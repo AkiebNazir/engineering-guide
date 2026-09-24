@@ -715,19 +715,22 @@ comparisons change from `<`/`>` to `cmp(a, b) < 0`/`> 0`.
 
 All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: The three delete cases. Say all three before writing a line — skipping one is how this problem is failed. A missing left child covers the leaf and the right-only cases in one line.
-flowchart TD
-  D["found the node to delete"] --> A{"n.Left == nil?"}
-  A -->|"yes"| R1["replace n with n.Right<br/>(covers a leaf AND right-only)"]:::ok
-  A -->|"no"| B{"n.Right == nil?"}
-  B -->|"yes"| R2["replace n with n.Left"]:::ok
-  B -->|"no: two children"| C["find the inorder successor:<br/>the leftmost node of n.Right"]:::hot
-  C --> E["copy its value up, then delete the<br/>successor from n.Right (an easy case)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node d "Found the node to delete" at 0,0 shape=pill w=200
+node a "n.Left == nil?" at 0,1 shape=diamond color=amber
+node r1 "Replace n with n.Right" at 1,1 color=green w=220 sub="covers a leaf AND right-only"
+node b "n.Right == nil?" at 0,2 shape=diamond color=amber
+node r2 "Replace n with n.Left" at 1,2 color=green w=220
+node c "Find the inorder successor" at 0,3 color=amber w=220 sub="the leftmost node of n.Right"
+node e "Copy its value up" at 0,4 color=amber w=220 sub="then delete the successor from n.Right (an easy case)"
+d -> a
+a -> r1 : "yes"
+a -> b : "no"
+b -> r2 : "yes"
+b -> c : "no: two children"
+c -> e
 ```
 
 ### Insert and delete through a pointer-to-pointer — something Python cannot do
@@ -950,21 +953,26 @@ In Go, when you need this *in production*, reach for a B-tree package (`github.c
 `github.com/tidwall/btree`) rather than hand-rolling. In an interview, name the operations you need — insert, delete, rank,
 range query — and the structure that provides them.
 
-```mermaid
+```arch
 %% caption: Choosing an ordered structure. What you need to do with the keys — and where they live — decides it.
-flowchart TD
-  Q(["Keys that must stay sorted"]) --> A{"Where do they live?"}
-  A -->|"on disk / very large"| B["B-tree or B+ tree<br/>fan-out is the lever"]:::ok
-  A -->|"in memory"| C{"What operations?"}
-  C -->|"only lookup, order does not matter"| H["map[K]V<br/>O(1) average"]:::ok
-  C -->|"insert, delete, predecessor, range"| D{"Adversarial or sorted input?"}
-  D -->|"no: random-ish keys"| P["plain BST<br/>O(log n) expected"]:::ok
-  D -->|"yes"| S["balanced tree, treap or skip list<br/>guaranteed or expected O(log n)"]:::hot
-  C -->|"rank / select / k-th"| O["augment with subtree sizes"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node q "Keys that must stay sorted" at 0,0 shape=pill w=200
+node a "Where do they live?" at 0,1 shape=diamond color=amber
+node b "B-tree or B+ tree" at 1,1 color=green w=230 sub="on disk / very large · fan-out is the lever"
+node c "What operations?" at 0,2 shape=diamond color=amber
+node h "map[K]V, O(1) average" at 1,2 color=green w=230 sub="only lookup, order does not matter"
+node o "Augment with subtree sizes" at 1,3 color=amber w=230 sub="rank / select / k-th"
+node d "Adversarial or sorted input?" at 0,4 shape=diamond color=amber sub="insert, delete, predecessor, range"
+node p "Plain BST" at 1,4 color=green w=230 sub="O(log n) expected"
+node s "Balanced tree, treap or skip list" at 0,5 color=amber w=230 sub="guaranteed or expected O(log n)"
+q -> a
+a -> b : "on disk"
+a -> c : "in memory"
+c:R -> h:L
+c:R -> o:L
+c -> d
+d -> p : "no: random-ish"
+d -> s : "yes"
 ```
 
 ### Duplicates are a policy, not an accident

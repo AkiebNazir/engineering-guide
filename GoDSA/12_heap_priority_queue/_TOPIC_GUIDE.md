@@ -224,20 +224,21 @@ is how `Merge K Sorted Lists` (LC 23) and external merge-sort avoid ever
 comparing more than k elements at a time — **O(n log k)** for n total elements
 across k lists.
 
-```mermaid
+```arch
 %% caption: Two heaps split the numbers into a lower half and an upper half. The median always sits at the tops.
-flowchart LR
-  X["new number x"] --> L["push into the max-heap<br/>(lower half)"]
-  L --> M["move the lower half's<br/>largest into the upper half"]
-  M --> R{"upper half bigger<br/>than lower half?"}
-  R -->|yes| MV["move the upper half's<br/>smallest back down"]
-  R -->|no| OK["balanced"]:::ok
-  MV --> OK
-  OK --> Q["median = top of lower (odd count)<br/>or average of both tops (even)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x90
+node x "New number x" at 0,0 shape=pill
+node l "Push into the max-heap" at 1,0 w=180 sub="lower half"
+node m "Move the lower half's largest into the upper half" at 2,0 w=200
+node r "Upper half bigger than lower half?" at 2,1 shape=diamond color=amber
+node mv "Move the upper half's smallest back down" at 2,2 w=200
+node ok "Balanced" at 1,1 color=green
+node q "Median" at 0,1 color=amber w=190 sub="top of lower (odd count) or average of both tops (even)"
+x -> l -> m -> r
+r -> mv : "yes"
+r -> ok : "no"
+mv:L -> ok:B
+ok -> q
 ```
 
 ### 4.3 Two-heap median finder
@@ -368,21 +369,27 @@ trick to avoid a second sort or a `slices.Reverse` call at the end.
 yourself in ~35 lines** — no `any` boxing, no type assertions, and the comparison is a closure you pass in. All code
 below ran on Go 1.24.5.
 
-```mermaid
+```arch
 %% caption: Push and pop on a slice-backed heap. Both are one walk along a single root-to-leaf path, so both are O(log n).
-flowchart TD
-  P["Push(x)"] --> P1["append x at the end"] --> P2{"less(x, parent)?"}
-  P2 -->|"yes"| P3["swap with parent, move up"]:::hot
-  P3 --> P2
-  P2 -->|"no / at root"| P4["done"]:::ok
-  O["Pop()"] --> O1["save the root; move the LAST element to the root;<br/>zero the old slot; shrink"] --> O2{"a child is smaller?"}
-  O2 -->|"yes"| O3["swap with the SMALLER child, move down"]:::hot
-  O3 --> O2
-  O2 -->|"no / leaf"| O4["return the saved root"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node p "Push(x)" at 0,0 shape=pill
+node p1 "Append x at the end" at 0,1
+node p2 "less(x, parent)?" at 0,2 shape=diamond color=amber
+node p3 "Swap with parent" at 0,3 color=amber sub="move up"
+node p4 "Done" at 1,2 color=green
+node o "Pop()" at 0,4 shape=pill
+node o1 "Save the root" at 0,5 w=220 sub="move the LAST element to the root; zero the old slot; shrink"
+node o2 "A child is smaller?" at 0,6 shape=diamond color=amber
+node o3 "Swap with the SMALLER child" at 0,7 color=amber w=200 sub="move down"
+node o4 "Return the saved root" at 1,6 color=green
+p -> p1 -> p2
+p2 -> p3 : "yes"
+p3:L -> p2:L
+p2 -> p4 : "no / at root"
+o -> o1 -> o2
+o2 -> o3 : "yes"
+o3:L -> o2:L
+o2 -> o4 : "no / leaf"
 ```
 
 ```go

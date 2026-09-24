@@ -250,16 +250,16 @@ Collapsing this to 1D (§3.2) only works because `dp[i][*]` only ever reads
 from row `i-1` — verify that property before attempting the collapse on any
 new DP you write.
 
-```mermaid
+```arch
 %% caption: The LCS recurrence. Edit distance uses the same three neighbours, with min and +1 instead.
-flowchart TD
-  A["cell (i, j): compare a[i-1] with b[j-1]"] --> B{"equal?"}
-  B -->|yes| C["dp[i][j] = dp[i-1][j-1] + 1"]:::ok
-  B -->|no| D["dp[i][j] = max(dp[i-1][j], dp[i][j-1])"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node a "cell (i, j)" at 0.5,0 sub="compare a[i-1] with b[j-1]"
+node b "equal?" at 0.5,1 shape=diamond color=amber
+node c "dp[i][j] = dp[i-1][j-1] + 1" at 0,2 color=green w=210
+node d "dp[i][j] = max(dp[i-1][j], dp[i][j-1])" at 1,2 w=260
+a -> b
+b -> c : "yes"
+b -> d : "no"
 ```
 
 ### 4.3 LCS / Edit Distance — the two-string diagonal
@@ -515,21 +515,26 @@ wants the bit-trick explained.
 Parts 1–9 give the Go mechanics (allocating grids, the `(m+1)×(n+1)` offset, rolling rows, bitmask DP). This Part is
 the catalogue of problems with Go code, grouped by shape. All snippets ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: Choosing the 2D shape. What the two indices range over decides the table, its fill order and whether it can be rolled.
-flowchart TD
-  Q(["A 2D DP problem"]) --> A{"What are the two indices?"}
-  A -->|"a row and a column of a GRID"| G["grid DP<br/>Unique Paths, Min Path Sum, Maximal Square"]:::ok
-  A -->|"a position in EACH of two strings"| S["two-string DP<br/>LCS, Edit Distance, Interleaving, Regex"]:::ok
-  A -->|"a day and a STATE"| M["state machine<br/>Stock with Cooldown"]:::ok
-  A -->|"an item count and a SUM"| K["knapsack, rolled to 1D<br/>Coin Change II (up), Target Sum (down)"]:::hot
-  A -->|"a range [l, r]"| I["interval DP, fill by LENGTH<br/>Burst Balloons, Palindromic Subsequence"]:::hot
-  A -->|"a node and a SET of nodes"| B["bitmask / state-space BFS<br/>Visiting All Nodes"]:::ok
-  A -->|"a digit position and a TIGHT flag"| D["digit DP<br/>Count Special Integers"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "A 2D DP problem" at 0,2 shape=pill
+node a "What are the two indices?" at 0,3 shape=diamond color=amber
+node g "Grid DP" at 1,0 color=green w=400 sub="a row and a column of a GRID · Unique Paths, Min Path Sum, Maximal Square"
+node s "Two-string DP" at 1,1 color=green w=400 sub="a position in EACH of two strings · LCS, Edit Distance, Interleaving, Regex"
+node m "State machine" at 1,2 color=green w=400 sub="a day and a STATE · Stock with Cooldown"
+node k "Knapsack, rolled to 1D" at 1,3 color=amber w=400 sub="an item count and a SUM · Coin Change II (up), Target Sum (down)"
+node i "Interval DP, fill by LENGTH" at 1,4 color=amber w=400 sub="a range [l, r] · Burst Balloons, Palindromic Subsequence"
+node b "Bitmask / state-space BFS" at 1,5 color=green w=400 sub="a node and a SET of nodes · Visiting All Nodes"
+node d "Digit DP" at 1,6 color=green w=400 sub="a digit position and a TIGHT flag · Count Special Integers"
+q -> a
+a:R -> g:L
+a:R -> s:L
+a:R -> m:L
+a:R -> k:L
+a:R -> i:L
+a:R -> b:L
+a:R -> d:L
 ```
 
 ### Grid shapes: Unique Paths I/II, Minimum Path Sum, Maximal Square

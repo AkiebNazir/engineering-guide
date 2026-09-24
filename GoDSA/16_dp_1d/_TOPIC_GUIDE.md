@@ -41,21 +41,27 @@ func fib(n int, memo map[int]int) int {
 }
 ```
 
-```mermaid
+```arch
 %% caption: Naive recursion recomputes the same subproblems: f(3) twice, f(2) three times. Only n distinct states exist, so caching each one turns O(2^n) into O(n).
-flowchart TD
-  f5["f(5)"] --> f4["f(4)"]
-  f5 --> f3a["f(3)"]:::bad
-  f4 --> f3b["f(3)"]:::bad
-  f4 --> f2a["f(2)"]:::hot
-  f3a --> f2b["f(2)"]:::hot
-  f3a --> f1a["f(1)"]
-  f3b --> f2c["f(2)"]:::hot
-  f3b --> f1b["f(1)"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node f5 "f(5)" at 2,0 shape=circle color=blue
+node f4 "f(4)" at 1,1 shape=circle color=blue
+node f3a "f(3)" at 3,1 shape=circle color=red
+node f3b "f(3)" at 0.5,2 shape=circle color=red
+node f2a "f(2)" at 1.5,2 shape=circle color=amber
+node f2b "f(2)" at 2.5,2 shape=circle color=amber
+node f1a "f(1)" at 3.5,2 shape=circle color=blue
+node f2c "f(2)" at 0,3 shape=circle color=amber
+node f1b "f(1)" at 1,3 shape=circle color=blue
+f5 -> f4
+f5 -> f3a
+f4 -> f3b
+f4 -> f2a
+f3a -> f2b
+f3a -> f1a
+f3b -> f2c
+f3b -> f1b
 ```
 
 ### 1.2 Map cache vs. slice cache
@@ -372,20 +378,24 @@ array.
 Parts 1–5 give the Go mechanics (slice memos, rolling variables, overflow, `%`). This Part is the catalogue of shapes with
 Go code. All snippets ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: The six 1D shapes. The wording of the question picks the family; the family fixes the loop order and the direction.
-flowchart TD
-  Q(["1D DP problem"]) --> A{"What varies?"}
-  A -->|"position i, FIXED look-back window"| L["Linear recurrence<br/>Fibonacci, Stairs, Tribonacci"]:::ok
-  A -->|"position i, take or skip"| T["Take-or-skip<br/>House Robber I and II"]:::ok
-  A -->|"a target VALUE, items reusable"| U["Unbounded knapsack: ascending<br/>Coin Change, Perfect Squares, Comb. Sum IV"]:::hot
-  A -->|"a target VALUE, each item once"| Z["0/1 knapsack: sums scanned DOWN<br/>Partition Equal Subset Sum"]:::hot
-  A -->|"best answer ENDING at i"| S["Sequence DP<br/>LIS, Word Break, Decode Ways, Max Product"]:::ok
-  A -->|"a centre or an interval"| P["Substring DP<br/>palindromes: expand or table"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "1D DP problem" at 0,1 shape=pill
+node a "What varies?" at 0,2 shape=diamond color=amber
+node l "Linear recurrence" at 1,0 color=green w=400 sub="position i, FIXED look-back window · Fibonacci, Stairs, Tribonacci"
+node t "Take-or-skip" at 1,1 color=green w=400 sub="position i, take or skip · House Robber I and II"
+node u "Unbounded knapsack: ascending" at 1,2 color=amber w=400 sub="a target VALUE, items reusable · Coin Change, Perfect Squares, Comb. Sum IV"
+node z "0/1 knapsack: sums scanned DOWN" at 1,3 color=amber w=400 sub="a target VALUE, each item once · Partition Equal Subset Sum"
+node s "Sequence DP" at 1,4 color=green w=400 sub="best answer ENDING at i · LIS, Word Break, Decode Ways, Max Product"
+node p "Substring DP" at 1,5 color=green w=400 sub="a centre or an interval · palindromes: expand or table"
+q -> a
+a:R -> l:L
+a:R -> t:L
+a:R -> u:L
+a:R -> z:L
+a:R -> s:L
+a:R -> p:L
 ```
 
 ### Take or skip — House Robber I and II

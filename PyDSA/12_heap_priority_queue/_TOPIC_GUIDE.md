@@ -33,15 +33,23 @@ cannot binary-search a heap or iterate it in sorted order for free.
 pointers**, by numbering nodes level-by-level, left-to-right, starting at
 index 0:
 
-```mermaid
+```arch
 %% caption: Stored as the array [1, 3, 2, 7, 4, 5, 9]. Children of i are 2i+1 and 2i+2, the parent is (i-1)//2. A min-heap only promises parent ≤ children, not a fully sorted array.
-flowchart TD
-  i0("1<br/>i=0") --> i1("3<br/>i=1")
-  i0 --> i2("2<br/>i=2")
-  i1 --> i3("7<br/>i=3")
-  i1 --> i4("4<br/>i=4")
-  i2 --> i5("5<br/>i=5")
-  i2 --> i6("9<br/>i=6")
+route straight
+grid 80x100
+node i0 "1" at 3,0 shape=circle color=blue sub="i=0"
+node i1 "3" at 1,1 shape=circle color=blue sub="i=1"
+node i2 "2" at 5,1 shape=circle color=blue sub="i=2"
+node i3 "7" at 0,2 shape=circle color=blue sub="i=3"
+node i4 "4" at 2,2 shape=circle color=blue sub="i=4"
+node i5 "5" at 4,2 shape=circle color=blue sub="i=5"
+node i6 "9" at 6,2 shape=circle color=blue sub="i=6"
+i0 -> i1
+i0 -> i2
+i1 -> i3
+i1 -> i4
+i2 -> i5
+i2 -> i6
 ```
 
 
@@ -95,17 +103,17 @@ element into index 0 (keeps completeness — no hole in the middle), then
 repeatedly swap it with its smaller (min-heap) child until the invariant
 holds:
 
-```mermaid
+```arch
 %% caption: Pop: the last element replaces the root and sinks, always swapping with the smaller child. At most one swap per level, so O(log n).
-flowchart TD
-  A["pop: take the root,<br/>move the last element to the root"] --> B{"a child is smaller<br/>than this element?"}
-  B -->|no| Z["heap property restored"]:::ok
-  B -->|yes| C["swap with the SMALLER child"]:::hot
-  C --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node A "pop: take the root" at 0,0 shape=card icon=sort sub="move the last element to the root"
+node B "a child is smaller than this element?" at 0,1 shape=diamond color=amber
+node Z "heap property restored" at 1,1 shape=pill color=green
+node C "swap with the SMALLER child" at 0,2 color=amber
+A -> B
+B -> Z : "no"
+B -> C : "yes"
+C:L -> B:L
 ```
 
 
@@ -305,20 +313,21 @@ more robust choice precisely because it can't pathologically degrade.
 Problem 009 in this topic (`find-median-from-data-stream`) is the canonical
 use of a **pair** of heaps to maintain a running median over a stream:
 
-```mermaid
+```arch
 %% caption: Two heaps split the numbers into a lower half and an upper half. The median always sits at the tops.
-flowchart LR
-  X["new number x"] --> L["push into the max-heap<br/>(lower half)"]
-  L --> M["move the lower half's<br/>largest into the upper half"]
-  M --> R{"upper half bigger<br/>than lower half?"}
-  R -->|yes| MV["move the upper half's<br/>smallest back down"]
-  R -->|no| OK["balanced"]:::ok
-  MV --> OK
-  OK --> Q["median = top of lower (odd count)<br/>or average of both tops (even)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node X "new number x" at 0,0 shape=pill
+node L "push into the max-heap" at 0,1 sub="lower half"
+node M "move lower's largest up" at 0,2 sub="into the upper half"
+node R "upper half bigger than lower half?" at 0,3 shape=diamond color=amber
+node MV "move upper's smallest back down" at 1,3
+node OK "balanced" at 0,4 color=green
+node Q "median" at 0,5 shape=card icon=sigma color=amber sub="top of lower (odd count) or average of both tops (even)"
+X -> L -> M -> R
+R -> MV : "yes"
+R -> OK : "no"
+MV:B -> OK:R
+OK -> Q
 ```
 
 
@@ -360,21 +369,22 @@ complexity via a different mechanism — a merge tree of height log k instead
 of a heap of size k); this topic's problems stick to the heap side of that
 family.
 
-```mermaid
+```arch
 %% caption: k-way merge: the heap holds one candidate per list, so each output element costs O(log k).
-flowchart LR
-  A["heap holds the current head<br/>of each of the k lists"] --> B["pop the smallest: (value, list id)"]
-  B --> C["append value to the output"]:::ok
-  C --> D{"that list has a next element?"}
-  D -->|yes| E["push it into the heap"]
-  E --> B
-  D -->|no| F{"heap empty?"}
-  F -->|no| B
-  F -->|yes| G["done: O(N log k)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node A "heap holds the head of each list" at 0,0 shape=card icon=layers sub="one per list, k lists"
+node B "pop the smallest" at 0,1 sub="(value, list id)"
+node C "append value to the output" at 0,2 color=green
+node D "that list has a next element?" at 0,3 shape=diamond color=amber
+node E "push it into the heap" at 1,3
+node F "heap empty?" at 0,4 shape=diamond color=amber
+node G "done: O(N log k)" at 0,5 shape=pill color=green
+A -> B -> C -> D
+D -> E : "yes"
+E:T -> B:R
+D -> F : "no"
+F:L -> B:L : "no"
+F -> G : "yes"
 ```
 
 
@@ -443,20 +453,24 @@ Lazy deletion reappears in Stock Price Fluctuation (25_design/013) and Dijkstra'
 
 Every snippet below was run against known answers while writing this section.
 
-```mermaid
+```arch
 %% caption: Why a heap and not a sorted list or a BST. The heap wins when you only ever need the extreme, and the data keeps changing.
-flowchart TD
-  Q(["Repeatedly need the min or max"]) --> A{"Do you need the full order,<br/>or predecessor / rank queries?"}
-  A -->|"yes"| B["sort once, or a balanced BST<br/>(topic 11)"]:::ok
-  A -->|"no: only the extreme"| C{"Does the data change<br/>between queries?"}
-  C -->|"no, one query"| D["sorted() / min() / quickselect<br/>no heap needed"]:::ok
-  C -->|"yes: inserts and pops"| E["heap: O(log n) push and pop,<br/>O(1) peek"]:::hot
-  E --> F{"Need to change a priority<br/>or delete an arbitrary item?"}
-  F -->|"yes"| G["heapq has no decrease-key:<br/>push a new entry, skip stale ones (lazy deletion)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 300x100
+node Q "Repeatedly need the min or max" at 0,0 shape=pill
+node A "Full order, or predecessor / rank queries?" at 0,1 shape=diamond color=amber
+node B "sort once, or a balanced BST" at 1,1 color=green sub="topic 11"
+node C "Does the data change between queries?" at 0,2 shape=diamond color=amber
+node D "sorted() / min() / quickselect" at 1,2 color=green sub="no heap needed"
+node E "heap" at 0,3 shape=card icon=sort color=amber w=240 sub="O(log n) push and pop, O(1) peek"
+node F "Change a priority or delete an arbitrary item?" at 0,4 shape=diamond color=amber
+node G "lazy deletion" at 1,4 shape=card icon=warn color=amber w=250 sub="heapq has no decrease-key: push a new entry, skip stale ones"
+Q -> A
+A -> B : "yes"
+A -> C : "no: only the extreme"
+C -> D : "no, one query"
+C -> E : "yes: inserts and pops"
+E -> F
+F -> G : "yes"
 ```
 
 ### 9.1 The frontier heap: K smallest pairs (LC 373)

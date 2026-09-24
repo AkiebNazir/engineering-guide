@@ -61,17 +61,19 @@ the payoff for why.
 The instinctive first attempt: check `left.val < node.val < right.val` at
 every node. This is wrong, and the counterexample is worth memorizing:
 
-```mermaid
+```arch
 %% caption: Node 3 is smaller than its parent 6, so a local check passes. But it sits in the right subtree of 5, so its allowed range is (5, 6) and it is invalid. Pass (lo, hi) bounds down the recursion.
-flowchart TD
-  n5("5<br/>(-inf, +inf)") --> n1("1<br/>(-inf, 5)")
-  n5 --> n6("6<br/>(5, +inf)")
-  n6 --> n3("3<br/>(5, 6)"):::bad
-  n6 --> n7("7<br/>(6, +inf)")
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 120x100
+node n5 "5" at 1.5,0 shape=box color=blue sub="(-inf, +inf)"
+node n1 "1" at 0.5,1 shape=box color=blue sub="(-inf, 5)"
+node n6 "6" at 2.5,1 shape=box color=blue sub="(5, +inf)"
+node n3 "3" at 2,2 shape=box color=red sub="(5, 6)"
+node n7 "7" at 3,2 shape=box color=blue sub="(6, +inf)"
+n5 -> n1
+n5 -> n6
+n6 -> n3
+n6 -> n7
 ```
 
 
@@ -142,18 +144,20 @@ same shape.
 
 Deleting the node holding `target`:
 
-```mermaid
+```arch
 %% caption: The three delete cases. With two children the in-order successor takes the node's place, which keeps the BST invariant.
-flowchart TD
-  F["find the node to delete"] --> C{"how many children?"}
-  C -->|"0"| A["remove it"]:::ok
-  C -->|"1"| B["replace it with its child"]:::ok
-  C -->|"2"| D["copy the in-order successor<br/>(min of the right subtree) into the node"]:::hot
-  D --> E["delete that successor<br/>from the right subtree"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x100
+node F "find the node to delete" at 1,0 shape=pill
+node C "how many children?" at 1,1 shape=diamond color=amber
+node A "remove it" at 0,2 color=green
+node B "replace it with its child" at 1,2 color=green
+node D "copy the in-order successor" at 2,2 color=amber sub="min of the right subtree, into the node"
+node E "delete that successor" at 2,3 sub="from the right subtree"
+F -> C
+C:L -> A:T : "0"
+C -> B : "1"
+C:R -> D:T : "2"
+D -> E
 ```
 
 
@@ -201,20 +205,27 @@ Insert `1, 2, 3, 4, 5, 6, 7` in that order using `insert` above. Every
 value is bigger than everything already there, so every node becomes the
 previous node's right child — a linked list wearing a tree costume:
 
-```mermaid
+```arch
 %% caption: Sorted inserts degrade a BST into a linked list. A balanced tree keeps the height at log n.
-flowchart TB
-  subgraph S["Sorted inserts: height 5"]
-    direction LR
-    s1(("1")) --> s2(("2")) --> s3(("3")) --> s4(("4")) --> s5(("5"))
-  end
-  subgraph B["Balanced: height 3"]
-    direction TB
-    b3(("3")) --> b2(("2"))
-    b3 --> b4(("4"))
-    b2 --> b1(("1"))
-    b4 --> b5(("5"))
-  end
+route straight
+grid 80x80
+group S "Sorted inserts: height 5" color=red
+node s1 "1" at 0,0 in S shape=circle color=red
+node s2 "2" at 1,1 in S shape=circle color=red
+node s3 "3" at 2,2 in S shape=circle color=red
+node s4 "4" at 3,3 in S shape=circle color=red
+node s5 "5" at 4,4 in S shape=circle color=red
+group B "Balanced: height 3" color=green
+node b3 "3" at 2,5 in B shape=circle color=green
+node b2 "2" at 1,6 in B shape=circle color=green
+node b4 "4" at 3,6 in B shape=circle color=green
+node b1 "1" at 0.5,7 in B shape=circle color=green
+node b5 "5" at 3.5,7 in B shape=circle color=green
+s1 -> s2 -> s3 -> s4 -> s5
+b3 -> b2
+b3 -> b4
+b2 -> b1
+b4 -> b5
 ```
 
 
@@ -288,24 +299,31 @@ Rotations locally re-parent three nodes without breaking the BST ordering
 invariant — the subtree in the middle (`B` below) moves to the other side,
 which is legal because it's still between the right two keys either way:
 
-```mermaid
+```arch
 %% caption: Left rotation: y moves up and x becomes its left child. Subtree B is re-attached as x's right child, and the in-order sequence A x B y C never changes.
-flowchart LR
-  subgraph B["before: left-rotate at x"]
-    direction TB
-    x(("x")) --> a["A"]
-    x --> y(("y"))
-    y --> b["B"]
-    y --> c["C"]
-  end
-  subgraph A["after"]
-    direction TB
-    y2(("y")) --> x2(("x"))
-    y2 --> c2["C"]
-    x2 --> a2["A"]
-    x2 --> b2["B"]
-  end
-  B ==> A
+route straight
+grid 70x90
+group B "before: left-rotate at x" color=slate
+node x "x" at 1,0 in B shape=circle color=blue
+node a "A" at 0,1 in B shape=box
+node y "y" at 2,1 in B shape=circle color=amber
+node b "B" at 1.5,2 in B shape=box color=amber
+node c "C" at 2.5,2 in B shape=box
+group A "after" color=green
+node y2 "y" at 2,4 in A shape=circle color=amber
+node x2 "x" at 1,5 in A shape=circle color=blue
+node c2 "C" at 3,5 in A shape=box
+node a2 "A" at 0.5,6 in A shape=box
+node b2 "B" at 1.5,6 in A shape=box color=amber
+x -> a
+x -> y
+y -> b
+y -> c
+y2 -> x2
+y2 -> c2
+x2 -> a2
+x2 -> b2
+c ==> y2
 ```
 
 

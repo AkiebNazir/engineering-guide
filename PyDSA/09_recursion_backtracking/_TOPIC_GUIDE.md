@@ -57,22 +57,26 @@ the problem asks you to *produce* them, not just count or optimize one.
 
 ## Part 1 · The universal template
 
-```mermaid
+```arch
 %% caption: The choose, explore, un-choose loop that every backtracking problem shares.
-flowchart TD
-  S["backtrack(state)"] --> B{"state is a complete answer?"}
-  B -->|yes| R["record a COPY of state"]:::ok
-  B -->|no| L["for each choice available now"]
-  L --> P{"choice breaks a constraint?"}
-  P -->|yes| SK["skip it (prune)"]:::bad
-  P -->|no| C["1. choose: modify state"]
-  C --> E["2. explore: backtrack(state)"]
-  E --> U["3. un-choose: undo the change"]:::hot
-  U --> L
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x100
+node S "backtrack(state)" at 0,0 shape=pill
+node B "complete answer?" at 0,1 shape=diamond color=amber
+node R "Record a COPY of state" at 1,1 shape=card icon=doc color=green
+node L "for each choice available now" at 0,2 shape=box
+node P "breaks a constraint?" at 1,2 shape=diamond color=amber
+node SK "skip it" at 2,2 color=red sub="prune"
+node C "1. choose" at 1,3 shape=card icon=check sub="modify state"
+node E "2. explore" at 1,4 shape=card icon=tree sub="backtrack(state)"
+node U "3. un-choose" at 0,4 shape=card icon=delete color=amber sub="undo the change"
+S -> B
+B -> R : "yes"
+B -> L : "no"
+L -> P
+P -> SK : "yes"
+P -> C : "no"
+C -> E -> U
+U -> L
 ```
 
 
@@ -138,19 +142,23 @@ combinations is the shape of `choices_at()`.** Everything else — the template,
 the recursion, the leaf test — is identical. Internalize this table before
 memorizing any individual solution:
 
-```mermaid
+```arch
 %% caption: Subsets as a decision tree: each level is one element, each branch is a choice, and the leaves are the answers.
-flowchart TD
-  r["[ ]"] -->|"take 1"| a["[1]"]
-  r -->|"skip 1"| b["[ ]"]
-  a -->|"take 2"| a1["[1, 2]"]:::ok
-  a -->|"skip 2"| a2["[1]"]:::ok
-  b -->|"take 2"| b1["[2]"]:::ok
-  b -->|"skip 2"| b2["[ ]"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 100x100
+node r "[ ]" at 1.5,0 shape=circle color=blue
+node a "[1]" at 0.5,1 shape=circle color=blue
+node b "[ ]" at 2.5,1 shape=circle color=blue
+node a1 "[1, 2]" at 0,2 shape=circle color=green
+node a2 "[1]" at 1,2 shape=circle color=green
+node b1 "[2]" at 2,2 shape=circle color=green
+node b2 "[ ]" at 3,2 shape=circle color=green
+r -> a : "take 1"
+r -> b : "skip 1"
+a -> a1 : "take 2"
+a -> a2 : "skip 2"
+b -> b1 : "take 2"
+b -> b2 : "skip 2"
 ```
 
 
@@ -191,18 +199,21 @@ duplicates at the end. On `[1,1,1,1,1,1,1,1,1,1]` (subsets), that naive
 approach constructs and discards `2^10 = 1024` branches to arrive at 11 unique
 results.
 
-```mermaid
+```arch
 %% caption: Sort first, then skip a value equal to the previous one at the same level of the tree. Deeper levels may still use it.
-flowchart TD
-  r["[ ]   nums sorted = [1, 1, 2]"] -->|"i=0: pick the first 1"| a["[1]"]
-  r -->|"i=1: equals nums[0] at the same level"| x["skip"]:::bad
-  r -->|"i=2: pick 2"| c["[2]"]
-  a -->|"i=1: pick the second 1<br/>(deeper level, allowed)"| a1["[1, 1]"]:::ok
-  a -->|"i=2: pick 2"| a2["[1, 2]"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 250x160
+node r "[ ]" at 1,0 color=blue sub="nums sorted = [1, 1, 2]"
+node a "[1]" at 0,1 color=blue
+node x "skip" at 1,1 color=red
+node c "[2]" at 2,1 color=blue
+node a1 "[1, 1]" at 0,2 color=green
+node a2 "[1, 2]" at 1,2 color=green
+r -> a : "i=0: pick the first 1"
+r -> x : "i=1: equals nums[0]\nat the same level"
+r -> c : "i=2: pick 2"
+a -> a1 : "i=1: second 1\n(deeper, allowed)"
+a -> a2 : "i=2: pick 2"
 ```
 
 
@@ -273,19 +284,20 @@ cells continues the word?" The state that must be choose/unchosen here is not a
 almost always represented as mutating the board cell itself (e.g. to `'#'`) or a
 parallel `visited` grid.
 
-```mermaid
+```arch
 %% caption: Grid backtracking: mark the cell on the way in, and always restore it on the way out.
-flowchart LR
-  A["at cell (r, c)"] --> B{"in bounds, letter matches,<br/>not visited?"}
-  B -->|no| X["return False"]:::bad
-  B -->|yes| C["MARK the cell as visited"]
-  C --> D["try the 4 neighbours"]
-  D --> E["UNMARK: restore the letter"]:::hot
-  E --> F["return True if any neighbour succeeded"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node A "at cell (r, c)" at 0,0 shape=pill
+node B "in bounds, letter matches, not visited?" at 0,1 shape=diamond color=amber
+node X "return False" at 1,1 color=red
+node C "MARK the cell as visited" at 0,2
+node D "try the 4 neighbours" at 0,3
+node E "UNMARK: restore the letter" at 0,4 color=amber
+node F "return True if any neighbour succeeded" at 0,5 shape=pill color=green
+A -> B
+B -> X : "no"
+B -> C : "yes"
+C -> D -> E -> F
 ```
 
 

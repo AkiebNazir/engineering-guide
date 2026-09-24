@@ -114,15 +114,22 @@ repeatedly inside a long-lived process.
 
 ---
 
-```mermaid
+```arch
 %% caption: From A: BFS visits by distance (A, B, C, D, E, F) using a queue. DFS dives first (A, B, D, F, E, C) using a stack or recursion. Both need a visited set, or the cycle A-B-D-F-E-C loops forever.
-flowchart LR
-  A(("A")) --- B(("B"))
-  A --- C(("C"))
-  B --- D(("D"))
-  C --- E(("E"))
-  D --- F(("F"))
-  E --- F
+route straight
+grid 100x80
+node a "A" at 0,1 shape=circle color=blue
+node b "B" at 1,0 shape=circle color=blue
+node c "C" at 1,2 shape=circle color=blue
+node d "D" at 2,0 shape=circle color=blue
+node e "E" at 2,2 shape=circle color=blue
+node f "F" at 3,1 shape=circle color=blue
+a -- b
+a -- c
+b -- d
+c -- e
+d -- f
+e -- f
 ```
 
 ## Part 3 · Depth-First Search
@@ -519,21 +526,24 @@ The Go guide so far covers representation, BFS/DFS, undirected cycles and bipart
 schedules, build orders, dependency resolution — need two more tools, and they are the same question asked twice: *is
 there a cycle?* and *what order respects every edge?* All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: Cycle detection and topological sort are one question. Kahn's algorithm peels off nodes with no unmet dependency; if it cannot peel them all, a cycle is holding the rest.
-flowchart TD
-  A["build adj and indegree<br/>edge [a, b] = b must come before a: b -> a"] --> B["queue all nodes with indegree 0"]
-  B --> C{"queue empty?"}
-  C -->|"no"| D["pop u, append to order"]
-  D --> E["for each v in adj[u]: indegree[v]--<br/>if it hits 0, enqueue v"]:::hot
-  E --> C
-  C -->|"yes"| F{"len(order) == n?"}
-  F -->|"yes"| G["valid order: no cycle"]:::ok
-  F -->|"no"| H["a cycle left nodes stuck<br/>at indegree > 0: NOT schedulable"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x90
+node a "Build adj and indegree" at 0,0 shape=pill w=260 sub="edge [a, b] = b must come before a: b -> a"
+node b "Queue all nodes with indegree 0" at 0,1 w=230
+node c "Queue empty?" at 0,2 shape=diamond color=amber
+node d "Pop u, append to order" at 0,3 w=230
+node e "For each v in adj[u]: indegree[v]--" at 0,4 color=amber w=240 sub="if it hits 0, enqueue v"
+node f "len(order) == n?" at 1,2 shape=diamond color=amber
+node g "Valid order: no cycle" at 2,2 color=green w=170
+node h "A cycle left nodes stuck" at 1,3 color=red w=200 sub="at indegree > 0: NOT schedulable"
+a -> b -> c
+c -> d : "no"
+d -> e
+e:L -> c:L
+c -> f : "yes"
+f -> g : "yes"
+f -> h : "no"
 ```
 
 ### Kahn's algorithm — BFS on in-degree

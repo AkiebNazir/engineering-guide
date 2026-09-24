@@ -117,21 +117,27 @@ even before you consider the map alternative.
 
 ---
 
-```mermaid
+```arch
 %% caption: Words: car, cat, cow, do. Green nodes end a word. Words sharing a prefix share a path, and search costs O(length of the word), independent of how many words are stored.
-flowchart TD
-  root(("root")) --> c(("c"))
-  root --> d(("d"))
-  c --> ca(("a"))
-  c --> co(("o"))
-  ca --> car(("r")):::ok
-  ca --> cat(("t")):::ok
-  co --> cow(("w")):::ok
-  d --> do(("o")):::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node root "root" at 2,0 shape=circle color=blue
+node c "c" at 1,1 shape=circle color=blue
+node d "d" at 3,1 shape=circle color=blue
+node ca "a" at 0.5,2 shape=circle color=blue
+node co "o" at 1.5,2 shape=circle color=blue
+node do "o" at 3,2 shape=circle color=green
+node car "r" at 0,3 shape=circle color=green
+node cat "t" at 1,3 shape=circle color=green
+node cow "w" at 2,3 shape=circle color=green
+root -> c
+root -> d
+c -> ca
+c -> co
+ca -> car
+ca -> cat
+co -> cow
+d -> do
 ```
 
 ## Part 3 · Insert, Search, StartsWith
@@ -360,23 +366,28 @@ copy-pasting the loop twice.
 
 All code below ran on Go 1.24.5 against LeetCode's own examples; the numbers are measurements from this machine.
 
-```mermaid
+```arch
 %% caption: One node type, three shapes. The alphabet decides the children field; the problem decides what else the node carries.
-flowchart TD
-  Q(["Design the trie node"]) --> A{"Alphabet?"}
-  A -->|"a-z, dense"| B["children [26]*Node<br/>fastest lookup, 224 B per node"]:::ok
-  A -->|"bits of an integer"| C["children [2]*Node<br/>Max XOR"]:::ok
-  A -->|"sparse, mixed case, Unicode"| D["children map[rune]*Node<br/>smaller per node when sparse"]:::hot
-  B --> E{"What else does a node carry?"}
-  C --> E
-  D --> E
-  E -->|"is this a word?"| F["isEnd bool  (Implement Trie, Wildcards)"]:::ok
-  E -->|"the word itself"| G["word string  (Word Search II)"]:::ok
-  E -->|"an aggregate"| H["sum / passCount int  (Map Sum Pairs)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node q "Design the trie node" at 1,0 shape=pill
+node a "Alphabet?" at 1,1 shape=diamond color=amber
+node b "children [26]*Node" at 0,2 color=green w=200 sub="fastest lookup, 224 B per node"
+node c "children [2]*Node" at 1,2 color=green w=200 sub="Max XOR"
+node d "children map[rune]*Node" at 2,2 color=amber w=200 sub="smaller per node when sparse"
+node e "What else does a node carry?" at 1,3 shape=diamond color=amber
+node f "isEnd bool" at 0,4 color=green w=200 sub="Implement Trie, Wildcards"
+node g "word string" at 1,4 color=green w=200 sub="Word Search II"
+node h "sum / passCount int" at 2,4 color=green w=200 sub="Map Sum Pairs"
+q -> a
+a -> b : "a-z, dense"
+a -> c : "bits of an integer"
+a -> d : "sparse, mixed case, Unicode"
+b -> e
+c -> e
+d -> e
+e -> f : "is this a word?"
+e -> g : "the word itself"
+e -> h : "an aggregate"
 ```
 
 ### Wildcards (LC 211): a method on a `nil` receiver

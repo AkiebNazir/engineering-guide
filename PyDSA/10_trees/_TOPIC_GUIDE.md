@@ -47,13 +47,19 @@ DFS commits to one branch and goes all the way down before backing up. The
 three "orders" differ only in WHEN, relative to the two recursive calls, you
 visit the current node.
 
-```mermaid
+```arch
 %% caption: Preorder 1 2 4 5 3 · Inorder 4 2 5 1 3 · Postorder 4 5 2 3 1 · Level order 1 2 3 4 5.
-flowchart TD
-  n1(("1")) --> n2(("2"))
-  n1 --> n3(("3"))
-  n2 --> n4(("4"))
-  n2 --> n5(("5"))
+route straight
+grid 80x90
+node n1 "1" at 1.5,0 shape=circle color=blue
+node n2 "2" at 0.5,1 shape=circle color=blue
+node n3 "3" at 2.5,1 shape=circle color=blue
+node n4 "4" at 0,2 shape=circle color=blue
+node n5 "5" at 1,2 shape=circle color=blue
+n1 -> n2
+n1 -> n3
+n2 -> n4
+n2 -> n5
 ```
 
 
@@ -201,19 +207,20 @@ structure is LIFO and the other is FIFO. Topic 07's guide
 (`PyDSA/07_queue_deque/_TOPIC_GUIDE.md`) covers the container in full — this
 is the specific way trees use it.
 
-```mermaid
+```arch
 %% caption: Level-order BFS: taking len(queue) up front is what separates one level from the next.
-flowchart TD
-  A["queue = deque([root])"] --> B{"queue not empty?"}
-  B -->|no| Z["done"]
-  B -->|yes| C["size = len(queue)<br/>exactly one whole level"]:::hot
-  C --> D["pop size nodes,<br/>push each one's children"]
-  D --> E["level finished:<br/>append it to the result"]
-  E --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x100
+node A "queue = deque([root])" at 1,0 shape=pill
+node B "queue not empty?" at 1,1 shape=diamond color=amber
+node Z "done" at 0,1 shape=pill color=green
+node C "size = len(queue)" at 1,2 color=amber sub="exactly one whole level"
+node D "pop size nodes" at 1,3 sub="push each one's children"
+node E "level finished" at 2,3 sub="append it to the result"
+A -> B
+B -> Z : "no"
+B -> C : "yes"
+C -> D -> E
+E:T -> B:R
 ```
 
 
@@ -286,11 +293,13 @@ BFS is not optional — it is the only order that groups nodes by depth.
 This is the single most useful sentence in this guide, and it resolves most
 "how do I even start" confusion on tree problems:
 
-```mermaid
+```arch
 %% caption: Information flows down through parameters and up through return values. Decide which one each problem needs.
-flowchart TD
-  P("parent call") -->|"DOWN: parameters<br/>depth, lo and hi bounds, path so far"| C("child call")
-  C -->|"UP: return value<br/>height, sum, is-valid"| P
+grid 200x160
+node P "parent call" at 1,0 shape=pill color=blue
+node C "child call" at 1,1 shape=pill color=blue
+P:L -> C:L : "DOWN: parameters\ndepth, lo/hi bounds,\npath so far"
+C:R -> P:R : "UP: return value\nheight, sum,\nis-valid"
 ```
 
 
@@ -524,20 +533,24 @@ prefix sum + hashmap. If it enumerates every path → backtracking.
 
 ## Part 7 · Decision Table
 
-```mermaid
+```arch
 %% caption: Choosing between BFS, postorder and preorder.
-flowchart TD
-  Q(["Tree problem"]) --> A{"Answer per LEVEL,<br/>or shortest depth?"}
-  A -->|yes| A1["BFS with a level size"]:::ok
-  A -->|no| B{"Parent needs information<br/>from its children?"}
-  B -->|yes| B1["Postorder: return values UP"]:::ok
-  B -->|no| C{"Children need information<br/>from ancestors?"}
-  C -->|yes| C1["Preorder: pass parameters DOWN"]:::ok
-  C -->|no| D["Inorder<br/>(on a BST: sorted order)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 250x100
+node Q "Tree problem" at 0,0 shape=pill
+node A "Answer per LEVEL, or shortest depth?" at 0,1 shape=diamond color=amber
+node A1 "BFS with a level size" at 1,1 color=green
+node B "Parent needs info from its children?" at 0,2 shape=diamond color=amber
+node B1 "Postorder: return values UP" at 1,2 color=green
+node C "Children need info from ancestors?" at 0,3 shape=diamond color=amber
+node C1 "Preorder: pass parameters DOWN" at 1,3 color=green
+node D "Inorder" at 0,4 color=green sub="on a BST: sorted order"
+Q -> A
+A -> A1 : "yes"
+A -> B : "no"
+B -> B1 : "yes"
+B -> C : "no"
+C -> C1 : "yes"
+C -> D : "no"
 ```
 
 

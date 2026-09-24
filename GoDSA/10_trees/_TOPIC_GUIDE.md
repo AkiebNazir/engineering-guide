@@ -427,20 +427,24 @@ Every tree problem is one recursion; what differs is **which direction the infor
 *up*. If a node needs something from its *ancestors* (a running sum, the maximum on the path, a bound), it must arrive
 through a **parameter**. All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: The design decision for every tree recursion. Ask what the node needs to know, and from where.
-flowchart TD
-  Q(["What does a node need to decide its answer?"]) --> A{"Something from its ANCESTORS?<br/>(remaining sum, path max, a bound)"}
-  A -->|"yes"| D["carry it DOWN as a parameter<br/>Path Sum, Good Nodes, Validate BST"]:::hot
-  A -->|"no"| B{"Something from its DESCENDANTS?<br/>(height, size, a found flag)"}
-  B -->|"yes"| U["RETURN it UP<br/>Depth, Balanced, LCA"]:::ok
-  B -->|"no"| L["a per-node local decision<br/>Invert, Same Tree"]:::ok
-  U --> S{"Also need a SECOND answer<br/>(diameter, max path sum)?"}
-  S -->|"yes"| M["record it in a captured variable<br/>OR return (a, b) — Go's multiple returns"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node q "What does a node need to decide its answer?" at 0,0 shape=pill w=240
+node a "From its ANCESTORS?" at 0,1 shape=diamond color=amber sub="remaining sum, path max, a bound"
+node d "Carry it DOWN as a parameter" at 1,1 color=amber w=240 sub="Path Sum, Good Nodes, Validate BST"
+node b "From its DESCENDANTS?" at 0,2 shape=diamond color=amber sub="height, size, a found flag"
+node l "A per-node local decision" at 1,2 color=green w=240 sub="Invert, Same Tree"
+node u "RETURN it UP" at 0,3 color=green w=200 sub="Depth, Balanced, LCA"
+node s "Also need a SECOND answer?" at 0,4 shape=diamond color=amber sub="diameter, max path sum"
+node m "Record it in a captured variable" at 1,4 color=amber w=240 sub="OR return (a, b): Go's multiple returns"
+q -> a
+a -> d : "yes"
+a -> b : "no"
+b -> u : "yes"
+b -> l : "no"
+u -> s
+s -> m : "yes"
 ```
 
 ### Down via a parameter: Path Sum and Good Nodes
@@ -557,24 +561,30 @@ dfs = func(n *TreeNode, depth int) {
 <!-- block:10_go_2_shapes -->
 ## Part 9 · Shapes Beyond the Twenty in Go
 
-```mermaid
+```arch
 %% caption: Which traversal? The order you need decides the tool; the space you can spend decides recursion, an explicit stack, or Morris.
-flowchart TD
-  Q(["Traverse a tree"]) --> A{"By level, or depth first?"}
-  A -->|"by level / nearest first"| B["BFS with a queue<br/>space O(width)"]:::ok
-  A -->|"depth first"| C{"When is the node visited?"}
-  C -->|"before its children"| PRE["preorder<br/>copy, serialize, path from root"]:::ok
-  C -->|"between the children"| INO["inorder<br/>a BST comes out sorted"]:::ok
-  C -->|"after its children"| POST["postorder<br/>heights, sizes, delete, evaluate"]:::ok
-  PRE --> S{"Space budget?"}
-  INO --> S
-  POST --> S
-  S -->|"O(h) is fine"| REC["recursion or explicit stack"]:::ok
-  S -->|"O(1) required"| MOR["Morris (inorder / preorder)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x90
+node q "Traverse a tree" at 1,0 shape=pill
+node a "By level, or depth first?" at 1,1 shape=diamond color=amber
+node b "BFS with a queue" at 2,1 color=green w=200 sub="by level / nearest first · space O(width)"
+node c "When is the node visited?" at 1,2 shape=diamond color=amber
+node pre "Preorder" at 0,3 color=green sub="copy, serialize, path from root"
+node ino "Inorder" at 1,3 color=green sub="a BST comes out sorted"
+node post "Postorder" at 2,3 color=green sub="heights, sizes, delete, evaluate"
+node s "Space budget?" at 1,4 shape=diamond color=amber
+node rec "Recursion or explicit stack" at 0,5 color=green
+node mor "Morris" at 2,5 color=amber sub="inorder / preorder"
+q -> a
+a -> b : "by level"
+a -> c : "depth first"
+c -> pre : "before its children"
+c -> ino : "between the children"
+c -> post : "after its children"
+pre -> s
+ino -> s
+post -> s
+s -> rec : "O(h) is fine"
+s -> mor : "O(1) required"
 ```
 
 ### Morris traversal — inorder in O(1) extra space

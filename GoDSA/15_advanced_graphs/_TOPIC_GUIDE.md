@@ -33,24 +33,29 @@ tracking each item's heap index and calling `heap.Fix`, but it adds real
 bookkeeping. The idiomatic Go workaround is simpler: **don't decrease — push
 again.**
 
-```mermaid
+```arch
 %% caption: Dijkstra with a heap. The stale-entry check replaces a decrease-key operation.
-flowchart TD
-  A["dist[src] = 0<br/>heap = [(0, src)]"] --> B{"heap empty?"}
-  B -->|yes| Z["dist holds the shortest paths"]:::ok
-  B -->|no| C["pop (d, u): the smallest distance"]
-  C --> D{"d > dist[u] ?"}
-  D -->|yes| S["stale entry: skip"]:::dim
-  S --> B
-  D -->|no| E["for each edge u to v with weight w"]
-  E --> F{"d + w is less than dist[v] ?"}
-  F -->|yes| G["dist[v] = d + w<br/>push (d + w, v)"]:::hot
-  F -->|no| B
-  G --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x90
+node a "Initialise" at 1,0 shape=pill w=220 sub="dist[src] = 0; heap = [(0, src)]"
+node b "heap empty?" at 1,1 shape=diamond color=amber
+node z "Done" at 0,1 color=green sub="dist holds the shortest paths"
+node c "pop (d, u)" at 1,2 sub="the smallest distance"
+node d "d > dist[u] ?" at 1,3 shape=diamond color=amber
+node s "Stale entry" at 2,3 color=slate sub="skip it"
+node e "For each edge u→v" at 1,4 sub="with weight w"
+node f "d + w < dist[v] ?" at 1,5 shape=diamond color=amber
+node g "dist[v] = d + w" at 1,6 color=amber sub="push (d + w, v)"
+a -> b
+b -> z : "yes"
+b -> c : "no"
+c -> d
+d -> s : "yes"
+s:T -> b:R dashed
+d -> e : "no"
+e -> f
+f -> g : "yes"
+g:R -> b:R
+f:L -> b:L : "no"
 ```
 
 ### 1.2 Lazy deletion
@@ -485,23 +490,30 @@ the variants where the *cost function*, the *state* or the *bookkeeping* changes
 LeetCode's own examples; it uses the generic `Heap[T]` from topic 12 (`NewHeap(less)`, `Push`, `Pop`, `Len`) and
 `const inf = math.MaxInt / 2` (Part 6).
 
-```mermaid
+```arch
 %% caption: Choosing a shortest-path or spanning algorithm. Negative edges, a DAG, a 0/1 weight set, or a dense graph each change the answer.
-flowchart TD
-  Q(["Weighted graph problem"]) --> A{"Edge weights?"}
-  A -->|"unweighted"| B["BFS"]:::ok
-  A -->|"only 0 and 1"| C["0-1 BFS with a deque"]:::ok
-  A -->|"non-negative"| D["Dijkstra + lazy deletion<br/>(the cost may be max, not sum)"]:::ok
-  A -->|"some negative"| E{"a DAG?"}
-  E -->|"yes"| F["relax in topological order"]:::ok
-  E -->|"no"| G["Bellman-Ford<br/>(K rounds = at most K edges)"]:::hot
-  Q --> H{"Connect everything cheaply?"}
-  H -->|"sparse"| I["Kruskal: sort + union-find"]:::ok
-  H -->|"dense / complete"| J["Prim with an O(V^2) array scan"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Weighted graph problem" at 0,0 shape=pill
+node a "Edge weights?" at 0,2 shape=diamond color=amber
+node b "BFS" at 1,0 color=green w=220 sub="unweighted"
+node c "0-1 BFS with a deque" at 1,1 color=green w=220 sub="only 0 and 1"
+node d "Dijkstra + lazy deletion" at 1,2 color=green w=220 sub="non-negative · the cost may be max, not sum"
+node e "Some negative: a DAG?" at 1,3 shape=diamond color=amber
+node f "Relax in topological order" at 2,3 color=green w=200
+node g "Bellman-Ford" at 1,4 color=amber w=220 sub="K rounds = at most K edges"
+node h "Connect everything cheaply?" at 0,5 shape=diamond color=amber
+node i "Kruskal: sort + union-find" at 1,5 color=green w=220 sub="sparse"
+node j "Prim with an O(V^2) array scan" at 1,6 color=green w=220 sub="dense / complete"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+e -> f : "yes"
+e -> g : "no"
+q:L -> h:L
+h:R -> i:L
+h:R -> j:L
 ```
 
 ### Dijkstra with a different cost: Path With Minimum Effort and Swim in Rising Water
