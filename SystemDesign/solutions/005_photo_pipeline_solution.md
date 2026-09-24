@@ -41,6 +41,26 @@ Idempotency: `POST /uploads` with the same `(user, sha256, size)` inside a short
 
 ## Source of truth and flow
 
+```arch
+%% caption: Upload bytes go client-to-storage on signed URLs, the metadata DB is the truth for state, an outbox event drives the scan/transform pipeline, and viewers read immutable variants through the CDN.
+node client "Client" at 1,0 icon=mobile
+node viewer "Viewer" at 3,0 icon=users
+node api "API" at 1,1 icon=api sub="small JSON only"
+node cdn "CDN" at 3,1 icon=cdn sub="origin shield"
+node db "Metadata DB" at 0,2 icon=db sub="Media state + outbox"
+node obj "Object storage" at 2,2 icon=blob sub="originals + variants"
+node pipe "Scan / transform pipeline" at 1,3 icon=workflow sub="sandboxed workers"
+client -> api : "upload, complete"
+client:R ==> obj:T : "PUT parts"
+api:L -> db:T : "txn"
+db:B ..> pipe:L : "outbox event"
+pipe:T -> db:R : "READY"
+pipe:R -> obj:B : "variants"
+viewer:L -> api:R : "signed URL"
+viewer -> cdn : "GET variant"
+cdn:B -> obj:R : "miss"
+```
+
 ```mermaid
 %% caption: Bytes flow client-to-storage directly; the API only ever handles small JSON — never the 50 MB payload.
 sequenceDiagram

@@ -59,18 +59,19 @@ my_list = [10, 20, 30]
 When `ob_size == allocated`, CPython reallocates. The growth rule lives in
 `list_resize()` in `Objects/listobject.c`:
 
-```mermaid
+```arch
 %% caption: Amortized O(1): the expensive copy is rare, and each copy buys many cheap appends.
-flowchart LR
-  A["append number 5<br/>len 4, cap 4<br/>FULL"]:::bad -->|"resize"| B["allocate a bigger block<br/>(over-allocate spare slots)"]
-  B --> C["copy 4 references<br/>O(n), but rare"]
-  C --> D["len 5, cap 8<br/>3 free slots"]:::ok
-  D -->|"next 3 appends"| E["write into a spare slot<br/>O(1) each"]
-  E -->|"full again"| A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x110
+node a "Append number 5" at 0,0 color=red sub="len 4, cap 4: FULL"
+node b "Allocate bigger block" at 1,0 sub="over-allocate spare slots"
+node c "Copy 4 references" at 2,0 sub="O(n), but rare"
+node d "len 5, cap 8" at 2,1 color=green sub="3 free slots"
+node e "Write into spare slot" at 0,1 sub="O(1) each"
+a -> b : "resize"
+b -> c
+c -> d
+d -> e : "next 3 appends"
+e -> a : "full again"
 ```
 
 
@@ -211,20 +212,21 @@ Most textbooks teach **separate chaining** (each slot holds a linked list).
 **CPython does not do this.** It uses **open addressing**: on a collision it
 probes for another slot in the same array.
 
-```mermaid
+```arch
 %% caption: Insert and lookup follow the same probe sequence, so a key is always found where it was placed. Long probe chains are what turn O(1) into O(n).
-flowchart TD
-  K["key"] --> H["h = hash(key)"]
-  H --> I["i = h and mask<br/>first probe slot"]
-  I --> Q{"look at slot i"}
-  Q -->|"empty"| INS["insert (key, value)"]:::ok
-  Q -->|"same hash and key =="| UPD["found: read or overwrite value"]:::ok
-  Q -->|"occupied by another key"| P["perturb and pick the next slot"]:::hot
-  P --> Q
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x100
+node k "key" at 1,0 shape=pill
+node h "h = hash(key)" at 1,1
+node i "i = h and mask" at 1,2 sub="first probe slot"
+node q "Look at slot i" at 1,3 shape=diamond color=amber
+node ins "Insert (key, value)" at 0,4 color=green
+node upd "Found" at 1,4 color=green sub="read or overwrite value"
+node p "Perturb" at 2,3 color=amber sub="pick the next slot"
+k -> h -> i -> q
+q -> ins : "empty"
+q -> upd : "same hash and key =="
+q:R -> p:L : "other key"
+p:T -> q:T
 ```
 
 
@@ -368,22 +370,28 @@ Interviewers often want the manual `dict` version too — know both.
 
 ## Part 3 · Choosing the Structure
 
-```mermaid
+```arch
 %% caption: Which container fits the question being asked.
-flowchart TD
-  Q(["What do you need from the data?"]) --> A{"Only: have I seen this before?"}
-  A -->|yes| S["set<br/>O(1) membership"]:::ok
-  A -->|no| B{"A value or count per key?"}
-  B -->|"count"| C["Counter"]:::ok
-  B -->|"lookup or group"| D["dict / defaultdict"]:::ok
-  B -->|"neither"| E{"Position or order matters?"}
-  E -->|"by index"| F["list"]:::ok
-  E -->|"sorted order, ranges"| G["sort once, then bisect"]:::ok
-  E -->|"repeated min or max"| H["heap"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 270x100
+node q "What do you need from the data?" at 1,0 shape=pill
+node a "Only: have I seen this before?" at 1,1 shape=diamond color=amber
+node s "set" at 2,1 color=green sub="O(1) membership"
+node b "A value or count per key?" at 1,2 shape=diamond color=amber
+node c "Counter" at 0,2 color=green
+node d "dict" at 2,2 sub="or defaultdict" color=green
+node e "Position or order matters?" at 1,3 shape=diamond color=amber
+node f "list" at 0,4 color=green
+node g "Sort once, then bisect" at 1,4 color=green
+node hh "heap" at 2,4 color=green
+q -> a
+a -> s : "yes"
+a -> b : "no"
+b -> c : "count"
+b -> d : "lookup or group"
+b -> e : "neither"
+e -> f : "by index"
+e -> g : "sorted order, ranges"
+e -> hh : "repeated min or max"
 ```
 
 

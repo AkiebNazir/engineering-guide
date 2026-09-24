@@ -118,6 +118,32 @@ So seven characters have plenty of room, the retry path is rare but *will* run a
 
 ## 6. Baseline architecture and flows
 
+```arch
+%% caption: Creates and redirects are separate paths that meet only at the link database; analytics hangs off an async stream so a slow pipeline never slows a redirect.
+group wp "Write path" color=blue icon=edit
+group rp "Read path" color=green icon=speed
+node creator "Creator" at 0,0 icon=user
+node visitor "Visitor" at 2,0 icon=users
+node edge "DNS / CDN / WAF" at 2,1 icon=cdn sub="rejects abuse"
+node api "API service" at 0,2 in wp icon=api sub="auth, alias, idempotency"
+node redirect "Redirect service" at 2,2 in rp icon=service sub="302 Location"
+node cache "Redis cache" at 3,2 in rp icon=redis sub="link:{code}"
+node db "Link database" at 1,3 icon=db sub="Link + Outbox, one txn"
+node relay "Outbox relay" at 0,4 in wp icon=worker
+node stream "Event stream" at 2,4 icon=stream
+node analytics "Click analytics" at 3,4 icon=metrics sub="aggregator + OLAP"
+creator -> api : "POST /links"
+visitor -> edge : "GET /{code}"
+edge -> redirect
+redirect -> cache : "GET"
+redirect -> db : "miss: SELECT"
+api -> db : "insert"
+db ..> relay : "outbox row"
+relay ..> stream : "LinkCreated"
+redirect ..> stream : "click event"
+stream ..> analytics
+```
+
 ```mermaid
 %% caption: Redirects and creates are independent paths — only creation touches the transactional outbox, and only the outbox touches analytics.
 sequenceDiagram

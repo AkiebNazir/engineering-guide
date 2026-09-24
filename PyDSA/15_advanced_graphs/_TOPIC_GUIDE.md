@@ -22,24 +22,29 @@ farther) node can ever be shorter. That non-negativity is the whole
 argument; it is also exactly what breaks the algorithm the instant a
 negative edge appears (§2).
 
-```mermaid
+```arch
 %% caption: Dijkstra with a heap. The stale-entry check replaces a decrease-key operation.
-flowchart TD
-  A["dist[src] = 0<br/>heap = [(0, src)]"] --> B{"heap empty?"}
-  B -->|yes| Z["dist holds the shortest paths"]:::ok
-  B -->|no| C["pop (d, u): the smallest distance"]
-  C --> D{"d > dist[u] ?"}
-  D -->|yes| S["stale entry: skip"]:::dim
-  S --> B
-  D -->|no| E["for each edge u to v with weight w"]
-  E --> F{"d + w is less than dist[v] ?"}
-  F -->|yes| G["dist[v] = d + w<br/>push (d + w, v)"]:::hot
-  F -->|no| B
-  G --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x90
+node a "Initialise" at 1,0 shape=pill w=220 sub="dist[src] = 0; heap = [(0, src)]"
+node b "heap empty?" at 1,1 shape=diamond color=amber
+node z "Done" at 0,1 color=green sub="dist holds the shortest paths"
+node c "pop (d, u)" at 1,2 sub="the smallest distance"
+node d "d > dist[u] ?" at 1,3 shape=diamond color=amber
+node s "Stale entry" at 2,3 color=slate sub="skip it"
+node e "For each edge u→v" at 1,4 sub="with weight w"
+node f "d + w < dist[v] ?" at 1,5 shape=diamond color=amber
+node g "dist[v] = d + w" at 1,6 color=amber sub="relax: push (d + w, v)"
+a -> b
+b -> z : "yes"
+b -> c : "no"
+c -> d
+d -> s : "yes"
+s:T -> b:R dashed
+d -> e : "no"
+e -> f
+f -> g : "yes"
+g:R -> b:R
+f:L -> b:L : "no"
 ```
 
 
@@ -217,20 +222,25 @@ A Union-Find tracks a partition of elements into disjoint sets, supporting
 `union(x, y)` (merge x's and y's sets), both in **amortized near-O(1)**.
 Two independent optimizations combine to get there:
 
-```mermaid
+```arch
 %% caption: Path compression: after find(1) every node on the path points straight at the root, so later finds are nearly O(1).
-flowchart LR
-  subgraph B["before find(1)"]
-    direction TB
-    b4(("4")) --> b3(("3")) --> b2(("2")) --> b1(("1"))
-  end
-  subgraph A["after path compression"]
-    direction TB
-    a4(("4")) --> a1(("1"))
-    a4 --> a2(("2"))
-    a4 --> a3(("3"))
-  end
-  B ==> A
+route straight
+grid 100x80
+group gb "before" color=slate
+node b4 "4" at 0,0 in gb shape=circle color=blue
+node b3 "3" at 0,1 in gb shape=circle color=blue
+node b2 "2" at 0,2 in gb shape=circle color=blue
+node b1 "1" at 0,3 in gb shape=circle color=amber
+node t "find(1) ⟹" at 1,2 shape=text
+group ga "after path compression" color=green
+node a4 "4" at 3,0 in ga shape=circle color=blue
+node a1 "1" at 2,3 in ga shape=circle color=green
+node a2 "2" at 3,3 in ga shape=circle color=green
+node a3 "3" at 4,3 in ga shape=circle color=green
+b4 -> b3 -> b2 -> b1
+a4 -> a1
+a4 -> a2
+a4 -> a3
 ```
 
 
@@ -535,26 +545,36 @@ rarely supply one.
 
 ## Part 8 · Decision Tree for This Folder
 
-```mermaid
+```arch
 %% caption: Which graph algorithm fits the question.
-flowchart TD
-  Q(["Graph problem: what is asked?"]) --> A{"Shortest path?"}
-  A -->|yes| A1{"Edge weights?"}
-  A1 -->|"all equal"| BFS["BFS"]:::ok
-  A1 -->|"0 or 1"| B01["0-1 BFS (deque)"]:::ok
-  A1 -->|"non-negative"| DJ["Dijkstra"]:::ok
-  A1 -->|"negative, or at most K edges"| BF["Bellman-Ford"]:::ok
-  A -->|no| B{"Connect everything at<br/>minimum total cost?"}
-  B -->|yes| MST["Kruskal (Union-Find) or Prim"]:::ok
-  B -->|no| C{"Are two nodes connected,<br/>edges arriving over time?"}
-  C -->|yes| UF["Union-Find"]:::ok
-  C -->|no| D{"Order with dependencies?"}
-  D -->|yes| TS["Topological sort"]:::ok
-  D -->|no| E["Bridges or SCC: Tarjan<br/>Minimise the worst edge: minimax Dijkstra"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x80
+node q "Graph problem: what is asked?" at 0,0 shape=pill
+node a "Shortest path?" at 0,1 shape=diamond color=amber
+node a1 "Edge weights?" at 1,1 shape=diamond color=amber
+node bfs "BFS" at 2,0 color=green w=200 sub="weights all equal"
+node b01 "0-1 BFS (deque)" at 2,1 color=green w=200 sub="weights 0 or 1"
+node dj "Dijkstra" at 2,2 color=green w=200 sub="non-negative weights"
+node bf "Bellman-Ford" at 2,3 color=green w=200 sub="negative, or at most K edges"
+node b "Connect all at min cost?" at 0,2 shape=diamond color=amber
+node mst "Kruskal or Prim" at 1,2 color=green sub="Kruskal uses Union-Find"
+node c "Connected? edges over time" at 0,3 shape=diamond color=amber
+node uf "Union-Find" at 1,3 color=green
+node d "Order with dependencies?" at 0,4 shape=diamond color=amber
+node ts "Topological sort" at 1,4 color=green
+node e "Bridges or SCC: Tarjan" at 0,5 color=green w=260 sub="minimise the worst edge: minimax Dijkstra"
+q -> a
+a -> a1 : "yes"
+a1:R -> bfs:L
+a1:R -> b01:L
+a1:R -> dj:L
+a1:R -> bf:L
+a -> b : "no"
+b -> mst : "yes"
+b -> c : "no"
+c -> uf : "yes"
+c -> d : "no"
+d -> ts : "yes"
+d -> e : "no"
 ```
 
 
@@ -632,21 +652,26 @@ flowchart TD
 The guide gives the algorithms; these are the questions asked *about* them. Every snippet was run, and each counter-example
 below was reproduced.
 
-```mermaid
+```arch
 %% caption: Choosing a shortest-path algorithm. The presence of negative edges, a DAG, or a single source decides it.
-flowchart TD
-  Q(["Shortest paths"]) --> A{"Edge weights?"}
-  A -->|"all equal / unweighted"| B["BFS  O(V+E)"]:::ok
-  A -->|"only 0 and 1"| C["0-1 BFS with a deque  O(V+E)"]:::ok
-  A -->|"non-negative"| D["Dijkstra with a heap  O((V+E) log V)"]:::ok
-  A -->|"some negative"| E{"Is the graph a DAG?"}
-  E -->|"yes"| F["relax in topological order  O(V+E)"]:::ok
-  E -->|"no"| G["Bellman-Ford  O(VE)<br/>also detects negative cycles"]:::hot
-  A -->|"all pairs, small V"| H["Floyd-Warshall  O(V^3)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Shortest paths" at 0,1 shape=pill
+node a "Edge weights?" at 0,2 shape=diamond color=amber
+node b "BFS" at 1,0 color=green w=200 sub="all equal / unweighted · O(V+E)"
+node c "0-1 BFS with a deque" at 1,1 color=green w=200 sub="only 0 and 1 · O(V+E)"
+node d "Dijkstra with a heap" at 1,2 color=green w=200 sub="non-negative · O((V+E) log V)"
+node h "Floyd-Warshall" at 1,3 color=green w=200 sub="all pairs, small V · O(V^3)"
+node e "Negative: a DAG?" at 1,4 shape=diamond color=amber
+node f "Relax in topo order" at 2,4 color=green sub="O(V+E)"
+node g "Bellman-Ford  O(VE)" at 1,5 color=amber w=200 sub="also detects negative cycles"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> h:L
+a:R -> e:L
+e -> f : "yes"
+e -> g : "no"
 ```
 
 ### 10.1 Why Dijkstra needs non-negative weights — a counter-example

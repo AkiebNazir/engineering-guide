@@ -78,18 +78,21 @@ The coordination service is on the startup path only, never on the per-ID path â
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Coordination happens once per process (worker-ID lease); every ID is generated locally with no network hop.
-flowchart LR
-    subgraph dc1[Datacenter 1]
-        app1[App server + ID library] -->|lease worker 17| coord1[(etcd / ZooKeeper)]
-        app2[App server + ID library] -->|lease worker 18| coord1
-    end
-    subgraph dc2[Datacenter 2]
-        app3[App server + ID library] -->|lease worker 3| coord2[(etcd / ZooKeeper)]
-    end
-    app1 --> db[(Databases: BIGINT primary keys)]
-    app3 --> db
+group dc1 "Datacenter 1" icon=region color=blue
+node coord1 "etcd / ZooKeeper" at 0.5,0 in dc1 icon=etcd
+node app1 "App server" at 0,1 in dc1 icon=server sub="+ ID library"
+node app2 "App server" at 1,1 in dc1 icon=server sub="+ ID library"
+group dc2 "Datacenter 2" icon=region color=blue
+node coord2 "etcd / ZooKeeper" at 2.5,0 in dc2 icon=etcd
+node app3 "App server" at 2.5,1 in dc2 icon=server sub="+ ID library"
+node db "Databases" at 1.75,2 icon=db sub="BIGINT primary keys"
+app1:T -> coord1:L : "lease worker 17"
+app2:T -> coord1:R : "lease worker 18"
+app3 -> coord2 : "lease worker 3"
+app1 -> db
+app3 -> db
 ```
 
 **Library vs service.** An embedded library gives the lowest latency and no new failure point, but every language needs an implementation and every process needs a worker ID. A small **ID service** (a pool of generators behind gRPC, clients fetching batches of, say, 1,000 IDs at a time) centralises correctness and worker management; batching keeps the network cost per ID tiny. Large companies use both: a library in core services, a service for everything else.

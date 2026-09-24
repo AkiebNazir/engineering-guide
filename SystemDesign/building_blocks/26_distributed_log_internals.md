@@ -15,13 +15,15 @@ A **partition** is one log. Records are appended at the end, never modified, and
 | Time index | Timestamp to offset, so a consumer can "seek to 10 minutes ago". | A `.timeindex` file per segment. |
 | Retention | Deletes whole segments by age or size, never the one being written. | 7 days, no size limit by default. |
 
-```mermaid
+```arch
 %% caption: A read is two binary searches and a short scan, so its cost does not grow with the amount of data retained.
-flowchart LR
-    req["Fetch from offset 1,234,567"] --> seg["Binary search segments<br/>by first offset"]
-    seg --> idx["Sparse index: largest entry<br/>at or below the target"]
-    idx --> scan["Scan forward at most<br/>about 4 KiB"]
-    scan --> ret["Return a chunk from there"]
+grid 160x100
+node req "Fetch from offset 1,234,567" at 0,0 shape=pill color=slate
+node seg "Binary search segments" at 0,1 shape=card icon=search sub="by first offset" w=260
+node idx "Sparse index" at 0,2 shape=card icon=index sub="largest entry at or below the target" w=260
+node scan "Scan forward" at 0,3 shape=card icon=file sub="at most about 4 KiB" w=260
+node ret "Return a chunk from there" at 0,4 shape=pill color=green
+req -> seg -> idx -> scan -> ret
 ```
 
 The paper describes the same shape: segment files of about 1 GB, appends to the last, and an in-memory sorted list of each segment's first offset. Modern Kafka numbers records densely (the 2011 paper used byte positions). Because retention deletes whole segments, a quiet partition can keep data past `retention.ms` until its segment rolls.
@@ -110,14 +112,19 @@ Consumers sharing a `group.id` split the partitions; a **group coordinator** bro
 | Static (`group.instance.id`) | A restarting member keeps its partitions if back within the session timeout. | Real failures are detected later. |
 | KIP-848 (GA in 4.0, opt in via `group.protocol=consumer`) | Broker-side assignment, no stop-the-world. | Needs 4.0-era clients and brokers. |
 
-```mermaid
+```arch
 %% caption: The order of commit and processing decides whether a crash loses work or repeats it.
-flowchart TB
-    poll["poll returns offsets 100 to 199"] --> a{"Commit order"}
-    a -->|"commit 200 first"| a1["crash during processing"]
-    a1 --> a2["restart at 200: 100 to 199 skipped<br/>AT-MOST-ONCE"]
-    a -->|"process first"| b1["crash before commit"]
-    b1 --> b2["restart at 100: records repeated<br/>AT-LEAST-ONCE"]
+node poll "poll returns offsets 100 to 199" at 1,0 shape=pill color=slate
+node a "Commit order" at 1,1 shape=diamond color=amber
+node a1 "crash during processing" at 0,2 color=red
+node a2 "restart at 200" at 0,3 color=red sub="100 to 199 skipped · AT-MOST-ONCE"
+node b1 "crash before commit" at 2,2 color=orange
+node b2 "restart at 100" at 2,3 color=orange sub="records repeated · AT-LEAST-ONCE"
+poll -> a
+a -> a1 : "commit 200 first"
+a1 -> a2
+a -> b1 : "process first"
+b1 -> b2
 ```
 
 Auto-commit (default on, every 5 s) can repeat a few seconds of work after a crash. Default to at-least-once with idempotent handlers; choose at-most-once only when a lost record is cheaper than a duplicate. **Consumer lag** (log end offset minus committed offset, per partition) is the primary SLI. Alert on lag *growing* over a window, and convert it to time: `lag / (capacity - inflow)`. With 6M records behind and 250k/s capacity against 200k/s inflow, drain time is 6M / 50k = 120 s.

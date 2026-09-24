@@ -37,21 +37,34 @@ Clicks are redirected through our click server (`/click?ad=…&sig=…`) which l
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: One immutable log feeds a fast streaming path for dashboards and pacing and a batch path that is authoritative for billing.
-flowchart LR
-    click([User click]) --> cs[Click servers<br/>log + redirect]
-    cs --> log[(Durable event log<br/>Kafka / Pub/Sub, partitioned by ad_id)]
-    log --> raw[(Raw event archive<br/>object storage, immutable)]
-    log --> stream[Stream aggregator<br/>Flink / Dataflow]
-    stream --> olap[(Real-time OLAP store<br/>per ad per minute)]
-    stream --> pace[Budget pacing counters]
-    pace --> adserve[Ad servers stop serving exhausted campaigns]
-    raw --> batch[Batch job: dedup + fraud + aggregate]
-    batch --> billing[(Billing aggregates)]
-    batch --> recon[Reconciliation report]
-    olap --> dash[Dashboards API]
-    billing --> dash
+grid 140x120
+node click "User click" at 1.5,0 icon=user shape=pill
+node cs "Click servers" at 1.5,1 icon=server sub="log + redirect"
+node log "Durable event log" at 1.5,2 icon=stream sub="Kafka / Pub/Sub, by ad_id"
+group sp "Streaming path: minutes" color=pink icon=speed
+node stream "Stream aggregator" at 1,3 in sp icon=apache-flink-icon sub="Flink / Dataflow"
+node pace "Budget pacing" at 0,4 in sp icon=counter sub="spend counters"
+node olap "Real-time OLAP" at 1,4 in sp icon=db sub="per ad per minute"
+node adserve "Ad servers" at 0,5 in sp icon=server sub="stop exhausted campaigns"
+group bp "Batch path: billing truth" color=green icon=archive
+node raw "Raw event archive" at 2,3 in bp icon=blob sub="object storage, immutable"
+node batch "Batch job" at 2,4 in bp icon=worker sub="dedup + fraud + aggregate"
+node recon "Reconciliation" at 3,4 in bp icon=doc sub="report"
+node billing "Billing aggregates" at 2,5 in bp icon=sql
+node dash "Dashboards API" at 1.5,6 icon=dashboard
+click -> cs -> log
+log -> stream
+log -> raw
+stream -> olap
+stream -> pace
+pace -> adserve
+raw -> batch
+batch -> billing
+batch -> recon
+olap -> dash
+billing -> dash
 ```
 
 ## Stream processing and windows

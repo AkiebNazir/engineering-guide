@@ -26,34 +26,40 @@ single step from `n-1`, or a double step from `n-2` — so every way to reach
 those two sets never overlap (they're distinguished by the last move).
 That gives the recurrence `ways(n) = ways(n-1) + ways(n-2)`.
 
-```mermaid
+```arch
 %% caption: The four stages of a DP solution and what each one costs.
-flowchart LR
-  A["1. Naive recursion<br/>O(2^n) time"]:::bad --> B["2. Memoize (top-down)<br/>O(n) time, O(n) space"] --> C["3. Tabulate (bottom-up)<br/>O(n) time, O(n) table"] --> D["4. Keep only what is read<br/>O(n) time, O(1) space"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 175x80
+node a "1. Naive recursion" at 0,0 color=red sub="O(2^n) time"
+node b "2. Memoize (top-down)" at 1,0 sub="O(n) time, O(n) space"
+node c "3. Tabulate (bottom-up)" at 2,0 sub="O(n) time, O(n) table"
+node d "4. Keep only what is read" at 3,0 color=green sub="O(n) time, O(1) space"
+a -> b -> c -> d
 ```
 
 
 ### Stage 1 — naive recursion (state it, price it, do not ship it)
 
-```mermaid
+```arch
 %% caption: Naive recursion recomputes the same subproblems: f(3) twice, f(2) three times. Only n distinct states exist, so caching each one turns O(2^n) into O(n).
-flowchart TD
-  f5["f(5)"] --> f4["f(4)"]
-  f5 --> f3a["f(3)"]:::bad
-  f4 --> f3b["f(3)"]:::bad
-  f4 --> f2a["f(2)"]:::hot
-  f3a --> f2b["f(2)"]:::hot
-  f3a --> f1a["f(1)"]
-  f3b --> f2c["f(2)"]:::hot
-  f3b --> f1b["f(1)"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node f5 "f(5)" at 2,0 shape=circle color=blue
+node f4 "f(4)" at 1,1 shape=circle color=blue
+node f3a "f(3)" at 3,1 shape=circle color=red
+node f3b "f(3)" at 0.5,2 shape=circle color=red
+node f2a "f(2)" at 1.5,2 shape=circle color=amber
+node f2b "f(2)" at 2.5,2 shape=circle color=amber
+node f1a "f(1)" at 3.5,2 shape=circle color=blue
+node f2c "f(2)" at 0,3 shape=circle color=amber
+node f1b "f(1)" at 1,3 shape=circle color=blue
+f5 -> f4
+f5 -> f3a
+f4 -> f3b
+f4 -> f2a
+f3a -> f2b
+f3a -> f1a
+f3b -> f2c
+f3b -> f1b
 ```
 
 
@@ -229,20 +235,24 @@ avoidable bug in this topic comes from.
 
 Work through these in order:
 
-```mermaid
+```arch
 %% caption: Choosing what dp[i] should mean.
-flowchart TD
-  Q(["Optimisation or counting problem"]) --> A{"Each choice depends only on<br/>the last few items?"}
-  A -->|yes| A1["dp[i] = best answer for the first i items<br/>(climb stairs, house robber)"]:::ok
-  A -->|no| B{"Subsequence that must END at i?"}
-  B -->|yes| B1["dp[i] = best answer ENDING at i<br/>(LIS). Final answer: max over all i"]:::ok
-  B -->|no| C{"Choose items to hit a target?"}
-  C -->|yes| C1["dp[t] = best answer for target t<br/>(coin change, knapsack)"]:::ok
-  C -->|no| D["Add a dimension: topic 17"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "Optimisation or counting problem" at 0,0 shape=pill
+node a "Depends only on last few items?" at 0,1 shape=diamond color=amber
+node a1 "dp[i] = best for first i items" at 1,1 color=green w=230 sub="climb stairs, house robber"
+node b "Subsequence must END at i?" at 0,2 shape=diamond color=amber
+node b1 "dp[i] = best ENDING at i" at 1,2 color=green w=230 sub="LIS; final answer: max over all i"
+node c "Choose items to hit a target?" at 0,3 shape=diamond color=amber
+node c1 "dp[t] = best for target t" at 1,3 color=green w=230 sub="coin change, knapsack"
+node d "Add a dimension" at 0,4 color=slate sub="topic 17"
+q -> a
+a -> a1 : "yes"
+a -> b : "no"
+b -> b1 : "yes"
+b -> c : "no"
+c -> c1 : "yes"
+c -> d : "no"
 ```
 
 
@@ -353,20 +363,24 @@ The guide teaches the *method* (state → transition → base case → order). T
 problem in the folder falls into, and — the part interviews probe — **the one line that separates two families that look
 identical**. Every snippet was run against LeetCode's own examples while writing this section.
 
-```mermaid
+```arch
 %% caption: The six 1D shapes. The wording of the question picks the family; the family fixes the loop order and the direction.
-flowchart TD
-  Q(["1D DP problem"]) --> A{"What varies?"}
-  A -->|"position i, look back a FIXED window"| L["Linear recurrence<br/>Fibonacci, Stairs, Tribonacci"]:::ok
-  A -->|"position i, take it or skip it"| T["Take-or-skip<br/>House Robber I and II"]:::ok
-  A -->|"a target VALUE, items reusable"| U["Unbounded knapsack<br/>Coin Change, Perfect Squares, Combination Sum IV"]:::hot
-  A -->|"a target VALUE, each item once"| Z["0/1 knapsack, sums scanned HIGH to LOW<br/>Partition Equal Subset Sum"]:::hot
-  A -->|"best answer ENDING at i, scan earlier j"| S["Sequence DP<br/>LIS, Word Break, Decode Ways, Max Product"]:::ok
-  A -->|"a centre or an interval"| P["Substring DP<br/>Palindromes: expand or table"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "1D DP problem" at 0,1 shape=pill
+node a "What varies?" at 0,2 shape=diamond color=amber
+node l "Linear recurrence" at 1,0 color=green w=400 sub="position i, FIXED look-back · Fibonacci, Stairs, Tribonacci"
+node t "Take-or-skip" at 1,1 color=green w=400 sub="position i, take it or skip it · House Robber I and II"
+node u "Unbounded knapsack" at 1,2 color=amber w=400 sub="target VALUE, items reusable · Coin Change, Perfect Squares, Combination Sum IV"
+node z "0/1 knapsack, sums HIGH to LOW" at 1,3 color=amber w=400 sub="target VALUE, each item once · Partition Equal Subset Sum"
+node s "Sequence DP" at 1,4 color=green w=400 sub="best ENDING at i, scan earlier j · LIS, Word Break, Decode Ways, Max Product"
+node p "Substring DP" at 1,5 color=green w=400 sub="a centre or an interval · Palindromes: expand or table"
+q -> a
+a:R -> l:L
+a:R -> t:L
+a:R -> u:L
+a:R -> z:L
+a:R -> s:L
+a:R -> p:L
 ```
 
 ### 7.1 Take or skip — House Robber I and II

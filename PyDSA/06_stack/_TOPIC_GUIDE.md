@@ -19,23 +19,27 @@ A stack supports exactly two O(1) operations: `push` (add to the top) and
 `pop` (remove from the top). No random access, no peeking below the top
 without popping through everything above it.
 
-```mermaid
+```arch
 %% caption: Bracket matching: the most recently opened bracket is always the next one that must close.
-flowchart TD
-  A["read next char c"] --> B{"opening bracket?"}
-  B -->|yes| C["push c"]
-  B -->|no| D{"stack empty, or top<br/>does not match c ?"}
-  D -->|yes| E["invalid"]:::bad
-  D -->|no| F["pop"]
-  C --> A
-  F --> A
-  A -->|"end of input"| G{"stack empty?"}
-  G -->|yes| H["valid"]:::ok
-  G -->|no| E
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x100
+node a "Read next char c" at 1,0 shape=pill
+node b "Opening bracket?" at 1,1 shape=diamond color=amber
+node c "push c" at 0,1
+node d "Stack empty, or top does not match c?" at 1,2 shape=diamond color=amber
+node f "pop" at 0,2
+node e "invalid" at 1,3 color=red
+node g "Stack empty?" at 2,1 shape=diamond color=amber
+node h "valid" at 2,2 color=green
+a -> b
+b -> c : "yes"
+b -> d : "no"
+d -> e : "yes"
+d -> f : "no"
+c:T -> a:L
+f:L -> a:L
+a:R -> g:T : "end of input"
+g -> h : "yes"
+g:R -> e:R : "no"
 ```
 
 
@@ -96,18 +100,18 @@ strictly decreasing) order from bottom to top, by refusing to push
 anything that would break that order — instead, it pops everything that
 would be out of order first.
 
-```mermaid
+```arch
 %% caption: Next-greater-element: the stack stays in decreasing order, and each pop is the moment an element finds its answer. Every element is pushed once and popped once.
-flowchart TD
-  A["next element x"] --> B{"stack not empty and<br/>top is smaller than x ?"}
-  B -->|yes| C["pop the top:<br/>its next greater element is x"]:::hot
-  C --> B
-  B -->|no| D["push x"]
-  D --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x100
+node a "Next element x" at 1,0 shape=pill
+node b "Stack not empty and top is smaller than x?" at 1,1 shape=diamond color=amber
+node c "Pop the top" at 2,1 color=amber sub="its next greater element is x"
+node d "push x" at 0,1
+a -> b
+b -> c : "yes"
+c:B -> b:B
+b -> d : "no"
+d:T -> a:L
 ```
 
 
@@ -347,21 +351,26 @@ this quality bar.
 
 ## Part 4 · Pattern Decision Tree
 
-```mermaid
+```arch
 %% caption: Which stack pattern fits.
-flowchart TD
-  Q(["Stack problem?"]) --> A{"Matching or nesting?<br/>(brackets, tags, decode string)"}
-  A -->|yes| A1["Plain stack:<br/>push openers, pop on closers"]:::ok
-  A -->|no| B{"Next greater or smaller,<br/>span, histogram area?"}
-  B -->|yes| B1["Monotonic stack"]:::ok
-  B -->|no| C{"Min or max in O(1)<br/>at any moment?"}
-  C -->|yes| C1["Stack of (value, running min)"]:::ok
-  C -->|no| D{"Evaluate an expression?"}
-  D -->|yes| D1["Operand stack<br/>(plus an operator stack)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 290x100
+node q "Stack problem?" at 0,0 shape=pill
+node a "Matching or nesting?" at 0,1 shape=diamond color=amber sub="brackets, tags, decode string"
+node a1 "Plain stack" at 1,1 color=green sub="push openers, pop on closers"
+node b "Next greater or smaller, span, histogram area?" at 0,2 shape=diamond color=amber
+node b1 "Monotonic stack" at 1,2 color=green
+node c "Min or max in O(1) at any moment?" at 0,3 shape=diamond color=amber
+node c1 "Stack of (value, running min)" at 1,3 color=green
+node d "Evaluate an expression?" at 0,4 shape=diamond color=amber
+node d1 "Operand stack" at 1,4 color=green sub="plus an operator stack"
+q -> a
+a -> a1 : "yes"
+a -> b : "no"
+b -> b1 : "yes"
+b -> c : "no"
+c -> c1 : "yes"
+c -> d : "no"
+d -> d1 : "yes"
 ```
 
 

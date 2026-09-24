@@ -194,16 +194,23 @@ This powers GraphiQL/Playground, autocomplete, and client code generation. Disab
 
 ## How a Query Executes
 
-```mermaid
-flowchart TD
-    A[HTTP POST /graphql] --> B[Parse text into an AST]
-    B --> C[Validate against schema<br/>unknown field? wrong type?]
-    C -- invalid --> E1[Return errors, no resolver runs]
-    C -- valid --> D[Execute: walk the tree from the root]
-    D --> R1[Query.post resolver]
-    R1 --> R2[Post.author resolver]
-    R2 --> R3[User.name: default resolver reads the property]
-    R3 --> F[Assemble JSON in the shape of the query]
+```arch
+%% caption: A query is parsed and validated first; only a valid query walks the resolver tree.
+grid 220x80
+node a "HTTP POST /graphql" at 0,0 shape=pill color=slate
+node b "Parse" at 0,1 sub="text into an AST"
+node c "Validate against schema" at 0,2 color=amber sub="unknown field? wrong type?"
+node e1 "Return errors" at 1,2 color=red sub="no resolver runs"
+node d "Execute" at 0,3 sub="walk the tree from the root"
+group res "Resolvers" color=blue icon=tree
+node r1 "Query.post resolver" at 0,4 in res color=blue
+node r2 "Post.author resolver" at 0,5 in res color=blue
+node r3 "User.name" at 0,6 in res color=blue sub="default resolver reads the property"
+node f "Assemble JSON" at 0,7 shape=pill color=green sub="in the shape of the query"
+a -> b -> c
+c -> e1 : "invalid"
+c -> d : "valid"
+d -> r1 -> r2 -> r3 -> f
 ```
 
 A **resolver** has the signature `(parent, args, context, info)`. Each field of each type may have one. If you do not write one, the default resolver reads `parent.fieldName`. Only the fields the client asked for run, and that is where the efficiency comes from.
@@ -392,12 +399,18 @@ REST gets HTTP caching free because every resource has a URL and uses `GET`. Gra
 
 ## Federation: One Graph, Many Teams
 
-```mermaid
-flowchart LR
-    C[Client] --> R[Router / Gateway<br/>supergraph]
-    R --> U[Users subgraph]
-    R --> P[Posts subgraph]
-    R --> I[Inventory subgraph]
+```arch
+%% caption: Federation: one router composes a supergraph from subgraphs owned by different teams.
+node c "Client" at 1,0 icon=client
+node r "Router / Gateway" at 1,1 icon=gateway sub="supergraph"
+group sg "Subgraphs" color=purple icon=graph
+node u "Users subgraph" at 0,2 in sg icon=graphql
+node p "Posts subgraph" at 1,2 in sg icon=graphql
+node i "Inventory subgraph" at 2,2 in sg icon=graphql
+c -> r
+r -> u
+r -> p
+r -> i
 ```
 
 Each team owns a **subgraph** that contributes types and fields; the router plans the query, calls the needed subgraphs, and merges results. Apollo Federation is the common standard. It is powerful but adds operational weight; do not start here.

@@ -19,19 +19,27 @@ Chat, live notifications, multiplayer cursors, and collaborative documents all b
 
 A WebSocket is state pinned to one server. The design keeps that server thin and stateless apart from the socket itself:
 
-```mermaid
+```arch
 %% caption: Gateways only hold sockets. Message truth lives in the durable store; routing uses a presence/session registry.
-flowchart LR
-    c1([Client A]) <--> g1[Connection gateway 1]
-    c2([Client B]) <--> g2[Connection gateway 2]
-    g1 --> svc[Message / collab service]
-    g2 --> svc
-    svc --> log[(Durable log / store)]
-    svc --> reg[(Session registry<br/>user → gateway)]
-    svc -. route to recipient's gateway .-> bus{{Pub/sub bus}}
-    bus -.-> g1
-    bus -.-> g2
-    svc --> push[Mobile push for offline users]
+node c1 "Client A" at 0,0 icon=client
+node c2 "Client B" at 0,2 icon=client
+node g1 "Connection gateway 1" at 1,0 icon=gateway
+node g2 "Connection gateway 2" at 1,2 icon=gateway
+node bus "Pub/sub bus" at 1,1 icon=topic sub="routes to recipient's gateway"
+node svc "Message / collab service" at 2,1 icon=service
+node log "Durable log / store" at 3,0 icon=db
+node reg "Session registry" at 3,1 icon=kv sub="user → gateway"
+node push "Mobile push" at 3,2 icon=notify sub="for offline users"
+c1 <-> g1
+c2 <-> g2
+g1:R -> svc:T
+g2:R -> svc:B
+svc -> log
+svc -> reg
+svc ..> bus
+bus ..> g1
+bus ..> g2
+svc -> push
 ```
 
 - **Connection gateways** terminate WebSockets, authenticate, apply per-connection rate limits and backpressure (bounded outbound buffers; drop and let the client resync if it is too slow). A single well-tuned host can hold on the order of 100K–1M idle connections; the limit is usually memory per connection and file descriptors.

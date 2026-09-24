@@ -49,17 +49,24 @@ Regional ownership is the pattern that lets interviewers stop asking: every reco
 
 ## Traffic steering
 
-```mermaid
+```arch
 %% caption: Steering is layered: pick a region by name, address or client logic, then a healthy region-local path, so each layer has its own failover time.
-flowchart LR
-    C["Client"] --> S{"Steering"}
-    S -->|"latency DNS, TTL 60 s"| R1["Region A entry"]
-    S -->|"anycast IP via BGP"| R2["Region B entry"]
-    S -->|"client SDK endpoint list"| R3["Region C entry"]
-    R1 --> L["Regional L7 LB"]
-    L --> CR["Cell router"]
-    CR --> CELL["Cell"]
-    H["Health checks from outside"] -.-> S
+node C "Client" at 1,0 icon=client
+node H "Health checks" at 2,0 icon=monitor sub="from outside"
+node S "Steering" at 1,1 shape=diamond color=amber
+group ra "Region A" color=blue icon=region
+node R1 "Region A entry" at 0,2 in ra icon=edge
+node L "Regional L7 LB" at 0,3 in ra icon=lb
+node CR "Cell router" at 0,4 in ra icon=gateway
+node CELL "Cell" at 0,5 in ra icon=server
+node R2 "Region B entry" at 1,2 icon=edge
+node R3 "Region C entry" at 2,2 icon=edge
+C -> S
+S:L -> R1:T : "latency DNS, TTL 60 s"
+S:B -> R2:T : "anycast IP via BGP"
+S:R -> R3:T : "client SDK endpoint list"
+R1 -> L -> CR -> CELL
+H ..> S
 ```
 
 | Mechanism | How it works | Failover | Limits |
@@ -121,15 +128,20 @@ A **cell** is a complete, independent copy of the stack serving a subset of cust
 
 **Shuffle sharding** (AWS Builders' Library): give each customer a random subset of workers. With 8 workers and 2 per customer there are C(8,2) = 28 combinations, so one bad customer overlaps a given other customer with probability 1/28 instead of 1/4 for plain 4-way sharding. Route 53 assigns each domain 4 of 2,048 virtual name servers, C(2048,4), about 730 billion combinations.
 
-```mermaid
+```arch
 %% caption: A global config push reaches every cell at once unless it is staged, which is why cells alone do not bound blast radius.
-flowchart TB
-    CP["Global control plane: config, flags, quotas"] -.->|"staged push, one cell first"| C1["Cell 1: 5%"]
-    CP -.->|"then"| C2["Cell 2: 5%"]
-    CP -.->|"then"| CN["Cells 3 to 20"]
-    R["Cell router"] --> C1
-    R --> C2
-    R --> CN
+node R "Cell router" at 1,0 icon=gateway
+group cells "Cells" color=blue icon=grid
+node C1 "Cell 1: 5%" at 0,1 in cells icon=server
+node C2 "Cell 2: 5%" at 1,1 in cells icon=server
+node CN "Cells 3 to 20" at 2,1 in cells icon=server
+node CP "Global control plane" at 1,2 icon=sitemap sub="config, flags, quotas"
+R:B -> C1:T
+R -> C2
+R:B -> CN:T
+CP:L ..> C1:B : "staged push, one cell first"
+CP ..> C2 : "then"
+CP:R ..> CN:B : "then"
 ```
 
 ## Global control planes are hidden single points of failure

@@ -40,17 +40,26 @@ looking at is more valuable than memorizing any individual recurrence,
 because the shape tells you the fill order, the space-optimization
 strategy (if any), and which mistakes to guard against.
 
-```mermaid
+```arch
 %% caption: The four shapes 2D DP takes, by what the two dimensions index.
-flowchart TD
-  R(["2D DP: what do the two indices mean?"]) --> A["Grid position (row, col)"]
-  R --> B["Two strings (i, j)"]
-  R --> C["Day and holding-state"]
-  R --> D["Interval (left, right)"]
-  A --> A1["unique paths,<br/>min path sum"]
-  B --> B1["LCS, edit distance"]
-  C --> C1["stock trading<br/>with cooldown"]
-  D --> D1["palindromic subsequence,<br/>burst balloons"]
+grid 190x70
+node r "2D DP: what do the two indices mean?" at 0,1.5 shape=pill w=170
+node a "Grid position" at 1,0 color=blue w=180 sub="(row, col)"
+node b "Two strings" at 1,1 color=purple w=180 sub="(i, j)"
+node c "Day and holding-state" at 1,2 color=teal w=180 sub="(day, state)"
+node d "Interval" at 1,3 color=orange w=180 sub="(left, right)"
+node a1 "unique paths, min path sum" at 2,0 color=slate w=220
+node b1 "LCS, edit distance" at 2,1 color=slate w=220
+node c1 "stock trading with cooldown" at 2,2 color=slate w=220
+node d1 "palindromic subsequence, burst balloons" at 2,3 color=slate w=220
+r:R -> a:L
+r:R -> b:L
+r:R -> c:L
+r:R -> d:L
+a -> a1
+b -> b1
+c -> c1
+d -> d1
 ```
 
 
@@ -77,16 +86,16 @@ an interview. Both indices are prefix LENGTHS into two DIFFERENT strings —
 genuinely independent, because the two strings advance at unrelated rates.
 Fill row by row (outer = one string's prefix length, inner = the other's).
 
-```mermaid
+```arch
 %% caption: The LCS recurrence. Edit distance uses the same three neighbours, with min and +1 instead.
-flowchart TD
-  A["cell (i, j): compare a[i-1] with b[j-1]"] --> B{"equal?"}
-  B -->|yes| C["dp[i][j] = dp[i-1][j-1] + 1"]:::ok
-  B -->|no| D["dp[i][j] = max(dp[i-1][j], dp[i][j-1])"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node a "cell (i, j)" at 0.5,0 sub="compare a[i-1] with b[j-1]"
+node b "equal?" at 0.5,1 shape=diamond color=amber
+node c "dp[i][j] = dp[i-1][j-1] + 1" at 0,2 color=green w=210
+node d "dp[i][j] = max(dp[i-1][j], dp[i][j-1])" at 1,2 w=260
+a -> b
+b -> c : "yes"
+b -> d : "no"
 ```
 
 
@@ -156,16 +165,17 @@ O(n^2).
 Every shape above has EXACTLY one correct fill order, dictated by "which
 smaller subproblems does this cell depend on":
 
-```mermaid
+```arch
 %% caption: Each cell reads the cell above, to the left, and diagonally up-left. Fill top to bottom, left to right, and every dependency is already computed. Only the previous row is needed for the rolling-array optimisation.
-flowchart LR
-  up["dp[i-1][j]<br/>above"] --> cur["dp[i][j]"]:::hot
-  left["dp[i][j-1]<br/>left"] --> cur
-  diag["dp[i-1][j-1]<br/>diagonal"] --> cur
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 150x90
+node diag "dp[i-1][j-1]" at 0,0 color=slate sub="diagonal"
+node up "dp[i-1][j]" at 1,0 color=slate sub="above"
+node left "dp[i][j-1]" at 0,1 color=slate sub="left"
+node cur "dp[i][j]" at 1,1 color=amber
+up -> cur
+left -> cur
+diag -> cur
 ```
 
 

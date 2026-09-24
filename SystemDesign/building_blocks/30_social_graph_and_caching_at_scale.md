@@ -52,16 +52,18 @@ Three problems follow:
 
 Two-hop expansion explodes: 200 friends × 200 friends = 40,000 candidates. Cap it, then rank ([31_ranking_recommendation_and_experimentation.md](31_ranking_recommendation_and_experimentation.md)).
 
-```mermaid
+```arch
 %% caption: Two-hop expansion is capped at each hop so candidate generation costs about 51 reads and 5,000 candidates, and ranking receives only the top few hundred.
-flowchart LR
-    U([User]) --> F1["Read own friends<br/>take 50 by interaction"]
-    F1 --> F2["Read each friend's newest 100<br/>50 reads, skip nodes over 5,000"]
-    F2 --> AGG["Count occurrences per candidate<br/>= mutual friends, 5,000 rows"]
-    AGG --> FLT["Drop existing friends, blocked, ineligible"]
-    FLT --> TOP["Keep top 500 by mutual count"]
-    TOP --> RK["Ranker adds signals<br/>contacts, workplace, recency"]
-    RK --> OUT([Suggestions, cached 24 h])
+grid 160x92
+node U "User" at 0,0 shape=pill color=slate
+node F1 "Read own friends" at 0,1 shape=card icon=users sub="take 50 by interaction" w=300
+node F2 "Read each friend's newest 100" at 0,2 shape=card icon=graph sub="50 reads, skip nodes over 5,000" w=300
+node AGG "Count occurrences per candidate" at 0,3 shape=card icon=counter sub="= mutual friends, 5,000 rows" w=300
+node FLT "Drop existing friends" at 0,4 shape=card icon=filter sub="blocked, ineligible" w=300
+node TOP "Keep top 500" at 0,5 shape=card icon=sort sub="by mutual count" w=300
+node RK "Ranker adds signals" at 0,6 shape=card icon=model sub="contacts, workplace, recency" w=300
+node OUT "Suggestions, cached 24 h" at 0,7 shape=pill color=green
+U -> F1 -> F2 -> AGG -> FLT -> TOP -> RK -> OUT
 ```
 
 Skipping high-degree friends loses little, because being friends with an account that has a million followers is weak evidence of a real-world tie. **Decision rule:** precompute per user in a batch and refresh on a friend-add event, do not compute per page view (numbers below).
@@ -92,21 +94,25 @@ Before TAO, Facebook's web tier used memcache look-aside for the graph. The pape
 
 **API.** Objects: `obj_add`, `obj_get`, `obj_update`, `obj_delete`. Associations: `assoc_add`, `assoc_delete`, `assoc_get(id1, atype, id2set, high, low)`, `assoc_count(id1, atype)`, `assoc_range(id1, atype, pos, limit)`, `assoc_time_range(id1, atype, high, low, limit)`. Cache servers know the semantics, so a cached count of zero answers a range query without touching the database.
 
-```mermaid
+```arch
 %% caption: Clients read from a nearby follower tier, followers forward misses and writes to the region's leader, and slave regions send writes to the master region while reading their local replica.
-flowchart LR
-    subgraph SR["Slave region"]
-        C([Web client]) --> FA["Follower tier A"]
-        C -.-> FB["Follower tier B, backup"]
-        FA -- "miss, write" --> SL["Leader tier"]
-        FB -- "miss, write" --> SL
-        SL -- "read miss" --> RDB[("Replica MySQL")]
-    end
-    subgraph MR["Master region"]
-        ML["Leader tier"] -- "read miss, write" --> MDB[("Master MySQL")]
-    end
-    SL -- "forward write" --> ML
-    MDB -- "replication stream with embedded invalidate and refill" --> RDB
+group SR "Slave region" color=blue icon=region
+node C "Web client" at 0.5,0 in SR icon=browser
+node FA "Follower tier A" at 0,1 in SR icon=cache
+node FB "Follower tier B" at 1,1 in SR icon=cache sub="backup"
+node SL "Leader tier" at 0.5,2 in SR icon=cache
+node RDB "Replica MySQL" at 0.5,3 in SR icon=mysql-icon
+group MR "Master region" color=purple icon=region
+node ML "Leader tier" at 2.5,2 in MR icon=cache
+node MDB "Master MySQL" at 2.5,3 in MR icon=mysql-icon
+C -> FA
+C ..> FB
+FA -> SL : "miss, write"
+FB -> SL : "miss, write"
+SL -> RDB : "read miss"
+ML -> MDB : "read miss, write"
+SL -> ML : "forward write"
+MDB -> RDB : "replication stream with embedded invalidate and refill"
 ```
 
 **Tiers.** Clients talk to the closest follower tier and never to leaders. A follower serves hits and forwards misses and writes to the leader for the shard. Each shard has one leader per region, and all writes to it pass through that leader, so writes to a shard serialize naturally. Because one coordinator sees every request for an `id1`, it avoids concurrent overlapping database queries and caps the pending queries per shard, which protects MySQL from herds. Caches are demand-filled with LRU eviction. Followers hold only contiguous prefixes of association lists.
@@ -176,17 +182,25 @@ sequenceDiagram
 
 **Invalidation from the commit log.** Web servers could broadcast deletes, but the paper says that batches poorly and gives little recourse after a misrouted delete, whereas deletes embedded in committed SQL sit in reliable logs, so `mcsqueal` can replay lost or misrouted ones. It batches deletes into fewer packets for mcrouter tiers, an 18× improvement in median deletes per packet, and the paper notes only 4% of deletes hit cached data. A web server also deletes in its own cluster to give the writer read-your-writes.
 
-```mermaid
+```arch
 %% caption: Deletes flow from the durable commit log through a batching daemon and mcrouter tiers to every frontend cluster, so a lost delete can be replayed.
-flowchart LR
-    W([Web server]) -- "UPDATE with keys to invalidate" --> DB[("MySQL storage server")]
-    DB --> LOG[/"Commit log"/]
-    LOG --> SQ["mcsqueal daemon"]
-    SQ -- "batched deletes" --> R1["mcrouter, cluster 1"]
-    SQ -- "batched deletes" --> R2["mcrouter, cluster 2"]
-    R1 --> M1[("memcached servers")]
-    R2 --> M2[("memcached servers")]
-    W -. "delete in own cluster" .-> M1
+node W "Web server" at 0,0 icon=server
+node DB "MySQL storage server" at 1.5,0 icon=mysql-icon
+node LOG "Commit log" at 2.5,0 icon=logs
+node SQ "mcsqueal daemon" at 2.5,1 icon=worker
+group c1 "Cluster 1" color=blue icon=group
+node R1 "mcrouter, cluster 1" at 1.5,2 in c1 icon=proxy
+node M1 "memcached servers" at 1.5,3 in c1 icon=memcached
+group c2 "Cluster 2" color=blue icon=group
+node R2 "mcrouter, cluster 2" at 3.5,2 in c2 icon=proxy
+node M2 "memcached servers" at 3.5,3 in c2 icon=memcached
+W -> DB : "UPDATE with keys to invalidate"
+DB -> LOG -> SQ
+SQ -> R1 : "batched deletes"
+SQ -> R2 : "batched deletes"
+R1 -> M1
+R2 -> M2
+W:B ..> M1:L : "delete in own cluster"
 ```
 
 **Cold cluster warm-up.** An empty cluster has a near-zero hit rate and would expose the databases. Clients in the cold cluster fetch from a warm cluster instead. Deletes in the cold cluster carry a two-second hold-off during which `add` is rejected, so a value fetched from a warm cluster before it saw an invalidation cannot be inserted. The paper says a theoretical gap remains if deletes are delayed more than two seconds, and that it turns the mechanism off once hit rates stabilise; it brought a cold cluster to full capacity in hours instead of days.

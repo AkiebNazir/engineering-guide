@@ -45,19 +45,35 @@ This avoids the geohash boundary problem (the covering naturally includes neighb
 
 ## Architecture and flows
 
-```mermaid
+```arch
 %% caption: Writes flow asynchronously into in-memory geo indexes; searches never touch the source-of-truth database.
-flowchart LR
-    owner([Business owner]) --> api[Places API] --> db[(Place store<br/>sharded by place_id)]
-    db -->|CDC events| indexer[Geo indexer]
-    indexer --> idx1[Search servers<br/>region A: in-memory S2 index]
-    indexer --> idx2[Search servers<br/>region B]
-    user([User]) --> edge[Edge / CDN cache<br/>by rounded area + filters]
-    edge --> gw[Search gateway]
-    gw --> idx1
-    gw --> rank[Ranking]
-    gw --> hours[Open-now + personalization]
-    user --> details[Place details API] --> cache[(Detail cache)] --> db
+node user "User" at 1,0 icon=mobile
+node owner "Business owner" at 3,0 icon=user
+group search "Search path" color=blue icon=search
+node edge "Edge / CDN cache" at 1,1 in search icon=cdn sub="rounded area + filters"
+node rank "Ranking" at 0,2 in search icon=sort
+node gw "Search gateway" at 1,2 in search icon=gateway
+node hours "Open-now + personalization" at 0,3 in search icon=time
+group det "Place details" color=teal icon=doc
+node details "Place details API" at 2,1 in det icon=api
+node cache "Detail cache" at 2,2 in det icon=cache
+group write "Write path" color=green icon=edit
+node api "Places API" at 3,1 in write icon=api
+node db "Place store" at 3,2 in write icon=db sub="sharded by place_id"
+node indexer "Geo indexer" at 3,3 in write icon=worker
+group idx "In-memory S2 index" color=purple icon=map
+node idx1 "Search servers" at 2,4 in idx icon=server sub="region A"
+node idx2 "Search servers" at 3,4 in idx icon=server sub="region B"
+user -> edge -> gw
+user:R -> details:T
+details -> cache -> db
+owner -> api -> db
+db ..> indexer : "CDC events"
+indexer ..> idx1
+indexer ..> idx2
+gw -> idx1:L
+gw -> rank
+gw -> hours
 ```
 
 - **Write path**: validate and moderate the update, write to the place store, emit a change event; the geo indexer updates the in-memory index on search servers (and a periodic full rebuild corrects drift). Freshness: seconds to minutes.

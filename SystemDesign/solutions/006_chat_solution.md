@@ -56,6 +56,30 @@ HTTPS
 
 ## Architecture and data
 
+```arch
+%% caption: Gateways hold the live sockets, the message service assigns the per-conversation sequence and persists first, and every fan-out path (online hint, offline push, search) runs after the durable append.
+node client "Client devices" at 1,0 icon=mobile
+node lb "L4 load balancer" at 1,1 icon=lb
+node gw "WebSocket gateways" at 1,2 icon=websocket sub="own sockets, not truth"
+node registry "Session registry" at 0,3 icon=kv sub="device to gateway, TTL"
+node svc "Message service" at 1,3 icon=service sub="assigns seq"
+node notif "Notification workers" at 2,3 icon=notify sub="push if offline"
+node apns "APNs / FCM" at 3,3 icon=mobile
+group data "Durable stores" color=blue icon=db
+node members "Membership store" at 0,4 in data icon=sql sub="strongly consistent"
+node log "Message store / log" at 1,4 in data icon=nosql sub="conversation_id#seq"
+node search "Search / moderation" at 2,4 icon=search sub="index projection"
+client -> lb -> gw
+gw:L -> registry:T : "lease"
+gw <-> svc : "send, hint"
+svc:L -> registry:R : "lookup"
+svc:B -> log:T
+svc:B -> members:T
+svc -> notif
+notif -> apns
+log ..> search
+```
+
 ```mermaid
 %% caption: The gateway owns the live connection, not the truth — a message is durable before it fans out anywhere.
 sequenceDiagram

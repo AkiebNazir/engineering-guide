@@ -86,6 +86,32 @@ Indexes are deliberately few, because every index on a hot mutable column adds w
 
 ## Architecture and flow
 
+```arch
+%% caption: The waiting room and CDN absorb the crowd, only token-bearing calls reach the seat service, and the seat map is a coalesced projection off the outbox that never feeds back into the sale decision.
+node buyer "Buyer" at 1.5,0 icon=users
+node cdn "CDN" at 0,1 icon=cdn sub="serving.json, map snapshot"
+node wait "Waiting room" at 1,1 icon=timer sub="tickets, admission tokens"
+node gw "Gateway" at 2,1 icon=gateway sub="verifies token"
+node pushers "Seat-map pushers" at 0,2 icon=websocket sub="SSE, section deltas"
+node seatsvc "Seat service" at 2,2 icon=service sub="per-section allocator"
+node saga "Payment saga" at 3,2 icon=payment
+node agg "Map relay + aggregator" at 0,3 icon=stream sub="coalesce 1 s"
+node seatsdb "Seats DB" at 2,3 icon=sql sub="partitioned by section"
+node rec "Reclaimer" at 3,3 icon=timer sub="every 5 s"
+buyer -> cdn : "poll"
+buyer -> wait : "join, admit"
+buyer -> gw : "hold + token"
+gw -> seatsvc
+gw:R -> saga:T : "checkout"
+saga:L -> seatsvc:R : "confirm / release"
+seatsvc -> seatsdb : "conditional txn"
+rec -> seatsdb : "expire holds"
+seatsdb ..> agg : "outbox"
+agg -> pushers
+agg:L -> cdn:L : "snapshot"
+pushers:R ..> buyer:L : "deltas"
+```
+
 ```mermaid
 %% caption: Every seat transition is one conditional statement in one transaction, and the waiting room, the seat map, and the reclaimer are all outside the sale decision.
 sequenceDiagram
@@ -204,16 +230,21 @@ Consequences that keep the contract tight:
 
 The requirement says users see availability in real time. The design says what "real time" means, because a promise of instant, exact availability at 2M users is a promise no one can keep and nobody needs.
 
-```mermaid
+```arch
 %% caption: The map is a derived, coalesced, cached projection of the seats table, so it can lag by seconds or fail entirely without ever affecting whether a seat is sold.
-flowchart LR
-    seats[(Seats DB)] -->|outbox rows| relay[Change relay]
-    relay --> agg[Section aggregator<br/>coalesce 1 s]
-    agg --> snap[(Cached snapshot<br/>venue and section, versioned)]
-    agg --> pub[Pub-sub topic per section]
-    pub --> push[SSE or WebSocket pushers<br/>about 5 nodes]
-    push --> client[Admitted client<br/>subscribed to viewed sections]
-    snap --> cdn[Edge cache, ETag] --> client
+node seats "Seats DB" at 0,0 icon=sql
+node relay "Change relay" at 1,0 icon=sync
+node agg "Section aggregator" at 2,0 icon=sigma sub="coalesce 1 s"
+node snap "Cached snapshot" at 3,0 icon=cache sub="venue and section, versioned"
+node pub "Pub-sub topic" at 2,1 icon=topic sub="per section"
+node cdn "Edge cache" at 3,1 icon=cdn sub="ETag"
+node push "SSE / WebSocket pushers" at 2,2 icon=websocket sub="about 5 nodes"
+node client "Admitted client" at 3,2 icon=users sub="subscribed to viewed sections"
+seats -> relay : "outbox rows"
+relay -> agg
+agg -> snap
+agg -> pub -> push -> client
+snap -> cdn -> client
 ```
 
 **Staleness contract.** The map lags the seats table by at most about 2 s under normal load (1 s coalescing plus delivery). It is advisory: clicking a seat always goes to the database, and a stale "available" turns into `409 SEAT_TAKEN` with the fresh state. Under overload the pushers degrade first (longer coalescing, then polling), never the sale path.
@@ -230,23 +261,37 @@ flowchart LR
 
 **The problem.** 2M arrivals, about 24k winners, and a database that can serve ~1,250 admissions/s. The room must (a) be cheap enough to face 33k joins/s and 200k polls/s, (b) admit at a rate the database can bear and seats can use, (c) be fair, and (d) resist bots that will try to jump the queue and buy in bulk.
 
-```mermaid
+```arch
 %% caption: Admission is the minimum of a database-rate limit, a seat-supply limit, and a latency guard, so the room slows down when any of them tightens.
-flowchart TD
-    tick[Every second] --> supply[Supply limit:<br/>2 x available seats / party size<br/>minus users inside]
-    tick --> dbcap[Rate cap:<br/>DB sustainable rate]
-    tick --> lat{Hold p99 above 150 ms}
-    lat -- yes --> cut[Rate x 0.7]
-    lat -- no --> grow[Rate + 5 percent up to cap]
-    supply --> budget[Budget = min of supply, rate, cap]
-    cut --> budget
-    grow --> budget
-    dbcap --> budget
-    budget --> pointer[Advance pointer by budget / show-up rate]
-    pointer --> publish[Publish serving.json to CDN]
-    admit[Client calls admit with ticket] --> bucket{Token bucket has budget<br/>and ticket at or below pointer}
-    bucket -- yes --> tok[Issue single-use signed token]
-    bucket -- no --> retry[425 with jittered Retry-After]
+grid 180x100
+group loop "Budget loop, every second" color=blue icon=timer
+node tick "Every second" at 1,0 in loop shape=pill
+node supply "Supply limit" at 0,1 in loop sub="2 x available seats / party size, minus users inside"
+node dbcap "Rate cap" at 1,1 in loop sub="DB sustainable rate"
+node lat "Hold p99 above 150 ms?" at 2,1 in loop shape=diamond color=amber
+node cut "Rate x 0.7" at 2,2 in loop color=red
+node grow "Rate + 5 percent" at 3,1 in loop color=green sub="up to cap"
+node budget "Budget" at 1,3 in loop sub="min of supply, rate, cap"
+node pointer "Advance pointer" at 1,4 in loop sub="by budget / show-up rate"
+node publish "Publish serving.json to CDN" at 1,5 in loop shape=pill
+group adm "Per request" color=purple icon=api
+node admit "Client calls admit with ticket" at 1,6 in adm shape=pill
+node bucket "Token bucket has budget and ticket at or below pointer?" at 1,7 in adm shape=diamond color=amber w=240
+node tok "Issue single-use signed token" at 0,8 in adm color=green
+node retry "425" at 2,8 in adm color=red sub="jittered Retry-After"
+tick -> supply
+tick -> dbcap
+tick -> lat
+lat -> cut : "yes"
+lat -> grow : "no"
+supply -> budget
+cut -> budget
+grow -> budget
+dbcap -> budget
+budget -> pointer -> publish
+admit -> bucket
+bucket -> tok : "yes"
+bucket -> retry : "no"
 ```
 
 **Queue design.** A ticket is a signed blob `{event_id, ticket_id, cohort, rank, join_ts}` signed with a rotating HMAC key (with a `kid`), issued with no server-side row. A single published pointer says how far the room has advanced. Clients poll that cached file, compare it to their own rank, and show an estimated wait (`(rank − serving) ÷ rate`). Only when their rank is below the pointer do they call `/admit`, which is the one stateful, rate-limited call. So the expensive part of the room, 2M users asking "am I in yet", is one static object.

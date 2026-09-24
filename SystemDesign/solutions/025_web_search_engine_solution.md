@@ -22,31 +22,36 @@ Decoupling them through durable storage (fetched documents, index shard files) m
 
 ## Pipeline overview
 
-```mermaid
+```arch
 %% caption: Crawl, index, and serve are separate pipelines connected by durable storage.
-flowchart LR
-    subgraph crawl[Crawl]
-        frontier[(URL frontier)] --> fetch[Fetchers]
-        fetch --> dedup[Content dedup]
-        dedup --> docs[(Document store)]
-        docs --> links[Link extraction] --> frontier
-    end
-    subgraph index[Index]
-        docs --> parse[Parse + tokenize]
-        parse --> build[Index builders<br/>MapReduce / streaming]
-        build --> shards[(Index shards<br/>base + fresh tiers)]
-        docs --> rank_sig[Offline signals<br/>PageRank, quality, spam]
-        rank_sig --> build
-    end
-    subgraph serve[Serve]
-        q([Query]) --> fe[Frontend + query cache]
-        fe --> root[Root / mixer]
-        root --> leaves[Leaf servers: one per shard]
-        leaves --> root
-        root --> rerank[Re-ranking + snippets]
-        rerank --> fe
-    end
-    shards --> leaves
+group crawl "Crawl" color=green icon=network
+node frontier "URL frontier" at 0,0 in crawl icon=queue sub="per-host queues"
+node fetch "Fetchers" at 1,0 in crawl icon=worker
+node dedup "Content dedup" at 1,1 in crawl icon=filter sub="hash + SimHash"
+node links "Link extraction" at 0,2 in crawl icon=link
+node docs "Document store" at 1,2 in crawl icon=storage
+group index "Index" color=purple icon=index
+node parse "Parse + tokenize" at 0,3 in index icon=process
+node sig "Offline signals" at 1,3 in index icon=metrics sub="PageRank, quality, spam"
+node build "Index builders" at 0,4 in index icon=worker sub="MapReduce / streaming"
+node shards "Index shards" at 1,4 in index icon=index sub="base + fresh tiers"
+group serve "Serve" color=blue icon=search
+node q "Query" at 3,0 in serve icon=user shape=pill
+node fe "Frontend" at 3,1 in serve icon=app sub="+ query cache"
+node rerank "Re-ranking" at 2,2 in serve icon=sort sub="+ snippets"
+node root "Root / mixer" at 3,2 in serve icon=sitemap
+node leaves "Leaf servers" at 3,4 in serve icon=server sub="one per shard"
+frontier -> fetch -> dedup -> docs -> links -> frontier
+docs -> parse
+docs -> sig
+parse -> build
+sig -> build
+build -> shards
+shards -> leaves : "versioned files"
+q -> fe -> root
+root <-> leaves : "fan-out / top 100"
+root -> rerank
+rerank:T -> fe:L
 ```
 
 ## Crawl and dedup

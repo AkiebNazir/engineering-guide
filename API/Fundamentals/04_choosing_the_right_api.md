@@ -27,21 +27,35 @@ There is no best API style, only a best fit. This guide gives you the comparison
 
 ## 2. Decision Tree
 
-```mermaid
-flowchart TD
-    Start([What are you building?]) --> Q1{Does the server need to<br/>tell a client something<br/>without being asked?}
-    Q1 -- "Yes, to another company's backend" --> WH[Webhooks]
-    Q1 -- "Yes, to a live UI in real time,<br/>and the client also sends often" --> WS[WebSockets]
-    Q1 -- "Yes, one-way updates to a browser" --> SSE[Server-Sent Events]
-    Q1 -- No --> Q2{Who calls the API?}
-    Q2 -- "Internal services<br/>you control both ends" --> Q3{Need streaming or<br/>very low latency?}
-    Q3 -- Yes --> GRPC[gRPC]
-    Q3 -- No --> Q4[REST or gRPC:<br/>pick your team's tooling]
-    Q2 -- "Public developers /<br/>third parties" --> REST[REST + OpenAPI]
-    Q2 -- "Your own web and mobile apps<br/>with varied data needs" --> GQL{Screens need nested data<br/>from many sources?}
-    GQL -- Yes --> GraphQL[GraphQL]
-    GQL -- No --> REST
-    Q2 -- "A partner that mandates it<br/>(bank, insurer, government)" --> SOAP[SOAP]
+```arch
+%% caption: Start from who needs to be told what, then from who calls the API.
+grid 150x110
+node start "What are you building?" at 1,0 shape=pill color=slate
+node q1 "Push to a client unasked?" at 1,1 shape=diamond color=amber w=150
+node wh "Webhooks" at 0,2 icon=webhook sub="to another company's backend"
+node ws "WebSockets" at 1,2 icon=websocket sub="live UI, client also sends often"
+node sse "Server-Sent Events" at 2,2 icon=stream sub="one-way updates to a browser"
+node q2 "Who calls the API?" at 3,2 shape=diamond color=amber w=140
+node q3 "Streaming or low latency?" at 0,3 shape=diamond color=amber w=150
+node rest "REST + OpenAPI" at 1,3 icon=api
+node gqlq "Nested data from many sources?" at 2,3 shape=diamond color=amber w=150
+node soap "SOAP" at 3,3 icon=doc sub="bank, insurer, government"
+node grpc "gRPC" at 0,4 icon=grpc
+node q4 "REST or gRPC" at 1,4 sub="pick your team's tooling"
+node graphql "GraphQL" at 2,4 icon=graphql
+start -> q1
+q1 -> wh : "yes: backend"
+q1 -> ws : "yes: live UI"
+q1:B -> sse:T : "yes: browser"
+q1:R -> q2:T : "no"
+q2 -> q3 : "internal, both ends yours"
+q2 -> rest : "public / third parties"
+q2 -> gqlq : "own apps, varied needs"
+q2 -> soap : "partner mandates it"
+q3 -> grpc : "yes"
+q3 -> q4 : "no"
+gqlq -> graphql : "yes"
+gqlq -> rest : "no"
 ```
 
 ### Rules of thumb
@@ -59,22 +73,35 @@ flowchart TD
 
 Real systems combine styles. Each arrow below is chosen for a reason.
 
-```mermaid
-flowchart LR
-    Web[Web app] -->|GraphQL| BFF[GraphQL gateway / BFF]
-    Mobile[Mobile app] -->|GraphQL| BFF
-    Partner[Partner developers] -->|REST + OpenAPI| Pub[Public REST API]
-    BFF -->|gRPC| Orders[Order service]
-    BFF -->|gRPC| Catalog[Catalog service]
-    Pub -->|gRPC| Orders
-    Orders -->|gRPC| Inventory[Inventory service]
-    Orders -->|gRPC| Pay[Payment service]
-    Pay -->|REST + HMAC| Stripe[(Payment provider)]
-    Stripe -.->|Webhook: payment.succeeded| Hook[Webhook receiver]
-    Hook -->|publishes event| Orders
-    Orders -->|WebSocket push| Live[Live order tracking]
-    Live --> Web
-    Orders -->|SOAP adapter| ERP[(Legacy ERP)]
+```arch
+%% caption: One e-commerce platform uses every style, each link chosen for a reason.
+node partner "Partner developers" at 0,0 icon=developer
+node mobile "Mobile app" at 1,0 icon=mobile
+node web "Web app" at 2,0 icon=browser
+node live "Live order tracking" at 3,2 icon=websocket
+node pub "Public REST API" at 0,1 icon=api
+node bff "GraphQL gateway / BFF" at 2,1 icon=graphql
+node hook "Webhook receiver" at 0,2 icon=webhook
+node orders "Order service" at 1,2 icon=service
+node catalog "Catalog service" at 3,1 icon=service
+node stripe "Payment provider" at 0,3 icon=payment
+node pay "Payment service" at 1,3 icon=payment
+node inv "Inventory service" at 2,3 icon=service
+node erp "Legacy ERP" at 3,3 icon=db
+web -> bff : "GraphQL"
+mobile:B -> bff:T : "GraphQL"
+partner -> pub : "REST + OpenAPI"
+bff:B -> orders:T : "gRPC"
+bff:R -> catalog:L : "gRPC"
+pub:R -> orders:T : "gRPC"
+orders -> inv : "gRPC"
+orders -> pay : "gRPC"
+pay -> stripe : "REST + HMAC"
+stripe ..> hook : "Webhook: payment.succeeded"
+hook -> orders : "publishes event"
+orders:R -> live:L : "WebSocket push"
+live:R -> web:R
+orders -> erp : "SOAP adapter"
 ```
 
 | Link | Style | Why |

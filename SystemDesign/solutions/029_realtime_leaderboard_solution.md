@@ -42,19 +42,32 @@ Up to tens of millions of players on one well-provisioned node, this alone is a 
 
 ## Write path and durability
 
-```mermaid
+```arch
 %% caption: The database is the source of truth; the sorted sets are a fast, rebuildable ranking projection.
-flowchart LR
-    gs[Game servers] -->|signed match result| api[Score service]
-    api --> db[(Score DB<br/>match results, player totals)]
-    db -->|outbox / CDC| upd[Leaderboard updaters]
-    upd --> z1[(Sorted-set shards)]
-    upd --> topk[(Global top-1000 set)]
-    upd --> hist[(Score histogram<br/>per board)]
-    client([Players]) --> read[Leaderboard API] --> cache[(Top-100 cache)]
-    read --> z1
-    read --> topk
-    read --> hist
+group wp "Write path" color=green icon=edit
+node gs "Game servers" at 0,0 in wp icon=server
+node api "Score service" at 0,1 in wp icon=service sub="validate, idempotent"
+node db "Score DB" at 0,2 in wp icon=db sub="match results, player totals"
+node upd "Leaderboard updaters" at 0,3 in wp icon=worker
+group rp "Read path" color=blue icon=search
+node client "Players" at 2,0 in rp icon=users
+node cache "Top-100 cache" at 3,1 in rp icon=cache
+node read "Leaderboard API" at 2,1 in rp icon=api
+group rd "Redis ranking projection" color=red icon=redis
+node z1 "Sorted-set shards" at 1,3 in rd icon=redis
+node topk "Global top-1000 set" at 2,3 in rd icon=sort
+node hist "Score histogram" at 3,3 in rd icon=metrics sub="per board"
+gs -> api : "signed match result"
+api -> db
+db ..> upd : "outbox / CDC"
+upd -> z1
+upd:B -> topk:B
+upd:B -> hist:B
+client -> read
+read -> cache
+read -> z1
+read -> topk
+read -> hist
 ```
 
 1. Game servers submit signed match results; the score service validates them (anti-cheat rules: plausible score for match duration, server-authoritative results only) and writes to the database idempotently by `match_id`.

@@ -28,21 +28,24 @@ digit with `// 10`). Python ints don't overflow, but the technique is
 worth knowing cold because it's the general pattern for "detect a
 palindrome without materializing the full reverse."
 
-```mermaid
+```arch
 %% caption: Binary exponentiation: n halves every round, so O(log n) multiplications instead of n - 1. For negative n, invert x first.
-flowchart TD
-  A["pow(x, n): result = 1"] --> B{"n == 0 ?"}
-  B -->|yes| Z["return result"]:::ok
-  B -->|no| C{"n is odd?"}
-  C -->|yes| D["result *= x"]
-  C -->|no| E["skip"]
-  D --> F["x = x * x<br/>n = n // 2"]:::hot
-  E --> F
-  F --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node a "pow(x, n)" at 1,0 shape=pill sub="result = 1"
+node b "n == 0 ?" at 1,1 shape=diamond color=amber
+node z "return result" at 2,1 color=green
+node c "n is odd?" at 1,2 shape=diamond color=amber
+node e "skip" at 2,2 color=slate
+node d "result *= x" at 1,3
+node f "x = x * x" at 1,4 color=amber sub="n = n // 2"
+a -> b
+b -> z : "yes"
+b -> c : "no"
+c -> d : "yes"
+c -> e : "no"
+d -> f
+e:B -> f:R
+f:L -> b:L
 ```
 
 
@@ -122,17 +125,15 @@ never divide. Vertical lines (`dx == 0`) and duplicate points (`dx == dy
 == 0`, which augment every line's count but define no slope of their own)
 need explicit handling outside the slope map.
 
-```mermaid
+```arch
 %% caption: Slope as a reduced fraction avoids floating point: equal slopes produce identical (dx, dy) keys.
-flowchart LR
-  A["anchor point p and another point q"] --> B["dx = qx - px<br/>dy = qy - py"]
-  B --> C["g = gcd(dx, dy)"]
-  C --> D["normalise the sign,<br/>key = (dx/g, dy/g)"]:::hot
-  D --> E["count[key] for this anchor<br/>max count + 1 = most points on one line"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x75
+node a "anchor p and another point q" at 0,0 shape=pill w=260
+node b "dx = qx - px" at 0,1 w=260 sub="dy = qy - py"
+node c "g = gcd(dx, dy)" at 0,2 w=260
+node d "Normalise the sign" at 0,3 color=amber w=260 sub="key = (dx/g, dy/g)"
+node e "count[key] for this anchor" at 0,4 color=green w=260 sub="max count + 1 = most points on one line"
+a -> b -> c -> d -> e
 ```
 
 
@@ -208,19 +209,22 @@ Part 0 explains the ten tricks. Interviews in this area rarely ask those ten —
 GCD and modular arithmetic, primes, and a handful of geometry primitives. Every snippet below was run, and every timing is a
 measurement from this machine (CPython 3.13).
 
-```mermaid
+```arch
 %% caption: Most math problems reduce to one of five moves: exploit divisibility, work modulo something, sieve, exponentiate by squaring, or replace a float by an exact rational.
-flowchart TD
-  Q(["A math problem"]) --> A{"What blows up or repeats?"}
-  A -->|"a huge value (x^n, n!, a big product)"| B["exponentiation by squaring;<br/>work mod p; never build the full number"]:::ok
-  A -->|"divisibility / common factors"| C["gcd, lcm, prime factorisation"]:::ok
-  A -->|"many primality or factor queries"| D["sieve once (smallest-prime-factor table)"]:::ok
-  A -->|"a ratio, slope or fraction as a key"| E["reduce by gcd, fix the sign — never a float"]:::hot
-  A -->|"orientation, area, intersection"| F["cross product with integers"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "A math problem" at 0,1 shape=pill
+node a "What blows up or repeats?" at 0,2 shape=diamond color=amber
+node b "Exponentiation by squaring" at 1,0 color=green w=380 sub="a huge value (x^n, n!, a big product) · work mod p; never build the full number"
+node c "gcd, lcm, prime factorisation" at 1,1 color=green w=380 sub="divisibility / common factors"
+node d "Sieve once" at 1,2 color=green w=380 sub="many primality or factor queries · smallest-prime-factor table"
+node e "Reduce by gcd, fix the sign" at 1,3 color=amber w=380 sub="a ratio, slope or fraction as a key · never a float"
+node f "Cross product with integers" at 1,4 color=green w=380 sub="orientation, area, intersection"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+a:R -> f:L
 ```
 
 ### 5.1 GCD, LCM and the extended Euclidean algorithm

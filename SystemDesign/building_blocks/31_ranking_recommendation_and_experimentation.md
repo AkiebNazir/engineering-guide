@@ -10,22 +10,32 @@ Two systems decide what a user sees: a ranking pipeline that chooses the items, 
 
 Scoring every item with the best model costs corpus size × model cost per request, so a cascade spends little on many items and a lot on few. YouTube's paper ("Deep Neural Networks for YouTube Recommendations", Covington, Adams, Sargin, RecSys 2016) uses this shape: candidate generation narrows millions of videos to hundreds, then a richer model ranks those.
 
-```mermaid
+```arch
 %% caption: Each stage sees fewer items and spends more per item, so total cost is set by how many candidates reach the heavy ranker.
-flowchart LR
-    corpus[(Corpus 10^8 items)] --> R1[Two-tower ANN]
-    corpus --> R2[Graph 2-hop]
-    corpus --> R3[Co-visitation]
-    corpus --> R4[Popular and fresh]
-    R1 --> M[Merge, dedupe, filter<br/>10^4]
-    R2 --> M
-    R3 --> M
-    R4 --> M
-    M --> L[Light ranker<br/>10^4 to 500]
-    L --> H[Heavy ranker<br/>500 to 50]
-    H --> B[Re-rank and blend<br/>50 to 20]
-    B --> P([Page])
-    B -. "shown items, positions, scores, features" .-> LOG[(Impression log)]
+grid 160x105
+node corpus "Corpus" at 1.5,0 icon=db sub="10^8 items"
+group ret "Candidate retrieval" color=teal icon=search
+node R1 "Two-tower ANN" at 0,1 in ret icon=vector
+node R2 "Graph 2-hop" at 1,1 in ret icon=graph
+node R3 "Co-visitation" at 2,1 in ret icon=link
+node R4 "Popular and fresh" at 3,1 in ret icon=news
+node M "Merge, dedupe, filter" at 1.5,2 color=slate sub="10^4"
+node L "Light ranker" at 1.5,3 color=blue sub="10^4 to 500"
+node H "Heavy ranker" at 1.5,4 color=purple sub="500 to 50"
+node B "Re-rank and blend" at 1.5,5 color=indigo sub="50 to 20"
+node P "Page" at 0.5,6 shape=pill color=green
+node LOG "Impression log" at 2.5,6 icon=logs
+corpus -> R1
+corpus -> R2
+corpus -> R3
+corpus -> R4
+R1 -> M
+R2 -> M
+R3 -> M
+R4 -> M
+M -> L -> H -> B
+B -> P
+B ..> LOG : "shown items, positions, scores, features"
 ```
 
 Assumptions (ours, not a real system's): 200M DAU × 10 ranked requests/day = 2×10^9/day ÷ 86,400 = 23k/s average, ×3 peak ≈ 70k/s, p99 budget 200 ms.
@@ -127,19 +137,30 @@ Assign with `bucket = hash(salt ‖ unit_id) mod 10,000`. The experiment owns a 
 
 Tang, Agarwal, O'Brien and Meyer ("Overlapping Experiment Infrastructure: More, Better, Faster Experimentation", Google, KDD 2010) describe how to run many experiments on the same traffic: parameters are grouped into layers, a request falls into at most one experiment per layer, and each layer hashes independently so the layers are orthogonal. Experiments that touch the same parameter share a layer and get disjoint bucket ranges; independent layers average out interactions instead of detecting them, so declare interacting experiments as conflicts.
 
-```mermaid
+```arch
 %% caption: One unit id is hashed independently per layer, giving each layer an unbiased split, and exposure is logged where the parameter is actually used.
-flowchart LR
-    U([user_id]) --> H1["hash salt_rank + id mod 10000"]
-    U --> H2["hash salt_ui + id mod 10000"]
-    H1 --> L1["Layer ranking<br/>exp A 0-499, exp B 500-999, rest control"]
-    H2 --> L2["Layer UI<br/>exp C 0-1999, rest control"]
-    L1 --> P["Resolved parameters<br/>ranker v7, page size 20"]
-    L2 --> P
-    P --> S[Service applies parameters]
-    S --> X[(Exposure log)]
-    X --> ST[Stream job: guardrails, SRM]
-    X --> BT[Batch job: CUPED, full stats]
+grid 160x105
+node U "user_id" at 0.5,0 shape=pill color=slate
+group lr "Ranking layer" color=blue icon=layers
+node H1 "hash salt_rank + id" at 0,1 in lr color=blue sub="mod 10000"
+node L1 "Layer ranking" at 0,2 in lr color=blue sub="exp A 0-499, exp B 500-999, rest control"
+group lu "UI layer" color=purple icon=layers
+node H2 "hash salt_ui + id" at 1,1 in lu color=purple sub="mod 10000"
+node L2 "Layer UI" at 1,2 in lu color=purple sub="exp C 0-1999, rest control"
+node P "Resolved parameters" at 0.5,3 color=slate sub="ranker v7, page size 20"
+node S "Service applies parameters" at 0.5,4 icon=service
+node X "Exposure log" at 0.5,5 icon=logs
+node ST "Stream job" at 0,6 icon=stream sub="guardrails, SRM"
+node BT "Batch job" at 1,6 icon=cron sub="CUPED, full stats"
+U -> H1
+U -> H2
+H1 -> L1
+H2 -> L2
+L1 -> P
+L2 -> P
+P -> S -> X
+X -> ST
+X -> BT
 ```
 
 | | Central assignment service | SDK-local evaluation |

@@ -56,6 +56,31 @@ Every mutation creates a snapshot; `base` gives optimistic concurrency. The gate
 
 ## Architecture and data flow
 
+```arch
+%% caption: Every request is answered from node memory (config snapshot, cached keys, leased quota tokens); the control plane and lease service stay off the request path.
+node client "Tenant clients" at 2,0 icon=users sub="Bearer JWT, TLS"
+node ddos "DDoS filter" at 2,1 icon=shield sub="per-IP limits"
+node lb "L4 balancer" at 2,2 icon=lb
+group dp "Gateway fleet: 60 nodes, 3 zones" color=purple icon=region
+node snap "Config snapshot" at 1,3 in dp icon=layers sub="routes, entitlements, keys"
+node gw "Gateway node" at 2,3 in dp icon=gateway sub="JWT, route, deadline"
+node bkt "Quota buckets" at 3,3 in dp icon=counter sub="local tokens, conc. caps"
+node be "Backend services" at 2,4 icon=service sub="re-authorize, tenant-scoped"
+node lease "Lease service" at 3,4 icon=kv sub="8 partitions by tenant"
+group cp "Control plane" color=slate icon=scheduler
+node jwks "Issuer JWKS" at 0,2 in cp icon=key sub="800 issuers, 60 s poll"
+node ctl "Snapshot compiler" at 0,3 in cp icon=workflow sub="validate, canary, rollback"
+node cfg "Config DB" at 0,4 in cp icon=sql sub="+ sync replica"
+client -> ddos -> lb -> gw
+gw -> be : "mTLS + verified claim"
+snap -- gw
+gw -- bkt
+bkt <..> lease : "25 ms leases"
+jwks ..> ctl : "key changes"
+cfg -> ctl
+ctl ..> snap : "xDS deltas, ACK/NACK"
+```
+
 ```mermaid
 %% caption: The gateway forwards the verified claim extracted from the token — never a raw header the caller could set themselves.
 sequenceDiagram

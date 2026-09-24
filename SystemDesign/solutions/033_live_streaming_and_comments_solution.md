@@ -56,20 +56,32 @@ GET  /v1/vods/{id}/comments?from_ms=&to_ms=       # immutable 30 s chunks, CDN-c
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Every frame passes ingest, transcode and packaging exactly once, after which it is an immutable file that a multi-CDN fabric fans out, so the origin's load depends on the number of CDNs and not on the audience.
-flowchart LR
-    enc["Encoder"] -->|"SRT, RTMPS or WHIP"| ing["Ingest server<br/>source rung passthrough"]
-    enc -.->|"backup feed"| ing2["Backup ingest"]
-    ing --> tc["Transcoder<br/>aligned-GOP ladder"]
-    ing2 -.-> tc
-    ing --> pk["Packager<br/>CMAF parts and segments"]
-    tc --> pk
-    pk --> os[("Object store<br/>DVR window and VOD")]
-    pk --> sh["Origin shield"]
-    sh --> cdn["Multi-CDN edges"]
-    cdn --> pl["Player"]
-    pl -->|"WebSocket"| cg["Chat gateways"]
+node enc "Encoder" at 0,0 icon=video
+group ingest "Ingest site" color=orange icon=region
+node ing "Ingest server" at 0,1 in ingest icon=server sub="source rung passthrough"
+node ing2 "Backup ingest" at 1,1 in ingest icon=server
+node tc "Transcoder" at 1,2 icon=cpu sub="aligned-GOP ladder"
+group origin "Origin" color=green icon=storage
+node pk "Packager" at 0,3 in origin icon=package sub="CMAF parts and segments"
+node sh "Origin shield" at 1,3 in origin icon=shield
+node os "Object store" at 0,4 in origin icon=blob sub="DVR window and VOD"
+node cdn "Multi-CDN edges" at 2,3 icon=cdn
+group view "Viewer" color=slate icon=users
+node papi "Playback API" at 3,2 in view icon=api sub="entitlement, CDN pick"
+node pl "Player" at 3,3 in view icon=mobile
+node cg "Chat gateways" at 3,4 in view icon=chat
+enc -> ing : "SRT, RTMPS or WHIP"
+enc:R ..> ing2:T : "backup feed"
+ing -> tc
+ing2 ..> tc
+ing -> pk
+tc:L -> pk:T
+pk -> os
+pk -> sh -> cdn -> pl
+pl -> papi : "signed manifest"
+pl -> cg : "WebSocket"
 ```
 
 **Watch.** The player asks the playback API, which checks entitlement and picks a CDN by weight and health, then returns a signed manifest URL and chat details. The player fetches the playlist and parts from the CDN. **Go live.** The encoder connects to an ingest server. The ingest server demuxes, publishes the source rung to the packager immediately and hands frames to the transcoder. The packager cuts parts and segments on source-PTS boundaries and writes them to the object store and the shield. The segments are the DVR window and, later, the VOD. Chat is the second diagram.

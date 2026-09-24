@@ -21,18 +21,26 @@ An **Application Programming Interface (API)** is a set of rules and protocols t
 
 Below is a quick overview of the most prominent API paradigms used in modern software engineering. We will dive deep into each one with code examples in the subsequent guides.
 
-```mermaid
-flowchart TD
-    API[Application Programming Interface] --> Sync[Synchronous]
-    API --> Async[Asynchronous / Event-Driven]
-    
-    Sync --> REST[REST<br/>Resource-based]
-    Sync --> GQL[GraphQL<br/>Query-based]
-    Sync --> RPC[gRPC / RPC<br/>Action-based]
-    Sync --> SOAP[SOAP<br/>XML/Enterprise]
-    
-    Async --> WS[WebSockets<br/>Bi-directional]
-    Async --> WH[Webhooks<br/>Server-to-Client]
+```arch
+%% caption: API styles split into synchronous request/response and asynchronous, event-driven families.
+grid 190x80
+node api "Application Programming Interface" at 0,3 shape=pill color=slate
+node syncn "Synchronous" at 1,1 color=blue
+node asyncn "Asynchronous / Event-Driven" at 1,5 color=pink
+node rest "REST" at 2,0 shape=card icon=api sub="Resource-based"
+node gql "GraphQL" at 2,1 shape=card icon=graphql sub="Query-based"
+node rpc "gRPC / RPC" at 2,2 shape=card icon=grpc sub="Action-based"
+node soap "SOAP" at 2,3 shape=card icon=doc sub="XML/Enterprise"
+node ws "WebSockets" at 2,5 shape=card icon=websocket sub="Bi-directional"
+node wh "Webhooks" at 2,6 shape=card icon=webhook sub="Server-to-Client"
+api:R -> syncn:L
+api:R -> asyncn:L
+syncn:R -> rest:L
+syncn:R -> gql:L
+syncn:R -> rpc:L
+syncn:R -> soap:L
+asyncn:R -> ws:L
+asyncn:R -> wh:L
 ```
 
 ### 1. REST (Representational State Transfer)

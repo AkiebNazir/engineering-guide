@@ -37,22 +37,25 @@ window's *state* (sum, frequency map, distinct count) is a separate variable
 you update by ±1 as `l` and `r` move. That incremental update is the entire
 algorithm — everything else is bookkeeping.
 
-```mermaid
+```arch
 %% caption: Every window loop is enter, restore, record. The only decision is where "record" goes: after the shrink for the longest window, inside the shrink for the shortest.
-flowchart TD
-  A["for r := 0; r < n; r++"] --> B["ENTER: add s[r] to the window state"]
-  B --> C{"window invalid?<br/>(longest / fixed shapes)"}
-  C -->|"yes"| D["RESTORE: remove s[l], l++"]:::hot
-  D --> C
-  C -->|"no"| E["RECORD longest: r - l + 1"]:::ok
-  B --> F{"window still valid?<br/>(shortest shape)"}
-  F -->|"yes"| G["RECORD shortest, then remove s[l], l++"]:::hot
-  G --> F
-  E --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x110
+node a "for r := 0; r < n; r++" at 0,0 shape=pill
+node b "ENTER" at 1,0 shape=card icon=start sub="add s[r] to the window state"
+node c "window invalid?" at 1,1 shape=diamond color=amber sub="longest / fixed shapes"
+node e "RECORD longest" at 0,1 shape=card icon=check color=green sub="r - l + 1"
+node d "RESTORE" at 1,2 shape=card icon=sync color=orange sub="remove s[l], l++"
+node f "window still valid?" at 2,1 shape=diamond color=amber sub="shortest shape"
+node g "RECORD shortest" at 2,2 shape=card icon=sync color=orange sub="then remove s[l], l++"
+a -> b
+b -> c
+b:R -> f:T
+c -> d : "yes"
+d:R -> c:R
+c -> e : "no"
+e -> a
+f -> g : "yes"
+g:R -> f:R
 ```
 
 ```go
@@ -161,22 +164,26 @@ r=4: [5] pops 3,2,1 (all <5)   deque: [4]           window max = 5
 The deque needs **push-back, pop-back, pop-front, and peek-front** — all
 O(1). That's a deque. Go's standard library has none.
 
-```mermaid
+```arch
 %% caption: One step of the monotonic deque. It holds indices whose values decrease front to back, so the front is always the current window maximum.
-flowchart TD
-  N["new element nums[r]"] --> F{"front index has left the window?<br/>(deque[head] <= r - k)"}
-  F -->|"yes"| PF["pop front: head++"]:::hot
-  PF --> F
-  F -->|"no"| B{"back value <= nums[r]?"}
-  B -->|"yes: dominated for good"| PB["pop back: tail--"]:::hot
-  PB --> B
-  B -->|"no"| PUSH["push r at the back"]
-  PUSH --> OUT{"r >= k - 1?"}
-  OUT -->|"yes"| M["window max = nums[deque[head]]"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node n "new element nums[r]" at 0,0 shape=pill
+node f "front index has left the window?" at 0,1 shape=diamond color=amber sub="deque[head] <= r - k"
+node pf "Pop front" at 1,1 shape=card icon=sync color=orange sub="head++"
+node b "back value <= nums[r]?" at 0,2 shape=diamond color=amber
+node pb "Pop back" at 1,2 shape=card icon=sync color=orange sub="dominated for good: tail--"
+node push "Push r at the back" at 0,3 shape=box
+node out "r >= k - 1?" at 0,4 shape=diamond color=amber
+node m "Window max" at 1,4 shape=card icon=check color=green sub="nums[deque[head]]"
+n -> f
+f:R -> pf:L : "yes"
+pf:T -> f:T
+f -> b : "no"
+b:R -> pb:L : "yes"
+pb:T -> b:T
+b -> push : "no"
+push -> out
+out -> m : "yes"
 ```
 
 ### 2.2 Three ways to build one in Go, and what each costs
@@ -435,21 +442,26 @@ O(|s| · 128).
 Part 1 gave the generic loop. Every sliding-window problem is one of six shapes; naming the shape *is*
 the solution. All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: Which window shape to reach for. Two questions decide it: is the size given, and what is being asked.
-flowchart TD
-  Q(["What is being asked?"]) --> A{"Window size k given?"}
-  A -->|"yes"| FA["Shape A: fixed window<br/>add one on the right, drop one on the left"]:::ok
-  A -->|"no"| B{"What is optimised?"}
-  B -->|"longest valid"| FB["Shape B: shrink while INVALID,<br/>record after"]:::ok
-  B -->|"longest, length only"| FD["Shape D: never-shrinking window"]:::ok
-  B -->|"shortest valid"| FC["Shape C: shrink while still VALID,<br/>record inside"]:::ok
-  B -->|"count subarrays"| FE["Shape E: atMost(g) minus atMost(g-1)"]:::ok
-  B -->|"max or min of the window"| FF["Shape F: monotonic deque"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x100
+node q "What is being asked?" at 1,0 shape=pill
+node a "Window size k given?" at 1,1 shape=diamond color=amber
+node fa "Shape A: fixed window" at 2,1 shape=card icon=grid color=green sub="add one on the right, drop one on the left"
+node b "What is optimised?" at 1,2 shape=diamond color=amber
+node fb "Longest valid" at 0,2 shape=card icon=filter color=green sub="Shape B: shrink while INVALID, record after"
+node fc "Shortest valid" at 2,2 shape=card icon=filter color=green sub="Shape C: shrink while still VALID, record inside"
+node fd "Longest, length only" at 0,3 shape=card icon=speed color=green sub="Shape D: never-shrinking window"
+node fe "Count subarrays" at 1,3 shape=card icon=counter color=green sub="Shape E: atMost(g) minus atMost(g-1)"
+node ff "Max or min of the window" at 2,3 shape=card icon=layers color=green sub="Shape F: monotonic deque"
+q -> a
+a -> fa : "yes"
+a -> b : "no"
+b -> fb
+b -> fc
+b:B -> fd:T
+b -> fe
+b:B -> ff:T
 ```
 
 | Shape | Loop | Record where | Init the answer | Problems |

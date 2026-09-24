@@ -393,18 +393,18 @@ Everything so far answered *"what is the sum of this range?"*. The most-asked pr
 inverse: *"which ranges have this sum?"* — and they are asked with **negative numbers allowed**, where a
 sliding window (topic 03) is not legal. All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: Turn "subarrays with sum k" into a lookup: one pass, one map. No window, so the numbers may be negative.
-flowchart LR
-  A["want: subarrays with sum = k"] --> B["sum(l..r) = P[r+1] - P[l]"]
-  B --> C["so an earlier prefix must equal<br/>P[r+1] - k"]
-  C --> D["scan once; at each r look up<br/>running - k in a map"]:::hot
-  D --> E["count += seen[running - k]"]
-  E --> F["seen[running]++"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node a "want: subarrays with sum = k" at 0,0 shape=pill
+node b "sum(l..r) = P[r+1] - P[l]" at 1,0 shape=box
+node c "An earlier prefix" at 2,0 shape=card icon=sigma sub="so it must equal P[r+1] - k"
+node d "Scan once" at 0,1 shape=card icon=kv color=orange sub="at each r look up running - k in a map"
+node e "count += seen[running - k]" at 1,1 shape=box w=220
+node f "seen[running]++" at 2,1 shape=box
+a -> b -> c
+c:B -> d:T
+d -> e -> f
 ```
 
 ### Variant A — count occurrences (LC 560)
@@ -506,20 +506,24 @@ func checkSubarraySum(nums []int, k int) bool {
 | Range *updates* then one read | any | difference array (Part 1.2) |
 | Point updates between queries | any | Fenwick / segment tree (topic 26) |
 
-```mermaid
+```arch
 %% caption: Choosing the prefix-sum tool. The sign of the numbers and whether the data changes decide it — not the wording of the question.
-flowchart TD
-  Q(["A question about ranges of an array"]) --> A{"Does the data change<br/>between queries?"}
-  A -->|"yes"| F["Fenwick or segment tree<br/>(topic 26)"]:::ok
-  A -->|"no"| B{"Ask for a range sum,<br/>or for ranges WITH a sum?"}
-  B -->|"a range sum"| P["prefix array: P[r+1] - P[l]"]:::ok
-  B -->|"ranges with property"| C{"Numbers all non-negative<br/>and a monotone rule?"}
-  C -->|"yes"| W["sliding window<br/>(topic 03)"]:::ok
-  C -->|"no, any sign"| H["prefix sum + hash map<br/>(seed {0:1} or {0:-1})"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 260x100
+node q "A question about ranges of an array" at 0,0 shape=pill
+node a "Does the data change between queries?" at 0,1 shape=diamond color=amber
+node f "Fenwick or segment tree" at 1,1 shape=card icon=tree color=green sub="topic 26"
+node b "A range sum, or ranges WITH a sum?" at 0,2 shape=diamond color=amber
+node p "Prefix array" at 1,2 shape=card icon=sigma color=green sub="P[r+1] - P[l]"
+node c "Numbers all non-negative?" at 0,3 shape=diamond color=amber sub="and a monotone rule"
+node w "Sliding window" at 1,3 shape=card icon=filter color=green sub="topic 03"
+node h "Prefix sum + hash map" at 0,4 shape=card icon=kv color=orange sub="seed {0:1} or {0:-1}"
+q -> a
+a -> f : "yes"
+a -> b : "no"
+b -> p : "range sum"
+b -> c : "ranges with property"
+c -> w : "yes"
+c -> h : "no, any sign"
 ```
 
 ---

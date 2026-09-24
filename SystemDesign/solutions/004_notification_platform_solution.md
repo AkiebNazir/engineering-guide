@@ -48,6 +48,30 @@ POST /v1/providers/{name}/webhook    → signed delivery/bounce/complaint callba
 
 ## Data and architecture
 
+```arch
+%% caption: A product event becomes a durable, deduplicated intent before any provider is called; queues and token buckets pace the sends, and provider callbacks only update attempt state.
+node product "Product service" at 1,0 icon=service sub="DB + outbox"
+group core "Notification platform" color=blue icon=notify
+node intake "Notification intake" at 1,1 in core icon=api sub="dedupe, route"
+node intent "Intent store" at 2,1 in core icon=nosql sub="intents + attempts"
+node pref "Preferences" at 2,2 in core icon=kv sub="consent, quiet hours"
+node queue "Priority + channel queues" at 1,3 in core icon=queue sub="partitioned by user_id"
+node sched "Schedule store" at 2,3 in core icon=time sub="not_before buckets"
+node workers "Email / push / SMS workers" at 1,4 in core icon=worker
+node buckets "Provider token buckets" at 2,4 in core icon=counter sub="shared store"
+node provider "Provider" at 0,5 icon=email sub="email, push, SMS"
+product -> intake
+intake -> intent : "record"
+intent -> pref : "evaluate"
+pref:L -> queue:T : "enqueue"
+pref -> sched : "quiet hours"
+sched:L ..> queue:R : "due"
+queue -> workers
+workers -> buckets : "take token"
+workers:B -> provider:R : "send"
+provider:T ..> intake:L : "signed webhook"
+```
+
 ```mermaid
 %% caption: The intent is durable before any provider is called; the provider callback only ever updates delivery-attempt state, never creates a new intent.
 sequenceDiagram
@@ -92,12 +116,25 @@ The one unavoidable window: the worker calls the provider, the provider accepts,
 
 ## Deep dive 2: Priority isolation and provider rate limits
 
-```text
-            ┌──────────── transactional queue (per channel) ──► dedicated worker pool
-intake ────►├──────────── standard queue ─────────────────────► shared pool
-            └──────────── bulk/campaign queue ────────────────► capped pool
-                                     │
-                     per-provider token buckets (global, in a shared store)
+```arch
+%% caption: Each priority class gets its own queue and worker pool, and every pool draws from the same per-provider token buckets.
+node intake "Intake" at 0,1 icon=api
+node tq "Transactional queue" at 1,0 icon=queue sub="per channel"
+node sq "Standard queue" at 1,1 icon=queue
+node bq "Bulk / campaign queue" at 1,2 icon=queue
+node tp "Dedicated worker pool" at 2,0 icon=worker
+node sp "Shared pool" at 2,1 icon=worker
+node cp "Capped pool" at 2,2 icon=worker
+node tb "Per-provider token buckets" at 3,1 icon=counter sub="global, shared store"
+intake:R -> tq:L
+intake -> sq
+intake:R -> bq:L
+tq -> tp
+sq -> sp
+bq -> cp
+tp:R -> tb:T
+sp -> tb
+cp:R -> tb:B
 ```
 
 - **Separate queues and worker pools per priority class.** Weighted fair queuing is not enough on its own: if a campaign consumes all provider rate-limit tokens, transactional traffic still waits. Reserve a share of each provider's quota for transactional traffic.

@@ -80,16 +80,18 @@ A stampede happens when many concurrent requests miss the same key at once (cold
 | Stale-while-revalidate | Serve the (slightly) expired value immediately while one background request refreshes it, instead of making every caller wait on a fresh fetch. |
 | Negative caching | Cache "not found" results too (short TTL), so a burst of lookups for a nonexistent key doesn't hammer the source repeatedly. |
 
-```mermaid
-flowchart TB
-    subgraph wo["Without coalescing"]
-        direction TB
-        a1["1000 concurrent misses"] --> a2["1000 source queries"] --> a3["source falls over"]
-    end
-    subgraph w["With coalescing"]
-        direction TB
-        b1["1000 concurrent misses"] --> b2["1 source query, 999 wait on it"] --> b3["source sees 1 extra query"]
-    end
+```arch
+%% caption: The same 1000 concurrent misses, without and with request coalescing.
+group wo "Without coalescing" color=red icon=warn
+node a1 "1000 concurrent misses" at 0,0 in wo color=red
+node a2 "1000 source queries" at 0,1 in wo color=red
+node a3 "Source falls over" at 0,2 in wo color=red
+group w "With coalescing" color=green icon=check
+node b1 "1000 concurrent misses" at 1,0 in w color=green
+node b2 "1 source query" at 1,1 in w color=green sub="999 wait on it"
+node b3 "Source sees 1 extra query" at 1,2 in w color=green
+a1 -> a2 -> a3
+b1 -> b2 -> b3
 ```
 
 ## Hot-key mitigation
@@ -190,15 +192,21 @@ A request can hit six caches before it reaches the disk. Each layer has its own 
 | Distributed (Redis, Memcached) | Domain key | Seconds to hours | Delete on write, CDC, leases | Network hop of about a millisecond, hot keys ([25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md)) |
 | Database buffer pool | Page id | None, replacement policy | Automatic, since writes update pages in place | Cold after a restart, sized by RAM you buy |
 
-```mermaid
+```arch
 %% caption: Each layer removes a share of the traffic, so with these assumed hit ratios only 1.4 of 100 requests reach the database and 0.07 reach disk.
-flowchart LR
-    R([100 requests]) --> B["Browser<br/>30% hit"]
-    B -- "70" --> CD["CDN<br/>60% hit"]
-    CD -- "28" --> L["App-local<br/>50% hit"]
-    L -- "14" --> RD["Redis<br/>90% hit"]
-    RD -- "1.4" --> DB["DB buffer pool<br/>95% hit"]
-    DB -- "0.07" --> DK[("Disk")]
+node R "100 requests" at 0,0 shape=pill color=slate
+node B "Browser" at 1,0 icon=browser sub="30% hit"
+node CD "CDN" at 2,0 icon=cdn sub="60% hit"
+node L "App-local" at 3,0 icon=cache sub="50% hit"
+node RD "Redis" at 3,1 icon=redis sub="90% hit"
+node DB "DB buffer pool" at 2,1 icon=db sub="95% hit"
+node DK "Disk" at 1,1 icon=disk
+R -> B
+B -> CD : "70"
+CD -> L : "28"
+L -> RD : "14"
+RD -> DB : "1.4"
+DB -> DK : "0.07"
 ```
 
 **Staleness adds up.** With no invalidation, a write at time zero can still be served after the sum of the layer TTLs, because each layer may have just fetched from the one behind it. With Redis at 300 s, app-local 5 s, CDN 60 s and browser 30 s, the worst case is 300 + 5 + 60 + 30 = 395 s. So give the product's staleness budget to the layers as a *split*, not to each layer in full. **Decision rule:** cache as close to the user as the data's staleness tolerance and shareability allow, and remember every layer you add is another one to invalidate.

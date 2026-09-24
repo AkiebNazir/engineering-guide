@@ -85,6 +85,23 @@ Why each detail is there:
 
 ## Architecture and policy evaluation
 
+```arch
+%% caption: Every request passes the WAF and one gateway check; the gateway spends tenant, key and route tokens in one script call on one sharded store, and only allowed requests reach the backend.
+node client "Client" at 1,0 icon=client
+node waf "WAF" at 1,1 icon=firewall sub="bot / abuse filter"
+node config "Policy config store" at 0,2 icon=file sub="versioned policies"
+node gw "API gateway" at 1,2 icon=gateway sub="auth + fleet-wide slice"
+node backend "Backend" at 2,2 icon=server
+group store "Bucket store, 8 shards" color=blue icon=db
+node primary "Shard primary" at 1,3 in store icon=redis sub="Lua token bucket"
+node replica "Shard replica" at 0,3 in store icon=replica sub="promoted on failure"
+client -> waf -> gw
+config ..> gw : "poll 10 s"
+gw -> primary : "one EVALSHA"
+gw -> backend : "allowed"
+primary ..> replica : "async"
+```
+
 ```mermaid
 %% caption: One script call checks the tenant, key and route buckets atomically on one shard; the fleet-wide bucket is enforced locally from a leased slice, and any denial rejects before the backend is touched.
 sequenceDiagram

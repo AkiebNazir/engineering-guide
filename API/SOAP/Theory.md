@@ -88,12 +88,16 @@ Python lab 1 shows a document in the wrong namespace silently matching nothing, 
 
 **WSDL** (Web Services Description Language) is an XML document that describes the whole service. Its five parts:
 
-```mermaid
-flowchart LR
-    T["types<br/>XML Schema: the shape of data"] --> M["message<br/>named payloads"]
-    M --> P["portType<br/>the operations (abstract WHAT)"]
-    P --> B["binding<br/>SOAP + HTTP + literal (HOW)"]
-    B --> S["service and port<br/>the URL (WHERE)"]
+```arch
+%% caption: A WSDL builds up from data shapes to a concrete URL: what, then how, then where.
+grid 260x80
+group wsdl "WSDL document" color=blue icon=doc
+node t "types" at 0,0 in wsdl shape=card icon=table sub="XML Schema: the shape of data"
+node m "message" at 0,1 in wsdl shape=card icon=message sub="named payloads"
+node p "portType" at 0,2 in wsdl shape=card icon=function sub="the operations (abstract WHAT)"
+node b "binding" at 0,3 in wsdl shape=card icon=link sub="SOAP + HTTP + literal (HOW)"
+node s "service and port" at 0,4 in wsdl shape=card icon=internet sub="the URL (WHERE)"
+t -> m -> p -> b -> s
 ```
 
 | Part | Answers | Example |
@@ -281,12 +285,17 @@ Practical rules for any language:
 
 Most teams do not want SOAP spreading through their architecture. The standard answer is a **gateway** that owns the XML and exposes a clean API:
 
-```mermaid
-flowchart LR
-    C[Modern clients<br/>JSON/REST or gRPC] --> G[Gateway / adapter]
-    G -->|"SOAP over TLS, WS-Security"| L[Legacy bank]
-    G --- W[(WSDL: operations,<br/>field types)]
-    G -. "timeouts, retries (idempotent only),<br/>circuit breaker, redacted logs" .- G
+```arch
+%% caption: The gateway owns the XML, so SOAP never spreads past it.
+node c "Modern clients" at 0,1 icon=client sub="JSON/REST or gRPC"
+node g "Gateway / adapter" at 1,1 icon=gateway
+node pol "Resilience" at 1,0 shape=card icon=shield sub="timeouts, retries (idempotent only), circuit breaker, redacted logs" w=230
+node w "WSDL" at 1,2 icon=doc sub="operations, field types"
+node l "Legacy bank" at 2,1 icon=server
+c -> g
+g -> l : "SOAP over TLS, WS-Security"
+g -- w
+g .. pol
 ```
 
 The gateway translates **requests** (JSON to XML), **responses** (XML to JSON, decimals kept as strings), and **errors**:

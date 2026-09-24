@@ -28,22 +28,36 @@ Server-sent events suit this one-directional stream; the client cancels by closi
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Cheap checks and context assembly happen before the GPU; the model tier only sees trimmed, permission-checked context.
-flowchart LR
-    ui([Mail client]) -->|SSE| gw[AI gateway<br/>auth · quotas · rate limits]
-    gw --> orch[Assistant orchestrator]
-    orch --> policy[Org policy + consent]
-    orch --> ret[Mailbox retrieval<br/>per-user index, ACL-filtered]
-    orch --> guard_in[Input guard<br/>injection + abuse classifiers]
-    orch --> router[Model router]
-    router --> small[Small model pool]
-    router --> large[Large model pool]
-    small --> guard_out[Output guard<br/>policy + PII checks]
-    large --> guard_out
-    guard_out --> gw
-    orch --> cache[(Response + prefix cache)]
-    orch --> logs[(Usage, eval samples, cost)]
+node ui "Mail client" at 1,0 icon=email shape=pill
+node guard_out "Output guard" at 0,1 icon=shield sub="policy + PII checks"
+node gw "AI gateway" at 1,1 icon=gateway sub="auth, quotas, rate limits"
+node orch "Orchestrator" at 1,2 icon=workflow sub="template, cache, citations"
+node router "Model router" at 1,3 icon=sitemap
+group gpu "Model tier: GPUs" color=teal icon=llm
+node small "Small model pool" at 0,3 in gpu icon=model
+node large "Large model pool" at 0,4 in gpu icon=llm
+group pre "Checks + context" color=blue icon=shield
+node guard_in "Input guard" at 2,0 in pre icon=shield sub="injection + abuse"
+node policy "Org policy + consent" at 2,1 in pre icon=auth
+node ret "Mailbox retrieval" at 2,2 in pre icon=search sub="per-user, ACL-filtered"
+group st "Stores" color=slate icon=db
+node cache "Response + prefix cache" at 2,3 in st icon=cache
+node logs "Usage, eval, cost" at 2,4 in st icon=logs sub="eval samples"
+ui -> gw : "SSE"
+gw -> orch
+orch:R -> guard_in:L
+orch:R -> policy:L
+orch -> ret
+orch:R -> cache:L
+orch:R -> logs:L
+orch -> router
+router -> small
+router:B -> large:R
+small -> guard_out
+large:L -> guard_out:L
+guard_out -> gw
 ```
 
 1. **AI gateway**: authenticates, checks the org/admin enablement flag, enforces quotas and rate limits, opens the stream.

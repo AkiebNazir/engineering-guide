@@ -199,18 +199,20 @@ For most of the last 15 years the default Linux scheduler was the **Completely F
 ### How CFS Works
 CFS does not use strict fixed timeslices (e.g., "every thread gets 10ms"). Instead, it tracks the "virtual runtime" (`vruntime`) of every runnable thread in a **Red-Black Tree**.
 
-```mermaid
-graph TD
-    subgraph CFS Red-Black Tree
-        R["Root (vruntime=50ms)"]
-        L["Left child (vruntime=30ms)"]
-        RR["Right child (vruntime=80ms)"]
-        LL["Leftmost = NEXT TO RUN (vruntime=10ms)"]
-        R --> L
-        R --> RR
-        L --> LL
-    end
-    S[Scheduler] -->|Always picks leftmost| LL
+```arch
+%% caption: CFS keeps runnable threads in a red-black tree keyed by vruntime and always runs the leftmost one.
+route straight
+grid 110x100
+node s "Scheduler" at 0,2 icon=scheduler
+group rb "CFS Red-Black Tree" color=blue icon=tree
+node r "50ms" at 3,0 in rb shape=circle color=blue sub="root"
+node l "30ms" at 2,1 in rb shape=circle color=blue sub="left child"
+node rr "80ms" at 4,1 in rb shape=circle color=blue sub="right child"
+node ll "10ms" at 1,2 in rb shape=circle color=green sub="NEXT TO RUN"
+r -> l
+r -> rr
+l -> ll
+s -> ll : "Always picks leftmost"
 ```
 *   **The Algorithm:** The scheduler picks the runnable thread with the smallest `vruntime` (the leftmost node, cached so the pick is O(1); insert/remove are O(log n)).
 *   **Weighting (Niceness):** High-priority tasks don't get *more* slices in a fixed sense; their `vruntime` advances *slower* than low-priority tasks, so they are picked more often and run longer in total.
@@ -251,19 +253,19 @@ When two threads run on different CPU cores, they each have their own L1/L2 cach
 ### The MESI Protocol (Cache Coherence)
 Cache coherence protocols in the MESI family track the state of each **cache line** (usually 64 bytes on x86 and most ARM servers):
 
-```mermaid
-stateDiagram-v2
-    M : Modified (dirty, must write back)
-    E : Exclusive (only copy, clean)
-    S : Shared (read-only, multiple cores)
-    I : Invalid (stale)
-    
-    I --> E : Core reads, no other copy
-    I --> S : Core reads, others have it
-    E --> M : Core writes
-    S --> I : Another core writes
-    M --> I : Another core reads (snoop)
-    E --> S : Another core reads
+```arch
+%% caption: MESI: every cache line is in one of four states, and reads and writes by other cores move it between them.
+grid 150x110
+node e "E" at 1,0 shape=circle color=green sub="Exclusive: only copy, clean"
+node i "I" at 0,1 shape=circle color=slate sub="Invalid: stale"
+node m "M" at 2,1 shape=circle color=red sub="Modified: dirty, must write back"
+node s "S" at 1,2 shape=circle color=blue sub="Shared: read-only, multiple cores"
+i:T -> e:L : "Core reads, no other copy"
+i:B -> s:L : "Core reads, others have it"
+e:R -> m:T : "Core writes"
+s:B -> i:L : "Another core writes"
+m:L -> i:R : "Another core reads (snoop)"
+e:B -> s:T : "Another core reads"
 ```
 
 <div class="lab" data-viz="false-sharing"></div>
@@ -328,20 +330,25 @@ A classic question: "How does Nginx handle 100,000 concurrent connections when a
 
 ### The Evolution of I/O
 
-```mermaid
-graph LR
-    subgraph "1. Thread-per-conn"
-        A1["10k threads"] -->|Context switch storm| A2["OS Scheduler thrashes"]
-    end
-    subgraph "2. select/poll"
-        B1["1 thread"] -->|O N scan ALL fds| B2["Kernel checks 10k fds"]
-    end
-    subgraph "3. epoll/kqueue"
-        C1["1 thread"] -->|O ready list| C2["Kernel returns ONLY active fds"]
-    end
-    subgraph "4. io_uring"
-        D1["Shared ring buffer"] -->|Batched or no syscalls| D2["Kernel and app share memory"]
-    end
+```arch
+%% caption: Four generations of I/O: each step cuts the work the kernel does per connection.
+grid 250x90
+group g1 "1. Thread-per-conn" color=red icon=thread
+node a1 "10k threads" at 0,0 in g1 icon=thread
+node a2 "OS Scheduler thrashes" at 1,0 in g1 icon=scheduler
+group g2 "2. select/poll" color=amber icon=search
+node b1 "1 thread" at 0,1 in g2 icon=thread
+node b2 "Kernel checks 10k fds" at 1,1 in g2 icon=cpu
+group g3 "3. epoll/kqueue" color=green icon=event
+node c1 "1 thread" at 0,2 in g3 icon=thread
+node c2 "Kernel returns ONLY active fds" at 1,2 in g3 icon=cpu
+group g4 "4. io_uring" color=blue icon=queue
+node d1 "Shared ring buffer" at 0,3 in g4 icon=memory
+node d2 "Kernel and app share memory" at 1,3 in g4 icon=cpu
+a1 -> a2 : "Context switch storm"
+b1 -> b2 : "O(N) scan ALL fds"
+c1 -> c2 : "O(ready) list"
+d1 -> d2 : "Batched or no syscalls"
 ```
 1.  **Thread-per-connection (classic Apache prefork/worker):** Each connection blocks in `read()` on its own thread or process. The limits are memory and context switching. **Precision note:** a thread's stack is *reserved virtual memory* (8 MB default on Linux glibc, configurable), and only touched pages consume RAM. So "10k x 2MB = 20GB of RAM" is wrong; real RSS per idle thread is tens of KB of stack plus kernel structures. The real problems are scheduler/context-switch overhead under load, per-thread memory at 100k+ connections, and lock contention.
 2.  **`select()` / `poll()`:** One thread passes the full set of descriptors to the kernel on every call; the kernel scans all of them. O(N) per call, and `select` is also capped at `FD_SETSIZE` (usually 1024).
@@ -378,13 +385,19 @@ same question with a different label on top.
 
 *   **Page tables and the TLB:** Translating a virtual address walks a multi-level page table (4 levels on x86-64, 5 with LA57). The **TLB** caches recent translations. A TLB miss costs a page walk (several memory accesses).
 
-```mermaid
-graph LR
-    VA["Virtual Address (what your program uses)"] --> TLB{"In TLB? (cache of recent translations)"}
-    TLB -->|Hit: 1 lookup| PA["Physical Address (real RAM)"]
-    TLB -->|Miss| Walk["Walk the page table (up to 4-5 levels of memory accesses)"]
-    Walk --> Fill["Fill the TLB with this translation"]
-    Fill --> PA
+```arch
+%% caption: A TLB hit translates in one lookup; a miss walks the page table and then fills the TLB.
+grid 200x100
+node va "Virtual Address" at 0,0 shape=pill color=slate sub="what your program uses"
+node tlb "In TLB?" at 0,1 shape=diamond color=amber sub="cache of recent translations"
+node pa "Physical Address" at 0,2 shape=pill color=green sub="real RAM"
+node walk "Walk the page table" at 1,1 icon=layers sub="up to 4-5 levels of memory accesses"
+node fill "Fill the TLB" at 1,2 icon=cache sub="with this translation"
+va -> tlb
+tlb -> pa : "Hit: 1 lookup"
+tlb -> walk : "Miss"
+walk -> fill
+fill -> pa
 ```
 *   **Context switch cost:** Switching between *processes* changes the address space. **Precision note:** with PCID (x86) / ASID (ARM), the kernel tags TLB entries per address space and does not have to flush the whole TLB on every switch, though entries for the old process stop being useful. Switching between *threads* of the same process keeps the address space and its TLB entries.
 *   **Huge pages:** 2 MB (or 1 GB) pages mean one TLB entry covers far more memory, cutting TLB misses for large heaps (databases, JVMs). Transparent Huge Pages can cause latency spikes during compaction; many databases recommend disabling THP and using explicit huge pages.
@@ -421,15 +434,22 @@ it's the pages you *write to afterward* that cost you.
 
 A good end-to-end answer that connects this file to networking:
 
-```text
-user buffer ── write() syscall ──► kernel socket send buffer (copy)
-      │                                     │
-      │ returns when data is COPIED,        ▼
-      │ not when it's delivered      TCP segments it (cwnd / MSS)
-      │                                     ▼
-      │                               IP routing, qdisc
-      │                                     ▼
-      │                               NIC driver ring buffer ─► DMA ─► wire
+```arch
+%% caption: write() returns once the bytes are copied into the kernel; TCP, IP and the NIC deliver them later.
+grid 220x95
+group us "User space" color=blue icon=user
+node ub "User buffer" at 0,0 in us icon=memory
+node note "returns when data is COPIED, not when it's delivered" at 0,1 in us shape=text
+group ks "Kernel" color=purple icon=shield
+node sb "Kernel socket send buffer" at 1,0 in ks icon=queue sub="(copy)"
+node tcp "TCP segments it" at 1,1 in ks icon=network sub="cwnd / MSS"
+node ip "IP routing, qdisc" at 1,2 in ks icon=network
+node nic "NIC driver ring buffer" at 1,3 in ks icon=plugin
+node wire "wire" at 1,4 shape=pill color=slate
+ub -> sb : "write() syscall"
+ub .. note
+sb -> tcp -> ip -> nic
+nic -> wire : "DMA"
 ```
 
 `write()` succeeding only means the bytes reached the kernel. If the send buffer is full, a blocking socket sleeps and a non-blocking socket returns `EAGAIN` (that is **backpressure** at the OS level). Zero-copy paths (`sendfile`, `splice`, `MSG_ZEROCOPY`) skip the user-to-kernel copy for large transfers such as serving files or video segments.

@@ -46,19 +46,19 @@ O(1) on leave, you do not have a sliding window.** (§1.6 is what to do then.)
 
 The template *looks* quadratic:
 
-```mermaid
+```arch
 %% caption: r only moves right and l only moves right, so every index enters and leaves the window at most once: 2n steps in total.
-flowchart TD
-  A["for r in range(n)"] --> B["add s[r] to the window"]
-  B --> C{"window still valid?"}
-  C -->|"no"| D["remove s[l], l += 1"]:::hot
-  D --> C
-  C -->|"yes"| E["update the best answer"]:::ok
-  E --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node a "for r in range(n)" at 1,0 shape=pill
+node b "Add s[r] to the window" at 1,1
+node c "Window still valid?" at 1,2 shape=diamond color=amber
+node d "Remove s[l], l += 1" at 2,2 color=amber
+node e "Update the best answer" at 0,2 color=green
+a -> b -> c
+c:R -> d:L : "no"
+d:B -> c:B
+c:L -> e:R : "yes"
+e:T -> a:L
 ```
 
 
@@ -363,20 +363,24 @@ one for max, one for min), LC 1696.
 Before writing a line, answer these in order. They determine the shape
 completely:
 
-```mermaid
+```arch
 %% caption: Which window shape to reach for.
-flowchart TD
-  Q(["What is being asked?"]) --> A{"Window size k given?"}
-  A -->|yes| FA["Shape A: fixed window<br/>add one on the right, drop one on the left"]:::ok
-  A -->|no| B{"What is optimised?"}
-  B -->|"longest valid"| FB["Shape B: shrink while INVALID"]:::ok
-  B -->|"shortest valid"| FC["Shape C: shrink while still VALID"]:::ok
-  B -->|"count subarrays"| FE["Shape E: atMost(k) minus atMost(k-1)"]:::ok
-  B -->|"max or min of the window"| FF["Shape F: monotonic deque"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 300x90
+node q "What is being asked?" at 0,0 shape=pill
+node a "Window size k given?" at 0,1 shape=diamond color=amber
+node fa "Shape A: fixed window" at 1,1 color=green w=230 sub="add one on the right, drop one on the left"
+node b "What is optimised?" at 0,3 shape=diamond color=amber
+node fb "Shape B" at 1,2 color=green sub="shrink while INVALID"
+node fc "Shape C" at 1,3 color=green sub="shrink while still VALID"
+node fe "Shape E" at 1,4 color=green sub="atMost(k) minus atMost(k-1)"
+node ff "Shape F" at 0,4 color=green sub="monotonic deque"
+q -> a
+a -> fa : "yes"
+a -> b : "no"
+b:R -> fb:L : "longest valid"
+b:R -> fc:L : "shortest valid"
+b:R -> fe:L : "count subarrays"
+b -> ff : "window max or min"
 ```
 
 

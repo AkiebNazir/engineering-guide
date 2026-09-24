@@ -116,6 +116,32 @@ Use cursor pagination based on a stable sort tuple such as `(score, product_id)`
 
 ## 5. Architecture
 
+```arch
+%% caption: The catalog commits truth plus an outbox row, an idempotent indexer turns the change stream into versioned search documents, and user queries only ever touch the CDN, the query API and the search cluster.
+node admin "Admin" at 0,0 icon=admin
+node user "User" at 3,0 icon=users
+group wp "Catalog" color=blue icon=db
+node catalog "Catalog API" at 0,1 in wp icon=api sub="source of truth"
+node catdb "Catalog DB" at 0,2 in wp icon=sql sub="product + outbox"
+group ip "Indexing pipeline" color=pink icon=stream
+node relay "Outbox relay / CDC" at 0,3 in ip icon=sync
+node stream "ProductChanged stream" at 1,3 in ip icon=stream
+node indexer "Indexer" at 2,3 in ip icon=worker sub="by product_id, version"
+node dlq "DLQ" at 2,4 in ip icon=queue sub="replay tool"
+group rp "Read path" color=green icon=search
+node cdn "CDN" at 3,1 in rp icon=cdn sub="public queries only"
+node qcache "API cache" at 2,2 in rp icon=cache sub="index-version key"
+node qapi "Search / suggest API" at 3,2 in rp icon=api sub="auth, tenant filters"
+node cluster "Search cluster" at 3,3 icon=search sub="versioned alias + suggestions"
+admin -> catalog -> catdb
+catdb ..> relay
+relay -> stream -> indexer
+indexer ..> dlq : "invalid"
+indexer -> cluster
+user -> cdn -> qapi -> cluster
+qapi -> qcache
+```
+
 ```mermaid
 %% caption: The catalog write path never depends on search — the outbox is what makes a crash-after-commit safe to replay.
 sequenceDiagram

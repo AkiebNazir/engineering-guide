@@ -6,26 +6,30 @@ Google designs increasingly include a model somewhere: a recommendation feed, se
 
 ## The two loops
 
-```mermaid
+```arch
 %% caption: Offline, models are trained on logged data. Online, they serve predictions. Logging what was served closes the loop.
-flowchart LR
-    subgraph offline[Offline loop · hours to days]
-        logs[(Event logs)] --> etl[Feature pipelines]
-        etl --> fs_off[(Offline feature store)]
-        fs_off --> train[Training]
-        train --> eval[Evaluation]
-        eval --> reg[(Model registry)]
-    end
-    subgraph online[Online loop · milliseconds]
-        req([Request]) --> svc[Serving service]
-        svc --> fs_on[(Online feature store)]
-        svc --> model[Model server]
-        model --> svc
-        svc --> resp([Response])
-    end
-    reg -->|deploy| model
-    svc -->|log features + prediction + outcome| logs
-    etl -->|materialise| fs_on
+grid 160x100
+group offline "Offline loop · hours to days" color=blue icon=time
+node logs "Event logs" at 0,1 in offline icon=logs
+node etl "Feature pipelines" at 0,2 in offline icon=workflow
+node fs_off "Offline feature store" at 0,3 in offline icon=storage
+node train "Training" at 0,4 in offline icon=model
+node eval "Evaluation" at 0,5 in offline icon=check
+node reg "Model registry" at 0,6 in offline icon=archive
+group online "Online loop · milliseconds" color=teal icon=speed
+node req "Request" at 2,0 in online shape=pill
+node resp "Response" at 3,0 in online shape=pill
+node svc "Serving service" at 2,1 in online icon=service
+node model "Model server" at 3,6 in online icon=llm
+node fs_on "Online feature store" at 2,2 in online icon=kv
+logs -> etl -> fs_off -> train -> eval -> reg
+req -> svc
+svc -> fs_on
+svc:R <-> model:T
+svc:T -> resp:L
+reg -> model : "deploy"
+svc -> logs : "log features + prediction + outcome"
+etl -> fs_on : "materialise"
 ```
 
 ## Feature stores and training-serving skew

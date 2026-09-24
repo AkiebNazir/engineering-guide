@@ -216,16 +216,22 @@ Refusing during the **handshake** (HTTP 401/403) is cheapest: no socket is ever 
 
 The core problem: a WebSocket is **stateful**. Client A is on server 1, client B on server 2. When A speaks, server 1 does not know B exists.
 
-```mermaid
-flowchart LR
-    A[Client A] <-->|ws| N1[Node 1]
-    B[Client B] <-->|ws| N2[Node 2]
-    C[Client C] <-->|ws| N2
-    N1 -->|publish room:go| BR[(Broker<br/>Redis pub/sub / NATS / Kafka)]
-    BR -->|deliver room:go| N1
-    BR -->|deliver room:go| N2
-    N2 -->|fan out to local sockets| B
-    N2 --> C
+```arch
+%% caption: Each node knows only its own sockets; a broker carries room messages between nodes.
+node br "Broker" at 1,0 icon=topic sub="Redis pub/sub / NATS / Kafka"
+node n1 "Node 1" at 0,1 icon=server
+node n2 "Node 2" at 2,1 icon=server
+node a "Client A" at 0,2 icon=client
+node b "Client B" at 1,2 icon=client
+node c "Client C" at 3,2 icon=client
+a <-> n1 : "ws"
+b:T <-> n2:L : "ws"
+c:T <-> n2:R : "ws"
+n1:T -> br:L : "publish room:go"
+br:B -> n1:R : "deliver room:go"
+br:R -> n2:T : "deliver room:go"
+n2:B -> b:R : "fan out to local sockets"
+n2:B -> c:L
 ```
 
 *   Every node **publishes** to a broker and **subscribes** to the rooms its local clients joined, then fans out to its own sockets. Go lab 5 builds exactly this with a `Broker` interface, and a message from a client on node 1 reaches a client on node 2 while a client in a different room on node 2 hears nothing.

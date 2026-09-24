@@ -73,6 +73,34 @@ The threshold is the actual design lever: too low and readers must merge too man
 
 ## Architecture and data flow
 
+```arch
+%% caption: Posts are written once with an outbox row; fan-out pushes id-only refs for normal authors and only records recent ids for pull-tier authors, and the read path merges both tiers, ranks them, snapshots the order and hydrates from the post store.
+group wp "Write path" color=blue icon=edit
+group rp "Read path" color=green icon=feed
+node author "Author" at 0,0 icon=user
+node reader "Reader" at 3,0 icon=users
+node postapi "Post API" at 0,1 in wp icon=api sub="idempotent create"
+node poststore "Post store" at 0,2 in wp icon=db sub="posts + outbox"
+node queue "Fan-out queue" at 0,3 in wp icon=queue sub="by author_id"
+node fanout "Fan-out workers" at 0,4 in wp icon=worker sub="5k-follower chunks"
+node feedsvc "Feed read service" at 3,1 in rp icon=service sub="merge, dedupe"
+node ranker "Ranker" at 3,2 in rp icon=model sub="light + heavy"
+node snapshot "Snapshot store" at 3,3 in rp icon=kv sub="top 200 ids, 30 min"
+node cache "Post cache" at 1.5,2 icon=cache sub="hydrate"
+node refs "Feed refs" at 1,4 icon=kv sub="per user, newest 800"
+node recent "author_recent" at 1,5 icon=memory sub="pull tier, replicated"
+author -> postapi -> poststore
+poststore ..> queue : "outbox relay"
+queue -> fanout
+fanout -> refs : "PUSH"
+fanout:B -> recent:L : "PULL"
+reader -> feedsvc -> ranker -> snapshot
+feedsvc:L -> cache:T : "hydrate"
+cache:L -> poststore:R : "miss"
+feedsvc:L -> refs:T
+feedsvc:L -> recent:R
+```
+
 ```mermaid
 %% caption: Push and pull tiers write differently but the read path always merges both and ranks the union, so a threshold change never breaks reads.
 sequenceDiagram
@@ -146,16 +174,19 @@ The tier is a function of *active* follower count, evaluated by a periodic job, 
 
 "Ranked, not strictly chronological" means the read path is a candidate-generation-then-ranking pipeline. Depth belongs in [032 — Ranked Home Feed](032_ranked_home_feed_solution.md) and [Ranking, recommendation, and experimentation](../building_blocks/31_ranking_recommendation_and_experimentation.md); this section shows where it plugs into the feed.
 
-```mermaid
+```arch
 %% caption: Both tiers feed one candidate pool that is narrowed by a cheap ranker, then an expensive one, then blending rules, and the result is frozen as a snapshot.
-flowchart LR
-    push[(Push-tier refs<br/>up to 800)] --> merge[Merge and dedupe<br/>~1,000 candidates]
-    pull[(Pull-tier recent lists<br/>~50 authors)] --> merge
-    merge --> light[Light ranker<br/>1,000 to 200]
-    light --> heavy[Heavy ranker<br/>200 to 50]
-    heavy --> blend[Blend<br/>diversity, integrity, seen-suppression]
-    blend --> snap[(Snapshot<br/>top 200 ids, TTL 30 min)]
-    snap --> page[Hydrate page of 25]
+node push "Push-tier refs" at 0,0 shape=cyl sub="up to 800"
+node pull "Pull-tier recent lists" at 0,1 shape=cyl sub="~50 authors"
+node merge "Merge and dedupe" at 1,0.5 sub="~1,000 candidates"
+node light "Light ranker" at 2,0.5 sub="1,000 to 200"
+node heavy "Heavy ranker" at 3,0.5 sub="200 to 50"
+node blend "Blend" at 3,1.5 sub="diversity, integrity, seen-suppression"
+node snap "Snapshot" at 2,1.5 shape=cyl sub="top 200 ids, TTL 30 min"
+node page "Hydrate page of 25" at 1,1.5 color=green
+push -> merge
+pull -> merge
+merge -> light -> heavy -> blend -> snap -> page
 ```
 
 **Candidates.** Up to 800 push refs plus about 50 pull authors × ≤10 recent posts each is ≤1,300 raw candidates, ~1,000 after dedupe and removing already-seen ids (a per-user seen set of recent `post_id`s).

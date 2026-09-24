@@ -90,6 +90,32 @@ The double-entry financial journal is owned by the ledger service ([017 — Paym
 
 ## Architecture and flow
 
+```arch
+%% caption: The order shard commits intent through an outbox, inventory holds stock with conditional updates, and the saga worker is the only thing that calls the payment provider, outside every transaction and lock.
+node client "Client" at 1,0 icon=client
+node gw "API gateway" at 1,1 icon=gateway sub="auth, per-user limits"
+node order "Order service" at 1,2 icon=service sub="idempotent checkout"
+node inv "Inventory service" at 2,2 icon=service sub="holds, hot-SKU shards"
+node stock "Stock + holds" at 3,2 icon=db sub="stock_shards, holds"
+node orderdb "Order shard" at 1,3 icon=db sub="orders, keys, outbox"
+node saga "Payment saga worker" at 2,3 icon=worker
+node provider "Payment provider" at 3,3 icon=payment
+node queue "Outbox queue" at 1,4 icon=queue sub="by order_id"
+node rec "Reconciler" at 0,4 icon=sync sub="stuck + settled"
+client -> gw -> order
+order -> inv : "reserve"
+inv -> stock : "decrement"
+order -> orderdb : "txn 1, txn 2"
+orderdb ..> queue : "relay"
+queue:R -> saga:B
+saga:T -> inv:B : "commit / release"
+saga:L -> orderdb:R : "state"
+saga -> provider : "authorize"
+provider:R ..> order:T : "webhook"
+rec:B -> provider:B : "compare"
+rec:T -> orderdb:L : "heal"
+```
+
 ```mermaid
 %% caption: The provider call sits outside every database transaction and every inventory lock, so a slow provider degrades saga throughput and never the lock table.
 sequenceDiagram
@@ -162,24 +188,39 @@ Do not call the payment provider from inside the database transaction that holds
 
 **Decision.** Default every SKU to a single row. Promote a SKU to sharded counters when it is flagged hot, either from the marketing calendar or automatically when its lock-wait p99 exceeds 50 ms or its attempts exceed ~300/s. Choose k from the burst: `k = ceil(peak ÷ (per-row rate × 0.5))`, so 3,000 ÷ (670 × 0.5) ≈ 9; I use k = 8 (56% utilization, close enough to the 50% target and a clean power-of-two layout) and verify it with a load test. Always put the admission bucket and the `SOLD_OUT` edge flag in front. Use the serialized allocator instead when FIFO fairness is a stated requirement ("the first 10k clickers win") or bundles must be atomic across SKUs. This trades a slightly fuzzy remaining-count and a tail-handling routine for horizontal scaling on the database we already run; the cost is acceptable because the alternative that avoids it, a per-SKU single-writer service, is a new stateful tier to operate for a handful of SKUs a year.
 
-```mermaid
+```arch
 %% caption: The edge flag and admission bucket keep post-sell-out traffic off the database, and the sharded conditional update plus a tail collapse keep it exact.
-flowchart TD
-    A[Reserve request for hot SKU] --> B{SOLD_OUT flag set at edge}
-    B -- yes --> C[409 OUT_OF_STOCK from cache]
-    B -- no --> D{Admission bucket has a token}
-    D -- no --> E[429 with jittered Retry-After]
-    D -- yes --> F[Insert hold row keyed by order_id and sku_id]
-    F --> G{Row already existed}
-    G -- yes --> H[Return the existing hold]
-    G -- no --> I[Conditional decrement on shard hash mod k]
-    I --> J{rowcount is 1}
-    J -- yes --> K[Hold HELD, expiry in 5 min]
-    J -- no --> L{Probed fewer than 3 shards}
-    L -- yes --> I
-    L -- no --> M{Sum of shards is 0}
-    M -- yes --> N[Set SOLD_OUT flag and answer 409]
-    M -- no --> O[Tail collapse then retry once]
+grid 190x105
+node A "Reserve request for hot SKU" at 1,0 shape=pill
+node B "SOLD_OUT flag set at edge?" at 1,1 shape=diamond color=amber
+node C "409 OUT_OF_STOCK" at 2,1 color=red sub="from cache"
+node D "Admission bucket has a token?" at 1,2 shape=diamond color=amber
+node E "429" at 2,2 color=red sub="jittered Retry-After"
+node F "Insert hold row" at 1,3 sub="keyed by order_id and sku_id"
+node G "Row already existed?" at 1,4 shape=diamond color=amber
+node H "Return the existing hold" at 2,4
+node I "Conditional decrement" at 1,5 sub="on shard hash mod k"
+node J "rowcount is 1?" at 1,6 shape=diamond color=amber
+node K "Hold HELD" at 2,6 color=green sub="expiry in 5 min"
+node L "Probed fewer than 3 shards?" at 1,7 shape=diamond color=amber
+node M "Sum of shards is 0?" at 1,8 shape=diamond color=amber
+node N "Set SOLD_OUT flag" at 2,8 color=red sub="answer 409"
+node O "Tail collapse" at 0,8 sub="then retry once"
+A -> B
+B -> C : "yes"
+B -> D : "no"
+D -> E : "no"
+D -> F : "yes"
+F -> G
+G -> H : "yes"
+G -> I : "no"
+I -> J
+J -> K : "yes"
+J -> L : "no"
+L:L -> I:L : "yes"
+L -> M : "no"
+M -> N : "yes"
+M -> O : "no"
 ```
 
 **What each part does, with numbers.**
@@ -194,18 +235,27 @@ More on sharding a single hot key and why probes must be bounded is in [Partitio
 
 ## State machine and legal transitions
 
-```mermaid
+```arch
 %% caption: Money-affecting steps happen only after every free-to-undo step succeeded, and every arrow is a guarded conditional update on the current state.
-flowchart LR
-    CREATED -->|all lines held| PAYMENT_PENDING
-    CREATED -->|a line rejected| OUT_OF_STOCK
-    PAYMENT_PENDING -->|authorized and holds committed| CONFIRMED
-    PAYMENT_PENDING -->|declined or resolved as not authorized| PAYMENT_FAILED
-    PAYMENT_PENDING -->|hold expired at commit, auth voided| EXPIRED
-    PAYMENT_PENDING -->|customer cancels| CANCELLED
-    CONFIRMED -->|cancel before capture, void plus restock| CANCELLED
-    CONFIRMED -->|cancel or return after capture| REFUND_PENDING
-    REFUND_PENDING -->|provider confirms refund| REFUNDED
+grid 250x120
+node created "CREATED" at 1,0 shape=pill color=blue
+node oos "OUT_OF_STOCK" at 2,0 shape=pill color=red
+node expired "EXPIRED" at 0,0 shape=pill color=red sub="auth voided"
+node pp "PAYMENT_PENDING" at 1,1 shape=pill color=amber
+node cancelled "CANCELLED" at 2,1.5 shape=pill color=slate
+node failed "PAYMENT_FAILED" at 0,2 shape=pill color=red
+node confirmed "CONFIRMED" at 1,2 shape=pill color=green
+node rp "REFUND_PENDING" at 1,3 shape=pill color=amber
+node refunded "REFUNDED" at 1,4 shape=pill color=slate
+created -> oos : "a line rejected"
+created -> pp : "all lines held"
+pp:L -> expired:B : "hold lapsed at commit"
+pp:L -> failed:T : "declined or not authorized"
+pp -> confirmed : "authorized, holds committed"
+pp:R -> cancelled:T : "customer cancels"
+confirmed:R -> cancelled:B : "cancel before capture"
+confirmed -> rp : "cancel or return after capture"
+rp -> refunded : "provider confirms refund"
 ```
 
 | From | To | Trigger | Guard and side effects |

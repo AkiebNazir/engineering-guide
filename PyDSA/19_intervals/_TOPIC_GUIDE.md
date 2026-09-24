@@ -51,20 +51,24 @@ This is the deepest idea in the topic. Two different greedy problems need two
 different sort keys, and using the wrong one produces code that passes a
 handful of test cases and then fails silently.
 
-```mermaid
+```arch
 %% caption: Which sort order, and which technique, an interval problem needs.
-flowchart TD
-  Q(["Interval problem"]) --> A{"Merge, union, or find gaps?"}
-  A -->|yes| S["Sort by START<br/>and extend the current end"]:::ok
-  A -->|no| B{"Keep the MOST non-overlapping<br/>(or remove the fewest)?"}
-  B -->|yes| E["Sort by END<br/>earliest finish first"]:::ok
-  B -->|no| C{"How many at the same time?"}
-  C -->|yes| H["Sweep line + min-heap of end times"]:::ok
-  C -->|no| T["Two sorted lists: two pointers"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Interval problem" at 0,0 shape=pill
+node a "Merge, union, or find gaps?" at 0,1 shape=diamond color=amber
+node s "Sort by START" at 1,1 color=green w=220 sub="and extend the current end"
+node b "Keep the MOST non-overlapping?\n(or remove the fewest)" at 0,2 shape=diamond color=amber
+node e "Sort by END" at 1,2 color=green w=220 sub="earliest finish first"
+node c "How many at the same time?" at 0,3 shape=diamond color=amber
+node h "Sweep line + min-heap" at 1,3 color=green w=220 sub="of end times"
+node t "Two sorted lists: two pointers" at 0,4 color=green w=220
+q -> a
+a -> s : "yes"
+a -> b : "no"
+b -> e : "yes"
+b -> c : "no"
+c -> h : "yes"
+c -> t : "no"
 ```
 
 
@@ -79,20 +83,20 @@ interval that could have started before it. Sorting by `end` would let a
 later-starting-but-earlier-ending interval slip in first, and you'd merge
 the wrong pair or miss a merge entirely.
 
-```mermaid
+```arch
 %% caption: Merge intervals: after sorting by start, an interval either extends the last merged one or starts a new one.
-flowchart TD
-  A["sort by start"] --> B["merged = [first interval]"]
-  B --> C["next interval (s, e)"]
-  C --> D{"s ≤ merged[-1].end ?"}
-  D -->|"yes: overlap"| E["merged[-1].end = max(merged[-1].end, e)"]:::hot
-  D -->|no| F["append (s, e) as a new interval"]
-  E --> C
-  F --> C
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 140x80
+node a "sort by start" at 1,0 shape=pill
+node b "merged = [first interval]" at 1,1 w=210
+node c "next interval (s, e)" at 1,2 w=210
+node d "s ≤\nmerged[-1].end ?" at 1,3 shape=diamond color=amber
+node e "Extend the last one" at 0,4 color=amber w=230 sub="end = max(merged[-1].end, e)"
+node f "Start a new one" at 2,4 w=200 sub="append (s, e) as a new interval"
+a -> b -> c -> d
+d:L -> e:T : "yes: overlap"
+d:R -> f:T : "no"
+e:L -> c:L
+f:R -> c:R
 ```
 
 
@@ -153,21 +157,23 @@ than §2: not "can everything fit in ONE resource" but "what's the PEAK
 number of resources needed at any instant?" This needs to track, at every
 point in time, how many intervals are currently "open."
 
-```mermaid
+```arch
 %% caption: Meeting rooms II: the heap holds the end time of every room in use. Its maximum size is the answer.
-flowchart TD
-  A["sort meetings by start"] --> B["next meeting (s, e)"]
-  B --> C{"heap not empty and<br/>heap[0] ≤ s ?"}
-  C -->|"yes: earliest room is free"| D["pop it: reuse that room"]:::ok
-  C -->|no| E["a new room is needed"]:::hot
-  D --> F["push e"]
-  E --> F
-  F --> G["rooms = max(rooms, len(heap))"]
-  G --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x80
+node a "sort meetings by start" at 1,0 shape=pill w=200
+node b "next meeting (s, e)" at 1,1 w=230
+node c "heap not empty and\nheap[0] ≤ s ?" at 1,2 shape=diamond color=amber
+node e "A new room is needed" at 2,2 color=amber w=190
+node d "Pop it: reuse that room" at 1,3 color=green w=230
+node f "push e" at 1,4 w=230
+node g "rooms = max(rooms, len(heap))" at 1,5 w=230
+a -> b -> c
+c -> d : "yes: earliest room free"
+c -> e : "no"
+d -> f
+e:B -> f:R
+f -> g
+g:L -> b:L
 ```
 
 
@@ -325,20 +331,24 @@ The guide covers the three sorts (start, end, sweep-with-heap) and two-list merg
 same ideas with a different data structure. Every snippet was run against LeetCode's own examples; the online structure was
 also checked against a brute-force version on 5,000 random inputs (0 mismatches).
 
-```mermaid
+```arch
 %% caption: Choosing the interval technique. The question — merge, select, count concurrency, cover, or answer online — picks the sort and the structure.
-flowchart TD
-  Q(["An interval problem"]) --> A{"What is asked?"}
-  A -->|"combine overlapping ones"| B["sort by START, sweep and merge"]:::ok
-  A -->|"keep the MOST non-overlapping"| C["sort by END, greedy selection"]:::ok
-  A -->|"peak overlap / resources needed"| D["sweep line: +1 / -1 events,<br/>or a min-heap of end times"]:::ok
-  A -->|"cover a range with the FEWEST intervals"| E["sort by start, greedy farthest reach"]:::hot
-  A -->|"intersect two sorted lists"| F["two pointers: advance the one that ends first"]:::ok
-  A -->|"intervals arrive online"| G["sorted list + bisect, or a balanced tree"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "An interval problem" at 0,1 shape=pill
+node a "What is asked?" at 0,2 shape=diamond color=amber
+node b "Sort by START, sweep and merge" at 1,0 color=green w=400 sub="combine overlapping ones"
+node c "Sort by END, greedy selection" at 1,1 color=green w=400 sub="keep the MOST non-overlapping"
+node d "Sweep line: +1 / -1 events" at 1,2 color=green w=400 sub="peak overlap / resources needed · or a min-heap of end times"
+node e "Sort by start, greedy farthest reach" at 1,3 color=amber w=400 sub="cover a range with the FEWEST intervals"
+node f "Two pointers" at 1,4 color=green w=400 sub="intersect two sorted lists · advance the one that ends first"
+node g "Sorted list + bisect, or a balanced tree" at 1,5 color=amber w=400 sub="intervals arrive online"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+a:R -> f:L
+a:R -> g:L
 ```
 
 ### 9.1 Sweep line with events: concurrency without a heap

@@ -151,10 +151,18 @@ dummy is always "the node before the one we're examining." This is the single
 most idiomatic pattern in Go (and general) linked-list code: reach for it any
 time you might delete, insert before, or merge at the head.
 
-```
-dummy ──► [1] ──► [2] ──► [3] ──► nil
-  ▲
-  curr starts here, one step "before" the real list
+```arch
+%% caption: The dummy node sits one step "before" the real list, so curr starts there and the real head is never a special case.
+route straight
+grid 90x80
+node dummy "dummy" at 0,0 shape=circle color=slate
+node n1 "1" at 1,0 shape=circle color=blue
+node n2 "2" at 2,0 shape=circle color=blue
+node n3 "3" at 3,0 shape=circle color=blue
+node nil "nil" at 4,0 shape=text
+node curr "curr starts here" at 0,1 shape=text sub="one step 'before' the real list"
+dummy -> n1 -> n2 -> n3 -> nil
+curr -> dummy
 ```
 
 ---
@@ -200,14 +208,19 @@ each step closes the gap between them by exactly one node.
 
 ### 3.3 Finding where the cycle starts (LC 142)
 
-```
-head ──► A ──► B ──► C ──► D
-                ▲           │
-                └────E◄─────┘
-
-slow/fast first meet somewhere inside the cycle (say at E).
-Restart one pointer at head, moving both one step at a time —
-they meet again exactly at the cycle's start (B).
+```arch
+%% caption: slow/fast first meet somewhere inside the cycle (say at E). Restart one pointer at head, moving both one step at a time — they meet again exactly at the cycle's start (B).
+route straight
+grid 90x80
+node head "head" at 0,0 shape=text
+node a "A" at 1,0 shape=circle color=blue
+node b "B" at 2,0 shape=circle color=green
+node c "C" at 3,0 shape=circle color=blue
+node d "D" at 4,0 shape=circle color=blue
+node e "E" at 3,1 shape=circle color=amber
+head -> a -> b -> c -> d
+d -> e
+e -> b
 ```
 
 ```go
@@ -262,19 +275,18 @@ Three-pointer dance: `next` saves what we're about to destroy, `curr.Next =
 prev` does the actual reversal, then both `prev` and `curr` slide forward.
 O(n) time, **O(1) space** — no recursion frame, no extra allocation.
 
-```mermaid
+```arch
 %% caption: One iteration of the three-pointer reversal. The order of the four statements is the whole algorithm — save first, or the rest of the list is lost.
-flowchart LR
-  A["1. next = curr.Next<br/>SAVE what you are about to destroy"]:::hot --> B["2. curr.Next = prev<br/>REVERSE the pointer"]
-  B --> C["3. prev = curr<br/>slide prev forward"]
-  C --> D["4. curr = next<br/>slide curr forward"]
-  D --> E{"curr == nil?"}
-  E -->|"no"| A
-  E -->|"yes"| F["return prev<br/>(the new head)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node a "1. SAVE" at 0,0 shape=card icon=key color=orange sub="next = curr.Next: save what you are about to destroy"
+node b "2. REVERSE" at 1,0 shape=card icon=sync sub="curr.Next = prev: reverse the pointer"
+node c "3. Slide prev forward" at 2,0 shape=card icon=start sub="prev = curr"
+node d "4. Slide curr forward" at 2,1 shape=card icon=start sub="curr = next"
+node e "curr == nil?" at 1,1 shape=diamond color=amber
+node f "Return prev" at 1,2 shape=card icon=check color=green sub="the new head"
+a -> b -> c -> d -> e
+e:L -> a:B : "no"
+e -> f : "yes"
 ```
 
 Note that `curr.Next = prev` is exactly the "sever the old forward link"
@@ -411,25 +423,23 @@ alone is enough — a map has no notion of order, and a singly linked list
 can't remove an arbitrary node in O(1) (you'd need the *previous* node, which
 a singly linked list can't give you without a full scan).
 
-```mermaid
+```arch
 %% caption: LRU cache: the map gives O(1) lookup by key, the doubly linked list gives O(1) reorder and eviction. The map stores pointers INTO the list.
-flowchart LR
-  subgraph HM["map[int]*dNode"]
-    k1["key 1"]
-    k2["key 2"]
-    k3["key 3"]
-  end
-  subgraph DLL["doubly linked list: order of use"]
-    direction LR
-    H["head sentinel"] <--> N3["node 3<br/>most recent"]:::ok <--> N1["node 1"] <--> N2["node 2<br/>least recent"]:::bad <--> T["tail sentinel"]
-  end
-  k1 -.-> N1
-  k2 -.-> N2
-  k3 -.-> N3
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 120x100
+group hm "map[int]*dNode" color=blue icon=kv
+node k3 "key 3" at 1,0 in hm shape=pill
+node k1 "key 1" at 2,0 in hm shape=pill
+node k2 "key 2" at 3,0 in hm shape=pill
+group dll "doubly linked list: order of use" color=purple icon=link
+node h "head sentinel" at 0,1 in dll shape=box color=slate
+node n3 "node 3" at 1,1 in dll shape=box color=green sub="most recent"
+node n1 "node 1" at 2,1 in dll shape=box color=blue
+node n2 "node 2" at 3,1 in dll shape=box color=red sub="least recent"
+node t "tail sentinel" at 4,1 in dll shape=box color=slate
+h <-> n3 <-> n1 <-> n2 <-> t
+k1 ..> n1
+k2 ..> n2
+k3 ..> n3
 ```
 
 ```go

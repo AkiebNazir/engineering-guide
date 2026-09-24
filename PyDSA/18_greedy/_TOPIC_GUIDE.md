@@ -34,21 +34,24 @@ state because it *is* provably safe, and never backtracks.
 The exchange argument is the standard proof technique for the
 greedy-choice property. The shape is always the same:
 
-```mermaid
+```arch
 %% caption: The exchange argument: show that swapping the greedy choice into any optimal solution never makes it worse.
-flowchart TD
-  A["Greedy picks choice g first"] --> B["Take ANY optimal solution O"]
-  B --> C{"Does O already contain g?"}
-  C -->|yes| E["some optimal solution contains g"]:::ok
-  C -->|no| D["swap g in for the element it displaces in O"]
-  D --> F{"still feasible and no worse?"}
-  F -->|yes| E
-  F -->|no| X["greedy choice is WRONG: look at DP"]:::bad
-  E --> G["repeat on the remaining subproblem"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x80
+node a "Greedy picks choice g first" at 0,0 w=200
+node b "Take ANY optimal solution O" at 0,1 w=200
+node c "Does O already contain g?" at 0,2 shape=diamond color=amber
+node e "Some optimal solution contains g" at 1,2 color=green w=200
+node g "Repeat on the remaining subproblem" at 2,2 w=180
+node d "Swap g in" at 0,3 w=200 sub="for the element it displaces in O"
+node f "Still feasible and no worse?" at 0,4 shape=diamond color=amber
+node x "Greedy choice is WRONG" at 0,5 color=red w=200 sub="look at DP"
+a -> b -> c
+c -> e : "yes"
+c -> d : "no"
+d -> f
+f:R -> e:B : "yes"
+f -> x : "no"
+e -> g
 ```
 
 
@@ -90,18 +93,20 @@ instead.
 Ask: **"If I make the locally-best choice now, could a worse-looking
 choice now ever lead to a strictly better outcome later?"**
 
-```mermaid
+```arch
 %% caption: Greedy or DP?
-flowchart TD
-  Q(["Optimisation problem"]) --> A{"Can you prove a local choice is safe?<br/>(exchange argument)"}
-  A -->|yes| G["Greedy: sort or scan once"]:::ok
-  A -->|no| B{"Do subproblems overlap?"}
-  B -->|yes| D["Dynamic programming"]:::ok
-  B -->|no| C["Backtracking or search"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x80
+node q "Optimisation problem" at 0,0 shape=pill
+node a "Local choice provably safe?\n(exchange argument)" at 0,1 shape=diamond color=amber
+node g "Greedy" at 1,1 color=green sub="sort or scan once"
+node b "Do subproblems overlap?" at 0,2 shape=diamond color=amber
+node d "Dynamic programming" at 1,2 color=green
+node c "Backtracking or search" at 0,3 color=slate
+q -> a
+a -> g : "yes"
+a -> b : "no"
+b -> d : "yes"
+b -> c : "no"
 ```
 
 
@@ -238,19 +243,22 @@ The guide teaches *when* greedy is legal and gives ten problems. This Part adds 
 the classic scheduling problem the ten do not include, and a way to **test a greedy** before you trust it. Every snippet was
 run, and every count below is from a randomised cross-check on this machine.
 
-```mermaid
+```arch
 %% caption: A greedy is only as good as its proof. Try to break it with a small counter-example first, then name the argument.
-flowchart TD
-  Q(["A greedy idea"]) --> A{"Can you find a small counter-example?<br/>(brute-force the tiny inputs)"}
-  A -->|"yes"| D["not greedy: use DP or search<br/>(coins 1,3,4 for 6)"]:::bad
-  A -->|"no"| B{"Which argument fits?"}
-  B -->|"swap an optimal choice for the greedy one, no worse"| E["exchange argument"]:::ok
-  B -->|"after every step, greedy is at least as far ahead as any other"| S["greedy stays ahead"]:::ok
-  B -->|"every partial choice is extendable to an optimum"| M["matroid / structural argument"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "A greedy idea" at 0,0 shape=pill
+node a "Small counter-example?\n(brute-force tiny inputs)" at 0,1 shape=diamond color=amber
+node d "Not greedy: use DP or search" at 1,1 color=red w=230 sub="e.g. coins 1,3,4 for 6"
+node b "Which argument fits?" at 0,2 shape=diamond color=amber
+node e "Exchange argument" at 1,2 color=green w=380 sub="swap an optimal choice for the greedy one, no worse"
+node s "Greedy stays ahead" at 1,3 color=green w=380 sub="after every step, greedy is at least as far ahead as any other"
+node m "Matroid / structural argument" at 1,4 color=green w=380 sub="every partial choice extends to an optimum"
+q -> a
+a -> d : "yes"
+a -> b : "no"
+b:R -> e:L
+b:R -> s:L
+b:R -> m:L
 ```
 
 ### 6.1 Two proof styles, in one sentence each

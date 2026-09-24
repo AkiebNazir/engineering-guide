@@ -27,23 +27,23 @@ A company chatbot over an employee handbook.
 
 ### 0.2 Two phases: prepare the library, then look things up
 
-```mermaid
+```arch
 %% caption: Indexing happens once, offline. Query time happens on every question and must be fast.
-flowchart TB
-    subgraph offline["OFFLINE · once per document set"]
-        direction LR
-        d["Handbook PDF"] --> c["Chunk<br/>split into passages (§2.1)"]
-        c --> e1["Embed each chunk<br/>+ build keyword index (§2.2)"]
-        e1 --> idx[("Index<br/>vectors + inverted index")]
-    end
-    subgraph online["QUERY TIME · every question"]
-        direction LR
-        q["'How many vacation days…?'"] --> r["Retrieve top candidates<br/>keyword + vector (§2.2)"]
-        r --> rr["Re-rank<br/>keep the best 3–5 (§2.3)"]
-        rr --> p["Pack into prompt<br/>(§2.4)"]
-        p --> llm["LLM answers<br/>'15 days'"]
-    end
-    idx -.-> r
+grid 150x130
+group offline "OFFLINE · once per document set" color=slate icon=archive
+node d "Handbook PDF" at 0,0 in offline icon=doc
+node c "Chunk" at 1,0 in offline icon=layers sub="split into passages (§2.1)"
+node e1 "Embed each chunk" at 2,0 in offline icon=embed sub="+ build keyword index (§2.2)"
+node idx "Index" at 3,0 in offline icon=index sub="vectors + inverted index"
+group online "QUERY TIME · every question" color=teal icon=search
+node q "'How many vacation days…?'" at 0,1 in online icon=user
+node r "Retrieve top candidates" at 1,1 in online icon=search sub="keyword + vector (§2.2)"
+node rr "Re-rank" at 2,1 in online icon=sort sub="keep the best 3–5 (§2.3)"
+node p "Pack into prompt" at 3,1 in online icon=prompt sub="(§2.4)"
+node llm "LLM answers" at 4,1 in online icon=llm sub="'15 days'"
+d -> c -> e1 -> idx
+q -> r -> rr -> p -> llm
+idx:B ..> r:T
 ```
 
 ### 0.3 Where RAG can go wrong — one per section
@@ -148,19 +148,27 @@ still can't guarantee every fact survives.
 
 One topic per chunk, nothing severed.
 
-```mermaid
+```arch
 %% caption: The recursive splitter tries the biggest meaningful boundary first and only falls back when a piece is still too big.
-flowchart TD
-    T["Text"] --> P["Split on blank lines<br/>(paragraphs)"]
-    P --> P1{"Every piece<br/>fits?"}
-    P1 -->|yes| OK["Done ✔"]
-    P1 -->|"no, for the big pieces"| L["Split on single newlines"]
-    L --> L1{"Fits?"}
-    L1 -->|yes| OK
-    L1 -->|no| S["Split on '. '<br/>(sentences)"]
-    S --> S1{"Fits?"}
-    S1 -->|yes| OK
-    S1 -->|no| H["Hard cut by<br/>character count"] --> OK
+node t "Text" at 0,0 shape=pill color=slate
+node p "Split on blank lines" at 0,1 color=blue sub="(paragraphs)"
+node l "Split on single newlines" at 1,1 color=blue
+node s "Split on '. '" at 2,1 color=blue sub="(sentences)"
+node h "Hard cut" at 3,1 color=red sub="by character count"
+node p1 "Every piece fits?" at 0,2 shape=diamond color=amber
+node l1 "Fits?" at 1,2 shape=diamond color=amber
+node s1 "Fits?" at 2,2 shape=diamond color=amber
+node ok "Done ✔" at 1.5,3 shape=pill color=green
+t -> p -> p1
+p1:R -> l:L : "no, for the big pieces"
+l -> l1
+l1:R -> s:L : "no"
+s -> s1
+s1:R -> h:L : "no"
+p1:B -> ok : "yes"
+l1:B -> ok : "yes"
+s1:B -> ok : "yes"
+h:B -> ok:R
 ```
 
 **④ Semantic chunking** — cut where the *meaning* changes. Toy 2-D sentence embeddings, threshold τ = 0.8:
@@ -171,16 +179,17 @@ flowchart TD
 | "Kittens start purring within days." → "The stock market fell today." | **0.330** | ✂️ **yes** |
 | "The stock market fell today." → "Investors sold tech shares." | 0.994 | no |
 
-```mermaid
+```arch
 %% caption: Semantic chunking places a boundary where similarity between neighbouring sentences drops.
-flowchart LR
-    subgraph c1["Chunk 1 · cats"]
-        s1["Cats purr…"] -- "0.99" --> s2["Kittens start purring…"]
-    end
-    subgraph c2["Chunk 2 · markets"]
-        s3["Stock market fell…"] -- "0.99" --> s4["Investors sold…"]
-    end
-    s2 -- "0.33 ✂ below τ" --> s3
+group c1 "Chunk 1 · cats" color=green
+node s1 "Cats purr…" at 0,0 in c1 color=green
+node s2 "Kittens start purring…" at 1,0 in c1 color=green
+group c2 "Chunk 2 · markets" color=blue
+node s3 "Stock market fell…" at 2,0 in c2 color=blue
+node s4 "Investors sold…" at 3,0 in c2 color=blue
+s1 -> s2 : "0.99"
+s3 -> s4 : "0.99"
+s2 -> s3 : "0.33 ✂ below τ" color=red
 ```
 
 ### 2.2 Retrieval pipeline mechanics
@@ -315,14 +324,20 @@ The 5th repetition adds almost nothing, so keyword-stuffing can't win.
 
 Documents that **both** retrievers like float to the top — no score normalisation needed.
 
-```mermaid
+```arch
 %% caption: Hybrid search. Two different retrievers, fused by rank position only.
-flowchart LR
-    Q["query"] --> BM["BM25<br/>inverted index"]
-    Q --> EMB["embed query"] --> VS["vector search"]
-    BM -->|"C, A, B"| RRF["Reciprocal Rank Fusion<br/>sum of 1 / (60 + rank)"]
-    VS -->|"B, C, D"| RRF
-    RRF -->|"C, B, A, D"| OUT["candidates for re-ranking"]
+node q "query" at 1,0 shape=pill color=slate
+node bm "BM25" at 0,2 icon=search sub="inverted index"
+node emb "embed query" at 2,1 icon=embed
+node vs "vector search" at 2,2 icon=vector
+node rrf "Reciprocal Rank Fusion" at 1,3 shape=card icon=sort sub="sum of 1 / (60 + rank)"
+node out "candidates for re-ranking" at 1,4 shape=pill color=green
+q:L -> bm:T
+q:R -> emb:T
+emb -> vs
+bm:B -> rrf:L : "C, A, B"
+vs:B -> rrf:R : "B, C, D"
+rrf -> out : "C, B, A, D"
 ```
 
 ### 2.3 Re-ranking: cross-encoders vs. bi-encoders
@@ -358,21 +373,27 @@ cross-encoder's $O(\text{candidates})$ full-attention cost.
 
 #### 🖼️ Bi-encoder vs. cross-encoder, side by side
 
-```mermaid
+```arch
 %% caption: A bi-encoder encodes query and document separately, so documents can be encoded ahead of time. A cross-encoder reads them together, so it can't.
-flowchart TB
-    subgraph bi["Bi-encoder · fast · used for retrieval"]
-        direction LR
-        bq["query"] --> be1["encoder"] --> bv1["vector"]
-        bd["document"] --> be2["encoder<br/>(done offline, once)"] --> bv2["vector"]
-        bv1 --> dot["dot product"]
-        bv2 --> dot
-        dot --> bs["score"]
-    end
-    subgraph cross["Cross-encoder · slow · used for re-ranking"]
-        direction LR
-        cq["query + [SEP] + document"] --> ce["one transformer pass<br/>every query word attends<br/>to every doc word"] --> cs["score"]
-    end
+group bi "Bi-encoder · fast · used for retrieval" color=blue icon=vector
+node bq "query" at 0,0 in bi shape=pill color=blue
+node bd "document" at 1,0 in bi shape=pill color=blue
+node be1 "encoder" at 0,1 in bi icon=model
+node be2 "encoder" at 1,1 in bi icon=model sub="(done offline, once)"
+node bv1 "vector" at 0,2 in bi icon=vector
+node bv2 "vector" at 1,2 in bi icon=vector
+node dot "dot product" at 0.5,3 in bi color=blue
+node bs "score" at 0.5,4 in bi shape=pill color=blue
+group cross "Cross-encoder · slow · used for re-ranking" color=purple icon=model
+node cq "query + [SEP] + document" at 2.5,0 in cross shape=pill color=purple
+node ce "one transformer pass" at 2.5,1.5 in cross shape=card icon=model sub="every query word attends to every doc word"
+node cs "score" at 2.5,4 in cross shape=pill color=purple
+bq -> be1 -> bv1
+bd -> be2 -> bv2
+bv1 -> dot
+bv2 -> dot
+dot -> bs
+cq -> ce -> cs
 ```
 
 **A simple example where the difference shows.** Query: *"Can I carry unused vacation days into next year?"*
@@ -387,12 +408,16 @@ detail is gone. The cross-encoder compares word-against-word.
 
 **Why you can't cross-encode everything:** the retrieve-then-rerank funnel.
 
-```mermaid
+```arch
 %% caption: Each stage is more accurate and more expensive per document, so each one sees fewer documents.
-flowchart LR
-    ALL["1,000,000 chunks"] -->|"BM25 + vector search<br/>milliseconds"| C100["100 candidates"]
-    C100 -->|"cross-encoder<br/>100 transformer passes"| C5["top 5"]
-    C5 -->|"packed into prompt"| LLM["LLM"]
+grid 160x110
+node all "1,000,000 chunks" at 0,0 icon=layers
+node c100 "100 candidates" at 0,1 icon=filter
+node c5 "top 5" at 0,2 icon=sort
+node llm "LLM" at 0,3 icon=llm
+all -> c100 : "BM25 + vector search · milliseconds"
+c100 -> c5 : "cross-encoder · 100 transformer passes"
+c5 -> llm : "packed into prompt"
 ```
 
 If one cross-encoder pass takes 20 ms: 100 candidates = 2 s of passes, 5,000 candidates = 100 s,
@@ -431,10 +456,15 @@ zone even though they may still be highly relevant.
 
 #### 🖼️ Lost in the middle — and the sandwich fix
 
-```mermaid
+```arch
 %% caption: Where the model reads reliably inside a long prompt. The start and the end are strong; the middle is weak.
-flowchart LR
-    S["START of prompt<br/>✔ read reliably"] --- M1["early middle<br/>~ weaker"] --- M2["deep middle<br/>✘ most likely skimmed"] --- M3["late middle<br/>~ weaker"] --- E["END, near the question<br/>✔ read reliably"]
+grid 150x120
+node s "START of prompt" at 0,0 color=green sub="✔ read reliably"
+node m1 "early middle" at 1,0 color=amber sub="~ weaker"
+node m2 "deep middle" at 2,0 color=red sub="✘ most likely skimmed"
+node m3 "late middle" at 3,0 color=amber sub="~ weaker"
+node e "END, near the question" at 4,0 color=green sub="✔ read reliably"
+s -- m1 -- m2 -- m3 -- e
 ```
 
 **Worked example.** The re-ranker returns 5 chunks, rank 1 = most relevant.
@@ -465,28 +495,32 @@ Less text → less middle to get lost in.
 
 ## 3. Low-Level Execution Flow & Data Structures
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│ INDEXING (offline, one-time per corpus)                                  │
-│   for doc in corpus:                                                     │
-│     chunks = chunk(doc)                    # §2.1                       │
-│     for chunk in chunks:                                                 │
-│       inverted_index[term].append((doc_id, chunk_id, tf))  # BM25 side   │
-│       vector_index.add(embed(chunk), chunk_id)              # dense side │
-└────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ QUERY TIME                                                                │
-│   sparse_ranking = bm25_rank(query, inverted_index)          # top-N     │
-│   dense_ranking  = vector_search(embed(query), vector_index) # top-N     │
-│   fused = reciprocal_rank_fusion([sparse_ranking, dense_ranking])        │
-│   candidates = fused[:100]                                               │
-│   reranked = cross_encoder_score(query, candidates)           # top-k    │
-│   context = pack_with_reordering(reranked[:k])                 # §2.4   │
-│   prompt = system_prompt + context + query                               │
-│   answer = LLM(prompt)                                                    │
-└────────────────────────────────────────────────────────────────────────┘
+```arch
+%% caption: Indexing runs once per corpus, offline; every query then runs sparse and dense retrieval, fuses, re-ranks, packs and calls the LLM.
+group ix "INDEXING (offline, one-time per corpus)" color=slate icon=archive
+node corp "for doc in corpus" at 1,0 in ix shape=pill color=slate
+node ch "chunks = chunk(doc)" at 1,1 in ix color=slate sub="§2.1"
+group fc "for chunk in chunks" in ix color=slate
+node inv "inverted_index[term].append(...)" at 0,2 in fc color=slate sub="(doc_id, chunk_id, tf) · BM25 side"
+node vec "vector_index.add(...)" at 2,2 in fc color=slate sub="embed(chunk), chunk_id · dense side"
+group qt "QUERY TIME" color=teal icon=search
+node sp "sparse_ranking" at 0,3 in qt color=teal sub="bm25_rank(query, inverted_index) · top-N"
+node dn "dense_ranking" at 2,3 in qt color=teal sub="vector_search(embed(query), vector_index) · top-N"
+node fu "fused" at 1,4 in qt color=teal sub="reciprocal_rank_fusion([sparse, dense])"
+node ca "candidates = fused[:100]" at 0,5 in qt color=teal
+node rr "reranked" at 1,5 in qt color=teal sub="cross_encoder_score(query, candidates) · top-k"
+node cx "context" at 2,5 in qt color=teal sub="pack_with_reordering(reranked[:k]) · §2.4"
+node pr "prompt" at 2,6 in qt icon=prompt sub="system_prompt + context + query"
+node an "answer = LLM(prompt)" at 1,6 in qt icon=llm
+corp -> ch
+ch:L -> inv:T
+ch:R -> vec:T
+inv ..> sp
+vec ..> dn
+sp:B -> fu:L
+dn:B -> fu:R
+fu:B -> ca:T
+ca -> rr -> cx -> pr -> an
 ```
 
 **Inverted index structure**: `Dict[term, Counter[doc_id -> term_frequency]]` plus

@@ -24,25 +24,34 @@ CAP applies to a **distributed system that replicates data**, during a **network
 - **Availability (A):** every request to a non-failed replica gets a non-error response.
 - **Partition tolerance (P):** the system keeps operating despite the communication break.
 
-```mermaid
-flowchart TB
-    %% caption: The three pairwise trade-offs CAP actually names
-    C((Consistency))
-    A((Availability))
-    P((Partition<br/>tolerance))
-    C ---|"CP — reject or wait<br/>when replicas disagree"| P
-    A ---|"AP — answer anyway,<br/>maybe stale"| P
-    C -.-|"CA — only real without<br/>partitions at all"| A
+```arch
+%% caption: The three pairwise trade-offs CAP actually names
+route straight
+node P "Partition tolerance" at 1,0 shape=circle color=purple w=100
+node cp "CP" at 0.5,1 shape=box color=blue sub="reject or wait when replicas disagree"
+node ap "AP" at 1.5,1 shape=box color=green sub="answer anyway, maybe stale"
+node C "Consistency" at 0,2 shape=circle color=blue w=100
+node A "Availability" at 2,2 shape=circle color=green w=100
+node ca "CA" at 1,2 shape=box color=slate sub="only real without partitions at all"
+C -- cp
+cp -- P
+A -- ap
+ap -- P
+C .. ca
+ca .. A
 ```
 
 Partitions are not optional to defend against — they happen. So the real decision CAP forces is per-operation, during a partition:
 
-```mermaid
-flowchart TD
-    %% caption: The per-operation decision CAP actually forces, during a partition
-    start["A request arrives<br/>during a partition"] --> ask{"Need the latest<br/>correct answer right now?"}
-    ask -->|yes| c["Wait, or fail, when replicas disagree<br/>— favor Consistency over Availability"]
-    ask -->|no — staleness is okay| a["Return a possibly stale/conflicting answer<br/>— favor Availability over Consistency"]
+```arch
+%% caption: The per-operation decision CAP actually forces, during a partition
+node start "A request arrives" at 1,0 shape=pill sub="during a partition"
+node ask "Need the latest correct answer now?" at 1,1 shape=diamond color=amber
+node c "Wait, or fail" at 0,2 shape=card color=blue icon=lock sub="when replicas disagree: favor Consistency over Availability"
+node a "Return a possibly stale answer" at 2,2 shape=card color=green icon=check sub="or conflicting: favor Availability over Consistency"
+start -> ask
+ask -> c : "yes"
+ask -> a : "no, staleness is okay"
 ```
 
 ### What CAP does NOT mean
@@ -75,25 +84,24 @@ These models are not one line from strong to weak. They live on two axes: **sing
 | Monotonic reads | A session never goes backward to an older version after seeing a newer one. | Session pinned across replica switches. |
 | Eventual | With no new writes and no failures, replicas converge — no bound stated, no ordering promised meanwhile. | Search index, analytics, feed fan-out. |
 
-```mermaid
-flowchart TB
-    %% caption: A partial order, not a line: strict serializable implies both linearizable and serializable, which are incomparable, and causal implies the session guarantees.
-    ss["Strict serializable<br/>(Spanner: external consistency)"]
-    lin["Linearizable<br/>(one object, real-time order)"]
-    ser["Serializable<br/>(multi-object transactions)"]
-    caus["Causal"]
-    ryw["Read-your-<br/>writes"]
-    mono["Monotonic<br/>reads"]
-    iso["Weaker isolation levels<br/>repeatable read, read committed"]
-    ev["Eventual"]
-    ss --> lin
-    ss --> ser
-    lin --> caus
-    caus --> ryw
-    caus --> mono
-    ryw --> ev
-    mono --> ev
-    ser --> iso
+```arch
+%% caption: A partial order, not a line: strict serializable implies both linearizable and serializable, which are incomparable, and causal implies the session guarantees.
+node ss "Strict serializable" at 1,0 color=purple sub="Spanner: external consistency"
+node lin "Linearizable" at 0,1 color=blue sub="one object, real-time order"
+node ser "Serializable" at 2,1 color=indigo sub="multi-object transactions"
+node caus "Causal" at 0,2 color=blue
+node iso "Weaker isolation levels" at 2,2 color=indigo sub="repeatable read, read committed"
+node ryw "Read-your-writes" at 0,3 color=teal
+node mono "Monotonic reads" at 1,3 color=teal
+node ev "Eventual" at 0.5,4 color=slate
+ss:B -> lin:T
+ss:B -> ser:T
+lin -> caus
+caus:B -> ryw:T
+caus:B -> mono:T
+ryw:B -> ev:T
+mono:B -> ev:T
+ser -> iso
 ```
 
 Reading the diagram: an arrow means "implies" (every system giving the tail also gives the head). Linearizable and serializable have no arrow between them — Spanner gets both only by paying for cross-replica coordination and, in its design, waiting out clock uncertainty on commit. Serializable alone does not imply causal or read-your-writes, because its equivalent serial order is free to ignore real time and session order (the literature adds "strong session serializability" for exactly that reason). Causal consistency is stronger than the session guarantees: a causally consistent store gives you read-your-writes and monotonic reads (plus monotonic writes and writes-follow-reads) for free, and it is generally cited as the strongest model a replicated system can still offer while every replica stays available during a partition (Mahajan, Alvisi and Dahlin, 2011).

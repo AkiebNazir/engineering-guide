@@ -267,20 +267,24 @@ one, mirroring the same GC-retention concern as slice-based stacks.
 All code below ran on Go 1.24.5. Every design here is "implement X with Y" — the interviewer is watching whether
 you can *state the amortised argument*, not whether you can type it.
 
-```mermaid
+```arch
 %% caption: Choosing the Go container for a queue-shaped problem. A short-lived single pass wants the plain slice; a long-lived or two-ended structure wants the ring buffer; sharing between goroutines wants a channel.
-flowchart TD
-  Q(["I need FIFO behaviour"]) --> A{"Shared between goroutines?"}
-  A -->|"yes"| CH["buffered channel<br/>bounded, blocking, thread-safe"]:::ok
-  A -->|"no"| B{"Long-lived, or push/pop at BOTH ends?"}
-  B -->|"no: one BFS pass"| SL["slice: append + q = q[1:]<br/>simplest, leak irrelevant"]:::ok
-  B -->|"yes"| C{"Fixed capacity?"}
-  C -->|"yes"| RB["ring buffer: head + size<br/>(LC 622, LC 641)"]:::ok
-  C -->|"no"| GD["generic Deque[T] ring buffer<br/>that grows by doubling (Part 5)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 250x100
+node q "I need FIFO behaviour" at 0,0 shape=pill
+node a "Shared between goroutines?" at 0,1 shape=diamond color=amber
+node ch "Buffered channel" at 1,1 shape=card icon=queue color=green sub="bounded, blocking, thread-safe"
+node b "Long-lived, or push/pop at BOTH ends?" at 0,2 shape=diamond color=amber
+node sl "Slice" at 1,2 shape=card icon=table color=green sub="one BFS pass: append + q = q[1:]; simplest, leak irrelevant"
+node c "Fixed capacity?" at 0,3 shape=diamond color=amber
+node rb "Ring buffer: head + size" at 1,3 shape=card icon=sync color=green sub="LC 622, LC 641"
+node gd "Generic Deque[T] ring buffer" at 0,4 shape=card icon=sync color=orange sub="grows by doubling (Part 5)"
+q -> a
+a -> ch : "yes"
+a -> b : "no"
+b -> sl : "no"
+b -> c : "yes"
+c -> rb : "yes"
+c -> gd : "no"
 ```
 
 ### Queue from two stacks (LC 232) — amortised O(1)
@@ -408,19 +412,21 @@ for len(q) > 0 {
 }                                                // [[0 0 0] [1 1 0] [1 1 0]] -> 5     [[0 1] [1 0]] -> -1
 ```
 
-```mermaid
+```arch
 %% caption: Why "mark on enqueue" matters. Marking on dequeue lets the same node be enqueued by every neighbour that reaches it before its first turn.
-flowchart LR
-  A["dequeue u"] --> B["for each neighbour v of u"]
-  B --> C{"v already marked?"}
-  C -->|"no"| D["mark v NOW, enqueue v"]:::ok
-  C -->|"yes"| E["skip"]:::dim
-  D --> B
-  B --> F["next dequeue"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x100
+node a "dequeue u" at 0,0 shape=pill
+node b "for each neighbour v of u" at 0,1 shape=box
+node f "next dequeue" at 1,1 shape=pill
+node c "v already marked?" at 0,2 shape=diamond color=amber
+node e "skip" at 1,2 shape=box color=slate
+node d "Mark v NOW" at 0,3 shape=card icon=check color=green sub="then enqueue v"
+a -> b
+b -> f : "done"
+b -> c
+c -> e : "yes"
+c -> d : "no"
+d:L -> b:L
 ```
 
 Note `[4][2]int{...}` — an *array* of directions is a value, allocated on the stack, and ranging over it needs no

@@ -136,12 +136,23 @@ fine; depth in the millions, or exponential blow-up like naive Fibonacci at
 Naive recursive Fibonacci (`recursion/fibonacci/fibonacci.go`) is slow for a
 reason that has nothing to do with the stack:
 
-```
-                               fib(6)
-                             /        \
-                      fib(5)            fib(4)
-                     /      \           /      \
-                fib(4)      fib(3)   fib(3)    fib(2)
+```arch
+%% caption: Naive fib(6) call tree, top three levels. The same subproblems (fib(4), fib(3)) are recomputed in different branches.
+route straight
+grid 90x90
+node f6 "fib(6)" at 1.5,0 shape=circle color=blue
+node f5 "fib(5)" at 0.5,1 shape=circle color=blue
+node f4r "fib(4)" at 2.5,1 shape=circle color=amber
+node f4l "fib(4)" at 0,2 shape=circle color=amber
+node f3l "fib(3)" at 1,2 shape=circle color=pink
+node f3r "fib(3)" at 2,2 shape=circle color=pink
+node f2 "fib(2)" at 3,2 shape=circle color=blue
+f6 -- f5
+f6 -- f4r
+f5 -- f4l
+f5 -- f3l
+f4r -- f3r
+f4r -- f2
 ```
 
 `fib(4)` is computed twice here; `fib(3)`, three times. The call tree has
@@ -189,19 +200,23 @@ free: `make([]bool, n)` is already all-`false`, `var path []int` (or
 initialization loop needed, unlike languages where you'd hand-initialize a
 "visited" array.
 
-```mermaid
+```arch
 %% caption: Subsets as a decision tree: each level is one element, each branch is a choice, and the leaves are the answers.
-flowchart TD
-  r["[ ]"] -->|"take 1"| a["[1]"]
-  r -->|"skip 1"| b["[ ]"]
-  a -->|"take 2"| a1["[1, 2]"]:::ok
-  a -->|"skip 2"| a2["[1]"]:::ok
-  b -->|"take 2"| b1["[2]"]:::ok
-  b -->|"skip 2"| b2["[ ]"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 100x100
+node r "[ ]" at 1.5,0 shape=circle color=blue
+node a "[1]" at 0.5,1 shape=circle color=blue
+node b "[ ]" at 2.5,1 shape=circle color=blue
+node a1 "[1, 2]" at 0,2 shape=circle color=green
+node a2 "[1]" at 1,2 shape=circle color=green
+node b1 "[2]" at 2,2 shape=circle color=green
+node b2 "[ ]" at 3,2 shape=circle color=green
+r -> a : "take 1"
+r -> b : "skip 1"
+a -> a1 : "take 2"
+a -> a2 : "skip 2"
+b -> b1 : "take 2"
+b -> b2 : "skip 2"
 ```
 
 ### 3.2 Subsets vs. permutations: a binary tree vs. a shrinking-choice tree
@@ -397,20 +412,20 @@ does not.
 Part 3 gave the template. This Part is the Go spelling of every shape in the folder, with the pitfalls that are
 specific to Go's slices and strings. All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: Choose, explore, un-choose. Every backtracking problem is this loop; the shapes differ only in what "choose" ranges over and what the leaf test is.
-flowchart TD
-  A["backtrack(state)"] --> B{"complete candidate?<br/>(the leaf test)"}
-  B -->|"yes"| C["record a COPY of the path<br/>slices.Clone(path)"]:::hot
-  B -->|"no"| D["for each legal choice"]
-  D --> E["choose: append to path, mark used"]
-  E --> F["explore: backtrack(next state)"]
-  F --> G["un-choose: pop from path, unmark"]:::ok
-  G --> D
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node a "backtrack(state)" at 0,0 shape=pill
+node b "complete candidate?" at 0,1 shape=diamond color=amber sub="the leaf test"
+node c "Record a COPY of the path" at 1,1 shape=card icon=doc color=orange sub="slices.Clone(path)"
+node d "for each legal choice" at 0,2 shape=box
+node e "choose" at 1,2 shape=card icon=check sub="append to path, mark used"
+node f "explore" at 1,3 shape=card icon=tree sub="backtrack(next state)"
+node g "un-choose" at 0,3 shape=card icon=delete color=green sub="pop from path, unmark"
+a -> b
+b -> c : "yes"
+b -> d : "no"
+d -> e -> f -> g -> d
 ```
 
 ### The copy rule, and the bug that passes small tests

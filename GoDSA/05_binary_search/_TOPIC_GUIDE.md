@@ -407,18 +407,19 @@ the other (still-rotated) half, so recurse there instead.
 Everything in Parts 2–5 is a *tool* (`sort.Search`, `slices.BinarySearch`). This Part is the *decision*: what
 `lo` and `hi` are moving over, and which boundary you are hunting. All code below ran on Go 1.24.5.
 
-```mermaid
+```arch
 %% caption: Two families of binary search. The only question is what lo and hi are moving over.
-flowchart TD
-  Q(["What are lo and hi moving over?"]) --> A["Indices of a sorted slice"]
-  Q --> B["Candidate answers<br/>(speed, capacity, days, distance ...)"]
-  A --> A1["Family A: search ON the data<br/>value lookup, insertion point, rotated, 2D"]:::ok
-  B --> B1["Family B: search ON the answer<br/>needs feasible(x), monotone: F F F T T T"]:::hot
-  B1 --> B2["the slice is USED INSIDE feasible,<br/>never searched directly"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x100
+node q "What are lo and hi moving over?" at 0.5,0 shape=pill
+node a "Indices of a sorted slice" at 0,1 shape=box
+node b "Candidate answers" at 1,1 shape=box sub="speed, capacity, days, distance ..."
+node a1 "Family A: search ON the data" at 0,2 shape=card icon=search color=green sub="value lookup, insertion point, rotated, 2D"
+node b1 "Family B: search ON the answer" at 1,2 shape=card icon=check color=orange sub="needs feasible(x), monotone: F F F T T T"
+node b2 "The slice is USED INSIDE feasible" at 1,3 shape=card icon=filter sub="never searched directly"
+q -> a
+q -> b
+a -> a1
+b -> b1 -> b2
 ```
 
 **The most-missed skill in this topic:** people fluent in Family A do not recognise Family B, because there is
@@ -427,17 +428,18 @@ and checking one candidate is cheap, the candidate is what you search.
 
 ### The three boundary templates
 
-```mermaid
+```arch
 %% caption: Three templates. What differs is which side keeps mid and which mid you compute. Pair them wrongly and the loop never ends.
-flowchart TD
-  Q(["Find a boundary in a monotone predicate"]) --> A{"Which boundary?"}
-  A -->|"leftmost True<br/>(smallest x that works)"| L["lo, hi := 0, n<br/>mid := lo + (hi-lo)/2   (LOWER mid)<br/>if ok(mid) { hi = mid } else { lo = mid + 1 }"]:::ok
-  A -->|"rightmost True<br/>(largest x that works)"| R["lo, hi := 0, n<br/>mid := lo + (hi-lo+1)/2   (UPPER mid)<br/>if ok(mid) { lo = mid } else { hi = mid - 1 }"]:::hot
-  A -->|"exact match"| E["lo, hi := 0, n-1<br/>for lo <= hi<br/>mid+1 and mid-1 on the two sides"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 235x140
+node q "Find a boundary in a monotone predicate" at 1,0 shape=pill
+node a "Which boundary?" at 1,1 shape=diamond color=amber
+node l "Smallest x that works" at 0,2 shape=card icon=code color=green w=215 sub="lo, hi := 0, n; mid := lo + (hi-lo)/2 (LOWER mid); if ok(mid) { hi = mid } else { lo = mid + 1 }"
+node r "Largest x that works" at 1,2 shape=card icon=code color=orange w=215 sub="lo, hi := 0, n; mid := lo + (hi-lo+1)/2 (UPPER mid); if ok(mid) { lo = mid } else { hi = mid - 1 }"
+node e "Exact match" at 2,2 shape=card icon=code color=green w=215 sub="lo, hi := 0, n-1; for lo <= hi; mid+1 and mid-1 on the two sides"
+q -> a
+a:L -> l:T : "leftmost True"
+a -> r : "rightmost True"
+a:R -> e:T : "exact match"
 ```
 
 ```go

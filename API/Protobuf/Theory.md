@@ -20,14 +20,20 @@ Protobuf is *not* a transport. It does not send anything; it turns objects into 
 
 > **Analogy:** JSON is a letter written in full sentences: readable by anyone, but wordy. Protobuf is a form with numbered boxes. Sender and receiver both hold a copy of the form, so the message only needs to say "box 2: Ana". It is tiny, but useless to someone who does not have the form.
 
-```mermaid
-flowchart LR
-    P[user.proto<br/>the contract] -->|protoc| PY[Python classes]
-    P -->|protoc| GO[Go structs]
-    P -->|protoc| JV[Java / C++ / ...]
-    PY -->|SerializeToString| B[(binary bytes)]
-    GO -->|proto.Marshal| B
-    B -->|"Kafka / Redis / file / gRPC / UDP"| R[any receiver with the same .proto]
+```arch
+%% caption: One .proto contract generates code for every language; the bytes travel over any transport.
+node p "user.proto" at 1,0 icon=doc sub="the contract"
+node py "Python classes" at 0,1 icon=python
+node go "Go structs" at 1,1 icon=go
+node jv "Java / C++ / ..." at 2,1 icon=java
+node b "Binary bytes" at 1,2 icon=blob
+node r "Any receiver" at 1,3 icon=service sub="with the same .proto"
+p -> py : "protoc"
+p -> go : "protoc"
+p -> jv : "protoc"
+py -> b : "SerializeToString"
+go -> b : "proto.Marshal"
+b -> r : "Kafka / Redis / file / gRPC / UDP"
 ```
 
 ## Why Not Just JSON?
@@ -196,14 +202,22 @@ Because the wire carries numbers and wire types, you can inspect unknown bytes: 
 
 Old and new code always meet in production: a deploy rolls out over minutes, messages sit in Kafka for days, files live for years. Protobuf is built so that works, if you follow the rules.
 
-```mermaid
-flowchart LR
-    W1[Writer v1<br/>id name phone] --> M1[(bytes)]
-    W2[Writer v2<br/>id name email phones] --> M2[(bytes)]
-    M1 --> R2[Reader v2]
-    M2 --> R1[Reader v1]
-    R2 -.->|"email = empty default"| OK1[safe]
-    R1 -.->|"unknown fields skipped, kept"| OK2[safe]
+```arch
+%% caption: Old and new code meet in production: each reader safely handles the other version's bytes.
+node w1 "Writer v1" at 0,0 icon=app sub="id name phone"
+node w2 "Writer v2" at 1,0 icon=app sub="id name email phones"
+node m1 "bytes" at 0,1 icon=blob
+node m2 "bytes" at 1,1 icon=blob
+node r2 "Reader v2" at 0,2 icon=app
+node r1 "Reader v1" at 1,2 icon=app
+node ok1 "safe" at 0,3 shape=pill color=green
+node ok2 "safe" at 1,3 shape=pill color=green
+w1 -> m1
+w2 -> m2
+m1 -> r2
+m2 -> r1
+r2 ..> ok1 : "email = empty default"
+r1 ..> ok2 : "unknown fields skipped, kept"
 ```
 
 | Change | Safe? | Why |
@@ -361,14 +375,22 @@ Repository layout that scales: one `proto/` directory (or a dedicated repo) as t
 
 ## Where Protobuf Is Used
 
-```mermaid
-flowchart TD
-    P[Protobuf] --> G[gRPC<br/>request and response messages]
-    P --> K[Kafka / Pub-Sub<br/>event payloads + schema registry]
-    P --> R[Redis / Memcached<br/>compact cached objects]
-    P --> F[Files / object storage<br/>logs, ML datasets, TFRecord]
-    P --> C[Config<br/>text-format .textproto]
-    P --> N[Custom UDP / TCP protocols<br/>games, telemetry, IoT]
+```arch
+%% caption: Protobuf is only an encoding, so it shows up wherever bytes are stored or sent.
+grid 230x90
+node p "Protobuf" at 1,1 icon=package
+node g "gRPC" at 0,0 shape=card icon=grpc sub="request and response messages"
+node k "Kafka / Pub-Sub" at 0,1 shape=card icon=kafka-icon sub="event payloads + schema registry" w=230
+node r "Redis / Memcached" at 0,2 shape=card icon=redis sub="compact cached objects"
+node f "Files / object storage" at 2,0 shape=card icon=storage sub="logs, ML datasets, TFRecord"
+node c "Config" at 2,1 shape=card icon=doc sub="text-format .textproto"
+node n "Custom UDP / TCP protocols" at 2,2 shape=card icon=network sub="games, telemetry, IoT"
+p:L -> g:R
+p:L -> k:R
+p:L -> r:R
+p:R -> f:L
+p:R -> c:L
+p:R -> n:L
 ```
 
 ## Common Pitfalls

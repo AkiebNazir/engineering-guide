@@ -67,6 +67,26 @@ Use a random opaque ID. It reduces enumeration but is not an authorization bound
 
 ## Architecture
 
+```arch
+%% caption: Metadata is the truth for visibility and expiry, immutable bodies live in object storage behind a CDN, and a background worker purges and cleans up.
+node creator "Creator" at 1,0 icon=user
+node reader "Reader" at 2,0 icon=users
+node cdn "CDN" at 2,1 icon=cdn sub="public bodies, s-maxage"
+group origin "Origin" color=blue icon=cloud
+node api "API" at 1,2 in origin icon=api sub="validate, authorize"
+node db "Metadata DB" at 0,3 in origin icon=db sub="status, expiry, ACL"
+node obj "Object storage" at 2,3 in origin icon=blob sub="immutable bodies"
+node worker "Lifecycle worker" at 1,4 icon=worker sub="expire, delete, report"
+creator -> api : "create"
+reader -> cdn : "GET /{id}"
+cdn:B -> api:R : "miss or private"
+api:L -> db:T
+api:B -> obj:T
+worker:L -> db:B : "status first"
+worker:R -> obj:B : "cleanup"
+worker:B ..> cdn:R : "purge"
+```
+
 ```mermaid
 %% caption: Three independent flows share the same metadata/object split — create, read, and background lifecycle cleanup.
 sequenceDiagram

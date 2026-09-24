@@ -6,20 +6,26 @@ This is the first module. Do not rush to microservices, Kafka, Kubernetes, or mu
 
 Most internet systems can begin with this picture:
 
-```mermaid
-flowchart LR
-    client([Client]) --> dns[DNS]
-    dns --> edge["Edge<br/>CDN · WAF"]
-    edge --> lb["Load balancer /<br/>API gateway"]
-    lb --> app["Stateless<br/>application"]
-    app --> cache[("Cache")]
-    app --> db[("Primary<br/>data store")]
-    app --> obj[("Object<br/>store")]
-    app -. async .-> queue{{"Broker / queue"}}
-    queue --> worker["Async workers &<br/>integrations"]
-
-    classDef store fill:transparent,stroke-width:2px;
-    class cache,db,obj store;
+```arch
+%% caption: The universal request path: an edge in front, a stateless tier in the middle, stores and async work behind it.
+node client "Client" at 0,0 icon=client
+node dns "DNS" at 1,0 icon=dns
+node edge "Edge" at 2,0 icon=cdn sub="CDN · WAF"
+node lb "Load balancer" at 3,0 icon=lb sub="or API gateway"
+node app "Stateless application" at 1,1 icon=server
+group stores "Data stores" color=green icon=storage
+node cache "Cache" at 0,2 in stores icon=cache
+node db "Primary data store" at 1,2 in stores icon=db
+node obj "Object store" at 2,2 in stores icon=blob
+node queue "Broker / queue" at 3,2 icon=queue
+node worker "Async workers" at 3,3 icon=worker sub="& integrations"
+client -> dns -> edge -> lb
+lb -> app
+app -> cache:T
+app -> db
+app -> obj:T
+app ..> queue:T : "async"
+queue -> worker
 ```
 
 > 💡 This diagram is a checklist, not a blueprint. It is not an architecture to copy blindly — it is a map for asking questions: which of these does my requirement actually need, and what does adding it cost?

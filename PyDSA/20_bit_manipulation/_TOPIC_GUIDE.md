@@ -14,15 +14,13 @@
 
 ### 1.0 The four core identities
 
-```mermaid
+```arch
 %% caption: n & (n-1) clears the lowest set bit. Repeat until n is 0 to count set bits, or test n & (n-1) == 0 for a power of two.
-flowchart LR
-  A["n = 1100"] --> B["n - 1 = 1011<br/>the lowest 1 became 0,<br/>the bits below it flipped"]
-  B --> C["n and (n - 1) = 1000<br/>lowest set bit cleared"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node a "n = 1100" at 0,0 color=blue
+node b "n - 1 = 1011" at 1,0 w=200 sub="the lowest 1 became 0, the bits below it flipped"
+node c "n & (n - 1) = 1000" at 2,0 color=green w=170 sub="lowest set bit cleared"
+a -> b -> c
 ```
 
 
@@ -154,17 +152,18 @@ This is the single biggest way this topic differs in Python versus
 C/C++/Java/Go, and it is worth understanding in real depth, not just
 memorizing "mask with `0xFFFFFFFF`."
 
-```mermaid
+```arch
 %% caption: Python ints are unbounded, so negatives have infinitely many leading 1s. Mask to 32 bits to emulate fixed width, then convert back if the sign bit is set.
-flowchart LR
-  A["Python int<br/>-1 = ...1111 (infinite)"] -->|"x and 0xFFFFFFFF"| B["unsigned 32-bit<br/>4294967295"]
-  B --> C{"x #gt; 0x7FFFFFFF ?"}
-  C -->|yes| D["x - 2**32<br/>(back to signed)"]:::ok
-  C -->|no| E["x as is"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node a "Python int" at 1,0 color=blue w=200 sub="-1 = ...1111 (infinite)"
+node b "unsigned 32-bit" at 1,1 w=200 sub="4294967295"
+node c "x > 0x7FFFFFFF?" at 1,2 shape=diamond color=amber
+node d "x - 2**32" at 0,3 color=green sub="back to signed"
+node e "x as is" at 2,3 color=green
+a -> b : "x & 0xFFFFFFFF"
+b -> c
+c:L -> d:T : "yes"
+c:R -> e:T : "no"
 ```
 
 
@@ -246,22 +245,28 @@ you must explicitly do `(~x) & 0xFFFFFFFF`, masking after inverting.
 
 ## Part 2 · Pattern Decision Tree
 
-```mermaid
+```arch
 %% caption: Which bit trick fits.
-flowchart TD
-  Q(["Bit problem"]) --> A{"Everything appears twice,<br/>one exception?"}
-  A -->|yes| X["XOR everything: pairs cancel"]:::ok
-  A -->|no| B{"Appears k times,<br/>one exception?"}
-  B -->|yes| C["Count each bit position mod k"]:::ok
-  B -->|no| D{"Power of two, or count set bits?"}
-  D -->|yes| E["n and (n - 1) trick"]:::ok
-  D -->|no| F{"AND over a range?"}
-  F -->|yes| G["Shift both ends right until equal:<br/>common prefix"]:::ok
-  F -->|no| H["Small set of items:<br/>enumerate bitmask subsets"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Bit problem" at 0,0 shape=pill
+node a "Everything twice,\none exception?" at 0,1 shape=diamond color=amber
+node x "XOR everything" at 1,1 color=green w=250 sub="pairs cancel"
+node b "Appears k times,\none exception?" at 0,2 shape=diamond color=amber
+node c "Count each bit position mod k" at 1,2 color=green w=250
+node d "Power of two, or count set bits?" at 0,3 shape=diamond color=amber
+node e "n & (n - 1) trick" at 1,3 color=green w=250
+node f "AND over a range?" at 0,4 shape=diamond color=amber
+node g "Shift both ends right until equal" at 1,4 color=green w=250 sub="common prefix"
+node h "Small set of items" at 0,5 color=green w=250 sub="enumerate bitmask subsets"
+q -> a
+a -> x : "yes"
+a -> b : "no"
+b -> c : "yes"
+b -> d : "no"
+d -> e : "yes"
+d -> f : "no"
+f -> g : "yes"
+f -> h : "no"
 ```
 
 
@@ -394,18 +399,20 @@ range-AND common-prefix trick, a different flavor of bit elimination.
 The guide covers the four core identities and Python's no-fixed-width gotcha. These are the techniques that recur once you
 leave the ten problems. Every snippet was run, and the timings are measurements from this machine (CPython 3.13).
 
-```mermaid
+```arch
 %% caption: A bitmask is a set of small integers. Add, remove, toggle and test are one operation each, and a whole set fits in one machine word.
-flowchart LR
-  S["set {3, 5}<br/>mask = 0b101000"] --> A["add x:  mask |= 1 << x"]:::ok
-  S --> R["remove x:  mask &= ~(1 << x)"]:::ok
-  S --> T["toggle x:  mask ^= 1 << x"]:::ok
-  S --> Q["contains x:  mask >> x & 1"]:::ok
-  S --> U["union |   intersection &   difference & ~"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x70
+node s "set {3, 5}" at 0,2 color=blue sub="mask = 0b101000"
+node a "add x" at 1,0 color=green w=240 sub="mask |= 1 << x"
+node r "remove x" at 1,1 color=green w=240 sub="mask &= ~(1 << x)"
+node t "toggle x" at 1,2 color=green w=240 sub="mask ^= 1 << x"
+node c "contains x" at 1,3 color=green w=240 sub="mask >> x & 1"
+node u "set algebra" at 1,4 color=green w=240 sub="union |   intersection &   difference & ~"
+s:R -> a:L
+s:R -> r:L
+s:R -> t:L
+s:R -> c:L
+s:R -> u:L
 ```
 
 ### 6.1 A bitmask *is* a set

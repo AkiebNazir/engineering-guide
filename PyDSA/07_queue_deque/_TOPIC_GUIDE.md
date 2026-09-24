@@ -70,16 +70,16 @@ A stack only gives you LIFO access, but two of them, cooperating, can
 simulate FIFO. The idea: use one stack to receive new elements (`in_stack`),
 and a second to serve them out in reversed — i.e. FIFO — order (`out_stack`).
 
-```mermaid
+```arch
 %% caption: Every element moves from the in-stack to the out-stack at most once, so dequeue is O(1) amortized.
-flowchart LR
-  P["enqueue x"] --> IN["in-stack"]
-  IN -->|"out-stack empty?<br/>move ALL over, reversing order"| OUT["out-stack"]:::hot
-  OUT --> POP["dequeue or peek:<br/>top of the out-stack"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 140x100
+node p "enqueue x" at 0,0 shape=pill
+node in "in-stack" at 1,0
+node out "out-stack" at 3,0 color=amber
+node pop "Dequeue or peek" at 4,0 color=green sub="top of the out-stack"
+p -> in
+in -> out : "out-stack empty? move ALL over, reversing order"
+out -> pop
 ```
 
 
@@ -198,16 +198,20 @@ A **circular buffer** (ring buffer) is a fixed-size array plus two indices,
 `head` (next slot to dequeue from) and `tail` (next slot to enqueue into),
 both wrapping around with modulo when they hit the array's end:
 
-```mermaid
+```arch
 %% caption: Indices wrap with (i + 1) % capacity, so nothing is ever shifted: O(1) enqueue and dequeue, unlike list.pop(0).
-flowchart LR
-  s0["slot 0"] --> s1["slot 1"] --> s2["slot 2"] --> s3["slot 3"] --> s4["slot 4"] --> s0
-  H["head: next to dequeue"]:::ok -.-> s1
-  T["tail: next free slot"]:::hot -.-> s4
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node s0 "slot 0" at 3,0 shape=circle color=blue
+node s1 "slot 1" at 4.5,1 shape=circle color=blue
+node s2 "slot 2" at 4,2.5 shape=circle color=blue
+node s3 "slot 3" at 2,2.5 shape=circle color=blue
+node s4 "slot 4" at 1.5,1 shape=circle color=blue
+node h "head" at 6.5,1 color=green sub="next to dequeue"
+node t "tail" at 0,1 color=amber sub="next free slot"
+s0 -> s1 -> s2 -> s3 -> s4 -> s0
+h ..> s1
+t ..> s4
 ```
 
 
@@ -465,21 +469,26 @@ force scan over all subarrays to make the complexity gap concrete.
 
 ## Part 7 · Pattern Decision Tree
 
-```mermaid
+```arch
 %% caption: Which queue or deque pattern fits.
-flowchart TD
-  Q(["Queue-shaped problem"]) --> A{"Plain FIFO, only the<br/>two ends matter?"}
-  A -->|yes| A1["collections.deque"]:::ok
-  A -->|no| B{"Events in a recent time window?"}
-  B -->|yes| B1["FIFO deque:<br/>pop from the left while expired"]:::ok
-  B -->|no| C{"Max or min of a sliding window?"}
-  C -->|yes| C1["Monotonic deque"]:::ok
-  C -->|no| D{"Negatives allowed, shortest<br/>subarray with sum ≥ K ?"}
-  D -->|yes| D1["Prefix sums + monotonic deque"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 290x100
+node q "Queue-shaped problem" at 0,0 shape=pill
+node a "Plain FIFO, only the two ends matter?" at 0,1 shape=diamond color=amber
+node a1 "collections.deque" at 1,1 color=green
+node b "Events in a recent time window?" at 0,2 shape=diamond color=amber
+node b1 "FIFO deque" at 1,2 color=green sub="pop from the left while expired"
+node c "Max or min of a sliding window?" at 0,3 shape=diamond color=amber
+node c1 "Monotonic deque" at 1,3 color=green
+node d "Negatives allowed, shortest subarray with sum ≥ K?" at 0,4 shape=diamond color=amber
+node d1 "Prefix sums + monotonic deque" at 1,4 color=green
+q -> a
+a -> a1 : "yes"
+a -> b : "no"
+b -> b1 : "yes"
+b -> c : "no"
+c -> c1 : "yes"
+c -> d : "no"
+d -> d1 : "yes"
 ```
 
 
@@ -611,18 +620,20 @@ is explicitly the trap topic 03's own guide warns about.
 The folder's problems are *designs* of queues. Real interview problems mostly *use* one — and the queue is
 almost always doing one of four jobs. Every snippet was run against known answers while writing this section.
 
-```mermaid
+```arch
 %% caption: The four jobs a queue does in interviews. The container is the same deque each time; what changes is what you put in it and when you mark things visited.
-flowchart TD
-  Q(["Why is there a queue?"]) --> A{"What does FIFO buy you?"}
-  A -->|"process by distance / level"| B["BFS: shortest path in an<br/>unweighted graph or grid"]:::ok
-  A -->|"process oldest first, forget the old"| C["FIFO window:<br/>recent calls, rate limiter, logs"]:::ok
-  A -->|"0/1 edge weights"| D["0-1 BFS: deque, push 0-cost<br/>neighbours to the FRONT"]:::hot
-  A -->|"hand work between threads"| E["producer / consumer:<br/>a blocking, bounded queue"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 180x100
+node q "Why is there a queue?" at 1,0 shape=pill
+node a "What does FIFO buy you?" at 1,1 shape=diamond color=amber
+node b "BFS" at 0,3 color=green w=165 sub="shortest path in an unweighted graph or grid"
+node c "FIFO window" at 1,3 color=green w=165 sub="recent calls, rate limiter, logs"
+node d "0-1 BFS" at 2,3 color=amber w=165 sub="deque, push 0-cost neighbours to the FRONT"
+node e "Producer / consumer" at 3,3 color=green w=165 sub="a blocking, bounded queue"
+q -> a
+a:L -> b:T : "process by distance / level"
+a:B -> c:T : "process oldest first, forget the old"
+a:R -> e:T : "hand work between threads"
+a:R -> d:T : "0/1 edge weights"
 ```
 
 ### 11.1 The BFS template — and the one rule that matters

@@ -364,19 +364,20 @@ Part 2 gave the idea. This Part is the *reference*: the four directions as one t
 decides duplicates, and the Go spelling of every stack problem in the folder. All code ran on Go 1.24.5 against
 LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: One step of a monotonic stack. Popping is where the answers are produced — each popped element learns its nearest bigger neighbour.
-flowchart TD
-  N["new element x = a[i]"] --> Q{"stack non-empty and<br/>top violates the order?<br/>(e.g. a[top] < x)"}
-  Q -->|"yes"| P["pop j: a[j]'s answer is i<br/>(distance i - j, or the value x)"]:::hot
-  P --> Q
-  Q -->|"no"| PUSH["push i<br/>(store the INDEX, not the value)"]:::ok
-  PUSH --> NEXT["next element"]
-  NEXT --> N
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node n "new element x = a[i]" at 0,0 shape=pill
+node q "stack non-empty and top violates the order?" at 0,1 shape=diamond color=amber sub="e.g. a[top] < x"
+node p "Pop j" at 1,1 shape=card icon=sync color=orange sub="a[j]'s answer is i (distance i - j, or the value x)"
+node push "Push i" at 0,2 shape=card icon=check color=green sub="store the INDEX, not the value"
+node next "next element" at 0,3 shape=box
+n -> q
+q:R -> p:L : "yes"
+p:T -> q:T
+q -> push : "no"
+push -> next
+next:L -> n:L
 ```
 
 ### The four faces
@@ -508,22 +509,28 @@ for i := 0; i < 2*n; i++ {
 
 ### Which stack pattern? — a decision guide
 
-```mermaid
+```arch
 %% caption: Which stack pattern fits. Matching and nesting use a plain stack; "nearest bigger or smaller" uses a monotonic stack; an O(1) aggregate uses a parallel stack.
-flowchart TD
-  Q(["Stack problem?"]) --> A{"Matching or nesting?<br/>(brackets, tags, decode string)"}
-  A -->|"yes"| A1["Plain stack:<br/>push openers, pop on closers"]:::ok
-  A -->|"no"| B{"Nearest bigger or smaller,<br/>span, histogram area?"}
-  B -->|"yes"| B1["Monotonic stack of INDICES"]:::ok
-  B -->|"no"| C{"Min or max in O(1)<br/>at any moment?"}
-  C -->|"yes"| C1["Parallel stack of running min / max"]:::ok
-  C -->|"no"| D{"Evaluate an expression?"}
-  D -->|"yes"| D1["Operand stack<br/>(plus an operator stack for precedence)"]:::ok
-  D -->|"no"| E["Reduction or context stack,<br/>or not a stack problem at all"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 250x100
+node q "Stack problem?" at 0,0 shape=pill
+node a "Matching or nesting?" at 0,1 shape=diamond color=amber sub="brackets, tags, decode string"
+node a1 "Plain stack" at 1,1 shape=card icon=layers color=green sub="push openers, pop on closers"
+node b "Nearest bigger or smaller, span, histogram area?" at 0,2 shape=diamond color=amber
+node b1 "Monotonic stack of INDICES" at 1,2 shape=card icon=sort color=green
+node c "Min or max in O(1) at any moment?" at 0,3 shape=diamond color=amber
+node c1 "Parallel stack" at 1,3 shape=card icon=layers color=green sub="of running min / max"
+node d "Evaluate an expression?" at 0,4 shape=diamond color=amber
+node d1 "Operand stack" at 1,4 shape=card icon=sigma color=green sub="plus an operator stack for precedence"
+node e "Reduction or context stack" at 0,5 shape=card icon=question color=slate sub="or not a stack problem at all"
+q -> a
+a -> a1 : "yes"
+a -> b : "no"
+b -> b1 : "yes"
+b -> c : "no"
+c -> c1 : "yes"
+c -> d : "no"
+d -> d1 : "yes"
+d -> e : "no"
 ```
 
 ---

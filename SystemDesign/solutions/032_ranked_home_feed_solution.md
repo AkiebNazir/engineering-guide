@@ -67,27 +67,41 @@ internal: Retrieve(user_ctx, source, deadline) → [(item_id, source, score)]
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Each stage sees fewer items and costs more per item, and every stage logs its counts so the cascade can be tuned and degraded.
-flowchart LR
-    U([Feed request]) --> CTX["User context, seen set<br/>parallel"]
-    U --> S1["In-network 1,000"]
-    U --> S2["ANN 1,500"]
-    U --> S3["Social signal 500"]
-    U --> S4["Co-engagement 500"]
-    U --> S5["Fresh and explore 500"]
-    S1 --> M["Merge, hard filters<br/>4,000 to 3,000"]
-    S2 --> M
-    S3 --> M
-    S4 --> M
-    S5 --> M
-    CTX --> LR
-    M --> LR["Light ranker<br/>3,000 to 300"]
-    LR --> HR["Heavy ranker<br/>300 to 100"]
-    HR --> BL["Blend and diversity<br/>100 to 50"]
-    BL --> SN[("Snapshot store")]
-    BL --> P([Page 1: 10 posts])
-    BL -. "shown items, scores, features" .-> LOG[("Impression and feature logs")]
+grid 140x115
+node U "Feed request" at 2,0 icon=mobile shape=pill
+node CTX "User context" at 4,0 icon=user sub="seen set, parallel"
+group ret "Retrieval: five sources in parallel" color=blue icon=search
+node S1 "In-network" at 0,1 in ret icon=users sub="1,000"
+node S2 "ANN" at 1,1 in ret icon=vector sub="1,500"
+node S3 "Social signal" at 2,1 in ret icon=graph sub="500"
+node S4 "Co-engagement" at 3,1 in ret icon=link sub="500"
+node S5 "Fresh + explore" at 4,1 in ret icon=idea sub="500"
+group cas "Ranking cascade" color=purple icon=filter
+node M "Merge, hard filters" at 2,2 in cas icon=filter sub="4,000 to 3,000"
+node LR "Light ranker" at 2,3 in cas icon=model sub="3,000 to 300"
+node HR "Heavy ranker" at 2,4 in cas icon=llm sub="300 to 100"
+node BL "Blend + diversity" at 2,5 in cas icon=sort sub="100 to 50"
+node SN "Snapshot store" at 1,6 icon=kv
+node P "Page 1: 10 posts" at 2,6 shape=pill color=green
+node LOG "Impression + feature logs" at 3,6 icon=logs
+U -> CTX
+U:B -> S1:T
+U:B -> S2:T
+U:B -> S3:T
+U:B -> S4:T
+U:B -> S5:T
+S1 -> M
+S2 -> M
+S3 -> M
+S4 -> M
+S5 -> M
+CTX:R -> LR:R
+M -> LR -> HR -> BL
+BL -> SN
+BL -> P
+BL ..> LOG : "items, scores, features"
 ```
 
 ```mermaid

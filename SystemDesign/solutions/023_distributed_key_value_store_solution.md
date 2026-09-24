@@ -29,6 +29,27 @@ delete(key, context?)                              → ok                    # w
 
 ## Partitioning with consistent hashing
 
+```arch
+%% caption: Any node coordinates a request and fans it out to the key's N = 3 preference-list replicas in different zones; a stand-in holds hinted writes for a replica that is down.
+node client "Clients" at 1,0 icon=users sub="partition-aware library"
+node lb "Load balancer" at 2,1 icon=lb sub="to any node"
+group ring "Consistent-hash ring: 128 vnodes per node, gossip membership" color=blue icon=network
+node coord "Coordinator" at 1,2 in ring icon=server sub="any node"
+node r1 "Replica 1" at 0,3 in ring icon=db sub="zone A, LSM tree"
+node r2 "Replica 2" at 1,3 in ring icon=db sub="zone B, LSM tree"
+node r3 "Replica 3" at 2,3 in ring icon=db sub="zone C, LSM tree"
+node hint "Stand-in node" at 3,3 in ring icon=server sub="hints for replica 3"
+client -> coord : "one fewer hop"
+client:R -> lb:T
+lb:B -> coord:R
+coord -> r1
+coord -> r2 : "W acks / R replies"
+coord -> r3
+coord ..> hint : "sloppy quorum"
+hint ..> r3 : "handoff"
+r1 <..> r2 : "Merkle repair"
+```
+
 Keys are hashed (e.g. MurmurHash3 128-bit) onto a ring. Each physical node owns many **virtual nodes** (tokens) — say 128 — spread around the ring. A key is stored on the first `N` *distinct physical* nodes found walking clockwise from its hash (its **preference list**), skipping virtual nodes of nodes already chosen and, ideally, choosing replicas in different racks/zones.
 
 - **Adding a node** takes over the arcs adjacent to its new virtual nodes — about `1/N_nodes` of the data, pulled evenly from existing nodes, streamed in the background while the old owners keep serving.

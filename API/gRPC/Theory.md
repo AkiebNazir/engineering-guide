@@ -35,22 +35,23 @@ The idea of remote procedure calls is old (1980s). gRPC's contribution is a mode
 
 ## The Big Picture
 
-```mermaid
-flowchart LR
-    subgraph Contract
-      P[shop.proto<br/>service + messages]
-    end
-    P -->|protoc + grpc plugin| CS[Generated client stub]
-    P -->|protoc + grpc plugin| SS[Generated server interface]
-    subgraph Client process
-      APP[Your code] --> CS
-      CS --> CH[Channel<br/>1 long-lived HTTP/2 connection]
-    end
-    subgraph Server process
-      SV[HTTP/2 server] --> SS
-      SS --> IMPL[Your implementation]
-    end
-    CH <-->|"binary frames over TCP + TLS"| SV
+```arch
+%% caption: One .proto generates both sides; they talk over a single long-lived HTTP/2 connection.
+group contract "Contract" color=amber icon=doc
+node p "shop.proto" at 1,0 in contract icon=doc sub="service + messages"
+group cli "Client process" color=blue icon=app
+node app "Your code" at 0,1 in cli icon=code
+node cs "Generated client stub" at 0,2 in cli icon=package
+node ch "Channel" at 0,3 in cli icon=connection sub="1 long-lived HTTP/2 connection"
+group srv "Server process" color=purple icon=server
+node impl "Your implementation" at 2,1 in srv icon=code
+node ss "Generated server interface" at 2,2 in srv icon=package
+node sv "HTTP/2 server" at 2,3 in srv icon=server
+p:B -> cs:R : "protoc + grpc plugin"
+p:B -> ss:L : "protoc + grpc plugin"
+app -> cs -> ch
+ch <-> sv : "binary frames over TCP + TLS"
+sv -> ss -> impl
 ```
 
 Your code calls a method on a **stub** (a generated client). The stub serialises the request with Protobuf and sends it through a **channel** (one long-lived HTTP/2 connection). The server's generated code deserialises it and calls **your implementation**.
@@ -244,11 +245,20 @@ A client **service config** can retry declaratively:
 
 Code that wraps every call: authentication, logging, metrics, rate limiting, panic recovery, tracing. There are **unary** and **stream** variants on both client and server, and you need both, or a check on unary calls leaves streaming methods wide open.
 
-```mermaid
-flowchart LR
-    R[request] --> L[Logging] --> RC[Recovery] --> A[Auth] --> RL[RateLimit] --> H[Your handler]
-    A -.->|"UNAUTHENTICATED: handler never runs"| X[reject]
-    RL -.->|"RESOURCE_EXHAUSTED"| X
+```arch
+%% caption: Interceptors wrap every call in order; auth and rate limiting can reject before the handler runs.
+grid 180x90
+node r "request" at 0,0 shape=pill color=slate
+group chain "Interceptor chain" color=blue icon=layers
+node l "Logging" at 0,1 in chain icon=logs
+node rc "Recovery" at 0,2 in chain icon=shield
+node a "Auth" at 0,3 in chain icon=auth
+node rl "RateLimit" at 0,4 in chain icon=gauge
+node h "Your handler" at 0,5 icon=code
+node x "reject" at 1,3 color=red
+r -> l -> rc -> a -> rl -> h
+a ..> x : "UNAUTHENTICATED: handler never runs"
+rl:R ..> x:B : "RESOURCE_EXHAUSTED"
 ```
 
 ```go
@@ -277,14 +287,18 @@ s := grpc.NewServer(
 
 ## Load Balancing: the Trap
 
-```mermaid
-flowchart LR
-    subgraph "L4 balancer sees ONE connection"
-      C[Client<br/>1 HTTP/2 connection] --> LB[L4 load balancer]
-      LB --> S1[Server 1<br/>ALL the traffic]
-      LB -.->|idle| S2[Server 2]
-      LB -.->|idle| S3[Server 3]
-    end
+```arch
+%% caption: An L4 balancer spreads connections, and gRPC opens only one, so every call lands on one server.
+group l4 "L4 balancer sees ONE connection" color=slate icon=lb
+node c "Client" at 1,0 in l4 icon=client sub="1 HTTP/2 connection"
+node lb "L4 load balancer" at 1,1 in l4 icon=lb
+node s1 "Server 1" at 0,2 in l4 icon=server sub="ALL the traffic"
+node s2 "Server 2" at 1,2 in l4 icon=server
+node s3 "Server 3" at 2,2 in l4 icon=server
+c -> lb
+lb ==> s1
+lb ..> s2 : "idle"
+lb ..> s3 : "idle"
 ```
 
 An ordinary (L4) load balancer spreads **connections**. gRPC opens **one** connection and multiplexes every call over it, so all traffic lands on a single backend. Two fixes:

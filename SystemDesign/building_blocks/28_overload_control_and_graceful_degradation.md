@@ -83,14 +83,16 @@ The breaker protects the caller from the callee, shedding protects the callee fr
 
 ## Graceful degradation
 
-```mermaid
+```arch
 %% caption: Degrade in order of least user-visible loss first, and make every rung a switch you can flip per request class.
-flowchart TD
-    r0["Rung 0: full experience"] --> r1["Rung 1: serve stale or cached result"]
-    r1 --> r2["Rung 2: drop optional features - recs, badges, counts"]
-    r2 --> r3["Rung 3: lower fidelity - fewer candidates, cheaper model, lower bitrate"]
-    r3 --> r4["Rung 4: static fallback - popular list, generic page"]
-    r4 --> r5["Rung 5: reject by priority, then fail fast"]
+grid 160x95
+node r0 "Rung 0: full experience" at 0,0 color=green w=300
+node r1 "Rung 1: serve stale" at 0,1 color=teal sub="or cached result" w=300
+node r2 "Rung 2: drop optional features" at 0,2 color=blue sub="recs, badges, counts" w=300
+node r3 "Rung 3: lower fidelity" at 0,3 color=amber sub="fewer candidates, cheaper model, lower bitrate" w=300
+node r4 "Rung 4: static fallback" at 0,4 color=orange sub="popular list, generic page" w=300
+node r5 "Rung 5: reject by priority" at 0,5 color=red sub="then fail fast" w=300
+r0 -> r1 -> r2 -> r3 -> r4 -> r5
 ```
 
 | Product | Concrete rungs (design patterns, not any company's internals) |
@@ -114,15 +116,19 @@ flowchart TD
 
 Bronson, Aghayev, Charapko and Zhu, "Metastable Failures in Distributed Systems" (HotOS 2021), define failures where a **trigger** (a spike, a cache flush, a slow dependency, a deploy) pushes the system into a bad state and a **sustaining effect** keeps it there after the trigger is gone. The system can be below its normal capacity and still not recover, because the bad state is stable and load must fall far below the trigger level (hysteresis).
 
-```mermaid
+```arch
 %% caption: The trigger starts the loop, but the sustaining effect keeps it running after the trigger is removed, so removing the cause does not restore service.
-flowchart TD
-    t["Trigger: spike, cache flush, slow dependency, deploy"] --> o["Latency rises, requests time out"]
-    o --> a["Sustaining effects: retries, cold-cache misses, work on dead requests"]
-    a --> h["Effective load on the bottleneck rises"]
-    h --> o
-    t -. "trigger removed" .-> x["Still broken: load stays above the recovery threshold"]
-    o --> x
+node t "Trigger" at 0,0 shape=pill color=amber sub="spike, cache flush, slow dependency, deploy"
+group loop "Sustaining loop" color=red icon=sync
+node o "Latency rises" at 0,1 in loop color=red sub="requests time out"
+node a "Sustaining effects" at 0,2 in loop color=red sub="retries, cold-cache misses, work on dead requests"
+node h "Effective load rises" at 0,3 in loop color=red sub="on the bottleneck"
+node x "Still broken" at 1.3,1 color=slate sub="load stays above the recovery threshold"
+t -> o
+o -> a -> h
+h:L -> o:L
+t:R ..> x:T : "trigger removed"
+o -> x
 ```
 
 Worked cold-cache loop (assumptions ours): 15,000 rps front load, 90% hit ratio, database capacity 2,000 rps. Healthy database load is `15,000 × 0.1 = 1,500 rps` (75%). A flush sends 15,000 rps at it (7.5×). It slows, requests time out, and the cache cannot refill because the reads that would refill it fail. To recover at a 0% hit ratio and 70% database utilisation, admitted load must be `0.7 × 2,000 = 1,400 rps`, 9% of normal, so you shed about **91%** until the cache warms. So: shed to the *recovery* level, not the safe level.

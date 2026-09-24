@@ -121,13 +121,19 @@ Many platforms send a fat payload but tell receivers to **treat it as a hint and
 
 Your endpoint is a **public URL**. Anyone can `POST` `{"type":"payment.succeeded"}` to it. The provider and you share a **secret**; the provider signs each request, you recompute and compare.
 
-```mermaid
-flowchart LR
-    B[raw request body] --> H["HMAC-SHA256(secret, timestamp + '.' + body)"]
-    S[shared secret] --> H
-    H --> C{constant-time<br/>compare with<br/>header signature}
-    C -- match --> OK[accept: parse and process]
-    C -- mismatch --> NO[401: reject, do no work]
+```arch
+%% caption: Recompute the signature from the raw body and compare in constant time before doing any work.
+node b "Raw request body" at 0,0 icon=doc
+node s "Shared secret" at 2,0 icon=key
+node h "HMAC-SHA256" at 1,1 icon=lock sub="(secret, timestamp + '.' + body)"
+node c "Matches header signature?" at 1,2 shape=diamond color=amber w=150 sub="constant-time compare"
+node ok "Accept" at 0,3 color=green sub="parse and process"
+node no "401: reject" at 2,3 color=red sub="do no work"
+b -> h
+s -> h
+h -> c
+c -> ok : "match"
+c -> no : "mismatch"
 ```
 
 The rules that separate a secure check from a decorative one:
@@ -197,14 +203,21 @@ Python lab 3 builds this engine with virtual time (days of retries in millisecon
 
 ## Building a Robust Receiver
 
-```mermaid
-flowchart LR
-    R[POST /webhook] --> V[verify signature<br/>bounded raw body]
-    V -- invalid --> X[401]
-    V --> I["INSERT INTO inbox(event_id ...)<br/>UNIQUE(event_id)"]
-    I --> A[200 immediately]
-    I -.-> W[background worker]
-    W --> D[(business logic,<br/>idempotent)]
+```arch
+%% caption: Verify, record the event id, answer 200 at once; the real work happens later in a worker.
+node r "POST /webhook" at 0,0 shape=pill color=slate
+node v "Verify signature" at 0,1 icon=auth sub="bounded raw body"
+node x "401" at 1,1 color=red
+node i "INSERT INTO inbox" at 0,2 icon=sql sub="(event_id ...) UNIQUE(event_id)"
+node a "200 immediately" at 1,2 color=green
+node w "Background worker" at 0,3 icon=worker
+node d "Business logic" at 0,4 icon=db sub="idempotent"
+r -> v
+v -> x : "invalid"
+v -> i
+i -> a
+i ..> w
+w -> d
 ```
 
 1.  **Acknowledge fast.** Do only the cheap, durable thing (store the raw event), then return `2xx`. If you process inline, slow work → timeouts → retries → duplicates → more load.

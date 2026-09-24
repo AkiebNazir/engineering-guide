@@ -54,18 +54,30 @@ The **partition key** is `hash(message key) mod partition count`. A partition is
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Producers and consumers talk only to partition leaders, while the controller quorum and object storage sit off the hot path.
-flowchart LR
-    P["Producers<br/>batch, idempotent"] --> L["Partition leader<br/>zone A"]
-    L -- "follower fetch" --> F1["Follower<br/>zone B"]
-    L -- "follower fetch" --> F2["Follower<br/>zone C"]
-    L --> T[("Object storage<br/>segments older than 6 h")]
-    C1["Consumer group 1"] --> L
-    C2["Consumer group 2"] --> L
-    C1 -.-> GC["Group coordinator<br/>offsets topic"]
-    CTL["Controller quorum 3<br/>metadata, ISR, leaders"] -.-> L
-    CTL -.-> F1
+node P "Producers" at 0,0 icon=app sub="batch, idempotent"
+node C2 "Consumer group 2" at 2,0 icon=users
+node C1 "Consumer group 1" at 3,0 icon=users
+group ctl "Control plane" color=slate icon=scheduler style=dashed
+node CTL "Controller quorum" at 0,1 in ctl icon=scheduler sub="3 nodes: metadata, ISR, leaders"
+group za "Zone A" color=blue icon=region
+node L "Partition leader" at 1,1 in za icon=server
+group zb "Zone B" color=blue icon=region
+node F1 "Follower" at 0,2 in zb icon=replica
+group zc "Zone C" color=blue icon=region
+node F2 "Follower" at 2,2 in zc icon=replica
+node GC "Group coordinator" at 3,2 icon=kv sub="offsets topic"
+node T "Object storage" at 1,3 icon=blob sub="segments older than 6 h"
+P:R -> L:T
+C2 -> L
+C1 -> L
+L -> F1 : "follower fetch"
+L -> F2 : "follower fetch"
+L -> T
+C1 ..> GC
+CTL ..> L
+CTL ..> F1
 ```
 
 **Write walk.** The client batches for `linger` (2 ms, assumed), hashes the key to a partition and sends to the cached leader. The leader appends to page cache, followers fetch, the leader advances the **high watermark** once every in-sync replica has the batch, and acks. On `NOT_LEADER` the client refreshes metadata and retries with the same sequence number.
@@ -139,16 +151,21 @@ Latency budget: linger 2 ms + network 0.5 + leader append 0.1 + follower fetch 1
 
 Cluster-wide de-duplication is not feasible: 16-byte IDs at the 0.4 M msgs/s average is 553 GB for a 24 h window and 3.9 TB for 7 days. It belongs at the sink of the consumers that need it.
 
-```mermaid
+```arch
 %% caption: A failed message hops through delay tiers and lands in the dead-letter topic after three attempts, so the main partition never stalls.
-flowchart LR
-    M["orders topic"] --> C{"process"}
-    C -- "ok" --> OK["commit offset"]
-    C -- "fail, attempt 1" --> R1["retry-5s topic"]
-    R1 --> C
-    C -- "fail, attempt 2" --> R2["retry-1m topic"]
-    R2 --> C
-    C -- "fail, attempt 3" --> D["orders-dlq topic<br/>alert on depth, redrive tool"]
+node M "orders topic" at 1,0 icon=topic
+node OK "commit offset" at 0,2 shape=pill color=green
+node C "process" at 1,2 shape=diamond color=amber
+node R1 "retry-5s topic" at 2,1 icon=topic
+node D "orders-dlq topic" at 3,2 icon=topic color=red sub="alert on depth, redrive tool"
+node R2 "retry-1m topic" at 2,3 icon=topic
+M -> C
+C -> OK : "ok"
+C:R -> R1:B : "fail, attempt 1"
+R1:L -> C:T
+C:R -> R2:T : "fail, attempt 2"
+R2:L -> C:B
+C -> D : "fail, attempt 3"
 ```
 
 **Retry and delay tiers.** Each tier topic has one fixed delay, so due order equals arrival order: the tier consumer sleeps until `head.timestamp + delay` and pauses the partition, with no per-message timer (the retry-topic and DLQ pattern in Uber's 2018 engineering post on reliable reprocessing). Permanent errors skip the tiers and go straight to the DLQ. **Delay up to 7 days:** tiers (5 s, 1 min, 10 min, 1 h) cover short delays; longer ones go to a timer store keyed by `due_time` that publishes when due. Chaining tiers up to 1 day would take about 12 hops for 7 days: at an assumed 1% delayed traffic (10,000/s) that is 120,000 extra messages/s, 12% of peak, hence the timer store.

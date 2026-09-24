@@ -24,17 +24,27 @@ Served from precomputed results, so reads are key-value lookups (and CDN-cacheab
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Events are counted in sketches per partition and minute; a merger combines minutes into windows and publishes top-K lists.
-flowchart LR
-    ev([View / use events]) --> log[(Event log<br/>partitioned by item_id)]
-    log --> filter[Abuse filter]
-    filter --> agg1[Counter workers<br/>per partition]
-    agg1 -->|every minute: sketch + candidate heap per slice| store[(Minute buckets)]
-    store --> merger[Window merger<br/>sum last N buckets]
-    merger --> topk[(Top-K results<br/>per window, region, category)]
-    topk --> api[Trending API + cache] --> users([Clients])
-    log --> batch[Daily exact batch job] --> topk
+node ev "View / use events" at 0,0 icon=event shape=pill
+node log "Event log" at 0,1 icon=stream sub="partitioned by item_id"
+node batch "Daily exact batch job" at 1,1 icon=worker
+group cnt "Per-partition counting" color=pink icon=counter
+node filter "Abuse filter" at 0,2 in cnt icon=filter
+node agg1 "Counter workers" at 0,3 in cnt icon=worker sub="per partition"
+node store "Minute buckets" at 0,4 in cnt icon=storage sub="sketch + heap per slice"
+node merger "Window merger" at 1,4 icon=sigma sub="sum last N buckets"
+group read "Read path" color=blue icon=search
+node users "Clients" at 2,0 in read icon=users
+node api "Trending API + cache" at 2,1 in read icon=api
+node topk "Top-K results" at 2,3 in read icon=kv sub="per window, region, category"
+ev -> log -> filter -> agg1
+agg1 -> store : "every minute"
+store -> merger
+merger:R -> topk:B
+log -> batch
+batch:B -> topk:L
+topk -> api -> users
 ```
 
 ## Counting with sketches

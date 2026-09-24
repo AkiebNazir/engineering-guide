@@ -6,14 +6,20 @@
 
 ## What a CDN is, mechanically
 
-```mermaid
+```arch
 %% caption: A miss walks up the hierarchy and is collapsed at every tier, so the origin sees roughly one request per object per shield instead of one per edge server.
-flowchart LR
-    v["Viewer"] -->|"DNS or anycast steering"| e["Edge POP<br/>TLS, hash to one of N servers"]
-    e -->|"miss, collapsed"| m["Regional mid-tier"]
-    m -->|"miss, collapsed"| s["Origin shield"]
-    s -->|"miss, collapsed"| o[("Origin<br/>object store and packager")]
-    e -->|"hit: reply from cache"| v
+grid 170x150
+node v "Viewer" at 1,0 icon=user
+group cdn "CDN hierarchy" color=purple icon=cdn
+node e "Edge POP" at 1,1 in cdn icon=edge sub="TLS, hash to one of N servers"
+node m "Regional mid-tier" at 1,2 in cdn icon=cache
+node s "Origin shield" at 1,3 in cdn icon=shield
+node o "Origin" at 1,4 icon=storage sub="object store and packager"
+v -> e : "DNS or anycast steering"
+e -> m : "miss, collapsed"
+m -> s : "miss, collapsed"
+s -> o : "miss, collapsed"
+e:R -> v:R : "hit: reply from cache"
 ```
 
 | Mechanism | What it does | Trade-off |
@@ -38,16 +44,18 @@ flowchart LR
 
 ## The media pipeline: ingest, transcode, package
 
-```mermaid
+```arch
 %% caption: Encode cost is paid once per title, in parallel chunks, and everything after packaging is a static file the CDN can cache.
-flowchart LR
-    src["Source master"] --> ing["Ingest and validate"]
-    ing --> spl["Split into chunks at shot boundaries"]
-    spl --> enc["Parallel encode: rungs by codecs"]
-    enc --> stc["Stitch and quality check - VMAF"]
-    stc --> pkg["Package CMAF, encrypt CENC, write HLS and DASH manifests"]
-    pkg --> org[("Origin store")]
-    org -->|"fill off-peak or on demand"| cdn["CDN tiers"]
+node src "Source master" at 0,0 icon=video
+node ing "Ingest and validate" at 1,0 icon=check
+node spl "Split into chunks" at 2,0 icon=layers sub="at shot boundaries"
+node enc "Parallel encode" at 2,1 icon=cpu sub="rungs by codecs"
+node stc "Stitch and quality check" at 1,1 icon=gauge sub="VMAF"
+node pkg "Package" at 0,1 icon=package sub="CMAF, encrypt CENC, write HLS and DASH manifests"
+node org "Origin store" at 0,2 icon=storage
+node cdn "CDN tiers" at 2,2 icon=cdn
+src -> ing -> spl -> enc -> stc -> pkg -> org
+org -> cdn : "fill off-peak or on demand"
 ```
 
 **Split, encode, stitch.** Cut the source at shot or keyframe boundaries so each chunk is independently encodable, encode every chunk × rung as an idempotent task (a failed or pre-empted task reruns alone), then stitch and check quality. Netflix's tech blog ("High Quality Video Encoding at Scale", 2015) describes this chunked, parallel cloud approach. Derived: a 2-hour title at 20 s chunks is 360 chunks, × 6 rungs = 2,160 tasks. At 10 core-minutes each that is 360 core-hours, about 15 days on one core and **10 minutes** on 2,160 cores. Parallelism buys wall clock, not cost: at ~$0.3 per core-hour (assumption) that is about $108 for the title, ≈ $54 per title-hour, which the break-even below rounds to $50. Rate control must be coordinated across chunks or quality visibly jumps at the seams.
