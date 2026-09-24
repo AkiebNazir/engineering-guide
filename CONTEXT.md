@@ -715,6 +715,21 @@ generated `*_pb2`/`*_pb2_grpc` stubs by bare name) into a scratch dir alongside 
 end: all 7 types' `/api/api-type` responses, a Python run with sibling pb2 imports (gRPC level 00), a Go run with
 an external module dependency (REST lab 06, Gin), and that no `.runtmp` directory or file mutation is left behind.
 
+**24 Sep 2026 — SoftwareDesign gained an optional `00` primer chapter.** User feedback: chapter `01`
+starts by defining *complexity* but otherwise assumes the reader is already comfortable with classes,
+interfaces, and Python typing/Go idioms — there was no on-ramp for someone who has never designed
+anything before. Added `SoftwareDesign/00_software_design_foundations.md`: what a program/function/
+module/class actually is, abstraction vs. encapsulation, coupling vs. cohesion in plain terms,
+interfaces (Python `Protocol` + Go structural typing side by side), functional vs. non-functional
+requirements, then one complete worked example (a library book-checkout rule, naive-then-designed, in
+both Python and Go) tying every idea together. Every code sample was actually run (`python3` /
+`go run`) and its real output captured, same standing rule as the rest of the track. Explicitly marked
+optional/skippable for readers who already know the vocabulary — `01`–`14` are unchanged and nothing in
+them repeats `00`. Wired in: `SoftwareDesign/README.md` (new "Part 0 · Before you start" row + table,
+a "New to software design?" callout), `webapp/server.py`'s `SWD_CHAPTER_PARTS` (new `("Part 0 · Before
+you start", ("00",))` entry — no renumbering needed since `00` sorts before `01` and every other chapter
+keeps its existing number).
+
 ## 7 · Adding a problem — the loop
 
 ```bash

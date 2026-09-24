@@ -225,6 +225,77 @@ import threading, itertools
 If time is short, **stub a secondary strategy** (`class PeakPricing: ...  # TODO`) and
 say how it would work. A running core beats complete-but-broken.
 
+### A minimal worked example (30 seconds to read)
+
+The parking lot above is realistic-sized; here's the same five-step order on a problem
+small enough to hold in your head — an in-memory coat check. One entity, one invariant
+("a ticket can be claimed at most once"), one variation point (how IDs are generated),
+one facade, one driver that exercises the happy path and a failure:
+
+```python
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import Protocol
+import itertools
+
+class ItemKind(Enum):                        # 1. enums / value objects
+    COAT = auto()
+    BAG = auto()
+
+@dataclass(frozen=True)
+class Ticket:
+    id: int
+
+class IdGenerator(Protocol):                  # 3. interface at the variation point
+    def next_id(self) -> int: ...
+
+class SequentialIds:                          # 3. one concrete implementation
+    def __init__(self) -> None:
+        self._counter = itertools.count(1)
+    def next_id(self) -> int:
+        return next(self._counter)
+
+class UnknownTicket(Exception): pass
+
+class CoatCheck:                              # 2. entity, owns the invariant
+    def __init__(self, ids: IdGenerator) -> None:
+        self._ids = ids
+        self._claims: dict[int, str] = {}
+
+    def check(self, item: str) -> Ticket:
+        ticket = Ticket(self._ids.next_id())
+        self._claims[ticket.id] = item
+        return ticket
+
+    def claim(self, ticket: Ticket) -> str:
+        if ticket.id not in self._claims:
+            raise UnknownTicket(f"no such ticket: {ticket.id}")
+        return self._claims.pop(ticket.id)
+
+if __name__ == "__main__":                    # 5. tiny driver, happy path + failure
+    booth = CoatCheck(SequentialIds())
+    t1 = booth.check("blue coat")
+    t2 = booth.check("red scarf")
+    print(f"issued {t1}, {t2}")
+    print("claimed:", booth.claim(t1))
+    try:
+        booth.claim(t1)
+    except UnknownTicket as e:
+        print("expected failure:", e)
+```
+
+Output:
+
+```text
+issued Ticket(id=1), Ticket(id=2)
+claimed: blue coat
+expected failure: no such ticket: 1
+```
+
+Swapping `SequentialIds` for a `RandomIds` later touches nothing but the constructor
+call — that's the payoff of putting the interface exactly at the one thing (`item` → ID)
+that plausibly varies, and nowhere else.
+
 ---
 
 ## 8 · Step 5 — Extensibility, concurrency, and tests (8 min)
@@ -274,6 +345,56 @@ Almost every LLD problem has a **check-then-act race** at its heart: "is the spo
 
 `lld/004_movie_ticket_booking_solution.py` runs exactly this race with real threads
 and shows it double-booking without the lock.
+
+### The simplest possible fix, shown running
+
+Same shape as the spot race, boiled down to a shared counter so you can see the fix in
+five lines. `time.sleep(0)` between the check and the act widens the race window enough
+to actually observe the lost updates on a fast machine — a real check-then-act race
+doesn't need help, but a toy one this small does:
+
+```python
+import threading, time
+
+class UnsafeCounter:
+    def __init__(self) -> None:
+        self.value = 0
+    def increment(self) -> None:
+        current = self.value       # "check"
+        time.sleep(0)              # widen the window
+        self.value = current + 1   # "act" -- not atomic together
+
+class SafeCounter:
+    def __init__(self) -> None:
+        self.value = 0
+        self._lock = threading.Lock()
+    def increment(self) -> None:
+        with self._lock:           # check-then-act inside ONE critical section
+            current = self.value
+            time.sleep(0)
+            self.value = current + 1
+
+def hammer(counter, n_threads=8, n_increments=200) -> int:
+    def worker():
+        for _ in range(n_increments):
+            counter.increment()
+    threads = [threading.Thread(target=worker) for _ in range(n_threads)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    return counter.value
+
+expected = 8 * 200
+print("unsafe result:", hammer(UnsafeCounter()), f"(expected {expected})")
+print("safe result:  ", hammer(SafeCounter()), f"(expected {expected})")
+```
+
+Output (the unsafe number is non-deterministic and will differ run to run — that's the
+race; the safe number is always exactly right):
+
+```text
+unsafe result: 212 (expected 1600)
+safe result:   1600 (expected 1600)
+```
 
 ### Options, from simplest to most scalable
 
@@ -405,28 +526,30 @@ The **key point** is what separates a strong answer. ✅ = worked, runnable solu
 
 ### Tier 2 — know the key point
 
-| Problem | Key design point |
-|---|---|
-| **Library management** | `Book` vs. `BookCopy`; `Loan` entity; reservation queue per book; fine policy |
-| **Hotel management** | `RoomType` inventory by date vs. specific room assignment at check-in; overbooking policy |
-| **Snake and ladder** | Board as a jump map; dice as injected strategy (testability); turn state |
-| **Chess** | Piece move generation per type (polymorphism), board validation, check detection by simulating moves; don't forget castling/en passant/promotion as rule objects |
-| **ATM** | State machine (idle → card → PIN → transaction); cash dispensing chain; bank as external port; transactional debit then dispense with compensation |
-| **Online shopping cart / checkout** | Cart vs. Order; price snapshot at order time; discount rules as composable strategies; inventory reservation |
-| **Ride sharing (in-process)** | Driver matching strategy; trip state machine; surge pricing strategy; location index |
-| **Food delivery order lifecycle** | Order state machine with actors per transition; assignment strategy; notifications as observers |
-| **Pub-sub / message queue (in-process)** | Topics, subscriber offsets, at-least-once with ack, back-pressure (`PyEngineering/16`) |
-| **Task/job scheduler** | Priority queue by run-at time; worker pool; retries with backoff; cancellation; recurring jobs |
-| **Notification service** | Channel strategy + templates; user preferences; retry decorator; rate limiting per user |
-| **Text editor with undo/redo** | Command pattern; rope/gap buffer for text; cursor as value object (`04` §8) |
-| **In-memory file system** | Composite tree; path resolution; `ls`/`mkdir`/`addContent` (`PyDSA/25_design/009`) |
-| **Snapshot array / time-based KV** | Per-key version lists + binary search (`PyDSA/25_design/012`) |
-| **Stack Overflow / Q&A site** | Votes and reputation rules; question/answer/comment Composite; tags; bounty state |
-| **Stock exchange order book** | Price-level maps + FIFO queues per level; match engine; order types as strategies |
-| **Coupon / discount engine** | Rules as Specifications + actions; stacking and priority rules; idempotent redemption |
-| **Traffic signal controller** | State machine with timed transitions; injected clock; emergency override |
-| **Cricket / sports scoreboard** | Event-sourced ball-by-ball log; derived stats as projections |
-| **Distributed ID generator (class level)** | Snowflake bit layout; clock-moved-backwards handling (`SystemDesign/problems/022`) |
+✅ = worked, runnable solution in `lld/`; a blank means design it on paper (§14's plan).
+
+| Problem | Key design point | |
+|---|---|---|
+| **Library management** | `Book` vs. `BookCopy`; `Loan` entity; reservation queue per book; fine policy | ✅ 015 |
+| **Hotel management** | `RoomType` inventory by date vs. specific room assignment at check-in; overbooking policy | |
+| **Snake and ladder** | Board as a jump map; dice as injected strategy (testability); turn state | |
+| **Chess** | Piece move generation per type (polymorphism), board validation, check detection by simulating moves; don't forget castling/en passant/promotion as rule objects | ✅ 019 |
+| **ATM** | State machine (idle → card → PIN → transaction); cash dispensing chain; bank as external port; transactional debit then dispense with compensation | ✅ 018 |
+| **Online shopping cart / checkout** | Cart vs. Order; price snapshot at order time; discount rules as composable strategies; inventory reservation | |
+| **Ride sharing (in-process)** | Driver matching strategy; trip state machine; surge pricing strategy; location index | |
+| **Food delivery order lifecycle** | Order state machine with actors per transition; assignment strategy; notifications as observers | ✅ 016 |
+| **Pub-sub / message queue (in-process)** | Topics, subscriber offsets, at-least-once with ack, back-pressure (`PyEngineering/16`) | |
+| **Task/job scheduler** | Priority queue by run-at time; worker pool; retries with backoff; cancellation; recurring jobs | ✅ 014 |
+| **Notification service** | Channel strategy + templates; user preferences; retry decorator; rate limiting per user | ✅ 020 |
+| **Text editor with undo/redo** | Command pattern; rope/gap buffer for text; cursor as value object (`04` §8) | ✅ 017 |
+| **In-memory file system** | Composite tree; path resolution; `ls`/`mkdir`/`addContent` (`PyDSA/25_design/009`) | |
+| **Snapshot array / time-based KV** | Per-key version lists + binary search (`PyDSA/25_design/012`) | |
+| **Stack Overflow / Q&A site** | Votes and reputation rules; question/answer/comment Composite; tags; bounty state | |
+| **Stock exchange order book** | Price-level maps + FIFO queues per level; match engine; order types as strategies | ✅ 013 |
+| **Coupon / discount engine** | Rules as Specifications + actions; stacking and priority rules; idempotent redemption | |
+| **Traffic signal controller** | State machine with timed transitions; injected clock; emergency override | |
+| **Cricket / sports scoreboard** | Event-sourced ball-by-ball log; derived stats as projections | |
+| **Distributed ID generator (class level)** | Snowflake bit layout; clock-moved-backwards handling (`SystemDesign/problems/022`) | |
 
 ---
 
