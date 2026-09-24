@@ -584,6 +584,10 @@
    stretching a five-node tree to the full column. */
 .reader[data-mod="dsaguide"] .diagram-canvas svg,
 .reader[data-mod="dsaguidego"] .diagram-canvas svg { width: 100%; min-width: 0; max-width: var(--nat, 100%); }
+/* arch diagrams: never stretched past their true size, and never shrunk below
+   720px either — a wide one scrolls sideways (or opens in Expand) instead of
+   turning its labels into specks */
+.diagram[data-kind="arch"] .diagram-canvas > svg { width: 100%; min-width: min(720px, var(--nat, 100%)); max-width: var(--nat, 100%); }
 .diagram figcaption { margin: 12px auto 2px; max-width: 60ch; font: italic 400 .88em/1.5 var(--serif); color: var(--text-dim); }
 .diagram-zoom {
   position: absolute; top: 9px; right: 9px; display: inline-flex; align-items: center; gap: 5px;

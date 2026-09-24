@@ -75,34 +75,36 @@ Every request your program makes eventually crosses one narrow, guarded boundary
 the **system call interface** — into the kernel, which routes it to the right
 subsystem, which talks to the actual hardware:
 
-```mermaid
-graph TD
-    subgraph "User Space — your code runs here, with no direct hardware access"
-        App1["Your Application"]
-        App2["Another Application"]
-    end
-    Syscall["System Call Interface — the only door across the boundary"]
-    subgraph "Kernel Space — privileged, talks to hardware directly"
-        Sched["Scheduler §1"]
-        Mem["Memory Manager §5"]
-        FS["File System §5/§7"]
-        Drivers["I/O Manager / Device Drivers §4/§7"]
-        Net["Network Stack §7"]
-    end
-    subgraph "Hardware"
-        CPU["CPU cores"]
-        RAM["RAM"]
-        Disk["Disk"]
-        NIC["Network Card"]
-    end
-    App1 --> Syscall
-    App2 --> Syscall
-    Syscall --> Sched & Mem & FS & Drivers & Net
-    Sched --> CPU
-    Mem --> RAM
-    FS --> Disk
-    Drivers --> Disk & NIC
-    Net --> NIC
+```arch
+%% caption: Every request crosses one guarded door, the system call interface, into the kernel subsystem that owns the hardware.
+group us "User Space: your code, no direct hardware access" color=blue icon=user
+node app1 "Your Application" at 1,0 in us icon=app
+node app2 "Another Application" at 3,0 in us icon=app
+node sys "System Call Interface" at 2,1 shape=pill color=amber sub="the only door across the boundary"
+group ks "Kernel Space: privileged, talks to hardware" color=purple icon=shield
+node sched "Scheduler" at 0,2 in ks icon=scheduler sub="§1"
+node mem "Memory Manager" at 1,2 in ks icon=memory sub="§5"
+node fs "File System" at 2,2 in ks icon=folder sub="§5 / §7"
+node io "I/O Manager & Drivers" at 3,2 in ks icon=plugin sub="§4 / §7"
+node net "Network Stack" at 4,2 in ks icon=network sub="§7"
+group hw "Hardware" color=slate icon=cpu
+node cpu "CPU cores" at 0,3 in hw icon=cpu
+node ram "RAM" at 1,3 in hw icon=memory
+node disk "Disk" at 2.5,3 in hw icon=disk
+node nic "Network Card" at 4,3 in hw icon=wifi
+app1 -> sys
+app2 -> sys
+sys -> sched
+sys -> mem
+sys -> fs
+sys -> io
+sys -> net
+sched -> cpu
+mem -> ram
+fs -> disk
+io -> disk
+io -> nic
+net -> nic
 ```
 
 <div class="lab" data-viz="os-architecture"></div>
