@@ -51,6 +51,8 @@ sequenceDiagram
 
 The **`code_challenge` / `code_verifier`** pair (PKCE) stops a stolen authorization code from being redeemed by an attacker.
 
+<div class="lab" data-viz="flow-oauth-pkce"></div>
+
 ## 2. Authorization: "What May You Do?"
 
 *   **Scopes** (`orders:read`, `orders:write`): coarse permissions carried in the token.

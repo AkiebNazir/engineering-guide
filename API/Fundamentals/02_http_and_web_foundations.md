@@ -192,6 +192,8 @@ sequenceDiagram
 *   Do not answer `Access-Control-Allow-Origin: *` on an API that uses cookies. List exact origins.
 *   A "CORS error" almost always means the *server* is missing headers, not that the client code is wrong.
 
+<div class="lab" data-viz="flow-cors"></div>
+
 ## 10. Cookies vs Tokens
 
 | | Session cookie | Bearer token (JWT / opaque) |

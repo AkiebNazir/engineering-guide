@@ -407,6 +407,8 @@ fill -> pa
 *   **OOM killer:** when memory is exhausted, Linux kills a process chosen by a badness score. In containers, exceeding the cgroup memory limit gets the container killed (exit code 137) even if the host has free memory.
 *   **NUMA (Non-Uniform Memory Access):** On multi-socket servers, each CPU has its own local RAM. Accessing another socket's memory goes over the interconnect and is slower. High-performance databases pin threads to cores and allocate memory on the local NUMA node (`numactl`, `libnuma`).
 
+<div class="lab" data-viz="flow-page-fault"></div>
+
 ## 6. Processes, Threads, and Containers
 
 | Concept | Isolation | Cost to create | Communication |

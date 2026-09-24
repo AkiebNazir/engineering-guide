@@ -137,6 +137,8 @@ is the layer `CSFundamentals/03_databases_deep_dive.md` and
 mechanics, MVCC's `xmin`/`xmax` row versioning, page layout, vacuum — none of which
 this level re-explains.
 
+<div class="lab" data-viz="flow-pg-query"></div>
+
 ## Connecting it to what you already ran
 
 Every level in this module exercised this pipeline without naming it:

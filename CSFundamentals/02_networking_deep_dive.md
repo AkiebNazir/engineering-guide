@@ -93,6 +93,8 @@ The most-asked networking question. Walk it layer by layer and stop to go deeper
 
 Numbers to mention: DNS usually a few ms when cached, tens of ms uncached; a same-continent RTT is ~20-80 ms; TCP+TLS 1.3 costs 2 RTTs on a new connection, HTTP/3 (QUIC) combines them into 1 RTT, and resumed QUIC sessions can send data in 0-RTT.
 
+<div class="lab" data-viz="flow-web-request"></div>
+
 ## 1. TCP Fundamentals Before Congestion Control
 
 ### Connection lifecycle
@@ -100,6 +102,8 @@ Numbers to mention: DNS usually a few ms when cached, tens of ms uncached; a sam
 - **Teardown:** `FIN`/`ACK` in each direction. The side that closes first enters **TIME_WAIT** for 2×MSL (commonly 60 s on Linux) so delayed segments from the old connection can't corrupt a new one with the same 4-tuple. A proxy that opens many short outbound connections can run out of ephemeral ports because of TIME_WAIT: use connection pooling / keep-alive.
 - **Flow control vs congestion control:** *flow control* protects the RECEIVER (the advertised receive window says how much it can buffer); *congestion control* protects the NETWORK (the congestion window, cwnd). The sender may transmit min(rwnd, cwnd).
 - **Nagle's algorithm + delayed ACKs** can add ~40 ms latency to small request/response writes. Latency-sensitive RPC stacks set `TCP_NODELAY`.
+
+<div class="lab" data-viz="flow-tcp"></div>
 
 ## 2. TCP Congestion Control (CUBIC vs. BBR)
 
@@ -210,6 +214,8 @@ b3 -> client2 : "5GB response DIRECTLY to client" thick
 *   **L7 load balancer / reverse proxy:** Terminates TCP and TLS, reads HTTP, opens its own connection (usually pooled) to the backend. Enables path/header routing, retries, rate limiting, WAF, auth, gRPC per-request balancing. Costs CPU and adds a hop. Envoy, Nginx, Google Front End (GFE).
 *   **Why L7 matters for gRPC:** HTTP/2 multiplexes many requests on one long-lived connection, so an L4 balancer pins all of a client's requests to one backend. Balance per request at L7, or use client-side load balancing.
 
+<div class="lab" data-viz="flow-lb-l4-l7"></div>
+
 ### Direct Server Return (DSR)
 In NAT-mode L4 balancing, responses flow back through the LB, which can bottleneck on large responses.
 *   **DSR:** The LB rewrites only the destination MAC and forwards the packet; the backend has the service IP (VIP) configured on a loopback interface and replies **directly** to the client. The LB sees only inbound traffic. Trade-off: the LB can't see responses (no response-based health signals) and backends must be on the same L2 segment (or use tunneling).
@@ -240,6 +246,8 @@ If asked how HTTPS works, don't just say "it encrypts data." **Precision note:**
 
 Properties to name: **forward secrecy** (ephemeral keys — a stolen server private key can't decrypt past traffic), **1-RTT full handshake**, optional **0-RTT resumption** (replayable), **mTLS** (client also presents a certificate; standard for service-to-service auth, e.g. Google's ALTS internally, SPIFFE/Istio elsewhere).
 
+<div class="lab" data-viz="flow-tls13"></div>
+
 ## 6. DNS in More Depth
 
 | Record | Purpose |
@@ -255,6 +263,8 @@ Properties to name: **forward secrecy** (ephemeral keys — a stolen server priv
 - **GeoDNS / latency-based DNS:** return different answers by resolver location (EDNS Client Subnet improves accuracy).
 - **DNS is a dependency:** cache results, set timeouts, and don't resolve per request in hot paths.
 - **UDP by default, TCP for large responses;** DNS over HTTPS/TLS for privacy.
+
+<div class="lab" data-viz="flow-dns"></div>
 
 ## Interview checklist
 

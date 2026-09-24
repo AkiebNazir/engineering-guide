@@ -141,6 +141,8 @@ physical backend on the next statement. This is a real operational gotcha, not a
 theoretical one — teams migrating onto PgBouncer in transaction mode routinely have
 to find and fix code that assumed session persistence.
 
+<div class="lab" data-viz="flow-pg-pooling"></div>
+
 ## The N+1 query problem — measured live
 
 The N+1 pattern: fetch a list of N rows, then loop over them issuing one more query

@@ -153,6 +153,8 @@ sequenceDiagram
 *   *Cost:* dead versions accumulate. PostgreSQL's `VACUUM` reclaims them; long-running transactions prevent cleanup and cause table bloat. InnoDB keeps old versions in undo logs instead.
 *   The same idea in miniature: `PyDSA/25_design/012_snapshot_array_solution.py`.
 
+<div class="lab" data-viz="flow-mvcc"></div>
+
 ## 3. Isolation Levels and the Anomalies They Allow
 
 | Anomaly | What happens |
@@ -230,6 +232,8 @@ sequenceDiagram
 *   **TrueTime:** Google runs time masters in every datacenter backed by **GPS receivers and atomic clocks**. `TT.now()` returns an interval `[earliest, latest]` guaranteed to contain true time. The paper reports the uncertainty bound ε typically between about 1 and 7 ms.
 *   **The Commit Wait:** A transaction picks commit timestamp `s ≥ TT.now().latest`, then waits until `TT.now().earliest > s` (about 2ε) before making the commit visible. After that, every machine's clock reading is past `s`, so any later transaction gets a larger timestamp. Snapshot reads at a timestamp are then lock-free and globally consistent.
 *   Spanner also uses **two-phase commit over Paxos groups** for multi-shard transactions — each participant is itself a replicated Paxos group, which avoids 2PC's classic "coordinator dies and participants block" problem.
+
+<div class="lab" data-viz="flow-spanner-commit"></div>
 
 ### Logical clocks when you don't have TrueTime
 *   **Lamport clocks:** a counter incremented on each event and bumped to `max(local, received) + 1` on receive. Gives a total order consistent with causality, but can't detect concurrency.

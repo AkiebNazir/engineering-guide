@@ -320,7 +320,14 @@ function mountFlow(L, spec) {
         const w = Math.max(44, Math.ceil(measure(s.label || '', FONT_TAG)) + 22);
         rect.setAttribute('width', w); rect.setAttribute('x', -w / 2);
       }
-      tag.setAttribute('transform', `translate(0 ${y < 110 ? 16 : -38})`);   // below the dot near the lane headers
+      // keep the tag clear of both cards on this hop: above them, or below if
+      // that would run into the lane headers
+      const A = box(s.path[k]), B = box(s.path[k + 1]);
+      const near = [A, B].filter(b => Math.abs(b.x - x) < b.w / 2 + 70);
+      const top = Math.min(y - 16, ...near.map(b => b.y - b.h / 2 - 6));
+      const bot = Math.max(y + 16, ...near.map(b => b.y + b.h / 2 + 6));
+      const ty = top - 24 >= 40 ? top - 24 : bot;
+      tag.setAttribute('transform', `translate(0 ${Math.round(ty - y)})`);
       tag.style.opacity = f > .8 && k === hops - 1 ? 0 : 1;          // don't cover the node it lands on
     }
 

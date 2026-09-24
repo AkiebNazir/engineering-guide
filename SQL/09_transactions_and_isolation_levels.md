@@ -204,6 +204,8 @@ Goroutine A's `SELECT ... FOR UPDATE` blocked on B's row lock, so A woke up with
 post-commit balance (90) instead of the stale 100 — identical mechanism, identical
 correct result, as the Python demo above.
 
+<div class="lab" data-viz="flow-lost-update"></div>
+
 ## Demo 2: non-repeatable read at `READ COMMITTED`, prevented by `REPEATABLE READ`
 
 ```python

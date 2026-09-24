@@ -136,6 +136,8 @@ Real output: `orphan lock present -> true` immediately after acquiring, then
 guarantee, same mechanism, Redis's own expiry doing the work regardless of which
 client set the key.
 
+<div class="lab" data-viz="flow-redis-lock"></div>
+
 ## The Redlock disagreement — and why it matters here
 
 Redis's creator (antirez) proposed **Redlock**: to make this pattern safe against a

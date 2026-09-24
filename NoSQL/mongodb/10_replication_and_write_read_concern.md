@@ -141,6 +141,8 @@ Two things worth internalizing from this real result:
 1. MongoDB is smart enough to reject an **unsatisfiable** write concern immediately (`UnsatisfiableWriteConcern`, in under a millisecond here) rather than making the client wait out the full `wtimeout` for something it already knows can never happen — it only actually times out (`WTimeoutError`) when the requested concern is *theoretically* satisfiable but doesn't get satisfied in time (e.g. `w: 2` on a 3-node set where a secondary happens to be down or lagging).
 2. **The write itself still happened.** `who=w2` is genuinely present in the collection — write concern governs *acknowledgment*, not whether the write is applied. The primary always applies the write to its own data immediately; `w` only controls how long the driver waits, and how many other nodes must confirm, before telling your code "done." A rejected/timed-out write concern is not a rolled-back write — this is a common and consequential misunderstanding to carry into an incident: an "error" from a write-concern timeout does not by itself mean the data didn't change.
 
+<div class="lab" data-viz="flow-mongo-wc"></div>
+
 ## Read preference: which node answers a read
 
 **Read preference** controls which member(s) of the replica set a read is allowed to go to.

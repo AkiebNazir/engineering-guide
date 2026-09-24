@@ -91,6 +91,8 @@ crashes before the flush — a real durability tradeoff, not free performance.
 Redis itself doesn't enforce any of these — they're an application-level discipline about
 who calls `SET` and when. Redis just provides the fast key-value layer underneath.
 
+<div class="lab" data-viz="flow-cache-aside"></div>
+
 ## TTL-based expiry and eviction
 
 TTL (level 01/02) handles per-key staleness: cached data automatically disappears after

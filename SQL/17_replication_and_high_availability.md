@@ -212,6 +212,8 @@ second is a piece of operational tooling (Patroni, repmgr, a managed cloud servi
 built on top of it. Saying "just add a replica" without naming what detects failure and
 performs promotion is an incomplete answer.
 
+<div class="lab" data-viz="flow-pg-ha"></div>
+
 ## Read replicas for read scaling — and the staleness they buy you
 
 The same mechanism used for HA also scales reads: point read-only traffic at one or
