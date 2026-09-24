@@ -19,7 +19,7 @@ in every LLD round.
 |---|---|
 | Deep modules, information hiding, pass-through layers | `01_philosophy_of_software_design.md` §3–§6 |
 | Layered, hexagonal, clean architecture diagrams | `SystemDesign/best_practices/05_architectural_patterns.md` |
-| HTTP/REST/gRPC wire-level API design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `04_api_design_low_level.md` |
+| HTTP/REST/gRPC wire-level API design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `SystemDesign/building_blocks/04_api_design_low_level.md` |
 | Service-level API evolution, sagas | `CSFundamentals/04_software_engineering_deep_dive.md` §3–§4 |
 | Error taxonomy code | `PyEngineering/17_error_taxonomy`, `GoEngineering/17_error_taxonomy` |
 | Monorepos and packaging | `PyEngineering/30_packaging_distribution_monorepos` |
@@ -85,6 +85,21 @@ def shipping_cost(country: str, weight_g: int) -> int:
 
 Stamp coupling isn't always wrong — passing a value object like `Address` is better than
 five loose strings. The smell is passing a *large mutable entity* to use one field.
+
+```python
+# MESSAGE COUPLING: A doesn't know B exists — only the event's shape is shared.
+class OrderPlaced:
+    def __init__(self, order_id: str) -> None:
+        self.order_id = order_id
+
+def place_order(order_id: str, publish) -> None:
+    publish(OrderPlaced(order_id))          # publish() is a callback/bus; A never imports B
+
+def send_confirmation_email(event: OrderPlaced) -> None:
+    print(f"emailing about {event.order_id}")
+
+# wiring happens elsewhere, e.g.: bus.subscribe(OrderPlaced, send_confirmation_email)
+```
 
 ### Temporal coupling
 
@@ -366,6 +381,23 @@ Rules of thumb:
    `Pagination`) — this also removes connascence of value between them.
 6. **A boolean parameter often means two functions** (`01` §10).
 
+Rule 4, in code — the bug is invisible at the call site:
+
+```python
+class Roster:
+    def __init__(self, names: list[str]) -> None:
+        self.names = names                 # aliases the caller's list, doesn't copy it
+
+source = ["Ann", "Bo"]
+roster = Roster(source)
+source.append("Cy")                        # roster.names silently has 3 names too
+
+# Fix: copy on the way in, or document that ownership transfers.
+class Roster:
+    def __init__(self, names: list[str]) -> None:
+        self.names = list(names)           # defensive copy — caller's list is now independent
+```
+
 ### Go: options structs vs. functional options
 
 ```go
@@ -401,6 +433,24 @@ A method either **changes state** (command, returns nothing or an ID) or **answe
 question** (query, no side effects) — not both. `stack.pop()` is the accepted pragmatic
 exception. A `get_user()` that also updates `last_seen` will one day be called in a loop
 by someone who didn't know.
+
+```python
+# VIOLATION: looks like a query; a side effect is hidden inside a "getter".
+def get_user(user_id: str, db) -> "User":
+    user = db.load(user_id)
+    user.last_seen = now()
+    db.save(user)
+    return user
+
+# FIXED: split the query from the command. Callers opt into the side effect.
+def get_user(user_id: str, db) -> "User":
+    return db.load(user_id)
+
+def record_seen(user_id: str, db) -> None:
+    user = db.load(user_id)
+    user.last_seen = now()
+    db.save(user)
+```
 
 ---
 
@@ -499,6 +549,20 @@ Go does this in the standard library: `time.Sleep(5 * time.Second)`.
 - Anything with background goroutines/threads → an explicit `Stop()`/`close()` that
   waits for them. A library that leaks goroutines is a library people stop using.
 
+```python
+class TempWorkspace:
+    def __enter__(self) -> "TempWorkspace":
+        self._dir = make_temp_dir()
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        remove_dir(self._dir)              # always runs, even if the block raised
+
+with TempWorkspace() as ws:
+    do_work(ws)
+# the directory is gone here, whether do_work() succeeded or raised — the pit of success
+```
+
 ### Thread safety is part of the contract
 
 State it in the doc: *"Safe for concurrent use by multiple goroutines"* (like
@@ -579,6 +643,23 @@ Every configuration option and extension point is an API with a maintenance cost
 - **Fail at startup on invalid config**, not at the first request that needs it.
 - Every option doubles the states to test. Default well; expose little.
 
+```python
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class AppConfig:
+    db_host: str
+    db_pool_size: int
+    request_timeout_s: float
+
+def load_config(env: dict[str, str]) -> AppConfig:
+    return AppConfig(
+        db_host=env["DB_HOST"],
+        db_pool_size=int(env.get("DB_POOL_SIZE", "10")),
+        request_timeout_s=float(env.get("REQUEST_TIMEOUT_S", "5.0")),
+    )                                        # missing/bad values raise here, at startup
+```
+
 ### Extension points (plugins, hooks, strategies)
 
 - Add them where the problem **demonstrably** varies (second customer, second vendor) —
@@ -589,6 +670,17 @@ Every configuration option and extension point is an API with a maintenance cost
 - Define the extension's contract: what it may call, which thread it runs on, what
   happens if it raises, whether its output is trusted.
 
+```python
+# The smallest extension point: pass a function. No registry, no base class.
+def apply_discount(total: float, discount_fn) -> float:
+    return discount_fn(total)
+
+def ten_percent_off(total: float) -> float:
+    return total * 0.9
+
+apply_discount(100.0, ten_percent_off)      # 90.0 — a new discount is just a new function
+```
+
 ---
 
 ## 12 · Modular monolith → services: where the seams go
@@ -597,6 +689,21 @@ A **modular monolith** — one deployable, strictly enforced internal module bou
 is the right starting architecture for most products, and the prerequisite for ever
 extracting services cleanly. A codebase with poor module boundaries, split into
 services, becomes a **distributed monolith**: all the coupling, plus network failures.
+
+```
+ MODULAR MONOLITH                            DISTRIBUTED MONOLITH
+ one deployable, boundaries enforced         same coupling, split anyway
+
+ ┌───────────────────────────────┐           ┌─────────┐  network  ┌──────────┐
+ │  orders │ payments │ catalog  │           │ orders  │─────────▶ │ payments │
+ │  (each reachable only         │           └────┬────┘   call    └────┬─────┘
+ │   through its own API)        │                │ still reaches   │
+ └───────────────────────────────┘                ▼ into catalog's  ▼
+     one deploy, one transaction              ┌─────────┐  tables  (the same
+                                               │ catalog │◀─────────  coupling —
+                                               └─────────┘  now with latency
+                                                             and partial failure)
+```
 
 Good seams (where a module/service boundary should go):
 

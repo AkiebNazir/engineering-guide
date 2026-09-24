@@ -182,6 +182,25 @@ func Hourly(rate int) PricingRule {
 **Force:** code needs to create one of several implementations, chosen by data (config,
 a request field, a file extension), without every call site knowing the concrete types.
 
+At its smallest, a factory is just a dict from key to constructor:
+
+```python
+# The simplest possible factory: a dict from key to constructor function.
+SHAPES = {
+    "circle": lambda r: 3.14159 * r * r,
+    "square": lambda s: s * s,
+}
+
+def area(kind: str, *args) -> float:
+    return SHAPES[kind](*args)
+
+assert area("square", 3) == 9
+assert round(area("circle", 2), 2) == 12.57
+```
+
+The `Notifier` factory below is the same dict-dispatch idea with a typed interface,
+constructor arguments read from config, and a real error on an unknown key:
+
 ```python
 from typing import Callable, Protocol
 
@@ -406,6 +425,28 @@ allow tests to inject a different one."
 **Force:** when something happens, a changing set of other parties must react, and the
 source shouldn't know who they are.
 
+The core of it is a list of callbacks:
+
+```python
+# The simplest possible observer: a list of plain callback functions.
+watchers = []
+
+def on_change(fn):
+    watchers.append(fn)
+
+def change(value):
+    for fn in watchers:
+        fn(value)
+
+seen = []
+on_change(lambda v: seen.append(v))
+change(42)
+assert seen == [42]
+```
+
+`EventBus` below is the same list-of-callbacks idea, hardened with topics, an
+unsubscribe handle, and failure isolation:
+
 ```python
 from collections import defaultdict
 from typing import Callable
@@ -490,6 +531,27 @@ before that happens. **Overkill** with two or three collaborators — wire them 
 
 **Force:** operations must be treated as data — undone, redone, queued, retried,
 scheduled, logged, or sent across a boundary.
+
+The smallest command is an action paired with its own undo:
+
+```python
+# The simplest possible command: an action paired with its own undo.
+class ToggleLight:
+    def __init__(self, light: dict) -> None:
+        self._light = light
+    def execute(self) -> None:
+        self._light["on"] = not self._light["on"]
+    def undo(self) -> None:
+        self.execute()          # toggling is its own inverse
+
+light = {"on": False}
+cmd = ToggleLight(light)
+cmd.execute(); assert light["on"] is True
+cmd.undo();    assert light["on"] is False
+```
+
+Most real commands aren't self-inverse. The text editor below captures what `undo`
+needs *at execute time*, and adds undo/redo stacks:
 
 ```python
 from dataclasses import dataclass, field
@@ -736,6 +798,37 @@ func (c *cachedStore) Get(ctx context.Context, k string) ([]byte, error) {
 `cache(retry(fetch))` caches the retried result. `metrics(retry(x))` counts one call;
 `retry(metrics(x))` counts every attempt. State the order you chose and why.
 
+### Proxy — same interface, controlled access
+
+A Proxy has the identical shape as a Decorator — same interface, wraps a collaborator —
+but its intent is **controlling access**, not adding behaviour: lazy loading, a remote
+stub, a permission check, rate limiting, or a cache.
+
+```python
+class SlowService:
+    def fetch(self, key: str) -> str:
+        return f"value-for-{key}"        # imagine a slow network call
+
+class CachingProxy:                      # same interface as SlowService
+    def __init__(self, real: SlowService) -> None:
+        self._real = real
+        self._cache: dict[str, str] = {}
+    def fetch(self, key: str) -> str:
+        if key not in self._cache:
+            self._cache[key] = self._real.fetch(key)
+        return self._cache[key]
+
+proxy = CachingProxy(SlowService())
+assert proxy.fetch("a") == "value-for-a"
+assert proxy.fetch("a") == "value-for-a"   # second call hits the cache, not SlowService
+```
+
+Swap `CachingProxy` for `RateLimitedProxy`, `ReadOnlyProxy`, or `RemoteStubProxy` and
+callers don't change — they still just call `.fetch(key)`. That's the same test as
+Decorator vs. Proxy in the table above: ask *why* you're wrapping. Adding behaviour on
+top of what's already there is Decorator; deciding whether or how the call reaches the
+real thing is Proxy.
+
 ### Adapter as an anti-corruption layer
 
 ```python
@@ -758,6 +851,37 @@ class VendorXAdapter:                             # translates both ways, at the
 
 Nothing outside `VendorXAdapter` knows the vendor's field names, error types, or casing.
 Switching vendors is one new adapter.
+
+### Facade — one simple call over a subsystem
+
+**Force:** getting anything done needs several collaborators used in the right order,
+and most callers only ever want the common case.
+
+```python
+class Decoder:
+    def decode(self, path: str) -> bytes: return b"raw-frames"
+
+class Encoder:
+    def encode(self, frames: bytes, fmt: str) -> bytes: return frames + fmt.encode()
+
+class Muxer:
+    def package(self, data: bytes) -> bytes: return b"[" + data + b"]"
+
+class VideoConverter:                     # the facade: one call, three collaborators hidden
+    def __init__(self) -> None:
+        self._decoder, self._encoder, self._muxer = Decoder(), Encoder(), Muxer()
+    def convert(self, path: str, fmt: str) -> bytes:
+        frames = self._decoder.decode(path)
+        encoded = self._encoder.encode(frames, fmt)
+        return self._muxer.package(encoded)
+
+assert VideoConverter().convert("movie.avi", "mp4") == b"[raw-framesmp4]"
+```
+
+A Facade doesn't hide `Decoder`, `Encoder`, and `Muxer` — code that needs frame-level
+control can still use them directly. It only removes the need to know all three, and
+the order they run in, for the 95% case. **Overkill** when the subsystem already has one
+obvious entry point — then the facade is just a same-named wrapper adding nothing.
 
 ### Bridge — two dimensions that vary independently
 
@@ -986,6 +1110,25 @@ filter"** interview questions.
 **Force:** users combine arbitrary criteria with AND/OR/NOT, and new criteria keep being
 added.
 
+At its simplest, a spec is just predicate functions combined by helper functions:
+
+```python
+# The simplest possible spec: plain predicate functions combined with helpers.
+def and_(*preds): return lambda x: all(p(x) for p in preds)
+def or_(*preds):  return lambda x: any(p(x) for p in preds)
+
+is_even = lambda n: n % 2 == 0
+is_positive = lambda n: n > 0
+
+check = and_(is_even, is_positive)
+assert check(4) is True
+assert check(-4) is False
+```
+
+The `Spec` class below adds the same composition through `&`/`|`/`~` operators and a
+human-readable label — worth the extra ceremony once specs need to be logged, debugged,
+or built at runtime from user input:
+
 ```python
 from dataclasses import dataclass
 from typing import Callable
@@ -1122,14 +1265,59 @@ outside.
 - Python's `sys.intern`, small-int cache, and `__slots__` are flyweight-flavoured
   memory techniques.
 
+```python
+class Glyph:                              # intrinsic state: shared, immutable
+    def __init__(self, char: str, font: str) -> None:
+        self.char, self.font = char, font
+
+_GLYPH_CACHE: dict[tuple[str, str], Glyph] = {}
+
+def glyph(char: str, font: str) -> Glyph:
+    key = (char, font)
+    if key not in _GLYPH_CACHE:
+        _GLYPH_CACHE[key] = Glyph(char, font)
+    return _GLYPH_CACHE[key]
+
+# "hello hello" is 11 characters but only 5 distinct ones -> 5 shared Glyph objects.
+positions = [(i, glyph(c, "Arial")) for i, c in enumerate("hello hello")]
+assert glyph("h", "Arial") is glyph("h", "Arial")             # same object, not a copy
+assert len({id(g) for _, g in positions}) == len(set("hello hello"))
+```
+
+The extrinsic state — where each glyph is drawn — lives in `positions`, outside the
+`Glyph`. Sharing only pays off when there are *many* objects with *few* distinct values
+of the expensive part; for a handful of objects it's not worth the cache/lookup cost.
+
 **Object Pool:** reuse expensive-to-create objects (connections, threads, large buffers).
+
+```python
+from contextlib import contextmanager
+
+class ConnectionPool:
+    def __init__(self, size: int) -> None:
+        self._free = [f"conn-{i}" for i in range(size)]
+
+    @contextmanager
+    def borrow(self):
+        conn = self._free.pop()          # raises IndexError if the pool is exhausted
+        try:
+            yield conn
+        finally:
+            self._free.append(conn)      # always returned, even on exception
+
+pool = ConnectionPool(size=2)
+with pool.borrow() as c1:
+    assert c1 == "conn-1"
+assert pool._free == ["conn-0", "conn-1"]     # returned automatically
+```
 
 - **Database connection pools** and **thread/worker pools** are pools; use the library's.
 - **Go `sync.Pool`** is for reducing GC pressure on short-lived temporary objects (e.g.
   `bytes.Buffer`); items can be dropped at any GC, so **never** use it for connections.
 - Pool pitfalls: returning a dirty object (reset before reuse), leaking (always return in
   `finally`/`defer`), pool exhaustion deadlock (a task holding one connection waits for a
-  second).
+  second). The `@contextmanager` form above returns the connection in `finally` so
+  leaking requires bypassing `borrow()` entirely.
 
 ---
 

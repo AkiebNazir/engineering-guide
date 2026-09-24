@@ -93,6 +93,35 @@ interpreter parses** — SQL, a shell, a file path, HTML, LDAP, a template, a lo
 fix is always the same shape: **pass data through a channel that the interpreter never
 parses as code** (parameters, argv arrays, path APIs, auto-escaping templates).
 
+The shape of the bug, stripped to just the strings involved — no database yet:
+
+```python
+def where_clause_unsafe(email: str) -> str:
+    return f"SELECT role FROM users WHERE email = '{email}'"   # data becomes part of the query text
+
+
+def where_clause_safe(email: str) -> tuple[str, tuple]:
+    return "SELECT role FROM users WHERE email = ?", (email,)  # data stays a parameter, sent separately
+
+
+attacker_input = "x' OR '1'='1"
+print("unsafe query:", where_clause_unsafe(attacker_input))
+print("safe query:  ", where_clause_safe(attacker_input))
+```
+
+Output:
+
+```
+unsafe query: SELECT role FROM users WHERE email = 'x' OR '1'='1'
+safe query:   ('SELECT role FROM users WHERE email = ?', ("x' OR '1'='1",))
+```
+
+The unsafe version's `WHERE` clause now says "or true" — the attacker's string became
+part of the query's logic. The safe version's query text never changes; the input travels
+as data the SQL engine treats literally, however it's spelled. The example below shows
+that same difference changing a query's *result* against a real database, plus the same
+shape of bug in a shell command and a file path.
+
 ```python
 # Injection: data crossing into an interpreter (SQL, shell, filesystem) must never become code.
 import sqlite3
@@ -210,6 +239,36 @@ not a wrong rule; it is **a missing check** on one of hundreds of code paths —
 added later, an export job, a GraphQL resolver, a bulk API.
 
 So design authorization so that forgetting it is structurally difficult:
+
+Deny-by-default, minimal — the core idea the full example below builds on:
+
+```python
+PERMISSIONS = {"editor": {"read", "write"}, "viewer": {"read"}}
+
+
+def can(role: str, action: str) -> bool:
+    return action in PERMISSIONS.get(role, set())     # unknown role -> empty set -> denied
+
+
+print("editor write:", can("editor", "write"))
+print("viewer write:", can("viewer", "write"))
+print("guest read:  ", can("guest", "read"))           # "guest" isn't in the table at all
+```
+
+Output:
+
+```
+editor write: True
+viewer write: False
+guest read:   False
+```
+
+`PERMISSIONS.get(role, set())` is the whole mechanism: a role that was never granted
+anything — misspelled, new, or simply not written into the table yet — gets an empty
+set back and every check fails. Nobody had to remember to deny `"guest"`; there's no
+code path that grants by omission. The full example below adds the two things a real
+authorization check also needs: the resource's own owner and tenant, and a principal
+that can only come from a verified token.
 
 ```python
 # Authorization designed so the secure path is the only path: deny by default,
@@ -514,6 +573,39 @@ Any feature where **the server fetches a URL a user supplied** — link previews
 inside your network*: to the cloud metadata service (instance credentials), admin panels
 on `localhost`, internal databases, or other tenants' services.
 
+A first, naive attempt at a check — checking the URL's *text*:
+
+```python
+from urllib.parse import urlsplit
+
+BLOCKED_HOSTS = {"localhost", "127.0.0.1", "169.254.169.254"}
+
+
+def looks_safe(url: str) -> bool:
+    host = urlsplit(url).hostname
+    return url.startswith("https://") and host not in BLOCKED_HOSTS
+
+
+for url in ["https://example.com/cat.png", "https://169.254.169.254/", "http://example.com/cat.png"]:
+    print(url, "->", "ALLOW" if looks_safe(url) else "BLOCK")
+```
+
+Output:
+
+```
+https://example.com/cat.png -> ALLOW
+https://169.254.169.254/ -> BLOCK
+http://example.com/cat.png -> BLOCK
+```
+
+That looks reasonable and is exactly what real SSRF filters get bypassed through: the
+denylist checks the *hostname string*, not where it actually resolves. A domain the
+attacker controls can point at `169.254.169.254` and never appear in `BLOCKED_HOSTS`;
+the same address is spellable as `2130706433` or `[::ffff:127.0.0.1]`; and a DNS answer
+can change between the check and the connect. The full example below fixes all of that
+by checking the **resolved** address against an allowlist of "public", not a denylist of
+hostnames.
+
 ```python
 # SSRF: the server fetches a URL the user supplied. Validate scheme, host, and the RESOLVED address.
 import ipaddress
@@ -634,6 +726,35 @@ Why each part of the design is necessary:
 Availability is part of security. Any input whose processing cost is unbounded lets one
 cheap request consume large amounts of memory or CPU.
 
+The general shape, minimal — reject before doing the work, not after:
+
+```python
+def parse_ids(raw: str, max_items: int = 100) -> list[int]:
+    items = raw.split(",")
+    if len(items) > max_items:
+        raise ValueError(f"too many items: {len(items)} > {max_items}")
+    return [int(x) for x in items]
+
+
+print(parse_ids("1,2,3"))
+try:
+    parse_ids(",".join(str(i) for i in range(1000)))
+except ValueError as e:
+    print("rejected:", e)
+```
+
+Output:
+
+```
+[1, 2, 3]
+rejected: too many items: 1000 > 100
+```
+
+The check runs before `int(x)` is called on a single item — cheap. The three cases
+below are the same principle applied where "cheap" is less obvious: a byte stream whose
+declared length you can't trust, a compressed archive that expands far past what it
+looked like on the wire, and a regex whose *time*, not its input size, is unbounded.
+
 ```python
 # Resource exhaustion: every input needs a size bound, and some algorithms need an input bound too.
 import io
@@ -750,6 +871,42 @@ The correct escaping **depends on the output context**:
 
 That's why "sanitise input" is the wrong mental model — the same string needs different
 treatment in each context, and the context is only known at output time.
+
+The HTML-body row of that table, concretely:
+
+```python
+import html
+
+
+def render_comment_unsafe(name: str) -> str:
+    return f"<p>Comment by {name}</p>"
+
+
+def render_comment_safe(name: str) -> str:
+    return f"<p>Comment by {html.escape(name)}</p>"
+
+
+attacker_name = "<script>alert(document.cookie)</script>"
+print("unsafe:", render_comment_unsafe(attacker_name))
+print("safe:  ", render_comment_safe(attacker_name))
+assert "<script>" not in render_comment_safe(attacker_name)
+print("ALL PASSED")
+```
+
+Output:
+
+```
+unsafe: <p>Comment by <script>alert(document.cookie)</script></p>
+safe:   <p>Comment by &lt;script&gt;alert(document.cookie)&lt;/script&gt;</p>
+ALL PASSED
+```
+
+The unsafe version hands the browser a real `<script>` tag; the safe version hands it
+the literal text `<script>`, rendered as visible characters instead of parsed as markup.
+`html.escape` covers the HTML-body context only — the attribute, URL, and `<script>`-body
+rows in the table above each need their own encoding, which is exactly why a hand-rolled
+`html.escape()` call at every output site doesn't scale and an auto-escaping template
+that picks the right encoding for each context (below) does.
 
 Design defences:
 

@@ -185,6 +185,42 @@ Vocabulary:
 | **Adapter** | Technology-specific code that implements or calls a port | `SqliteOrderRepository`, HTTP handler |
 | **Composition root** | The one place concrete adapters are chosen and wired | `main.py` / `cmd/server/main.go` |
 
+In miniature, before the full worked example in §4 — the whole idea is dependency
+inversion: the core declares the port it needs, in its own vocabulary, and an adapter
+implements it.
+
+```python
+# THE IDEA IN FIFTEEN LINES, before the full worked example in §4.
+from typing import Protocol
+
+class GreetingRepository(Protocol):      # port: owned by the core, in the core's vocabulary
+    def name_for(self, user_id: str) -> str: ...
+
+class GreetUser:                         # core: the use case. Knows nothing about storage.
+    def __init__(self, repo: GreetingRepository):
+        self._repo = repo
+    def __call__(self, user_id: str) -> str:
+        return f"Hello, {self._repo.name_for(user_id)}!"
+
+class InMemoryUsers:                     # adapter: implements the port, no "implements" keyword needed
+    def __init__(self, names: dict[str, str]):
+        self._names = names
+    def name_for(self, user_id: str) -> str:
+        return self._names[user_id]
+
+greet = GreetUser(InMemoryUsers({"u1": "Ada"}))
+print(greet("u1"))
+```
+
+Output:
+
+```
+Hello, Ada!
+```
+
+Swap `InMemoryUsers` for a `SqlUsers` that queries a database and `GreetUser` does not
+change one line — that swap is the entire payoff of §3, scaled up in §4.
+
 **Clean architecture's** concentric rings are the same thing with one more split:
 Entities (enterprise rules) → Use Cases (application rules) → Interface Adapters
 (controllers, presenters, gateways) → Frameworks & Drivers (web, DB). **Onion** says the
@@ -705,6 +741,47 @@ There are three natural shapes for "an order":
 | **Request/response DTO** | Driving adapter | Wire format, versioning, public contract | `{"order_id": "...", "total": "3.60"}` |
 | **Domain model** | Domain | Enforcing rules, expressing behaviour | `Order` with `Money`, `Status` enum, methods |
 | **Persistence model** | Driven adapter | Storage layout, indexes, migrations | a row with `lines_json`, or an ORM class |
+
+The same order as three shapes, in code:
+
+```python
+# THE SAME "ORDER" AS THREE SHAPES — minimal illustration of the table above.
+from dataclasses import dataclass
+
+@dataclass
+class OrderResponseDTO:      # wire shape: whatever the public API promises to keep stable
+    order_id: str
+    total: str                # "3.60" as a string — JSON numbers would round-trip through float
+
+@dataclass
+class Order:                  # domain shape: fields plus behaviour
+    id: str
+    total_cents: int
+    def total_display(self) -> str:
+        return f"{self.total_cents / 100:.2f}"
+
+@dataclass
+class OrderRow:               # persistence shape: matches the table, includes internal-only columns
+    id: str
+    total_cents: int
+    customer_id: str          # exists in storage; never appears in the DTO
+
+order = Order(id="o-1", total_cents=360)
+row = OrderRow(id=order.id, total_cents=order.total_cents, customer_id="c-1")
+dto = OrderResponseDTO(order_id=order.id, total=order.total_display())
+print(row)
+print(dto)
+```
+
+Output:
+
+```
+OrderRow(id='o-1', total_cents=360, customer_id='c-1')
+OrderResponseDTO(order_id='o-1', total='3.60')
+```
+
+`customer_id` lives on the row because the database needs it for a foreign key; it has
+no reason to exist on the DTO at all, which is the point of keeping the shapes separate.
 
 **Why keep them separate?** Each changes for different reasons:
 
@@ -1253,6 +1330,50 @@ forbidden_modules =
     sqlalchemy
     fastapi
 ```
+
+What a tool like that does under the hood is not magic — it walks the import statements
+in each file and checks them against a deny list:
+
+```python
+# A MINIMAL VERSION OF WHAT import-linter/depguard DO: walk imports, fail the build on a forbidden one.
+import ast
+
+FORBIDDEN_IN_DOMAIN = {"sqlite3", "requests", "flask"}
+
+def imports_of(source: str) -> set[str]:
+    tree = ast.parse(source)
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            names.add(node.module.split(".")[0])
+    return names
+
+def check(modules: dict[str, str]) -> list[str]:
+    return [f"{name}: imports {sorted(bad)}"
+            for name, src in modules.items()
+            if (bad := imports_of(src) & FORBIDDEN_IN_DOMAIN)]
+
+modules = {
+    "domain/order.py": "from dataclasses import dataclass\nclass Order: ...",
+    "domain/pricing.py": "import sqlite3\ndef price():\n    return sqlite3.connect(':memory:')",
+}
+for violation in check(modules):
+    print(violation)
+assert check(modules) == ["domain/pricing.py: imports ['sqlite3']"]
+print("ALL PASSED")
+```
+
+Output:
+
+```
+domain/pricing.py: imports ['sqlite3']
+ALL PASSED
+```
+
+Run this over every file in `domain/` in a CI step and the boundary is enforced by a
+machine, not by a reviewer's memory.
 
 ---
 

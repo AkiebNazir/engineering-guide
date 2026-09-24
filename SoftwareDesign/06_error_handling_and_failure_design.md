@@ -89,6 +89,38 @@ Three mechanisms, each with a place:
 **In Python, use exceptions for failures, and return values for expected outcomes the
 caller must always branch on.**
 
+The simplest version of that split, before any framework or type is involved:
+
+```python
+# Simplest on-ramp: an exception for a genuine failure, a return value for an expected outcome.
+def divide(a: int, b: int) -> float:
+    if b == 0:
+        raise ZeroDivisionError(f"cannot divide {a} by zero")
+    return a / b
+
+def find_user(users: dict[str, str], user_id: str) -> str | None:
+    return users.get(user_id)          # absence is normal here, not a failure
+
+try:
+    divide(10, 0)
+except ZeroDivisionError as e:
+    print("caught:", e)
+
+print("lookup:", find_user({"1": "Ada"}, "2"))
+```
+
+Output:
+
+```
+caught: cannot divide 10 by zero
+lookup: None
+```
+
+`divide` can't do anything useful with `b=0`, so it raises and lets the caller decide.
+`find_user` treats absence as a normal outcome, so it returns `None` — no `try` needed to
+call it. The rest of this section is the same split applied to a case where the caller
+**must** handle every outcome, enforced by the type checker instead of by convention:
+
 ```python
 from dataclasses import dataclass
 
@@ -370,6 +402,39 @@ clients is *none*: Python `requests` without `timeout=` waits forever, and so do
 zero-value `http.Client{}`. A hung dependency then holds a thread, a connection, and a
 user — and under load, all of them.
 
+### The simplest timeout
+
+Before deadlines and cancellation, the basic move: give up waiting on a call after a
+fixed duration, even though the call itself has no `timeout=` parameter.
+
+```python
+# Simplest on-ramp: enforce a timeout on a call that might hang.
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+import time
+
+def slow_call(seconds: float) -> str:
+    time.sleep(seconds)
+    return "done"
+
+with ThreadPoolExecutor() as pool:
+    future = pool.submit(slow_call, 0.3)
+    try:
+        print(future.result(timeout=0.05))
+    except FutureTimeout:
+        print("gave up after 0.05s -- the call keeps running in the background")
+```
+
+Output:
+
+```
+gave up after 0.05s -- the call keeps running in the background
+```
+
+That last line is the catch: `slow_call` is still running when the caller moves on —
+timing out only stops *waiting*, it doesn't cancel the work (cancellation is covered
+below). Real clients (`requests`, database drivers, gRPC stubs) build the same idea into a
+`timeout=` argument so you don't need the thread pool.
+
 ### Deadlines, not per-call timeouts
 
 ```
@@ -493,6 +558,45 @@ into a large one. The questions to answer for every retry:
 
 Why jitter: without it, a thousand clients that failed at the same moment retry at the
 same moment, again and again — synchronised waves that keep the dependency down.
+
+The idea in its smallest form, before backoff, jitter, or a deadline:
+
+```python
+# Simplest on-ramp: retry a flaky call a few times with a short pause.
+import time
+
+attempts = [RuntimeError("boom"), RuntimeError("boom again"), "ok"]
+
+def flaky_call():
+    result = attempts.pop(0)
+    if isinstance(result, Exception):
+        raise result
+    return result
+
+def call_with_simple_retry(fn, max_attempts=3, delay_s=0.01):
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return fn()
+        except RuntimeError as e:
+            if attempt == max_attempts:
+                raise
+            print(f"attempt {attempt} failed ({e}), retrying...")
+            time.sleep(delay_s)
+
+print(call_with_simple_retry(flaky_call))
+```
+
+Output:
+
+```
+attempt 1 failed (boom), retrying...
+attempt 2 failed (boom again), retrying...
+ok
+```
+
+Everything below adds what this loop is missing: only retrying errors known to be
+transient, backoff that grows and jitters instead of a fixed `delay_s`, and an overall
+deadline instead of just an attempt count.
 
 ```python
 # Retry: one policy object, injected sleep and randomness, retries only what is retryable.
@@ -642,6 +746,38 @@ Four techniques to make them idempotent:
 | **Natural key / unique constraint** | The operation's identity is a DB unique key; a duplicate insert is a no-op | `UNIQUE(order_id)` on `payments` |
 | **Conditional write** | Apply only if state is still what you read | `UPDATE … SET status='paid' WHERE id=? AND status='pending'` |
 | **Dedupe on the consumer** | Store processed message IDs in the same transaction as the effect | At-least-once queue consumers |
+
+The simplest version of "dedupe on the consumer" — skip work already done for an ID:
+
+```python
+# Simplest on-ramp: skip work already done for a given ID.
+processed_ids: set[str] = set()
+total = 0
+
+def handle_payment(payment_id: str, amount: int) -> str:
+    global total
+    if payment_id in processed_ids:
+        return "already processed, skipped"
+    processed_ids.add(payment_id)
+    total += amount
+    return "processed"
+
+print(handle_payment("pay-1", 50))
+print(handle_payment("pay-1", 50))   # network retry sends the same payment again
+print("total charged:", total)
+```
+
+Output:
+
+```
+processed
+already processed, skipped
+total charged: 50
+```
+
+The full pattern below (idempotency **keys**) generalises this: it also stores the
+*result* so a replay can return it, rejects a reused key with a different body, and
+handles a retry that arrives while the first attempt is still in flight.
 
 ```python
 # Idempotency keys: the server remembers the result of each key.

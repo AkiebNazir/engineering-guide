@@ -78,6 +78,39 @@ not pretend to be an object. Both are fine — the mistake is mixing them up:
 - A struct that twelve functions across the codebase mutate, each re-checking the same
   rule, is an object that was never written.
 
+### The idea in 30 seconds
+
+```python
+# STRUCT: nothing stops an invalid value from being written in from outside.
+class CounterStruct:
+    def __init__(self):
+        self.count = 0
+
+c = CounterStruct()
+c.count = -5                      # meaningless, but nothing prevents it
+
+# OBJECT: the invariant ("count never negative") lives in one place, guarded.
+class Counter:
+    def __init__(self):
+        self._count = 0
+
+    def increment(self) -> None:
+        self._count += 1
+
+    def decrement(self) -> None:
+        if self._count == 0:
+            raise ValueError("count cannot go negative")
+        self._count -= 1
+
+    @property
+    def count(self) -> int:
+        return self._count
+```
+
+Every deeper example in this file (`Account`, `Order`, `Money`...) is this same idea
+applied to a real domain: find the rule, put it behind a method, remove every other way
+in.
+
 ---
 
 ## 2 · The four pillars, honestly
@@ -91,6 +124,24 @@ know what each is actually *for* and where it goes wrong.
 | **Abstraction** | Expose *what*, hide *how*. | Let callers reason at a higher level; let the implementation change. | Leaky abstractions (callers must know the "how" anyway), or abstractions with one implementation "for the future". |
 | **Inheritance** | A subclass reuses and specialises a parent. | Model a genuine *is-substitutable-for* relationship; share a template of behaviour. | Used for code reuse alone → fragile base class, deep hierarchies, LSP violations. |
 | **Polymorphism** | One interface, many implementations. | Replace conditionals on type with dispatch, so new variants are additions. | Polymorphism over things that never vary; or `isinstance` checks that defeat it. |
+
+### Polymorphism in 30 seconds
+
+```python
+class Dog:
+    def speak(self) -> str:
+        return "Woof"
+
+class Cat:
+    def speak(self) -> str:
+        return "Meow"
+
+for animal in [Dog(), Cat()]:
+    print(animal.speak())          # same call, different behavior per type — no if/elif
+```
+
+That's the whole idea. The rest of this section is the vocabulary for three different
+*mechanisms* that give you this.
 
 ### Three kinds of polymorphism
 
@@ -305,6 +356,31 @@ still right for logic that spans several aggregates or talks to infrastructure �
 
 "Favor object composition over class inheritance" is from the Gang of Four book itself,
 page 20. The reasons are concrete.
+
+### The idea in 30 seconds
+
+```python
+class Engine:
+    def start(self) -> str:
+        return "vroom"
+
+# WRONG: a Car "is an" Engine? No — this reuses code, but the relationship is false.
+class CarWrong(Engine):
+    pass
+
+# RIGHT: a Car "has an" Engine. Swapping engines later means passing a different one in.
+class Car:
+    def __init__(self, engine: Engine) -> None:
+        self._engine = engine
+
+    def start(self) -> str:
+        return self._engine.start()
+
+car = Car(Engine())
+car.start()                        # "vroom" — Car delegates, it doesn't inherit
+```
+
+The rest of this section is about *why* that matters once the code gets bigger than this.
 
 ### Why inheritance is the strongest coupling there is
 
@@ -661,6 +737,30 @@ Rules that fall out of this:
 4. **Keep aggregates small.** A `Library` aggregate that contains every `Book` means
    every borrow locks the library.
 
+### Rule 2 in code: reference by ID, not by object
+
+```python
+class OrderLine:
+    def __init__(self, sku: str, qty: int) -> None:
+        self.sku = sku
+        self.qty = qty
+
+class Order:                                  # the aggregate root
+    def __init__(self, order_id: str, customer_id: str) -> None:
+        self.order_id = order_id
+        self.customer_id = customer_id        # a plain ID, not a Customer object
+        self._lines: list[OrderLine] = []
+
+    def add_line(self, sku: str, qty: int) -> None:
+        self._lines.append(OrderLine(sku, qty))
+
+order = Order("O-1", customer_id="C-42")
+order.add_line("SKU-1", 2)
+# To act on the customer: customer_repository.get(order.customer_id) — a separate
+# load, in a separate transaction if needed. Order never holds a Customer object, so
+# touching one aggregate can never accidentally pull the other one into the same lock.
+```
+
 ### Domain service vs. application service
 
 | | Domain service | Application service |
@@ -1011,6 +1111,39 @@ Knowing when *not* to use objects is part of design maturity.
 Choose based on which axis will grow. A compiler's AST gains operations (passes) more
 often than node types → functions + `match` (or Visitor). A payment platform gains
 payment methods more often than operations → classes.
+
+### The same task, three ways
+
+```python
+items = [("apple", 3, 0.50), ("bread", 1, 2.00)]   # (name, qty, unit_price)
+
+# OOP: behaviour lives on an object.
+class LineItem:
+    def __init__(self, name: str, qty: int, unit_price: float) -> None:
+        self.name, self.qty, self.unit_price = name, qty, unit_price
+    def total(self) -> float:
+        return self.qty * self.unit_price
+
+oop_total = sum(LineItem(*i).total() for i in items)
+
+# FUNCTIONAL: a pure function over plain, immutable data.
+def line_total(item: tuple[str, int, float]) -> float:
+    _, qty, unit_price = item
+    return qty * unit_price
+
+fn_total = sum(line_total(i) for i in items)
+
+# DATA-ORIENTED: bulk operation over parallel arrays, no per-item object at all.
+quantities = [i[1] for i in items]
+prices = [i[2] for i in items]
+data_total = sum(q * p for q, p in zip(quantities, prices))
+
+assert oop_total == fn_total == data_total == 3.5
+```
+
+Same answer, three ways of organising the same handful of lines. At this size it's a
+matter of taste; the table above is about which style keeps paying off as the codebase
+grows in one direction or the other.
 
 ### Most good Python/Go code is a mix
 

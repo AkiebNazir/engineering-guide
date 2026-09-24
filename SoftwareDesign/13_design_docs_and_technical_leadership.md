@@ -143,6 +143,32 @@ What each section is **for**:
 
 ## 4 · A complete example design doc
 
+### The same structure, at 30 seconds
+
+Before the realistic (and longer) example below, here's the §3 structure filled in for a
+decision small enough to read in one breath — the shape doesn't change with size, only
+the depth:
+
+```text
+Design: Add a GET /healthz endpoint to the checkout service
+Status: Approved
+
+CONTEXT    SRE has no way to tell the process is up without sending real traffic.
+GOAL       An uptime check can confirm the process is alive in < 50 ms.
+OVERVIEW   Add GET /healthz, returning 200 "ok" once startup has finished. No auth,
+           no dependency checks — this is liveness, not readiness.
+ALTERNATIVE  Also check DB connectivity here — rejected: that's a readiness concern,
+             not liveness (`10_designing_observable_code.md` §7), and would fail every
+             replica at once during a DB blip.
+ROLLOUT    Additive route, no flag needed; ships in the next regular deploy.
+```
+
+That's a real, reviewable design doc — it just has a decision small enough that every
+section is one line. The next example is the same nine sections at the size and depth a
+multi-team, hard-to-reverse decision actually needs.
+
+### The full worked example
+
 A condensed but realistic example. Real docs have more prose; the shape and the
 decisions are what matter.
 
@@ -584,6 +610,46 @@ spent more than a wrong choice would have cost.
 | **Runbook** | What on-call does when an alert fires: diagnosis steps, mitigations, escalation | 1–3 pages per alert family |
 | **Postmortem** | Blameless incident analysis with action items | 2–5 pages |
 | **Status update** | Progress vs. plan, risks, decisions needed, asks | Weekly, short |
+
+### A one-pager, in full
+
+The one-pager's job is narrower than a design doc's: get agreement that a problem is
+worth solving *before* spending a week designing the solution.
+
+```text
+One-pager: Should we build in-app receipt scanning?
+
+PROBLEM   23% of expense-report support tickets are "receipt didn't attach" — about
+          400 tickets/month at ~12 minutes of support time each.
+PROPOSAL  Let users photograph a receipt in the app; OCR fills in amount and vendor.
+COST      ~3 engineer-weeks. OCR vendor: ~$0.01/scan, ~$40/month at current volume.
+ASK       Approve scoping a full design doc for Q4.
+```
+
+Four lines answer one question — is this worth a design doc — and nothing else. A
+one-pager that starts describing the OCR pipeline has become a design doc without the
+sections that make one reviewable.
+
+### A runbook entry, in full
+
+```text
+Alert: idempotent_replay_rate > 5% for 10 minutes (payments)
+
+MEANING    Clients are retrying far more than normal. Usually a client bug or an
+           upstream timeout — not necessarily a payments-side problem.
+DIAGNOSE   1. Check p99 latency on POST /v1/charges — if elevated, the retries are
+              probably caused by us (see the latency runbook).
+           2. Check which account IDs dominate replays (dashboard: go/payments-replays).
+MITIGATE   Single account driving it: contact them or rate-limit that account.
+           Latency-caused: follow the latency runbook.
+ESCALATE   Payments on-call if replay rate > 20%, or if any duplicate charge is seen —
+           duplicates should be impossible with idempotency keys in place, so one is a
+           page, not a ticket.
+```
+
+The pattern that makes a runbook usable at 3 a.m.: **diagnose before mitigate**, steps
+numbered and checkable half-asleep, and an explicit line for when to stop trying to fix
+it yourself and wake someone else.
 
 ### Status update that leaders actually read
 

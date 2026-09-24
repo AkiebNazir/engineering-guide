@@ -110,6 +110,35 @@ Design rules:
    semantic conventions: `http.request.method`, `error.type`, `user.id`) so queries work
    fleet-wide.
 
+The whole idea in five lines, before the production-shaped version below:
+
+```python
+import json
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+log = logging.getLogger("demo")
+
+
+def log_event(msg: str, **fields) -> None:
+    log.info(json.dumps({"msg": msg, **fields}))
+
+
+log_event("order placed", order_id="o-1", amount_cents=1200)
+log_event("order placed", order_id="o-2", amount_cents=90000)
+```
+
+Output:
+
+```
+{"msg": "order placed", "order_id": "o-1", "amount_cents": 1200}
+{"msg": "order placed", "order_id": "o-2", "amount_cents": 90000}
+```
+
+Constant message, variable fields, one JSON object per line — that's the whole idea. A
+real service adds the parts below: request context attached automatically instead of
+passed by hand, central redaction, and the traceback logged once at the boundary.
+
 ```python
 # Structured logging: one JSON object per event, request context attached automatically,
 # secrets redacted centrally, and the traceback logged once at the boundary.
@@ -292,6 +321,53 @@ Never implement an audit trail by grepping debug logs.
 
 **Why histograms, not averages:** averages hide the tail, and the tail is what users feel.
 
+Counters and gauges, minimal — before the histogram and cardinality guard below:
+
+```python
+from collections import Counter
+
+requests_total = Counter()          # counter: only ever goes up
+in_flight = 0                       # gauge: goes up and down
+
+
+def start_request() -> None:
+    global in_flight
+    in_flight += 1
+    print("in_flight now:", in_flight)
+
+
+def finish_request(status_class: str) -> None:
+    global in_flight
+    in_flight -= 1
+    requests_total[status_class] += 1
+    print("in_flight now:", in_flight)
+
+
+for code in [200, 200, 404]:
+    start_request()
+for code in [200, 200, 404]:
+    finish_request(f"{code // 100}xx")
+
+print("counter:", dict(requests_total))
+```
+
+Output:
+
+```
+in_flight now: 1
+in_flight now: 2
+in_flight now: 3
+in_flight now: 2
+in_flight now: 1
+in_flight now: 0
+counter: {'2xx': 2, '4xx': 1}
+```
+
+`in_flight` needs both directions — a counter can't represent it, because a counter
+never goes down. That's the type distinction in the table above, in code. A real
+metrics client makes both thread-safe and exports them; the example below adds the third
+type (histograms) and the cardinality guard every counter/gauge implementation needs.
+
 ```python
 # Metrics in code: counters, histograms with fixed buckets, and a guard against label explosion.
 import bisect
@@ -457,6 +533,48 @@ A **trace** is the tree of work done for one request. Each node is a **span**: a
 start, duration, attributes, status, and a parent. Propagating the trace and parent IDs
 across process boundaries (the W3C `traceparent` HTTP header) stitches spans from many
 services into one tree.
+
+A span is just an id, a name, a parent id, and a duration — before context propagation
+across processes enters the picture:
+
+```python
+import itertools
+import time
+
+_next_id = itertools.count(1)
+
+
+def start_span(name: str, parent_id: int | None = None) -> dict:
+    return {"id": next(_next_id), "name": name, "parent_id": parent_id, "start": time.perf_counter()}
+
+
+def end_span(span: dict) -> dict:
+    span["duration_ms"] = (time.perf_counter() - span["start"]) * 1000
+    return span
+
+
+root = start_span("checkout")
+child = start_span("charge", parent_id=root["id"])
+time.sleep(0.01)
+end_span(child)
+end_span(root)
+
+print(f"{root['name']:<10} id={root['id']} parent={root['parent_id']}  {root['duration_ms']:5.1f} ms")
+print(f"  {child['name']:<8} id={child['id']} parent={child['parent_id']}  {child['duration_ms']:5.1f} ms")
+```
+
+Output (duration varies slightly between runs):
+
+```
+checkout   id=1 parent=None   10.2 ms
+  charge   id=2 parent=1   10.2 ms
+```
+
+`child["parent_id"] == root["id"]` is the entire mechanism a tracing backend uses to
+rebuild the tree — everything below adds the piece that makes this work across an
+in-process call stack *and* across a network call: an implicit current span (via
+`contextvars`, so callers don't pass span objects around) and a header that carries the
+IDs to the next process.
 
 ```python
 # Tracing in code: spans nest via contextvars and cross process boundaries via a header.
