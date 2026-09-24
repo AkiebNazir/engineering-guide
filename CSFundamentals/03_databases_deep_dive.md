@@ -62,21 +62,30 @@ actually deliver on it.
 ## 1. Storage Engines: The Physics of Storage
 HDDs pay a mechanical **seek** (milliseconds) for random I/O, so sequential I/O is dramatically faster. **Precision note:** SSDs have no seek, and random reads are fast; the issues with random *writes* on SSDs are erase-block management, garbage collection, and device-level write amplification, which hurt latency consistency and endurance. Sequential, append-oriented write patterns still help on both.
 
-```mermaid
-graph TD
-    subgraph "B+ Tree (Read-Optimized)"
-        R1["Root Page"] --> L1["Leaf Page 1"]
-        R1 --> L2["Leaf Page 2"]
-        R1 --> L3["Leaf Page 3"]
-        L1 <-->|"Linked list"| L2
-        L2 <-->|"Linked list"| L3
-    end
-    subgraph "LSM Tree (Write-Optimized)"
-        W["Write"] -->|"Append"| MT["MemTable (RAM)"]
-        MT -->|"Flush when full"| SS1["SSTable L0 (disk)"]
-        SS1 -->|"Compact"| SS2["SSTable L1 (disk)"]
-        SS2 -->|"Compact"| SS3["SSTable L2 (disk)"]
-    end
+```arch
+%% caption: A B+ tree updates fixed-size pages in place and links its leaves for range scans; an LSM tree appends to memory and compacts sorted files on disk.
+route straight
+grid 190x95
+group bt "B+ Tree (read-optimized)" color=blue icon=tree
+node r1 "Root page" at 1,0 in bt color=blue
+node l1 "Leaf page 1" at 0,1 in bt color=blue
+node l2 "Leaf page 2" at 1,1 in bt color=blue
+node l3 "Leaf page 3" at 2,1 in bt color=blue
+group lsm "LSM Tree (write-optimized)" color=green icon=layers
+node w "Write" at 3.1,0 in lsm shape=pill color=slate
+node mt "MemTable" at 3.1,1 in lsm color=orange sub="RAM"
+node s1 "SSTable L0" at 3.1,2 in lsm color=green sub="disk"
+node s2 "SSTable L1" at 3.1,3 in lsm color=green sub="disk"
+node s3 "SSTable L2" at 3.1,4 in lsm color=green sub="disk"
+r1 -> l1
+r1 -> l2
+r1 -> l3
+l1 <-> l2 : "linked list"
+l2 <-> l3 : "linked list"
+w -> mt : "append"
+mt -> s1 : "flush when full"
+s1 -> s2 : "compact"
+s2 -> s3 : "compact"
 ```
 
 <div class="lab" data-viz="lsm-tree"></div>

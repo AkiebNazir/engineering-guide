@@ -16,17 +16,18 @@ The `mongo:7` instance backing this module is a **single-node replica set** — 
 
 ## Replica sets, conceptually
 
-```mermaid
-flowchart LR
-    subgraph rs["Replica set rs0"]
-        P["PRIMARY<br/>accepts all writes"]
-        S1["SECONDARY<br/>replicates oplog"]
-        S2["SECONDARY<br/>replicates oplog"]
-    end
-    client["Client / driver"] -->|writes, and reads by default| P
-    P -->|oplog stream| S1
-    P -->|oplog stream| S2
-    client -.->|reads, only with a<br/>non-primary read preference| S1
+```arch
+%% caption: The primary takes every write and streams its oplog to the secondaries; a client reads from a secondary only when its read preference allows it.
+grid 210x120
+node client "Client / driver" at 0,1 icon=client
+group rs "Replica set rs0" color=green icon=db
+node p "PRIMARY" at 1,1 in rs icon=db sub="accepts all writes"
+node s1 "SECONDARY" at 2,0 in rs icon=replica sub="replicates oplog"
+node s2 "SECONDARY" at 2,2 in rs icon=replica sub="replicates oplog"
+client -> p : "writes, and reads by default"
+p -> s1 : "oplog stream"
+p -> s2 : "oplog stream"
+client:T ..> s1:L : "reads, only with a non-primary read preference"
 ```
 
 The real `rs.config()` from this lab's single-node set:

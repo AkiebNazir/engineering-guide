@@ -10,14 +10,20 @@ this is Postgres's per-connection process model, and it's the reason connection
 pooling (level 13) matters at all: every connection is a real OS process with real
 memory overhead, not a free abstraction.
 
-```mermaid
-flowchart LR
-    C1[psql] -->|TCP :5544| S[postgres server process]
-    C2[psycopg script] -->|TCP :5544| S
-    S -->|forks| B1[backend process<br/>for C1's connection]
-    S -->|forks| B2[backend process<br/>for C2's connection]
-    B1 --> D[(dsa database<br/>on disk)]
-    B2 --> D
+```arch
+%% caption: Every client connection gets its own backend process, forked by the postgres server; all backends share the same database on disk.
+node c1 "psql" at 0,0 icon=cli
+node c2 "psycopg script" at 2,0 icon=code
+node s "postgres server process" at 1,1 icon=postgresql
+node b1 "backend process" at 0,2 icon=process sub="for C1's connection"
+node b2 "backend process" at 2,2 icon=process sub="for C2's connection"
+node d "dsa database" at 1,3 icon=db sub="on disk"
+c1 -> s : "TCP :5544"
+c2 -> s : "TCP :5544"
+s -> b1 : "forks"
+s -> b2 : "forks"
+b1 -> d
+b2 -> d
 ```
 
 A **session** is everything that happens on one connection between the time it

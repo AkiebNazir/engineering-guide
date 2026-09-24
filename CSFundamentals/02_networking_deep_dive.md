@@ -105,18 +105,21 @@ Numbers to mention: DNS usually a few ms when cached, tens of ms uncached; a sam
 
 TCP uses a **Congestion Window (cwnd)** to decide how much unacknowledged data can be in flight.
 
-```mermaid
-graph TD
-    subgraph CUBIC - Loss Based
-        C1["Slow Start: exponential growth from initial window"] --> C2["Congestion Avoidance: cubic growth"]
-        C2 --> C3["Packet Loss Detected!"]
-        C3 -->|"Multiplicative decrease (x0.7)"| C2
-    end
-    subgraph BBR - Model Based
-        B1["Probe Bandwidth"] --> B2["Measure min RTT"]
-        B2 --> B3["Build pipe model"]
-        B3 -->|"Pace sending rate to the model"| B1
-    end
+```arch
+%% caption: CUBIC cuts its window whenever it sees loss; BBR measures bandwidth and RTT and paces to that model instead.
+grid 200x100
+group cubic "CUBIC: loss-based" color=orange icon=warn
+node c1 "Slow Start" at 0,0 in cubic sub="exponential growth from initial window"
+node c2 "Congestion Avoidance" at 0,1 in cubic sub="cubic growth"
+node c3 "Packet loss detected!" at 0,2 in cubic color=red
+group bbr "BBR: model-based" color=green icon=gauge
+node b1 "Probe bandwidth" at 1.5,0 in bbr
+node b2 "Measure min RTT" at 1.5,1 in bbr
+node b3 "Build pipe model" at 1.5,2 in bbr
+c1 -> c2 -> c3
+c3:L -> c2:L : "multiplicative decrease ×0.7"
+b1 -> b2 -> b3
+b3:R -> b1:R : "pace sending rate to the model"
 ```
 
 <div class="lab" data-viz="tcp-bbr"></div>
@@ -135,21 +138,29 @@ graph TD
 
 ## 3. The HTTP Evolution
 
-```mermaid
-graph LR
-    subgraph "HTTP/1.1"
-        A["Request 1"] -->|Wait for Response 1| B["Request 2"]
-    end
-    subgraph "HTTP/2 (TCP)"
-        C["Stream A"] --> E["Single TCP conn"]
-        D["Stream B"] --> E
-        E -->|"TCP loss blocks ALL"| F["Head-of-Line Block"]
-    end
-    subgraph "HTTP/3 (QUIC/UDP)"
-        G["Stream A"] --> I["Independent UDP streams"]
-        H["Stream B"] --> I
-        I -->|"Loss in A does NOT block B"| J["No HoL blocking"]
-    end
+```arch
+%% caption: HTTP/1.1 serializes requests; HTTP/2 multiplexes streams but one TCP loss stalls them all; HTTP/3 gives each stream its own recovery.
+grid 150x80
+group h1 "HTTP/1.1" color=slate
+node a "Request 1" at 0,0 in h1
+node b "Request 2" at 2,0 in h1
+group h2 "HTTP/2 (TCP)" color=amber
+node c "Stream A" at 0,1 in h2
+node d "Stream B" at 2,1 in h2
+node e "Single TCP conn" at 1,2 in h2 color=amber
+node f "Head-of-Line Block" at 1,3 in h2 color=red
+group h3 "HTTP/3 (QUIC over UDP)" color=green
+node g "Stream A" at 0,4 in h3
+node h "Stream B" at 2,4 in h3
+node i "Independent UDP streams" at 1,5 in h3 color=green
+node j "No HoL blocking" at 1,6 in h3 color=green
+a -> b : "wait for response 1"
+c -> e
+d -> e
+e -> f : "TCP loss blocks ALL"
+g -> i
+h -> i
+i -> j : "loss in A doesn't block B"
 ```
 
 ### HTTP/1.1 (Application-Level Head-of-Line Blocking)
@@ -176,17 +187,22 @@ graph LR
 
 ## 4. Advanced Load Balancing Architectures
 
-```mermaid
-graph TD
-    Client -->|Request| LB["Load Balancer"]
-    LB -->|"L4: NAT, forward packets"| Backend1
-    LB -->|"L7: Terminate TLS, read HTTP"| Backend2
-    
-    subgraph DSR - Direct Server Return
-        Client2[Client] --> LB2["LB (forward only)"]
-        LB2 -->|"Modify MAC only"| Backend3
-        Backend3 -->|"5GB response DIRECTLY to client"| Client2
-    end
+```arch
+%% caption: An L4 balancer forwards packets, an L7 one terminates TLS and reads HTTP; with Direct Server Return the backend answers the client itself.
+node client "Client" at 1,0 icon=client
+node lb "Load Balancer" at 1,1 icon=lb
+node b1 "Backend 1" at 0,2 icon=server sub="L4: NAT, forward packets"
+node b2 "Backend 2" at 2,2 icon=server sub="L7: terminate TLS, read HTTP"
+group dsr "DSR: Direct Server Return" color=purple icon=network
+node client2 "Client" at 0,3 in dsr icon=client
+node lb2 "LB" at 2,3 in dsr icon=lb sub="forward only"
+node b3 "Backend 3" at 2,4 in dsr icon=server
+client -> lb : "request"
+lb -> b1 : "L4"
+lb -> b2 : "L7"
+client2 -> lb2
+lb2 -> b3 : "modify MAC only"
+b3 -> client2 : "5GB response DIRECTLY to client" thick
 ```
 
 ### Layer 4 (Transport) vs. Layer 7 (Application)

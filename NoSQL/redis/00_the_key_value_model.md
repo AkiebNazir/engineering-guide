@@ -37,16 +37,20 @@ Three properties explain almost everything about how Redis behaves:
    how a single Redis instance handles tens of thousands of concurrent clients on modest
    hardware.
 
-```mermaid
-flowchart LR
-    subgraph Clients
-        C1[client A]
-        C2[client B]
-        C3[client C]
-    end
-    C1 & C2 & C3 -->|socket| EL[event loop\n(single thread)]
-    EL -->|reads/writes memory| DS[(in-memory\ndata structures)]
-    EL -.->|snapshot / append| Disk[(disk: RDB / AOF)]
+```arch
+%% caption: Redis serves every client from one event-loop thread over in-memory structures, and persists to disk in the background.
+group cl "Clients" color=slate icon=users
+node c1 "client A" at 0,0 in cl icon=client
+node c2 "client B" at 1,0 in cl icon=client
+node c3 "client C" at 2,0 in cl icon=client
+node el "Event loop" at 1,1 icon=thread sub="single thread"
+node ds "In-memory data structures" at 0,2 icon=memory
+node disk "Disk: RDB / AOF" at 2,2 icon=disk
+c1 -> el
+c2 -> el : "socket"
+c3 -> el
+el -> ds : "reads/writes memory"
+el ..> disk : "snapshot / append"
 ```
 
 ## What this buys you, and what it costs

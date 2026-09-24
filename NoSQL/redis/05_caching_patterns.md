@@ -7,13 +7,16 @@ string holding serialized JSON); what matters is **who writes to the cache, and 
 
 ## Three patterns
 
-```mermaid
-flowchart TB
-    subgraph "Cache-aside (lazy loading)"
-        A1[App] -->|1 read| C1[(Cache)]
-        A1 -->|2 miss: read| D1[(DB)]
-        A1 -->|3 populate| C1
-    end
+```arch
+%% caption: Cache-aside: the app reads the cache, falls back to the DB on a miss, then populates the cache itself.
+grid 220x120
+group ca "Cache-aside (lazy loading)" color=blue icon=cache
+node app "App" at 0,0 in ca icon=app
+node cache "Cache" at 1,0 in ca icon=cache
+node db "DB" at 0,1 in ca icon=db
+app:R -> cache:L : "1. read"
+app -> db : "2. miss: read"
+app:T -> cache:T : "3. populate"
 ```
 
 **Cache-aside** (a.k.a. lazy loading): the application checks the cache first; on a miss,

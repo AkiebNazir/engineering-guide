@@ -63,19 +63,17 @@ When a monolith becomes too complex, teams often split it into microservices arb
 
 **DDD prevents this by drawing boundaries around business capabilities:**
 
-```mermaid
-graph TD
-    subgraph "Bounded Context: Inventory"
-        P1["Product: weight, warehouse, stock_count"]
-    end
-    subgraph "Bounded Context: Shopping Cart"
-        P2["Product: id, price, image_url"]
-    end
-    subgraph "Bounded Context: Shipping"
-        P3["Product: dimensions, fragile_flag"]
-    end
-    P1 -.->|"Same entity, different models"| P2
-    P2 -.->|"Same entity, different models"| P3
+```arch
+%% caption: One real-world "Product", three bounded contexts, three different models; each context keeps only what it needs.
+grid 240x110
+group inv "Bounded Context: Inventory" color=blue icon=store
+node p1 "Product" at 0,0 in inv shape=card icon=package sub="weight, warehouse, stock_count"
+group cart "Bounded Context: Shopping Cart" color=orange icon=cart
+node p2 "Product" at 0,1 in cart shape=card icon=package sub="id, price, image_url"
+group ship "Bounded Context: Shipping" color=green icon=delivery
+node p3 "Product" at 0,2 in ship shape=card icon=package sub="dimensions, fragile_flag"
+p1 ..> p2 : "same entity, different models"
+p2 ..> p3 : "same entity, different models"
 ```
 *   **Ubiquitous Language:** Engineers and domain experts use the same terms in conversation and in code. If the business says "Client" and the code says "User", every conversation needs a translation, and translations breed bugs.
 *   **Bounded Contexts:** A boundary within which a model is consistent. A "Product" in Inventory has weight and warehouse location; in Cart it has price and image. *Don't force one `Product` class to serve every context.* Contexts communicate through explicit contracts (APIs, events) and translation at the edge (an **anti-corruption layer** when integrating a legacy or external model).
@@ -103,14 +101,24 @@ Instead of storing current state (`UPDATE account SET balance = 50`), store an a
 ### CQRS (Command Query Responsibility Segregation)
 Often paired with event sourcing, but independent of it.
 
-```mermaid
-graph LR
-    Client -->|"POST /orders (Write)"| CMD["Command Side"]
-    CMD --> WDB[("Write DB (Normalized)")]
-    WDB -->|"Emit OrderCreated event"| Bus["Event Bus"]
-    Bus --> QS["Query Side"]
-    QS --> RDB[("Read DB (Denormalized)")]
-    Client2[Client] -->|"GET /orders (Read)"| QS
+```arch
+%% caption: CQRS: writes go through the command side to a normalized store; events build a denormalized read model the query side serves.
+grid 190x120
+node client "Client" at 0,0 icon=client
+node client2 "Client" at 0,1 icon=client
+group cs "Command side" color=orange icon=edit
+node cmd "Command Side" at 1,0 in cs icon=service
+node wdb "Write DB" at 2,0 in cs icon=db sub="normalized"
+node bus "Event Bus" at 2,1 icon=event
+group qs_g "Query side" color=blue icon=search
+node qs "Query Side" at 1,1 in qs_g icon=service
+node rdb "Read DB" at 1,2 in qs_g icon=db sub="denormalized"
+client -> cmd : "POST /orders (write)"
+cmd -> wdb
+wdb -> bus : "emit OrderCreated"
+bus -> qs
+qs -> rdb
+client2 -> qs : "GET /orders (read)"
 ```
 *   **The Problem:** The model that enforces write invariants is rarely the shape that serves UI reads fast.
 *   **CQRS:** The command side validates and writes to the write store and emits events; the query side consumes them into denormalized read models (search index, cache, materialized views).

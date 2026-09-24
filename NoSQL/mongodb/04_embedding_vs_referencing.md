@@ -161,15 +161,23 @@ This gives you the fast "show post + a preview" read of embedding without the un
 
 ## Decision guide
 
-```mermaid
-flowchart TD
-    start["Related data: A has children B"] --> few{"Bounded and small<br/>(tens, not thousands)?"}
-    few -->|yes| embed["Embed B inside A"]
-    few -->|no| unbounded{"Unbounded / always growing<br/>(could reach thousands+)?"}
-    unbounded -->|yes| ref["Reference: B in its own<br/>collection, keyed by A's id"]
-    unbounded -->|no, moderate and slow-growing| access{"Almost always read<br/>together with A?"}
-    access -->|yes| embedOrDenorm["Embed, or embed a summary<br/>+ reference the full set"]
-    access -->|no, B often queried alone| ref
+```arch
+%% caption: Embed small, bounded children that are read with the parent; reference anything unbounded or queried on its own.
+grid 230x110
+node start "Related data: A has children B" at 1,0 shape=pill
+node few "Bounded and small?" at 1,1 shape=diamond color=amber sub="tens, not thousands"
+node embed "Embed B inside A" at 0,1 color=green
+node unb "Unbounded / always growing?" at 1,2 shape=diamond color=amber sub="could reach thousands+"
+node ref "Reference" at 2,2 color=blue sub="B in its own collection, keyed by A's id"
+node access "Almost always read together with A?" at 1,3 shape=diamond color=amber
+node emb2 "Embed, or embed a summary" at 0,3 color=green sub="+ reference the full set"
+start -> few
+few -> embed : "yes"
+few -> unb : "no"
+unb -> ref : "yes"
+unb -> access : "no, moderate and slow-growing"
+access -> emb2 : "yes"
+access:R -> ref:B : "no, B often queried alone"
 ```
 
 ## Common mistakes

@@ -15,14 +15,22 @@ storage/durability/MVCC specifically.
 
 ## The four stages
 
-```mermaid
-flowchart LR
-    Q["SQL text\nSELECT * FROM accounts_big\nWHERE email = '...'"] --> P[Parser]
-    P -->|parse tree| R[Rewriter]
-    R -->|rewritten query| PL["Planner / Optimizer"]
-    PL -->|chosen plan| E[Executor]
-    E -->|reads/writes| S["Storage\n(heap pages, indexes, WAL)"]
-    E --> OUT[Rows returned to client]
+```arch
+%% caption: A query passes through parser, rewriter, planner and executor; only the executor touches storage.
+grid 230x100
+node q "SQL text" at 0,0 shape=card icon=code sub="SELECT * FROM accounts_big WHERE email = '...'"
+node p "Parser" at 0,1 icon=code
+node r "Rewriter" at 0,2 icon=edit
+node pl "Planner / Optimizer" at 0,3 icon=speed
+node e "Executor" at 0,4 icon=process
+node s "Storage" at 0,5 shape=card icon=disk sub="heap pages, indexes, WAL"
+node out "Rows returned to client" at 1,4 icon=table
+q -> p
+p -> r : "parse tree"
+r -> pl : "rewritten query"
+pl -> e : "chosen plan"
+e -> s : "reads/writes"
+e -> out
 ```
 
 ### 1. Parser
