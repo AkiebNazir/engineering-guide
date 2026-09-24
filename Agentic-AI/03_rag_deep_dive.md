@@ -46,6 +46,8 @@ q -> r -> rr -> p -> llm
 idx:B ..> r:T
 ```
 
+<div class="lab" data-viz="flow-rag"></div>
+
 ### 0.3 Where RAG can go wrong — one per section
 
 | Stage | What can go wrong (in the example) | Section |

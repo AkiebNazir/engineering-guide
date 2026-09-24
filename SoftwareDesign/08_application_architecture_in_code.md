@@ -687,6 +687,8 @@ ALL PASSED
 Every arrow points toward `domain`. `domain` has no outgoing arrows. That is the whole
 architecture; everything else is detail.
 
+<div class="lab" data-viz="flow-place-order"></div>
+
 ---
 
 ## 5 · Where does each concern go?

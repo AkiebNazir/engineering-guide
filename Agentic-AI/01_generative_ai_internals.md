@@ -543,6 +543,8 @@ din -> dqkv -> dkv -> ds -> dout -> dnext
 dnext:R -> din:R : "repeat"
 ```
 
+<div class="lab" data-viz="flow-llm-inference"></div>
+
 ### 3.2 KV cache as a data structure
 
 Conceptually, per layer, per head: a growing 2D array `[n_tokens, d_head]` for K and

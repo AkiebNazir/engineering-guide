@@ -51,6 +51,8 @@ unreliable at exact arithmetic. So a good agent does this:
 
 Three LLM calls, two tool calls, one answer. Every section below zooms into one part of this table.
 
+<div class="lab" data-viz="flow-agent-loop"></div>
+
 ### 0.3 The four parts every agent has
 
 ```arch

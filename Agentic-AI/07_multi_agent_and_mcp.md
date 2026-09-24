@@ -47,6 +47,8 @@ In your `04_enterprise_ai_infrastructure` project, MCP acts as an air-gap.
 - The MCP Client talks to the MCP Server.
 - The MCP Server runs the query and returns the context.
 
+<div class="lab" data-viz="flow-mcp"></div>
+
 ### The 3 Primitives of MCP
 1. **Resources**: Static data the agent can read (e.g., a specific log file or a Notion page).
 2. **Tools**: Functions the agent can execute (e.g., `query_employee_db()`).
