@@ -1210,12 +1210,14 @@ SWD_CHAPTER_PARTS = [
     ("Part 2 · Code that survives change", ("05", "06", "07")),
     ("Part 3 · Services in production", ("08", "09", "10", "11", "12")),
     ("Part 4 · Leading design & the LLD interview", ("13", "14")),
+    ("Part 5 · Extended toolkit & field reference", ("15",)),
 ]
 SWD_LLD_SETS = [
     ("LLD practice 1 · Warm-up", ("008", "009", "003")),
     ("LLD practice 2 · Core set", ("001", "002", "004", "005", "006")),
     ("LLD practice 3 · Breadth", ("007", "010", "011", "012")),
     ("LLD practice 4 · Tier 2", ("013", "014", "015", "016", "017")),
+    ("LLD practice 5 · Tier 2 extended", ("018", "019", "020")),
 ]
 LLD_TITLE_RE = re.compile(r"^LLD\s+(\d{3})\s*·\s*(.+?)\s*(?:\[(Tier\s*\d)\])?\s*$", re.M)
 

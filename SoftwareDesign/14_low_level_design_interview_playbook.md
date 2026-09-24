@@ -405,28 +405,30 @@ The **key point** is what separates a strong answer. ✅ = worked, runnable solu
 
 ### Tier 2 — know the key point
 
-| Problem | Key design point |
-|---|---|
-| **Library management** | `Book` vs. `BookCopy`; `Loan` entity; reservation queue per book; fine policy |
-| **Hotel management** | `RoomType` inventory by date vs. specific room assignment at check-in; overbooking policy |
-| **Snake and ladder** | Board as a jump map; dice as injected strategy (testability); turn state |
-| **Chess** | Piece move generation per type (polymorphism), board validation, check detection by simulating moves; don't forget castling/en passant/promotion as rule objects |
-| **ATM** | State machine (idle → card → PIN → transaction); cash dispensing chain; bank as external port; transactional debit then dispense with compensation |
-| **Online shopping cart / checkout** | Cart vs. Order; price snapshot at order time; discount rules as composable strategies; inventory reservation |
-| **Ride sharing (in-process)** | Driver matching strategy; trip state machine; surge pricing strategy; location index |
-| **Food delivery order lifecycle** | Order state machine with actors per transition; assignment strategy; notifications as observers |
-| **Pub-sub / message queue (in-process)** | Topics, subscriber offsets, at-least-once with ack, back-pressure (`PyEngineering/16`) |
-| **Task/job scheduler** | Priority queue by run-at time; worker pool; retries with backoff; cancellation; recurring jobs |
-| **Notification service** | Channel strategy + templates; user preferences; retry decorator; rate limiting per user |
-| **Text editor with undo/redo** | Command pattern; rope/gap buffer for text; cursor as value object (`04` §8) |
-| **In-memory file system** | Composite tree; path resolution; `ls`/`mkdir`/`addContent` (`PyDSA/25_design/009`) |
-| **Snapshot array / time-based KV** | Per-key version lists + binary search (`PyDSA/25_design/012`) |
-| **Stack Overflow / Q&A site** | Votes and reputation rules; question/answer/comment Composite; tags; bounty state |
-| **Stock exchange order book** | Price-level maps + FIFO queues per level; match engine; order types as strategies |
-| **Coupon / discount engine** | Rules as Specifications + actions; stacking and priority rules; idempotent redemption |
-| **Traffic signal controller** | State machine with timed transitions; injected clock; emergency override |
-| **Cricket / sports scoreboard** | Event-sourced ball-by-ball log; derived stats as projections |
-| **Distributed ID generator (class level)** | Snowflake bit layout; clock-moved-backwards handling (`SystemDesign/problems/022`) |
+✅ = worked, runnable solution in `lld/`; a blank means design it on paper (§14's plan).
+
+| Problem | Key design point | |
+|---|---|---|
+| **Library management** | `Book` vs. `BookCopy`; `Loan` entity; reservation queue per book; fine policy | ✅ 015 |
+| **Hotel management** | `RoomType` inventory by date vs. specific room assignment at check-in; overbooking policy | |
+| **Snake and ladder** | Board as a jump map; dice as injected strategy (testability); turn state | |
+| **Chess** | Piece move generation per type (polymorphism), board validation, check detection by simulating moves; don't forget castling/en passant/promotion as rule objects | ✅ 019 |
+| **ATM** | State machine (idle → card → PIN → transaction); cash dispensing chain; bank as external port; transactional debit then dispense with compensation | ✅ 018 |
+| **Online shopping cart / checkout** | Cart vs. Order; price snapshot at order time; discount rules as composable strategies; inventory reservation | |
+| **Ride sharing (in-process)** | Driver matching strategy; trip state machine; surge pricing strategy; location index | |
+| **Food delivery order lifecycle** | Order state machine with actors per transition; assignment strategy; notifications as observers | ✅ 016 |
+| **Pub-sub / message queue (in-process)** | Topics, subscriber offsets, at-least-once with ack, back-pressure (`PyEngineering/16`) | |
+| **Task/job scheduler** | Priority queue by run-at time; worker pool; retries with backoff; cancellation; recurring jobs | ✅ 014 |
+| **Notification service** | Channel strategy + templates; user preferences; retry decorator; rate limiting per user | ✅ 020 |
+| **Text editor with undo/redo** | Command pattern; rope/gap buffer for text; cursor as value object (`04` §8) | ✅ 017 |
+| **In-memory file system** | Composite tree; path resolution; `ls`/`mkdir`/`addContent` (`PyDSA/25_design/009`) | |
+| **Snapshot array / time-based KV** | Per-key version lists + binary search (`PyDSA/25_design/012`) | |
+| **Stack Overflow / Q&A site** | Votes and reputation rules; question/answer/comment Composite; tags; bounty state | |
+| **Stock exchange order book** | Price-level maps + FIFO queues per level; match engine; order types as strategies | ✅ 013 |
+| **Coupon / discount engine** | Rules as Specifications + actions; stacking and priority rules; idempotent redemption | |
+| **Traffic signal controller** | State machine with timed transitions; injected clock; emergency override | |
+| **Cricket / sports scoreboard** | Event-sourced ball-by-ball log; derived stats as projections | |
+| **Distributed ID generator (class level)** | Snowflake bit layout; clock-moved-backwards handling (`SystemDesign/problems/022`) | |
 
 ---
 
