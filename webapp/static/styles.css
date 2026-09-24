@@ -186,6 +186,8 @@ svg {
   flex: none;
 }
 svg.filled path, .ico-play path, .ico-pause path, .streak svg path { fill: currentColor; stroke: none; }
+/* the icon stroke above must not outline text inside diagrams (it reads as a glow) */
+svg text { stroke: none; }
 
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 input  { font: inherit; color: inherit; }
