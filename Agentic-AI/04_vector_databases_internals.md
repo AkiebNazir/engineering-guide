@@ -36,13 +36,18 @@ One query against 1,000,000 stored vectors of 768 dimensions is
 is a trick to look at only a *small part* of the data, accepting that it will occasionally miss
 a true neighbour.
 
-```mermaid
+```arch
 %% caption: The index families in this module, and what each one trades away.
-flowchart LR
-    Q["Query vector"] --> FLAT["Flat / brute force<br/>check all N<br/>✔ exact · ✘ slow"]
-    Q --> HNSW["HNSW (§2.1)<br/>walk a graph of neighbours<br/>✔ fast, high recall · ✘ lots of RAM"]
-    Q --> IVF["IVF (§2.2)<br/>search only nearby clusters<br/>✔ fast · ✘ misses at cluster edges"]
-    IVF --> PQ["IVF-PQ (§2.2)<br/>+ compress vectors to bytes<br/>✔ tiny memory · ✘ approximate distances"]
+grid 235x120
+node q "Query vector" at 1,0 icon=vector
+node flat "Flat / brute force" at 0,1 shape=card icon=search sub="check all N · ✔ exact · ✘ slow"
+node hnsw "HNSW (§2.1)" at 1,1 shape=card icon=graph sub="walk a graph of neighbours · ✔ fast, high recall · ✘ lots of RAM"
+node ivf "IVF (§2.2)" at 2,1 shape=card icon=grid sub="search only nearby clusters · ✔ fast · ✘ misses at cluster edges"
+node pq "IVF-PQ (§2.2)" at 2,2 shape=card icon=archive sub="+ compress vectors to bytes · ✔ tiny memory · ✘ approximate distances"
+q:B -> flat:T
+q:B -> hnsw:T
+q:B -> ivf:T
+ivf -> pq
 ```
 
 > 🎯 **Recall@k** is the word to use in interviews: "of the true 10 nearest neighbours, how many
@@ -134,25 +139,32 @@ streets** for the last few hundred metres. HNSW's layers are exactly that.
 Toy example: 8 items placed on a number line — `A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7`.
 Query **q = 6.2**. (True nearest: G.)
 
-```mermaid
-%% caption: Thick borders are the nodes the search actually visits. Upper layers skip most of the data.
-flowchart TB
-    subgraph L2["Layer 2 · motorway — few nodes, long jumps"]
-        direction LR
-        A2((A)) --- F2((F))
-    end
-    subgraph L1["Layer 1 · main roads"]
-        direction LR
-        A1((A)) --- C1((C)) --- F1((F)) --- H1((H))
-    end
-    subgraph L0["Layer 0 · local streets — every node"]
-        direction LR
-        A0((A)) --- B0((B)) --- C0((C)) --- D0((D)) --- E0((E)) --- F0((F)) --- G0((G)) --- H0((H))
-    end
-    F2 -. "drop down" .-> F1
-    H1 -. "drop down" .-> H0
-    classDef visited stroke-width:4px
-    class A2,F2,F1,H1,H0,G0 visited
+```arch
+%% caption: Highlighted nodes are the ones the search actually visits. Upper layers skip most of the data.
+route straight
+grid 72x95
+group l2 "Layer 2 · motorway: few nodes, long jumps" color=purple
+node a2 "A" at 0,0 in l2 shape=circle color=amber
+node f2 "F" at 5,0 in l2 shape=circle color=amber
+group l1 "Layer 1 · main roads" color=blue
+node a1 "A" at 0,1 in l1 shape=circle color=slate
+node c1 "C" at 2,1 in l1 shape=circle color=slate
+node f1 "F" at 5,1 in l1 shape=circle color=amber
+node h1 "H" at 7,1 in l1 shape=circle color=amber
+group l0 "Layer 0 · local streets: every node" color=green
+node a0 "A" at 0,2 in l0 shape=circle color=slate
+node b0 "B" at 1,2 in l0 shape=circle color=slate
+node c0 "C" at 2,2 in l0 shape=circle color=slate
+node d0 "D" at 3,2 in l0 shape=circle color=slate
+node e0 "E" at 4,2 in l0 shape=circle color=slate
+node f0 "F" at 5,2 in l0 shape=circle color=slate
+node g0 "G" at 6,2 in l0 shape=circle color=amber
+node h0 "H" at 7,2 in l0 shape=circle color=amber
+a2 -- f2
+a1 -- c1 -- f1 -- h1
+a0 -- b0 -- c0 -- d0 -- e0 -- f0 -- g0 -- h0
+f2 ..> f1 : "drop down"
+h1 ..> h0 : "drop down"
 ```
 
 | Layer | Standing at (distance to q) | Neighbours checked | Move to |
@@ -240,22 +252,21 @@ Query **q = (5, 5.2)**. Distance to centroids: c1 = 5.218, **c2 = 4.929** → c2
 | `nprobe = 1` | c2 only | D at distance 4.104 | ✘ — the true nearest is **G at 0.283** |
 | `nprobe = 2` | c1 and c2 | G at distance 0.283 | ✔ |
 
-```mermaid
+```arch
 %% caption: G sits just inside cell c1, but the query is nearer to c2's centroid — so nprobe = 1 never looks at G.
-flowchart LR
-    subgraph cell1["Cell c1 · centroid (1.5, 1.33)"]
-        A["A"]
-        B["B"]
-        C["C"]
-        G["G — true nearest, 0.283 away"]
-    end
-    subgraph cell2["Cell c2 · centroid (8.5, 8.67)"]
-        D["D — 4.104 away"]
-        E["E"]
-        F["F"]
-    end
-    Q(("q")) == "nprobe = 1 scans only this cell" ==> cell2
-    Q -. "only scanned when nprobe = 2" .-> cell1
+grid 130x100
+group cell1 "Cell c1 · centroid (1.5, 1.33)" color=blue
+node a "A" at 0,0 in cell1 shape=circle color=blue
+node b "B" at 1,0 in cell1 shape=circle color=blue
+node c "C" at 0,1 in cell1 shape=circle color=blue
+node g "G" at 1,1 in cell1 shape=pill color=green sub="true nearest, 0.283 away"
+group cell2 "Cell c2 · centroid (8.5, 8.67)" color=purple
+node e "E" at 3,0 in cell2 shape=circle color=purple
+node f "F" at 4,0 in cell2 shape=circle color=purple
+node d "D" at 3,1 in cell2 shape=pill color=purple sub="4.104 away"
+node q "q" at 2,2.4 shape=circle color=amber
+q:R ==> d:B : "nprobe = 1 scans only this cell"
+q:L ..> g:B : "only scanned when nprobe = 2"
 ```
 
 > 🎯 This is *the* IVF interview trade-off: `nprobe` is a recall-vs-latency dial. Points near a
@@ -277,15 +288,21 @@ Toy PQ: **4-dim vectors, m = 2 sub-vectors, 4 centroids each.**
 
 **Encode** `x = [0.9, 0.1, 5.2, 4.8]`:
 
-```mermaid
+```arch
 %% caption: Encoding. Each half of the vector is replaced by the index of its nearest codebook entry.
-flowchart LR
-    X["x = [0.9, 0.1, 5.2, 4.8]<br/>4 floats = 16 bytes"] --> S1["[0.9, 0.1]"]
-    X --> S2["[5.2, 4.8]"]
-    S1 -->|"nearest in codebook 1"| C1["#1 = [1, 0]"]
-    S2 -->|"nearest in codebook 2"| C2["#0 = [5, 5]"]
-    C1 --> CODE["stored code: [1, 0]"]
-    C2 --> CODE
+grid 190x100
+node x "x = [0.9, 0.1, 5.2, 4.8]" at 1,0 color=blue sub="4 floats = 16 bytes"
+node s1 "[0.9, 0.1]" at 0,1 color=slate
+node s2 "[5.2, 4.8]" at 2,1 color=slate
+node c1 "#1 = [1, 0]" at 0,2 color=purple
+node c2 "#0 = [5, 5]" at 2,2 color=purple
+node code "stored code: [1, 0]" at 1,3 color=green
+x -> s1
+x -> s2
+s1 -> c1 : "nearest in codebook 1"
+s2 -> c2 : "nearest in codebook 2"
+c1 -> code
+c2 -> code
 ```
 
 **Search with ADC.** Query `q = [1.0, 0.0, 5.0, 5.0]` stays full precision. Build two small tables
@@ -364,13 +381,20 @@ After normalisation all three agree — dot product *equals* cosine, and L2 is j
 √(2 − 2·cosine) = √(2 − 1.92) = 0.283. That's why databases normalise once at insert time and then
 run the cheapest kernel: a plain dot product.
 
-```mermaid
+```arch
 %% caption: Picking a metric is really asking: what was the embedding model trained with?
-flowchart TD
-    START["Which metric?"] --> T{"How was the<br/>embedding model trained?"}
-    T -->|"cosine similarity<br/>(most text models)"| N["L2-normalise vectors once<br/>at insert time"] --> DOT["Index with dot product<br/>(fastest SIMD kernel)"]
-    T -->|"raw dot product<br/>(length carries meaning)"| DOT2["Index with dot product,<br/>do NOT normalise"]
-    T -->|"Euclidean distance"| L2["Index with L2"]
+grid 215x110
+node start "Which metric?" at 1,0 shape=pill
+node t "How was the embedding model trained?" at 1,1 shape=diamond color=amber
+node n "L2-normalise vectors once" at 0,2 color=blue sub="at insert time"
+node dot "Index with dot product" at 0,3 color=green sub="fastest SIMD kernel"
+node dot2 "Index with dot product" at 1,2.5 color=green sub="do NOT normalise"
+node l2 "Index with L2" at 2,2.5 color=green
+start -> t
+t:L -> n:T : "cosine similarity (most text models)"
+n -> dot
+t:B -> dot2:T : "raw dot product (length carries meaning)"
+t:R -> l2:T : "Euclidean distance"
 ```
 
 ### 2.4 Filtered search: pre-filter vs. post-filter vs. single-stage
@@ -405,21 +429,24 @@ distinct execution strategies with very different failure modes:
 
 Catalog: **1,000,000** shoes. Only **1%** (10,000) are red. We want the 10 most similar red shoes.
 
-```mermaid
+```arch
 %% caption: Three ways to combine a metadata filter with vector search.
-flowchart TB
-    subgraph post["Post-filter"]
-        direction LR
-        p1["ANN search<br/>top 10 of all shoes"] --> p2["drop non-red"] --> p3["≈ 0 results ✘"]
-    end
-    subgraph pre["Pre-filter"]
-        direction LR
-        q1["metadata index<br/>→ 10,000 red shoes"] --> q2["brute-force distance<br/>on those 10,000"] --> q3["exact top 10 ✔<br/>but slow if filter is broad"]
-    end
-    subgraph single["Single-stage (filter-aware traversal)"]
-        direction LR
-        s1["walk the HNSW graph"] --> s2["pass through any node,<br/>but only collect red ones"] --> s3["top 10 red ✔ fast"]
-    end
+grid 200x80
+group post "Post-filter" color=red
+node p1 "ANN search" at 0,0 in post sub="top 10 of all shoes"
+node p2 "drop non-red" at 1,0 in post
+node p3 "≈ 0 results ✘" at 2,0 in post color=red
+group pre "Pre-filter" color=amber
+node q1 "metadata index" at 0,1 in pre sub="→ 10,000 red shoes"
+node q2 "brute-force distance" at 1,1 in pre sub="on those 10,000"
+node q3 "exact top 10 ✔" at 2,1 in pre color=amber sub="but slow if filter is broad"
+group single "Single-stage (filter-aware traversal)" color=green
+node s1 "walk the HNSW graph" at 0,2 in single
+node s2 "pass through any node" at 1,2 in single sub="but only collect red ones"
+node s3 "top 10 red ✔ fast" at 2,2 in single color=green
+p1 -> p2 -> p3
+q1 -> q2 -> q3
+s1 -> s2 -> s3
 ```
 
 | Strategy | What happens here | Numbers |

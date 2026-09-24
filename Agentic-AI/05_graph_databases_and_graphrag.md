@@ -24,14 +24,18 @@ Four sentences, each in a different document:
 
 > **Question:** "In which city did the discoverer of Radium work?"
 
-```mermaid
+```arch
 %% caption: The same four sentences as a graph. The answer is a 3-hop path, not a single sentence.
-flowchart LR
-    R(["Radium"]) -- "DISCOVERED_BY" --> MC(["Marie Curie"])
-    MC -- "WORKED_AT" --> S(["Sorbonne"])
-    S -- "LOCATED_IN" --> P(["Paris ✔"])
-    PC(["Pierre Curie"]) -- "COLLABORATED_WITH" --> MC
-    style P stroke-width:3px
+grid 280x85
+node r "Radium" at 0,0 shape=pill color=blue
+node mc "Marie Curie" at 0,1 shape=pill color=blue
+node s "Sorbonne" at 0,2 shape=pill color=blue
+node p "Paris ✔" at 0,3 shape=pill color=green
+node pc "Pierre Curie" at 1,1 shape=pill color=blue
+r -> mc : "DISCOVERED_BY"
+mc -> s : "WORKED_AT"
+s -> p : "LOCATED_IN" thick
+pc -> mc : "COLLABORATED_WITH"
 ```
 
 ### 0.2 Why plain vector RAG struggles here
@@ -47,18 +51,20 @@ care how a sentence *sounds* — it just follows the edges Radium → Marie Curi
 
 ### 0.3 The two halves of this module
 
-```mermaid
+```arch
 %% caption: Part one is about storing graphs fast; part two is about using an LLM to build and query them.
-flowchart LR
-    subgraph db["Graph databases (§2.1–2.3)"]
-        direction TB
-        a["How nodes and edges are stored<br/>LPG vs RDF"] --> b["Why hops are cheap<br/>index-free adjacency"] --> c["How to walk them<br/>BFS · Dijkstra · PageRank"]
-    end
-    subgraph grag["GraphRAG (§2.4)"]
-        direction TB
-        d["LLM extracts triples<br/>from text"] --> e["Group into communities<br/>+ summarise"] --> f["Answer local and<br/>global questions"]
-    end
-    db --> grag
+grid 230x100
+group db "Graph databases (§2.1–2.3)" color=blue icon=graph
+node a "How nodes and edges are stored" at 0,0 in db sub="LPG vs RDF"
+node b "Why hops are cheap" at 0,1 in db sub="index-free adjacency"
+node c "How to walk them" at 0,2 in db sub="BFS · Dijkstra · PageRank"
+group grag "GraphRAG (§2.4)" color=teal icon=llm
+node d "LLM extracts triples" at 1.2,0 in grag sub="from text"
+node e "Group into communities" at 1.2,1 in grag sub="+ summarise"
+node f "Answer local and global questions" at 1.2,2 in grag
+a -> b -> c
+d -> e -> f
+c:R -> d:L
 ```
 
 ---
@@ -121,10 +127,12 @@ Fact: *"Marie Curie (born 1867) discovered Radium (symbol Ra) in 1898."*
 
 **As a Labeled Property Graph** — 2 nodes, 1 edge, properties sit right on them:
 
-```mermaid
+```arch
 %% caption: LPG — the edge itself carries the year, just like a node carries its properties.
-flowchart LR
-    MC["Marie Curie<br/>label: Person<br/>born: 1867"] -- "DISCOVERED<br/>year: 1898" --> RA["Radium<br/>label: Element<br/>symbol: Ra"]
+grid 260x120
+node mc "Marie Curie" at 0,0 color=blue sub="label: Person · born: 1867"
+node ra "Radium" at 0,1 color=green sub="label: Element · symbol: Ra"
+mc -> ra : "DISCOVERED · year: 1898"
 ```
 
 **As RDF triples** — everything must be `(subject, predicate, object)`:
@@ -145,12 +153,16 @@ have to invent a node for the event itself (**reification**):
 | :Discovery1 | :element | :Radium |
 | :Discovery1 | :year | 1898 |
 
-```mermaid
+```arch
 %% caption: RDF reification — one edge with a property becomes an extra node plus three edges.
-flowchart LR
-    D(["Discovery1"]) -- ":agent" --> MC(["MarieCurie"])
-    D -- ":element" --> RA(["Radium"])
-    D -- ":year" --> Y["1898"]
+grid 170x100
+node d "Discovery1" at 1,0 shape=pill color=amber
+node mc "MarieCurie" at 0,1 shape=pill color=blue
+node ra "Radium" at 1,1 shape=pill color=blue
+node y "1898" at 2,1 color=slate
+d -> mc : ":agent"
+d -> ra : ":element"
+d -> y : ":year"
 ```
 
 The same question in each query language:
@@ -298,15 +310,22 @@ by importance rather than treating every node equally.
 
 #### 🧮 Worked example — BFS: "everything within 2 hops of Marie Curie"
 
-```mermaid
+```arch
 %% caption: Edges point one way. BFS from Marie Curie follows outgoing edges only.
-flowchart LR
-    MC(["Marie Curie<br/>hop 0"]) --> RA(["Radium<br/>hop 1"])
-    MC --> SO(["Sorbonne<br/>hop 1"])
-    MC --> NP(["Nobel Prize<br/>hop 1"])
-    SO --> PA(["Paris<br/>hop 2"])
-    PA --> FR(["France<br/>hop 3 — too far"])
-    PC(["Pierre Curie<br/>not reachable"]) --> MC
+grid 170x90
+node pc "Pierre Curie" at 0,0 shape=pill color=slate sub="not reachable"
+node mc "Marie Curie" at 1,0 shape=pill color=blue sub="hop 0"
+node ra "Radium" at 0,1 shape=pill color=green sub="hop 1"
+node so "Sorbonne" at 1,1 shape=pill color=green sub="hop 1"
+node np "Nobel Prize" at 2,1 shape=pill color=green sub="hop 1"
+node pa "Paris" at 1,2 shape=pill color=green sub="hop 2"
+node fr "France" at 1,3 shape=pill color=amber sub="hop 3 — too far"
+mc -> ra
+mc -> so
+mc -> np
+so -> pa
+pa -> fr
+pc -> mc
 ```
 
 | Queue (front → back) | Pop | Record | Push |
@@ -333,14 +352,19 @@ graph-bfs
 
 #### 🧮 Worked example — Dijkstra: the obvious road isn't the shortest
 
-```mermaid
+```arch
 %% caption: The direct edge A→B costs 4, but A→C→B costs 3. Thick edges are the shortest path to D.
-flowchart LR
-    A((A)) -- "4" --> B((B))
-    A == "1" ==> C((C))
-    C == "2" ==> B
-    B == "1" ==> D((D))
-    C -- "5" --> D
+route straight
+grid 110x90
+node a "A" at 0,1 shape=circle color=blue
+node b "B" at 2,0 shape=circle color=blue
+node c "C" at 1,2 shape=circle color=blue
+node d "D" at 3,1 shape=circle color=green
+a -> b : "4"
+a ==> c : "1" color=green
+c ==> b : "2" color=green
+b ==> d : "1" color=green
+c -> d : "5"
 ```
 
 | Pop (smallest distance first) | dist A | dist B | dist C | dist D | What changed |
@@ -358,14 +382,18 @@ distance to the destination*, so it stops exploring roads heading the wrong way.
 
 Links: A → B, A → C, B → C, C → A, D → C. Damping d = 0.85, all nodes start at 0.25.
 
-```mermaid
+```arch
 %% caption: C has three incoming links, D has none.
-flowchart LR
-    A((A)) --> B((B))
-    A --> C((C))
-    B --> C
-    C --> A
-    D((D)) --> C
+route straight
+grid 100x90
+node a "A" at 0,0 shape=circle color=blue
+node b "B" at 2,0 shape=circle color=blue
+node c "C" at 1,1 shape=circle color=green
+node d "D" at 1,2 shape=circle color=slate
+a -> b
+a <-> c
+b -> c
+d -> c
 ```
 
 | Node | Start | After 1 round | After 2 rounds | Converged (50 rounds) |
@@ -433,27 +461,30 @@ all LLM-call-heavy) compared to flat chunking and embedding.
 
 #### 🖼️ GraphRAG, end to end
 
-```mermaid
+```arch
 %% caption: GraphRAG's offline pipeline is LLM-call-heavy; query time mixes vector search, graph walks and community summaries.
-flowchart TB
-    subgraph build["OFFLINE · build the graph"]
-        direction LR
-        CH["Text chunks"] --> EX["LLM extracts<br/>entities + relations<br/>(structured JSON)"]
-        EX --> ER["Entity resolution<br/>'M. Curie' = 'Marie Curie'"]
-        ER --> G[("Knowledge graph")]
-        G --> CD["Community detection<br/>(Leiden)"]
-        CD --> SUM["LLM writes one summary<br/>per community"]
-    end
-    subgraph ask["QUERY TIME"]
-        direction LR
-        Q["Question"] --> VM["Vector-match entities<br/>and summaries"]
-        VM --> LOC["Local: k-hop BFS<br/>around matched entities"]
-        VM --> GLO["Global: relevant<br/>community summaries"]
-        LOC --> P["Prompt → LLM"]
-        GLO --> P
-    end
-    G -.-> LOC
-    SUM -.-> GLO
+grid 175x90
+group build "OFFLINE · build the graph" color=purple icon=workflow
+node ch "Text chunks" at 0,0 in build color=slate
+node ex "LLM extracts" at 0,1 in build color=teal sub="entities + relations (structured JSON)"
+node er "Entity resolution" at 0,2 in build color=purple sub="'M. Curie' = 'Marie Curie'"
+node g "Knowledge graph" at 0,3 in build shape=cyl color=blue
+node cd "Community detection" at 0,4 in build color=purple sub="Leiden"
+node sum "LLM writes one summary" at 0,5 in build color=teal sub="per community"
+group ask "QUERY TIME" color=teal icon=search
+node q "Question" at 1.5,0 in ask shape=pill
+node vm "Vector-match" at 1.5,1.5 in ask color=teal sub="entities and summaries"
+node loc "Local: k-hop BFS" at 1,3 in ask color=blue sub="around matched entities"
+node glo "Global" at 2,5 in ask color=blue sub="relevant community summaries"
+node p "Prompt → LLM" at 1.5,6 in ask color=teal
+ch -> ex -> er -> g -> cd -> sum
+q -> vm
+vm -> loc
+vm -> glo
+loc -> p
+glo -> p
+g ..> loc
+sum ..> glo
 ```
 
 #### 🧮 Worked example — Stage 1, extraction
@@ -487,22 +518,30 @@ calls in Module 2 §2.3):
 
 #### 🧮 Worked example — Stage 2, communities and summaries
 
-```mermaid
+```arch
 %% caption: Leiden finds groups that link to each other far more than to the outside. Each group gets its own LLM-written summary.
-flowchart LR
-    subgraph sci["Community 1 · Radioactivity research"]
-        MC(["Marie Curie"]) --- PC(["Pierre Curie"])
-        MC --- RA(["Radium"])
-        MC --- PO(["Polonium"])
-        PC --- NP(["Nobel Prize 1903"])
-        MC --- NP
-    end
-    subgraph geo["Community 2 · Paris institutions"]
-        SO(["Sorbonne"]) --- PA(["Paris"])
-        PA --- FR(["France"])
-        SO --- ENS(["École Normale"])
-    end
-    MC -. "one bridge edge" .- SO
+route straight
+grid 125x90
+group sci "Community 1 · Radioactivity research" color=blue
+node pc "Pierre Curie" at 0,0 in sci shape=pill color=blue
+node np "Nobel Prize 1903" at 0,1.2 in sci shape=pill color=blue
+node mc "Marie Curie" at 1,1.2 in sci shape=pill color=blue
+node ra "Radium" at 1,2.4 in sci shape=pill color=blue
+node po "Polonium" at 0,2.4 in sci shape=pill color=blue
+group geo "Community 2 · Paris institutions" color=green
+node so "Sorbonne" at 2.6,1.2 in geo shape=pill color=green
+node pa "Paris" at 3.6,1.2 in geo shape=pill color=green
+node fr "France" at 3.6,2.4 in geo shape=pill color=green
+node ens "École Normale" at 2.6,2.4 in geo shape=pill color=green
+mc -- pc
+mc -- ra
+mc -- po
+pc -- np
+mc -- np
+so -- pa
+pa -- fr
+so -- ens
+mc .. so : "one bridge edge"
 ```
 
 - **Summary 1:** "Marie and Pierre Curie researched radioactivity, discovering polonium and radium, and shared the 1903 Nobel Prize in Physics."
