@@ -57,23 +57,33 @@ Everything is keyed by `meeting_id`: subscriptions depend on the other participa
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Signaling and placement pick an SFU per region, media flows as SRTP with cascade links carrying only the layers a remote region needs, and recording and webinar fan-out hang off the SFU as ordinary subscribers.
-flowchart LR
-    c1["Client A<br/>3 simulcast layers"] -->|"WSS signaling"| sg["Signaling shards<br/>by meeting id"]
-    sg --> pl["Placement<br/>power of two choices"]
-    pl --> rs[("Room store<br/>lease and epoch")]
-    pl -.->|"reserve room"| s1
-    c1 ==>|"SRTP over UDP"| s1["SFU region 1"]
-    c1 -.->|"TURN over TLS 443"| tn["TURN relay"]
-    tn --> s1
-    s1 <-->|"cascade, needed layers only"| s2["SFU region 2"]
-    s2 ==> c2["Client B<br/>tiles by size"]
-    s1 -->|"top layer RTP fork"| rc["Recorder tap"]
-    rc --> os[("Object store<br/>raw tracks")]
-    os --> cw["Composite and ASR workers"]
-    s1 -->|"panelist layers"| lf["Webinar leaf SFUs"]
-    lf --> at["Attendees"]
+node sg "Signaling shards" at 0,0 icon=websocket sub="by meeting id"
+node c1 "Client A" at 1,0 icon=video sub="3 simulcast layers"
+node tn "TURN relay" at 2,0 icon=proxy
+node pl "Placement" at 0,1 icon=scheduler sub="power of two choices"
+node rs "Room store" at 0,2 icon=kv sub="lease and epoch"
+node s1 "SFU region 1" at 1.5,2 icon=server
+node s2 "SFU region 2" at 3,2 icon=server
+node rc "Recorder tap" at 1,3 icon=video
+node lf "Webinar leaf SFUs" at 2,3 icon=server
+node c2 "Client B" at 3,3 icon=video sub="tiles by size"
+node os "Object store" at 1,4 icon=blob sub="raw tracks"
+node at "Attendees" at 2,4 icon=users
+node cw "Composite and ASR workers" at 1,5 icon=worker
+c1:L -> sg:R : "WSS signaling"
+sg -> pl -> rs
+pl:R ..> s1:L : "reserve room"
+c1:B ==> s1:T : "SRTP over UDP"
+c1:R ..> tn:L : "TURN over TLS 443"
+tn:B -> s1:T
+s1:R <-> s2:L : "cascade, needed layers only"
+s2 ==> c2
+s1:B -> rc:T : "top layer RTP fork"
+rc -> os -> cw
+s1:B -> lf:T : "panelist layers"
+lf -> at
 ```
 
 **Join** (sequence diagram below): signaling authenticates, the placer picks the room's SFU, the client gets a token and ICE servers, and media starts. **Media:** a camera encodes three layers and the SFU receives them over SRTP. For each receiver it picks one layer per tile, rewrites SSRC, sequence number and timestamp so each tile is one continuous stream, encrypts with that receiver's key and sends. Nothing is decoded or written to disk on the live path. In-meeting chat reuses [006](006_chat_solution.md), and socket and presence mechanics are in [22](../building_blocks/22_realtime_and_collaboration.md).

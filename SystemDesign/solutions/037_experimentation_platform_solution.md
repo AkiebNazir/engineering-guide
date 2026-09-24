@@ -52,25 +52,34 @@ Everything downstream of the control-plane store is derived and recomputable; it
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: A small transactional control plane compiles versioned config that servers evaluate locally, while exposures feed a stream path for guardrails and a batch path for decisions.
-flowchart LR
-    UI["Experiment UI and API<br/>review, audit, metric registry"] --> CP[("Control plane DB<br/>experiments, layers, allocations")]
-    CP --> B["Config builder<br/>signed snapshot + deltas"]
-    B --> R["Relay tier<br/>about 30 relays"]
-    R --> S["Service SDK<br/>hash, layers, lazy exposure"]
-    M["Mobile and web"] --> AS["Assignment API<br/>once per session"]
-    AS --> S
-    S --> K[["Exposure log (Kafka)"]]
-    E[["Product metric events"]] --> ST
-    K --> ST["Stream job<br/>guardrails, SRM, replay check"]
-    K --> BT["Batch<br/>dedupe, join, CUPED, sufficient stats"]
-    E --> BT
-    BT --> SE["Stats engine<br/>sequential tests"]
-    ST --> RC["Ramp controller<br/>may only reduce exposure"]
-    RC --> CP
-    SE --> RES[("Results store")]
-    RES --> UI
+node UI "Experiment UI and API" at 0,0 icon=dashboard sub="review, audit, metric registry"
+node CP "Control plane DB" at 1,0 icon=db sub="experiments, layers, allocations"
+node B "Config builder" at 2,0 icon=package sub="signed snapshot + deltas"
+node R "Relay tier" at 3,0 icon=proxy sub="about 30 relays"
+node AS "Assignment API" at 2,1 icon=api sub="once per session"
+node S "Service SDK" at 3,1 icon=code sub="hash, layers, lazy exposure"
+node M "Mobile and web" at 2,2 icon=mobile
+node K "Exposure log (Kafka)" at 3,2 icon=kafka-icon
+node RC "Ramp controller" at 1,3 icon=gauge sub="may only reduce exposure"
+node ST "Stream job" at 2,3 icon=stream sub="guardrails, SRM, replay check"
+node E "Product metric events" at 2,4 icon=event
+node BT "Batch" at 3,4 icon=worker sub="dedupe, join, CUPED, sufficient stats"
+node RES "Results store" at 0,5 icon=db
+node SE "Stats engine" at 3,5 icon=sigma sub="sequential tests"
+UI -> CP -> B -> R -> S
+M -> AS -> S
+S -> K
+E -> ST
+K -> ST
+K -> BT
+E -> BT
+BT -> SE
+ST -> RC
+RC -> CP
+SE -> RES
+RES -> UI
 ```
 
 **Write walk (start).** One transaction validates metric bindings, computes power (`422` if the MDE misses), reserves the bucket range (the exclusion constraint rejects overlaps), and writes an immutable version plus an audit row. The builder emits a signed delta with `effective_at` = now + 120 s.

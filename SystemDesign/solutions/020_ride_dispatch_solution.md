@@ -72,26 +72,38 @@ Trip creation is idempotent on `Idempotency-Key` plus a unique index of one acti
 
 ## Architecture and data flow
 
-```mermaid
+```arch
 %% caption: Pings feed a disposable per-city index, the dispatcher batches requests over it, and only conditional writes in the trip store make an assignment true.
-flowchart LR
-    drv[Driver app] -->|ping every 4 s| dgw[Driver gateway<br/>persistent streams]
-    dgw -->|batched by city| idx[(City shard<br/>in-memory H3 index, TTL 12 s)]
-    dgw -.->|on-trip pings| trace[(GPS trace log)]
-    rider[Rider app] -->|create trip| api[Trip API]
-    api -->|row and queue| ledger[(Trip store<br/>trips, offers, drivers)]
-    api --> disp[City dispatcher<br/>1.5 s batches]
-    idx -->|k-ring candidates| disp
-    disp -->|coarse ETA| eta[ETA service]
-    disp -->|claim driver, write offer| ledger
-    disp -->|offer| pgw[Push gateway]
-    pgw --> drv
-    drv -->|accept| api
-    api -->|CAS OFFERED to MATCHED| ledger
-    ledger -->|outbox| bus[Event bus]
-    bus --> pgw
-    pgw --> rider
-    bus --> pay[Payments hand-off]
+grid 160x150
+node drv "Driver app" at 0,0 icon=mobile
+node pgw "Push gateway" at 1.5,0 icon=notify
+node rider "Rider app" at 3,0 icon=mobile
+node dgw "Driver gateway" at 0,1 icon=gateway sub="persistent streams"
+node disp "City dispatcher" at 1.5,1 icon=scheduler sub="1.5 s batches"
+node api "Trip API" at 3,1 icon=api
+node idx "City shard" at 0,2 icon=cache sub="in-memory H3 index, TTL 12 s"
+node ledger "Trip store" at 2.5,2 icon=db sub="trips, offers, drivers"
+node trace "GPS trace log" at 0,3 icon=logs
+node eta "ETA service" at 1.5,3 icon=timer
+node bus "Event bus" at 2.5,3 icon=stream
+node pay "Payments hand-off" at 2.5,4 icon=payment
+drv -> dgw : "ping every 4 s"
+dgw -> idx : "batched by city"
+dgw:L ..> trace:L : "on-trip pings"
+rider -> api : "create trip"
+api:B -> ledger:T : "row and queue"
+api:L -> disp:R
+idx:R -> disp:L : "k-ring candidates"
+disp:B -> eta:T : "coarse ETA"
+disp:R -> ledger:L : "claim driver, write offer"
+disp:T -> pgw:B : "offer"
+pgw -> drv
+drv:T -> api:R : "accept"
+api:R -> ledger:R : "CAS OFFERED\nto MATCHED"
+ledger -> bus : "outbox"
+bus:L -> pgw:B
+pgw -> rider
+bus -> pay
 ```
 
 **One write (a ride request).** `POST /v1/trips` checks the quote, pre-authorises payment, inserts the trip in `SEARCHING` (one row plus outbox event) and queues it in the city dispatcher. When the window closes, the dispatcher pulls 25 candidates per request, ranks by coarse ETA, solves each zone, claims each chosen driver, writes the offer and pushes it. The driver's `accept` runs the compare-and-set that yields `MATCHED`, and the outbox event reaches both apps.

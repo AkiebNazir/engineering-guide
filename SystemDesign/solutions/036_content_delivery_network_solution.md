@@ -50,20 +50,26 @@ GET /img/a.jpg → 200 Cache-Status: EdgeCDN; fwd=stale; fwd-status=503   # stal
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: The request path touches only POP-local state, and config, certificates and purges flow one way from the control plane, so a POP keeps serving from its last snapshot if that flow stops.
-flowchart LR
-    U["Client"] -->|"anycast or DNS-mapped IP"| L4["L4 balancer<br/>flow hash"]
-    subgraph POP["Edge POP: 2 to 12 servers"]
-        L4 --> S1["Server A<br/>TLS, HTTP, cache"]
-        L4 --> S2["Server B<br/>owner of this key"]
-        S1 <-->|"peer fetch from owner"| S2
-    end
-    S2 -->|"miss, collapsed"| R["Regional parent"]
-    R -->|"miss, collapsed"| SH["Origin shield<br/>one per origin"]
-    SH -->|"pooled HTTP/2"| O[("Customer origin")]
-    CP["Control plane<br/>config, certs, purge log, mapping"] -.->|"snapshots, purge stream, certs by SNI"| S1
-    S1 -.->|"counters and logs"| CP
+node U "Client" at 1,0 icon=client
+node L4 "L4 balancer" at 1,1 icon=lb sub="flow hash"
+group POP "Edge POP: 2 to 12 servers" icon=edge color=purple
+node S1 "Server A" at 0,2 in POP icon=server sub="TLS, HTTP, cache"
+node S2 "Server B" at 2,2 in POP icon=server sub="owner of this key"
+node R "Regional parent" at 2,3 icon=cache
+node SH "Origin shield" at 2,4 icon=shield sub="one per origin"
+node O "Customer origin" at 2,5 icon=db
+node CP "Control plane" at 0,4 icon=scheduler sub="config, certs, purge log, mapping"
+U -> L4 : "anycast or DNS-mapped IP"
+L4:L -> S1:T
+L4:R -> S2:T
+S1:R <-> S2:L : "peer fetch from owner"
+S2 -> R : "miss, collapsed"
+R -> SH : "miss, collapsed"
+SH -> O : "pooled HTTP/2"
+CP:L ..> S1:L : "snapshots, purge stream, certs by SNI"
+S1:B ..> CP:T : "counters and logs"
 ```
 
 **Read.** DNS or anycast lands the client on a POP and the L4 balancer picks any server by flow hash (Maglev, NSDI 2016). The server completes TLS from its RAM certificate cache, builds the key from the zone snapshot and checks its RAM index. A fresh, un-purged hit goes out with `sendfile`, and a local miss goes to the key's owner over the POP LAN. An owner miss joins or starts one collapsed fetch up the regional parent, shield and origin, and the response streams to every waiter while written to disk. **Write.** Config and purges are validated, committed, then pushed down a relay tree (deep dive 4).

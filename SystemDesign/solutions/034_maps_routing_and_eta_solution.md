@@ -53,24 +53,36 @@ Shards partition **geographically**, sessions **by hash** (no locality to exploi
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Position reports feed both navigation state and the traffic pipeline, and everything converges on one versioned metric served from RAM.
-flowchart LR
-    Phone["Phone: on-device matching, offline pack"] -->|"batch every 5 s"| GW["Nav gateway: sessions, ETA, reroute policy"]
-    Phone -->|"route request"| RA["Router"]
-    GW --> RA
-    RA --> SN["Snapper: geo index"]
-    RA --> SH["Routing shard group in RAM: graph, overlay, 3 metrics"]
-    RA --> ETA["ETA model"]
-    GW -->|"anonymised traversals"| LOG["Probe log"]
-    LOG --> AGG["Aggregator: per-segment speed"]
-    AGG --> SS["Speed store, history"]
-    SS --> CUS["Customizer every 60 s"]
-    CUS -->|"metric blob"| SH
-    MAP["Map edits, incidents"] --> BLD["Validate, build, partition"]
-    BLD -->|"build artifact"| SH
-    BLD --> TL["Tile and offline builders"]
-    SS --> TT["Traffic tiles, CDN"]
+node Phone "Phone" at 1,0 icon=mobile sub="on-device matching, offline pack"
+node GW "Nav gateway" at 0,1 icon=gateway sub="sessions, ETA, reroute policy"
+node RA "Router" at 2,1 icon=map
+node ETA "ETA model" at 3,1 icon=model
+node LOG "Probe log" at 0,2 icon=logs
+node SN "Snapper" at 1,2 icon=index sub="geo index"
+node MAP "Map edits, incidents" at 3,2 icon=edit
+node AGG "Aggregator" at 0,3 icon=sigma sub="per-segment speed"
+node SH "Routing shard group" at 2,3 icon=memory sub="in RAM: graph, overlay, 3 metrics"
+node BLD "Validate, build, partition" at 3,3 icon=package
+node SS "Speed store" at 0,4 icon=db sub="history"
+node CUS "Customizer" at 2,4 icon=cron sub="every 60 s"
+node TL "Tile and offline builders" at 3,4 icon=worker
+node TT "Traffic tiles, CDN" at 0,5 icon=cdn
+Phone:L -> GW:T : "batch every 5 s"
+Phone:R -> RA:T : "route request"
+GW:R -> RA:L
+RA -> SN
+RA -> SH
+RA -> ETA
+GW -> LOG : "anonymised traversals"
+LOG -> AGG -> SS
+SS -> CUS
+CUS -> SH : "metric blob"
+MAP -> BLD
+BLD -> SH : "build artifact"
+BLD -> TL
+SS -> TT
 ```
 
 **Read walk (a 2,400 km request).** The router snaps both ends (4 candidate edges each), picks the group, runs the bidirectional overlay search on `LIVE`, adds alternatives, unpacks, re-prices each path time-dependently, calls the ETA model and stamps the versions.

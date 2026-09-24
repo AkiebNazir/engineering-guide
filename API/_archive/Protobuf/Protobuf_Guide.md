@@ -4,13 +4,18 @@
 
 <div data-viz="api-protobuf"></div>
 
-```mermaid
-flowchart LR
-    A[user.proto Schema] -->|protoc| B(user.pb.go)
-    A -->|protoc| C(user_pb2.py)
-    B -->|Serialize| D[(Binary 0x08 0x01)]
-    D -->|Network| E[(Binary 0x08 0x01)]
-    E -->|Deserialize| C
+```arch
+%% caption: One .proto schema generates code for each language, and both sides agree on the same compact binary bytes on the wire.
+node A "user.proto Schema" at 0,0.5 icon=file
+node B "user.pb.go" at 1,0 icon=go
+node D "Binary 0x08 0x01" at 2,0 icon=disk
+node C "user_pb2.py" at 1,1 icon=python
+node E "Binary 0x08 0x01" at 2,1 icon=disk
+A -> B : "protoc"
+A -> C : "protoc"
+B -> D : "Serialize"
+D -> E : "Network"
+E -> C : "Deserialize"
 ```
 
 
@@ -48,20 +53,20 @@ flowchart LR
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph TD
-    A[user.proto Schema] -->|protoc Compiler| B[Go Structs]
-    A -->|protoc Compiler| C[Python Classes]
-
-    subgraph Service A - Go
-        B --> D[Serialize to Binary]
-    end
-
-    subgraph Service B - Python
-        E[Deserialize from Binary] --> C
-    end
-
-    D -->|Tiny Binary Payload| E
+```arch
+%% caption: The compiler turns one schema into Go structs and Python classes, so the two services exchange a tiny binary payload with no hand-written parsing.
+node A "user.proto Schema" at 1,0 icon=file
+group ga "Service A - Go" icon=go color=cyan
+node B "Go Structs" at 0,1 in ga icon=go
+node D "Serialize to Binary" at 0,2 in ga icon=code
+group gb "Service B - Python" icon=python color=amber
+node C "Python Classes" at 2,1 in gb icon=python
+node E "Deserialize from Binary" at 2,2 in gb icon=code
+A -> B : "protoc Compiler"
+A -> C : "protoc Compiler"
+B -> D
+E -> C
+D -> E : "Tiny Binary Payload"
 ```
 
 ### Animated Flow Visualization (JSON vs Protobuf Size Comparison)

@@ -55,30 +55,28 @@ Errors: `SESSION_EXPIRED` (terminal), `IN_JEOPARDY` (retryable), `NOT_MASTER{hin
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Clients reach one master through an optional proxy tier, the master commits through a 5-replica log, and protected resources verify fencing tokens themselves.
-flowchart LR
-    subgraph Clients["Client processes"]
-        C1["App + client library<br/>session, cache, watches"]
-        C2["App + client library"]
-    end
-    P["Proxy tier<br/>batched KeepAlive, shared cache"]
-    subgraph Cell["Cell: 5 replicas over 3 zones (2-2-1)"]
-        M["Master = Raft leader<br/>tree, sessions, leases, watches in RAM"]
-        F1["Follower A"]
-        F2["Follower B"]
-        F3["Follower B"]
-        F4["Follower C"]
-    end
-    R["Protected resource<br/>stores highest token seen"]
-    C1 --> P
-    C2 --> P
-    P --> M
-    M -- "append, commit at 3 of 5" --> F1
-    M --> F2
-    M --> F3
-    M --> F4
-    C1 -- "write + token" --> R
+grid 150x120
+group Clients "Client processes" icon=app color=slate
+node C1 "App + client library" at 0,0 in Clients icon=app sub="session, cache, watches"
+node C2 "App + client library" at 1.5,0 in Clients icon=app
+node R "Protected resource" at 0,1 icon=lock sub="stores highest token seen"
+node P "Proxy tier" at 1.5,1 icon=proxy sub="batched KeepAlive, shared cache"
+group Cell "Cell: 5 replicas over 3 zones (2-2-1)" icon=region color=blue
+node M "Master = Raft leader" at 1.5,2 in Cell icon=server sub="tree, sessions, leases, watches in RAM"
+node F1 "Follower A" at 0,3 in Cell icon=replica
+node F2 "Follower B" at 1,3 in Cell icon=replica
+node F3 "Follower B" at 2,3 in Cell icon=replica
+node F4 "Follower C" at 3,3 in Cell icon=replica
+C1:R -> P:L
+C2 -> P
+P -> M
+M -> F1 : "append, commit at 3 of 5"
+M:B -> F2:T
+M:B -> F3:T
+M -> F4
+C1 -> R : "write + token"
 ```
 
 **Write walk (`Set` on a file cached by 10 clients).** The master (1) checks the session and dedup table, (2) sends invalidations to the 10 cachers on their parked KeepAlive replies and waits for acks or lease expiry, (3) appends, fsyncs, replicates and commits at 3 of 5, (4) applies to the tree, queues watch events and replies. Invalidating first means an aborted write costs only a harmless re-read.

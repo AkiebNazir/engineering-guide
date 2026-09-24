@@ -63,27 +63,20 @@ sequenceDiagram
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph LR
-    subgraph Client [Web Browser / Mobile App]
-        A[HTTP Client]
-    end
-
-    subgraph CDN_Layer [CDN / Caching Layer]
-        B[Cloudflare / Varnish]
-    end
-
-    subgraph Server_Cluster [Backend Microservices]
-        C[API Gateway / LB]
-        D[User Service]
-        E[Order Service]
-        
-        C -->|Route /users| D
-        C -->|Route /orders| E
-    end
-    
-    A -->|GET /users/123| B
-    B -->|Cache Miss| C
+```arch
+%% caption: A request passes through the CDN cache first, and only misses reach the gateway that routes by path to each backend service.
+group Client "Web Browser / Mobile App" icon=browser color=slate
+node A "HTTP Client" at 1,0 in Client icon=browser
+group CDN_Layer "CDN / Caching Layer" icon=cdn color=purple
+node B "Cloudflare / Varnish" at 1,1 in CDN_Layer icon=cloudflare-icon
+group Server_Cluster "Backend Microservices" icon=server color=orange
+node C "API Gateway / LB" at 1,2 in Server_Cluster icon=gateway
+node D "User Service" at 0,3 in Server_Cluster icon=service
+node E "Order Service" at 2,3 in Server_Cluster icon=service
+A -> B : "GET /users/123"
+B -> C : "Cache Miss"
+C -> D : "Route /users"
+C -> E : "Route /orders"
 ```
 
 ### Animated Flow Visualization

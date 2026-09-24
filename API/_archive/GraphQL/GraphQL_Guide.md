@@ -59,26 +59,22 @@ sequenceDiagram
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph TD
-    subgraph Client [Mobile / Web App]
-        A[Apollo / Relay Client]
-    end
-
-    subgraph API_Layer [GraphQL Gateway]
-        B[Query Parser] --> C[Resolver Engine]
-        C --> D[DataLoader / Batching]
-    end
-
-    subgraph Data_Sources [Microservices / DBs]
-        E[(Postgres - Users)]
-        F[(MongoDB - Posts)]
-        G[REST API - Payments]
-    end
-
-    A -->|POST { user { name, posts { title } } }| B
-    D -->|Fetch User| E
-    D -->|Fetch Posts| F
+```arch
+%% caption: The gateway parses a nested query, resolves each field, and batches the fetches out to the underlying data sources.
+group Client "Mobile / Web App" icon=mobile color=slate
+node A "Apollo / Relay Client" at 0,0 in Client icon=graphql
+group API_Layer "GraphQL Gateway" icon=gateway color=purple
+node B "Query Parser" at 0,1 in API_Layer icon=code
+node C "Resolver Engine" at 1,1 in API_Layer icon=graphql
+node D "DataLoader / Batching" at 2,1 in API_Layer icon=layers
+group Data_Sources "Microservices / DBs" icon=db color=green
+node E "Postgres - Users" at 1,2 in Data_Sources icon=postgresql
+node F "MongoDB - Posts" at 2,2 in Data_Sources icon=mongodb-icon
+node G "REST API - Payments" at 0,2 in Data_Sources icon=payment
+A -> B : "POST { user { name,\nposts { title } } }"
+B -> C -> D
+D:B -> E:T : "Fetch User"
+D -> F : "Fetch Posts"
 ```
 
 ### Animated Flow Visualization

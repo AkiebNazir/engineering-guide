@@ -60,21 +60,23 @@ sequenceDiagram
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph TD
-    subgraph Client_Node [Client Service - Python]
-        A[Client Application] -->|Method Call| B(gRPC Stub)
-        B -->|Serialize to Binary| C[HTTP/2 Client]
-    end
-
-    subgraph Network
-        C <-->|Multiplexed Binary Streams| D[HTTP/2 Server]
-    end
-
-    subgraph Server_Node [Target Service - Go]
-        D -->|Deserialize Binary| E(gRPC Stub)
-        E -->|Invoke Method| F[Server Implementation]
-    end
+```arch
+%% caption: A call on the client stub is serialized onto multiplexed HTTP/2 streams, then deserialized by the server stub and dispatched to the implementation.
+grid 160x100
+group Client_Node "Client Service - Python" icon=python color=amber
+node A "Client Application" at 0,0 in Client_Node icon=app
+node B "gRPC Stub" at 0,1 in Client_Node icon=grpc
+node C "HTTP/2 Client" at 0,2 in Client_Node icon=network
+group Network "Network" icon=network color=purple style=dashed
+node D "HTTP/2 Server" at 0,3 in Network icon=network
+group Server_Node "Target Service - Go" icon=go color=cyan
+node E "gRPC Stub" at 0,4 in Server_Node icon=grpc
+node F "Server Implementation" at 0,5 in Server_Node icon=server
+A -> B : "Method Call"
+B -> C : "Serialize to Binary"
+C <-> D : "Multiplexed Binary Streams"
+D -> E : "Deserialize Binary"
+E -> F : "Invoke Method"
 ```
 
 ### Animated Flow Visualization

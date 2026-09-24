@@ -62,22 +62,24 @@ sequenceDiagram
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph TD
-    subgraph Browser [Web Client]
-        A[JavaScript App] -->|ws:// or wss://| B(WebSocket API)
-    end
-
-    subgraph Load_Balancer [API Gateway / LB]
-        B -->|HTTP Upgrade / TCP Connection| C[NGINX/HAProxy]
-    end
-
-    subgraph Backend_Cluster
-        C <-->|Persistent TCP| D[Go Server Node 1]
-        C <-->|Persistent TCP| E[Go Server Node 2]
-        D <-->|Pub/Sub Message Bus| F[(Redis / Kafka)]
-        E <-->|Pub/Sub Message Bus| F
-    end
+```arch
+%% caption: The browser upgrades to a persistent connection through the load balancer, and server nodes share messages over a pub/sub bus.
+grid 160x140
+group Browser "Web Client" icon=browser color=slate
+node A "JavaScript App" at 1,0 in Browser icon=code
+node B "WebSocket API" at 1,1 in Browser icon=websocket
+group Load_Balancer "API Gateway / LB" icon=lb color=purple
+node C "NGINX/HAProxy" at 1,2 in Load_Balancer icon=nginx
+group Backend_Cluster "Backend Cluster" icon=server color=orange
+node D "Go Server Node 1" at 0,3 in Backend_Cluster icon=go
+node E "Go Server Node 2" at 2,3 in Backend_Cluster icon=go
+node F "Redis / Kafka" at 1,4 in Backend_Cluster icon=stream
+A -> B : "ws:// or wss://"
+B -> C : "HTTP Upgrade /\nTCP Connection"
+C:L <-> D:T : "Persistent TCP"
+C:R <-> E:T : "Persistent TCP"
+D:B <-> F:L : "Pub/Sub Message Bus"
+E:B <-> F:R : "Pub/Sub Message Bus"
 ```
 
 ### Animated Flow Visualization

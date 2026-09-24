@@ -125,21 +125,28 @@ Mechanics are in [29](../building_blocks/29_cdn_and_streaming_media.md) and the 
 
 ## Deep dive 4: Live comments and reactions at 10M viewers
 
-```mermaid
+```arch
 %% caption: Posts are cheap-filtered and logged, then a two-level selector reduces 300K per second to a five-per-second sequenced feed, so fan-out cost depends on viewers times reading speed and not on the posting rate.
-flowchart LR
-    v["Viewer"] -->|"post over WebSocket"| gw["Chat gateways x100"]
-    gw --> cf["Cheap filters<br/>rate limit, bans, terms"]
-    cf --> lg[("Room log<br/>64 partitions by author")]
-    lg --> sel["Selectors<br/>top-k per 200 ms"]
-    sel --> mm["Merge and ML moderation<br/>at most 20 candidates per s"]
-    mm --> sq["Sequencer<br/>epoch, seq, 5 per s"]
-    sq --> rl["Relays x10"]
-    rl --> gw
-    gw -->|"4 batched frames per s"| v
-    v -.->|"reaction counts, 1 per s"| gw
-    gw -.-> rx["Reduce partial sums"]
-    rx -.->|"1 aggregate per s"| rl
+node v "Viewer" at 0,1 icon=user
+node gw "Chat gateways x100" at 1.5,1 icon=gateway
+node cf "Cheap filters" at 3,1 icon=filter sub="rate limit, bans, terms"
+node rx "Reduce partial sums" at 0,2 icon=sigma
+node lg "Room log" at 3,2 icon=stream sub="64 partitions by author"
+node rl "Relays x10" at 1.5,3 icon=proxy
+node sq "Sequencer" at 0,3 icon=counter sub="epoch, seq, 5 per s"
+node sel "Selectors" at 3,3 icon=sort sub="top-k per 200 ms"
+node mm "Merge and ML moderation" at 1.5,4 icon=model sub="at most 20 candidates per s"
+v:R -> gw:L : "post over WebSocket"
+gw:T -> v:T : "4 batched frames per s"
+v:B ..> gw:B : "reaction counts, 1 per s"
+gw:R -> cf:L
+cf -> lg -> sel
+sel:B -> mm:R
+mm:L -> sq:B
+sq:R -> rl:L
+rl:T -> gw:B
+gw:B ..> rx:R
+rx:B ..> rl:L : "1 aggregate per s"
 ```
 
 | Option | Gives | Costs |

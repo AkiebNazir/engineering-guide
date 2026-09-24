@@ -66,23 +66,29 @@ outbox(seq, dest_id1, atype, id2, op, state)                        -- inverse e
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Clients read from the nearest follower tier, misses climb to the region's leader and then MySQL, writes go to the shard's master region, and replication carries invalidations back.
-flowchart LR
-    subgraph R2["Region B: replica"]
-        C([Web tier]) --> FA["Follower tier A<br/>91 servers"]
-        C -.-> FB["Follower tier B"]
-        FA -- "miss or write" --> L2["Leader tier<br/>24 servers"]
-        FB -- "miss or write" --> L2
-        L2 -- "read miss" --> RDB[("Replica MySQL")]
-    end
-    subgraph R1["Region A: master for shard S"]
-        L1["Leader tier"] --> MDB[("Primary plus semi-sync replica")]
-        OB["Outbox worker"] --> MDB
-    end
-    L2 -- "write for shard S" --> L1
-    MDB -- "replication stream carries invalidate and refill" --> RDB
-    PY["PYMK batch, low priority"] -.-> FA
+group R2 "Region B: replica" icon=region color=blue
+node C "Web tier" at 0.5,0 in R2 icon=app
+node FB "Follower tier B" at 0,1 in R2 icon=cache
+node FA "Follower tier A" at 1,1 in R2 icon=cache sub="91 servers"
+node L2 "Leader tier" at 0.5,2 in R2 icon=cache sub="24 servers"
+node RDB "Replica MySQL" at 0.5,3 in R2 icon=mysql-icon
+node PY "PYMK batch" at 2,1 icon=worker sub="low priority"
+group R1 "Region A: master for shard S" icon=region color=green
+node L1 "Leader tier" at 2,2 in R1 icon=cache
+node MDB "Primary MySQL" at 2,3 in R1 icon=mysql-icon sub="plus semi-sync replica"
+node OB "Outbox worker" at 3,3 in R1 icon=worker
+C -> FA
+C ..> FB
+FA:B -> L2:T : "miss or write"
+FB:B -> L2:L : "miss or write"
+L2 -> RDB : "read miss"
+L1 -> MDB
+OB -> MDB
+L2:R -> L1:L : "write for shard S"
+MDB -> RDB : "replication:\ninvalidate + refill"
+PY ..> FA
 ```
 
 **Write.** A user in region B follows an account: follower → local leader → master-region leader (this hop vanishes for a locally mastered shard). The leader runs one transaction: insert the edge, increment the count if inserted, insert an outbox row for the inverse. It commits, acknowledged by a replica in another zone (semi-sync, ours), and returns a changeset and version; the changeset updates the actor's follower before it answers, and the response carries the version as a token. The outbox worker then applies the inverse through the other shard, idempotently. Replication reaches region B's replica, and only then does the leader send invalidate and refill messages: earlier delivery would let a refill read stale data (the paper's ordering argument).
