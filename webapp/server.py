@@ -1205,6 +1205,7 @@ def run_api_file(type_name: str, section: str, level_id: str, lang: str, code: s
 # SoftwareDesign — one ordered path: README, 14 chapters, then LLD practice
 # ----------------------------------------------------------------------------
 SWD_CHAPTER_PARTS = [
+    ("Part 0 · Before you start", ("00",)),
     ("Part 1 · Foundations", ("01", "02", "03", "04")),
     ("Part 2 · Code that survives change", ("05", "06", "07")),
     ("Part 3 · Services in production", ("08", "09", "10", "11", "12")),

@@ -10,10 +10,16 @@ distributed systems — the code-quality bar in every coding round, the low-leve
 (LLD) round, the "how would you structure this?" follow-ups, and the design-leadership
 stories in behavioural rounds.
 
-It is laid out as **one path**: 14 chapters in five parts, then 17 LLD problems you
-solve in the editor and check with real tests. Work top to bottom. Every chapter builds on
-the ones before it, and later chapters point back with short references like `02` §7
-(chapter 02, section 7).
+It is laid out as **one path**: an optional primer, 14 chapters in five parts, then 17
+LLD problems you solve in the editor and check with real tests. Work top to bottom.
+Every chapter builds on the ones before it, and later chapters point back with short
+references like `02` §7 (chapter 02, section 7).
+
+**New to software design?** Start with `00_software_design_foundations.md` — it assumes
+only that you can write a function and a loop, and builds the vocabulary (class,
+encapsulation, coupling, interface, requirement) that chapter `01` onward takes for
+granted, with the smallest possible examples in both Python and Go. **Already comfortable
+with that vocabulary?** Skip it and start at `01` — nothing later repeats it.
 
 ---
 
@@ -21,11 +27,18 @@ the ones before it, and later chapters point back with short references like `02
 
 | Step | Part | What you'll be able to do |
 |---|---|---|
+| **0** | **Part 0 · Before you start** *(optional)* | Know what a class, module, interface, and requirement actually are — the vocabulary the rest of the track assumes |
 | **1–4** | **Part 1 · Foundations** | Spot complexity, model a domain with objects that protect their own rules, draw module boundaries, use patterns only where something actually varies |
 | **5–7** | **Part 2 · Code that survives change** | Make code testable and refactor it safely; design failure handling, retries, and idempotency; write concurrent code that is correct by construction |
 | **8–12** | **Part 3 · Services in production** | Arrange a service with ports and adapters; evolve data and schemas without downtime; make code observable, fast enough, and secure by default |
 | **13–14** | **Part 4 · Leading design and the LLD interview** | Write and review design docs, turn disagreements into decisions; run a 45-minute LLD interview with a repeatable framework |
 | **15–31** | **LLD practice** | Solve 17 classic LLD problems against real tests: warm-up → core set → breadth → Tier 2 |
+
+### Part 0 · Before you start (optional)
+
+| Step | Chapter | Read it for |
+|---|---|---|
+| 0 | `00_software_design_foundations.md` | What a class, function, and module actually are; abstraction vs. encapsulation; coupling and cohesion in plain terms; interfaces; functional vs. non-functional requirements — one small, fully-run Python and Go example per idea |
 
 ### Part 1 · Foundations
 
