@@ -1,6 +1,81 @@
-# L5 Deep Dive: Operating Systems & Hardware Symbiosis
+# Operating Systems & Hardware Symbiosis
 
-At the Senior Software Engineer (L5) level, Google interviewers rarely ask "what is a thread." They ask how your application's architecture interacts with the kernel's scheduler, CPU caches, and virtual memory subsystem, and they expect precise answers. This file corrects several popular myths along the way; each correction is marked **Precision note**.
+Every program you run eventually becomes instructions competing for a CPU, some RAM,
+and a disk or network card that hundreds of other programs also want. This file
+starts with what an operating system actually does about that, then goes as deep as
+a Senior Software Engineer (L5) interview loop expects: how your application's
+architecture interacts with the kernel's scheduler, CPU caches, and virtual memory
+subsystem. Interviewers at that level rarely ask "what is a thread" — they ask
+precise follow-ups, and this file corrects several popular myths along the way; each
+correction is marked **Precision note**.
+
+## Foundations — Start Here If You're New to Operating Systems
+
+**What an OS actually is.** Your CPU can only do one thing at a time per core: run
+raw instructions. The **operating system (OS)** is the program that runs first, and
+its job is to let many other programs share that CPU, the RAM, and every disk and
+network device, safely and (mostly) fairly. Everything in this file is really one
+question asked about a different resource: *who gets to use this next, and how do we
+stop them from stepping on each other?*
+
+**Kernel vs. user space.** The **kernel** is the core of the OS — the only code
+allowed to talk to hardware directly. Your program runs in **user space** and asks
+the kernel for things (read a file, send a packet, allocate memory) through a
+**system call (syscall)** — a controlled door between your code and the hardware.
+Every "expensive" operation you'll read about below (a context switch, a page fault,
+a blocking read) is expensive largely *because* it crosses that door.
+
+**Process vs. thread — the distinction the rest of this file assumes.**
+- A **process** is a running program with its own private memory (its **address
+  space**), like a self-contained office: nobody outside can see your desk.
+- A **thread** is a unit of execution *inside* a process. A process can have many
+  threads, and they all share that process's memory — like several workers in the
+  same office, all able to read and write the same shared whiteboard. That sharing is
+  convenient (no copying data between them) and dangerous (two workers can scribble
+  on the whiteboard at the same time) — §2–3 below are entirely about the "dangerous"
+  half, and `05_concurrency_deep_dive.md` is the full treatment.
+
+**Why scheduling exists.** A typical machine has far more runnable threads than CPU
+cores. The **scheduler** (§1) is the part of the kernel that decides, many times a
+second, which thread runs on which core next. Switching a core from one thread to
+another is called a **context switch**: the kernel saves that thread's registers and
+loads the next thread's — not free, which is why §1 cares about *how many* threads
+you create, not just how you use them.
+
+**Memory, in one picture.** RAM is one giant array of bytes shared by every process
+on the machine. Letting programs address it directly would mean any bug could
+overwrite another program's data — so the OS gives every process the *illusion* of
+its own private, contiguous memory (**virtual memory**), and translates each
+program's addresses to real physical RAM behind the scenes. §5 covers the mechanism
+(page tables, the TLB); for now, just know that "memory address" in your program is
+never the literal RAM location.
+
+**CPU caches, in one picture.** RAM is slow compared to a modern CPU core — hundreds
+of cycles away. Every core has small, fast **caches** (L1, L2, often a shared L3)
+that hold recently-used data so the core doesn't wait on RAM for every access. §2
+covers what happens when *two* cores cache the *same* data.
+
+**Blocking, in one picture.** When your code asks the kernel to do something slow
+(read a file, wait for a network reply), the simplest behavior is: your thread stops
+running until the answer is ready (**blocking**). That's simple to reason about and
+expensive at scale — §4 is entirely about the faster alternatives operating systems
+offer instead.
+
+**Vocabulary you'll meet below, in one table:**
+
+| Term | One-line meaning |
+|---|---|
+| Kernel | The part of the OS allowed to touch hardware directly |
+| Syscall | A controlled request from your program to the kernel |
+| Process | A running program with its own private memory |
+| Thread | A unit of execution sharing its process's memory with other threads |
+| Context switch | The kernel swapping which thread a core is running |
+| Virtual memory | The illusion that each process owns all of memory |
+| Cache line | The chunk (usually 64 bytes) a CPU cache moves and tracks at a time |
+| Blocking call | A syscall that pauses your thread until it completes |
+
+With that vocabulary in place, the rest of this file is the precise, L5-depth
+version of each idea above.
 
 ## 1. Deep Linux Internals: The Scheduler
 

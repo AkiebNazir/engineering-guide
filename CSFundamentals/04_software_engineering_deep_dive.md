@@ -1,8 +1,61 @@
-# L5 Deep Dive: Software Engineering & Architecture
+# Software Engineering & Architecture
 
-At the L5 level, you are expected to design systems that span multiple teams and evolve safely over years. Design patterns (Factory, Singleton) are table stakes; this file covers macro-architecture: boundaries, events, distributed transactions, and API evolution.
+A single program is easy to reason about: one memory space, one team, one deploy.
+Software engineering at scale is what happens once a system is too big for that —
+split across services, teams, and years of change — and almost every idea in this
+file is a way to keep that split from turning into chaos. This file starts with why
+systems get split up at all, then goes as deep as an L5 interview loop expects: you
+are expected to design systems that span multiple teams and evolve safely over
+years. Design patterns (Factory, Singleton) are table stakes; this file covers
+macro-architecture: boundaries, events, distributed transactions, and API evolution.
 
 For the micro level (complexity, deep modules, naming, errors), read `SoftwareDesign/01_philosophy_of_software_design.md`. For SOLID and patterns, read `SystemDesign/best_practices/`.
+
+## Foundations — Start Here If You're New to Software Architecture
+
+**Monolith vs. services, in one picture.** A **monolith** is one deployable program:
+every part of the business logic runs in the same process, calling other parts
+through plain function calls. A **service-oriented** (or **microservices**)
+architecture splits that logic into multiple independently deployable programs that
+talk over the network instead of function calls. Neither is "correct" by default —
+a monolith is simpler until a team or a scaling need outgrows it; splitting it badly
+(one service per database table, say) creates a **distributed monolith**: all the
+network overhead of services, none of the independence. §1 (DDD) is about splitting
+along the right lines instead.
+
+**Synchronous request vs. asynchronous event.** When service A calls service B and
+*waits* for the answer before continuing, that's a **synchronous** call — simple to
+follow, but A is now stuck if B is slow or down (**temporal coupling**). When A
+instead publishes "this happened" and moves on, letting any interested service react
+whenever it's ready, that's an **asynchronous event** — more resilient to one
+service being slow, harder to trace end to end. §2 is entirely about this second
+style and its trade-offs.
+
+**What an API contract is.** An **API** is the agreed-upon shape of a request and
+response between two services (or a service and its clients): which fields exist,
+what they mean, what's required. Once other teams (or other companies' apps) depend
+on that shape, changing it can break them — §4 is about changing an API without
+breaking the programs that already depend on it.
+
+**Why "it works with one service" gets hard with several.** A single database gives
+you a transaction: multiple writes that all succeed or all fail together (see
+`03_databases_deep_dive.md`'s ACID). Once "reserve inventory" and "charge a card" are
+two *different* services with two different databases, there's no single transaction
+that covers both — §3 is entirely about how to still make that operation safe.
+
+**Vocabulary you'll meet below, in one table:**
+
+| Term | One-line meaning |
+|---|---|
+| Service / microservice | An independently deployable unit talking to others over the network |
+| Distributed monolith | Services split along the wrong lines: all the network cost, none of the independence |
+| Synchronous call | Caller waits for the response before continuing |
+| Event | A published fact ("this happened"); publisher doesn't know or wait for consumers |
+| API contract | The agreed shape of a request/response between two systems |
+| Breaking change | An API change that an existing client can no longer handle correctly |
+
+With that vocabulary, the rest of this file is the precise, L5-depth version of how
+to draw those service boundaries, coordinate them safely, and evolve them over time.
 
 ## 1. Domain-Driven Design (DDD)
 

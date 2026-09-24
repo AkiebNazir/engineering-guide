@@ -1,6 +1,74 @@
-# L5 Deep Dive: Networking & Distributed Communication
+# Networking & Distributed Communication
 
-At the L5 level, you are expected to know what happens on the wire. When a distributed system misbehaves, the cause is often not the application code but connection setup, congestion control, TLS, DNS, or load balancer behavior. This file corrects several common simplifications; corrections are marked **Precision note**.
+Every API call, database connection, and "it works on my machine but not in prod" bug
+eventually comes down to bytes moving between two machines. This file starts with
+what those bytes actually are and how two computers agree to exchange them, then goes
+as deep as an L5 interview loop expects: you are expected to know what happens on the
+wire. When a distributed system misbehaves, the cause is often not the application
+code but connection setup, congestion control, TLS, DNS, or load balancer behavior.
+This file corrects several common simplifications; corrections are marked
+**Precision note**.
+
+## Foundations — Start Here If You're New to Networking
+
+**Client and server, in one picture.** Almost everything in this file is two
+programs on two machines (or two processes on one machine) talking: one **client**
+that initiates a request, one **server** that listens and responds. "The network" is
+everything that carries bytes between them.
+
+**Addresses and ports.** An **IP address** identifies a machine (or a machine's
+network interface) — like a street address. A **port** (a number 0–65535) identifies
+*which program* on that machine a message is for — like an apartment number at that
+address. A server "listens" on a port (e.g. a web server on port 443); a client
+connects to `ip:port`.
+
+**Packets: the network moves chunks, not streams.** Data doesn't travel as one
+continuous stream — it's broken into **packets**, small chunks that each carry a bit
+of your data plus headers saying where they're from and where they're going. Packets
+for the same conversation can even take different physical routes and arrive out of
+order; the protocols below exist largely to hide that from you.
+
+**TCP vs. UDP — the two building blocks almost everything else uses.**
+- **TCP** is a *reliable, ordered, connected* stream: before any data moves, both
+  sides agree to talk (a **handshake**, §1); every packet is acknowledged, lost
+  packets are retransmitted, and your application reads bytes in the exact order they
+  were sent. This reliability costs setup time and a little overhead on every
+  packet — the cost §2's congestion control is all about managing.
+- **UDP** is *fire-and-forget*: send a packet, no handshake, no guarantee it arrives
+  or arrives in order. Cheaper and faster to start, but your application must handle
+  loss and reordering itself if it cares. QUIC (§3, the protocol behind HTTP/3) is
+  built on UDP specifically to get TCP-like reliability without TCP's TCP-specific
+  head-of-line blocking problem.
+
+**HTTP, in one exchange.** HTTP is a text-shaped (in HTTP/1.1) *request/response*
+protocol that normally runs on top of TCP: the client sends a request (a method like
+`GET`/`POST`, a path, headers, maybe a body); the server sends back a response (a
+status code like `200`/`404`/`500`, headers, a body). Nearly every web API you've
+used is "HTTP request/response, with JSON as the body." §3 covers how this evolved
+across three major versions.
+
+**Encryption, in one sentence.** **TLS** (what makes `http://` into `https://`) wraps
+that same request/response exchange in encryption, after its own handshake (§5)
+negotiates a shared secret key that only the two endpoints know.
+
+**DNS, in one sentence.** You rarely connect to a raw IP address — you connect to a
+name (`google.com`), and **DNS** (§6) is the system that turns that name into an IP
+address before the TCP handshake can even begin.
+
+**Vocabulary you'll meet below, in one table:**
+
+| Term | One-line meaning |
+|---|---|
+| IP address | Identifies a machine on the network |
+| Port | Identifies which program on that machine |
+| Packet | A chunk of data plus routing headers; the unit the network actually moves |
+| RTT (round-trip time) | Time for a packet to reach the other side and its reply to come back |
+| Handshake | Messages exchanged before data flows, to agree on connection parameters |
+| Socket | A local endpoint (IP + port + protocol) your program reads/writes through |
+
+Section 0 below is the classic "walk me through what happens when..." interview
+answer, using every layer above in sequence — read it once you're comfortable with
+this vocabulary.
 
 ## 0. What Happens When You Type `google.com` and Press Enter
 

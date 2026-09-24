@@ -1,6 +1,13 @@
-# L5 Deep Dive: Python for Coding Interviews — The Standard Library, Cold
+# Python for Coding Interviews — The Standard Library, Cold
 
-Python is this curriculum's interview language. The plan's mastery check: **write Dijkstra, an LRU cache, and a trie in a plain doc with zero syntax lookups.** This file is the complete toolkit, with the complexity and the traps for each tool. Every snippet here runs on Python 3.10+ (verified on 3.13).
+This file is a reference, not a narrative read: dip into whichever section you need.
+If `O(1)`/`O(n)` or "hash map" feel unfamiliar, read `07_complexity_analysis_deep_dive.md`
+and `06_data_structure_internals_deep_dive.md` first — this file assumes that
+vocabulary and turns it into exact Python tool choices. Python is this curriculum's
+interview language. The plan's mastery check: **write Dijkstra, an LRU cache, and a
+trie in a plain doc with zero syntax lookups.** This file is the complete toolkit,
+with the complexity and the traps for each tool. Every snippet here runs on Python
+3.10+ (verified on 3.13).
 
 ## 1. Built-in Types: Costs and Traps
 

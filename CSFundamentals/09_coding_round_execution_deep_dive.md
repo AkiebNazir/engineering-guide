@@ -1,6 +1,12 @@
-# L5 Deep Dive: Running the 45-Minute Coding Round
+# Running the 45-Minute Coding Round
 
-Knowing algorithms is necessary but not sufficient. Interviewers write feedback on **four things**: communication, problem solving, code quality, and verification (testing your own code). An optimal answer reached silently, with sloppy code and no testing, can still come back as a weak rating. At L5 there's a fifth, implicit signal: **did you drive it, or did the interviewer drag you through it?**
+This file is about *performing* what you know, not learning new CS concepts — it
+applies whether this is your first technical interview or your tenth, at any level.
+Knowing algorithms is necessary but not sufficient. Interviewers write feedback on
+**four things**: communication, problem solving, code quality, and verification
+(testing your own code). An optimal answer reached silently, with sloppy code and no
+testing, can still come back as a weak rating. At L5 there's a fifth, implicit
+signal: **did you drive it, or did the interviewer drag you through it?**
 
 This file is the execution layer: the timeline, a clarifying-question list you can use until it's automatic, the edge-case checklist, how to think out loud, how to use hints, how to recover when stuck, and how to verify code without running it.
 

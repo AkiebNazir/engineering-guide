@@ -1,6 +1,9 @@
-# L5 Deep Dive: Google-Style Follow-Ups — Scaling a Coding Answer
+# Google-Style Follow-Ups — Scaling a Coding Answer
 
-After you solve the problem, a Google interviewer often changes it:
+This is the capstone of the module — read it after files `01`–`09`, once you can
+already solve a base coding problem confidently. It takes that solved problem and
+stretches it exactly the way a strong interviewer does. After you solve the problem,
+a Google interviewer often changes it:
 
 1. **What if the input is a stream and you can't store it all?**
 2. **What if the data doesn't fit in memory, or is spread across many machines?**

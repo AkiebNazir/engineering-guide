@@ -99,7 +99,7 @@ const MODULES = {
   csfund: {
     hash: 'cs-fundamentals', nav: 'navCSFundamentals', name: 'CS Fundamentals', noun: 'deep dives', motif: 'csfund',
     list: '/api/cs-fundamentals', doc: '/api/cs-fundamentals-doc',
-    tagline: 'Operating systems, networking, databases, and software architecture — the L5 deep dives that separate senior engineers from everyone else.',
+    tagline: 'Operating systems, networking, databases, and software architecture — from first-principles foundations to the deep-dive precision a senior interview expects.',
     group: () => 'Deep Dives',
     label: it => `${+it.num}`,
     kicker: it => `Deep Dive ${+it.num}`,

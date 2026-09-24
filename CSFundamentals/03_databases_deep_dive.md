@@ -1,6 +1,63 @@
-# L5 Deep Dive: Database Storage Engines & Advanced Structures
+# Database Storage Engines & Advanced Structures
 
-At the L5 level, you must understand how data actually reaches durable storage. "Indexes make reads fast" is an incomplete statement. You choose between B+ trees and LSM trees based on your read/write profile, pick an isolation level knowing which anomalies it allows, and explain how distributed databases agree and order events. Corrections of common myths are marked **Precision note**.
+A database's job sounds simple — remember data, give it back correctly, don't lose
+it — and almost every interesting detail in this file is a consequence of doing that
+*fast*, *concurrently*, and *durably* at the same time. This file starts with what a
+database actually is, then goes as deep as an L5 interview loop expects: you must
+understand how data actually reaches durable storage. "Indexes make reads fast" is an
+incomplete statement. You choose between B+ trees and LSM trees based on your
+read/write profile, pick an isolation level knowing which anomalies it allows, and
+explain how distributed databases agree and order events. Corrections of common
+myths are marked **Precision note**.
+
+## Foundations — Start Here If You're New to Databases
+
+**What a database is.** A program whose entire job is storing data so it survives a
+crash (**durability**) and can be found again quickly and correctly, even while many
+clients read and write it at once. A relational database organizes data into
+**tables** (like a spreadsheet): each **row** is one record, each **column** one
+field, and a **primary key** is the column (or columns) that uniquely identifies a
+row.
+
+**Why indexes exist — the book-index analogy.** Without an index, finding "every row
+where `email = 'x@y.com'`" means reading every single row (a **full scan**) —
+correct, but slow on a large table. An **index** is a separate, smaller structure the
+database keeps in sync with the table, sorted or organized so it can jump straight to
+matching rows — exactly like a book's index lets you find a topic without reading
+every page. The cost: every index has to be updated on every write to the columns it
+covers, so indexes trade write speed for read speed. §1 covers *how* an index is
+actually built (a tree, or something else), and §2 covers how to design one well.
+
+**A query, in one sentence.** A request you send the database describing *what* data
+you want (`SELECT name FROM users WHERE id = 5`) — the database decides *how* to get
+it (full scan? use an index?), which is exactly the kind of decision an index makes
+cheap instead of expensive.
+
+**ACID, in one line each — what "transaction" promises:**
+
+| Letter | Promise | Plain meaning |
+|---|---|---|
+| **A**tomicity | All-or-nothing | A transaction's writes either all happen or none do — no half-finished update |
+| **C**onsistency | Valid state → valid state | Your application's own rules (e.g. "balance ≥ 0") are never violated by a committed transaction |
+| **I**solation | Concurrent transactions don't corrupt each other | What one transaction sees isn't broken by others running at the same time — §3 is entirely about *how much* isolation you actually get |
+| **D**urability | Once committed, it survives a crash | The change has reached storage that outlives a power loss, not just RAM |
+
+**Why "durable" is harder than it sounds.** Writing to a file doesn't mean the data
+is safe from a crash the instant `write()` returns — the OS may still be holding it
+in memory (see `01_operating_systems_deep_dive.md` §5's page cache). Databases solve
+this with a **write-ahead log (WAL)**: before changing the actual data files, append
+a durable record of the change to a log first, so a crash mid-write can be replayed
+and recovered from. Every storage engine in §1 relies on some form of this.
+
+**One database, many clients, at the same time.** A single database file or table is
+routinely read and written by hundreds of connections simultaneously. §2's MVCC and
+§3's isolation levels are both answers to the same question: how do you let that
+happen fast, without one client's half-finished write corrupting what another client
+reads?
+
+With that vocabulary — table/row/index/transaction/WAL — the rest of this file is
+the precise, L5-depth version of how real storage engines and distributed databases
+actually deliver on it.
 
 ## 1. Storage Engines: The Physics of Storage
 HDDs pay a mechanical **seek** (milliseconds) for random I/O, so sequential I/O is dramatically faster. **Precision note:** SSDs have no seek, and random reads are fast; the issues with random *writes* on SSDs are erase-block management, garbage collection, and device-level write amplification, which hurt latency consistency and endurance. Sequential, append-oriented write patterns still help on both.

@@ -1,6 +1,49 @@
-# L5 Deep Dive: Data Structure Internals — What Actually Happens Under the API
+# Data Structure Internals — What Actually Happens Under the API
 
-"How does a hash map work under the hood?" is a standard Google question, and a good answer goes past "an array of buckets." This file covers the structures you use every day, how real runtimes implement them (CPython, Go, Java), and the performance consequences you can mention in a coding round.
+Every data structure you reach for by habit — a list, a dict, a heap — is a small
+piece of engineering with real trade-offs baked in, not a black box that's simply
+"fast." This file starts with the basic vocabulary, then goes as deep as a standard
+Google interview question expects: "how does a hash map work under the hood?" needs
+a good answer that goes past "an array of buckets." This file covers the structures
+you use every day, how real runtimes implement them (CPython, Go, Java), and the
+performance consequences you can mention in a coding round.
+
+## Foundations — Start Here If You're New to Data Structures
+
+**What "Big-O" means, in one sentence.** You'll see `O(1)`, `O(n)`, `O(log n)` all
+over this file — they describe how an operation's cost grows as the amount of data
+(`n`) grows: `O(1)` means "roughly the same cost no matter how much data,"
+`O(n)` means "cost grows in direct proportion to the data," and `O(log n)` sits far
+closer to `O(1)` than to `O(n)` as data grows. `07_complexity_analysis_deep_dive.md`
+is the full, precise treatment — read it first if this is new; everything below
+assumes you can read these symbols comfortably.
+
+**The three basic shapes, in one table** — nearly every structure in this file is a
+variation on one of these:
+
+| Shape | What it looks like | Strength | Weakness |
+|---|---|---|---|
+| **Array** (Python `list`, Go slice) | Values sitting next to each other in memory, accessed by position | Instant access by index (`O(1)`); very cache-friendly | Inserting/removing in the middle means shifting everything (`O(n)`) |
+| **Linked structure** (linked list, tree) | Each value points to the next (or to children) | Insert/remove is cheap *once you're at the right spot* | Finding that spot means following pointers one at a time — no jumping to "position 5" |
+| **Hash map** (Python `dict`, Go `map`) | Values found by computing a number from the key, then jumping straight there | Near-instant lookup by key regardless of how much data (`O(1)` average) | No natural order; a bad key distribution can degrade this badly |
+
+**Why a hash map's lookup is (usually) instant.** Instead of searching for a key, a
+hash map runs it through a **hash function** — a calculation that turns any key into
+a number — and uses that number to jump almost straight to where the value lives.
+Compare that to an array, where finding a *value* (not an index) means checking
+every slot one by one. §1 is the precise version: how that jump actually works, what
+happens when two different keys hash to the same spot, and how real languages
+implement it.
+
+**Why some operations that look free actually aren't.** An array's `append` is
+usually instant, but "usually" is doing real work there — occasionally the array
+runs out of room and the whole thing must be copied to a bigger block. §2 explains
+why that occasional expensive copy still averages out to "cheap every time"
+(**amortized** cost — also covered from the complexity side in `07` §6).
+
+With those three shapes and the idea of a hash function in mind, the rest of this
+file is the precise, implementation-level version: how CPython, Go, and Java
+actually build each structure, and the performance consequences worth knowing.
 
 ## 1. Hash Maps
 

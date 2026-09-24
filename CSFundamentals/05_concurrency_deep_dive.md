@@ -1,6 +1,50 @@
-# L5 Deep Dive: Concurrency — Locks, Conditions, Deadlocks, and Thread-Safe Design
+# Concurrency — Locks, Conditions, Deadlocks, and Thread-Safe Design
 
-Google coding interviews add one follow-up more than any other: **"What if multiple threads call this at once?"** Some loops also include a dedicated concurrency question (bounded blocking queue, thread-safe rate limiter, concurrent web crawler). This file gives you the vocabulary, the primitives, the classic bugs, and two verified implementations (Python and Go).
+The moment two things can happen "at the same time," a whole new category of bug
+becomes possible — one that doesn't show up in a single-threaded test and can't be
+found by reading the code once. This file starts with why that happens at all, then
+goes as deep as Google-style coding interviews expect: **"What if multiple threads
+call this at once?"** is the single most common follow-up in this repo's interview
+loop, and some loops also include a dedicated concurrency question (bounded blocking
+queue, thread-safe rate limiter, concurrent web crawler). This file gives you the
+vocabulary, the primitives, the classic bugs, and two verified implementations
+(Python and Go).
+
+## Foundations — Start Here If You're New to Concurrency
+
+**Where this builds on `01_operating_systems_deep_dive.md`.** Recall from that
+file's Foundations: a **thread** is a unit of execution that shares its process's
+memory with other threads. That sharing is exactly what makes concurrency both
+useful (threads can cooperate on the same data with no copying) and dangerous (they
+can corrupt it) — this file is entirely about managing that danger.
+
+**Why `count += 1` isn't safe with two threads.** It looks like one operation, but
+the CPU actually does three: read `count`, add 1, write it back. If two threads both
+read `count` (say it's `5`) before either writes back, both compute `6` and both
+write `6` — one increment vanished. This is a **race condition**: the answer depends
+on the exact timing of two threads, which is unpredictable and can pass every test
+you happen to run. §1 gives you the precise vocabulary for this and related bugs.
+
+**Why locks exist.** A **lock** (or **mutex**, mutual exclusion) is a tool that lets
+only one thread run a given piece of code (a **critical section**) at a time — every
+other thread that tries must wait. Wrapping the read-add-write above in a lock fixes
+it: no other thread can read `count` mid-update. §2 covers locks and several other
+tools for the same underlying problem, each with different trade-offs.
+
+**Concurrency vs. parallelism — worth separating early.** Concurrency is about
+*structuring* a program as independently-progressing tasks; parallelism is actually
+*running* more than one at the same literal instant, which needs multiple CPU cores.
+You can have concurrency without parallelism (many tasks interleaved on one core) —
+§1's table makes this precise, because interview answers often conflate the two.
+
+**A first mental model for "what could go wrong."** Any time two threads touch the
+same mutable data, and at least one of them writes, ask: could they interleave in an
+order that produces a wrong answer? If yes, that's the shared state you need to
+protect — §7 turns this question into a repeatable checklist for real interview
+problems (a cache, a rate limiter, a counter).
+
+With that mental model, the rest of this file is the precise, interview-depth
+vocabulary, primitives, and worked implementations for managing it correctly.
 
 ## 1. Vocabulary You Must Use Precisely
 
