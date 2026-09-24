@@ -25,46 +25,41 @@
 }
 @keyframes flowHint { 50% { opacity: .55; } }
 
-.fl-grid { fill: none; stroke: var(--border-soft); stroke-width: 1; }
-.fl-zone rect { fill: color-mix(in srgb, var(--surface) 55%, transparent); stroke: var(--border-soft); stroke-dasharray: 5 6; }
-.fl-zone text { fill: var(--text-faint); font: 600 13px/1 var(--mono); letter-spacing: .06em; }
+/* Flat, crisp and readable: no blur, no glow. State is shown with colour and
+   stroke weight only, so text stays sharp at any zoom and in both themes. */
+/* styles.css gives every <svg> `stroke: currentColor` for UI icons; inherited
+   by the diagram's text it outlines every glyph (the "glow"), so reset it here */
+.flow-canvas svg { stroke: none; stroke-width: 1; }
+.flow-canvas svg text { stroke: none; text-rendering: geometricPrecision; -webkit-font-smoothing: antialiased; }
+.fl-zone rect { fill: color-mix(in srgb, var(--surface) 70%, transparent); stroke: var(--border-soft); stroke-width: 1; }
+.fl-zone text { fill: var(--text-dim); font: 650 11px/1 var(--sans); letter-spacing: .09em; }
 
-.fl-edge { stroke: var(--border-strong); stroke-width: 1.75; transition: stroke var(--t), stroke-width var(--t); }
-.fl-edge.is-async { stroke-dasharray: 6 6; }
-.fl-edge.is-on { stroke: var(--accent); stroke-width: 2.75; }
+.fl-edge { fill: none; stroke: var(--border-strong); stroke-width: 1.6; stroke-linejoin: round; transition: stroke var(--t), stroke-width var(--t); }
+.fl-edge.is-async { stroke-dasharray: 5 5; }
+.fl-edge.is-on { stroke: var(--accent); stroke-width: 2.4; }
 .fl-edge.is-async-on { stroke: var(--fl-async); }
-.fl-edge-flow { stroke: transparent; stroke-width: 2.75; stroke-dasharray: 4 16; stroke-linecap: round; }
-.fl-edge-flow.is-on { stroke: color-mix(in srgb, var(--accent) 55%, var(--text)); animation: flowDash .7s linear infinite; }
-.fl-edge-flow.is-async-on { stroke: color-mix(in srgb, var(--fl-async) 55%, var(--text)); }
-@keyframes flowDash { to { stroke-dashoffset: -20; } }
+.fl-edge-flow { fill: none; stroke: transparent; stroke-width: 2.4; stroke-dasharray: 3 13; stroke-linecap: round; }
+.fl-edge-flow.is-on { stroke: var(--surface); animation: flowDash .8s linear infinite; }
+@keyframes flowDash { to { stroke-dashoffset: -16; } }
 
-.fl-node .fl-shape { fill: var(--surface-2); stroke: var(--border-strong); stroke-width: 1.5; transition: fill var(--t), stroke var(--t); }
-.fl-node .fl-shape-line { fill: none; stroke: var(--border-strong); stroke-width: 1.5; }
-.fl-node .fl-slot { fill: var(--border-strong); }
-.fl-node .fl-bolt { fill: var(--fl-warn); opacity: .8; }
-.fl-node.kind-client .fl-shape { fill: var(--surface); }
-.fl-label { fill: var(--text); font: 600 15px/1 var(--sans); letter-spacing: -.01em; }
-.fl-sub { fill: var(--text-dim); font: 500 11px/1 var(--sans); }
-.fl-halo { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: 0; transition: opacity var(--t-slow); }
-.fl-node.is-used .fl-shape { stroke: color-mix(in srgb, var(--accent) 40%, var(--border-strong)); }
-.fl-node.is-on .fl-halo { opacity: 0.28; }
-.fl-node.is-on .fl-shape { stroke: var(--accent); stroke-width: 1.75; fill: color-mix(in srgb, var(--accent) 7%, var(--surface-2)); }
-.fl-node.is-on .fl-shape-line { stroke: var(--accent); }
-.fl-down { fill: var(--err); font: 650 14px/1 var(--mono); opacity: 0; }
-.fl-node.is-down .fl-shape { stroke: var(--err); fill: color-mix(in srgb, var(--err) 10%, var(--surface-2)); stroke-dasharray: 5 4; }
-.fl-node.is-down .fl-halo { fill: var(--err); opacity: .18; }
+.fl-node .fl-shape { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.25; transition: fill var(--t), stroke var(--t); }
+.fl-node .fl-tile-logo { fill: #fff; stroke: var(--border); }
+.fl-label { fill: var(--text); font: 600 15px/1 var(--sans); letter-spacing: -.005em; }
+.fl-sub { fill: var(--text-dim); font: 500 12.5px/1 var(--sans); }
+.fl-node.is-used .fl-shape { stroke: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.fl-node.is-on .fl-shape { stroke: var(--accent); stroke-width: 2; fill: color-mix(in srgb, var(--accent) 9%, var(--surface-2)); }
+.fl-down { fill: var(--err); font: 600 12.5px/1 var(--sans); opacity: 0; }
+.fl-node.is-down .fl-shape { stroke: var(--err); fill: color-mix(in srgb, var(--err) 9%, var(--surface-2)); stroke-dasharray: 5 4; }
 .fl-node.is-down .fl-down { opacity: 1; }
+.fl-node.is-down > :not(.fl-shape):not(.fl-down):not(title) { opacity: .55; }
 
-.fl-badge { opacity: 0; transition: opacity var(--t), transform var(--t); pointer-events: none; }
+.fl-badge { opacity: 0; transition: opacity var(--t); pointer-events: none; }
 .fl-badge.is-shown { opacity: 1; }
-.fl-badge rect { fill: var(--elevated, var(--surface-2)); stroke: var(--accent); stroke-width: 1.4; }
-.fl-badge text { fill: var(--text); font: 650 14px/1 var(--mono); }
-.fl-badge.tone-ok rect { stroke: var(--ok); }
-.fl-badge.tone-ok text { fill: var(--ok); }
-.fl-badge.tone-warn rect { stroke: var(--fl-warn); }
-.fl-badge.tone-warn text { fill: var(--fl-warn); }
-.fl-badge.tone-err rect { stroke: var(--err); }
-.fl-badge.tone-err text { fill: var(--err); }
+.fl-badge rect { fill: var(--surface); stroke: var(--accent); stroke-width: 1.25; }
+.fl-badge text { fill: var(--text); font: 600 12.5px/1 var(--sans); }
+.fl-badge.tone-ok rect { stroke: var(--ok); fill: color-mix(in srgb, var(--ok) 12%, var(--surface)); }
+.fl-badge.tone-warn rect { stroke: var(--fl-warn); fill: color-mix(in srgb, var(--fl-warn) 12%, var(--surface)); }
+.fl-badge.tone-err rect { stroke: var(--err); fill: color-mix(in srgb, var(--err) 12%, var(--surface)); }
 
 .fl-packet { --pk: var(--accent); opacity: 0; transition: opacity 120ms; pointer-events: none; }
 .fl-packet.is-shown { opacity: 1; }
@@ -72,12 +67,11 @@
 .fl-packet.tone-warn { --pk: var(--fl-warn); }
 .fl-packet.tone-err { --pk: var(--err); }
 .fl-packet.tone-async { --pk: var(--fl-async); }
+.fl-pk-ring { fill: var(--surface); stroke: var(--pk); stroke-width: 2; }
 .fl-pk-dot { fill: var(--pk); }
-.fl-pk-halo { fill: var(--pk); opacity: .25; animation: flowPulse 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; transform-box: fill-box; }
-@keyframes flowPulse { 50% { transform: scale(1.35); opacity: .1; } }
 .fl-pk-tag { transition: opacity 140ms; }
-.fl-pk-tag rect { fill: var(--pk); }
-.fl-pk-tag text { fill: var(--bg); font: 700 14px/1 var(--mono); }
+.fl-pk-tag rect { fill: var(--surface); stroke: var(--pk); stroke-width: 1.5; }
+.fl-pk-tag text { fill: var(--text); font: 600 12.5px/1 var(--sans); }
 
 .flow-bar { display: flex; align-items: center; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 .flow-btn {
@@ -129,7 +123,7 @@
 
 @media (max-width: 900px) { .flow-bottom { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) {
-  .fl-edge-flow.is-on, .fl-pk-halo, .flow-hint { animation: none; }
+  .fl-edge-flow.is-on, .flow-hint { animation: none; }
 }
 
 /* ------------------------------------------------------ reveal gate ---- */
