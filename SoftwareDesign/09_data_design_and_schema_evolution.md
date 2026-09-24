@@ -27,7 +27,7 @@ Examples are in **Python** with **Go** in §8. Every example was run; outputs ar
 | DTO vs. domain model vs. persistence model | `08_application_architecture_in_code.md` §6 |
 | Migration runner implementation (versions table, transactions) | `PyEngineering/11_migrations_schema_management`, `GoEngineering/11_*` |
 | JSON/protobuf encoding hands-on | `PyEngineering/23_custom_json_protobuf_encoding`, `GoEngineering/23_*` |
-| Serialisation formats compared; REST/gRPC API versioning | `SystemDesign/building_blocks/04_api_design_low_level.md`, `03_api_design_high_level.md` |
+| Serialisation formats compared; REST/gRPC API versioning | `SystemDesign/building_blocks/04_api_design_low_level.md`, `SystemDesign/building_blocks/03_api_design_high_level.md` |
 | Normalisation, indexes, isolation levels, database internals | `CSFundamentals/03_databases_deep_dive.md`, `SystemDesign/building_blocks/05–06` |
 | Event sourcing, outbox, CQRS | `CSFundamentals/04_software_engineering_deep_dive.md` §2 |
 
@@ -92,6 +92,34 @@ Name the direction precisely — people use "backward compatible" to mean both.
 | **Forward** | Old code must read data written by new code: during a rolling deploy, after a rollback, old mobile clients reading new API responses, old consumers of a topic | v2 instances still running while v3 instances publish events |
 | **Full** | Both, which is the practical requirement for most shared data | Kafka topics with independent producer/consumer deploys |
 
+In ten lines, before the field-by-field rules in §3 and the full worked example in §4:
+
+```python
+# BACKWARD vs FORWARD compatibility, minimally.
+old_record = {"name": "Ada"}
+new_record = {"first_name": "Ada", "last_name": "Lovelace"}
+
+def old_reader(rec):        # only knows "name"
+    return rec.get("name", "unknown")
+
+def new_reader(rec):        # knows "name" is gone; falls back for records written before the change
+    return rec.get("first_name") or rec.get("name", "unknown")
+
+print(new_reader(old_record))   # BACKWARD: new code reads data written by old code
+print(old_reader(new_record))   # FORWARD: old code reads data written by new code — degrades, doesn't crash
+```
+
+Output:
+
+```
+Ada
+unknown
+```
+
+Neither reader crashes on the other version's shape. `old_reader` degrades to
+`"unknown"` rather than raising `KeyError` — that degradation, not an exception, is what
+forward compatibility buys you.
+
 **Deployment ordering follows from it:**
 
 | Change | Safe order |
@@ -136,6 +164,29 @@ separated by deploys.**
 A **tolerant reader** reads only the fields it needs, ignores fields it doesn't know,
 defaults fields that are missing, and maps unknown enum values to an explicit "unknown"
 rather than crashing. It is the single most important habit for forward compatibility.
+
+```python
+# TOLERANT READING in miniature, before the full upcaster example below.
+def parse_job(d: dict) -> dict:
+    return {
+        "id": d["id"],                          # required: crash loudly if truly missing
+        "retries": d.get("retries", 0),          # unknown/missing field: default it
+        "priority": d.get("priority", "normal"), # a field this reader has never heard of has no effect
+    }
+
+print(parse_job({"id": "j1", "retries": 3, "region": "eu-west-1"}))   # "region" is silently ignored
+print(parse_job({"id": "j2"}))                                        # missing fields get defaults
+```
+
+Output:
+
+```
+{'id': 'j1', 'retries': 3, 'priority': 'normal'}
+{'id': 'j2', 'retries': 0, 'priority': 'normal'}
+```
+
+`region` is dropped rather than raising `TypeError: unexpected keyword argument` — a
+future writer can add fields without coordinating a deploy with every reader.
 
 Two caveats keep tolerance from becoming sloppiness:
 
@@ -573,6 +624,34 @@ detectable; and treat IDs as **opaque strings** in APIs, so the format can chang
 - **Email addresses and usernames**: store as entered, compare on a normalised form with a
   unique index on that form.
 
+```python
+# The claims above, checked: one grapheme cluster, several code points, more bytes still.
+import unicodedata
+
+zwj = "\u200D"                                            # zero-width joiner
+family = "\U0001F469" + zwj + "\U0001F469" + zwj + "\U0001F467"   # woman + ZWJ + woman + ZWJ + girl
+print(len(family), len(family.encode("utf-8")))          # code points, UTF-8 bytes
+
+cafe_nfc = "caf" + "\u00E9"          # precomposed é: one code point
+cafe_nfd = "cafe" + "\u0301"         # "e" + combining acute accent: two code points
+print(cafe_nfc == cafe_nfd, len(cafe_nfc), len(cafe_nfd))
+print(unicodedata.normalize("NFC", cafe_nfd) == cafe_nfc)
+```
+
+Output:
+
+```
+5 18
+False 4 5
+True
+```
+
+`len()` counts code points, not grapheme clusters or bytes — a length-limit check in
+Python that uses `len()` alone is already lying about what it's limiting. And
+`cafe_nfc == cafe_nfd` is `False`: two strings that render identically and mean the same
+thing compare unequal until normalised, which is why a unique index or an `==` check on
+raw user input needs `unicodedata.normalize` first.
+
 ---
 
 ## 7 · Nulls, optionality, defaults, and deletion
@@ -590,6 +669,34 @@ discount", `{"discount": null}` means "remove it". Plain Python dataclasses with
 defaults and Go structs with zero values both collapse them. Options: a sentinel
 (`UNSET = object()`), `pydantic`'s `model_fields_set`, pointers or `omitzero`/wrapper
 types in Go (§8), protobuf `optional` / field masks.
+
+The sentinel in code:
+
+```python
+# Distinguishing "not sent" from "sent null" in a PATCH body, with a sentinel object.
+UNSET = object()
+
+def apply_patch(order: dict, discount=UNSET) -> dict:
+    if discount is not UNSET:               # only touch the field if the client actually sent it
+        order["discount"] = discount        # None here means "explicitly cleared"
+    return order
+
+print(apply_patch({"id": "o-1", "discount": 500}))                 # {}                  -> unchanged
+print(apply_patch({"id": "o-1", "discount": 500}, discount=None))  # {"discount": null}  -> cleared
+print(apply_patch({"id": "o-1", "discount": 500}, discount=0))     # {"discount": 0}     -> zero
+```
+
+Output:
+
+```
+{'id': 'o-1', 'discount': 500}
+{'id': 'o-1', 'discount': None}
+{'id': 'o-1', 'discount': 0}
+```
+
+A default of `discount=None` instead of `discount=UNSET` cannot make this distinction —
+every call that omits the argument would look identical to a call that explicitly clears
+it.
 
 ### Defaults are part of the schema
 

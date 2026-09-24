@@ -141,8 +141,56 @@ Two observations:
 
 ## 3 · Designing a thread-safe class
 
-The **monitor** pattern: private state, a private lock, and every public method acquires
-the lock for its whole critical section.
+The smallest version of the problem: a counter incremented by several threads.
+
+```python
+# Simplest on-ramp: read-then-write on shared state loses updates unless it's one atomic step.
+import threading, time
+
+def bump_many(counter, key, n, lock=None):
+    for _ in range(n):
+        if lock:
+            with lock:
+                v = counter[key]
+                time.sleep(0)          # force a thread switch between read and write
+                counter[key] = v + 1
+        else:
+            v = counter[key]
+            time.sleep(0)
+            counter[key] = v + 1
+
+counter = {"n": 0}
+threads = [threading.Thread(target=bump_many, args=(counter, "n", 2_000)) for _ in range(4)]
+for t in threads: t.start()
+for t in threads: t.join()
+print("without a lock:", counter["n"], "(expected 8000)")
+
+counter = {"n": 0}
+lock = threading.Lock()
+threads = [threading.Thread(target=bump_many, args=(counter, "n", 2_000, lock)) for _ in range(4)]
+for t in threads: t.start()
+for t in threads: t.join()
+print("with a lock:", counter["n"])
+```
+
+Output:
+
+```
+without a lock: 2002 (expected 8000)
+with a lock: 8000
+```
+
+Without a lock, "read the value, then write value+1" is two separate steps, and the
+forced switch between them loses most updates. With the lock, the read and the write
+happen as one step as far as any other thread can see, and the count comes out exact.
+(The exact number without a lock varies slightly between runs; that it's far short of
+8000 does not. This example forces the interleaving with `time.sleep(0)` to make it fail
+every time — the *natural* version of this race is much harder to trigger reliably, which
+is exactly why §12 builds a deterministic reproduction technique instead of just running
+threads and hoping.)
+
+The **monitor** pattern scales this to a real object: private state, a private lock, and
+every public method acquires the lock for its whole critical section.
 
 ```python
 # A thread-safe class: one private lock guards one invariant; compound actions are methods.
@@ -322,9 +370,42 @@ to switch to an actor (§7), where the "lock" is a queue and callbacks become me
 
 ## 6 · Immutability and snapshots
 
-Immutable objects need no synchronisation: every thread can read them forever. For data
-that is **read constantly and changed rarely** — configuration, feature flags, routing
-tables, permission sets — use **copy-on-write with a reference swap**:
+Immutable objects need no synchronisation: every thread can read them forever — there is
+nothing to protect, because nothing can change.
+
+```python
+# Simplest on-ramp: an immutable value literally cannot be corrupted by concurrent code.
+point = (3, 4)
+try:
+    point[0] = 99
+except TypeError as e:
+    print("tuples are immutable:", e)
+
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class Point:
+    x: int
+    y: int
+
+p = Point(3, 4)
+try:
+    p.x = 99
+except Exception as e:
+    print("frozen dataclass is immutable:", type(e).__name__, e)
+```
+
+Output:
+
+```
+tuples are immutable: 'tuple' object does not support item assignment
+frozen dataclass is immutable: FrozenInstanceError cannot assign to field 'x'
+```
+
+No thread can ever observe `point` or `p` half-updated, because there is no operation
+that updates them at all — "changing" one means building a new value. For data that is
+**read constantly and changed rarely** — configuration, feature flags, routing tables,
+permission sets — scale that idea up with **copy-on-write and a reference swap**:
 
 ```python
 # Immutable snapshot + atomic reference swap: lock-free reads of hot, rarely-changing data.
@@ -403,6 +484,39 @@ sharing, as in Clojure or `pyrsistent` — reduce the copy to O(log n).)
 Instead of many threads locking shared state, **one thread owns the state and processes
 messages one at a time.** No locks around the state at all — sequential code, sequentially
 correct.
+
+The smallest version: one thread owns a plain list, everyone else sends it messages
+through a queue instead of touching the list directly.
+
+```python
+# Simplest on-ramp: one thread owns a plain list; everyone else sends it messages through a queue.
+import queue, threading
+
+inbox = queue.Queue()
+log = []
+
+def owner():
+    while (msg := inbox.get()) is not None:
+        log.append(msg)          # only this thread ever touches `log`
+
+t = threading.Thread(target=owner)
+t.start()
+for i in range(5):
+    inbox.put(f"event-{i}")
+inbox.put(None)                  # poison pill: stop
+t.join()
+print(log)
+```
+
+Output:
+
+```
+['event-0', 'event-1', 'event-2', 'event-3', 'event-4']
+```
+
+No lock guards `log` because nothing needs to: only `owner` ever reads or writes it, so
+there is no concurrent access to synchronise. Scaled up, the same idea gives callers
+replies and the actor a richer internal state instead of a bare list:
 
 ```python
 # Single writer (actor): one thread owns the state; others send messages and get futures back.
@@ -607,6 +721,35 @@ Guarantees you get:
 
 Python 3.11+ has `asyncio.TaskGroup`; Go has `golang.org/x/sync/errgroup`; Java 21+ has
 `StructuredTaskScope`; Kotlin has coroutine scopes; Trio pioneered "nurseries".
+
+The simplest use: run two things concurrently and wait for both.
+
+```python
+# Simplest on-ramp: run two things concurrently and wait for both.
+import asyncio
+
+async def say(msg, delay):
+    await asyncio.sleep(delay)
+    return msg
+
+async def main():
+    async with asyncio.TaskGroup() as tg:
+        t1 = tg.create_task(say("hello", 0.02))
+        t2 = tg.create_task(say("world", 0.01))
+    print(t1.result(), t2.result())
+
+asyncio.run(main())
+```
+
+Output:
+
+```
+hello world
+```
+
+The `async with` block doesn't exit — and `main` doesn't move past it — until both tasks
+finish, in either order. Scaled up, the same block adds a concurrency limit and turns a
+failure into cancellation of the sibling tasks instead of a leak:
 
 ```python
 # Structured, bounded fan-out: at most N in flight, all-or-nothing, nothing leaks.
