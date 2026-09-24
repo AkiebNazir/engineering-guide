@@ -105,6 +105,8 @@ graph TD
     Net --> NIC
 ```
 
+<div class="lab" data-viz="os-architecture"></div>
+
 ### Kernel Space vs. User Space
 
 The **kernel** is the only code allowed to talk to hardware directly; it runs in a
