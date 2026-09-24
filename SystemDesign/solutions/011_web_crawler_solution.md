@@ -102,25 +102,39 @@ Walk-through: a fetcher on node 17 extracts links and posts them to `links.disco
 
 The Mercator design (Heydon and Najork, 1999; also Manning et al., *Introduction to Information Retrieval*, ch. 20) splits the two concerns, and the split is the answer.
 
-```mermaid
+```arch
 %% caption: Front queues encode priority and back queues encode politeness, so one min-heap of next-allowed times is the only structure that decides which host to fetch next.
-flowchart LR
-    N["New normalized URL"] --> P["Priority assigner"]
-    P --> F1["Front queue 1 (high)"]
-    P --> F2["Front queue 2"]
-    P --> F3["Front queue F (low)"]
-    F1 --> S["Biased selector"]
-    F2 --> S
-    F3 --> S
-    S --> R["Router: host to back queue"]
-    R --> B1["Back queue: host A"]
-    R --> B2["Back queue: host B"]
-    R --> B3["Back queue: host C"]
-    B1 --> H["Min-heap by next_allowed_at"]
-    B2 --> H
-    B3 --> H
-    H --> T["Fetcher slot: pop root, wait, fetch"]
-    T -->|"next_allowed_at = now + delay"| H
+grid 170x125
+node N "New normalized URL" at 1,0 shape=pill
+node P "Priority assigner" at 1,1 icon=sort
+group fq "Front queues (priority)" color=blue icon=queue
+node F1 "Front queue 1" at 0,2 in fq icon=queue sub="high"
+node F2 "Front queue 2" at 1,2 in fq icon=queue
+node F3 "Front queue F" at 2,2 in fq icon=queue sub="low"
+node S "Biased selector" at 1,3 icon=filter
+node R "Router" at 1,4 icon=sitemap sub="host to back queue"
+group bq "Back queues (politeness)" color=green icon=queue
+node B1 "Back queue: host A" at 0,5 in bq icon=queue
+node B2 "Back queue: host B" at 1,5 in bq icon=queue
+node B3 "Back queue: host C" at 2,5 in bq icon=queue
+node H "Min-heap" at 1,6 icon=tree sub="by next_allowed_at"
+node T "Fetcher slot" at 2,7 icon=worker sub="pop root, wait, fetch"
+N -> P
+P -> F1
+P -> F2
+P -> F3
+F1 -> S
+F2 -> S
+F3 -> S
+S -> R
+R -> B1
+R -> B2
+R -> B3
+B1:B -> H:T
+B2 -> H
+B3:B -> H:T
+H:B -> T:L
+T:T -> H:R : "next_allowed_at =\nnow + delay"
 ```
 
 - **Front queues** (say 8) hold URLs by priority from importance and freshness need. A *biased* selector prefers high queues by weight rather than strict priority, so the low tail is not starved.

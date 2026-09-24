@@ -189,15 +189,23 @@ Two published anchors: content-defined chunking with Rabin fingerprints for band
 
 A version is the ordered list of its chunk hashes plus their lengths. Storing that list flat costs 5,120 × 32 B = **164 KB for a 5 GiB file at 1 MiB chunks**, and 100 versions of it would be 16 MB, almost all of it repeated. A hash tree fixes that.
 
-```mermaid
+```arch
 %% caption: A manifest is a tree of content-addressed nodes, so a new version of a large file writes only the nodes on the path to the changed chunks and shares every other node with older versions.
-flowchart TD
-    root["Version manifest root<br/>manifest_hash = version content id"] --> p1["Page 1<br/>up to 64 chunk entries"]
-    root --> p2["Page 2"]
-    root --> pn["Page N (unchanged, shared with v41)"]
-    p1 --> c1["chunk hash + len"]
-    p1 --> c2["chunk hash + len"]
-    p2 --> c3["chunk hash + len (edited in v42)"]
+route straight
+grid 230x80
+node root "Version manifest root" at 0,1.5 color=blue sub="manifest_hash = version content id"
+node p1 "Page 1" at 1,0.5 color=blue sub="up to 64 chunk entries"
+node p2 "Page 2" at 1,2 color=blue
+node pn "Page N" at 1,3 color=slate sub="unchanged, shared with v41"
+node c1 "chunk hash + len" at 2,0 shape=box color=green
+node c2 "chunk hash + len" at 2,1 shape=box color=green
+node c3 "chunk hash + len" at 2,2 shape=box color=amber sub="edited in v42"
+root -> p1
+root -> p2
+root -> pn
+p1 -> c1
+p1 -> c2
+p2 -> c3
 ```
 
 - **Structure.** Chunk hashes are grouped 64 per page, pages are hashed, and pages are grouped again until one root remains; `manifest_hash` is that root and doubles as the version's **content id**. A 5 GiB file is 5,120 leaf entries, 80 pages, 2 inner nodes, and 1 root (three levels at fan-out 64). Small files (up to 64 chunks) inline their manifest in the version row.
@@ -216,17 +224,23 @@ flowchart TD
 
 **Notifications are pokes, not data.**
 
-```mermaid
+```arch
 %% caption: The journal is the truth and the push path is only a hint, so losing a notification delays a device by one poll interval and never loses a change.
-flowchart LR
-    commit[Commit txn<br/>version plus journal row] --> relay[Journal relay]
-    relay --> topic[(Pub-sub topic per namespace)]
-    topic --> gw[Gateway per subscriber group]
-    gw --> ws[Device WebSocket]
-    ws --> pull[GET changes since cursor]
-    pull --> journal[(Journal)]
-    timer[Safety poll every 5 min, jittered] --> pull
-    reconnect[Reconnect] --> pull
+node commit "Commit txn" at 0,0 icon=db sub="version plus journal row"
+group push "Push path (hint)" color=pink icon=notify style=dashed
+node relay "Journal relay" at 0,1 in push icon=sync
+node topic "Pub-sub topic" at 0,2 in push icon=topic sub="per namespace"
+node gw "Gateway" at 0,3 in push icon=gateway sub="per subscriber group"
+node ws "Device WebSocket" at 0,4 in push icon=websocket
+node timer "Safety poll" at 1,3 icon=timer sub="every 5 min, jittered"
+node pull "GET changes since cursor" at 1,4 icon=api
+node reconnect "Reconnect" at 2,4 icon=connection
+node journal "Journal" at 1,5 icon=db
+commit -> relay -> topic -> gw -> ws
+ws -> pull
+pull -> journal
+timer -> pull
+reconnect -> pull
 ```
 
 The relay publishes `(ns_id, seq)` per namespace, coalesced up to ~1 s. Each gateway subscribes to the namespaces its connected devices use, so a commit in a shared folder with 100k members sends one message per gateway (at most ~375), and each gateway fans out locally. A lost or duplicated poke is harmless: the device compares `seq` with its cursor and pulls. Reconnects, a 5-minute safety poll (125k requests/s across the fleet), and app foregrounding also pull, so the push path is an optimisation for latency, never a correctness dependency. Long-polling is the fallback transport for networks that block WebSockets.

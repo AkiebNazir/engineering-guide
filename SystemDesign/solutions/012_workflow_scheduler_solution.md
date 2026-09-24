@@ -102,16 +102,22 @@ sequenceDiagram
 
 The fencing token is the hard mechanism: lease expiry alone is not enough, because a worker can be merely slow (GC pause, network blip) rather than dead, and a naive "am I still the owner" check races with the reclaimer. Requiring the completion write to match the exact token issued at claim time closes that race deterministically, at the price of a small monotonic counter per claim.
 
-```mermaid
+```arch
 %% caption: Every step follows one state machine, and READY with a future available_at is how retries, timers and delayed starts share a single queue.
-flowchart LR
-    P["PENDING"] -->|"last dep DONE"| R["READY (available_at)"]
-    R -->|"claim, fence++"| U["RUNNING (lease)"]
-    U -->|"complete with fence"| D["DONE"]
-    U -->|"fail retryable or lease expired"| R
-    U -->|"attempts exhausted"| F["FAILED (dead letter)"]
-    R -->|"wait step"| Wt["WAITING"]
-    Wt -->|"signal or timeout_at"| R
+grid 250x120
+node P "PENDING" at 1,0 shape=pill color=slate
+node R "READY" at 1,1 color=blue sub="available_at" w=230
+node Wt "WAITING" at 2,1 color=amber
+node U "RUNNING" at 1,2 color=indigo sub="lease" w=230
+node D "DONE" at 1,3 shape=pill color=green
+node F "FAILED" at 2,3 color=red sub="dead letter"
+P -> R : "last dep DONE"
+R -> U : "claim, fence++"
+U -> D : "complete with fence"
+U:L -> R:L : "fail retryable or\nlease expired"
+U:R -> F:T : "attempts exhausted"
+R:R -> Wt:L : "wait step"
+Wt:T -> R:T : "signal or timeout_at"
 ```
 
 ## Claiming work: SKIP LOCKED, poll versus push

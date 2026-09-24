@@ -142,21 +142,29 @@ The hard decision is making encode state explicit and asynchronous rather than t
 
 **Design.** Probe and validate the source, then **split at keyframe (or scene-cut) boundaries into ~30-second chunks** aligned to whole segments (8 × 4 s = 32 s). Encode every chunk × rung as an independent task that starts with an IDR frame and writes CMAF segments directly to its final path. "Stitching" is then not a re-encode: it is assembling the manifest over the already-segmented output and verifying that timestamps and segment numbering are contiguous across chunk boundaries.
 
-```mermaid
+```arch
 %% caption: One video fans out into chunk-by-rung tasks that run in parallel and join at packaging, so wall time is set by the slowest task rather than the total work.
-flowchart LR
-    up[Upload complete] --> probe[Probe and validate<br/>sandboxed workers]
-    probe --> split[Split at keyframes<br/>about 32 s chunks]
-    split --> t1[Encode chunk 1<br/>rungs 1 to 8]
-    split --> t2[Encode chunk 2<br/>rungs 1 to 8]
-    split --> tn[Encode chunk N<br/>rungs 1 to 8]
-    probe --> aud[Audio and captions]
-    t1 --> pkg[Assemble, encrypt,<br/>write manifests]
-    t2 --> pkg
-    tn --> pkg
-    aud --> pkg
-    pkg --> qc[QC sample decode<br/>and quality check]
-    qc --> pub[Publish ready<br/>notify creator]
+node up "Upload complete" at 1,0 shape=pill
+node probe "Probe and validate" at 1,1 icon=shield sub="sandboxed workers"
+node split "Split at keyframes" at 1,2 icon=video sub="about 32 s chunks"
+node aud "Audio and captions" at 3,2 icon=music
+group enc "Parallel encode tasks" color=orange icon=worker
+node t1 "Encode chunk 1" at 0,3 in enc icon=worker sub="rungs 1 to 8"
+node t2 "Encode chunk 2" at 1,3 in enc icon=worker sub="rungs 1 to 8"
+node tn "Encode chunk N" at 2,3 in enc icon=worker sub="rungs 1 to 8"
+node pkg "Assemble, encrypt, write manifests" at 1,4 icon=package
+node qc "QC sample decode" at 1,5 icon=check sub="and quality check"
+node pub "Publish ready" at 1,6 icon=notify sub="notify creator"
+up -> probe -> split
+split -> t1
+split -> t2
+split -> tn
+probe:R -> aud:T
+t1 -> pkg
+t2 -> pkg
+tn -> pkg
+aud:B -> pkg:R
+pkg -> qc -> pub
 ```
 
 - **Rate control across chunks.** Independent chunks can drift in quality and bitrate. A fast first pass (a low-resolution complexity scan of the whole video) sets each chunk's target, and each chunk uses constrained quality (capped CRF with a max rate and buffer size), so buffer constraints hold at boundaries. The price is a small efficiency loss from closed GOPs at every chunk start; measure it, and it is worth it.

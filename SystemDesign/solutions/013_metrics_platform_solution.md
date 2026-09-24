@@ -121,24 +121,35 @@ sequenceDiagram
     end
 ```
 
-```mermaid
+```arch
 %% caption: Writes go through stateless distributors to zone-replicated ingesters and then to object storage, while dashboards and alert rules read through separate query pools.
-flowchart LR
-    agents([Agents and SDKs]) --> lb[Load balancer]
-    lb --> dist[Distributors<br/>auth, validate, limits]
-    dist -->|RF 3, quorum 2| ing[(Ingesters x42<br/>WAL and head, 3 zones)]
-    ing -->|cut 2 h block| obj[(Object store<br/>blocks per tenant)]
-    obj --> comp[Compactor<br/>merge, dedup, downsample]
-    comp --> obj
-    obj --> sg[Store-gateways<br/>index and chunk cache]
-    dash([Dashboards]) --> qf[Query frontend<br/>split, cache, fair queue]
-    qf --> qr[Queriers]
-    qr --> ing
-    qr --> sg
-    ruler[Rulers<br/>rule groups] --> rq[Rule query pool]
-    rq --> ing
-    ruler --> am[Alertmanager cluster]
-    am --> notify([Pager and chat])
+node agents "Agents and SDKs" at 0,0 icon=app
+node dash "Dashboards" at 2,0 icon=dashboard
+node notify "Pager and chat" at 3,0 icon=notify
+node lb "Load balancer" at 0,1 icon=lb
+node qf "Query frontend" at 2,1 icon=gateway sub="split, cache, fair queue"
+node am "Alertmanager cluster" at 3,1 icon=alert
+node dist "Distributors" at 0,2 icon=service sub="auth, validate, limits"
+node qr "Queriers" at 2,2 icon=search
+node ruler "Rulers" at 3,2 icon=scheduler sub="rule groups"
+node ing "Ingesters x42" at 1,3 icon=db sub="WAL and head, 3 zones"
+node rq "Rule query pool" at 3,3 icon=search
+node comp "Compactor" at 0,4 icon=worker sub="merge, dedup, downsample"
+node obj "Object store" at 1,4 icon=blob sub="blocks per tenant"
+node sg "Store-gateways" at 2,4 icon=cache sub="index and chunk cache"
+agents -> lb -> dist
+dist:B -> ing:L : "RF 3, quorum 2"
+ing -> obj : "cut 2 h block"
+obj:L -> comp:R
+comp:B -> obj:B
+obj -> sg
+dash -> qf -> qr
+qr:B -> ing:T
+qr -> sg
+ruler -> rq
+rq -> ing
+ruler -> am
+am -> notify
 ```
 
 Partitioning ingest and storage by tenant + time + series is what makes both the cardinality guard and horizontal scaling possible: cardinality accounting only has to reason about one tenant's series count at a time, and compaction/downsampling jobs operate independently per time-partition without cross-tenant coordination. The hard decision is enforcing the cardinality guard *at ingest*, before the sample is written anywhere, rather than detecting and cleaning up cardinality explosions after the fact — this trades a small amount of extra validation latency on every write for preventing a single tenant's mistake from ever reaching durable storage and degrading shared query performance. Retention and downsampling policy is the second explicit trade: this design keeps full resolution only for a bounded recent window and openly loses precision on older data, trading storage cost for dashboard/alert responsiveness on the data that actually gets queried.
@@ -161,17 +172,29 @@ Backpressure is explicit: distributors hold a bounded in-flight budget (bytes) p
 
 ## TSDB internals: head, WAL, blocks, and the label index
 
-```mermaid
+```arch
 %% caption: A sample lives in the WAL and head for about two hours, then becomes an immutable block whose index maps label pairs to sorted series lists.
-flowchart LR
-    w[Sample batch] --> wal[(WAL on local SSD<br/>append only)]
-    w --> head[In-memory head<br/>series map and open chunks]
-    head -->|chunk full at about 120 samples| mm[Memory-mapped chunk files]
-    head -->|every 2 h cut block| blk[Immutable block<br/>chunks, index, meta]
-    blk --> up[Upload to object store]
-    q["Query: job=api, status=~5xx"] --> pi[Postings index<br/>label pair to sorted series IDs]
-    pi -->|intersect lists| ids[Matching series IDs]
-    ids --> ch[Fetch and decode chunks]
+grid 180x120
+group wp "Write path" color=blue icon=edit
+node w "Sample batch" at 1,0 in wp shape=pill
+node wal "WAL on local SSD" at 0,0 in wp icon=disk sub="append only"
+node head "In-memory head" at 1,1 in wp icon=memory sub="series map and open chunks"
+node mm "Memory-mapped chunk files" at 0,2 in wp icon=file
+node blk "Immutable block" at 1,2 in wp icon=layers sub="chunks, index, meta"
+node up "Upload to object store" at 1,3 in wp icon=blob
+group rp "Query path" color=green icon=search
+node q "Query" at 2,0 in rp shape=pill sub="job=api, status=~5xx"
+node pi "Postings index" at 2,1 in rp icon=index sub="label pair to sorted series IDs"
+node ids "Matching series IDs" at 2,2 in rp icon=id
+node ch "Fetch and decode chunks" at 2,3 in rp icon=file
+w:L -> wal:R
+w -> head
+head:L -> mm:T : "chunk full at about 120 samples"
+head -> blk : "every 2 h cut block"
+blk -> up
+q -> pi
+pi -> ids : "intersect lists"
+ids -> ch
 ```
 
 - **WAL.** Every accepted batch is appended sequentially to a write-ahead log on local SSD before it is acked, so a restart can rebuild the head. Prometheus documents WAL files in 128 MB segments, with the current block held in memory and protected by the WAL. Cost: replay time on restart grows with the series count; checkpointing the WAL keeps it to minutes for ~5M series per ingester (to be measured).

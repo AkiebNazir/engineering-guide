@@ -82,19 +82,25 @@ touch(key, ttl)              → ok | miss
 
 ## Architecture and data flow
 
-```mermaid
+```arch
 %% caption: Clients route by a cached slot map, the owning node answers hits and issues a lease on a miss, and only the lease holder reads the source.
-flowchart LR
-    app[App process<br/>client library] -->|slot = crc16 mod 16384| smap[(Slot map<br/>epoch N, cached)]
-    app -->|get_lease| n1[Owning node<br/>table + policy + TTL]
-    n1 -->|hit| app
-    n1 -->|miss and token| app
-    app -->|lease holder only| src[(Source of truth)]
-    app -->|set with token| n1
-    cp[Control plane<br/>Raft store] -->|new epoch| smap
-    n1 -->|heartbeat| cp
-    app -.->|node timeout| gut[Gutter pool<br/>short TTL]
-    gut -.-> src
+grid 180x130
+node cp "Control plane" at 3,0 icon=scheduler sub="Raft store"
+node smap "Slot map" at 0,1 icon=kv sub="epoch N, cached"
+node app "App process" at 1,1 icon=app sub="client library"
+node n1 "Owning node" at 3,1 icon=cache sub="table + policy + TTL"
+node gut "Gutter pool" at 0,3 icon=cache sub="short TTL"
+node src "Source of truth" at 2,3 icon=db
+app:L -> smap:R : "slot = crc16\nmod 16384"
+app:R -> n1:L : "get_lease"
+n1:T -> app:T : "hit"
+n1:T -> app:T : "miss and token"
+app:R -> n1:L : "set with token"
+app:B -> src:T : "lease holder only"
+cp:L -> smap:T : "new epoch"
+n1:R -> cp:R : "heartbeat"
+app:B -> gut:T : "node timeout" dashed
+gut ..> src
 ```
 
 **One read, end to end.** The client computes `crc16(key) mod 16384`, looks the slot up in its cached map, and sends `get_lease` to that node with a 3 ms deadline. On a hit it returns the value. On a miss the node returns a lease token (or `wait_ms` if another client already holds one for this key). The lease holder reads the source, then calls `set(key, value, ttl, lease_token)`; the node stores it only if the token is still valid. Waiting clients retry after a few milliseconds and hit. If the node does not answer inside the deadline, the client goes to the gutter pool, and if that also misses, to the source through a per-process single-flight.
@@ -258,13 +264,23 @@ Two ways to warm faster: (1) **copy from a warm peer** — the Facebook paper's 
 
 Each region runs its own cache cluster over its own replica of the source. Caches are never replicated across regions: a cross-region round trip (tens of ms) already exceeds the 5 ms budget, and a cache is cheaper to refill than to ship.
 
-```mermaid
+```arch
 %% caption: Invalidations ride the database's own replication stream so a replica region never invalidates before its database has the new row.
-flowchart LR
-    w[Writer in home region] --> db1[(Primary DB)]
-    db1 -->|commit log| inv1[Invalidation daemon] --> c1[Home cache cluster]
-    db1 -->|replication stream| db2[(Replica DB in region B)]
-    db2 -->|commit log after apply| inv2[Invalidation daemon B] --> c2[Region B cache cluster]
+group ra "Home region" color=blue icon=region
+node w "Writer" at 0,0 in ra icon=app sub="home region"
+node db1 "Primary DB" at 0,1 in ra icon=db
+node inv1 "Invalidation daemon" at 0,2 in ra icon=worker
+node c1 "Home cache cluster" at 0,3 in ra icon=cache
+group rb "Region B" color=blue icon=region
+node db2 "Replica DB" at 2,1 in rb icon=replica sub="region B"
+node inv2 "Invalidation daemon B" at 2,2 in rb icon=worker
+node c2 "Region B cache cluster" at 2,3 in rb icon=cache
+w -> db1
+db1 -> inv1 : "commit log"
+inv1 -> c1
+db1 ..> db2 : "replication stream"
+db2 -> inv2 : "commit log after apply"
+inv2 -> c2
 ```
 
 **The trap.** If the writer in the home region deletes the key in region B's cache directly, the delete can arrive *before* replication delivers the new row. A region-B reader then misses, reads the old row from the lagging replica, and caches the stale value indefinitely. The Facebook paper avoids this by having a daemon on each database tail its commit log and issue the deletes *after* commit, and in replica regions only after replication applies the change; it also batches deletes and replays them if a router or cluster was down.

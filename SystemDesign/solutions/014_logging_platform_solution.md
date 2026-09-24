@@ -116,22 +116,32 @@ sequenceDiagram
     end
 ```
 
-```mermaid
+```arch
 %% caption: Lines are redacted at the agent, buffered in a replicated log, turned into object-store chunks by consumers that commit offsets only after the flush, and read by both search and live tail.
-flowchart LR
-    app([Service stdout and files]) --> ag[Agent<br/>parse, redact, disk spool]
-    ag -->|idempotent batch| gw[Ingest gateway<br/>auth, quota, schema]
-    gw --> raw[(Log topic<br/>service+host partitions)]
-    raw --> rd[Redaction pass 2<br/>detectors and quarantine]
-    rd --> clean[(Clean topic)]
-    clean --> idx[Indexers x40<br/>build chunks]
-    idx -->|flush then commit| obj[(Object store<br/>by retention class)]
-    idx --> lab[(Label and trace index)]
-    clean --> tail[Live tail service]
-    q([Query API]) --> lab
-    q --> obj
-    q --> idx
-    tail --> ops([Operators])
+grid 180x120
+node app "Service stdout and files" at 0,0 icon=app
+node ops "Operators" at 2,0 icon=users
+node ag "Agent" at 0,1 icon=logs sub="parse, redact, disk spool"
+node tail "Live tail service" at 2,1 icon=stream
+node gw "Ingest gateway" at 0,2 icon=gateway sub="auth, quota, schema"
+node raw "Log topic" at 0,3 icon=topic sub="service+host partitions"
+node rd "Redaction pass 2" at 1,3 icon=shield sub="detectors and quarantine"
+node clean "Clean topic" at 2,3 icon=topic
+node lab "Label and trace index" at 1,4 icon=index
+node idx "Indexers x40" at 2,4 icon=worker sub="build chunks"
+node obj "Object store" at 3,4 icon=blob sub="by retention class"
+node q "Query API" at 2,5 icon=api
+app -> ag
+ag -> gw : "idempotent batch"
+gw -> raw -> rd -> clean
+clean -> idx
+idx -> obj : "flush then commit"
+idx -> lab
+clean:T -> tail:B
+q:L -> lab:B
+q:R -> obj:B
+q:T -> idx:B
+tail -> ops
 ```
 
 Buffering at the agent and shipping asynchronously is the mechanism that makes the core contract possible: the product request only ever writes to a fast local buffer, never waits on the network or the ingest backend, so a logging backend outage shows up as buffer growth and eventual sampling/drop, never as elevated product-request latency. This trades log completeness during an outage (some logs may be shed once the bounded buffer fills) for the much stronger guarantee that logging can never cause a product outage — an explicit, correct trade for an observability system whose job is to help diagnose problems, not become one. Redacting sensitive fields at ingest, before the durable write, is the second hard decision: it trades a small amount of ingest-time processing for making the durable store itself safe to broadly query, rather than depending on every future read path to remember to filter.
