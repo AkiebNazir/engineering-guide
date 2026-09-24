@@ -110,26 +110,41 @@ by hand, not just "does it terminate."
 
 ## Part 2 · Three call shapes, three cost models
 
-```mermaid
+```arch
 %% caption: Linear: depth n, one path. Branching with overlap: exponential unless memoized. Divide and conquer: the halves are disjoint, the depth is log n, and there is nothing to memoize.
-flowchart TD
-  L0["Linear: f(n) calls f(n-1)"]:::hot --> l1["f(4)"] --> l2["f(3)"] --> l3["f(2)"]
-  T0["Branching: f(n-1) and f(n-2)"]:::hot --> t1["f(4)"]
-  t1 --> t2["f(3)"]
-  t1 --> t3["f(2)"]
-  t2 --> t4["f(2)"]
-  t2 --> t5["f(1)"]
-  D0["Divide and conquer: two halves"]:::hot --> d1["n"]
-  d1 --> d2["n/2"]
-  d1 --> d3["n/2"]
-  d2 --> d4["n/4"]
-  d2 --> d5["n/4"]
-  d3 --> d6["n/4"]
-  d3 --> d7["n/4"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x85
+node L0 "Linear" at 0,0 color=amber sub="f(n) calls f(n-1)" w=150
+node l1 "f(4)" at 2,0 shape=circle color=blue
+node l2 "f(3)" at 3,0 shape=circle color=blue
+node l3 "f(2)" at 4,0 shape=circle color=blue
+node T0 "Branching" at 0,1 color=amber sub="f(n-1) and f(n-2)" w=150
+node t1 "f(4)" at 3,1 shape=circle color=blue
+node t2 "f(3)" at 2,2 shape=circle color=blue
+node t3 "f(2)" at 4,2 shape=circle color=red
+node t4 "f(2)" at 1.5,3 shape=circle color=red
+node t5 "f(1)" at 2.5,3 shape=circle color=blue
+node D0 "Divide and conquer" at 0,4 color=amber sub="two halves" w=150
+node d1 "n" at 3.5,4 shape=circle color=green
+node d2 "n/2" at 2.5,5 shape=circle color=green
+node d3 "n/2" at 4.5,5 shape=circle color=green
+node d4 "n/4" at 2,6 shape=circle color=green
+node d5 "n/4" at 3,6 shape=circle color=green
+node d6 "n/4" at 4,6 shape=circle color=green
+node d7 "n/4" at 5,6 shape=circle color=green
+L0 -> l1 -> l2 -> l3
+T0 -> t1
+t1 -> t2
+t1 -> t3
+t2 -> t4
+t2 -> t5
+D0 -> d1
+d1 -> d2
+d1 -> d3
+d2 -> d4
+d2 -> d5
+d3 -> d6
+d3 -> d7
 ```
 
 
@@ -214,16 +229,16 @@ aren't the first time you've seen the pattern — DP *is* memoized
 recursion (or its bottom-up mirror image), nothing more mystical than
 that.
 
-```mermaid
+```arch
 %% caption: Memoize only when the same arguments really are called more than once.
-flowchart TD
-  Q(["Recursive solution"]) --> A{"Same arguments called<br/>more than once?"}
-  A -->|yes| B["Memoize: cache keyed by the arguments<br/>functools.cache"]:::ok
-  A -->|no| C["Do not memoize<br/>(disjoint subproblems, the cache never hits)"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x105
+node Q "Recursive solution" at 0.5,0 shape=pill
+node A "Same arguments called more than once?" at 0.5,1 shape=diamond color=amber
+node B "Memoize" at 0,2 color=green sub="cache keyed by the arguments, functools.cache" w=210
+node C "Do not memoize" at 1,2 color=slate sub="disjoint subproblems, the cache never hits" w=210
+Q -> A
+A -> B : "yes"
+A -> C : "no"
 ```
 
 
@@ -295,20 +310,24 @@ that starts with a recursive solution.
 
 Parts 0–7 give the model. This Part puts numbers on it (CPython 3.13, best of several runs) and lists the recurrence and cost of every problem in the ladder, so "what does this recursion cost?" always has a checked answer.
 
-```mermaid
+```arch
 %% caption: A RecursionError has four fixes, in order of preference: shrink the depth by construction, iterate with an explicit stack, memoise so fewer distinct calls happen, and only then raise the limit.
-flowchart TD
-  Q(["RecursionError, or depth that could be large"]) --> A{"Can each call halve the input?"}
-  A -->|"yes"| B["recurse on n // 2: depth log n (binary exponentiation, divide and conquer)"]:::ok
-  A -->|"no"| C{"Is it a linear chain or a tree walk?"}
-  C -->|"yes"| D["iterate: a loop, or an explicit stack of (node, state)"]:::ok
-  C -->|"no, branching"| E{"Same arguments repeated?"}
-  E -->|"yes"| F["memoise: fewer calls, and often less depth"]:::hot
-  E -->|"no"| G["setrecursionlimit as a last resort; it costs memory"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 290x105
+node Q "RecursionError, or depth that could be large" at 0,0 shape=pill w=260
+node A "Can each call halve the input?" at 0,1 shape=diamond color=amber
+node B "recurse on n // 2: depth log n" at 1,1 color=green sub="binary exponentiation, divide and conquer" w=260
+node C "Is it a linear chain or a tree walk?" at 0,2 shape=diamond color=amber
+node D "iterate" at 1,2 color=green sub="a loop, or an explicit stack of (node, state)" w=260
+node E "Same arguments repeated?" at 0,3 shape=diamond color=amber
+node F "memoise" at 1,3 color=amber sub="fewer calls, and often less depth" w=260
+node G "setrecursionlimit as a last resort" at 0,4 color=red sub="it costs memory" w=260
+Q -> A
+A -> B : "yes"
+A -> C : "no"
+C -> D : "yes"
+C -> E : "no, branching"
+E -> F : "yes"
+E -> G : "no"
 ```
 
 ### 8.1 The stack limit, measured

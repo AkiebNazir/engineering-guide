@@ -28,18 +28,18 @@ common factors with it. This is topic 01's whole "hash map as O(1)
 lookup" lesson, just with the machine opened up and the bucket-count
 choice made explicit instead of delegated to CPython.
 
-```mermaid
+```arch
 %% caption: A hand-built hash set: hash to a bucket, then scan the short chain.
-flowchart LR
-  K["key"] --> H["index = key % bucket_count"]
-  H --> B["bucket at index<br/>(a short list)"]
-  B --> C["scan the chain for key"]
-  C -->|"add"| D["append if absent"]:::ok
-  C -->|"remove or contains"| E["delete it, or report"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x95
+node K "key" at 0.5,0 shape=pill
+node H "index = key % bucket_count" at 0.5,1 w=200
+node B "bucket at index" at 0.5,2 sub="a short list"
+node C "scan the chain for key" at 0.5,3 color=amber
+node D "append if absent" at 0,4 color=green
+node E "delete it, or report" at 1,4 color=green
+K -> H -> B -> C
+C -> D : "add"
+C -> E : "remove or contains"
 ```
 
 
@@ -129,17 +129,15 @@ the LeetCode-imposed complexity requirement (usually "O(1)," sometimes
 "O(log n)" or "O(prefix length)") is IMPOSSIBLE with any single stock
 container, because the required operations pull in different directions:
 
-```mermaid
+```arch
 %% caption: RandomizedSet remove in O(1): the array gives random access, the map gives lookup, and swap-with-last avoids shifting. Both structures must be updated together.
-flowchart LR
-  R["remove(val)"] --> S["i = index_of[val]"]
-  S --> T["arr[i] = arr[-1]<br/>the last element fills the hole"]
-  T --> U["index_of[arr[i]] = i"]
-  U --> V["arr.pop()<br/>del index_of[val]"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x95
+node R "remove(val)" at 0,0 shape=pill
+node S "i = index_of[val]" at 0,1
+node T "arr[i] = arr[-1]" at 0,2 sub="the last element fills the hole"
+node U "index_of[arr[i]] = i" at 0,3
+node V "arr.pop()\ndel index_of[val]" at 0,4 color=green
+R -> S -> T -> U -> V
 ```
 
 
@@ -214,19 +212,20 @@ When a design problem hands you a class with several methods and a
 per-method complexity target, work through these questions in order
 before writing any code:
 
-```mermaid
+```arch
 %% caption: The design-problem routine: bounds first, then structures, then the invariant that keeps them in sync.
-flowchart TD
-  A["List every operation and its required bound"] --> B["For each one: which structure gives that bound?"]
-  B --> C{"One structure covers all of them?"}
-  C -->|yes| D["use it"]:::ok
-  C -->|no| E["Combine structures<br/>(map + list, map + heap, map + linked list)"]:::hot
-  E --> F["State the invariant that ties them together"]
-  F --> G["Update BOTH on every mutation"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 260x100
+node A "List every operation and its required bound" at 0,0 w=230
+node B "For each one: which structure gives that bound?" at 0,1 w=230
+node C "One structure covers all of them?" at 0,2 shape=diamond color=amber
+node D "use it" at 1,2 color=green
+node E "Combine structures" at 0,3 color=amber sub="map + list, map + heap, map + linked list" w=230
+node F "State the invariant that ties them together" at 0,4 w=230
+node G "Update BOTH on every mutation" at 0,5 w=230
+A -> B -> C
+C -> D : "yes"
+C -> E : "no"
+E -> F -> G
 ```
 
 
@@ -311,20 +310,36 @@ truth with one index per query shape, and decide how each index stays correct un
 Part 1 says each design problem pairs two structures. This Part prices the parts you pair, so you can say *why* a combination meets a bound, and shows the stdlib shortcuts. All snippets ran on
 CPython 3.13; timings are best of three.
 
-```mermaid
+```arch
 %% caption: What the operation list demands picks the structure pair. Each row is one design problem's move.
-flowchart TD
-  Q(["A design class with a list of operations"]) --> A{"Which operation is the hard one?"}
-  A -->|"evict / reorder by recency"| B["hash map to nodes + doubly linked list<br/>(OrderedDict does both in C)"]:::ok
-  A -->|"uniform random pick + delete by value"| C["array + value to index map, swap-with-last delete"]:::ok
-  A -->|"max/min under updates or corrections"| D["source-of-truth map + heap with lazy validation on read"]:::hot
-  A -->|"value as of a past time or version"| E["append-only history per key + bisect"]:::ok
-  A -->|"count in a sliding window"| F["fixed ring of time-tagged buckets"]:::ok
-  A -->|"top K completions of a prefix"| G["trie whose every node indexes the sentences through it"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x80
+node Q "A design class with a list of operations" at 0,0 shape=pill w=210
+node A "Which operation is the hard one?" at 0,1 shape=diamond color=amber
+node pb "evict / reorder by recency" at 1,2 shape=pill w=210
+node pc "uniform random pick + delete by value" at 1,3 shape=pill w=210
+node pd "max/min under updates or corrections" at 1,4 shape=pill w=210
+node pe "value as of a past time or version" at 1,5 shape=pill w=210
+node pf "count in a sliding window" at 1,6 shape=pill w=210
+node pg "top K completions of a prefix" at 1,7 shape=pill w=210
+node B "hash map to nodes + doubly linked list" at 2,2 color=green sub="OrderedDict does both in C" w=250
+node C "array + value to index map" at 2,3 color=green sub="swap-with-last delete" w=250
+node D "source-of-truth map + heap" at 2,4 color=amber sub="lazy validation on read" w=250
+node E "append-only history per key + bisect" at 2,5 color=green w=250
+node F "fixed ring of time-tagged buckets" at 2,6 color=green w=250
+node G "trie" at 2,7 color=amber sub="every node indexes the sentences through it" w=250
+Q -> A
+A -> pb:L
+A -> pc:L
+A -> pd:L
+A -> pe:L
+A -> pf:L
+A -> pg:L
+pb -> B
+pc -> C
+pd -> D
+pe -> E
+pf -> F
+pg -> G
 ```
 
 ### 7.1 Hash tables: the bucket count is a design decision (Problems 001–002)

@@ -19,33 +19,32 @@ random when I eyeball it" is not good enough — the interview bar is
 proving EVERY outcome is equally likely (uniform), or that a weighted
 outcome hits its exact target probability. Three techniques:
 
-```mermaid
+```arch
 %% caption: Fisher-Yates shuffle: n! equally likely orderings, because position i receives each of the i+1 eligible items with probability 1/(i+1).
-flowchart TD
-  A["for i from n - 1 down to 1"] --> B["j = random integer in 0..i (inclusive)"]
-  B --> C["swap a[i] and a[j]"]
-  C --> D["a[i..n-1] is final:<br/>the eligible range shrinks by one"]:::ok
-  D --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 260x95
+node A "for i from n - 1 down to 1" at 0,0 w=230
+node B "j = random integer in 0..i (inclusive)" at 0,1 w=230
+node C "swap a[i] and a[j]" at 0,2 w=230
+node D "a[i..n-1] is final" at 0,3 color=green sub="the eligible range shrinks by one" w=230
+A -> B -> C -> D
+D:R -> A:R
 ```
 
 
-```mermaid
+```arch
 %% caption: Reservoir sampling: by induction every item seen so far is kept with probability exactly 1/n after n items, using O(1) memory.
-flowchart TD
-  A["stream item number k (k = 1, 2, 3 ...)"] --> B{"random() is below 1/k ?"}
-  B -->|yes| C["replace the kept item with this one"]:::hot
-  B -->|no| D["keep the current item"]
-  C --> E["next item"]
-  D --> E
-  E --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node A "stream item number k" at 0,0 sub="k = 1, 2, 3 ..." w=190
+node B "random() is below 1/k ?" at 0,1 shape=diamond color=amber
+node D "keep the current item" at 1,1 w=180
+node C "replace the kept item with this one" at 0,2 color=amber w=190
+node E "next item" at 0,3
+A -> B
+B -> C : "yes"
+B -> D : "no"
+C -> E
+D:B -> E:R
+E:L -> A:L
 ```
 
 
@@ -74,18 +73,19 @@ compare by length first, then lexicographically — `"9" > "10"` as strings
 but `9 < 10` as numbers) instead of relying on `<` doing the right thing by
 default, proving the technique generalizes beyond natural numeric order.
 
-```mermaid
+```arch
 %% caption: Quickselect discards the side that cannot hold the answer: expected O(n) (n + n/2 + n/4 ...), versus O(n log n) for a full sort.
-flowchart TD
-  A["kth smallest of a[lo..hi]"] --> B["pick a pivot and partition:<br/>smaller | pivot | larger"]
-  B --> C{"pivot's final index p vs k"}
-  C -->|"p == k"| D["answer = a[p]"]:::ok
-  C -->|"k is less than p"| E["recurse into the LEFT part only"]
-  C -->|"k is greater than p"| F["recurse into the RIGHT part only"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x105
+node A "kth smallest of a[lo..hi]" at 1,0 shape=pill
+node B "pick a pivot and partition" at 1,1 sub="smaller | pivot | larger" w=200
+node C "pivot's final index p vs k" at 1,2 shape=diamond color=amber
+node E "recurse into the LEFT part only" at 0,3 w=180
+node D "answer = a[p]" at 1,3 color=green
+node F "recurse into the RIGHT part only" at 2,3 w=180
+A -> B -> C
+C -> D : "p == k"
+C -> E : "k is less than p"
+C -> F : "k is greater than p"
 ```
 
 

@@ -31,16 +31,25 @@ exact same inclusion-exclusion idea as topic 04's prefix sum, just backed by
 a structure that keeps the prefix answer current in O(log n) per mutation
 instead of O(n).
 
-```mermaid
+```arch
 %% caption: Update at i walks UP with i += i & -i (3, 4, 8). A prefix query walks the other way with i -= i & -i (7, 6, 4). Each tree[i] covers the last (i & -i) elements ending at i.
-flowchart BT
-  t1["tree[1] = a1"] --> t2["tree[2] = a1..a2"]
-  t2 --> t4["tree[4] = a1..a4"]
-  t3["tree[3] = a3"] --> t4
-  t4 --> t8["tree[8] = a1..a8"]
-  t5["tree[5] = a5"] --> t6["tree[6] = a5..a6"]
-  t6 --> t8
-  t7["tree[7] = a7"] --> t8
+route straight
+grid 92x85
+node t8 "tree[8]" at 7,0 sub="a1..a8" color=blue
+node t4 "tree[4]" at 3,1 sub="a1..a4" color=blue
+node t2 "tree[2]" at 1,2 sub="a1..a2" color=blue
+node t6 "tree[6]" at 5,2 sub="a5..a6" color=blue
+node t1 "tree[1]" at 0,3 sub="a1" color=blue
+node t3 "tree[3]" at 2,3 sub="a3" color=blue
+node t5 "tree[5]" at 4,3 sub="a5" color=blue
+node t7 "tree[7]" at 6,3 sub="a7" color=blue
+t1 -> t2
+t2 -> t4
+t3 -> t4
+t4 -> t8
+t5 -> t6
+t6 -> t8
+t7 -> t8
 ```
 
 
@@ -119,18 +128,19 @@ it's the same tool as 005.
 Both answer "range query + point/range update in O(log n)." They are not
 interchangeable in general, and knowing WHEN each wins is the graded skill:
 
-```mermaid
+```arch
 %% caption: Fenwick or segment tree?
-flowchart TD
-  Q(["Range query with updates"]) --> A{"Aggregate has an inverse?<br/>(sum, xor: subtraction undoes it)"}
-  A -->|yes| B{"Only point updates?"}
-  B -->|yes| F["Fenwick tree<br/>short code, small constant"]:::ok
-  B -->|"range updates"| S["Segment tree + lazy propagation"]:::ok
-  A -->|"no: min, max, gcd"| S
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 300x105
+node Q "Range query with updates" at 0,0 shape=pill
+node A "Aggregate has an inverse?" at 0,1 shape=diamond color=amber sub="sum, xor: subtraction undoes it"
+node B "Only point updates?" at 0,2 shape=diamond color=amber
+node F "Fenwick tree" at 0,3 color=green sub="short code, small constant"
+node S "Segment tree + lazy propagation" at 1,2 color=green w=200
+Q -> A
+A -> B : "yes"
+B -> F : "yes"
+B -> S : "range updates"
+A:R -> S:T : "no: min, max, gcd"
 ```
 
 
@@ -240,27 +250,39 @@ Here is the machinery itself, in full, because "I know the concept" and "I
 can write it correctly in fifteen minutes" are different skills and only the
 second one survives an interview.
 
-```mermaid
+```arch
 %% caption: Query [2..5] needs only the two highlighted nodes, [2..3] and [4..5]: O(log n) nodes are ever visited. Lazy propagation postpones a range update on a node until a query must look at its children.
-flowchart TD
-  r["[0..7]"] --> l1["[0..3]"]
-  r --> r1["[4..7]"]
-  l1 --> a["[0..1]"]
-  l1 --> b["[2..3]"]:::hot
-  r1 --> c["[4..5]"]:::hot
-  r1 --> d["[6..7]"]
-  a --> a0["0"]
-  a --> a1["1"]
-  b --> b2["2"]
-  b --> b3["3"]
-  c --> c4["4"]
-  c --> c5["5"]
-  d --> d6["6"]
-  d --> d7["7"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node r "[0..7]" at 3,0 shape=circle color=blue
+node l1 "[0..3]" at 1,1 shape=circle color=blue
+node r1 "[4..7]" at 5,1 shape=circle color=blue
+node a "[0..1]" at 0,2 shape=circle color=blue
+node b "[2..3]" at 2,2 shape=circle color=amber
+node c "[4..5]" at 4,2 shape=circle color=amber
+node d "[6..7]" at 6,2 shape=circle color=blue
+node a0 "0" at 0,3 shape=circle color=slate
+node a1 "1" at 1,3 shape=circle color=slate
+node b2 "2" at 2,3 shape=circle color=slate
+node b3 "3" at 3,3 shape=circle color=slate
+node c4 "4" at 4,3 shape=circle color=slate
+node c5 "5" at 5,3 shape=circle color=slate
+node d6 "6" at 6,3 shape=circle color=slate
+node d7 "7" at 7,3 shape=circle color=slate
+r -> l1
+r -> r1
+l1 -> a
+l1 -> b
+r1 -> c
+r1 -> d
+a -> a0
+a -> a1
+b -> b2
+b -> b3
+c -> c4
+c -> c5
+d -> d6
+d -> d7
 ```
 
 
@@ -390,21 +412,26 @@ each under sixty lines.
 Parts 1–4a give the two structures and the decision rule; the six solution files build only what each problem needs. This Part writes out the rest of what an interview asks about, and measures it.
 Every class below was checked against a brute-force reference on hundreds of random operation sequences (non-power-of-two sizes included), on CPython 3.13.
 
-```mermaid
+```arch
 %% caption: Which range structure? Invertible aggregate and point updates: Fenwick. Anything else, or range updates: segment tree. Static data: prefix sums or a sparse table.
-flowchart TD
-  Q(["Range query problem"]) --> A{"Does the array change?"}
-  A -->|"no"| B{"Aggregate?"}
-  B -->|"sum / xor"| P["prefix sums, O(1) per query"]:::ok
-  B -->|"min / max / gcd"| SP["sparse table, O(1) per query"]:::ok
-  A -->|"yes"| C{"Aggregate has an inverse?"}
-  C -->|"yes, point updates"| F["Fenwick tree"]:::ok
-  C -->|"yes, range updates"| F2["two Fenwick trees, or a lazy segment tree"]:::hot
-  C -->|"no (min, max, gcd)"| S["segment tree (iterative if no lazy tags)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 185x100
+node Q "Range query problem" at 1,0 shape=pill
+node A "Does the array change?" at 1,1 shape=diamond color=amber
+node B "Aggregate?" at 0,2 shape=diamond color=amber
+node C "Aggregate has an inverse?" at 2,2 shape=diamond color=amber
+node P "prefix sums" at 0,3 color=green sub="O(1) per query" w=170
+node SP "sparse table" at 0,4 color=green sub="O(1) per query" w=170
+node F "Fenwick tree" at 2,3 color=green w=170
+node F2 "two Fenwick trees" at 2,4 color=amber sub="or a lazy segment tree" w=170
+node S "segment tree" at 2,5 color=amber sub="iterative if no lazy tags" w=170
+Q -> A
+A:L -> B:T : "no"
+A:R -> C:T : "yes"
+B -> P : "sum / xor"
+B:L -> SP:L : "min / max / gcd"
+C -> F : "yes, point updates"
+C:R -> F2:R : "yes, range updates"
+C:L -> S:L : "no (min, max, gcd)"
 ```
 
 ### 7.1 The Fenwick tree, complete — linear build, and the one bug everyone makes
