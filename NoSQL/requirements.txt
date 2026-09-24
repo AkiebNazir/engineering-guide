@@ -1,0 +1,3 @@
+# Python dependencies for the NoSQL (MongoDB + Redis) module.   pip install -r requirements.txt
+pymongo>=4.9
+redis>=5.2

@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package demo.v1;
+
+option go_package = "dsapractice/api/Protobuf/labs/golang/pb;pb";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Enums: the first value MUST be 0 and is the default. Name it *_UNSPECIFIED.
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_USER = 1;
+  ROLE_ADMIN = 2;
+}
+
+message Address {
+  string street = 1;
+  string city = 2;
+  string zip = 3;
+}
+
+message User {
+  // Field numbers 1-15 cost ONE byte of tag; 16+ cost two. Give them to the hot fields.
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  Role role = 4;
+  repeated string tags = 5;              // packed automatically when scalar
+  map<string, string> attrs = 6;         // sugar for repeated {key,value} entries
+  Address address = 7;                   // nested message: absent (nil) vs present-but-empty
+
+  oneof contact {                        // at most ONE of these is set
+    string phone = 8;
+    string slack = 9;
+  }
+
+  optional int32 age = 10;               // `optional` restores "was it set?" for scalars
+  google.protobuf.Timestamp created_at = 11;
+  sint32 balance_delta = 12;             // sint* uses ZigZag: small negatives stay small
+  int32 legacy_score = 13;               // int32 with a negative value costs 10 bytes!
+  bool active = 14;
+  double rating = 15;
+  bytes avatar = 16;
+  repeated int32 scores = 17;            // repeated scalars are PACKED: one tag + one length + all values
+}
+
+message Event {
+  string id = 1;
+  google.protobuf.Any payload = 2;       // any message, tagged with its type URL
+  google.protobuf.Duration ttl = 3;
+}
+
+message UserPatch {
+  User user = 1;
+  google.protobuf.FieldMask update_mask = 2;   // "only touch these fields"
+}

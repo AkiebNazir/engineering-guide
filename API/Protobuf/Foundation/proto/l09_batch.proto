@@ -1,0 +1,17 @@
+// FOUNDATION LEVEL 09 - the schema for a tiny two-program pipeline:
+// one program writes a file of these, another program reads it back.
+syntax = "proto3";
+
+package found.l09;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l09;l09";
+
+message Sample {
+  int64 unix_millis = 1;
+  double value = 2;
+}
+
+message SensorBatch {
+  string device_id = 1;
+  repeated Sample samples = 2;
+}

@@ -1,0 +1,19 @@
+// FOUNDATION LEVEL 09 - authentication.
+// Notice: no token field. The credential travels in METADATA (level 07), and an
+// interceptor (level 08) checks it before this service's code ever runs.
+syntax = "proto3";
+
+package foundation.authn.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/authnpb;authnpb";
+
+service Identity {
+  rpc WhoAmI(WhoAmIRequest) returns (WhoAmIResponse);
+}
+
+message WhoAmIRequest {}
+
+message WhoAmIResponse {
+  string user = 1;
+  string role = 2;
+}

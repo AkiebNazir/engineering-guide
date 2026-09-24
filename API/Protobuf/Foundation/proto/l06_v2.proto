@@ -1,0 +1,27 @@
+// FOUNDATION LEVEL 06 (schema version 2) - a SAFE evolution of l06_v1.proto.
+//
+// Three rules are visible in this file:
+//   1. every field v1 had keeps its exact number and type   (1, 2, 3)
+//   2. the new field gets a brand-new, never-before-used number (4)
+//   3. a field that was deleted has its number AND name `reserved` forever,
+//      so no future edit can silently recycle it
+syntax = "proto3";
+
+package found.l06.v2;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l06v2;l06v2";
+
+message Order {
+  // Field 9 / `internal_note` existed briefly in a 1.5 release and was
+  // deleted. Reserving both the number and the name makes the compiler
+  // itself reject any attempt to reuse them - which is the only reliable
+  // defence, because old encoded bytes with tag 9 still exist in logs,
+  // queues and databases somewhere.
+  reserved 9;
+  reserved "internal_note";
+
+  int64 id = 1;
+  string sku = 2;
+  int32 qty = 3;
+  string currency = 4; // NEW in v2. v1 readers do not know it and must not break.
+}

@@ -1,0 +1,32 @@
+// FOUNDATION LEVEL 12 - the bridge to gRPC.
+//
+// Note what is here: two ORDINARY messages, exactly like every level before
+// this one, plus a `service` block. The service block is the only new thing
+// gRPC adds to a .proto file, and it generates a SEPARATE file via a
+// SEPARATE plugin (protoc-gen-go-grpc / grpcio-tools). The message codegen
+// in this folder is produced without that plugin, so the service block below
+// contributes exactly zero bytes to it - which is the point of the level.
+syntax = "proto3";
+
+package found.l12;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l12;l12";
+
+message EchoRequest {
+  string text = 1;
+}
+
+message EchoResponse {
+  string text = 1;
+  int32 length = 2;
+}
+
+// gRPC's whole contribution: "here is a function, its argument is one of my
+// messages and its result is another". Everything gRPC then does - HTTP/2
+// framing, streaming, deadlines, interceptors - is about MOVING these
+// messages, never about what is inside them.
+//
+// See ../../../gRPC/Foundation for that entire layer.
+service EchoService {
+  rpc Echo(EchoRequest) returns (EchoResponse);
+}

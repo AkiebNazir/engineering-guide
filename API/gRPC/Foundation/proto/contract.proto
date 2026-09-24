@@ -1,0 +1,38 @@
+// FOUNDATION LEVEL 01 - the .proto file IS the contract.
+// This is level 00's ping.proto after two edits: one new FIELD on an existing
+// message, and one new RPC on the existing service.
+syntax = "proto3";
+
+package foundation.contract.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/contractpb;contractpb";
+
+service Greeter {
+  rpc Ping(PingRequest) returns (PongResponse);
+
+  // EDIT #2: a brand new RPC. Adding an RPC is backward compatible - old
+  // clients simply never call it.
+  rpc Version(VersionRequest) returns (VersionResponse);
+}
+
+message PingRequest {
+  string name = 1;
+
+  // EDIT #1: a brand new field, with a NEW field number (never reuse 1).
+  // Old clients that do not set it send nothing and the server reads the
+  // proto3 default (0) - that is what "backward compatible" means concretely.
+  int32 times = 2;
+}
+
+message PongResponse {
+  string message = 1;
+  int32 count = 2;
+}
+
+// An empty request message is normal and correct. Every RPC takes exactly one
+// message type, even when it needs no input, so the contract can grow later.
+message VersionRequest {}
+
+message VersionResponse {
+  string version = 1;
+}

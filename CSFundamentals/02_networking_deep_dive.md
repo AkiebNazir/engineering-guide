@@ -1,0 +1,184 @@
+# L5 Deep Dive: Networking & Distributed Communication
+
+At the L5 level, you are expected to know what happens on the wire. When a distributed system misbehaves, the cause is often not the application code but connection setup, congestion control, TLS, DNS, or load balancer behavior. This file corrects several common simplifications; corrections are marked **Precision note**.
+
+## 0. What Happens When You Type `google.com` and Press Enter
+
+The most-asked networking question. Walk it layer by layer and stop to go deeper wherever the interviewer pushes.
+
+```text
+1. Browser  : parse URL, check HSTS preload (force https), check caches
+2. DNS      : browser cache → OS resolver cache → recursive resolver (ISP / 8.8.8.8)
+              recursive resolver → root → .com TLD → google.com authoritative → A/AAAA
+              (answers cached per TTL; Google uses anycast + geo-aware answers)
+3. TCP      : SYN → SYN-ACK → ACK       (1 RTT)      — or QUIC for HTTP/3
+4. TLS 1.3  : ClientHello(key_share) → ServerHello(key_share) + encrypted cert
+              + CertificateVerify + Finished → client Finished   (1 RTT)
+5. HTTP     : GET / over HTTP/2 (or HTTP/3); headers compressed (HPACK/QPACK)
+6. Edge     : anycast IP lands at a nearby Google front end (GFE); L4 then L7
+              load balancing; TLS terminated at the edge; request forwarded
+              over Google's backbone to a backend
+7. Backend  : search frontends fan out to many index shards, merge, rank
+8. Response : HTML streamed back; browser parses, builds DOM/CSSOM, fetches
+              subresources (often from cache/CDN), runs JS, paints
+```
+
+Numbers to mention: DNS usually a few ms when cached, tens of ms uncached; a same-continent RTT is ~20-80 ms; TCP+TLS 1.3 costs 2 RTTs on a new connection, HTTP/3 (QUIC) combines them into 1 RTT, and resumed QUIC sessions can send data in 0-RTT.
+
+## 1. TCP Fundamentals Before Congestion Control
+
+### Connection lifecycle
+- **Three-way handshake:** `SYN` (client ISN) → `SYN-ACK` (server ISN, ack client) → `ACK`. The server holds half-open state after SYN, which is what a **SYN flood** exhausts; **SYN cookies** encode that state into the ISN so no memory is held.
+- **Teardown:** `FIN`/`ACK` in each direction. The side that closes first enters **TIME_WAIT** for 2×MSL (commonly 60 s on Linux) so delayed segments from the old connection can't corrupt a new one with the same 4-tuple. A proxy that opens many short outbound connections can run out of ephemeral ports because of TIME_WAIT: use connection pooling / keep-alive.
+- **Flow control vs congestion control:** *flow control* protects the RECEIVER (the advertised receive window says how much it can buffer); *congestion control* protects the NETWORK (the congestion window, cwnd). The sender may transmit min(rwnd, cwnd).
+- **Nagle's algorithm + delayed ACKs** can add ~40 ms latency to small request/response writes. Latency-sensitive RPC stacks set `TCP_NODELAY`.
+
+## 2. TCP Congestion Control (CUBIC vs. BBR)
+
+TCP uses a **Congestion Window (cwnd)** to decide how much unacknowledged data can be in flight.
+
+```mermaid
+graph TD
+    subgraph CUBIC - Loss Based
+        C1["Slow Start: exponential growth from initial window"] --> C2["Congestion Avoidance: cubic growth"]
+        C2 --> C3["Packet Loss Detected!"]
+        C3 -->|"Multiplicative decrease (x0.7)"| C2
+    end
+    subgraph BBR - Model Based
+        B1["Probe Bandwidth"] --> B2["Measure min RTT"]
+        B2 --> B3["Build pipe model"]
+        B3 -->|"Pace sending rate to the model"| B1
+    end
+```
+
+<div class="lab" data-viz="tcp-bbr"></div>
+
+### The Classic Loss-Based Family: Reno and CUBIC
+*   **Slow Start:** cwnd starts at the **initial window** and roughly doubles every RTT until a threshold or loss. **Precision note:** the initial window is not 1 packet on modern stacks; Linux has used **10 segments** (IW10, RFC 6928) for over a decade. That is why small responses (~14 KB) fit in the first flight.
+*   **Congestion Avoidance:** Reno grows cwnd linearly (+1 MSS per RTT); **CUBIC** (the Linux default) grows along a cubic curve centered on the window size where the last loss happened, which recovers faster on high-bandwidth links.
+*   **On loss:** Reno halves cwnd. **Precision note:** CUBIC's multiplicative decrease uses β = 0.7, i.e. it cuts the window by 30%, not 50%.
+*   **The weakness:** loss-based algorithms treat *any* loss as congestion. On long, high-bandwidth paths with random (non-congestion) loss, such as cellular or intercontinental links, they back off unnecessarily. On routers with huge buffers they fill buffers before seeing loss, causing **bufferbloat** latency.
+
+### Google BBR (Model-Based)
+*   **BBR** = Bottleneck Bandwidth and Round-trip propagation time.
+*   It estimates the path's **bottleneck bandwidth** (max recent delivery rate) and **minimum RTT** (propagation delay), and paces sending to roughly that rate, periodically probing for more bandwidth and draining queues to re-measure min RTT.
+*   **Precision note:** BBR aims to operate near the optimal point (full bandwidth, minimal queueing). It does not "perfectly" avoid overflowing buffers. BBRv1 was criticized for high retransmission rates and unfairness to CUBIC flows in shallow buffers; **BBRv2/v3** added loss and ECN signals to address this.
+*   **L5 Insight:** BBR is a **sender-side** change (no client update needed). Google reported large throughput and latency improvements for YouTube and Google.com traffic, especially on lossy long-distance paths. It's a strong answer for "improve a global upload/download service" — framed as "measure; BBR often helps on lossy high-RTT paths," not as a guaranteed win.
+
+## 3. The HTTP Evolution
+
+```mermaid
+graph LR
+    subgraph "HTTP/1.1"
+        A["Request 1"] -->|Wait for Response 1| B["Request 2"]
+    end
+    subgraph "HTTP/2 (TCP)"
+        C["Stream A"] --> E["Single TCP conn"]
+        D["Stream B"] --> E
+        E -->|"TCP loss blocks ALL"| F["Head-of-Line Block"]
+    end
+    subgraph "HTTP/3 (QUIC/UDP)"
+        G["Stream A"] --> I["Independent UDP streams"]
+        H["Stream B"] --> I
+        I -->|"Loss in A does NOT block B"| J["No HoL blocking"]
+    end
+```
+
+### HTTP/1.1 (Application-Level Head-of-Line Blocking)
+*   Text-based. Keep-Alive reuses a TCP connection, but responses on one connection are serialized: request 2 waits for response 1. (Pipelining existed but was broken by proxies and disabled by browsers.)
+*   *Workaround:* browsers open ~6 connections per origin; sites used domain sharding and sprite sheets.
+
+### HTTP/2 (Multiplexing, TCP Head-of-Line Blocking)
+*   Binary framing. Many concurrent streams share **one** TCP connection; headers compressed with HPACK. gRPC runs on HTTP/2.
+*   *The flaw:* TCP delivers bytes in order. If one packet is lost, **all** streams wait for its retransmission even if their own data arrived. On lossy networks HTTP/2 over one connection can be slower than HTTP/1.1 over six.
+
+### HTTP/3 (QUIC)
+*   Runs over **UDP**, with reliability, ordering (per stream), and congestion control implemented in user space.
+*   Loss on stream A no longer blocks stream B: transport head-of-line blocking is gone.
+*   **Handshake:** QUIC integrates TLS 1.3 into its transport handshake, so a **new** connection is established in **1 RTT** (vs 2 RTTs for TCP + TLS 1.3). **Precision note:** **0-RTT** only applies when **resuming** a previous session with a cached key; 0-RTT data is replayable, so only idempotent requests should use it.
+*   **Connection migration:** connections are identified by connection IDs, not the IP/port 4-tuple, so a phone switching from Wi-Fi to cellular keeps its connection.
+
+### Real-time delivery options (see `SystemDesign/building_blocks/22_realtime_and_collaboration.md`)
+| Mechanism | Direction | Notes |
+|---|---|---|
+| Short polling | client pulls | Simple, wasteful |
+| Long polling | client pulls, server holds until data | Works everywhere; one request per message |
+| Server-Sent Events | server → client over HTTP | Auto-reconnect, text only, one direction |
+| WebSocket | full duplex after HTTP Upgrade | Chat, games, collaboration; needs sticky connection handling on LBs |
+
+## 4. Advanced Load Balancing Architectures
+
+```mermaid
+graph TD
+    Client -->|Request| LB["Load Balancer"]
+    LB -->|"L4: NAT, forward packets"| Backend1
+    LB -->|"L7: Terminate TLS, read HTTP"| Backend2
+    
+    subgraph DSR - Direct Server Return
+        Client2[Client] --> LB2["LB (forward only)"]
+        LB2 -->|"Modify MAC only"| Backend3
+        Backend3 -->|"5GB response DIRECTLY to client"| Client2
+    end
+```
+
+### Layer 4 (Transport) vs. Layer 7 (Application)
+*   **L4 load balancer:** Decides on IP/port (5-tuple). Forwards packets (NAT, encapsulation, or MAC rewrite) without reading HTTP. Very fast, protocol-agnostic, can't route by URL/header. Google's **Maglev** is a software L4 LB using consistent hashing so connections survive LB changes.
+*   **L7 load balancer / reverse proxy:** Terminates TCP and TLS, reads HTTP, opens its own connection (usually pooled) to the backend. Enables path/header routing, retries, rate limiting, WAF, auth, gRPC per-request balancing. Costs CPU and adds a hop. Envoy, Nginx, Google Front End (GFE).
+*   **Why L7 matters for gRPC:** HTTP/2 multiplexes many requests on one long-lived connection, so an L4 balancer pins all of a client's requests to one backend. Balance per request at L7, or use client-side load balancing.
+
+### Direct Server Return (DSR)
+In NAT-mode L4 balancing, responses flow back through the LB, which can bottleneck on large responses.
+*   **DSR:** The LB rewrites only the destination MAC and forwards the packet; the backend has the service IP (VIP) configured on a loopback interface and replies **directly** to the client. The LB sees only inbound traffic. Trade-off: the LB can't see responses (no response-based health signals) and backends must be on the same L2 segment (or use tunneling).
+
+### Balancing algorithms
+| Algorithm | Good for | Caveat |
+|---|---|---|
+| Round robin | Uniform requests | Ignores load differences |
+| Least connections / least outstanding requests | Variable request cost | Needs live counters |
+| Power of two random choices | Large fleets | Near-least-loaded with O(1) work, avoids herding |
+| Consistent hashing / Maglev / rendezvous | Affinity (caches, sessions) | Hot keys still hot |
+| Weighted | Heterogeneous hardware, canaries | Weights must be maintained |
+
+### Anycast Routing
+How does `8.8.8.8` answer quickly from most places?
+*   Many sites around the world announce the **same IP prefix** via **BGP**. Routers send packets to the topologically nearest announcement (by BGP policy, not strictly geographic distance).
+*   Gives network-level global load distribution and DDoS absorption (attack traffic is spread across sites). Works best for short-lived or stateless flows like DNS; long TCP flows can break if routing changes mid-connection, which is why Google terminates at an anycast edge and then routes internally.
+
+## 5. The TLS 1.3 Handshake
+
+If asked how HTTPS works, don't just say "it encrypts data." **Precision note:** in TLS 1.3 the key exchange happens *in* the Hello messages and the certificate is sent **encrypted**; older explanations describe TLS 1.2.
+
+1.  **ClientHello:** supported cipher suites, a random nonce, and a **key_share** (the client's ephemeral (EC)DHE public key, e.g. X25519), plus SNI (the hostname).
+2.  **ServerHello:** chosen cipher suite, server nonce, and the server's **key_share**. Both sides now compute the same shared secret via Diffie-Hellman; handshake keys are derived from it. Everything after this point is encrypted.
+3.  **Encrypted server messages:** `EncryptedExtensions`, `Certificate` (chain), `CertificateVerify` (a **signature** over the handshake transcript with the certificate's private key — this proves the server owns the certificate), and `Finished` (MAC over the transcript).
+4.  **Client verification:** check the certificate chain up to a trusted root CA, check the hostname matches, check validity and revocation policy (and Certificate Transparency in browsers), verify `CertificateVerify`, then send its own `Finished`.
+5.  **Application data:** symmetric AEAD encryption (AES-GCM or ChaCha20-Poly1305) with keys derived from the handshake. Symmetric crypto is used for bulk data because it's far faster than public-key operations.
+
+Properties to name: **forward secrecy** (ephemeral keys — a stolen server private key can't decrypt past traffic), **1-RTT full handshake**, optional **0-RTT resumption** (replayable), **mTLS** (client also presents a certificate; standard for service-to-service auth, e.g. Google's ALTS internally, SPIFFE/Istio elsewhere).
+
+## 6. DNS in More Depth
+
+| Record | Purpose |
+|---|---|
+| A / AAAA | IPv4 / IPv6 address |
+| CNAME | Alias to another name (not allowed at the zone apex) |
+| MX | Mail servers |
+| NS | Delegation to authoritative servers |
+| TXT | Verification, SPF/DKIM |
+| SRV | Service host + port |
+
+- **TTL trade-off:** short TTLs allow fast failover and traffic shifting but increase resolver load and latency; long TTLs are cheap but slow to change. Resolvers and clients don't always honor TTLs exactly.
+- **GeoDNS / latency-based DNS:** return different answers by resolver location (EDNS Client Subnet improves accuracy).
+- **DNS is a dependency:** cache results, set timeouts, and don't resolve per request in hot paths.
+- **UDP by default, TCP for large responses;** DNS over HTTPS/TLS for privacy.
+
+## Interview checklist
+
+- [ ] I can walk through "type google.com" from HSTS to paint, going deep on any layer.
+- [ ] I can explain TIME_WAIT, SYN cookies, flow vs congestion control, and Nagle.
+- [ ] I can compare CUBIC and BBR precisely (IW10, β = 0.7, BBR's model).
+- [ ] I can explain HTTP/2 vs HTTP/3 head-of-line blocking and QUIC 1-RTT vs 0-RTT.
+- [ ] I can explain L4 vs L7, DSR, and why gRPC needs per-request balancing.
+- [ ] I can describe the TLS 1.3 handshake correctly, including CertificateVerify and forward secrecy.
+
+Related: `SystemDesign/building_blocks/02_networking.md`, `13_scaling_and_load_balancing.md`, `22_realtime_and_collaboration.md`; GoEngineering topic 34.

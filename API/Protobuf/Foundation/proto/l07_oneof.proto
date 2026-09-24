@@ -1,0 +1,20 @@
+// FOUNDATION LEVEL 07 - oneof: "exactly one of these, never two".
+syntax = "proto3";
+
+package found.l07;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l07;l07";
+
+message Payment {
+  int64 amount_cents = 1;
+
+  // The members of a oneof still have ordinary, unique field numbers - the
+  // oneof is not a wire-format feature, it is a GENERATED-CODE feature. On
+  // the wire only one of tags 2/3/4 is ever present; the generated setters
+  // are what enforce that, by clearing the others for you.
+  oneof method {
+    string card_token = 2;
+    string bank_iban = 3;
+    string wallet_id = 4;
+  }
+}

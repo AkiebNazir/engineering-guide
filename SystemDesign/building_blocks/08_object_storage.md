@@ -1,0 +1,104 @@
+# Object Storage
+
+Object storage (S3-like) holds large, unstructured blobs — images, video, documents, backups, exports — as opaque objects addressed by key, with metadata but no query language. It is not a database and not a filesystem; treat it as durable, cheap, horizontally-scaled bytes-at-rest, and keep everything queryable (owner, status, content hash, size, access rules) in your actual database instead.
+
+## Why not a DB BLOB or a filesystem on one box
+
+| Option | Problem |
+|---|---|
+| BLOB column in the relational DB | Bloats table/index size, slows backups and replication (the whole row set now includes megabytes of binary), and burns transactional-database capacity on something that doesn't need transactions or joins. |
+| Filesystem on a single application/box | Not durable past that box (no built-in replication), doesn't scale past that disk, and ties file availability to that specific instance being up — breaks the "any healthy instance can serve" property of a stateless app tier. |
+| Object storage | Durable by replication across the service, scales independently of the app tier, and the app never touches the bytes directly — it just authorizes access. |
+
+The rule: your database holds the *fact* that an object exists and its metadata; object storage holds the *bytes*. Losing the bytes and losing the fact are different failure modes and should be handled separately.
+
+## Direct/presigned upload flow
+
+Routing large file bytes through your application servers wastes their capacity on pass-through I/O and pushes bandwidth cost onto infrastructure that should be doing business logic. Let the client upload directly to object storage instead, authorized by a short-lived signed URL.
+
+```mermaid
+%% caption: The API server never sees the file bytes — it only issues authorization, the same shape as the CDN/edge principle.
+sequenceDiagram
+    actor Client
+    participant API
+    participant Obj as Object storage
+    participant Worker as Async worker
+    participant DB
+
+    Client->>API: "I want to upload a file"
+    API->>API: authorize, generate short-lived signed upload URL
+    API-->>Client: signed URL + object key
+    Client->>Obj: PUT bytes directly
+    Obj-->>Worker: object created event
+    Worker->>Worker: validate → scan → transform
+    Worker->>DB: status PENDING → READY (or REJECTED)
+```
+
+The API server never sees the file bytes — it only issues authorization. This is the same shape as the CDN/edge principle: keep large-byte traffic off the tier that runs your business logic.
+
+## Content validation after upload
+
+Never trust a client-supplied MIME type, filename, or file extension — a client can label anything `image/png` and it's just a request header, not a guarantee about the bytes. After upload, a worker must:
+
+- Sniff the actual content type from the byte signature (magic bytes), not the client's claimed `Content-Type`.
+- Reject or re-derive the extension/type from the real content, not the filename.
+- Run malware/virus scanning before the object is marked usable, for anything a user can upload and another user can later retrieve.
+- Enforce size limits server-side (signed URL can cap size, and the worker double-checks).
+
+The object's DB row should stay in a `PENDING`/`UNVERIFIED` state — not linkable or servable to other users — until validation completes and flips it to `READY`. This closes the gap where a client uploads something malicious and other users could fetch it before scanning finishes.
+
+## Event-driven post-processing
+
+Object storage upload events are the natural trigger for everything that has to happen to the object before it's usable: thumbnailing an image, transcoding a video into multiple resolutions, extracting text from a document, running a malware scanner. This keeps heavy transformation work off the request path entirely — the upload succeeds immediately, and derivative generation happens asynchronously.
+
+```mermaid
+%% caption: Heavy transformation work stays off the request path entirely — the upload already succeeded before any of this runs.
+sequenceDiagram
+    participant Obj as Object storage
+    participant Queue
+    participant Thumb as Thumbnail generator
+    participant Scanner as Malware scanner
+    participant Trans as Transcoder
+
+    Obj->>Queue: object created event
+    par
+        Queue->>Thumb: dequeue
+        Thumb->>Thumb: writes derivative object + DB row
+    and
+        Queue->>Scanner: dequeue
+        Scanner->>Scanner: flips status or quarantines
+    and
+        Queue->>Trans: dequeue
+        Trans->>Trans: writes multiple resolution variants
+    end
+```
+
+See `09_messaging_and_streaming.md` for the queue/worker mechanics (visibility timeout, retries, DLQ) that make this reliable — an object storage event is just another producer into that same async-work machinery.
+
+## Lifecycle tiers and expiry
+
+Object storage classes typically split into hot (frequent access, higher per-GB cost), cool/infrequent-access (cheaper storage, retrieval fee), and archive (cheapest storage, slow/expensive retrieval, meant for compliance retention or backups nobody expects to read soon). Define a lifecycle policy per object class up front:
+
+| Tier | Use for | Cost shape |
+|---|---|---|
+| Hot | Actively served user content (profile photos, current catalog images). | Higher storage cost, cheap/fast retrieval. |
+| Cool/infrequent | Older content still occasionally accessed (past order invoices). | Lower storage cost, retrieval fee applies. |
+| Archive | Compliance retention, backups, rarely-if-ever read. | Lowest storage cost, slow and costly to retrieve. |
+
+Automate the transition (e.g., "move to cool after 90 days of no access") and set explicit expiry for anything with a retention policy — logs, temp exports, expired user uploads — rather than relying on someone to remember to delete it manually.
+
+## Multipart / resumable upload
+
+For large files (video, large datasets), a single PUT is fragile — one network blip and the whole upload restarts. Multipart upload splits the file into chunks uploaded independently (and in parallel), each acknowledged separately, with a final "complete multipart upload" call that stitches the parts together server-side. This bounds retry cost to one failed chunk instead of the whole file, and enables resuming an interrupted upload from where it left off rather than from zero. Use it above a size threshold (commonly a low tens-of-MB cutoff) — below that, the coordination overhead isn't worth it.
+
+## Delete propagation to derivatives
+
+Deleting an object is rarely just one object. A user photo might have a thumbnail, a few resized variants, and a CDN-cached copy. Deleting the source object without propagating to its derivatives leaves orphaned data (a compliance problem for user-requested deletion) and dangling references (a correctness problem — code that expects the thumbnail to exist). Track derivative relationships in the DB (a `parent_object_id` or similar), and make delete a workflow: mark source deleted → enqueue derivative cleanup → invalidate any CDN cache entries → confirm all derivatives gone before considering the delete complete. Treat "delete" the same way you'd treat any other multi-step operation with partial-failure risk — see the saga pattern in `12_application_resilience_patterns.md`.
+
+## Related building blocks
+
+- [09_messaging_and_streaming.md](09_messaging_and_streaming.md)
+- [05_databases.md](05_databases.md)
+- [14_security.md](14_security.md)
+- [13_scaling_and_load_balancing.md](13_scaling_and_load_balancing.md)
+- [16_platform_and_infra.md](16_platform_and_infra.md)

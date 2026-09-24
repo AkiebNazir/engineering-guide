@@ -1,0 +1,44 @@
+# gRPC Foundation - ground zero to a complete, secured RPC service
+
+This is the on-ramp *before* `../Theory.md` and `../labs/`. Each level is a
+tiny, self-contained, runnable file in **both** `python/` and `golang/` -
+same lesson, same demo shape, two languages side by side. Every file prints
+`OK` when it passes its own built-in checks.
+
+Every level that needs a contract owns its **own** small `.proto` in `proto/`,
+so no level depends on another level's types. The generated stubs are committed,
+so the levels run straight out of a fresh clone.
+
+Run any Python level:  `python gRPC/Foundation/python/00_single_unary_rpc_end_to_end.py`
+Run any Go level:      `go run ./gRPC/Foundation/golang/00_single_unary_rpc_end_to_end`
+Regenerate the stubs:  `./gRPC/Foundation/generate.sh`  (only needed if you EDIT a `.proto`)
+
+| # | Level | The one new idea |
+|---|---|---|
+| 00 | Single unary RPC, explained end to end | What "a basic gRPC endpoint" actually is: one `.proto`, generated stubs, one server, one client call - REST's request/response loop with a strict binary contract instead of a URL+JSON convention |
+| 01 | The `.proto` contract | The contract-first workflow: edit the `.proto`, regenerate, *then* write code; field numbers are the wire identity |
+| 02 | Unary request and response fields | The generated types *are* the "JSON in / JSON out" step - typed fields, zero values, no parsing |
+| 03 | Server-streaming RPC | One request, many responses: `stream` on the return type, and `yield` / `Send` |
+| 04 | Client-streaming RPC | Many requests, one response: `stream` on the request, half-close, one answer at the end |
+| 05 | Bidirectional streaming | Both directions stream independently - the fourth and last RPC shape |
+| 06 | Status codes | gRPC's deliberate error vocabulary, mapped against REST's HTTP codes, and which codes are retryable |
+| 07 | Metadata | gRPC's headers: request metadata in, initial and *trailing* metadata out - things HTTP/1.1 cannot do |
+| 08 | Middleware = **interceptors** | Wrapping every RPC instead of editing handlers: logging + panic recovery, chained, with order mattering |
+| 09 | Authentication | "Who is this?" - a token read from metadata in an interceptor; missing or invalid -> `UNAUTHENTICATED` |
+| 10 | Authorization | "What may they do?" - a role check in a *second* interceptor layered on 09; wrong role -> `PERMISSION_DENIED` |
+| 11 | Complete, protected service | Everything above, combined: a public read RPC, an authenticated write, an admin-only delete |
+| 12 | Being a client | Calling a service instead of serving one: deadlines on every call, and retrying `UNAVAILABLE` with exponential backoff |
+| 13 | Bonus: generated code and raw wire bytes | Optional deep dive - what protoc actually emitted, and level 00's message hand-decoded with no protobuf library (read any time after level 00) |
+
+**Where to go next:** level 11 is the same shape as
+`../labs/golang/03_interceptor_chain` and
+`../labs/python/03_interceptors_auth_logging_ratelimit.py` - once level 11 feels
+easy, `../labs/` (rich `errdetails` error payloads, mTLS service identity,
+streaming flow control and cancellation, deadline propagation across hops,
+health checking, server reflection, graceful shutdown, asyncio servers and
+client-side load balancing) is the very next step, not a jump.
+`../Theory.md` covers the *why* (HTTP/2 framing, the four RPC shapes, channel
+and connection management, when gRPC beats REST and when it does not) behind
+everything these files do in code. For the other half of the story - the
+message and wire format itself, rather than the RPC layer built on top of it -
+read `../../Protobuf/Foundation`, which is what level 13 is a one-page preview of.

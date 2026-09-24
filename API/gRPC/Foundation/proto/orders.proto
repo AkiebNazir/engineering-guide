@@ -1,0 +1,25 @@
+// FOUNDATION LEVEL 02 - real request and response fields.
+// The generated types for these two messages ARE this level's "JSON in / JSON out".
+syntax = "proto3";
+
+package foundation.orders.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/orderspb;orderspb";
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+}
+
+message CreateOrderRequest {
+  string sku = 1;
+  int32 quantity = 2;
+  string currency = 3;
+  bool gift_wrap = 4; // snake_case in the .proto; the generator renames it per language
+}
+
+message CreateOrderResponse {
+  string order_id = 1;
+  int64 total_cents = 2; // money as integer minor units, never a float
+  string currency = 3;
+  repeated string notes = 4; // "repeated" = a list / slice
+}

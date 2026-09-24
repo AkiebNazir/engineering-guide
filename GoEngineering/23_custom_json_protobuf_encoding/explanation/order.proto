@@ -1,0 +1,28 @@
+// order.proto — reference copy of the wire schema you'll implement against.
+//
+// This file is documentation only in the explanation/ package: it is NOT
+// compiled by protoc here (the explanation package is Go-only and must
+// build with `go build` alone, no code-generation step). The solution/
+// directory holds the real .proto plus its generated orderpb package —
+// read solution/order.proto for the exact `protoc` invocation used.
+//
+// Your job while working the explanation package is to implement the Go
+// conversion functions (ToProto / FromProto) against a schema shaped like
+// this one; you do not need to run protoc yourself to complete the
+// exercise, but you're encouraged to, to see what protoc-gen-go emits.
+syntax = "proto3";
+
+package orderpb;
+
+option go_package = "goengineering/23_custom_json_protobuf_encoding/solution/orderpb";
+
+message Order {
+  string id = 1;
+  string customer_id = 2;
+  int64 amount_cents = 3;
+  string currency = 4;
+  repeated string items = 5;
+  int64 created_at_unix = 6;
+  optional string notes = 7;
+  bytes metadata_json = 8;
+}

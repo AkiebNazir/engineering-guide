@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package shop.v1;
+
+option go_package = "dsapractice/api/gRPC/labs/golang/shoppb;shoppb";
+
+// The four RPC shapes, all in one small service.
+service Catalog {
+  // 1. Unary: one request, one response (like a normal function call).
+  rpc GetProduct(GetProductRequest) returns (Product);
+
+  // 2. Server streaming: one request, many responses.
+  rpc ListProducts(ListProductsRequest) returns (stream Product);
+
+  // 3. Client streaming: many requests, one response.
+  rpc UploadMetrics(stream Metric) returns (UploadSummary);
+
+  // 4. Bidirectional streaming: both sides send whenever they like.
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}
+
+message Product {
+  int64 id = 1;
+  string name = 2;
+  int64 price_cents = 3;   // money as integer minor units, never floats
+  int32 stock = 4;
+}
+
+message GetProductRequest { int64 id = 1; }
+
+message ListProductsRequest {
+  string name_prefix = 1;
+  int32 limit = 2;
+}
+
+message Metric {
+  string name = 1;
+  double value = 2;
+}
+
+message UploadSummary {
+  int32 count = 1;
+  double sum = 2;
+  double avg = 3;
+}
+
+message ChatMessage {
+  string from = 1;
+  string text = 2;
+}

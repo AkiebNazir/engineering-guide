@@ -1,0 +1,24 @@
+// FOUNDATION LEVEL 03 - server streaming: one request, many responses.
+syntax = "proto3";
+
+package foundation.ticker.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/tickerpb;tickerpb";
+
+service Ticker {
+  // The "stream" keyword on the RETURN type is the entire difference between
+  // a unary RPC and a server-streaming one.
+  rpc Countdown(CountdownRequest) returns (stream Tick);
+}
+
+message CountdownRequest {
+  // Named "start", not "from": "from" is a keyword in Python (and several other
+  // target languages), and protoc does NOT rename fields for you. Picking
+  // language-neutral field names is a real part of designing a .proto.
+  int32 start = 1;
+}
+
+message Tick {
+  int32 value = 1;
+  bool last = 2;
+}

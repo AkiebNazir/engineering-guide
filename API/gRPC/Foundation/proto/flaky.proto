@@ -1,0 +1,25 @@
+// FOUNDATION LEVEL 12 - being a client: deadlines and retry-with-backoff.
+// The server exists only to fail in a controlled, transient way.
+syntax = "proto3";
+
+package foundation.flaky.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/flakypb;flakypb";
+
+service Flaky {
+  rpc Fetch(FetchRequest) returns (FetchResponse);
+  rpc Slow(SlowRequest) returns (SlowResponse); // always takes longer than the deadline
+}
+
+message FetchRequest {}
+
+message FetchResponse {
+  string status = 1;
+  int32 attempt = 2;
+}
+
+message SlowRequest {}
+
+message SlowResponse {
+  string status = 1;
+}

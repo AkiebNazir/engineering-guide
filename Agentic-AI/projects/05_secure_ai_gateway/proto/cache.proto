@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package semanticcache;
+
+option go_package = "./pb";
+
+service SemanticCacheService {
+  rpc CheckCache (CacheRequest) returns (CacheResponse) {}
+  rpc SetCache (SetCacheRequest) returns (SetCacheResponse) {}
+}
+
+message CacheRequest {
+  string prompt = 1;
+}
+
+message CacheResponse {
+  bool hit = 1;
+  string cached_response = 2;
+  float similarity_score = 3;
+}
+
+message SetCacheRequest {
+  string prompt = 1;
+  string response = 2;
+}
+
+message SetCacheResponse {
+  bool success = 1;
+}

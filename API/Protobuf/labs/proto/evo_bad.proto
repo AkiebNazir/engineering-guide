@@ -1,0 +1,9 @@
+syntax = "proto3";
+package evo.bad;
+
+// THE MISTAKE: tag 3 used to be `string phone`. Someone reused it for something else.
+message Customer {
+  int64 id = 1;
+  string name = 2;
+  string nickname = 3;
+}

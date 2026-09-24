@@ -1,0 +1,4 @@
+# Curriculum targets Python 3.12+ (see ../README.md). Scoped to this
+# directory so ruff resolves builtins/syntax (e.g. ExceptionGroup,
+# asyncio.TaskGroup usage) against 3.12 instead of its conservative default.
+target-version = "py312"

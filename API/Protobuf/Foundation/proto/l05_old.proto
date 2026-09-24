@@ -1,0 +1,20 @@
+// FOUNDATION LEVEL 05 (the OLDER schema) - knows only three Status values.
+// An older client that has not been redeployed yet uses this file, and will
+// be handed STATUS_ARCHIVED (= 3) by the newer service.
+syntax = "proto3";
+
+package found.l05.old;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l05old;l05old";
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_QUEUED = 1;
+  STATUS_RUNNING = 2;
+  // STATUS_ARCHIVED = 3;  <- does not exist yet in this build
+}
+
+message Job {
+  string id = 1;
+  Status status = 2;
+}

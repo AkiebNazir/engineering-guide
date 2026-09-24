@@ -1,0 +1,1217 @@
+{
+  "docs": {
+    "agentic:01_generative_ai_internals": {
+      "last": 1789653849039,
+      "pct": 100,
+      "pos": 0.0227
+    },
+    "agentic:02_agentic_ai_internals": {
+      "last": 1789653855357
+    },
+    "agentic:03_rag_deep_dive": {
+      "last": 1789653855972
+    },
+    "agentic:04_vector_databases_internals": {
+      "last": 1789653856655
+    },
+    "agentic:05_graph_databases_and_graphrag": {
+      "last": 1789654035229,
+      "pct": 100,
+      "pos": 0.9694
+    },
+    "api:Fundamentals/01_api_fundamentals": {
+      "last": 1790094711939,
+      "pos": 0
+    },
+    "api:Fundamentals/04_choosing_the_right_api": {
+      "last": 1790006173477
+    },
+    "api:GraphQL/Theory": {
+      "last": 1790102632570,
+      "pct": 51,
+      "pos": 0.1424
+    },
+    "api:Protobuf/Protobuf_Guide": {
+      "last": 1789925751511,
+      "pct": 100,
+      "pos": 0.9255
+    },
+    "api:Protobuf/Protobuf_Masterclass_Guide": {
+      "last": 1789925737421,
+      "pct": 100,
+      "pos": 0.8604
+    },
+    "api:Protobuf/Theory": {
+      "last": 1790102637595,
+      "pct": 32,
+      "pos": 0.3112
+    },
+    "api:REST/REST_API_Guide": {
+      "last": 1789925733611,
+      "pct": 100,
+      "pos": 0.9283
+    },
+    "api:REST/REST_Masterclass_Guide": {
+      "last": 1789925732978,
+      "pct": 100,
+      "pos": 0.8635
+    },
+    "api:REST/Theory": {
+      "last": 1790006170088
+    },
+    "api:SOAP/Theory": {
+      "last": 1790006189314
+    },
+    "api:WebSockets/Theory": {
+      "last": 1790006190700
+    },
+    "api:WebSockets/WebSockets_Guide": {
+      "last": 1789925732594,
+      "pct": 100,
+      "pos": 0.9509
+    },
+    "api:WebSockets/WebSockets_Masterclass_Guide": {
+      "last": 1789925732093,
+      "pct": 100,
+      "pos": 0.8493
+    },
+    "api:Webhooks/Theory": {
+      "last": 1790006202156
+    },
+    "api:gRPC/Theory": {
+      "last": 1790006237872
+    },
+    "api:gRPC/gRPC_Guide": {
+      "last": 1789925731470,
+      "pct": 100,
+      "pos": 0.9486
+    },
+    "api:gRPC/gRPC_Masterclass_Guide": {
+      "last": 1789925730760,
+      "pct": 100,
+      "pos": 0.9239
+    },
+    "behavioral:02_star_method_blueprints": {
+      "last": 1789500235413,
+      "pos": 0
+    },
+    "csfund:01_operating_systems_deep_dive": {
+      "last": 1790264243160,
+      "pct": 100,
+      "pos": 0.9289
+    },
+    "csfund:02_networking_deep_dive": {
+      "last": 1790264245330,
+      "pct": 100,
+      "pos": 0.9342
+    },
+    "csfund:03_databases_deep_dive": {
+      "last": 1790264249796,
+      "pct": 100,
+      "pos": 0.933
+    },
+    "csfund:04_software_engineering_deep_dive": {
+      "last": 1790264250957,
+      "pos": 0
+    },
+    "dsaguide:01_arrays_hashing": {
+      "last": 1790240260057,
+      "pct": 100,
+      "pos": 0
+    },
+    "dsaguide:02_two_pointers": {
+      "last": 1790240262395,
+      "pct": 100,
+      "pos": 0
+    },
+    "dsaguide:03_sliding_window": {
+      "last": 1790240264312,
+      "pct": 100,
+      "pos": 0
+    },
+    "dsaguide:04_prefix_sum": {
+      "last": 1790240266186,
+      "pct": 100,
+      "pos": 0
+    },
+    "dsaguide:05_binary_search": {
+      "last": 1790240268086
+    },
+    "dsaguide:06_stack": {
+      "last": 1790240269966
+    },
+    "dsaguide:07_queue_deque": {
+      "last": 1790240271839
+    },
+    "dsaguide:08_linked_list": {
+      "last": 1790240273743
+    },
+    "dsaguide:09_recursion_backtracking": {
+      "last": 1790240275635
+    },
+    "dsaguide:10_trees": {
+      "last": 1790240277519
+    },
+    "dsaguide:11_binary_search_tree": {
+      "last": 1790240279403
+    },
+    "dsaguide:12_heap_priority_queue": {
+      "last": 1790240281296
+    },
+    "dsaguide:13_trie": {
+      "last": 1790240283184
+    },
+    "dsaguide:14_graphs": {
+      "last": 1790240285030
+    },
+    "dsaguide:15_advanced_graphs": {
+      "last": 1790240286907
+    },
+    "dsaguide:16_dp_1d": {
+      "last": 1790240288800
+    },
+    "dsaguide:17_dp_2d": {
+      "last": 1790240290675
+    },
+    "dsaguide:18_greedy": {
+      "last": 1790240292547
+    },
+    "dsaguide:19_intervals": {
+      "last": 1790240294418
+    },
+    "dsaguide:20_bit_manipulation": {
+      "last": 1790240296303
+    },
+    "dsaguide:21_math_geometry": {
+      "last": 1790240298184
+    },
+    "dsaguide:22_sorting_algorithms": {
+      "last": 1790240300053
+    },
+    "dsaguide:23_string_algorithms": {
+      "last": 1790240301924
+    },
+    "dsaguide:24_matrix": {
+      "last": 1790240303810,
+      "pct": 100,
+      "pos": 0
+    },
+    "dsaguide:25_design": {
+      "last": 1790240305692
+    },
+    "dsaguide:26_segment_tree_fenwick": {
+      "last": 1790240307575
+    },
+    "dsaguide:27_algorithms": {
+      "last": 1790240309464
+    },
+    "dsaguide:28_recursion_backtracking": {
+      "last": 1790240311344
+    },
+    "dsaguidego:01_arrays_hashing": {
+      "last": 1790240199355,
+      "pct": 93,
+      "pos": 0.3553
+    },
+    "dsaguidego:02_two_pointers": {
+      "last": 1790240201333,
+      "pct": 99,
+      "pos": 0.418
+    },
+    "dsaguidego:03_sliding_window": {
+      "last": 1790240203209,
+      "pos": 0
+    },
+    "dsaguidego:04_prefix_sum": {
+      "last": 1790240204132
+    },
+    "dsaguidego:05_binary_search": {
+      "last": 1790240206004
+    },
+    "dsaguidego:06_stack": {
+      "last": 1790240207885
+    },
+    "dsaguidego:07_queue_deque": {
+      "last": 1790240209763
+    },
+    "dsaguidego:08_linked_list": {
+      "last": 1790240211648
+    },
+    "dsaguidego:09_recursion_backtracking": {
+      "last": 1790240213520
+    },
+    "dsaguidego:10_trees": {
+      "last": 1790240215400
+    },
+    "dsaguidego:11_binary_search_tree": {
+      "last": 1790240217283
+    },
+    "dsaguidego:12_heap_priority_queue": {
+      "last": 1790240219173
+    },
+    "dsaguidego:13_trie": {
+      "last": 1790240221048
+    },
+    "dsaguidego:14_graphs": {
+      "last": 1790240222915
+    },
+    "dsaguidego:15_advanced_graphs": {
+      "last": 1790240224787
+    },
+    "dsaguidego:16_dp_1d": {
+      "last": 1790240226667
+    },
+    "dsaguidego:17_dp_2d": {
+      "last": 1790240228536
+    },
+    "dsaguidego:18_greedy": {
+      "last": 1790240230401
+    },
+    "dsaguidego:19_intervals": {
+      "last": 1790240232268
+    },
+    "dsaguidego:20_bit_manipulation": {
+      "last": 1790240234144
+    },
+    "dsaguidego:21_math_geometry": {
+      "last": 1790240236004
+    },
+    "dsaguidego:22_sorting_algorithms": {
+      "last": 1790240237881
+    },
+    "dsaguidego:23_string_algorithms": {
+      "last": 1790240239748
+    },
+    "dsaguidego:24_matrix": {
+      "last": 1790240241602
+    },
+    "dsaguidego:25_design": {
+      "last": 1790240243480
+    },
+    "dsaguidego:26_segment_tree_fenwick": {
+      "last": 1790240245369
+    },
+    "dsaguidego:27_algorithms": {
+      "last": 1790240441316
+    },
+    "dsaguidego:28_recursion_backtracking": {
+      "last": 1790240439672,
+      "pct": 92,
+      "pos": 0.8876
+    },
+    "library:14_langgraph": {
+      "last": 1790178714309,
+      "pct": 89,
+      "pos": 0.7531
+    },
+    "nosql:concepts/02_interview_playbook": {
+      "last": 1790174609621
+    },
+    "nosql:mongodb/09_transactions_in_mongodb": {
+      "last": 1790179701824
+    },
+    "nosql:redis/08_distributed_locking": {
+      "last": 1790179701118
+    },
+    "roadmap:0_day_prerequisites_and_notation": {
+      "last": 1789496736318,
+      "pct": 100,
+      "pos": 0
+    },
+    "roadmap:1_day_vectors_dot_products": {
+      "last": 1789654487649,
+      "pct": 94,
+      "pos": 0
+    },
+    "roadmap:2_day_matrix_operations": {
+      "last": 1789654600888,
+      "pct": 100,
+      "pos": 0
+    },
+    "roadmap:3_day_eigenvalues_eigenvectors": {
+      "last": 1789654616028,
+      "pct": 23,
+      "pos": 0
+    },
+    "roadmap:4_day_svd_matrix_approximation": {
+      "last": 1789654705110,
+      "pct": 41,
+      "pos": 0
+    },
+    "roadmap:5_day_norms_distances": {
+      "last": 1789654778846,
+      "pct": 14,
+      "pos": 0.0721
+    },
+    "roadmap:61_day_self_attention": {
+      "last": 1789655082545,
+      "pct": 26,
+      "pos": 0.1268
+    },
+    "roadmap:6_day_matrix_calculus_jacobians": {
+      "last": 1789654899878,
+      "pct": 55,
+      "pos": 0
+    },
+    "sd:00_google_l5_playbook": {
+      "last": 1789621956624,
+      "pct": 100,
+      "pos": 0
+    },
+    "sd:02_problem_catalog": {
+      "last": 1789621963920,
+      "pos": 0
+    },
+    "sd:03_practice_prompts": {
+      "last": 1789674806927,
+      "pct": 100,
+      "pos": 0
+    },
+    "sd:04_practice_answers": {
+      "last": 1789654342735,
+      "pct": 100,
+      "pos": 0
+    },
+    "sd:05_architecture_blueprints": {
+      "last": 1789674815559,
+      "pct": 95,
+      "pos": 0.5082
+    },
+    "sd:best_practices/07_anti_patterns_and_code_smells": {
+      "last": 1789622058241,
+      "pct": 90,
+      "pos": 0.7837
+    },
+    "sd:building_blocks/00_overview": {
+      "last": 1790178028374
+    },
+    "sd:building_blocks/13_scaling_and_load_balancing": {
+      "last": 1789507035681
+    },
+    "sd:building_blocks/19_consensus_and_coordination": {
+      "last": 1789507035681
+    },
+    "sd:building_blocks/21_batch_and_stream_processing": {
+      "last": 1789655124583,
+      "pct": 77,
+      "pos": 0.0592
+    },
+    "sd:guide": {
+      "last": 1789675028943,
+      "pct": 100,
+      "pos": 0.1965
+    },
+    "sd:problem/001_url_shortener": {
+      "coach": {
+        "checks": {},
+        "elapsed": 0,
+        "notes": {},
+        "phase": 0
+      },
+      "last": 1790264823272,
+      "pct": 100,
+      "pos": 0.9635,
+      "revealed": true,
+      "revealedAt": 1790264606595,
+      "reveals": 2
+    },
+    "sd:problem/002_rate_limiter": {
+      "last": 1790264883855,
+      "pct": 100,
+      "pos": 0.9597,
+      "revealed": true,
+      "revealedAt": 1790264829635,
+      "reveals": 7
+    },
+    "sd:problem/003_pastebin": {
+      "last": 1789671571659,
+      "pct": 100,
+      "pos": 0.4928,
+      "revealed": true,
+      "revealedAt": 1789671557161,
+      "reveals": 2
+    },
+    "sd:problem/004_notification_platform": {
+      "last": 1789674741220,
+      "pct": 100,
+      "pos": 0.9382,
+      "revealed": true,
+      "revealedAt": 1789674603088,
+      "reveals": 1
+    },
+    "sd:problem/005_photo_pipeline": {
+      "last": 1790178532326,
+      "pct": 100,
+      "pos": 0.218,
+      "revealed": true,
+      "revealedAt": 1790178530142,
+      "reveals": 2
+    },
+    "sd:problem/006_chat": {
+      "coach": {
+        "checks": {},
+        "elapsed": 0,
+        "notes": {},
+        "phase": 0
+      },
+      "last": 1790178651021,
+      "pct": 100,
+      "pos": 0.1915,
+      "revealed": true,
+      "revealedAt": 1790178648975,
+      "reveals": 2
+    },
+    "sd:problem/009_search_and_autocomplete": {
+      "last": 1789674571742,
+      "pct": 93,
+      "pos": 0.6215,
+      "revealed": true,
+      "revealedAt": 1789674500221,
+      "reveals": 1
+    },
+    "sd:problem/012_workflow_scheduler": {
+      "last": 1790178658138,
+      "pct": 72,
+      "pos": 0.2449,
+      "revealed": true,
+      "revealedAt": 1790178656216,
+      "reveals": 1
+    },
+    "sd:problem/023_distributed_key_value_store": {
+      "last": 1790174574650,
+      "pct": 45,
+      "pos": 0.1981,
+      "revealed": true,
+      "revealedAt": 1790174572948,
+      "reveals": 2
+    },
+    "sd:problem/026_nearby_places": {
+      "last": 1789674467955,
+      "pct": 100,
+      "pos": 0,
+      "revealed": true,
+      "revealedAt": 1789674410689,
+      "reveals": 1
+    },
+    "sd:problem/028_top_k_trending": {
+      "last": 1790177562560,
+      "pct": 100,
+      "pos": 0.2181,
+      "revealed": true,
+      "revealedAt": 1790177561337,
+      "reveals": 5
+    },
+    "sd:problem/030_llm_assistant_feature": {
+      "last": 1790174743361,
+      "pct": 100,
+      "pos": 0.2093,
+      "revealed": true,
+      "revealedAt": 1790174741449,
+      "reveals": 2
+    },
+    "sd:problem/039_social_graph_service": {
+      "last": 1790264596183,
+      "pct": 97,
+      "pos": 0.7213,
+      "revealed": true,
+      "revealedAt": 1790264521831,
+      "reveals": 1
+    },
+    "sd:problem/040_distributed_lock_service": {
+      "last": 1790264448625,
+      "pct": 100,
+      "pos": 0.9557,
+      "revealed": true,
+      "revealedAt": 1790264337666,
+      "reveals": 1
+    },
+    "sd:readme": {
+      "last": 1789674365637,
+      "pct": 100,
+      "pos": 0
+    },
+    "sql:00_the_relational_model": {
+      "last": 1790177984326,
+      "pct": 100,
+      "pos": 0.7912
+    },
+    "sql:01_connecting_and_first_query": {
+      "last": 1790179699871,
+      "pct": 100,
+      "pos": 0.849
+    },
+    "sql:02_creating_tables_and_data_types": {
+      "last": 1790178089349,
+      "pct": 100,
+      "pos": 0.8422
+    },
+    "sql:03_inserting_and_basic_selects": {
+      "last": 1790178120730,
+      "pct": 100,
+      "pos": 0.8603
+    },
+    "sql:04_filtering_sorting_pagination": {
+      "last": 1790178510719,
+      "pct": 100,
+      "pos": 0.8691
+    },
+    "sql:09_transactions_and_isolation_levels": {
+      "last": 1790179700406
+    },
+    "sql:19_interview_playbook": {
+      "last": 1790174608009
+    },
+    "sql:README": {
+      "last": 1790177939619,
+      "pct": 96,
+      "pos": 0.7918
+    },
+    "swd:01_philosophy_of_software_design": {
+      "last": 1789899822835,
+      "pct": 71,
+      "pos": 0.6923
+    },
+    "swd:02_oop_and_domain_modeling": {
+      "last": 1790265115050,
+      "pct": 51,
+      "pos": 0.3957
+    },
+    "swd:04_design_patterns_in_practice": {
+      "last": 1789675208405,
+      "pct": 56,
+      "pos": 0.542
+    },
+    "swd:README": {
+      "last": 1789899802551,
+      "pos": 0
+    }
+  },
+  "problems": {
+    "01_arrays_hashing/001": {
+      "attempts": 3,
+      "drafts": {
+        "go": "package main\n\nimport (\n\"fmt\"\n    \"slices\"\n)\n\n// YourGetConcatenation is your attempt.\n// Implement it, then run:  cd GoDSA && go run ./01_arrays_hashing/001_concatenation_of_array\n//\n// Unused functions are legal in Go, so this stub compiles as-is.\nfunc YourGetConcatenation(nums []int) []int {\n    n := len(nums)\n    ans := make([]int, 2*n)\n    for i:=0; i<n; i++{\n        ans[i] = nums[i]\n        ans[i+n] = nums[i]\n    }\n    return ans\n}\n\n\nfunc main() {\n\t// TODO: call your function with the examples from the problem statement\n\t// and print the results. An empty main compiles, so you can run right away.\n    nums := []int{1, 2, 3}\n    expected := []int{1, 2, 3, 1, 2, 3}\n    ans := YourGetConcatenation(nums)\n    res := slices.Equal(ans,expected)\n    fmt.Println(res)\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def getConcatenation(self, nums: List[int]) -> List[int]:\n        n = len(nums)\n        return [nums[j%n] for j in range(2*n)]\n\n\n# ==============================================================================\n# TESTS \u2014 run this file directly:  python 001_concatenation_of_array_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 2, 1], [1, 2, 1, 1, 2, 1]),\n        ([1, 3, 2, 1], [1, 3, 2, 1, 1, 3, 2, 1]),\n        ([1], [1, 1]),\n        ([7, 7], [7, 7, 7, 7]),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.getConcatenation(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums}\")\n        print(f\"      expected={expected}\")\n        print(f\"      got     ={got}\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "lastSolutionView": 1790183233379,
+      "nextReview": null,
+      "runs": 15,
+      "solutionViews": 2,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/002": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\n\n// YourContainsDuplicate is your attempt.\n// Implement it, then run:  cd GoDSA && go run ./01_arrays_hashing/002_contains_duplicate\nfunc YourContainsDuplicate(nums []int) bool {\n\t// YOUR CODE HERE\n\treturn false\n}\n\n\nfunc main() {\n\t// TODO: call your function with the examples from the problem statement\n\t// and print the results. An empty main compiles, so you can run right away.\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def containsDuplicate(self, nums: List[int]) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 002_contains_duplicate_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 2, 3, 1], True),\n        ([1, 2, 3, 4], False),\n        ([1, 1, 1, 3, 3, 4, 3, 2, 4, 2], True),\n        ([1], False),\n        ([-1, -1], True),\n        ([0, 1, -1, 2, -2], False),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.containsDuplicate(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/003": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\n\n// YourIsAnagram is your attempt.\n// Implement it, then run:  cd GoDSA && go run ./01_arrays_hashing/003_valid_anagram\nfunc YourIsAnagram(s string, t string) bool {\n    \n\t// YOUR CODE HERE\n\treturn false\n}\n\n\nfunc main() {\n\t// TODO: call your function with the examples from the problem statement\n\t// and print the results. An empty main compiles, so you can run right away.\n}\n",
+        "py": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 003_valid_anagram_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        (\"anagram\", \"nagaram\", True),\n        (\"rat\", \"car\", False),\n        (\"a\", \"a\", True),\n        (\"a\", \"ab\", False),\n        (\"aacc\", \"ccac\", False),   # same letter SET, different counts\n        (\"ab\", \"ba\", True),\n    ]\n    passed = 0\n    for s, t, expected in cases:\n        got = sol.isAnagram(s, t)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  s={s!r} t={t!r} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "runs": 1,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/004": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\n\n// YourTwoSum is your attempt.\n// Implement it, then run:  cd GoDSA && go run ./01_arrays_hashing/004_two_sum\nfunc YourTwoSum(nums []int, target int) []int {\n\t// YOUR CODE HERE\n\treturn nil\n}\n\n\nfunc main() {\n\t// TODO: call your function with the examples from the problem statement\n\t// and print the results. An empty main compiles, so you can run right away.\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 004_two_sum_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([2, 7, 11, 15], 9, [0, 1]),\n        ([3, 2, 4], 6, [1, 2]),\n        ([3, 3], 6, [0, 1]),\n        ([-1, -2, -3, -4, -5], -8, [2, 4]),\n        ([0, 4, 3, 0], 0, [0, 3]),\n    ]\n    passed = 0\n    for nums, target, expected in cases:\n        got = sol.twoSum(list(nums), target)\n        # Any order is acceptable; compare as a set of indices.\n        ok = got is not None and sorted(got) == sorted(expected)\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} target={target} \"\n              f\"-> {got} (want {expected} in any order)\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/005": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\n\n// YourMajorityElement is your attempt.\n// Implement it, then run:  cd GoDSA && go run ./01_arrays_hashing/005_majority_element\nfunc YourMajorityElement(nums []int) int {\n\t// YOUR CODE HERE\n\treturn 0\n}\n\n\nfunc main() {\n\t// TODO: call your function with the examples from the problem statement\n\t// and print the results. An empty main compiles, so you can run right away.\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def majorityElement(self, nums: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 005_majority_element_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([3, 2, 3], 3),\n        ([2, 2, 1, 1, 1, 2, 2], 2),\n        ([1], 1),\n        ([1, 2, 1], 1),\n        ([6, 5, 5], 5),\n        ([-1, -1, -1, 2, 3], -1),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.majorityElement(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/006": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\n\n// YourFindDisappearedNumbers is your attempt.\n// Implement it, then run:\n//\n//\tcd GoDSA && go run ./01_arrays_hashing/006_find_all_numbers_disappeared_in_an_array\nfunc YourFindDisappearedNumbers(nums []int) []int {\n\t// YOUR CODE HERE\n\treturn nil\n}\n\n\nfunc main() {\n\t// TODO: call your function with the examples from the problem statement\n\t// and print the results. An empty main compiles, so you can run right away.\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def findDisappearedNumbers(self, nums: List[int]) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 006_..._question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([4, 3, 2, 7, 8, 2, 3, 1], [5, 6]),\n        ([1, 1], [2]),\n        ([1], []),\n        ([2, 2], [1]),\n        ([1, 2, 3, 4], []),\n        ([3, 3, 3, 3], [1, 2, 4]),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.findDisappearedNumbers(list(nums))\n        ok = got is not None and sorted(got) == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/007": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 007_group_anagrams_question.py\n# ==============================================================================\ndef _norm(groups):\n    \"\"\"Order-insensitive comparison: sort within each group, then sort groups.\"\"\"\n    if groups is None:\n        return None\n    return sorted(sorted(g) for g in groups)\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"],\n         [[\"ate\", \"eat\", \"tea\"], [\"bat\"], [\"nat\", \"tan\"]]),\n        ([\"\"], [[\"\"]]),\n        ([\"a\"], [[\"a\"]]),\n        ([\"abc\", \"cba\", \"bac\", \"xyz\"], [[\"abc\", \"bac\", \"cba\"], [\"xyz\"]]),\n        ([\"a\", \"a\", \"a\"], [[\"a\", \"a\", \"a\"]]),\n        ([\"ab\", \"ba\", \"abc\", \"cab\", \"bca\"], [[\"ab\", \"ba\"], [\"abc\", \"bca\", \"cab\"]]),\n    ]\n    passed = 0\n    for strs, expected in cases:\n        got = sol.groupAnagrams(list(strs))\n        ok = _norm(got) == _norm(expected)\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {strs}\\n      -> {got}\\n      want {expected}\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/008": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def topKFrequent(self, nums: List[int], k: int) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 008_top_k_frequent_elements_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 1, 1, 2, 2, 3], 2, [1, 2]),\n        ([1], 1, [1]),\n        ([1, 2], 2, [1, 2]),\n        ([4, 4, 4, 4], 1, [4]),\n        ([5, 5, 4, 4, 3, 3, 2, 1], 3, [3, 4, 5]),\n        ([-1, -1, -1, 0, 0, 7], 2, [-1, 0]),\n        ([3, 0, 1, 0], 1, [0]),\n    ]\n    passed = 0\n    for nums, k, expected in cases:\n        got = sol.topKFrequent(list(nums), k)\n        ok = got is not None and sorted(got) == sorted(expected)\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} k={k} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/009": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/010": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def productExceptSelf(self, nums: List[int]) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 010_product_of_array_except_self_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 2, 3, 4], [24, 12, 8, 6]),\n        ([-1, 1, 0, -3, 3], [0, 0, 9, 0, 0]),\n        ([2, 3], [3, 2]),                       # minimum length\n        ([0, 0], [0, 0]),                       # two zeros\n        ([1, 0], [0, 1]),                       # exactly one zero\n        ([0, 4, 0], [0, 0, 0]),                 # two zeros, spread out\n        ([-1, -1, -1], [1, 1, 1]),              # sign bookkeeping\n        ([1, 1, 1, 1], [1, 1, 1, 1]),\n        ([5, 2, 1, 3], [6, 15, 30, 10]),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.productExceptSelf(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/011": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/012": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def longestConsecutive(self, nums: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 012_longest_consecutive_sequence_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([100, 4, 200, 1, 3, 2], 4),\n        ([0, 3, 7, 2, 5, 8, 4, 6, 0, 1], 9),\n        ([], 0),                                  # empty input\n        ([1], 1),\n        ([1, 2, 0, 1], 3),                        # duplicate inside the run\n        ([1, 1, 1, 1], 1),                        # all duplicates\n        ([9, 1, 4, 7, 3, -1, 0, 5, 8, -1, 6], 7),  # -1..1 and 3..9\n        ([-3, -2, -1, 0], 4),                     # negatives\n        ([10, 30, 20], 1),                        # no run at all\n        ([1, 2, 3, 100, 101, 102, 103], 4),       # the later run is longer\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.longestConsecutive(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "01_arrays_hashing/013": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def nextPermutation(self, nums: List[int]) -> None:\n        \"\"\"Do not return anything, modify nums in-place instead.\"\"\"\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 013_next_permutation_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    cases = [\n        ([1, 2, 3], [1, 3, 2]),\n        ([3, 2, 1], [1, 2, 3]),\n        ([1, 1, 5], [1, 5, 1]),\n        ([1], [1]),\n        ([2, 1, 1], [1, 1, 2]),\n        ([1, 2, 1], [2, 1, 1]),\n        ([1, 5, 8, 4, 7, 6, 5, 3, 1], [1, 5, 8, 5, 1, 3, 4, 6, 7]),\n    ]\n    all_ok = True\n    for nums, want in cases:\n        arr = list(nums)\n        Solution().nextPermutation(arr)\n        ok = arr == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {nums} -> {arr}  want={want}\")\n    print(\"\\nALL PASSED\" if all_ok else \"\\nFAILURES PRESENT\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "02_two_pointers/001": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n",
+        "py": "class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 001_valid_palindrome_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        (\"A man, a plan, a canal: Panama\", True),\n        (\"race a car\", False),\n        (\" \", True),                       # empty after cleaning\n        (\"\", True),                        # empty input\n        (\".,;:!\", True),                   # ALL junk \u2014 the skip-loop killer\n        (\"a\", True),                       # single character\n        (\"ab\", False),\n        (\"aa\", True),\n        (\"0P\", False),                     # '0' vs 'p' \u2014 the ord() trap\n        (\"aba\", True),                     # odd length, middle ignored\n        (\"abba\", True),                    # even length\n        (\"1a2\", False),\n        (\"12321\", True),                   # digits count as alphanumeric\n        (\"Ab,a\", True),\n    ]\n    passed = 0\n    for s, expected in cases:\n        got = sol.isPalindrome(s)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {s!r:<34} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "02_two_pointers/002": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "02_two_pointers/003": {
+      "attempts": 2,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "02_two_pointers/004": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "02_two_pointers/005": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "02_two_pointers/006": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "02_two_pointers/007": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "todo",
+      "timeSpent": 0
+    },
+    "02_two_pointers/008": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "02_two_pointers/009": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n",
+        "py": "from typing import List\n\n\nclass Solution:\n    def maxArea(self, height: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 009_container_with_most_water_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    cases = [\n        ([1, 8, 6, 2, 5, 4, 8, 3, 7], 49),\n        ([1, 1], 1),\n        ([4, 3, 2, 1, 4], 16),\n        ([1, 2, 1], 2),\n        ([0, 0], 0),\n        ([2, 3, 10, 5, 7, 8, 9], 36),\n    ]\n    all_ok = True\n    for height, want in cases:\n        got = Solution().maxArea(list(height))\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  height={height}  got={got}  want={want}\")\n    print(\"\\nALL PASSED\" if all_ok else \"\\nFAILURES PRESENT\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "lastSolutionView": 1789723525859,
+      "solutionViews": 1,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "02_two_pointers/010": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nfunc main() {\n}\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "02_two_pointers/011": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def numRescueBoats(self, people: List[int], limit: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 011_boats_to_save_people_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    cases = [\n        ([1, 2], 3, 1),\n        ([3, 2, 2, 1], 3, 3),\n        ([3, 5, 3, 4], 5, 4),\n        ([5], 5, 1),\n        ([1, 1, 2, 2], 3, 2),\n        ([2, 2, 2, 2], 4, 2),\n        ([1, 5, 3, 5], 7, 3),\n    ]\n    all_ok = True\n    for people, limit, want in cases:\n        got = Solution().numRescueBoats(list(people), limit)\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  people={people} limit={limit}  got={got}  want={want}\")\n    print(\"\\nALL PASSED\" if all_ok else \"\\nFAILURES PRESENT\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "03_sliding_window/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def maxProfit(self, prices: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 001_best_time_to_buy_and_sell_stock_question.py\n# ==============================================================================\ndef _brute(prices):\n    \"\"\"O(n^2) reference: every (buy, sell) pair with buy < sell.\"\"\"\n    best = 0\n    for i in range(len(prices)):\n        for j in range(i + 1, len(prices)):\n            best = max(best, prices[j] - prices[i])\n    return best\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([7, 1, 5, 3, 6, 4], 5),\n        ([7, 6, 4, 3, 1], 0),          # only falls -> 0, never negative\n        ([1], 0),                      # single day: cannot buy AND sell\n        ([2, 2, 2], 0),                # flat\n        ([1, 2], 1),                   # minimum profitable case\n        ([2, 1], 0),\n        ([3, 2, 6, 5, 0, 3], 4),       # best pair is NOT the global min/max\n        ([2, 4, 1], 2),                # global min is LAST -> useless\n        ([1, 4, 2], 3),\n        ([0, 0], 0),\n        ([5, 4, 3, 2, 1, 100], 99),    # long descent then a spike\n        ([100, 1, 2, 3], 2),\n    ]\n\n    passed = 0\n    for prices, expected in cases:\n        # cross-check the hand-written expectation against the oracle\n        assert _brute(prices) == expected, (\n            f\"bad test expectation for {prices}: \"\n            f\"oracle says {_brute(prices)}, test says {expected}\")\n        got = sol.maxProfit(list(prices))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {prices} -> {got}  (want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "03_sliding_window/015": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 015_sliding_window_maximum_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    cases = [\n        ([1, 3, -1, -3, 5, 3, 6, 7], 3, [3, 3, 5, 5, 6, 7]),\n        ([1], 1, [1]),\n        ([1, -1], 1, [1, -1]),\n        ([9, 11], 2, [11]),\n        ([4, -2], 2, [4]),\n        ([5, 5, 1], 2, [5, 5]),\n        ([7, 2, 4], 2, [7, 4]),\n        ([1, 3, 1, 2, 0, 5], 3, [3, 3, 2, 5]),\n    ]\n    all_ok = True\n    for nums, k, want in cases:\n        got = Solution().maxSlidingWindow(list(nums), k)\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} k={k}  got={got}  want={want}\")\n    print(\"\\nALL PASSED\" if all_ok else \"\\nFAILURES PRESENT\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "04_prefix_sum/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def runningSum(self, nums: List[int]) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 001_running_sum_of_1d_array_question.py\n# ==============================================================================\ndef _brute(nums):\n    \"\"\"O(n^2) reference: re-sum the prefix from scratch at every index.\"\"\"\n    return [sum(nums[:i + 1]) for i in range(len(nums))]\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 2, 3, 4], [1, 3, 6, 10]),\n        ([1, 1, 1, 1, 1], [1, 2, 3, 4, 5]),\n        ([3, 1, 2, 10, 1], [3, 4, 6, 16, 17]),\n        ([5], [5]),                          # single element\n        ([0, 0, 0, 0], [0, 0, 0, 0]),        # all zeros\n        ([-1, -2, -3], [-1, -3, -6]),        # negative numbers\n        ([-1, 2, -3, 4], [-1, 1, -2, 2]),    # mixed signs\n        ([1000000, 1000000], [1000000, 2000000]),  # near the constraint bound\n    ]\n\n    passed = 0\n    for nums, expected in cases:\n        # cross-check the hand-written expectation against the oracle\n        assert _brute(nums) == expected, (\n            f\"bad test expectation for {nums!r}: \"\n            f\"oracle says {_brute(nums)}, test says {expected}\")\n        got = sol.runningSum(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {nums!r:<24} -> {got}  \"\n              f\"(want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "04_prefix_sum/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass NumArray:\n    def __init__(self, nums: List[int]):\n        # YOUR CODE HERE\n        pass\n\n    def sumRange(self, left: int, right: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 002_range_sum_query_immutable_question.py\n# ==============================================================================\nclass _NumArrayBrute:\n    \"\"\"O(right-left) per query reference: slice and sum every call.\"\"\"\n\n    def __init__(self, nums):\n        self.nums = nums\n\n    def sumRange(self, left, right):\n        return sum(self.nums[left:right + 1])\n\n\ndef run_tests() -> None:\n    cases = [\n        ([-2, 0, 3, -5, 2, -1], [(0, 2), (2, 5), (0, 5)], [1, -1, -3]),\n        ([1], [(0, 0)], [1]),                       # single-element array\n        ([5, 5, 5, 5], [(0, 0), (1, 1), (0, 3)], [5, 5, 20]),  # left==right, whole array\n        ([-1, -1, -1], [(0, 2)], [-3]),              # all negative\n        ([0, 0, 0], [(0, 1), (1, 2)], [0, 0]),        # all zeros\n        ([7, -3, 4, -8, 2, 9], [(0, 5), (3, 3), (1, 4)], [11, -8, -5]),\n    ]\n\n    passed = total = 0\n    for nums, queries, expected in cases:\n        oracle = _NumArrayBrute(list(nums))\n        # cross-check the hand-written expectation against the oracle\n        for (l, r), exp in zip(queries, expected):\n            assert oracle.sumRange(l, r) == exp, (\n                f\"bad test expectation for nums={nums} range=({l},{r}): \"\n                f\"oracle says {oracle.sumRange(l, r)}, test says {exp}\")\n\n        na = NumArray(list(nums))\n        for (l, r), exp in zip(queries, expected):\n            total += 1\n            got = na.sumRange(l, r)\n            ok = got == exp\n            passed += ok\n            print(f\"{'PASS' if ok else 'FAIL'}  nums={nums!r:<28} \"\n                  f\"sumRange({l},{r}) -> {got}  (want {exp})\")\n\n    print(f\"\\n{passed}/{total} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "04_prefix_sum/003": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def pivotIndex(self, nums: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 003_find_pivot_index_question.py\n# ==============================================================================\ndef _brute(nums):\n    \"\"\"O(n^2) reference: re-sum the left and right sides at every index.\"\"\"\n    n = len(nums)\n    for i in range(n):\n        left = sum(nums[:i])\n        right = sum(nums[i + 1:])\n        if left == right:\n            return i\n    return -1\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 7, 3, 6, 5, 6], 3),\n        ([1, 2, 3], -1),                 # no pivot exists\n        ([2, 1, -1], 0),                 # pivot at index 0 (leftSum = 0)\n        ([-1, -1, 0, 1, 1, 0], 5),        # pivot at the LAST index\n        ([5], 0),                        # single element -> trivially pivot 0\n        ([0, 0, 0, 0], 0),                # all zeros -> leftmost (index 0) wins\n        ([-1, -1, -1, -1, -1, -1], -1),   # no pivot with all-equal negatives\n        ([1, -1, 1, -1, 1], 0),           # negatives mixed with positives\n        ([0], 0),                        # single zero\n        ([1, 0], 0),                     # pivot right at the start, right sum 0 too? check\n    ]\n\n    passed = 0\n    for nums, expected in cases:\n        # cross-check the hand-written expectation against the oracle\n        assert _brute(nums) == expected, (\n            f\"bad test expectation for {nums!r}: \"\n            f\"oracle says {_brute(nums)}, test says {expected}\")\n        got = sol.pivotIndex(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {nums!r:<28} -> {got}  \"\n              f\"(want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "04_prefix_sum/004": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def subarraySum(self, nums: List[int], k: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 004_subarray_sum_equals_k_question.py\n# ==============================================================================\ndef _brute(nums, k):\n    \"\"\"O(n^2) reference: running inner sum from every start.\"\"\"\n    n = len(nums)\n    count = 0\n    for i in range(n):\n        s = 0\n        for j in range(i, n):\n            s += nums[j]\n            if s == k:\n                count += 1\n    return count\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 1, 1], 2, 2),\n        ([1, 2, 3], 3, 2),\n        ([1, -1, 0], 0, 3),\n        ([1], 1, 1),\n        ([1], 0, 0),\n        ([-1, -1, 1], 0, 1),\n        ([0, 0, 0], 0, 6),                 # k=0 with zeros: every subarray of zeros counts\n        ([-1, -1, -1], -2, 2),             # all negative\n        ([3, 4, 7, 2, -3, 1, 4, 2], 7, 4), # mixed, several overlapping answers\n        ([1, 2, 3], 100, 0),               # no valid subarray\n        ([1, 2, 3], 6, 1),                 # whole array sums to k, starts at index 0\n        ([1, 1, 1, 1], 2, 3),              # duplicate prefix sums -> multiple counted subarrays\n        ([5], 5, 1),                       # single element equal to k\n        ([-5], -5, 1),\n        ([1, -1, 1, -1, 1], 0, 6),\n        ([100, -100, 100, -100], 0, 4),\n    ]\n\n    passed = 0\n    for nums, k, expected in cases:\n        assert _brute(nums, k) == expected, (\n            f\"bad test expectation for {nums!r}, k={k}: \"\n            f\"oracle says {_brute(nums, k)}, test says {expected}\")\n        got = sol.subarraySum(list(nums), k)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums!r:<32} k={k:<6} -> {got}  \"\n              f\"(want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "04_prefix_sum/005": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def findMaxLength(self, nums: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 005_contiguous_array_question.py\n# ==============================================================================\ndef _brute(nums):\n    \"\"\"O(n^2) reference: for every (l, r), count 0s and 1s directly.\"\"\"\n    n = len(nums)\n    best = 0\n    for i in range(n):\n        zeros = ones = 0\n        for j in range(i, n):\n            if nums[j] == 0:\n                zeros += 1\n            else:\n                ones += 1\n            if zeros == ones:\n                best = max(best, j - i + 1)\n    return best\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([0, 1], 2),\n        ([0, 1, 0], 2),\n        ([0, 1, 0, 0, 1, 1, 0], 6),\n        ([0], 0),\n        ([1], 0),\n        ([0, 0, 0], 0),\n        ([1, 1, 1], 0),\n        ([0, 1, 1, 0], 4),\n        ([1, 0, 1, 0, 1, 0], 6),                   # alternating: whole array\n        ([1, 1, 0, 0, 1, 0, 1, 1], 8),\n        ([1, 1, 1, 0, 0, 0], 6),\n        ([0, 0, 1, 0, 0, 1, 1, 1], 8),\n        ([1, 0, 0, 1, 0, 0, 1, 1], 6),              # best subarray not the whole array\n        ([1, 1, 0, 1, 1, 1, 0, 0, 1, 1], 4),\n    ]\n\n    passed = 0\n    for nums, expected in cases:\n        assert _brute(nums) == expected, (\n            f\"bad test expectation for {nums!r}: \"\n            f\"oracle says {_brute(nums)}, test says {expected}\")\n        got = sol.findMaxLength(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums!r:<36} -> {got}  \"\n              f\"(want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "04_prefix_sum/008": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def checkSubarraySum(self, nums: List[int], k: int) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 008_continuous_subarray_sum_question.py\n# ==============================================================================\ndef _brute(nums, k):\n    \"\"\"O(n^2) reference: every subarray of length >= 2, sum it, check.\"\"\"\n    n = len(nums)\n    for i in range(n):\n        total = nums[i]\n        for j in range(i + 1, n):\n            total += nums[j]\n            length = j - i + 1\n            if length >= 2:\n                if k == 0:\n                    if total == 0:\n                        return True\n                elif total % k == 0:\n                    return True\n    return False\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([23, 2, 4, 6, 7], 6, True),\n        ([23, 2, 6, 4, 7], 6, True),\n        ([23, 2, 6, 4, 7], 13, False),\n        ([0, 0], 0, True),                  # k=0, adjacent zeros\n        ([0, 1, 0], 0, False),              # k=0, no adjacent zeros\n        ([5], 5, False),                    # length < 2, no valid subarray\n        ([1], 1, False),                    # single element, same reason\n        ([1, 0], 1, True),                  # exact length-2 boundary\n        ([-1, 2, -1, 3], 2, True),          # negatives\n        ([5, 0, 0, 0], 3, True),            # k doesn't divide any element\n                                             # alone, but a combination works\n        ([1, 2, 3], 5, True),               # 2+3=5\n        ([1, 2, 3], 6, True),                # whole-array multiple\n    ]\n\n    passed = 0\n    for nums, k, expected in cases:\n        oracle = _brute(nums, k)\n        assert oracle == expected, (\n            f\"bad test expectation for {nums}, k={k}: \"\n            f\"oracle says {oracle}, test says {expected}\")\n        got = sol.checkSubarraySum(nums, k)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {nums}, k={k} -> {got}  (want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "05_binary_search/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": ""
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "05_binary_search/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def searchInsert(self, nums: List[int], target: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 002_search_insert_position_question.py\n# ==============================================================================\nCASES = [\n    ([1, 3, 5, 6], 5, 2),\n    ([1, 3, 5, 6], 2, 1),\n    ([1, 3, 5, 6], 7, 4),\n    ([1, 3, 5, 6], 0, 0),\n    ([1], 1, 0),\n    ([1], 0, 0),\n    ([1], 2, 1),\n]\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    for nums, target, expected in CASES:\n        got = sol.searchInsert(nums, target)\n        ok = got == expected\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums!r:<20} target={target:<5} \"\n              f\"-> {got}  (want {expected})\")\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "runs": 1,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "06_stack/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "class Solution:\n    def isValid(self, s: str) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 001_valid_parentheses_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        (\"()\", True),\n        (\"()[]{}\", True),\n        (\"(]\", False),\n        (\"([)]\", False),\n        (\"{[]}\", True),\n        (\"\", True),\n        (\"(\", False),\n        (\")\", False),\n        (\"(((\", False),\n        (\")))\", False),\n        (\"([{}])\", True),\n        (\"([{}()])\", True),\n        (\"]\", False),\n        (\"(){}}{\", False),\n        (\"(((((((((())))))))))\" , True),\n        (\"((()\", False),\n    ]\n\n    passed = 0\n    for text, expected in cases:\n        got = sol.isValid(text)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  s={text!r:<24} -> {got}  (want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "lastSolutionView": 1789928320548,
+      "solutionViews": 1,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "08_linked_list/002": {
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def getConcatenation(self, nums: List[int]) -> List[int]:\n        n = len(nums)\n        return [nums[j%n] for j in range(2*n)]\n\n\n# ==============================================================================\n# TESTS \u2014 run this file directly:  python 001_concatenation_of_array_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 2, 1], [1, 2, 1, 1, 2, 1]),\n        ([1, 3, 2, 1], [1, 3, 2, 1, 1, 3, 2, 1]),\n        ([1], [1, 1]),\n        ([7, 7], [7, 7, 7, 7]),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.getConcatenation(list(nums))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums}\")\n        print(f\"      expected={expected}\")\n        print(f\"      got     ={got}\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "timeSpent": 0
+    },
+    "09_recursion_backtracking/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "class Solution:\n    def fib(self, n: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 001_fibonacci_number_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        (0, 0), (1, 1), (2, 1), (3, 2), (4, 3), (5, 5), (6, 8), (7, 13),\n        (10, 55), (15, 610), (20, 6765), (30, 832040),\n    ]\n    passed = 0\n    for n, expected in cases:\n        got = sol.fib(n)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  fib({n:>2}) -> {got}  (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "09_recursion_backtracking/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def subsets(self, nums: List[int]) -> List[List[int]]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 002_subsets_question.py\n# ==============================================================================\ndef _normalize(subsets_list):\n    return sorted(sorted(s) for s in subsets_list)\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 2, 3], [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]),\n        ([0], [[], [0]]),\n        ([1], [[], [1]]),\n        ([1, 2], [[], [1], [2], [1, 2]]),\n        ([-2, -1], [[], [-2], [-1], [-2, -1]]),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.subsets(nums)\n        ok = _normalize(got) == _normalize(expected)\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  subsets({nums}) -> {len(got) if got else 0} subsets \"\n              f\"(want {len(expected)})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "09_recursion_backtracking/005": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def permuteUnique(self, nums: List[int]) -> List[List[int]]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 005_permutations_ii_question.py\n# ==============================================================================\ndef _normalize(perms):\n    return sorted(tuple(p) for p in perms)\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 1, 2], [[1, 1, 2], [1, 2, 1], [2, 1, 1]]),\n        ([1, 2, 3], [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]),\n        ([1, 1, 1], [[1, 1, 1]]),\n        ([2, 2], [[2, 2]]),\n    ]\n    passed = 0\n    for nums, expected in cases:\n        got = sol.permuteUnique(nums)\n        ok = _normalize(got) == _normalize(expected)\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  permuteUnique({nums}) -> \"\n              f\"{len(got) if got else 0} perms (want {len(expected)})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n</content>\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "10_trees/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from collections import deque\nfrom typing import List, Optional\n\n\nclass TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\n\nclass Solution:\n    def preorderTraversal(self, root: Optional[TreeNode]) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TEST HELPERS \u2014 the standard tree kit for this topic. Nothing to solve here.\n# ==============================================================================\ndef build(values):\n    \"\"\"LeetCode level-order notation -> tree. `None` means \"no child here\".\"\"\"\n    if not values or values[0] is None:\n        return None\n    root = TreeNode(values[0])\n    queue = deque([root])\n    i = 1\n    while queue and i < len(values):\n        node = queue.popleft()\n        if i < len(values):\n            v = values[i]\n            i += 1\n            if v is not None:\n                node.left = TreeNode(v)\n                queue.append(node.left)\n        if i < len(values):\n            v = values[i]\n            i += 1\n            if v is not None:\n                node.right = TreeNode(v)\n                queue.append(node.right)\n    return root\n\n\ndef to_level_order(root):\n    \"\"\"Inverse of build(): tree -> level-order list, trailing Nones trimmed.\"\"\"\n    if root is None:\n        return []\n    out, queue = [], deque([root])\n    while queue:\n        node = queue.popleft()\n        if node is None:\n            out.append(None)\n            continue\n        out.append(node.val)\n        queue.append(node.left)\n        queue.append(node.right)\n    while out and out[-1] is None:\n        out.pop()\n    return out\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        ([1, None, 2, 3], [1, 2, 3]),\n        ([], []),\n        ([1], [1]),\n        ([1, 2, 3, 4, 5, None, 8, None, None, 6, 7, 9], [1, 2, 4, 5, 6, 7, 3, 8, 9]),\n        ([3, 9, 20, None, None, 15, 7], [3, 9, 20, 15, 7]),\n    ]\n    for values, want in cases:\n        got = sol.preorderTraversal(build(values))\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {values!r:<44} -> {got}  (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "12_heap_priority_queue/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "import heapq\n\n\nclass KthLargest:\n    def __init__(self, k: int, nums: list[int]):\n        # YOUR CODE HERE\n        pass\n\n    def add(self, val: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests():\n    kl = KthLargest(3, [4, 5, 8, 2])\n    assert kl.add(3) == 4\n    assert kl.add(5) == 5\n    assert kl.add(10) == 5\n    assert kl.add(9) == 8\n    assert kl.add(4) == 8\n    print(\"ALL PASSED\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "14_graphs/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from collections import deque\nfrom typing import List\n\n\nclass Solution:\n    def floodFill(self, image: List[List[int]], sr: int, sc: int,\n                   color: int) -> List[List[int]]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 001_flood_fill_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        ([[1, 1, 1], [1, 1, 0], [1, 0, 1]], 1, 1, 2,\n         [[2, 2, 2], [2, 2, 0], [2, 0, 1]]),\n        ([[0, 0, 0], [0, 0, 0]], 0, 0, 0,\n         [[0, 0, 0], [0, 0, 0]]),\n        ([[0, 0, 0], [0, 1, 1]], 1, 1, 1,\n         [[0, 0, 0], [0, 1, 1]]),\n        ([[1]], 0, 0, 9, [[9]]),\n        ([[0, 0, 0], [0, 0, 0], [0, 0, 0]], 1, 1, 2,\n         [[2, 2, 2], [2, 2, 2], [2, 2, 2]]),\n    ]\n    for image, sr, sc, color, want in cases:\n        got = sol.floodFill([row[:] for row in image], sr, sc, color)\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  image={image!r} sr={sr} sc={sc} \"\n              f\"color={color} -> {got} (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "14_graphs/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from collections import deque\nfrom typing import List\n\n\nclass Solution:\n    def numIslands(self, grid: List[List[str]]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 002_number_of_islands_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        ([[\"1\", \"1\", \"1\", \"1\", \"0\"],\n          [\"1\", \"1\", \"0\", \"1\", \"0\"],\n          [\"1\", \"1\", \"0\", \"0\", \"0\"],\n          [\"0\", \"0\", \"0\", \"0\", \"0\"]], 1),\n        ([[\"1\", \"1\", \"0\", \"0\", \"0\"],\n          [\"1\", \"1\", \"0\", \"0\", \"0\"],\n          [\"0\", \"0\", \"1\", \"0\", \"0\"],\n          [\"0\", \"0\", \"0\", \"1\", \"1\"]], 3),\n        ([[\"0\"]], 0),\n        ([[\"1\"]], 1),\n        ([[\"1\", \"0\", \"1\", \"0\", \"1\"]], 3),\n    ]\n    for grid, want in cases:\n        g = [row[:] for row in grid]\n        got = sol.numIslands(g)\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  grid={grid!r} -> {got} (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "14_graphs/004": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from collections import deque\nfrom typing import Dict, List, Optional\n\n\nclass Node:\n    def __init__(self, val=0, neighbors=None):\n        self.val = val\n        self.neighbors = neighbors if neighbors is not None else []\n\n\nclass Solution:\n    def cloneGraph(self, node: Optional[\"Node\"]) -> Optional[\"Node\"]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TEST HELPERS \u2014 build a Node graph from / back to an adjacency list\n# ==============================================================================\ndef build_graph(adj_list: List[List[int]]) -> Optional[Node]:\n    \"\"\"adjList[i] = neighbor VALUES of the node with val = i+1 -> Node graph,\n    returns the node with val == 1 (or None for an empty graph).\"\"\"\n    if not adj_list:\n        return None\n    nodes: Dict[int, Node] = {i + 1: Node(i + 1) for i in range(len(adj_list))}\n    for i, neighbors in enumerate(adj_list):\n        nodes[i + 1].neighbors = [nodes[v] for v in neighbors]\n    return nodes[1]\n\n\ndef to_adj_list(node: Optional[Node]) -> List[List[int]]:\n    \"\"\"Node graph -> adjList sorted by val, via BFS. Inverse of build_graph.\"\"\"\n    if node is None:\n        return []\n    by_val: Dict[int, Node] = {}\n    queue = deque([node])\n    by_val[node.val] = node\n    while queue:\n        cur = queue.popleft()\n        for nb in cur.neighbors:\n            if nb.val not in by_val:\n                by_val[nb.val] = nb\n                queue.append(nb)\n    return [sorted(n.val for n in by_val[v].neighbors)\n            for v in sorted(by_val)]\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        [[2, 4], [1, 3], [2, 4], [1, 3]],\n        [[]],\n        [],\n        [[2], [1]],\n    ]\n    for adj in cases:\n        original = build_graph(adj)\n        clone = sol.cloneGraph(original)\n        got = to_adj_list(clone)\n        ok = got == adj\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  adjList={adj!r} -> {got} (want {adj!r})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "15_advanced_graphs/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def findCircleNum(self, isConnected: List[List[int]]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        ([[1, 1, 0], [1, 1, 0], [0, 0, 1]], 2),\n        ([[1, 0, 0], [0, 1, 0], [0, 0, 1]], 3),\n        ([[1]], 1),\n        ([[1, 1, 1], [1, 1, 1], [1, 1, 1]], 1),\n        ([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 1, 1]], 3),\n    ]\n    for matrix, want in cases:\n        got = sol.findCircleNum([row[:] for row in matrix])\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  n={len(matrix)}  -> {got}  (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "15_advanced_graphs/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def equationsPossible(self, equations: List[str]) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        ([\"a==b\", \"b!=a\"], False),\n        ([\"b==a\", \"a==b\"], True),\n        ([\"a==b\", \"b==c\", \"a==c\"], True),\n        ([\"a==b\", \"b!=c\", \"c==a\"], False),\n        ([\"c==c\", \"b==d\", \"x!=z\"], True),\n        ([\"a==a\"], True),\n        ([\"a!=a\"], False),\n        ([\"a==b\", \"c==d\", \"b==c\", \"a!=d\"], False),\n        ([\"a==b\", \"c==d\", \"b==c\"], True),\n    ]\n    for eqs, want in cases:\n        got = sol.equationsPossible(eqs)\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  {eqs!r:<40} -> {got}  (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "16_dp_1d/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "class Solution:\n    def tribonacci(self, n: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        (0, 0),\n        (1, 1),\n        (2, 1),\n        (3, 2),\n        (4, 4),\n        (25, 1389537),\n        (37, 2082876103),\n    ]\n    for n, want in cases:\n        got = sol.tribonacci(n)\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  n={n:2d}  -> {got}  (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "16_dp_1d/005": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def rob(self, nums: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        ([1, 2, 3, 1], 4),\n        ([2, 7, 9, 3, 1], 12),\n        ([2, 1, 1, 2], 4),\n        ([5], 5),\n        ([5, 5], 5),\n        ([0, 0, 0], 0),\n        ([200, 3, 140, 20, 10], 350),\n    ]\n    for nums, want in cases:\n        got = sol.rob(nums[:])\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums}  -> {got}  (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "18_greedy/001": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\n\n// TODO: Implement the stub\n\n\nfunc main() {\n\t// TODO: call your function with the examples from the problem statement\n\t// and print the results. An empty main compiles, so you can run right away.\n}\n",
+        "py": "class Solution:\n    def largestSumAfterKNegations(self, nums: list[int], k: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests():\n    sol = Solution()\n    assert sol.largestSumAfterKNegations([4, 2, 3], 1) == 5\n    assert sol.largestSumAfterKNegations([3, -1, 0, 2], 3) == 6\n    assert sol.largestSumAfterKNegations([2, -3, -1, 5, -4], 2) == 13\n    print(\"ALL PASSED\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "19_intervals/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def canAttendMeetings(self, intervals: List[List[int]]) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests():\n    sol = Solution()\n    assert sol.canAttendMeetings([[0, 30], [5, 10], [15, 20]]) is False\n    assert sol.canAttendMeetings([[7, 10], [2, 4]]) is True\n    assert sol.canAttendMeetings([]) is True\n    assert sol.canAttendMeetings([[5, 8]]) is True\n    # touching endpoints: NOT a conflict for this problem\n    assert sol.canAttendMeetings([[1, 2], [2, 3]]) is True\n    # true overlap\n    assert sol.canAttendMeetings([[1, 5], [4, 8]]) is False\n    print(\"ALL PASSED\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "lastSolutionView": 1790102293342,
+      "solutionViews": 1,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "20_bit_manipulation/001": {
+      "attempts": 2,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def singleNumber(self, nums: List[int]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    cases = [\n        ([2, 2, 1], 1),\n        ([4, 1, 2, 1, 2], 4),\n        ([1], 1),\n        ([-1, -1, -2], -2),\n        ([0, 0, 5], 5),\n    ]\n    for nums, want in cases:\n        got = sol.singleNumber(nums[:])\n        ok = got == want\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums}  -> {got}  (want {want})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "nextReview": null,
+      "solvedAt": null,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "21_math_geometry/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "class Solution:\n    def isPalindrome(self, x: int) -> bool:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    pass\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "22_sorting_algorithms/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def merge(self, nums1: List[int], m: int, nums2: List[int], n: int) -> None:\n        \"\"\"Do not return anything, modify nums1 in-place instead.\"\"\"\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    pass\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "22_sorting_algorithms/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def sortArray(self, nums: List[int]) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    pass\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "23_string_algorithms/004": {
+      "attempts": 1,
+      "drafts": {
+        "py": "class Solution:\n    def findRepeatedDnaSequences(self, s: str) -> list:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    pass\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "24_matrix/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def rotate(self, matrix: List[List[int]]) -> None:\n        \"\"\"\n        Do not return anything, modify matrix in-place instead.\n        \"\"\"\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    pass\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "27_algorithms/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "import random\n\n\nclass Solution:\n    def __init__(self, nums: list[int]):\n        # YOUR CODE HERE\n        pass\n\n    def reset(self) -> list[int]:\n        # YOUR CODE HERE\n        pass\n\n    def shuffle(self) -> list[int]:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    all_ok = True\n\n    sol = Solution([1, 2, 3])\n\n    got = sol.reset()\n    ok = got == [1, 2, 3]\n    all_ok &= ok\n    print(f\"{'PASS' if ok else 'FAIL'}  reset() -> {got}  (want [1, 2, 3])\")\n\n    shuffled = sol.shuffle()\n    ok = sorted(shuffled) == [1, 2, 3]\n    all_ok &= ok\n    print(f\"{'PASS' if ok else 'FAIL'}  shuffle() is a permutation -> {shuffled}\")\n\n    got = sol.reset()\n    ok = got == [1, 2, 3]\n    all_ok &= ok\n    print(f\"{'PASS' if ok else 'FAIL'}  reset() after shuffle -> {got}  (want [1, 2, 3])\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "27_algorithms/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "import random\n\n\nclass Solution:\n    def __init__(self, nums: list[int]):\n        # YOUR CODE HERE\n        pass\n\n    def pick(self, target: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    all_ok = True\n\n    sol = Solution([1, 2, 3, 3, 3])\n\n    got = sol.pick(1)\n    ok = got == 0\n    all_ok &= ok\n    print(f\"{'PASS' if ok else 'FAIL'}  pick(1) -> {got}  (want 0, unique match)\")\n\n    valid_for_3 = {2, 3, 4}\n    got = sol.pick(3)\n    ok = got in valid_for_3\n    all_ok &= ok\n    print(f\"{'PASS' if ok else 'FAIL'}  pick(3) -> {got}  (want one of {valid_for_3})\")\n\n    for _ in range(50):\n        got = sol.pick(3)\n        if got not in valid_for_3:\n            all_ok = False\n            print(f\"FAIL  pick(3) -> {got} not in {valid_for_3}\")\n            break\n    else:\n        print(\"PASS  50 more pick(3) calls all landed in the valid set\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "27_algorithms/006": {
+      "attempts": 1,
+      "drafts": {
+        "py": "class Solution:\n    def diffWaysToCompute(self, expression: str) -> list[int]:\n        # YOUR CODE HERE\n        pass\n\n\ndef run_tests() -> None:\n    all_ok = True\n    sol = Solution()\n\n    cases = [\n        (\"2-1-1\", [0, 2]),\n        (\"2*3-4*5\", [-34, -14, -10, -10, 10]),\n        (\"0\", [0]),\n        (\"11\", [11]),\n    ]\n    for expr, want in cases:\n        got = sol.diffWaysToCompute(expr)\n        ok = sorted(got) == sorted(want)\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  diffWaysToCompute({expr!r}) \"\n              f\"-> {sorted(got)}  (want {sorted(want)})\")\n\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "28_recursion_backtracking/001": {
+      "attempts": 1,
+      "drafts": {
+        "py": "class Solution:\n    def numberOfSteps(self, num: int) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 001_number_of_steps_to_reduce_a_number_to_zero_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        (0, 0), (1, 1), (2, 2), (3, 3), (4, 3), (8, 4), (14, 6),\n        (123, 12), (1000000, 25),\n    ]\n    passed = 0\n    for num, expected in cases:\n        got = sol.numberOfSteps(num)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  numberOfSteps({num}) -> {got}  (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "28_recursion_backtracking/002": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def reverseString(self, s: List[str]) -> None:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 002_reverse_string_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([\"h\", \"e\", \"l\", \"l\", \"o\"], [\"o\", \"l\", \"l\", \"e\", \"h\"]),\n        ([\"H\", \"a\", \"n\", \"n\", \"a\", \"h\"], [\"h\", \"a\", \"n\", \"n\", \"a\", \"H\"]),\n        ([\"a\"], [\"a\"]),\n        ([\"a\", \"b\"], [\"b\", \"a\"]),\n    ]\n    passed = 0\n    for s, expected in cases:\n        working = list(s)\n        sol.reverseString(working)\n        ok = working == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  reverseString({s}) -> {working}  (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "28_recursion_backtracking/025": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List, Optional\n\n\nclass TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\n\ndef build_tree(rows: List[Optional[int]]) -> Optional[TreeNode]:\n    \"\"\"Level-order (LeetCode-style, with None gaps) -> TreeNode.\"\"\"\n    if not rows or rows[0] is None:\n        return None\n    it = iter(rows)\n    root = TreeNode(next(it))\n    queue = [root]\n    while queue:\n        node = queue.pop(0)\n        try:\n            lv = next(it)\n        except StopIteration:\n            break\n        if lv is not None:\n            node.left = TreeNode(lv)\n            queue.append(node.left)\n        try:\n            rv = next(it)\n        except StopIteration:\n            break\n        if rv is not None:\n            node.right = TreeNode(rv)\n            queue.append(node.right)\n    return root\n\n\nclass Solution:\n    def minCameraCover(self, root: Optional[TreeNode]) -> int:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 025_binary_tree_cameras_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([0, 0, None, 0, 0], 1),\n        ([0, 0, None, 0, None, 0, None, None, 0], 2),\n        ([0], 1),\n        ([0, 0], 1),\n        ([0, None, 0, None, 0, None, 0], 2),  # right-skewed chain of 4\n    ]\n    passed = 0\n    for rows, expected in cases:\n        root = build_tree(rows)\n        got = sol.minCameraCover(root)\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  minCameraCover({rows}) -> {got}  (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "api/REST/Foundation/00_single_endpoint_and_how_it_works": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nimport (\n\t\"flag\"\n\t\"fmt\"\n\t\"io\"\n\t\"log\"\n\t\"net\"\n\t\"net/http\"\n)\n\n// pingHandler runs exactly once per incoming request that reaches it. By the\n// time this function starts, net/http has already read the request off the\n// network socket and parsed it into method / path / headers for you - that\n// parsing step is what the bonus level (13) shows happening by hand, with\n// nothing but raw bytes, once this feels easy.\nfunc pingHandler(w http.ResponseWriter, r *http.Request) {\n\t// r.URL.Path is the exact URL path the client asked for, e.g. \"/ping\".\n\t// This handler is only ever registered for \"/ping\" (see main below), so\n\t// by the time we're here that check has already been made for us.\n\tw.Header().Set(\"Content-Type\", \"text/plain\") // step 1: headers, before the status line is sent\n\tfmt.Fprint(w, \"pong\\n\")                      // step 2: the body (net/http sends \"200 OK\" automatically\n\t//         the first time you write, unless you called WriteHeader yourself)\n}\n\nfunc main() {\n\tserve := flag.Bool(\"serve\", false, \"keep serving on :8080 instead of running the demo\")\n\tflag.Parse()\n\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"GET /ping\", pingHandler) // this server agrees to answer exactly ONE path\n\n\tif *serve {\n\t\tlog.Println(\"listening on http://localhost:8080  (try: curl -i localhost:8080/ping)\")\n\t\tlog.Fatal(http.ListenAndServe(\"127.0.0.1:8080\", mux))\n\t}\n\n\t// port 0 = \"operating system, hand me any free port\" - so this demo never\n\t// collides with something else already listening on 8080 on your machine.\n\tln, err := net.Listen(\"tcp\", \"127.0.0.1:0\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tgo http.Serve(ln, mux)\n\tbase := \"http://\" + ln.Addr().String()\n\n\t// This IS \"the client\". curl, a browser's address bar, and this code all\n\t// do the exact same three things: open a connection, send a request, read\n\t// back a response. There is nothing special about any of them - they all\n\t// speak the same plain-text protocol.\n\tres, err := http.Get(base + \"/ping\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tbody, _ := io.ReadAll(res.Body)\n\tres.Body.Close()\n\n\tfmt.Printf(\"request  : GET %s/ping\\n\", base)\n\tfmt.Printf(\"response : %d %q\\n\", res.StatusCode, string(body))\n\t// 200 means \"the server understood the request AND was able to fulfil it\".\n\tif res.StatusCode != 200 || string(body) != \"pong\\n\" {\n\t\tpanic(\"FAILED\")\n\t}\n\n\t// Now ask for a path this server never agreed to answer.\n\tres2, err := http.Get(base + \"/does-not-exist\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tres2.Body.Close()\n\tfmt.Printf(\"request  : GET %s/does-not-exist\\n\", base)\n\tfmt.Printf(\"response : %d   (an endpoint this server never agreed to answer - not a crash)\\n\", res2.StatusCode)\n\tif res2.StatusCode != 404 {\n\t\tpanic(\"FAILED\")\n\t}\n\tfmt.Println(\"OK\")\n}\n"
+      },
+      "lastOpened": 1790186619734,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "go-eng/01_rest_api_service": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"net/http\"\n\t\"sync\"\n\t\"time\"\n)\n\n// Task is the resource this API exposes.\ntype Task struct {\n\tID        string    `json:\"id\"`\n\tTitle     string    `json:\"title\"`\n\tDone      bool      `json:\"done\"`\n\tCreatedAt time.Time `json:\"created_at\"`\n}\n\n// TaskStore is a concurrency-safe in-memory collection of tasks.\n//\n// TODO: add whatever fields you need (a map keyed by ID, a mutex, an\n// incrementing ID counter or a UUID generator, and something that lets List\n// return tasks in stable creation order \u2014 a map alone does not preserve\n// order).\ntype TaskStore struct {\n\tmu sync.RWMutex\n\t// TODO: fields\n}\n\n// NewTaskStore returns an empty, ready-to-use TaskStore.\nfunc NewTaskStore() *TaskStore {\n\tpanic(\"TODO: implement NewTaskStore\")\n}\n\n// Create inserts a new task with the given title and returns it.\n// TODO: generate an ID, set CreatedAt, store it, preserve insertion order.\nfunc (s *TaskStore) Create(title string) Task {\n\tpanic(\"TODO: implement TaskStore.Create\")\n}\n\n// Get returns the task with the given id.\n// TODO: return (Task{}, ErrNotFound) when the id doesn't exist.\nfunc (s *TaskStore) Get(id string) (Task, error) {\n\tpanic(\"TODO: implement TaskStore.Get\")\n}\n\n// List returns all tasks in creation order.\nfunc (s *TaskStore) List() []Task {\n\tpanic(\"TODO: implement TaskStore.List\")\n}\n\n// Update overwrites the title/done fields of an existing task.\n// TODO: return ErrNotFound when the id doesn't exist.\nfunc (s *TaskStore) Update(id string, title string, done bool) (Task, error) {\n\tpanic(\"TODO: implement TaskStore.Update\")\n}\n\n// Delete removes a task by id.\n// TODO: return ErrNotFound when the id doesn't exist.\nfunc (s *TaskStore) Delete(id string) error {\n\tpanic(\"TODO: implement TaskStore.Delete\")\n}\n\n// ErrNotFound is returned by TaskStore methods when an id doesn't exist.\n// TODO: define this as a sentinel error (errors.New), and use errors.Is at\n// the HTTP layer to translate it into a 404 without the store knowing\n// anything about HTTP.\nvar ErrNotFound error\n\n// apiError is the stable JSON envelope every error response uses.\n//\n// TODO: define the JSON shape described in the header comment:\n//\n//\t{\"error\": {\"code\": \"...\", \"message\": \"...\"}}\n//\n// Hint: you likely want two structs \u2014 an outer one with a single \"error\"\n// field, and an inner one with \"code\"/\"message\" \u2014 so encoding/json produces\n// the nested shape without manual map-building.\ntype apiError struct {\n\t// TODO: fields\n}\n\n// writeJSON encodes v as JSON with the given status code.\n// TODO: set Content-Type: application/json, write the status header, then\n// encode v to w. Consider what happens if encoding fails after the header\n// is already written (you can't change the status at that point \u2014 at\n// minimum don't panic).\nfunc writeJSON(w http.ResponseWriter, status int, v any) {\n\tpanic(\"TODO: implement writeJSON\")\n}\n\n// writeError writes an error response using the apiError envelope.\n// TODO: build the envelope and delegate to writeJSON.\nfunc writeError(w http.ResponseWriter, status int, code, message string) {\n\tpanic(\"TODO: implement writeError\")\n}\n\n// decodeJSON decodes the request body into dst, rejecting unknown fields\n// and malformed JSON.\n//\n// TODO: use json.NewDecoder(r.Body), call DisallowUnknownFields, and Decode\n// into dst. Also check for a trailing second JSON value in the body (a\n// classic bug: `{\"a\":1}{\"b\":2}` decodes the first object silently) by\n// calling Decode a second time into a throwaway `json.RawMessage` and\n// expecting io.EOF.\nfunc decodeJSON(r *http.Request, dst any) error {\n\tpanic(\"TODO: implement decodeJSON\")\n}\n\n// createTaskRequest is the JSON body accepted by POST /tasks.\ntype createTaskRequest struct {\n\tTitle string `json:\"title\"`\n}\n\n// updateTaskRequest is the JSON body accepted by PUT /tasks/{id}.\ntype updateTaskRequest struct {\n\tTitle string `json:\"title\"`\n\tDone  bool   `json:\"done\"`\n}\n\n// validateTitle enforces the title validation rules from the spec.\n// TODO: trim whitespace, reject empty, reject > 200 runes. Return a\n// descriptive error whose message is safe to show directly to the caller.\nfunc validateTitle(title string) (string, error) {\n\tpanic(\"TODO: implement validateTitle\")\n}\n\n// handleHealthz implements GET /healthz.\nfunc handleHealthz(w http.ResponseWriter, r *http.Request) {\n\tpanic(\"TODO: implement handleHealthz\")\n}\n\n// handleCreateTask implements POST /tasks.\n// TODO: decode+validate the body, call store.Create, respond 201 with the\n// created task.\nfunc handleCreateTask(store *TaskStore) http.HandlerFunc {\n\tpanic(\"TODO: implement handleCreateTask\")\n}\n\n// handleListTasks implements GET /tasks.\nfunc handleListTasks(store *TaskStore) http.HandlerFunc {\n\tpanic(\"TODO: implement handleListTasks\")\n}\n\n// handleGetTask implements GET /tasks/{id}.\n// TODO: read the {id} path value via r.PathValue(\"id\") (Go 1.22+ mux\n// feature \u2014 no third-party router needed).\nfunc handleGetTask(store *TaskStore) http.HandlerFunc {\n\tpanic(\"TODO: implement handleGetTask\")\n}\n\n// handleUpdateTask implements PUT /tasks/{id}.\nfunc handleUpdateTask(store *TaskStore) http.HandlerFunc {\n\tpanic(\"TODO: implement handleUpdateTask\")\n}\n\n// handleDeleteTask implements DELETE /tasks/{id}.\n// TODO: 204 No Content on success \u2014 no body.\nfunc handleDeleteTask(store *TaskStore) http.HandlerFunc {\n\tpanic(\"TODO: implement handleDeleteTask\")\n}\n\n// newMux wires every route to its handler and returns the resulting\n// http.Handler. Tests exercise the server through this function directly,\n// without a real network listener.\n//\n// TODO: build an *http.ServeMux, register each route using Go 1.22+\n// \"METHOD /path\" patterns, and return it.\nfunc newMux(store *TaskStore) http.Handler {\n\tpanic(\"TODO: implement newMux\")\n}\n\n// newServer builds an *http.Server with production-sane timeouts wrapping\n// the mux from newMux.\n// TODO: set Addr, Handler, ReadHeaderTimeout, WriteTimeout, IdleTimeout.\nfunc newServer(addr string, store *TaskStore) *http.Server {\n\tpanic(\"TODO: implement newServer\")\n}\n\nfunc main() {\n\t// TODO:\n\t//  1. Build a store and server via newServer(\":8080\", NewTaskStore()).\n\t//  2. Start it in a goroutine with ListenAndServe, sending any non-\n\t//     ErrServerClosed error to a channel (or log.Fatal-ing carefully \u2014\n\t//     but prefer not crashing the whole process from a goroutine you\n\t//     can't recover from cleanly).\n\t//  3. Wait for SIGINT/SIGTERM via signal.NotifyContext.\n\t//  4. On signal, call server.Shutdown(ctx) with a bounded timeout\n\t//     (e.g. 10s) so in-flight requests can finish, then exit.\n\tpanic(\"TODO: implement main\")\n}\n\nvar _ = json.Marshal // keep encoding/json imported for the stub file\n\n/*\nHINTS\n\n  - `r.PathValue(\"id\")` is the Go 1.22+ way to read a `{id}` path segment \u2014\n    no third-party router required. It only works if the mux pattern\n    actually contains `{id}`.\n  - `http.ServeMux` patterns that specify a method (\"GET /tasks\") only match\n    that method; an unmatched method on a registered path returns 405\n    automatically as of Go 1.22 \u2014 you don't have to check r.Method yourself\n    inside the handler.\n  - Prefer building the mux as a plain function (`newMux`) rather than a\n    package-level `http.DefaultServeMux` + `init()` \u2014 package-level mutable\n    routing state makes tests fight each other.\n  - `json.Decoder.DisallowUnknownFields` + a second `Decode` call to detect\n    trailing garbage are both real production patterns, not academic \u2014 a\n    client sending `{\"title\":\"x\"}{\"evil\":1}` or a typo'd field name should\n    fail loudly, not silently.\n\nCOMMON PITFALLS\n\n  - Returning raw Go errors (`err.Error()`) to the client \u2014 leaks internal\n    detail and is inconsistent in shape. Always go through writeError.\n  - Forgetting `WriteHeader` must be called before `Write`/`Encode` writes\n    body bytes \u2014 encoding/json's Encode after WriteHeader is fine, but if\n    you write body bytes first, the status silently becomes 200.\n  - A `TaskStore` using a `map[string]Task` with no separate ordering slice\n    \u2014 Go map iteration order is randomized, so `List` will return tasks in\n    a different order every call. Track insertion order explicitly.\n  - `http.ListenAndServe` blocking main forever with no signal handling \u2014\n    means `docker stop` / k8s SIGTERM hard-kills the process after its\n    grace period, dropping in-flight requests.\n  - Validating only in the handler and not returning descriptive messages \u2014\n    \"400 Bad Request\" with no body forces the API consumer to guess.\n\nSTRETCH GOALS\n\n  - Add pagination to GET /tasks (`?limit=&cursor=`).\n  - Add optimistic concurrency: an ETag/If-Match header on PUT, 412 on\n    mismatch.\n  - Add a PATCH /tasks/{id} for partial updates (JSON merge semantics \u2014\n    distinguish \"field omitted\" from \"field set to zero value\" using\n    pointer fields or `json.RawMessage`).\n  - Swap TaskStore's backing storage for a `database/sql` implementation\n    behind the same interface (foreshadows problem 09).\n*/\n"
+      },
+      "lastOpened": 1790202129824,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "go-eng/26_advanced_concurrency_patterns": {
+      "attempts": 1,
+      "drafts": {
+        "go": ""
+      },
+      "lastOpened": 1789655088794,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "py-eng/01_rest_api_service": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from __future__ import annotations\n\nfrom collections.abc import AsyncIterator\nfrom contextlib import asynccontextmanager\n\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\n\n# NOTE (stub only): you'll need more imports once you fill in the TODOs\n# below \u2014 at minimum `uuid` (task ids), `datetime.UTC`/`datetime.datetime`\n# (timestamps), `pydantic.Field` (length-constrained fields), and from\n# `fastapi`: `HTTPException`, `Query` (the `?done=` filter), `Request`\n# (reaching `request.app.state.store`), and `status` (named status codes).\n# They're listed here rather than pre-imported so this file imports cleanly\n# as a stub without tripping an unused-import lint error.\n\n\n# ---------------------------------------------------------------------------\n# Domain exceptions \u2014 HTTP-agnostic. The store layer should never import\n# `fastapi` or raise `HTTPException` directly; that keeps it testable and\n# reusable outside of a web context (e.g. from a CLI or a background job).\n# ---------------------------------------------------------------------------\nclass TaskError(Exception):\n    \"\"\"Base class for all task-store domain errors.\"\"\"\n\n\nclass TaskNotFoundError(TaskError):\n    \"\"\"Raised when a task id does not exist in the store.\"\"\"\n\n    def __init__(self, task_id: str) -> None:\n        # TODO: store `task_id` on the instance and call\n        # super().__init__ with a human-readable message. Callers (the\n        # exception handler) will read the message via str(exc).\n        raise NotImplementedError(\"TODO: implement TaskNotFoundError.__init__\")\n\n\n# ---------------------------------------------------------------------------\n# Pydantic models \u2014 the request/response contract.\n# ---------------------------------------------------------------------------\nclass TaskCreate(BaseModel):\n    \"\"\"Body for POST /tasks.\"\"\"\n\n    # TODO: `title: str` constrained to 1..200 chars after stripping\n    # whitespace (use pydantic.Field with min_length/max_length, and either\n    # a field validator that strips, or str_strip_whitespace in model_config).\n    # TODO: `done: bool = False`\n\n\nclass TaskUpdate(BaseModel):\n    \"\"\"Body for PATCH /tasks/{id}. Every field optional (partial update).\"\"\"\n\n    # TODO: `title: str | None = None` (same length constraint when present)\n    # TODO: `done: bool | None = None`\n\n\nclass TaskOut(BaseModel):\n    \"\"\"Response model. Server-generated fields are never client-writable.\"\"\"\n\n    # TODO: id: str, title: str, done: bool, created_at: datetime\n\n\n# ---------------------------------------------------------------------------\n# Store \u2014 an async-safe in-memory repository. In a real service this would\n# be a thin wrapper over a DB connection pool; the concurrency-safety shape\n# (guard the critical section, keep methods small) is identical either way.\n# ---------------------------------------------------------------------------\nclass TaskStore:\n    \"\"\"In-memory task repository, safe under concurrent async handlers.\"\"\"\n\n    def __init__(self) -> None:\n        # TODO: self._tasks: dict[str, TaskOut] = {}\n        # TODO: self._lock = asyncio.Lock()\n        raise NotImplementedError(\"TODO: implement TaskStore.__init__\")\n\n    async def create(self, data: TaskCreate) -> TaskOut:\n        \"\"\"Generate an id + created_at, store, and return the new task.\"\"\"\n        # TODO: build a TaskOut with uuid.uuid4().hex and datetime.now(UTC),\n        # insert it under the lock, return it.\n        raise NotImplementedError(\"TODO: implement TaskStore.create\")\n\n    async def list(self, *, done: bool | None = None) -> list[TaskOut]:\n        \"\"\"Return all tasks, optionally filtered by `done`.\"\"\"\n        raise NotImplementedError(\"TODO: implement TaskStore.list\")\n\n    async def get(self, task_id: str) -> TaskOut:\n        \"\"\"Return one task or raise TaskNotFoundError.\"\"\"\n        raise NotImplementedError(\"TODO: implement TaskStore.get\")\n\n    async def update(self, task_id: str, data: TaskUpdate) -> TaskOut:\n        \"\"\"Apply only the fields set on `data`; raise TaskNotFoundError if missing.\"\"\"\n        raise NotImplementedError(\"TODO: implement TaskStore.update\")\n\n    async def delete(self, task_id: str) -> None:\n        \"\"\"Remove a task or raise TaskNotFoundError.\"\"\"\n        raise NotImplementedError(\"TODO: implement TaskStore.delete\")\n\n\n# ---------------------------------------------------------------------------\n# Lifespan \u2014 startup/shutdown. This is where you'd open a DB pool or an\n# httpx.AsyncClient once per process and guarantee it's closed on shutdown,\n# including on SIGTERM (uvicorn translates SIGTERM into a clean ASGI\n# lifespan \"shutdown\" event, which is what makes this pattern \"graceful\").\n# ---------------------------------------------------------------------------\n@asynccontextmanager\nasync def lifespan(app: FastAPI) -> AsyncIterator[None]:\n    # TODO: create a TaskStore, assign it to app.state.store, log/print a\n    # startup message, `yield`, then log/print a shutdown message and clear\n    # the store. Everything before `yield` runs on startup; everything after\n    # runs on shutdown \u2014 even if the process is asked to stop while requests\n    # are in flight, ASGI servers drain in-flight requests before calling\n    # the shutdown half of lifespan.\n    raise NotImplementedError(\"TODO: implement lifespan\")\n    yield  # pragma: no cover - unreachable, keeps this a valid generator\n\n\ndef create_app() -> FastAPI:\n    \"\"\"Application factory \u2014 lets tests build fresh app instances.\"\"\"\n    app = FastAPI(lifespan=lifespan)\n\n    # TODO: register routes on `app` (either directly or via an APIRouter),\n    # and register an exception_handler for TaskNotFoundError that returns\n    # a 404 JSONResponse. Access the store as request.app.state.store inside\n    # handlers, never as a module-level global \u2014 that's what makes the app\n    # testable with multiple independent instances.\n    raise NotImplementedError(\"TODO: implement create_app routes\")\n\n    return app  # pragma: no cover - unreachable until TODO above is done\n\n\n# NOTE (stub only): unlike the solution file, `app` is *not* built at import\n# time here. `create_app()` still raises `NotImplementedError` until you fill\n# in the TODOs above, and this file must import cleanly as-is \u2014 so calling\n# it unconditionally at module scope would break that contract. Once your\n# implementation is in place, either uncomment the line below or drive\n# `create_app()` from your own `if __name__ == \"__main__\":` block:\n#\n#     app = create_app()\n\n\n# ---------------------------------------------------------------------------\n# HINTS\n# -----\n# - `request.app.state.store` is the idiomatic way to reach per-app state\n#   from inside a route handler without module-level globals.\n# - Prefer `response_model=TaskOut` (or a return-type annotation FastAPI can\n#   introspect) over building JSONResponse by hand \u2014 you get automatic\n#   OpenAPI docs and response validation for free.\n# - `TestClient` from `fastapi.testclient` runs the full ASGI lifecycle\n#   (including `lifespan`) when used as a context manager:\n#   `with TestClient(app) as client: ...` \u2014 a bare `TestClient(app)` without\n#   the `with` does NOT run lifespan in recent FastAPI/Starlette versions.\n# - `HTTPException(status_code=..., detail=...)` is fine for hand-authored\n#   4xx paths inside a handler (e.g. the \"at least one field\" 400 on\n#   PATCH); reserve the domain exception hierarchy for errors raised deep\n#   in the store, away from any `Request`/`HTTPException` import.\n#\n# COMMON PITFALLS\n# ---------------\n# - Forgetting the `asyncio.Lock` and doing \"check-then-act\" on the dict\n#   (e.g. `if id in self._tasks: del self._tasks[id]`) \u2014 under concurrent\n#   requests two coroutines can both pass the check before either acts.\n#   The lock must wrap the *entire* read-modify-write sequence, not just\n#   the mutation.\n# - Returning `204 No Content` with a body \u2014 FastAPI/Starlette will reject\n#   this; a 204 response must have an empty body (don't set\n#   `response_model` on the DELETE handler).\n# - Using a *module-level* `TaskStore()` instance instead of `app.state` \u2014\n#   this leaks state across test cases that each construct their own `app`\n#   and makes lifespan startup/shutdown meaningless (there's nothing left\n#   for it to create/destroy).\n# - `datetime.utcnow()` is deprecated in modern Python \u2014 use\n#   `datetime.now(UTC)` for a timezone-aware timestamp.\n#\n# STRETCH GOALS\n# --------------\n# - Add pagination (`?limit=&cursor=`) to `GET /tasks` instead of returning\n#   the whole store.\n# - Add an `ETag`/`If-Match` optimistic-concurrency check on `PATCH`.\n# - Swap the in-memory dict for stdlib `sqlite3` (foreshadows problem 09)\n#   without changing the router code \u2014 only `TaskStore`'s internals change,\n#   which is the point of keeping HTTP and storage layered.\n# - Add a real uvicorn entrypoint (`if __name__ == \"__main__\":\n#   uvicorn.run(...)`) and manually send SIGTERM to a running process to\n#   observe the lifespan shutdown log fire before the process exits.\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "py-eng/26_metaprogramming_descriptors_decorators": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import Any, Type, Dict, Callable\n\n# ============================================================================\n# 1. Class Decorator\n# ============================================================================\ndef singleton(cls: Type[Any]) -> Type[Any]:\n    \"\"\"\n    TODO: Implement the singleton class decorator.\n    It should return a wrapper that intercepts class instantiation and returns\n    the same instance if it was already created.\n    \"\"\"\n    pass\n\n@singleton\nclass DatabaseConnection:\n    def __init__(self):\n        self.connected = True\n\n# ============================================================================\n# 2. Descriptors\n# ============================================================================\nclass ValidatedField:\n    \"\"\"\n    TODO: Implement the descriptor protocol (__get__, __set__, __set_name__).\n    - __set_name__ should store the name of the attribute.\n    - __get__ should return the value from the instance's __dict__.\n    - __set__ should enforce that the value is of the correct type (int) and > 0.\n    \"\"\"\n    def __init__(self, expected_type: Type, min_value: Any = None):\n        pass\n        \n    def __set_name__(self, owner: Type, name: str):\n        pass\n        \n    def __get__(self, instance: Any, owner: Type) -> Any:\n        pass\n        \n    def __set__(self, instance: Any, value: Any):\n        pass\n\nclass UserAccount:\n    age = ValidatedField(int, min_value=18)\n    \n    def __init__(self, age: int):\n        self.age = age\n\n# ============================================================================\n# 3. Metaclasses\n# ============================================================================\n# Global registry for our metaclass\nCOMPONENT_REGISTRY: Dict[str, Type] = {}\n\nclass RegistryMeta(type):\n    \"\"\"\n    TODO: Implement the __new__ or __init__ method for this metaclass.\n    Whenever a new class is defined using this metaclass, it should automatically\n    be added to the COMPONENT_REGISTRY dictionary with its class name as the key.\n    \"\"\"\n    pass\n\nclass BaseComponent(metaclass=RegistryMeta):\n    pass\n    \nclass EmailComponent(BaseComponent):\n    pass\n\nclass SMSComponent(BaseComponent):\n    pass\n\nif __name__ == \"__main__\":\n    print(\"Run the solution file to see the working implementation!\")\n"
+      },
+      "lastOpened": 1789655084176,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "py-eng/32_pydantic_v2_deep_dive": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import Any\ntry:\n    from pydantic import BaseModel, field_validator, model_validator, field_serializer, ValidationError\nexcept ImportError:\n    print(\"Please install pydantic: pip install pydantic\")\n    import sys\n    sys.exit(1)\n\n# ============================================================================\n# Pydantic v2 Deep Dive\n# ============================================================================\n\nclass UserRegistration(BaseModel):\n    # TODO: Define fields: username (str), password (str), password_confirm (str)\n    \n    # TODO: Add a field_validator for 'username'.\n    # Convert it to lowercase. If it is not alphanumeric, raise a ValueError.\n    \n    # TODO: Add a model_validator (mode=\"after\") that checks if password == password_confirm.\n    # If they don't match, raise a ValueError.\n    \n    # TODO: Add a field_serializer for 'password'.\n    # Whenever the model is serialized (e.g. model_dump()), the password should output as \"***\".\n    pass\n\nif __name__ == \"__main__\":\n    print(\"Run the solution file to see the working implementation!\")\n"
+      },
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "stdlib/py/01_os/level_01_environment_variables": {
+      "attempts": 1,
+      "drafts": {
+        "py": "\"\"\"\nLEVEL 01 (basic) - Reading environment variables with os.environ / os.getenv\n=============================================================================\nYou will learn\n  * os.environ is a dict-like snapshot of the process environment\n  * os.getenv(key, default) is the safe read (never raises KeyError)\n  * writing os.environ[\"KEY\"] = value is how you actually set one for real\n  * why os.putenv exists but is NOT the way to update your own process's view\n\nRun: python level_01_environment_variables.py\n\"\"\"\nimport os\n\nif __name__ == \"__main__\":\n    # os.environ behaves like a dict: every currently-set environment variable\n    # is a key. PATH exists on essentially every machine this could run on.\n    assert \"PATH\" in os.environ\n    assert isinstance(os.environ[\"PATH\"], str)\n\n    # os.getenv is the safe read: missing key -> default (None if you don't ask\n    # for one), never a KeyError. This is the one you reach for 90% of the time.\n    missing = os.getenv(\"THIS_VAR_DEFINITELY_DOES_NOT_EXIST_12345\")\n    assert missing is None\n\n    with_default = os.getenv(\"THIS_VAR_DEFINITELY_DOES_NOT_EXIST_12345\", \"fallback\")\n    assert with_default == \"fallback\"\n\n    # os.environ[\"KEY\"] directly (no default) DOES raise KeyError if unset --\n    # that's the difference between os.environ[...] and os.getenv(...).\n    try:\n        _ = os.environ[\"THIS_VAR_DEFINITELY_DOES_NOT_EXIST_12345\"]\n        raise AssertionError(\"expected KeyError\")\n    except KeyError:\n        pass\n\n    # The correct way to SET a variable so your own process sees the change\n    # immediately is to assign into os.environ directly.\n    os.environ[\"PYSTDLIB_DEMO_VAR\"] = \"hello\"\n    assert os.getenv(\"PYSTDLIB_DEMO_VAR\") == \"hello\"\n\n    # os.putenv() also exists and updates the real OS-level process environment\n    # (what a child process launched afterwards would inherit), but it does NOT\n    # refresh the os.environ dict cache in THIS process -- read the value back\n    # through os.environ afterwards and it still shows the old value. This is\n    # exactly why the docs say \"don't call os.putenv directly, assign to\n    # os.environ instead\" -- assigning to os.environ calls putenv for you AND\n    # keeps the dict in sync.\n    os.environ[\"PYSTDLIB_DEMO_VAR\"] = \"before\"\n    os.putenv(\"PYSTDLIB_DEMO_VAR\", \"after-via-putenv\")\n    # the process-level environment changed, but our cached dict did not:\n    assert os.environ[\"PYSTDLIB_DEMO_VAR\"] == \"before\"\n\n    # clean up after ourselves\n    del os.environ[\"PYSTDLIB_DEMO_VAR\"]\n    assert \"PYSTDLIB_DEMO_VAR\" not in os.environ\n\n    print(\"OK\")\n"
+      },
+      "lastOpened": 1790186623262,
+      "status": "attempting",
+      "timeSpent": 0
+    }
+  },
+  "sessions": {},
+  "settings": {
+    "editorFont": 13,
+    "lang": "go",
+    "theme": "dark"
+  },
+  "version": 1
+}

@@ -1,0 +1,62 @@
+// Task service used by 24_grpc_service.
+//
+// Generate Python + gRPC bindings with (run from the PyEngineering/ directory):
+//
+//   .venv/bin/python -m grpc_tools.protoc \
+//       -I24_grpc_service \
+//       --python_out=24_grpc_service \
+//       --grpc_python_out=24_grpc_service \
+//       --pyi_out=24_grpc_service \
+//       24_grpc_service/task_service.proto
+//
+// This produces `task_service_pb2.py` (messages), `task_service_pb2.pyi`
+// (message stubs), and `task_service_pb2_grpc.py` (the `TaskServiceServicer`
+// base class + async-capable stub) next to this file.
+syntax = "proto3";
+
+package pyengineering.tasks;
+
+message Task {
+  string id = 1;
+  string title = 2;
+  bool done = 3;
+}
+
+message CreateTaskRequest {
+  string title = 1;
+}
+
+message GetTaskRequest {
+  string id = 1;
+}
+
+message ListTasksRequest {}
+
+// Deliberately slow, cooperatively-cancellable RPC used to demonstrate
+// grpc.aio deadline propagation: the servicer polls `context.cancelled()`
+// instead of blindly sleeping for the full duration, so a client deadline
+// that expires partway through stops server-side work promptly instead of
+// wasting it.
+message SlowRequest {
+  double delay_seconds = 1;
+}
+
+message SlowResponse {
+  string message = 1;
+}
+
+service TaskService {
+  // Unary RPC. Returns INVALID_ARGUMENT (via context.abort) for a blank title.
+  rpc CreateTask(CreateTaskRequest) returns (Task);
+
+  // Unary RPC. Returns NOT_FOUND (via context.abort) for an unknown id -
+  // the error-model half of the exercise.
+  rpc GetTask(GetTaskRequest) returns (Task);
+
+  // Server-streaming RPC: the streaming half of the exercise.
+  rpc ListTasks(ListTasksRequest) returns (stream Task);
+
+  // Unary RPC, deliberately slow - the deadline-propagation half of the
+  // exercise (see message comment above).
+  rpc SlowOperation(SlowRequest) returns (SlowResponse);
+}

@@ -1,0 +1,23 @@
+// FOUNDATION LEVEL 04 - presence and default values.
+//
+// The two int32 fields below behave COMPLETELY differently even though they
+// have the same type, because one of them is marked `optional`.
+syntax = "proto3";
+
+package found.l04;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l04;l04";
+
+message Reading {
+  string sensor_id = 1;
+
+  // A plain proto3 scalar. It has NO presence: the encoder skips it whenever
+  // it holds the type's default (0), so "never set" and "deliberately 0"
+  // produce byte-for-byte identical output. You cannot recover the difference.
+  int32 celsius = 2;
+
+  // The same type, but `optional` turns presence back on. Setting it to 0
+  // now still emits the field on the wire, so a reader can ask "was this
+  // sent?" and get a truthful answer.
+  optional int32 humidity = 3;
+}

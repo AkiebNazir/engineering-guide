@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+httpx
+hypothesis
+grpcio
+grpcio-tools
+protobuf
+prometheus_client
+pytest
+pytest-asyncio
+mypy
+black
+ruff

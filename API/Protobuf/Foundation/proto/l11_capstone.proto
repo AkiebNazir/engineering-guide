@@ -1,0 +1,57 @@
+// FOUNDATION LEVEL 11 (CAPSTONE) - one realistic schema that uses everything.
+//
+// Nested messages (level 02), repeated fields (level 03), presence via
+// `optional` (level 04), an enum (level 05) and the evolution rules
+// (level 06) all appear below. A Python program and a Go program both read
+// and write the same `ShipmentFile` bytes from this one file.
+syntax = "proto3";
+
+package found.l11;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l11;l11";
+
+enum Carrier {
+  CARRIER_UNSPECIFIED = 0;
+  CARRIER_DHL = 1;
+  CARRIER_UPS = 2;
+  CARRIER_POSTNORD = 3;
+}
+
+message Address {
+  string line1 = 1;
+  string city = 2;
+  string country_code = 3;
+}
+
+message LineItem {
+  string sku = 1;
+  int32 qty = 2;
+  int64 unit_price_cents = 3;
+}
+
+message Shipment {
+  // EVOLUTION LOG - the part of a real schema that saves you two years later.
+  //   v1 : fields 1-5
+  //   v2 : added `delivered_unix_millis` (6) as `optional`, so "not delivered
+  //        yet" is distinguishable from "delivered at epoch 0"
+  //   v2 : deleted `tracking_url` (7); its number and name are reserved
+  //        forever so nothing can recycle them
+  // Never renumber 1-6. Never un-reserve 7. Only ever append new numbers.
+  reserved 7;
+  reserved "tracking_url";
+
+  string shipment_id = 1;
+  Carrier carrier = 2;
+  Address destination = 3;         // nested message
+  repeated LineItem items = 4;     // repeated message
+  repeated string tags = 5;        // repeated scalar
+  optional int64 delivered_unix_millis = 6;
+}
+
+// The on-disk file format: a version number plus a list of shipments. Putting
+// an explicit schema_version in the payload costs one byte and tells a future
+// reader which evolution step produced the file.
+message ShipmentFile {
+  int32 schema_version = 1;
+  repeated Shipment shipments = 2;
+}

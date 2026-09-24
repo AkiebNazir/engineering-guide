@@ -1,0 +1,27 @@
+// FOUNDATION LEVEL 10 - authorization.
+// Two RPCs with deliberately different permission requirements: any
+// authenticated caller may list, only an admin may delete.
+syntax = "proto3";
+
+package foundation.authz.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/authzpb;authzpb";
+
+service Reports {
+  rpc ListReports(ListReportsRequest) returns (ListReportsResponse);
+  rpc DeleteReport(DeleteReportRequest) returns (DeleteReportResponse);
+}
+
+message ListReportsRequest {}
+
+message ListReportsResponse {
+  repeated string titles = 1;
+}
+
+message DeleteReportRequest {
+  int32 id = 1;
+}
+
+message DeleteReportResponse {
+  int32 remaining = 1;
+}
