@@ -196,7 +196,10 @@ function mountFlow(L, spec) {
   };
 
   /* ------------------------------------------------------------- drawing -- */
+  const seenEdge = new Set();                         // a→b and b→a are one line
   $f('.fl-edges').innerHTML = spec.edges.map(([a, b, o = {}]) => {
+    if (seenEdge.has(pairKey(a, b))) return '';
+    seenEdge.add(pairKey(a, b));
     const d = pathD(polyline(a, b));
     return `<path class="fl-edge${o.async ? ' is-async' : ''}" data-e="${pairKey(a, b)}" d="${d}"/>
       <path class="fl-edge-flow" data-e="${pairKey(a, b)}" d="${d}"/>`;
@@ -230,7 +233,7 @@ function mountFlow(L, spec) {
       <rect class="fl-shape" x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="12"/>
       ${n._stack ? tile(n, b.x - s / 2, y + 10, s) : tile(n, x + 13, b.y - s / 2, s)}
       ${text}
-      <g class="fl-badge" transform="translate(${b.x} ${y - 18})"><rect rx="12" height="24" y="-12"/><text text-anchor="middle" y="4.5"></text></g>
+      <g class="fl-badge" transform="translate(${b.x} ${y < 90 ? y + b.h + 18 : y - 18})"><rect rx="12" height="24" y="-12"/><text text-anchor="middle" y="4.5"></text></g>
       <text class="fl-down" x="${b.x}" y="${y + b.h + 18}" text-anchor="middle">unavailable</text>
     </g>`;
   }).join('');
@@ -317,7 +320,7 @@ function mountFlow(L, spec) {
         const w = Math.max(44, Math.ceil(measure(s.label || '', FONT_TAG)) + 22);
         rect.setAttribute('width', w); rect.setAttribute('x', -w / 2);
       }
-      tag.setAttribute('transform', `translate(0 ${y < 90 ? 16 : -38})`);
+      tag.setAttribute('transform', `translate(0 ${y < 110 ? 16 : -38})`);   // below the dot near the lane headers
       tag.style.opacity = f > .8 && k === hops - 1 ? 0 : 1;          // don't cover the node it lands on
     }
 
@@ -454,7 +457,7 @@ const FLOW_WORD_RULES = [
   [/relay|worker|consumer|fetcher|crawler|encoder|transcod|processor|job/i, 'worker'], [/schedul|cron|timer/i, 'scheduler'],
   [/cache|hot set/i, 'cache'], [/search|index|autocomplete|trie/i, 'search'], [/analytic|metric|dashboard|olap|warehouse/i, 'metrics'],
   [/model|llm|gpu|inference|embed/i, 'model'], [/rank|recommend|feature store/i, 'sort'], [/ledger|payment|psp|billing|wallet/i, 'payment'],
-  [/notif|push|apns|fcm/i, 'notify'], [/email|smtp/i, 'email'], [/sms|chat|message/i, 'message'], [/geo|map|location|route|eta/i, 'map'],
+  [/notif|push|apns|fcm/i, 'notify'], [/email|smtp/i, 'email'], [/sms|chat|message/i, 'message'], [/geo|map|location|route|\beta\b/i, 'map'],
   [/video|media|stream(ing)? origin|hls/i, 'video'], [/image|photo|thumb/i, 'image'], [/object|blob|bucket|chunk|file|storage|archive/i, 'blob'],
   [/replica|follower/i, 'replica'], [/shard|partition|\bdb\b|database|table|store|primary|ledger/i, 'db'], [/config|flag/i, 'flag'],
   [/counter|limit/i, 'counter'], [/monitor|health|detector/i, 'monitor'], [/coordinat|zookeeper|etcd|raft|consensus/i, 'sync'],
@@ -645,11 +648,11 @@ defineFlow('sd-flow-shortener', {
   ],
 });
 const Lrl = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'EDGE', nodes: [{ id: 'waf', label: 'WAF', sub: 'L7 firewall' }] },
-  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'API Gateway', sub: 'authenticate & route', w: 160 }] },
-  { label: 'LIMIT STATE', nodes: [{ id: 'redis', label: 'Redis Cluster', sub: 'token bucket (Lua)', kind: 'cache', w: 160 }] },
-  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend', sub: 'protected service' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }] },
+  { label: 'EDGE', nodes: [{ id: 'waf', label: 'WAF', sub: 'L7 firewall', row: 0 }] },
+  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'API Gateway', sub: 'authenticate & route', w: 160, row: 0 }] },
+  { label: 'LIMIT STATE', nodes: [{ id: 'redis', label: 'Redis Cluster', sub: 'token bucket (Lua)', kind: 'cache', w: 160, row: 1 }] },
+  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend', sub: 'protected service', row: 0 }] },
 ]);
 defineFlow('sd-flow-ratelimiter', {
   title: 'Distributed Rate Limiter',
@@ -705,11 +708,11 @@ defineFlow('sd-flow-ratelimiter', {
   ]
 });
 const Lpb = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'EDGE', nodes: [{ id: 'cdn', label: 'CDN / Edge', sub: 'public cache' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'API Service', sub: 'auth & logic' }] },
-  { label: 'STATE', nodes: [{ id: 'meta', label: 'Metadata DB', sub: 'PostgreSQL', kind: 'db' }, { id: 's3', label: 'Object Store', sub: 'blob storage', kind: 'db' }] },
-  { label: 'BACKGROUND', nodes: [{ id: 'worker', label: 'Async Worker', sub: 'cleanup & expiry' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }] },
+  { label: 'EDGE', nodes: [{ id: 'cdn', label: 'CDN / Edge', sub: 'public cache', row: 0 }] },
+  { label: 'SERVICE', nodes: [{ id: 'api', label: 'API Service', sub: 'auth & logic', row: 0 }] },
+  { label: 'STATE', nodes: [{ id: 'meta', label: 'Metadata DB', sub: 'PostgreSQL', kind: 'db', row: 0 }, { id: 's3', label: 'Object Store', sub: 'blob storage', kind: 'db', row: 1 }] },
+  { label: 'BACKGROUND', nodes: [{ id: 'worker', label: 'Async Worker', sub: 'cleanup & expiry', row: 0.5 }] },
 ]);
 defineFlow('sd-flow-pastebin', {
   title: 'Pastebin Architecture',
@@ -774,11 +777,11 @@ defineFlow('sd-flow-pastebin', {
   ]
 });
 const Lnp = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'API · STATE', nodes: [{ id: 'api', label: 'Notification API', sub: 'auth & accept' }, { id: 'db', label: 'Record DB', sub: 'idempotency & log', kind: 'db' }] },
-  { label: 'QUEUE', nodes: [{ id: 'queue', label: 'Event Queue', sub: 'partitioned topic', kind: 'queue' }] },
-  { label: 'WORKERS', nodes: [{ id: 'workers', label: 'Worker Fleet', sub: 'fetch & dispatch' }] },
-  { label: 'EXTERNAL', nodes: [{ id: 'provider', label: '3rd Party', sub: 'FCM / SMS' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 1 }] },
+  { label: 'API', nodes: [{ id: 'api', label: 'Notification API', sub: 'auth & accept', row: 1 }] },
+  { label: 'QUEUE · STATE', nodes: [{ id: 'queue', label: 'Event Queue', sub: 'partitioned topic', kind: 'queue', row: 1 }, { id: 'db', label: 'Record DB', sub: 'idempotency & log', kind: 'db', row: 2 }] },
+  { label: 'WORKERS', nodes: [{ id: 'workers', label: 'Worker Fleet', sub: 'fetch & dispatch', row: 1 }] },
+  { label: 'EXTERNAL', nodes: [{ id: 'provider', label: '3rd Party', sub: 'FCM / SMS', icon: 'notify', row: 0 }] },
 ]);
 defineFlow('sd-flow-notifications', {
   title: 'Notification Platform',
@@ -829,9 +832,10 @@ defineFlow('sd-flow-notifications', {
   ]
 });
 const Lpp = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Upload API', sub: 'metadata & auth' }, { id: 'queue', label: 'Transform Q', sub: 'job queue', kind: 'queue' }, { id: 'cdn', label: 'CDN Edge', sub: 'public cache' }] },
-  { label: 'STORAGE · WORKERS', nodes: [{ id: 's3', label: 'Object Store', sub: 'original & variants', kind: 'db' }, { id: 'worker', label: 'Worker Fleet', sub: 'resize & scan' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 1 }] },
+  { label: 'API · EDGE', nodes: [{ id: 'api', label: 'Upload API', sub: 'metadata & auth', row: 0 }, { id: 'cdn', label: 'CDN Edge', sub: 'public cache', row: 2 }] },
+  { label: 'STORAGE', nodes: [{ id: 's3', label: 'Object Store', sub: 'original & variants', kind: 'db', row: 1 }] },
+  { label: 'PROCESSING', nodes: [{ id: 'queue', label: 'Transform Q', sub: 'job queue', kind: 'queue', row: 0 }, { id: 'worker', label: 'Worker Fleet', sub: 'resize & scan', row: 1 }] },
 ]);
 defineFlow('sd-flow-photopipeline', {
   title: 'Photo Upload & Pipeline',
@@ -888,10 +892,10 @@ defineFlow('sd-flow-photopipeline', {
   ]
 });
 const Lch = lane([
-  { label: 'CLIENTS', nodes: [{ id: 'alice', label: 'Alice', kind: 'client' }, { id: 'bob', label: 'Bob', kind: 'client' }] },
-  { label: 'GATEWAYS', nodes: [{ id: 'gwa', label: 'Gateway A', sub: 'WebSocket state' }, { id: 'gwb', label: 'Gateway B', sub: 'WebSocket state' }] },
-  { label: 'ROUTING', nodes: [{ id: 'svc', label: 'Message Router', sub: 'business logic' }, { id: 'push', label: 'Push Svc', sub: 'FCM / APNs' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Chat Log', sub: 'Cassandra / KV', kind: 'db' }] },
+  { label: 'CLIENTS', nodes: [{ id: 'alice', label: 'Alice', kind: 'client', row: 0 }, { id: 'bob', label: 'Bob', kind: 'client', row: 1 }] },
+  { label: 'GATEWAYS', nodes: [{ id: 'gwa', label: 'Gateway A', sub: 'WebSocket state', row: 0 }, { id: 'gwb', label: 'Gateway B', sub: 'WebSocket state', row: 1 }] },
+  { label: 'ROUTING', nodes: [{ id: 'svc', label: 'Message Router', sub: 'business logic', row: 0 }, { id: 'push', label: 'Push Svc', sub: 'FCM / APNs', row: 1.5 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Chat Log', sub: 'Cassandra / KV', kind: 'db', row: 0 }] },
 ]);
 defineFlow('sd-flow-chat', {
   title: 'Real-Time Chat',
@@ -993,11 +997,11 @@ defineFlow('sd-flow-newsfeed', {
 });
 
 const Lco = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Shopper', kind: 'client' }] },
-  { label: 'API', nodes: [{ id: 'api', label: 'Checkout API', sub: 'idempotent' }] },
-  { label: 'STATE', nodes: [{ id: 'db_o', label: 'Order DB', sub: 'PENDING state', kind: 'db' }, { id: 'db_i', label: 'Inventory DB', sub: 'conditional hold', kind: 'db' }] },
-  { label: 'SAGA', nodes: [{ id: 'saga', label: 'Saga Worker', sub: 'async payment' }] },
-  { label: 'EXTERNAL', nodes: [{ id: 'psp', label: 'Stripe / PSP', sub: 'external' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Shopper', kind: 'client', row: 0 }] },
+  { label: 'API', nodes: [{ id: 'api', label: 'Checkout API', sub: 'idempotent', row: 0 }] },
+  { label: 'STATE', nodes: [{ id: 'db_o', label: 'Order DB', sub: 'PENDING state', kind: 'db', row: 0 }, { id: 'db_i', label: 'Inventory DB', sub: 'conditional hold', kind: 'db', row: 1 }] },
+  { label: 'SAGA', nodes: [{ id: 'saga', label: 'Saga Worker', sub: 'async payment', row: 0 }] },
+  { label: 'EXTERNAL', nodes: [{ id: 'psp', label: 'Stripe / PSP', sub: 'external', row: 0 }] },
 ]);
 defineFlow('sd-flow-checkout', {
   title: 'Checkout Saga',
@@ -1048,8 +1052,8 @@ defineFlow('sd-flow-checkout', {
 const Lsa = lane([
   { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
   { label: 'SERVICE', nodes: [{ id: 'sug', label: 'Suggest API', sub: 'in-memory trie' }, { id: 'search', label: 'Search API', sub: 'query parser' }] },
-  { label: 'INDEX', nodes: [{ id: 'ingest', label: 'Ingest Pipeline', sub: 'async indexer' }, { id: 'idx', label: 'Search Index', sub: 'Elasticsearch', kind: 'db' }] },
-  { label: 'SOURCE', nodes: [{ id: 'db', label: 'Catalog DB', sub: 'source of truth', kind: 'db' }] },
+  { label: 'INDEX', nodes: [{ id: 'ingest', label: 'Ingest Pipeline', sub: 'async indexer', icon: 'worker', row: 0 }, { id: 'idx', label: 'Search Index', sub: 'Elasticsearch', kind: 'db', row: 1 }] },
+  { label: 'SOURCE', nodes: [{ id: 'db', label: 'Catalog DB', sub: 'source of truth', kind: 'db', row: 0 }] },
 ]);
 defineFlow('sd-flow-search', {
   title: 'Search & Autocomplete',
@@ -1098,10 +1102,10 @@ defineFlow('sd-flow-search', {
 });
 
 const Lst = lane([
-  { label: 'BUYER', nodes: [{ id: 'buyer', label: 'Buyer', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'wait', label: 'Waiting Room', sub: 'rate limiter' }, { id: 'api', label: 'Booking API', sub: 'transactional' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Seat DB', sub: 'conditional updates', kind: 'db' }] },
-  { label: 'EXTERNAL', nodes: [{ id: 'pay', label: 'Payment', sub: 'external PSP' }] },
+  { label: 'BUYER', nodes: [{ id: 'buyer', label: 'Buyer', kind: 'client', row: 0 }] },
+  { label: 'SERVICE', nodes: [{ id: 'wait', label: 'Waiting Room', sub: 'rate limiter', icon: 'queue', row: 0 }, { id: 'api', label: 'Booking API', sub: 'transactional', row: 1 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Seat DB', sub: 'conditional updates', kind: 'db', row: 1 }] },
+  { label: 'EXTERNAL', nodes: [{ id: 'pay', label: 'Payment', sub: 'external PSP', row: 0 }] },
 ]);
 defineFlow('sd-flow-seats', {
   title: 'Seat Reservation',
@@ -1145,11 +1149,13 @@ defineFlow('sd-flow-seats', {
 });
 
 const Lcr = lane([
-  { label: 'DISCOVERY', nodes: [{ id: 'disc', label: 'Discovery', sub: 'extract links' }] },
-  { label: 'DEDUP', nodes: [{ id: 'dup', label: 'URL Dedup', sub: 'Bloom filter', kind: 'cache' }] },
-  { label: 'FRONTIER', nodes: [{ id: 'front', label: 'Frontier', sub: 'per-host queues', kind: 'queue' }] },
-  { label: 'FETCH', nodes: [{ id: 'fetch', label: 'Fetcher', sub: 'politeness rules' }] },
-  { label: 'STORAGE', nodes: [{ id: 'store', label: 'Storage', sub: 'content dedup', kind: 'db' }] },
+  { label: 'PARSE · STORE', nodes: [
+    { id: 'disc', label: 'Discovery', sub: 'extract links', icon: 'search', row: 0 },
+    { id: 'store', label: 'Storage', sub: 'content dedup', kind: 'db', icon: 'storage', row: 1 }] },
+  { label: 'DEDUP', nodes: [{ id: 'dup', label: 'URL Dedup', sub: 'Bloom filter', kind: 'cache', icon: 'filter', row: 0 }] },
+  { label: 'CRAWL', nodes: [
+    { id: 'front', label: 'Frontier', sub: 'per-host queues', kind: 'queue', row: 0 },
+    { id: 'fetch', label: 'Fetcher', sub: 'politeness rules', row: 1 }] },
 ]);
 defineFlow('sd-flow-crawler', {
   title: 'Web Crawler',
@@ -1181,8 +1187,8 @@ defineFlow('sd-flow-crawler', {
   ]
 });
 const Lsc = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Scheduler API', sub: 'submit & state' }, { id: 'disp', label: 'Dispatcher', sub: 'cron & polling' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }] },
+  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Scheduler API', sub: 'submit & state' }, { id: 'disp', label: 'Dispatcher', sub: 'cron & polling', icon: 'scheduler' }] },
   { label: 'STATE', nodes: [{ id: 'db', label: 'State DB', sub: 'PostgreSQL', kind: 'db' }, { id: 'q', label: 'Task Queue', sub: 'ready to run', kind: 'queue' }] },
   { label: 'WORKERS', nodes: [{ id: 'worker', label: 'Worker Fleet', sub: 'execute tasks' }] },
 ]);
@@ -1225,10 +1231,12 @@ defineFlow('sd-flow-scheduler', {
 });
 
 const Lmt = lane([
-  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Agent', kind: 'client' }] },
-  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Ingest API', sub: 'validate & quota' }] },
-  { label: 'BUFFER', nodes: [{ id: 'wal', label: 'WAL Buffer', sub: 'durable stream', kind: 'queue' }] },
-  { label: 'STORAGE', nodes: [{ id: 'tsdb', label: 'TSDB', sub: 'blocks & index', kind: 'db' }, { id: 'comp', label: 'Compactor', sub: 'downsample' }] },
+  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Agent', kind: 'client', icon: 'server', row: 0 }] },
+  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Ingest API', sub: 'validate & quota', row: 0 }] },
+  { label: 'BUFFER', nodes: [{ id: 'wal', label: 'WAL Buffer', sub: 'durable stream', kind: 'queue', row: 0 }] },
+  { label: 'STORAGE', nodes: [
+    { id: 'tsdb', label: 'TSDB', sub: 'blocks & index', kind: 'db', icon: 'metrics', row: 0 },
+    { id: 'comp', label: 'Compactor', sub: 'downsample', icon: 'worker', row: 1 }] },
 ]);
 defineFlow('sd-flow-metrics', {
   title: 'Metrics Platform',
@@ -1266,10 +1274,10 @@ defineFlow('sd-flow-metrics', {
 });
 
 const Llg = lane([
-  { label: 'SERVICE', nodes: [{ id: 'app', label: 'Service', kind: 'client' }] },
-  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Log Agent', sub: 'local buffer' }] },
-  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Log Ingest', sub: 'redact & route' }] },
-  { label: 'STORAGE', nodes: [{ id: 'store', label: 'Log Store', sub: 'blob & index', kind: 'db' }] },
+  { label: 'SERVICE', nodes: [{ id: 'app', label: 'Service', kind: 'client', icon: 'service' }] },
+  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Log Agent', sub: 'local buffer', icon: 'agent' }] },
+  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Log Ingest', sub: 'redact & route', icon: 'logs' }] },
+  { label: 'STORAGE', nodes: [{ id: 'store', label: 'Log Store', sub: 'blob & index', kind: 'db', icon: 'storage' }] },
 ]);
 defineFlow('sd-flow-logging', {
   title: 'Logging Platform',
@@ -1296,10 +1304,12 @@ defineFlow('sd-flow-logging', {
   ]
 });
 const Ldv = lane([
-  { label: 'DEVICES', nodes: [{ id: 'd1', label: 'Device A', kind: 'client' }, { id: 'd2', label: 'Device B', kind: 'client' }] },
-  { label: 'API', nodes: [{ id: 'api', label: 'Sync API', sub: 'metadata commit' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Metadata DB', sub: 'version & cursor', kind: 'db' }, { id: 's3', label: 'Object Store', sub: 'immutable blocks', kind: 'db' }] },
-  { label: 'ASYNC', nodes: [{ id: 'pub', label: 'Change Feed', sub: 'async fanout' }] },
+  { label: 'BLOCKS', nodes: [{ id: 's3', label: 'Object Store', sub: 'immutable blocks', kind: 'db', icon: 'blob', row: 0.5 }] },
+  { label: 'DEVICES', nodes: [{ id: 'd1', label: 'Device A', kind: 'client', icon: 'desktop', row: 0 }, { id: 'd2', label: 'Device B', kind: 'client', icon: 'mobile', row: 1 }] },
+  { label: 'SYNC SERVICE', nodes: [
+    { id: 'api', label: 'Sync API', sub: 'metadata commit', row: 0 },
+    { id: 'pub', label: 'Change Feed', sub: 'async fanout', icon: 'stream', row: 1 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Metadata DB', sub: 'version & cursor', kind: 'db', icon: 'db', row: 0 }] },
 ]);
 defineFlow('sd-flow-drive', {
   title: 'Cloud Drive Sync',
@@ -1335,10 +1345,12 @@ defineFlow('sd-flow-drive', {
 });
 
 const Lvd = lane([
-  { label: 'CLIENTS', nodes: [{ id: 'creator', label: 'Creator', kind: 'client' }, { id: 'viewer', label: 'Viewer', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'job', label: 'Transcoder', sub: 'async ladder' }, { id: 'auth', label: 'Auth API', sub: 'signed manifests' }] },
-  { label: 'STORAGE', nodes: [{ id: 's3', label: 'Object Store', sub: 'derivatives', kind: 'db' }] },
-  { label: 'EDGE', nodes: [{ id: 'cdn', label: 'CDN Edge', sub: 'global cache' }] },
+  { label: 'CLIENTS', nodes: [{ id: 'creator', label: 'Creator', kind: 'client', row: 0 }, { id: 'viewer', label: 'Viewer', kind: 'client', row: 1.5 }] },
+  { label: 'EDGE · API', nodes: [
+    { id: 'auth', label: 'Auth API', sub: 'signed manifests', row: 1 },
+    { id: 'cdn', label: 'CDN Edge', sub: 'global cache', row: 2 }] },
+  { label: 'STORAGE', nodes: [{ id: 's3', label: 'Object Store', sub: 'source & renditions', kind: 'db', icon: 'blob', row: 0 }] },
+  { label: 'PROCESSING', nodes: [{ id: 'job', label: 'Transcoder', sub: 'async ladder', icon: 'video', row: 0 }] },
 ]);
 defineFlow('sd-flow-vod', {
   title: 'Video On Demand',
@@ -1381,10 +1393,10 @@ defineFlow('sd-flow-vod', {
 });
 
 const Lld = lane([
-  { label: 'CLIENTS', nodes: [{ id: 'client', label: 'Client', kind: 'client' }, { id: 'settle', label: 'Bank / PSP', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Ledger API', sub: 'idempotent' }, { id: 'recon', label: 'Reconciler', sub: 'audit mismatches' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Journal DB', sub: 'immutable entries', kind: 'db' }] },
-  { label: 'DERIVED', nodes: [{ id: 'proj', label: 'Projection', sub: 'materialized balance' }] },
+  { label: 'CLIENTS', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }, { id: 'settle', label: 'Bank / PSP', kind: 'client', icon: 'payment', row: 1 }] },
+  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Ledger API', sub: 'idempotent', row: 0 }, { id: 'recon', label: 'Reconciler', sub: 'audit mismatches', icon: 'check', row: 1 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Journal DB', sub: 'immutable entries', kind: 'db', icon: 'db', row: 0 }] },
+  { label: 'DERIVED', nodes: [{ id: 'proj', label: 'Projection', sub: 'balance view', icon: 'table', row: 0 }] },
 ]);
 defineFlow('sd-flow-ledger', {
   title: 'Payment Ledger',
@@ -1423,7 +1435,7 @@ defineFlow('sd-flow-ledger', {
 });
 const Lcc = lane([
   { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'APP', nodes: [{ id: 'api', label: 'App Node', sub: 'hash ring & stampede lock' }] },
+  { label: 'APP', nodes: [{ id: 'api', label: 'App Node', sub: 'hash ring · lock', icon: 'server' }] },
   { label: 'CACHE RING', nodes: [{ id: 'node_a', label: 'Cache Node A', sub: 'shard 1', kind: 'cache' }, { id: 'node_b', label: 'Cache Node B', sub: 'shard 2', kind: 'cache' }] },
   { label: 'ORIGIN', nodes: [{ id: 'db', label: 'Database', sub: 'origin', kind: 'db' }] },
 ]);
@@ -1468,10 +1480,10 @@ defineFlow('sd-flow-cache', {
 });
 
 const Lfl = lane([
-  { label: 'CLIENT', nodes: [{ id: 'req', label: 'User Req', kind: 'client' }] },
-  { label: 'APPLICATION', nodes: [{ id: 'app', label: 'Application', sub: 'SDK cache' }] },
-  { label: 'DISTRIBUTION', nodes: [{ id: 'cdn', label: 'Distribution', sub: 'CDN / SSE stream' }] },
-  { label: 'CONTROL PLANE', nodes: [{ id: 'api', label: 'Control Plane', sub: 'manage flags' }] },
+  { label: 'CLIENT', nodes: [{ id: 'req', label: 'User', sub: 'request', kind: 'client' }] },
+  { label: 'APPLICATION', nodes: [{ id: 'app', label: 'App', sub: 'SDK cache', icon: 'app' }] },
+  { label: 'DISTRIBUTION', nodes: [{ id: 'cdn', label: 'Flag CDN', sub: 'SSE stream', icon: 'cdn' }] },
+  { label: 'CONTROL PLANE', nodes: [{ id: 'api', label: 'Flag API', sub: 'manage flags', icon: 'flag' }] },
   { label: 'STATE', nodes: [{ id: 'db', label: 'Rules DB', sub: 'PostgreSQL', kind: 'db' }] },
 ]);
 defineFlow('sd-flow-flags', {
@@ -1511,7 +1523,7 @@ defineFlow('sd-flow-flags', {
 const Lrd = lane([
   { label: 'CLIENTS', nodes: [{ id: 'driver', label: 'Driver', kind: 'client' }, { id: 'rider', label: 'Rider', kind: 'client' }] },
   { label: 'DISPATCH', nodes: [{ id: 'api', label: 'Dispatch Svc', sub: 'match & offer' }] },
-  { label: 'STATE', nodes: [{ id: 'geo', label: 'Geo Index', sub: 'ephemeral locations', kind: 'cache' }, { id: 'db', label: 'Trip DB', sub: 'transactional state', kind: 'db' }] },
+  { label: 'STATE', nodes: [{ id: 'geo', label: 'Geo Index', sub: 'live locations', kind: 'cache', icon: 'map' }, { id: 'db', label: 'Trip DB', sub: 'transactional state', kind: 'db' }] },
 ]);
 defineFlow('sd-flow-ride', {
   title: 'Ride Dispatch',
@@ -1549,10 +1561,10 @@ defineFlow('sd-flow-ride', {
 });
 
 const Lgw = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', sub: 'tenant A', kind: 'client' }] },
-  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'Gateway', sub: 'auth · route · deadline' }, { id: 'quota', label: 'Quota store', sub: 'per-tenant buckets', kind: 'cache' }] },
-  { label: 'CONFIG', nodes: [{ id: 'policy', label: 'Route policy', sub: 'cached · versioned', kind: 'db' }] },
-  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend svc', sub: 're-authorizes' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', sub: 'tenant A', kind: 'client', row: 0 }] },
+  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'Gateway', sub: 'auth · route · deadline', row: 0 }, { id: 'quota', label: 'Quota store', sub: 'per-tenant buckets', kind: 'cache', icon: 'counter', row: 1 }] },
+  { label: 'CONFIG', nodes: [{ id: 'policy', label: 'Route policy', sub: 'cached · versioned', kind: 'db', icon: 'flag', row: 1 }] },
+  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend svc', sub: 're-authorizes', row: 0 }] },
 ]);
 defineFlow('sd-flow-gateway', {
   title: 'Multi-Tenant API Gateway',
@@ -1649,9 +1661,9 @@ defineFlow('sd-flow-snowflake', {
 
 const Ldy = lane([
   { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'COORDINATOR', nodes: [{ id: 'coord', label: 'Coordinator', sub: 'any node' }] },
+  { label: 'COORDINATOR', nodes: [{ id: 'coord', label: 'Coordinator', sub: 'any node', icon: 'sync' }] },
   { label: 'REPLICAS (N=3)', nodes: [{ id: 'nodeA', label: 'Replica A', kind: 'db' }, { id: 'nodeB', label: 'Replica B', kind: 'db' }, { id: 'nodeC', label: 'Replica C', kind: 'db' }] },
-  { label: 'FAILOVER', nodes: [{ id: 'standin', label: 'Stand-in node', sub: 'holds a hint', kind: 'db' }] },
+  { label: 'FAILOVER', nodes: [{ id: 'standin', label: 'Stand-in node', sub: 'holds a hint', kind: 'db', row: 1.5 }] },
 ]);
 defineFlow('sd-flow-dynamo', {
   title: 'Distributed Key-Value Store',
@@ -1809,7 +1821,7 @@ defineFlow('sd-flow-searchengine', {
 const Lpl = lane([
   { label: 'CLIENTS', nodes: [{ id: 'user', label: 'User', kind: 'client' }, { id: 'owner', label: 'Business owner', kind: 'client' }] },
   { label: 'EDGE · API', nodes: [{ id: 'edge', label: 'Edge / CDN', sub: 'result cache', kind: 'cache' }, { id: 'api', label: 'Places API' }] },
-  { label: 'SERVING', nodes: [{ id: 'gw', label: 'Search gateway' }] },
+  { label: 'SERVING', nodes: [{ id: 'gw', label: 'Search gateway', icon: 'search', row: 0 }] },
   { label: 'STATE', nodes: [{ id: 'index', label: 'S2 geo index', sub: 'in-memory', kind: 'cache' }, { id: 'db', label: 'Place store', sub: 'source of truth', kind: 'db' }] },
 ]);
 defineFlow('sd-flow-places', {
@@ -1860,8 +1872,8 @@ const Lac = lane([
   { label: 'USER', nodes: [{ id: 'user', label: 'User', kind: 'client' }] },
   { label: 'CLICK SERVER', nodes: [{ id: 'cs', label: 'Click server', sub: 'log + redirect' }] },
   { label: 'DURABLE LOG', nodes: [{ id: 'log', label: 'Event log', sub: 'Kafka', kind: 'queue' }] },
-  { label: 'FAST PATH', nodes: [{ id: 'stream', label: 'Stream aggregator', sub: '1-min windows' }, { id: 'olap', label: 'Real-time OLAP', kind: 'db' }] },
-  { label: 'EXACT PATH', nodes: [{ id: 'archive', label: 'Raw archive', sub: 'immutable', kind: 'db' }, { id: 'batch', label: 'Batch job', sub: 'dedup + fraud' }] },
+  { label: 'FAST · EXACT', nodes: [{ id: 'stream', label: 'Stream aggregator', sub: '1-min windows', icon: 'worker', row: 0 }, { id: 'archive', label: 'Raw archive', sub: 'immutable', kind: 'db', icon: 'blob', row: 1 }] },
+  { label: 'RESULTS', nodes: [{ id: 'olap', label: 'Real-time OLAP', kind: 'db', icon: 'metrics', row: 0 }, { id: 'batch', label: 'Batch job', sub: 'dedup + fraud', row: 1 }] },
 ]);
 defineFlow('sd-flow-adclick', {
   title: 'Ad Click Aggregation',
@@ -1908,12 +1920,11 @@ defineFlow('sd-flow-adclick', {
 });
 
 const Ltr = lane([
-  { label: 'EVENTS', nodes: [{ id: 'ev', label: 'Events', sub: 'views / uses', kind: 'client' }] },
-  { label: 'LOG', nodes: [{ id: 'log', label: 'Event log', sub: 'by item_id', kind: 'queue' }] },
-  { label: 'COUNTING', nodes: [{ id: 'counter', label: 'Counter worker', sub: 'sketch + heap' }, { id: 'store', label: 'Minute buckets', kind: 'cache' }] },
-  { label: 'WINDOW', nodes: [{ id: 'merger', label: 'Window merger' }] },
-  { label: 'RESULTS', nodes: [{ id: 'topk', label: 'Top-K results', kind: 'db' }] },
-  { label: 'READERS', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
+  { label: 'EVENTS', nodes: [{ id: 'ev', label: 'Events', sub: 'views / uses', kind: 'client', icon: 'mobile', row: 0 }] },
+  { label: 'LOG', nodes: [{ id: 'log', label: 'Event log', sub: 'by item_id', kind: 'queue', row: 0 }] },
+  { label: 'COUNTING', nodes: [{ id: 'counter', label: 'Counter worker', sub: 'sketch + heap', row: 0 }, { id: 'store', label: 'Minute buckets', kind: 'cache', row: 1 }] },
+  { label: 'WINDOW', nodes: [{ id: 'merger', label: 'Window merger', icon: 'scheduler', row: 1 }] },
+  { label: 'RESULTS · READERS', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }, { id: 'topk', label: 'Top-K results', kind: 'db', row: 1 }] },
 ]);
 defineFlow('sd-flow-trending', {
   title: 'Top-K Trending',
@@ -1959,11 +1970,11 @@ defineFlow('sd-flow-trending', {
 });
 
 const Llb = lane([
-  { label: 'SOURCE', nodes: [{ id: 'gs', label: 'Game server', sub: 'signed result', kind: 'client' }] },
-  { label: 'WRITE PATH', nodes: [{ id: 'api', label: 'Score service' }, { id: 'reader', label: 'Leaderboard API' }] },
-  { label: 'SOURCE OF TRUTH', nodes: [{ id: 'db', label: 'Score DB', sub: 'source of truth', kind: 'db' }] },
-  { label: 'PROJECTION', nodes: [{ id: 'upd', label: 'Leaderboard updater' }] },
-  { label: 'READ MODELS', nodes: [{ id: 'topset', label: 'Top-1000 set', kind: 'cache' }, { id: 'hist', label: 'Score histogram', kind: 'cache' }] },
+  { label: 'SOURCE', nodes: [{ id: 'gs', label: 'Game server', sub: 'signed result', kind: 'client', row: 0 }] },
+  { label: 'WRITE PATH', nodes: [{ id: 'api', label: 'Score service', row: 0 }, { id: 'db', label: 'Score DB', sub: 'source of truth', kind: 'db', row: 1 }] },
+  { label: 'PROJECTION', nodes: [{ id: 'upd', label: 'Rank updater', sub: 'CDC consumer', icon: 'worker', row: 1 }] },
+  { label: 'READ MODELS', nodes: [{ id: 'topset', label: 'Top-1000 set', sub: 'Redis sorted set', kind: 'cache', row: 0 }, { id: 'hist', label: 'Score histogram', sub: 'Redis buckets', kind: 'cache', row: 1 }] },
+  { label: 'READ API', nodes: [{ id: 'reader', label: 'Leaderboard API', icon: 'api' }] },
 ]);
 defineFlow('sd-flow-leaderboard', {
   title: 'Real-Time Leaderboard',
@@ -2008,11 +2019,11 @@ defineFlow('sd-flow-leaderboard', {
 });
 
 const Lllm = lane([
-  { label: 'CLIENT', nodes: [{ id: 'ui', label: 'Mail client', sub: 'SSE stream', kind: 'client' }] },
-  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'AI gateway', sub: 'auth · quota' }] },
-  { label: 'ORCHESTRATION', nodes: [{ id: 'orch', label: 'Orchestrator', sub: 'context + guard' }, { id: 'ret', label: 'Mailbox index', sub: 'ACL-filtered', kind: 'db' }] },
-  { label: 'ROUTING', nodes: [{ id: 'router', label: 'Model router' }] },
-  { label: 'MODEL POOLS', nodes: [{ id: 'small', label: 'Small model pool' }, { id: 'large', label: 'Large model pool' }] },
+  { label: 'CLIENT', nodes: [{ id: 'ui', label: 'Mail client', sub: 'SSE stream', kind: 'client', row: 0 }] },
+  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'AI gateway', sub: 'auth · quota', row: 0 }] },
+  { label: 'ORCHESTRATION', nodes: [{ id: 'orch', label: 'Orchestrator', sub: 'context + guard', row: 0 }, { id: 'ret', label: 'Mailbox index', sub: 'ACL-filtered', kind: 'db', icon: 'search', row: 1 }] },
+  { label: 'ROUTING', nodes: [{ id: 'router', label: 'Model router', icon: 'sort', row: 0 }] },
+  { label: 'MODEL POOLS', nodes: [{ id: 'small', label: 'Small model pool', row: 0 }, { id: 'large', label: 'Large model pool', row: 1 }] },
 ]);
 defineFlow('sd-flow-llm', {
   title: 'LLM Assistant Feature',
