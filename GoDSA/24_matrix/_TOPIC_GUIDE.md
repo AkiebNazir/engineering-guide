@@ -188,24 +188,28 @@ right-to-left along what's now a degenerate "bottom" row that's the same as
 the top row already emitted. Trace a 1×n and an n×1 input by hand once; the
 need for the guards becomes obvious.
 
-```mermaid
+```arch
 %% caption: Spiral traversal: four shrinking boundaries. The two inner checks stop a single leftover row or column from being walked twice.
-flowchart TD
-  A["top, bottom = 0, m - 1<br/>left, right = 0, n - 1"] --> B{"top ≤ bottom and left ≤ right ?"}
-  B -->|no| Z["done"]:::ok
-  B -->|yes| C["row top: left to right, top += 1"]
-  C --> D["column right: top to bottom, right -= 1"]
-  D --> E{"top ≤ bottom ?"}
-  E -->|yes| F["row bottom: right to left, bottom -= 1"]
-  E -->|no| B
-  F --> G{"left ≤ right ?"}
-  G -->|yes| H["column left: bottom to top, left += 1"]
-  G -->|no| B
-  H --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x78
+node a "top, bottom = 0, m - 1" at 1,0 shape=pill w=240 sub="left, right = 0, n - 1"
+node b "top ≤ bottom and\nleft ≤ right ?" at 1,1 shape=diamond color=amber
+node z "done" at 0,1 color=green
+node c "row top: left to right" at 1,2 w=260 sub="top += 1"
+node d "column right: top to bottom" at 1,3 w=260 sub="right -= 1"
+node e "top ≤ bottom ?" at 1,4 shape=diamond color=amber
+node f "row bottom: right to left" at 1,5 w=260 sub="bottom -= 1"
+node g "left ≤ right ?" at 1,6 shape=diamond color=amber
+node h "column left: bottom to top" at 1,7 w=260 sub="left += 1"
+a -> b
+b -> z : "no"
+b -> c : "yes"
+c -> d -> e
+e -> f : "yes"
+e:R -> b:R : "no"
+f -> g
+g -> h : "yes"
+g:R -> b:R : "no"
+h:R -> b:R
 ```
 
 ### 3.2 Diagonal — `r+c` is constant along a diagonal, `r-c` along an anti-diagonal
@@ -410,22 +414,28 @@ Part 1 draws the `[][]int` layout. This Part measures what the layout does and d
 arrays), and gives every rotation as an index formula. All numbers are Go 1.24 on darwin/arm64, best of seven runs; all code was compiled with `go vet`, and the
 rotations were checked against the formulas on 400 random square matrices (sizes 0–7).
 
-```mermaid
+```arch
 %% caption: Read the constraints first: shape, in-place, and which ordering the rows and columns guarantee decide the technique.
-flowchart TD
-  Q(["A matrix problem"]) --> A{"Must the answer be computed in place?"}
-  A -->|"yes, and it is square"| B["rotate/reflect with swaps: transpose + reverse, or 4-way ring cycles"]:::ok
-  A -->|"yes, but a new value needs old neighbours"| C["encode old + 2*new in the cell, decode in a second pass"]:::hot
-  A -->|"yes, and rows/columns must be remembered"| D["row 0 and column 0 as markers (capture them first)"]:::hot
-  A -->|"no"| E{"A traversal order?"}
-  E -->|"yes"| F["four shrinking boundaries, or dirs with a turn rule"]:::ok
-  E -->|"a search"| G{"ONE global sorted order?"}
-  G -->|"yes"| H["binary search on the flat index r*cols + c"]:::ok
-  G -->|"only rows and columns sorted"| I["staircase from the top-right corner, O(m + n)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x85
+node q "A matrix problem" at 0,0 shape=pill
+node a "Must the answer be\ncomputed in place?" at 0,1 shape=diamond color=amber w=280
+node b "Rotate/reflect with swaps" at 1,0 color=green w=300 sub="yes, and it is square · transpose + reverse, or 4-way ring cycles"
+node c "Encode old + 2*new in the cell" at 1,1 color=amber w=300 sub="yes, but a new value needs old neighbours · decode in a second pass"
+node d "Row 0 and column 0 as markers" at 1,2 color=amber w=300 sub="yes, and rows/columns must be remembered · capture them first"
+node e "A traversal order?" at 0,3 shape=diamond color=amber
+node f "Four shrinking boundaries" at 1,3 color=green w=300 sub="or dirs with a turn rule"
+node g "ONE global sorted order?" at 0,4 shape=diamond color=amber
+node h "Binary search on the flat index" at 1,4 color=green w=300 sub="r*cols + c"
+node i "Staircase from the top-right corner" at 0,5 color=amber w=260 sub="O(m + n)"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a -> e : "no"
+e -> f : "yes"
+e -> g : "a search"
+g -> h : "yes"
+g -> i : "only rows and columns sorted"
 ```
 
 ### 9.1 What the layout costs — measured

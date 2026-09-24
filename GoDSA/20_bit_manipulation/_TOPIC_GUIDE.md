@@ -207,15 +207,13 @@ func isPowerOfTwo(x int) bool {
 }
 ```
 
-```mermaid
+```arch
 %% caption: n & (n-1) clears the lowest set bit. Repeat until n is 0 to count set bits, or test n & (n-1) == 0 for a power of two.
-flowchart LR
-  A["n = 1100"] --> B["n - 1 = 1011<br/>the lowest 1 became 0,<br/>the bits below it flipped"]
-  B --> C["n and (n - 1) = 1000<br/>lowest set bit cleared"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node a "n = 1100" at 0,0 color=blue
+node b "n - 1 = 1011" at 1,0 w=200 sub="the lowest 1 became 0, the bits below it flipped"
+node c "n & (n - 1) = 1000" at 2,0 color=green w=170 sub="lowest set bit cleared"
+a -> b -> c
 ```
 
 ### 4.2 `x & -x` — isolate the lowest set bit
@@ -370,18 +368,20 @@ is that **a fixed-width type wraps by itself** — so the "mask to 32 bits" ritu
 or moves to a different place (if you use the 64-bit `int`). All code below ran on Go 1.24.5 against LeetCode's own
 examples; timings are measurements from this machine.
 
-```mermaid
+```arch
 %% caption: A bitmask is a set of small integers. Add, remove, toggle and test are one operation each, and Go's &^ makes "remove" read naturally.
-flowchart LR
-  S["set {3, 5}<br/>mask = 0b101000"] --> A["add x:  mask |= 1 << x"]:::ok
-  S --> R["remove x:  mask &^= 1 << x"]:::hot
-  S --> T["toggle x:  mask ^= 1 << x"]:::ok
-  S --> Q["contains x:  mask>>x&1 == 1"]:::ok
-  S --> U["union |   intersection &   difference &^"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x70
+node s "set {3, 5}" at 0,2 color=blue sub="mask = 0b101000"
+node a "add x" at 1,0 color=green w=240 sub="mask |= 1 << x"
+node r "remove x" at 1,1 color=amber w=240 sub="mask &^= 1 << x"
+node t "toggle x" at 1,2 color=green w=240 sub="mask ^= 1 << x"
+node c "contains x" at 1,3 color=green w=240 sub="mask>>x&1 == 1"
+node u "set algebra" at 1,4 color=green w=240 sub="union |   intersection &   difference &^"
+s:R -> a:L
+s:R -> r:L
+s:R -> t:L
+s:R -> c:L
+s:R -> u:L
 ```
 
 ### XOR and clear-the-lowest-bit: Single Number, Number of 1 Bits, Counting Bits, Missing Number

@@ -439,19 +439,22 @@ Parts 1–10 give KMP and Rabin–Karp for one search. This Part adds the pieces
 matches, what the tables say about periods and borders — and checks them against the standard library. All code below was
 compiled with `go vet` and compared with brute force on 3,000 random strings over `{a, b, c}`.
 
-```mermaid
+```arch
 %% caption: Pick the string tool from the question being asked. Go's standard library already covers plain search.
-flowchart TD
-  Q(["A string problem in Go"]) --> A{"What is being compared?"}
-  A -->|"one pattern inside one text"| B["strings.Index / Contains in production;<br/>prefix function or Z-function to write it yourself"]:::ok
-  A -->|"a string against itself<br/>(period, border, repetition)"| C["prefix function: n - lps[n-1] is the smallest period"]:::ok
-  A -->|"many equal-length windows, or a<br/>'longest length such that' question"| D["rolling hash + binary search on the length,<br/>verify every hash match"]:::hot
-  A -->|"palindromes"| E["expand around centres O(n^2);<br/>Manacher O(n); prefix function on s + 0x00 + reverse(s)"]:::ok
-  A -->|"many patterns at once"| F["trie / Aho-Corasick"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x85
+node q "A string problem in Go" at 0,0 shape=pill w=200
+node a "What is being\ncompared?" at 0,2 shape=diamond color=amber
+node b "strings.Index / Contains in production" at 1,0 color=green w=380 sub="one pattern inside one text · prefix function or Z-function to write it yourself"
+node c "prefix function: n - lps[n-1] is the smallest period" at 1,1 color=green w=380 sub="a string against itself (period, border, repetition)"
+node d "rolling hash + binary search on the length" at 1,2 color=amber w=380 sub="many equal-length windows, or a 'longest length such that' question · verify every hash match"
+node e "expand around centres O(n^2)" at 1,3 color=green w=380 sub="palindromes · Manacher O(n); prefix function on s + 0x00 + reverse(s)"
+node f "trie / Aho-Corasick" at 1,4 color=amber w=380 sub="many patterns at once"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+a:R -> f:L
 ```
 
 ### 11.1 The prefix function (Part 2's `buildLPS`) and why it is linear
@@ -870,19 +873,22 @@ of one repeated byte), fast for typical input. Prefix doubling gives O(n log² n
 <!-- block:23_go_4_gofacts -->
 ## Part 14 · Go String Facts That Decide the Answer — Bytes, Runes, `strings`, `Atoi`, and the Last Two Problems
 
-```mermaid
+```arch
 %% caption: In Go the first question about any string problem is what an "element" is: a byte, a rune, or a user-perceived character.
-flowchart TD
-  Q(["A Go string problem"]) --> A{"Is the input guaranteed ASCII?"}
-  A -->|"yes (most interview problems)"| B["index s[i] as bytes; no conversion, O(1) access"]:::ok
-  A -->|"no: code points matter"| C["[]rune(s) once (O(n), copies) or range over s"]:::hot
-  C --> D{"User-perceived characters (accents, emoji)?"}
-  D -->|"yes"| E["grapheme segmentation needs a library:<br/>neither bytes nor runes are enough"]:::bad
-  D -->|"no"| F["work on the []rune, convert back with string(r)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x85
+node q "A Go string problem" at 0,0 shape=pill
+node a "Is the input\nguaranteed ASCII?" at 0,1 shape=diamond color=amber w=250
+node b "index s[i] as bytes" at 1,1 color=green w=260 sub="most interview problems · no conversion, O(1) access"
+node c "[]rune(s) once, or range over s" at 0,2 color=amber w=240 sub="O(n), copies"
+node d "User-perceived\ncharacters?" at 0,3 shape=diamond color=amber w=250 sub="accents, emoji"
+node e "Grapheme segmentation\nneeds a library" at 1,3 color=red w=260 sub="neither bytes nor runes are enough"
+node f "Work on the []rune" at 0,4 color=green w=240 sub="convert back with string(r)"
+q -> a
+a -> b : "yes"
+a -> c : "no: code points matter"
+c -> d
+d -> e : "yes"
+d -> f : "no"
 ```
 
 ### 14.1 Three different "lengths"

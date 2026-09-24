@@ -392,20 +392,24 @@ Everything above is the *mechanism*; this Part is the *content*. The Go solution
 brute-force reference on random operation sequences (hundreds of sequences per class; the counts are given per section) and compiled with `go vet`. Names use `NewX` for clarity — LeetCode's Go templates
 want `func Constructor(…) X` returning the struct by value, with the same pointer-receiver methods (Part 1.2).
 
-```mermaid
+```arch
 %% caption: What the operation list demands picks the structure pair. Each row is one design problem's move.
-flowchart TD
-  Q(["A design class with a list of operations"]) --> A{"Which operation is the hard one?"}
-  A -->|"evict / reorder by recency"| B["map to list elements + container/list<br/>(or a hand-built typed list)"]:::ok
-  A -->|"uniform random pick + delete by value"| C["slice + value to index map, swap-with-last delete"]:::ok
-  A -->|"max/min under updates or corrections"| D["source-of-truth map + container/heap with lazy validation"]:::hot
-  A -->|"value as of a past time or version"| E["append-only history per key + sort.Search"]:::ok
-  A -->|"count in a sliding window"| F["fixed array of time-tagged buckets"]:::ok
-  A -->|"top K completions of a prefix"| G["trie whose every node indexes the sentences through it"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "A design class with\na list of operations" at 0,0 shape=pill w=200
+node a "Which operation\nis the hard one?" at 0,3 shape=diamond color=amber
+node b "map to list elements + container/list" at 1,0 color=green w=380 sub="evict / reorder by recency · or a hand-built typed list"
+node c "slice + value to index map" at 1,1 color=green w=380 sub="uniform random pick + delete by value · swap-with-last delete"
+node d "source-of-truth map + container/heap" at 1,2 color=amber w=380 sub="max/min under updates or corrections · lazy validation"
+node e "append-only history per key + sort.Search" at 1,3 color=green w=380 sub="value as of a past time or version"
+node f "fixed array of time-tagged buckets" at 1,4 color=green w=380 sub="count in a sliding window"
+node g "trie indexing sentences at every node" at 1,5 color=amber w=380 sub="top K completions of a prefix · every node indexes the sentences through it"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+a:R -> f:L
+a:R -> g:L
 ```
 
 ### 10.1 Hash set and hash map (001, 002) — the bucket count, and Go's negative `%`
@@ -558,17 +562,15 @@ func (s *SnapshotArray) Get(i, snapID int) int {
 - **Hit Counter:** the slot's stored second must be compared on **read** (`ts-s.ts < 300`), or last cycle's count leaks into this one. A zero-valued slot has `ts == 0, n == 0`, so it contributes nothing even at `ts = 0`. Checked on 300 random hit/query sequences.
 - **Snapshot Array:** `sort.Search` returns the first version *after* `snapID`, so the answer is at `k-1`, and `k == 0` means "never set" (`0`). Setting twice within one snapshot overwrites instead of appending. Checked against a copy-on-snap reference on 300 random sequences.
 
-```mermaid
+```arch
 %% caption: Remove in O(1): the slice gives random access, the map gives lookup, and swap-with-last avoids shifting. Both structures must be updated together, in this order.
-flowchart LR
-  R["Remove(v)"] --> S["i = pos[v]"]
-  S --> T["vals[i] = vals[last]<br/>the last element fills the hole"]
-  T --> U["pos[vals[i]] = i<br/>fix the moved element's index"]
-  U --> V["vals = vals[:last]<br/>delete(pos, v) AFTER the fix-up"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x75
+node r "Remove(v)" at 0,0 shape=pill w=280
+node s "i = pos[v]" at 0,1 w=280
+node t "vals[i] = vals[last]" at 0,2 w=280 sub="the last element fills the hole"
+node u "pos[vals[i]] = i" at 0,3 w=280 sub="fix the moved element's index"
+node v "vals = vals[:last]" at 0,4 color=green w=280 sub="delete(pos, v) AFTER the fix-up"
+r -> s -> t -> u -> v
 ```
 
 ### 10.3 Design Linked List and RandomizedSet (004, 005)

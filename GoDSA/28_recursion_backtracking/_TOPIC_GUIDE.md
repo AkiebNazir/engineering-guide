@@ -52,20 +52,24 @@ sequenceDiagram
 
 Write the **base case first**, minimal (`n == 0`, `node == nil`, `i == len(s)`), then write the recursive step assuming a strictly smaller call is already correct ("leap of faith" — induction, not mental unwinding). Three shapes cover the ladder:
 
-```mermaid
+```arch
 %% caption: Three call shapes, three cost models. Linear: depth n. Branching with overlap: exponential unless memoised. Divide and conquer: log n depth and nothing to memoise.
-flowchart TD
-  Q(["A recursive problem"]) --> A{"How many recursive calls per level?"}
-  A -->|"one (f of n-1)"| L["linear: O(depth) calls; a loop is usually cheaper"]:::ok
-  A -->|"several, sizes overlap"| T["branching: exponential unless memoised"]:::hot
-  A -->|"several, disjoint halves"| D["divide and conquer: depth log n, no memo needed"]:::ok
-  T --> M{"Same arguments called twice?"}
-  M -->|"yes"| MEMO["memoise on exactly the state the subproblem depends on"]:::ok
-  M -->|"no"| NOMEMO["do not memoise: the cache would never hit"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x85
+node q "A recursive problem" at 1,0 shape=pill
+node a "How many recursive\ncalls per level?" at 1,1 shape=diamond color=amber
+node l "Linear" at 0,2 color=green w=200 sub="O(depth) calls; a loop is usually cheaper"
+node t "Branching" at 1,2 color=amber w=200 sub="exponential unless memoised"
+node d "Divide and conquer" at 2,2 color=green w=200 sub="depth log n, no memo needed"
+node m "Same arguments\ncalled twice?" at 1,3 shape=diamond color=amber
+node memo "Memoise" at 0,4 color=green w=200 sub="on exactly the state the subproblem depends on"
+node nomemo "Do not memoise" at 2,4 color=slate w=200 sub="the cache would never hit"
+q -> a
+a:L -> l:T : "one (f of n-1)"
+a -> t : "several, sizes overlap"
+a:R -> d:T : "several, disjoint halves"
+t -> m
+m:L -> memo:T : "yes"
+m:R -> nomemo:T : "no"
 ```
 
 | Recurrence | Solution | Example in this folder |
