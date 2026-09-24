@@ -225,6 +225,77 @@ import threading, itertools
 If time is short, **stub a secondary strategy** (`class PeakPricing: ...  # TODO`) and
 say how it would work. A running core beats complete-but-broken.
 
+### A minimal worked example (30 seconds to read)
+
+The parking lot above is realistic-sized; here's the same five-step order on a problem
+small enough to hold in your head — an in-memory coat check. One entity, one invariant
+("a ticket can be claimed at most once"), one variation point (how IDs are generated),
+one facade, one driver that exercises the happy path and a failure:
+
+```python
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import Protocol
+import itertools
+
+class ItemKind(Enum):                        # 1. enums / value objects
+    COAT = auto()
+    BAG = auto()
+
+@dataclass(frozen=True)
+class Ticket:
+    id: int
+
+class IdGenerator(Protocol):                  # 3. interface at the variation point
+    def next_id(self) -> int: ...
+
+class SequentialIds:                          # 3. one concrete implementation
+    def __init__(self) -> None:
+        self._counter = itertools.count(1)
+    def next_id(self) -> int:
+        return next(self._counter)
+
+class UnknownTicket(Exception): pass
+
+class CoatCheck:                              # 2. entity, owns the invariant
+    def __init__(self, ids: IdGenerator) -> None:
+        self._ids = ids
+        self._claims: dict[int, str] = {}
+
+    def check(self, item: str) -> Ticket:
+        ticket = Ticket(self._ids.next_id())
+        self._claims[ticket.id] = item
+        return ticket
+
+    def claim(self, ticket: Ticket) -> str:
+        if ticket.id not in self._claims:
+            raise UnknownTicket(f"no such ticket: {ticket.id}")
+        return self._claims.pop(ticket.id)
+
+if __name__ == "__main__":                    # 5. tiny driver, happy path + failure
+    booth = CoatCheck(SequentialIds())
+    t1 = booth.check("blue coat")
+    t2 = booth.check("red scarf")
+    print(f"issued {t1}, {t2}")
+    print("claimed:", booth.claim(t1))
+    try:
+        booth.claim(t1)
+    except UnknownTicket as e:
+        print("expected failure:", e)
+```
+
+Output:
+
+```text
+issued Ticket(id=1), Ticket(id=2)
+claimed: blue coat
+expected failure: no such ticket: 1
+```
+
+Swapping `SequentialIds` for a `RandomIds` later touches nothing but the constructor
+call — that's the payoff of putting the interface exactly at the one thing (`item` → ID)
+that plausibly varies, and nowhere else.
+
 ---
 
 ## 8 · Step 5 — Extensibility, concurrency, and tests (8 min)
@@ -274,6 +345,56 @@ Almost every LLD problem has a **check-then-act race** at its heart: "is the spo
 
 `lld/004_movie_ticket_booking_solution.py` runs exactly this race with real threads
 and shows it double-booking without the lock.
+
+### The simplest possible fix, shown running
+
+Same shape as the spot race, boiled down to a shared counter so you can see the fix in
+five lines. `time.sleep(0)` between the check and the act widens the race window enough
+to actually observe the lost updates on a fast machine — a real check-then-act race
+doesn't need help, but a toy one this small does:
+
+```python
+import threading, time
+
+class UnsafeCounter:
+    def __init__(self) -> None:
+        self.value = 0
+    def increment(self) -> None:
+        current = self.value       # "check"
+        time.sleep(0)              # widen the window
+        self.value = current + 1   # "act" -- not atomic together
+
+class SafeCounter:
+    def __init__(self) -> None:
+        self.value = 0
+        self._lock = threading.Lock()
+    def increment(self) -> None:
+        with self._lock:           # check-then-act inside ONE critical section
+            current = self.value
+            time.sleep(0)
+            self.value = current + 1
+
+def hammer(counter, n_threads=8, n_increments=200) -> int:
+    def worker():
+        for _ in range(n_increments):
+            counter.increment()
+    threads = [threading.Thread(target=worker) for _ in range(n_threads)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    return counter.value
+
+expected = 8 * 200
+print("unsafe result:", hammer(UnsafeCounter()), f"(expected {expected})")
+print("safe result:  ", hammer(SafeCounter()), f"(expected {expected})")
+```
+
+Output (the unsafe number is non-deterministic and will differ run to run — that's the
+race; the safe number is always exactly right):
+
+```text
+unsafe result: 212 (expected 1600)
+safe result:   1600 (expected 1600)
+```
 
 ### Options, from simplest to most scalable
 

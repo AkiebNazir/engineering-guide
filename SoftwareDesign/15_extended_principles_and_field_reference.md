@@ -153,6 +153,32 @@ use case, maps the result to a response) is the Controller; `application/place_o
 HTTP — happens. Confusing the two is the "pass-through method" smell from `01` §6 in one
 direction, and a fat, untestable HTTP handler in the other.
 
+```python
+# WRONG: the controller contains the business rule itself — it can't be
+# reached from a CLI or a queue consumer, and it can't be tested without HTTP.
+class OrderController:
+    def handle_place_order(self, request: dict) -> dict:
+        if request["quantity"] <= 0:
+            raise ValueError("quantity must be positive")
+        total = request["quantity"] * request["unit_price"]
+        if total > request["account_credit_limit"]:
+            raise ValueError("over credit limit")
+        # ... the actual order-placing logic lives here too ...
+        return {"status": "placed", "total": total}
+
+# RIGHT: the controller only translates HTTP <-> domain calls; PlaceOrder
+# owns the rule, and is reachable — and testable — from anywhere.
+class OrderController:
+    def __init__(self, place_order: "PlaceOrder") -> None:
+        self._place_order = place_order
+
+    def handle_place_order(self, request: dict) -> dict:
+        result = self._place_order.execute(
+            quantity=request["quantity"], unit_price=request["unit_price"]
+        )
+        return {"status": "placed", "total": result.total}
+```
+
 ---
 
 ## 2 · Seeing architecture at the right zoom level: the C4 model
@@ -297,6 +323,7 @@ you don't remember which chapter.
 | Composite / Visitor | `04` §12 |
 | Composition over inheritance | `02` §4 |
 | Connascence | `03` §3 |
+| Controller (GRASP) | `15` §1 (this file) |
 | Coupling | `03` §1 |
 | CQRS-lite | `08` §10 |
 | Creator (GRASP) | `15` §1 (this file) |
