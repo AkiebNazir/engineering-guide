@@ -1,31 +1,123 @@
 # Operating Systems & Hardware Symbiosis
 
 Every program you run eventually becomes instructions competing for a CPU, some RAM,
-and a disk or network card that hundreds of other programs also want. This file
-starts with what an operating system actually does about that, then goes as deep as
-a Senior Software Engineer (L5) interview loop expects: how your application's
-architecture interacts with the kernel's scheduler, CPU caches, and virtual memory
-subsystem. Interviewers at that level rarely ask "what is a thread" — they ask
-precise follow-ups, and this file corrects several popular myths along the way; each
-correction is marked **Precision note**.
+and a disk or network card that hundreds of other programs also want. This chapter
+starts from first principles — what an operating system actually is, what its major
+components are, and how they work together — then goes as deep as a Senior Software
+Engineer (L5) interview loop expects: how your application's architecture interacts
+with the kernel's scheduler, CPU caches, and virtual memory subsystem. Interviewers
+at that level rarely ask "what is a thread" — they ask precise follow-ups, and this
+file corrects several popular myths along the way; each correction is marked
+**Precision note**. A side-by-side breakdown of what Junior through Staff+ engineers
+are actually expected to know about this material closes out the chapter, just
+before the interview checklist.
 
-## Foundations — Start Here If You're New to Operating Systems
+## Foundations — What Is an Operating System, and How Does It Work?
 
-**What an OS actually is.** Your CPU can only do one thing at a time per core: run
-raw instructions. The **operating system (OS)** is the program that runs first, and
-its job is to let many other programs share that CPU, the RAM, and every disk and
-network device, safely and (mostly) fairly. Everything in this file is really one
-question asked about a different resource: *who gets to use this next, and how do we
-stop them from stepping on each other?*
+### Why Operating Systems Exist
 
-**Kernel vs. user space.** The **kernel** is the core of the OS — the only code
-allowed to talk to hardware directly. Your program runs in **user space** and asks
-the kernel for things (read a file, send a packet, allocate memory) through a
-**system call (syscall)** — a controlled door between your code and the hardware.
-Every "expensive" operation you'll read about below (a context switch, a page fault,
-a blocking read) is expensive largely *because* it crosses that door.
+The earliest computers ran one program at a time, start to finish, loaded by an
+operator who physically fed it in. There was nothing to "share" — one program, one
+machine, no other programs waiting. That stopped working the moment computers became
+expensive enough that idling them between programs was wasteful, and popular enough
+that many people wanted to use one at once. Two ideas fixed this, and the modern OS
+is built on both of them:
 
-**Process vs. thread — the distinction the rest of this file assumes.**
+- **Multiprogramming** — keep several programs loaded in memory at once, and while
+  one waits for slow I/O (a disk read, say), let another use the CPU instead of
+  sitting idle. This is the ancestor of everything in §1 (scheduling) and §4 (I/O
+  models) below.
+- **Time-sharing** — go further and give each program (and each user) the illusion
+  of having the machine to itself, by rapidly switching between them many times a
+  second. This is the ancestor of §5 (virtual memory) and §6 (processes/containers):
+  the *illusion* of a private machine is the OS's central trick, applied to memory,
+  to the CPU, and eventually to entire environments (containers, VMs).
+
+Every idea in this file is really a more precise version of one of those two moves:
+*share a physical resource among many programs*, and *make each program feel like it
+has that resource to itself*.
+
+### What an Operating System Actually Is
+
+An **operating system (OS)** is the program that runs first when a machine boots,
+and it does two jobs at once:
+
+1. **Resource manager** — your CPU can only run one instruction stream at a time per
+   core, RAM is one shared array of bytes, and there's usually one disk and one
+   network card. The OS decides, continuously, who gets to use each of these next.
+2. **Abstraction layer** — the OS hides the ugly, hardware-specific reality
+   underneath a much simpler interface. You don't calculate which physical disk
+   sectors to write; you call `write()` on a **file**. You don't manage raw physical
+   memory addresses; your program gets an **address space** it can pretend is all
+   its own. You don't speak directly to a specific network card's electrical
+   signaling; you open a **socket**. Every "job" below is one resource, turned into
+   one clean abstraction.
+
+### The Core Components of an Operating System
+
+An OS isn't one monolithic blob of logic — it's a handful of cooperating subsystems,
+each responsible for one resource:
+
+| Component | What it's responsible for | Covered deeper in |
+|---|---|---|
+| **Kernel** | The privileged core; the only code allowed to talk to hardware directly | Throughout this file |
+| **Process & thread manager + scheduler** | Creates and destroys processes/threads; decides which one runs on which CPU core, and when | §1 (scheduling), §6 (processes vs. threads) |
+| **Memory manager** | Gives every process the illusion of its own private, contiguous memory; maps that illusion onto real, shared RAM | §5 |
+| **File system** | Organizes persistent storage into files and directories; turns raw disk blocks into `open()`/`read()`/`write()` | §5 (page cache), §7 (I/O path) |
+| **I/O manager & device drivers** | Talks to disks, network cards, keyboards, and every other device through vendor-specific driver code, behind one uniform interface | §4, §7 |
+| **Network stack** | Implements TCP/IP (and friends) so a process can exchange bytes with a process on another machine | §7 here; the full treatment is `02_networking_deep_dive.md` |
+| **Inter-process communication (IPC)** | Controlled channels for processes to exchange data: pipes, sockets, shared memory, signals | §6 |
+| **Security & access control** | Users, permissions, and isolation boundaries — decides *who* is allowed to do *what* to which resource | §6 (namespaces, cgroups, containers) |
+
+### How the Pieces Fit Together
+
+Every request your program makes eventually crosses one narrow, guarded boundary —
+the **system call interface** — into the kernel, which routes it to the right
+subsystem, which talks to the actual hardware:
+
+```mermaid
+graph TD
+    subgraph "User Space — your code runs here, with no direct hardware access"
+        App1["Your Application"]
+        App2["Another Application"]
+    end
+    Syscall["System Call Interface — the only door across the boundary"]
+    subgraph "Kernel Space — privileged, talks to hardware directly"
+        Sched["Scheduler §1"]
+        Mem["Memory Manager §5"]
+        FS["File System §5/§7"]
+        Drivers["I/O Manager / Device Drivers §4/§7"]
+        Net["Network Stack §7"]
+    end
+    subgraph "Hardware"
+        CPU["CPU cores"]
+        RAM["RAM"]
+        Disk["Disk"]
+        NIC["Network Card"]
+    end
+    App1 --> Syscall
+    App2 --> Syscall
+    Syscall --> Sched & Mem & FS & Drivers & Net
+    Sched --> CPU
+    Mem --> RAM
+    FS --> Disk
+    Drivers --> Disk & NIC
+    Net --> NIC
+```
+
+### Kernel Space vs. User Space
+
+The **kernel** is the only code allowed to talk to hardware directly; it runs in a
+privileged CPU mode (ring 0 on x86). Your program runs in **user space**, a
+deliberately restricted mode, and asks the kernel for things — read a file, send a
+packet, allocate memory — through a **system call (syscall)**: a controlled,
+validated door between your code and the hardware. Every "expensive" operation
+you'll read about below (a context switch, a page fault, a blocking read) is
+expensive largely *because* it crosses that door: the CPU has to switch privilege
+modes, and the kernel has to validate and act on the request.
+
+### Process vs. Thread — the Distinction the Rest of This File Assumes
+
 - A **process** is a running program with its own private memory (its **address
   space**), like a self-contained office: nobody outside can see your desk.
 - A **thread** is a unit of execution *inside* a process. A process can have many
@@ -35,47 +127,66 @@ a blocking read) is expensive largely *because* it crosses that door.
   on the whiteboard at the same time) — §2–3 below are entirely about the "dangerous"
   half, and `05_concurrency_deep_dive.md` is the full treatment.
 
-**Why scheduling exists.** A typical machine has far more runnable threads than CPU
-cores. The **scheduler** (§1) is the part of the kernel that decides, many times a
-second, which thread runs on which core next. Switching a core from one thread to
-another is called a **context switch**: the kernel saves that thread's registers and
-loads the next thread's — not free, which is why §1 cares about *how many* threads
-you create, not just how you use them.
+### Why Scheduling, Memory Illusions, Caches, and Blocking All Exist
 
-**Memory, in one picture.** RAM is one giant array of bytes shared by every process
-on the machine. Letting programs address it directly would mean any bug could
-overwrite another program's data — so the OS gives every process the *illusion* of
-its own private, contiguous memory (**virtual memory**), and translates each
-program's addresses to real physical RAM behind the scenes. §5 covers the mechanism
-(page tables, the TLB); for now, just know that "memory address" in your program is
-never the literal RAM location.
+These four ideas are the connective tissue between the components table above and
+the deep-dive sections below — each is a direct consequence of "one shared resource,
+many programs that want it":
 
-**CPU caches, in one picture.** RAM is slow compared to a modern CPU core — hundreds
-of cycles away. Every core has small, fast **caches** (L1, L2, often a shared L3)
-that hold recently-used data so the core doesn't wait on RAM for every access. §2
-covers what happens when *two* cores cache the *same* data.
+- **Scheduling** exists because a typical machine has far more runnable threads than
+  CPU cores. The **scheduler** (§1) decides, many times a second, which thread runs
+  on which core next. Switching a core from one thread to another is a **context
+  switch**: the kernel saves that thread's registers and loads the next thread's —
+  not free, which is why §1 cares about *how many* threads you create, not just how
+  you use them.
+- **Virtual memory** exists because letting programs address real RAM directly would
+  mean any bug in one program could overwrite another program's data. So the memory
+  manager gives every process the *illusion* of owning all of memory, and translates
+  each program's addresses to real physical RAM behind the scenes (§5). "Memory
+  address" in your program is never the literal RAM location.
+- **CPU caches** exist because RAM is slow compared to a modern CPU core — hundreds
+  of cycles away. Every core has small, fast caches (L1, L2, often a shared L3) that
+  hold recently-used data so the core doesn't wait on RAM for every access. §2 covers
+  what happens when *two* cores cache the *same* data.
+- **Blocking** is the simplest possible answer to "what happens while I wait for
+  something slow" (a disk read, a network reply): your thread stops running until the
+  answer is ready. Simple to reason about, expensive at scale — §4 is entirely about
+  the faster alternatives operating systems offer instead.
 
-**Blocking, in one picture.** When your code asks the kernel to do something slow
-(read a file, wait for a network reply), the simplest behavior is: your thread stops
-running until the answer is ready (**blocking**). That's simple to reason about and
-expensive at scale — §4 is entirely about the faster alternatives operating systems
-offer instead.
+### Kernel Design Philosophies
 
-**Vocabulary you'll meet below, in one table:**
+Not every OS draws the kernel-space/user-space line in the same place. This matters
+because it trades performance against fault isolation:
+
+| Design | Where subsystems live | Trade-off | Examples |
+|---|---|---|---|
+| **Monolithic kernel** | Scheduler, memory manager, file systems, and drivers all run together in kernel space | Fast — no IPC needed between subsystems — but a bug in one driver can crash the whole kernel | Linux, the original Unix |
+| **Microkernel** | Only the bare minimum (scheduling, basic IPC, minimal memory management) runs in kernel space; file systems and drivers run as user-space servers, talking to the kernel via message passing | More fault-isolated (a crashed file-system server doesn't take down the kernel); historically slower, because every cross-subsystem call now pays IPC + context-switch cost | Minix, QNX, seL4 |
+| **Hybrid** | Mostly monolithic, with some services pulled out into more isolated, microkernel-like components | A practical middle ground | Windows NT, macOS's XNU (a Mach microkernel core plus a large monolithic BSD layer) |
+
+**Precision note:** Linux is monolithic but *modular* — loadable kernel modules let
+you add drivers without recompiling the kernel — but a loaded module still runs in
+kernel space at full privilege, unlike a true microkernel's user-space servers.
+"Modular" and "microkernel" are not the same claim.
+
+### Vocabulary You'll Meet Below, in One Table
 
 | Term | One-line meaning |
 |---|---|
 | Kernel | The part of the OS allowed to touch hardware directly |
-| Syscall | A controlled request from your program to the kernel |
+| Syscall | A controlled request from your program to the kernel, crossing the user/kernel boundary |
 | Process | A running program with its own private memory |
 | Thread | A unit of execution sharing its process's memory with other threads |
 | Context switch | The kernel swapping which thread a core is running |
 | Virtual memory | The illusion that each process owns all of memory |
 | Cache line | The chunk (usually 64 bytes) a CPU cache moves and tracks at a time |
 | Blocking call | A syscall that pauses your thread until it completes |
+| IPC | A controlled channel for processes to exchange data (pipes, sockets, shared memory, signals) |
+| Monolithic / microkernel | Whether subsystems run inside the privileged kernel, or as isolated user-space services |
 
-With that vocabulary in place, the rest of this file is the precise, L5-depth
-version of each idea above.
+With the components, the layering, and that vocabulary in place, the rest of this
+chapter is the precise, L5-depth version of each piece — how the scheduler actually
+picks a thread, how caches actually stay consistent across cores, and so on.
 
 ## 1. Deep Linux Internals: The Scheduler
 
@@ -110,6 +221,24 @@ graph TD
 | CPU affinity / pinning | Restrict a thread to specific cores | Keeps caches warm; used by databases, packet processing, and NUMA-aware services |
 | cgroups CPU quota | Limit a container to N CPU-seconds per period | A container throttled mid-period shows latency spikes even at low average CPU. Classic Kubernetes p99 problem |
 | Priority inversion | Low-priority task holds a lock a high-priority task needs | Solved with priority inheritance in real-time systems |
+
+### Scheduling Classes, Briefly
+
+CFS/EEVDF is only the *default* ("fair") scheduling class. Linux actually offers
+several, and the kernel always prefers a higher class over a lower one:
+
+| Class | Policy | Used for |
+|---|---|---|
+| Real-time (highest) | `SCHED_FIFO` (runs until it blocks or yields), `SCHED_RR` (round-robin among equal priority) | Latency-critical system tasks; almost never used by application code |
+| Fair (default) | `SCHED_NORMAL`/`SCHED_OTHER` — CFS or EEVDF | Essentially everything you write |
+| Idle (lowest) | `SCHED_IDLE` | Background work that should never delay anything else |
+
+**Order of magnitude worth knowing:** a context switch on Linux is commonly cited in
+the low single-digit microseconds for the switch itself, with the larger and more
+variable cost coming from the *cold caches afterward* (§2) — a thread that gets
+switched back in has to re-warm L1/L2 from scratch, which can cost far more than the
+switch. That's the real reason "thousands of runnable threads" hurts throughput more
+than the O(log n) scheduler data structure ever would.
 
 ## 2. Concurrency at the Hardware Level (MESI)
 
@@ -146,6 +275,21 @@ Imagine `struct { int64 A; int64 B; }`. Thread 1 only modifies `A` on Core 1. Th
 *   **The Result:** Throughput can collapse. Published measurements range from tens of percent to several-times slowdowns depending on the write rate and core distance. **Precision note:** "10-100x" figures circulate but are workload-specific; say "significant, measure it with `perf c2c`."
 *   **The Fix:** Put independently-written hot fields on different cache lines: pad the struct (e.g., `_ [56]byte` after an `int64` in Go, or `golang.org/x/sys/cpu.CacheLinePad`), use `@Contended` in Java, `alignas(64)` in C++, or give each thread its own counter and merge periodically.
 
+```go
+// Before: A and B share a 64-byte cache line -> ping-pong under concurrent writes.
+type Counters struct {
+    A int64
+    B int64
+}
+
+// After: pad so each field owns its own cache line.
+type PaddedCounters struct {
+    A    int64
+    _pad [56]byte // fills out the rest of a 64-byte line
+    B    int64
+}
+```
+
 ## 3. Atomic Instructions (CAS)
 
 How do mutexes avoid race conditions themselves? They rely on hardware atomic instructions, specifically **Compare-And-Swap (CAS)** (`LOCK CMPXCHG` on x86, `LDREX/STREX` or `CMPXCHG`-style ops on ARM).
@@ -155,6 +299,24 @@ A CAS takes 3 arguments: a memory location, an expected old value, and a new val
 *   **Spinlocks:** A spinlock is essentially `while (!CAS(&lock, 0, 1)) pause();`. Good when critical sections are tiny and on other cores; terrible when the lock holder can be descheduled.
 *   **Futex-based mutexes:** The uncontended path is a single CAS in user space with no syscall. Only when the CAS fails does the thread call `futex(FUTEX_WAIT)` to sleep in a kernel wait queue; the unlocker calls `futex(FUTEX_WAKE)` if there are waiters. Many mutexes spin briefly before sleeping (adaptive mutexes).
 *   **ABA problem:** a CAS-based lock-free stack can see value A, get preempted while another thread pops A, pushes B, pushes A back, and then succeed incorrectly. Fixes: tagged pointers / version counters, hazard pointers, epoch-based reclamation, or a GC.
+
+**A lock-free counter, to make CAS concrete:**
+
+```go
+// Retry loop: read, compute, try to swap in — retry if another thread won the race.
+func increment(counter *int64) {
+    for {
+        old := atomic.LoadInt64(counter)
+        if atomic.CompareAndSwapInt64(counter, old, old+1) {
+            return // nobody else changed it between our read and our swap
+        }
+        // someone else updated it first — loop and try again with a fresh read
+    }
+}
+```
+No lock is ever held; under contention some goroutines simply retry. This is the
+same shape every lock-free data structure uses, and it's why CAS retries — rather
+than blocking — are the right mental model for "lock-free."
 
 ## 4. Advanced I/O Models
 
@@ -191,9 +353,35 @@ graph LR
 | I/O multiplexing (readiness) | One thread waits for *readiness* of many fds, then does non-blocking reads | `epoll`, `kqueue` |
 | Asynchronous I/O (completion) | Kernel performs the I/O and notifies on *completion* | `io_uring`, Windows IOCP |
 
+### The Same Idea, Wearing Different Names Per Language
+
+Every high-level "async" runtime is built on the readiness or completion models
+above, not on magic:
+
+| Language / runtime | What it actually sits on |
+|---|---|
+| Go | Its own M:N scheduler + a netpoller built on `epoll`/`kqueue` — goroutines that block on I/O don't block an OS thread |
+| Python `asyncio` | An event loop built on `select`/`epoll`/`kqueue` (via `selectors`) |
+| Node.js | `libuv`, which wraps `epoll`/`kqueue`/IOCP per platform |
+| Java NIO / virtual threads (21+) | `epoll`-based selectors historically; virtual threads add M:N scheduling on top |
+| Nginx, Redis, HAProxy | `epoll`/`kqueue` directly, event-loop style |
+
+Knowing this saves you in an interview: "how does `asyncio` handle 10,000
+connections on one thread?" and "how does Nginx handle 100,000 connections?" are the
+same question with a different label on top.
+
 ## 5. Virtual Memory & NUMA
 
 *   **Page tables and the TLB:** Translating a virtual address walks a multi-level page table (4 levels on x86-64, 5 with LA57). The **TLB** caches recent translations. A TLB miss costs a page walk (several memory accesses).
+
+```mermaid
+graph LR
+    VA["Virtual Address (what your program uses)"] --> TLB{"In TLB? (cache of recent translations)"}
+    TLB -->|Hit: 1 lookup| PA["Physical Address (real RAM)"]
+    TLB -->|Miss| Walk["Walk the page table (up to 4-5 levels of memory accesses)"]
+    Walk --> Fill["Fill the TLB with this translation"]
+    Fill --> PA
+```
 *   **Context switch cost:** Switching between *processes* changes the address space. **Precision note:** with PCID (x86) / ASID (ARM), the kernel tags TLB entries per address space and does not have to flush the whole TLB on every switch, though entries for the old process stop being useful. Switching between *threads* of the same process keeps the address space and its TLB entries.
 *   **Huge pages:** 2 MB (or 1 GB) pages mean one TLB entry covers far more memory, cutting TLB misses for large heaps (databases, JVMs). Transparent Huge Pages can cause latency spikes during compaction; many databases recommend disabling THP and using explicit huge pages.
 *   **Page faults:** a *minor* fault maps a page already in memory (e.g., first touch of allocated memory, copy-on-write after `fork`); a *major* fault reads from disk (swap or a memory-mapped file) and costs milliseconds.
@@ -213,6 +401,18 @@ graph LR
 
 Interview-ready one-liner: **a container is a process with namespaces for isolation and cgroups for limits; it is not a lightweight VM.** Google's Borg (and its paper, see `SystemDesign/building_blocks/24_google_papers.md`) is where much of the cgroups work originated.
 
+### Why `fork()` Is Cheap: Copy-on-Write
+
+`fork()` creates a new process that is an exact copy of the calling one. Copying an
+entire address space on every `fork()` would be far too slow to use as often as Unix
+does — the fix is **copy-on-write (COW)**: the child's page table initially points at
+the *same physical pages* as the parent, all marked read-only. Only when either
+process **writes** to a shared page does the kernel take a page fault, actually copy
+that one page, and let the write proceed. A `fork()` immediately followed by `exec()`
+(the classic way to launch a new program) may end up copying almost nothing at all —
+this is also why "process creation is always expensive" is an oversimplification;
+it's the pages you *write to afterward* that cost you.
+
 ## 7. What Happens When a Program Calls `write()` on a Socket
 
 A good end-to-end answer that connects this file to networking:
@@ -230,13 +430,44 @@ user buffer ── write() syscall ──► kernel socket send buffer (copy)
 
 `write()` succeeding only means the bytes reached the kernel. If the send buffer is full, a blocking socket sleeps and a non-blocking socket returns `EAGAIN` (that is **backpressure** at the OS level). Zero-copy paths (`sendfile`, `splice`, `MSG_ZEROCOPY`) skip the user-to-kernel copy for large transfers such as serving files or video segments.
 
+## What Each Engineering Level Should Know
+
+Not everyone reading this file needs every sentence of it cold. This table maps this
+chapter's material onto a standard industry ladder *and* the Google-style ladder this
+repo's interview content is written against, side by side — the mapping between
+company-specific titles and levels is approximate and varies by company, but the
+*depth of understanding* described in each row is a reliable signal regardless of
+which company uses which label. Use it two ways: as a syllabus (read down a column to
+see what to learn next) or as a self-assessment (find the row/column that matches
+where a real interview would place you).
+
+| Topic in this chapter | Junior / New Grad (Google L3) | Mid-Level (Google L4) | Senior (Google L5) | Staff+ (Google L6–L7) |
+|---|---|---|---|---|
+| **Core vocabulary & components** (Foundations) | Can define process, thread, kernel vs. user space, and syscall in plain language | Can explain how the OS's components work together (the Foundations diagram) and why each exists | Connects the vocabulary across subsystems unprompted — e.g. can give §7's full `write()` walkthrough | Can explain kernel design trade-offs (monolithic vs. microkernel vs. hybrid) and how that choice shapes an entire platform's reliability story |
+| **Processes, threads & scheduling** (§1, §6) | Knows a process has its own memory and a thread shares it; knows "the OS shares the CPU" | Knows a context switch has a cost and that creating too many threads is bad, without naming the specific mechanism | Explains CFS/EEVDF's `vruntime` mechanism precisely and corrects the "2MB × 10k threads = 20GB" myth | Weighs M:N scheduling (Go goroutines, Java virtual threads) against raw OS threads for a real workload, and reasons about scheduler-latency SLOs at fleet scale |
+| **Hardware-level concurrency** (§2–§3) | Aware that two cores can see stale data without synchronization | Knows locks/atomics fix races; hasn't necessarily seen MESI by name | Explains MESI's four states, diagnoses false sharing, and fixes it with padding | Predicts false sharing in a design review before anyone measures it, and knows when a lock-free structure is (and isn't) worth the ABA-problem complexity |
+| **I/O models** (§4) | Knows "blocking" vs. "non-blocking" as terms | Knows `epoll`/`kqueue` exist and roughly why they beat `select`/`poll` | Derives epoll's O(ready events) advantage from first principles and compares it precisely to `io_uring` | Makes the actual production adoption call — `io_uring`'s throughput win against its larger attack surface — for a real fleet |
+| **Memory management** (§5) | Knows RAM is shared and programs never see real physical addresses | Knows what a page fault is, without necessarily distinguishing minor from major | Explains the TLB, huge pages, and why `fsync` — not `write()` — is what actually makes data durable | Diagnoses a NUMA-related latency regression or a Transparent-Huge-Page-induced p99 spike from symptoms alone |
+| **Containers & isolation** (§6) | Believes "a container is a lightweight VM" (a common oversimplification) | Knows containers share a kernel and cost less overhead than VMs, without the precise mechanism | Corrects the VM myth precisely: namespaces for isolation, cgroups for limits, same kernel | Explains the cgroup-quota-throttling p99 problem from first principles and designs around it (e.g. CPU limits vs. requests in Kubernetes) |
+
+**Reading this table as a study plan:** if you're aiming at a Senior/L5 bar, your
+target is the whole "Senior" column — which is exactly what the numbered sections (1–7)
+above already deliver in full. The "Junior" and "Mid-Level" columns describe the
+partial understanding this chapter's Foundations section alone gets you to; the
+"Staff+" column is judgment that mostly comes from having operated real systems at
+scale, not from reading — this file gives you the vocabulary to have that
+conversation, not a substitute for having had it.
+
 ## Interview checklist
 
+- [ ] I can name an OS's core components (scheduler, memory manager, file system, I/O manager, network stack, IPC, security) and what each owns.
+- [ ] I can explain the kernel/user-space boundary and why crossing it (a syscall) isn't free.
 - [ ] I can explain why 10k blocked threads hurt, without the "2MB x 10k = 20GB" myth.
 - [ ] I can explain false sharing and name one detection tool and one fix.
 - [ ] I can explain CAS, futexes, and the ABA problem.
 - [ ] I can compare select/poll, epoll, and io_uring with correct complexity.
 - [ ] I can explain the page cache and why `fsync` matters for durability.
-- [ ] I can define a container as namespaces + cgroups.
+- [ ] I can explain why `fork()` is cheap (copy-on-write) and when it stops being cheap.
+- [ ] I can define a container as namespaces + cgroups, and compare monolithic vs. microkernel design.
 
 Related: `SystemDesign/building_blocks/01_operating_systems.md`, `05_concurrency_deep_dive.md` (this folder), GoEngineering topics 26, 28, 31.
