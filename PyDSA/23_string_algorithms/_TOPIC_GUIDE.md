@@ -29,24 +29,28 @@ most reused piece of machinery in the whole topic: 002 and 006 both call
 the exact same `_build_lps` helper on a DIFFERENT constructed string to
 answer a completely different question.
 
-```mermaid
+```arch
 %% caption: KMP: on a mismatch the pattern index falls back through the lps table while the text index never moves backwards, so the scan is O(n + m).
-flowchart TD
-  A["compare text[i] with pattern[j]"] --> B{"equal?"}
-  B -->|yes| C["i += 1, j += 1"]
-  C --> D{"j == len(pattern) ?"}
-  D -->|yes| E["match ends at i<br/>j = lps[j - 1]"]:::ok
-  D -->|no| A
-  E --> A
-  B -->|no| F{"j #gt; 0 ?"}
-  F -->|yes| G["j = lps[j - 1]<br/>fall back, i does NOT move"]:::hot
-  F -->|no| H["i += 1"]
-  G --> A
-  H --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node A "compare text[i] with pattern[j]" at 0,0 w=220
+node B "equal?" at 0,1 shape=diamond color=amber
+node C "i += 1, j += 1" at 0,2
+node D "j == len(pattern) ?" at 0,3 shape=diamond color=amber
+node E "match ends at i" at 0,4 color=green sub="j = lps[j - 1]"
+node F "j > 0 ?" at 1,1 shape=diamond color=amber
+node G "j = lps[j - 1]" at 1,2 color=amber w=170 sub="fall back, i does NOT move"
+node H "i += 1" at 2,1
+A -> B
+B -> C : "yes"
+C -> D
+D -> E : "yes"
+D:L -> A:L : "no"
+E:L -> A:L
+B:R -> F:L : "no"
+F -> G : "yes"
+F -> H : "no"
+G:R -> A:R
+H:T -> A:R
 ```
 
 
@@ -152,19 +156,18 @@ regimes, and knowing which one you're in matters:
      real substrings before trusting it. This is the exact same
      probabilistic-filter-then-verify discipline as a Bloom filter.
 
-```mermaid
+```arch
 %% caption: A rolling hash updates the window's hash in O(1). A hash match must still be verified, because collisions are possible.
-flowchart LR
-  A["hash of the window<br/>s[i .. i+m-1]"] --> B["remove the leading char:<br/>subtract s[i] * base^(m-1)"]
-  B --> C["shift: multiply by base"]
-  C --> D["add the new trailing char<br/>s[i+m]"]
-  D --> E{"hash equals the pattern's hash?"}
-  E -->|yes| F["verify by direct comparison"]:::hot
-  E -->|no| A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x100
+node A "hash of the window" at 0,0 sub="s[i .. i+m-1]"
+node B "remove the leading char" at 1,0 sub="subtract s[i] * base^(m-1)"
+node C "shift: multiply by base" at 2,0
+node D "add the new trailing char" at 2,1 sub="s[i+m]"
+node E "hash equals the pattern's hash?" at 1,1 shape=diamond color=amber
+node F "verify by direct comparison" at 1,2 color=amber
+A -> B -> C -> D -> E
+E -> F : "yes"
+E:L -> A:B : "no"
 ```
 
 
@@ -257,19 +260,32 @@ Parts 0–4 tell you *which* trick each problem uses. This Part is the machinery
 linear-time "self-overlap" tables (the KMP prefix function and the Z-function), how to list *every* match, and what the
 tables say about periods and borders. Every function below was checked against brute force on 3,000 random binary strings.
 
-```mermaid
+```arch
 %% caption: Pick the string tool from the question being asked, not from the problem's title.
-flowchart TD
-  Q(["A string problem"]) --> A{"What is being compared?"}
-  A -->|"one pattern inside one text"| B["str.find in production;<br/>prefix function or Z-function to write it yourself"]:::ok
-  A -->|"a string against itself<br/>(period, border, repetition)"| C["prefix function: n - lps[-1] is the smallest period"]:::ok
-  A -->|"many equal-length windows, or a<br/>'longest length such that' question"| D["rolling hash + binary search on the length,<br/>verify every hash match"]:::hot
-  A -->|"palindromes"| E["expand around centres O(n^2);<br/>Manacher O(n); prefix function on s + # + reverse(s)"]:::ok
-  A -->|"many patterns at once"| F["trie / Aho-Corasick"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x80
+node Q "A string problem" at 0,1 shape=pill
+node A "What is being compared?" at 0,2 shape=diamond color=amber
+node qb "one pattern inside one text" at 1,0 shape=pill w=200
+node qc "a string against itself (period, border, repetition)" at 1,1 shape=pill w=200
+node qd "many equal-length windows, or a 'longest length such that' question" at 1,2 shape=pill w=200
+node qe "palindromes" at 1,3 shape=pill w=200
+node qf "many patterns at once" at 1,4 shape=pill w=200
+node B "str.find in production" at 2,0 color=green w=260 sub="prefix function or Z-function to write it yourself"
+node C "prefix function" at 2,1 color=green w=260 sub="n - lps[-1] is the smallest period"
+node D "rolling hash + binary search on the length" at 2,2 color=amber w=260 sub="verify every hash match"
+node E "expand around centres O(n^2)" at 2,3 color=green w=260 sub="Manacher O(n); prefix function on s + # + reverse(s)"
+node F "trie / Aho-Corasick" at 2,4 color=amber w=260
+Q -> A
+A:R -> qb:L
+A:R -> qc:L
+A:R -> qd:L
+A:R -> qe:L
+A:R -> qf:L
+qb -> B
+qc -> C
+qd -> D
+qe -> E
+qf -> F
 ```
 
 ### 5.1 The prefix function (the `lps` array) and why it is linear

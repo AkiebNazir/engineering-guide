@@ -34,14 +34,14 @@ hard spatial operation into two easy ones that each only need O(1) extra
 memory (a swap, a two-pointer reverse), because the matrix being SQUARE
 is what makes doing this without a second array possible at all.
 
-```mermaid
+```arch
 %% caption: Rotate 90° clockwise = transpose, then reverse every row. Both passes work in place.
-flowchart LR
-  A["1 2 3<br/>4 5 6<br/>7 8 9"] -->|"transpose"| B["1 4 7<br/>2 5 8<br/>3 6 9"] -->|"reverse each row"| C["7 4 1<br/>8 5 2<br/>9 6 3"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x100
+node A "1 2 3\n4 5 6\n7 8 9" at 0,0 color=slate
+node B "1 4 7\n2 5 8\n3 6 9" at 1,0 color=slate
+node C "7 4 1\n8 5 2\n9 6 3" at 2,0 color=green
+A -> B : "transpose"
+B -> C : "reverse each row"
 ```
 
 
@@ -56,24 +56,28 @@ the bottom-row pass, `if left <= right` before the left-column pass)
 exist for exactly one reason: without them, a matrix with a single
 remaining row or column gets traversed twice once the boundaries cross.
 
-```mermaid
+```arch
 %% caption: Spiral traversal: four shrinking boundaries. The two inner checks stop a single leftover row or column from being walked twice.
-flowchart TD
-  A["top, bottom = 0, m - 1<br/>left, right = 0, n - 1"] --> B{"top ≤ bottom and left ≤ right ?"}
-  B -->|no| Z["done"]:::ok
-  B -->|yes| C["row top: left to right, top += 1"]
-  C --> D["column right: top to bottom, right -= 1"]
-  D --> E{"top ≤ bottom ?"}
-  E -->|yes| F["row bottom: right to left, bottom -= 1"]
-  E -->|no| B
-  F --> G{"left ≤ right ?"}
-  G -->|yes| H["column left: bottom to top, left += 1"]
-  G -->|no| B
-  H --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node A "top, bottom = 0, m - 1" at 1,0 w=300 sub="left, right = 0, n - 1"
+node B "top ≤ bottom and left ≤ right ?" at 1,1 shape=diamond color=amber
+node Z "done" at 2,1 color=green
+node C "row top: left to right, top += 1" at 1,2 w=300
+node D "column right: top to bottom, right -= 1" at 1,3 w=300
+node E "top ≤ bottom ?" at 1,4 shape=diamond color=amber
+node F "row bottom: right to left, bottom -= 1" at 1,5 w=300
+node G "left ≤ right ?" at 1,6 shape=diamond color=amber
+node H "column left: bottom to top, left += 1" at 1,7 w=300
+A -> B
+B -> Z : "no"
+B -> C : "yes"
+C -> D -> E
+E -> F : "yes"
+E:L -> B:L : "no"
+F -> G
+G -> H : "yes"
+G:L -> B:L : "no"
+H:L -> B:L
 ```
 
 
@@ -98,21 +102,24 @@ sorted independently" guarantee here does not imply one global sorted
 order, so flattening the matrix and binary-searching it (the LC 74
 technique, a different and stricter problem) is simply wrong here.
 
-```mermaid
+```arch
 %% caption: Staircase search from the top-right corner: every comparison eliminates a whole row or a whole column, so O(m + n).
-flowchart TD
-  A["start at the top-right cell"] --> B{"cell compared with target"}
-  B -->|"equal"| C["found"]:::ok
-  B -->|"cell is bigger"| D["move left: col -= 1<br/>the rest of this column is bigger too"]
-  B -->|"cell is smaller"| E["move down: row += 1<br/>the rest of this row is smaller too"]
-  D --> F{"still inside the matrix?"}
-  E --> F
-  F -->|yes| B
-  F -->|no| G["not present"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x100
+node A "start at the top-right cell" at 1,0
+node B "cell compared with target" at 1,1 shape=diamond color=amber
+node C "found" at 2,1 color=green
+node D "move left: col -= 1" at 0.5,2 w=190 sub="the rest of this column is bigger too"
+node E "move down: row += 1" at 1.5,2 w=190 sub="the rest of this row is smaller too"
+node F "still inside the matrix?" at 1,3 shape=diamond color=amber
+node G "not present" at 1,4 color=red
+A -> B
+B:R -> C:L : "equal"
+B:B -> D:T : "cell is bigger"
+B:B -> E:T : "cell is smaller"
+D:B -> F:L
+E:B -> F:R
+F:L -> B:L : "yes"
+F -> G : "no"
 ```
 
 
@@ -234,22 +241,34 @@ Parts 0–4 explain the eight tricks. This Part is what you need *around* them: 
 rotation and flip as a one-line formula (and its in-place version), the silent index-wrap trap, and the diagonal arithmetic. Every
 snippet was run on CPython 3.13; the rotations were checked against `zip`-based references on square matrices of size 0–7.
 
-```mermaid
+```arch
 %% caption: Read the matrix problem's constraints first: shape, in-place, and which ordering the rows and columns guarantee decide the technique.
-flowchart TD
-  Q(["A matrix problem"]) --> A{"Must the answer be computed in place?"}
-  A -->|"yes, and it is square"| B["rotate/reflect with swaps: transpose + reverse, or 4-way ring cycles"]:::ok
-  A -->|"yes, but a cell's new value needs old neighbours"| C["encode old + 2*new in the cell, decode in a second pass"]:::hot
-  A -->|"yes, and rows/columns must be remembered"| D["use row 0 and column 0 as markers (capture them first)"]:::hot
-  A -->|"no"| E{"Is it a traversal order?"}
-  E -->|"yes"| F["four shrinking boundaries, or direction vectors with a turn rule"]:::ok
-  E -->|"no: a search"| G{"Is it ONE global sorted order?"}
-  G -->|"yes"| H["binary search on the flattened index r*n + c"]:::ok
-  G -->|"only rows and columns sorted"| I["staircase from the top-right corner, O(m + n)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x80
+node Q "A matrix problem" at 0,0 shape=pill
+node A "Must the answer be computed in place?" at 0,2 shape=diamond color=amber
+node qb "yes, and it is square" at 1,1 shape=pill w=190
+node qc "yes, but a cell's new value needs old neighbours" at 1,2 shape=pill w=190
+node qd "yes, and rows/columns must be remembered" at 1,3 shape=pill w=190
+node B "rotate/reflect with swaps" at 2,1 color=green w=250 sub="transpose + reverse, or 4-way ring cycles"
+node C "encode old + 2*new in the cell" at 2,2 color=amber w=250 sub="decode in a second pass"
+node D "use row 0 and column 0 as markers" at 2,3 color=amber w=250 sub="capture them first"
+node E "Is it a traversal order?" at 0,4 shape=diamond color=amber
+node F "four shrinking boundaries" at 2,4 color=green w=250 sub="or direction vectors with a turn rule"
+node G "Is it ONE global sorted order?" at 0,5 shape=diamond color=amber
+node H "binary search on the flattened index" at 2,5 color=green w=250 sub="r*n + c"
+node I "staircase from the top-right corner" at 2,6 color=amber w=250 sub="O(m + n)"
+Q -> A
+A:R -> qb:L
+A:R -> qc:L
+A:R -> qd:L
+qb -> B
+qc -> C
+qd -> D
+A -> E : "no"
+E -> F : "yes"
+E -> G : "no: a search"
+G -> H : "yes"
+G:B -> I:L : "only rows and columns sorted"
 ```
 
 ### 5.1 Building and copying without aliasing

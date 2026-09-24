@@ -76,15 +76,22 @@ Mechanically these are the *same two traversals* as topic 07 (queue/deque
 BFS) and topic 10 (tree DFS/BFS) — a stack (or recursion) for DFS, a
 `collections.deque` for BFS. What's different:
 
-```mermaid
+```arch
 %% caption: From A: BFS visits by distance (A, B, C, D, E, F) using a queue. DFS dives first (A, B, D, F, E, C) using a stack or recursion. Both need a visited set, or the cycle A-B-D-F-E-C loops forever.
-flowchart LR
-  A(("A")) --- B(("B"))
-  A --- C(("C"))
-  B --- D(("D"))
-  C --- E(("E"))
-  D --- F(("F"))
-  E --- F
+route straight
+grid 90x80
+node A "A" at 0,1 shape=circle color=blue
+node B "B" at 1,0 shape=circle color=blue
+node C "C" at 1,2 shape=circle color=blue
+node D "D" at 2,0 shape=circle color=blue
+node E "E" at 2,2 shape=circle color=blue
+node F "F" at 3,1 shape=circle color=blue
+A -- B
+A -- C
+B -- D
+C -- E
+D -- F
+E -- F
 ```
 
 
@@ -253,16 +260,16 @@ A directed graph can revisit an already-fully-explored node legitimately
 again via C; that's not a cycle, D just has two predecessors). The fix is
 **three colors** instead of a boolean:
 
-```mermaid
+```arch
 %% caption: An edge into a GRAY node is a back edge, which means a directed cycle. An edge into a BLACK node is harmless, and one visited set cannot tell the two apart.
-flowchart LR
-  W["WHITE<br/>unvisited"] -->|"DFS enters"| G["GRAY<br/>on the current path"]:::hot
-  G -->|"all neighbours finished"| B["BLACK<br/>fully done"]:::ok
-  G -.->|"edge to a GRAY node"| C["cycle found"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 280x100
+node W "WHITE" at 0,0 color=slate sub="unvisited"
+node G "GRAY" at 1,0 color=amber sub="on the current path"
+node B "BLACK" at 2,0 color=green sub="fully done"
+node C "cycle found" at 1,1 color=red
+W -> G : "DFS enters"
+G -> B : "all neighbours finished"
+G ..> C : "edge to a GRAY node"
 ```
 
 
@@ -331,24 +338,28 @@ a graph with a cycle, because a cycle has no valid linear order.
 **Idea:** a node with no unprocessed prerequisites (in-degree 0) can safely
 go first. Peel those off, decrement their neighbors' in-degrees, repeat.
 
-```mermaid
+```arch
 %% caption: Kahn's algorithm: repeatedly take a node with no remaining prerequisites. If some nodes never reach indegree 0, they are on a cycle.
-flowchart TD
-  A["compute the indegree of every node"] --> B["queue = all nodes with indegree 0"]
-  B --> C{"queue empty?"}
-  C -->|no| D["pop u, append u to the order"]
-  D --> E["for each edge u to v:<br/>indegree[v] -= 1"]
-  E --> F{"indegree[v] is 0 ?"}
-  F -->|yes| G["push v"]
-  F -->|no| C
-  G --> C
-  C -->|yes| H{"len(order) == n ?"}
-  H -->|yes| I["valid topological order"]:::ok
-  H -->|no| J["cycle: some nodes never reached 0"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node A "compute the indegree of every node" at 0,0 w=230
+node B "queue = all nodes with indegree 0" at 0,1 w=230
+node C "queue empty?" at 0,2 shape=diamond color=amber
+node D "pop u, append u to the order" at 0,3 w=230
+node E "for each edge u to v:\nindegree[v] -= 1" at 0,4 w=230
+node F "indegree[v] is 0 ?" at 0,5 shape=diamond color=amber
+node G "push v" at 0,6
+node H "len(order) == n ?" at 1,2 shape=diamond color=amber
+node I "valid topological order" at 1,3 color=green
+node J "cycle: some nodes never reached 0" at 2,2 color=red w=180
+A -> B -> C
+C -> D : "no"
+D -> E -> F
+F -> G : "yes"
+F:L -> C:L : "no"
+G:L -> C:L
+C -> H : "yes"
+H -> I : "yes"
+H -> J : "no"
 ```
 
 
@@ -688,20 +699,36 @@ The eighteen problems teach traversal, components, cycle detection, topological 
 These are the variants interviews ask next. Every snippet was run against LeetCode's own examples, and every count below is
 measured.
 
-```mermaid
+```arch
 %% caption: Choosing the graph tool. The question being asked — reach, distance, order, cycle, or partition — picks the traversal.
-flowchart TD
-  Q(["A graph problem"]) --> A{"What is asked?"}
-  A -->|"is X reachable / how many groups"| B["DFS or BFS + visited<br/>(components: outer loop over all nodes)"]:::ok
-  A -->|"fewest steps, unweighted"| C["BFS (multi-source if several starts,<br/>bidirectional if start AND goal known)"]:::ok
-  A -->|"a valid ORDER of dependencies"| D["topological sort: Kahn or DFS postorder;<br/>fewer than n nodes out = a cycle"]:::ok
-  A -->|"is there a cycle"| E["undirected: parent tracking / union-find<br/>directed: three colours"]:::ok
-  A -->|"two groups, no edge inside a group"| F["2-colouring (bipartite)"]:::ok
-  A -->|"weights on edges"| G["not this topic: Dijkstra, Bellman-Ford (topic 15)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x80
+node Q "A graph problem" at 0,1 shape=pill
+node A "What is asked?" at 0,2 shape=diamond color=amber
+node qb "is X reachable / how many groups" at 1,0 shape=pill w=190
+node qc "fewest steps, unweighted" at 1,1 shape=pill w=190
+node qd "a valid ORDER of dependencies" at 1,2 shape=pill w=190
+node qe "is there a cycle" at 1,3 shape=pill w=190
+node qf "two groups, no edge inside a group" at 1,4 shape=pill w=190
+node qg "weights on edges" at 1,5 shape=pill w=190
+node B "DFS or BFS + visited" at 2,0 color=green w=260 sub="components: outer loop over all nodes"
+node C "BFS" at 2,1 color=green w=260 sub="multi-source if several starts, bidirectional if start AND goal known"
+node D "topological sort: Kahn or DFS postorder" at 2,2 color=green w=260 sub="fewer than n nodes out = a cycle"
+node E "undirected: parent tracking / union-find" at 2,3 color=green w=260 sub="directed: three colours"
+node F "2-colouring (bipartite)" at 2,4 color=green w=260
+node G "not this topic" at 2,5 color=amber w=260 sub="Dijkstra, Bellman-Ford (topic 15)"
+Q -> A
+A:R -> qb:L
+A:R -> qc:L
+A:R -> qd:L
+A:R -> qe:L
+A:R -> qf:L
+A:R -> qg:L
+qb -> B
+qc -> C
+qd -> D
+qe -> E
+qf -> F
+qg -> G
 ```
 
 ### 12.1 Bidirectional BFS: search from both ends, always expand the smaller side

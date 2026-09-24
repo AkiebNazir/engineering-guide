@@ -15,21 +15,27 @@ This is Topic 01's array-vs-hashmap debate (`01_arrays_hashing` §2.1) replayed
 one level deeper — instead of choosing a container for *counts*, you're
 choosing a container for *child pointers*.
 
-```mermaid
+```arch
 %% caption: Words: car, cat, cow, do. Green nodes end a word. Words sharing a prefix share a path, and search costs O(length of the word), independent of how many words are stored.
-flowchart TD
-  root(("root")) --> c(("c"))
-  root --> d(("d"))
-  c --> ca(("a"))
-  c --> co(("o"))
-  ca --> car(("r")):::ok
-  ca --> cat(("t")):::ok
-  co --> cow(("w")):::ok
-  d --> do(("o")):::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node root "root" at 2.125,0 shape=circle color=blue
+node c "c" at 1.25,1 shape=circle color=blue
+node d "d" at 3,1 shape=circle color=blue
+node ca "a" at 0.5,2 shape=circle color=blue
+node co "o" at 2,2 shape=circle color=blue
+node do "o" at 3,2 shape=circle color=green
+node car "r" at 0,3 shape=circle color=green
+node cat "t" at 1,3 shape=circle color=green
+node cow "w" at 2,3 shape=circle color=green
+root -> c
+root -> d
+c -> ca
+c -> co
+ca -> car
+ca -> cat
+co -> cow
+d -> do
 ```
 
 
@@ -98,25 +104,32 @@ alternative only if asked to optimize for a known small alphabet.
 
 ## Part 2 · Insert / Search / StartsWith — the shared traversal
 
-```mermaid
+```arch
 %% caption: The three operations share one walk down the trie and differ only in what they do at a missing child and at the end.
-flowchart TD
-  S["node = root"] --> L["for each char c in the word"]
-  L --> Q{"c in node.children?"}
-  Q -->|yes| M["node = node.children[c]"]
-  Q -->|no| N{"operation?"}
-  N -->|insert| I["create the child, then move"]
-  N -->|"search or startsWith"| F["return False"]:::bad
-  I --> L
-  M --> L
-  L -->|"all chars consumed"| E{"operation?"}
-  E -->|insert| E1["node.is_end = True"]:::ok
-  E -->|search| E2["return node.is_end"]:::ok
-  E -->|startsWith| E3["return True"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 150x90
+node S "node = root" at 1,0 shape=pill
+node L "for each char c in the word" at 1,1 w=200
+node Q "c in node.children?" at 1,2 shape=diamond color=amber
+node M "node = node.children[c]" at 0,2 w=130
+node N "operation?" at 1,3 shape=diamond color=amber
+node I "create the child, then move" at 0,3 w=130
+node F "return False" at 1,4 color=red
+node E "operation?" at 2.5,2 shape=diamond color=amber
+node E1 "node.is_end = True" at 2,3 color=green w=130
+node E2 "return node.is_end" at 3,3 color=green w=130
+node E3 "return True" at 2.5,4 color=green
+S -> L
+L -> Q
+Q:L -> M:R : "yes"
+Q -> N : "no"
+N:L -> I:R : "insert"
+N -> F : "search or startsWith"
+I:L -> L:L
+M:T -> L:L
+L:R -> E:T : "all chars consumed"
+E:L -> E1:T : "insert"
+E:R -> E2:T : "search"
+E:B -> E3:T : "startsWith"
 ```
 
 
