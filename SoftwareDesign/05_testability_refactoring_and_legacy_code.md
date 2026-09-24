@@ -167,6 +167,31 @@ code you can't yet change, and a smell in code you're designing now, because it 
 the test to *where* a name is imported (patching `requests.get` does nothing if the code
 did `from requests import get` — you must patch `mymodule.get`).
 
+The `ReportService` in §2 is already an object seam — the constructor parameter is the
+enabling point. A function seam is the same idea for a single call, not a whole object:
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Order:
+    customer_email: str
+
+def real_send_email(to: str, body: str) -> None:
+    ...                                    # actually talks to an SMTP server
+
+def send_receipt(order: Order, send=real_send_email) -> None:   # `send` is the seam
+    send(order.customer_email, "Thanks for your order")
+
+sent = []
+send_receipt(Order("a@b.com"), send=lambda to, body: sent.append((to, body)))
+assert sent == [("a@b.com", "Thanks for your order")]
+```
+
+Production calls `send_receipt(order)` and gets the default, real sender; the test
+passes a different function. Nothing was patched, and the seam is visible in the
+signature.
+
 ---
 
 ## 4 · Test doubles: dummy, stub, spy, mock, fake
@@ -198,6 +223,34 @@ def test_overdue_reminder():
     send_overdue_reminders(loans, mailer, clock)
     assert mailer.sent == [("m1", "book-1 is overdue")]    # state-based assertion
 ```
+
+`FakeClock` above is a **fake** and `SpyMailer` a **spy**. The other three in one place:
+
+```python
+from unittest.mock import Mock
+
+class DummyLogger:                                 # DUMMY: required by the signature, never called
+    def log(self, msg: str) -> None:
+        raise AssertionError("should never be called")
+
+class StubUserRepo:                                 # STUB: canned answer, controls the input
+    def get(self, user_id: str) -> dict:
+        return {"id": user_id, "plan": "pro"}
+
+def test_pro_users_get_priority_support():
+    repo = StubUserRepo()
+    assert routes_to_priority_queue(repo.get("u1")) is True
+
+def test_gateway_charged_exactly_once():
+    gateway = Mock()                                # MOCK: the expectation IS the behaviour under test
+    checkout(gateway, order_total=1999, idempotency_key="k1")
+    gateway.charge.assert_called_once_with(1999, idempotency_key="k1")
+```
+
+`DummyLogger` never has `.log()` called in this test — it's only there because the
+constructor requires *a* logger. `StubUserRepo` controls an indirect input without
+caring how it's called. `Mock` verifies an indirect output *as an expectation*, which is
+why mocks belong where the call itself is the behaviour under test (below).
 
 ### Fakes over mocks — why
 
@@ -263,6 +316,27 @@ Guidelines:
   balance never drops below −overdraft", "decode(encode(x)) == x".
 - **Determinism is non-negotiable.** A flaky test is worse than no test — it trains
   people to ignore red builds.
+
+The property holds for *every* input, so instead of picking examples by hand, generate
+many and check it holds:
+
+```python
+import random
+
+def encode(x: int) -> str: return f"n:{x}"
+def decode(s: str) -> int: return int(s.split(":", 1)[1])
+
+def test_decode_encode_roundtrips_for_any_int():
+    for _ in range(200):
+        x = random.randint(-10_000, 10_000)
+        assert decode(encode(x)) == x
+```
+
+A real property-based library (Hypothesis for Python, `testing/quick` for Go) does the
+same thing but also shrinks a failing case to the smallest input that still fails, and
+replays known-bad inputs across runs — worth adopting once you're writing these by hand
+more than occasionally. Runnable versions: `PyEngineering/21_fuzzing_property_testing`,
+`GoEngineering/21_*`.
 
 ### The test-size model (Google's terminology)
 
@@ -390,6 +464,23 @@ a suggestion, "this is a mess" is not.
    the caller uses become return values.
 3. Replace the fragment with a call. Run tests.
 
+```python
+# Before: the fragment is buried in a longer function.
+def invoice_total_v1(invoice) -> float:
+    total = 0
+    for item in invoice.items:
+        total += item.price * item.quantity
+    return total
+
+# After: the fragment is a function named by intent; behaviour is unchanged.
+def invoice_total(invoice) -> float:
+    return sum(item.price * item.quantity for item in invoice.items)
+```
+
+Both compute the same result for the same input — that's the whole point of a
+refactoring — which is exactly what a characterization test (§7) would catch if they
+didn't.
+
 **Change Function Declaration (migration style)** — when callers are many or outside your
 control:
 
@@ -397,6 +488,17 @@ control:
 2. Make the old function call the new one (and deprecate it).
 3. Migrate callers one by one, testing each.
 4. Remove the old function when it has no callers.
+
+```python
+def send_email(to: str, subject: str, body: str) -> None:  # step 1: the new signature
+    ...
+
+def send(to: str, body: str) -> None:                       # step 2: old name forwards
+    send_email(to, subject="", body=body)
+
+# step 3: callers migrate one at a time from send(to, body) to send_email(to, "", body)
+# step 4: once nothing calls send(...), delete it
+```
 
 That second one is expand → migrate → contract (`03` §10) applied inside a codebase.
 
