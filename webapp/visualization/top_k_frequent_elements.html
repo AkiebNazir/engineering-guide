@@ -1,0 +1,1476 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260917-05-f0c5fe2","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YACgEZulLoA,0","Arial Narrow":"YAGyDvJ_4Ts,0","Arial Rounded MT Bold":"YAFcfoaHu-s,0","Arial":"YAGyDvJ_4Ts,0","Avenir Next":"YAFcfmNq6UY,0","Baloo 2":"YADK30bC6HQ,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Broken Glyph":"YADZ-exUkv0,0","Canva Sans":"YAFdJjTk5UU,1","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAFcfvtOAUY,1","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","Courier Prime":"YAD1aFjegN8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAFdJpU7Kkk,0","Georgia":"YAGzXkO0pEM,0","Ghost Mono":"YAHQutsX00Q,0","Hanken Grotesk":"YAFcfhwp99E,0","Helvetica Neue":"YAFcf6CtJfI,0","Helvetica":"YAFcf6CtJfI,0","IBM Plex Mono":"YAFdJkmvhGI,0","Impact":"YAFcfnjI7Vk,0","Instrument Serif":"YAHFeOnZNEk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YADK3zbC6RM,0","JetBrains Mono":"YAFdJksXcAk,0","Josefin Sans":"YAFdJjvw9Ps,0","Lato":"YAFdJuFCnaw,0","Libre Baskerville":"YACgEUFdPdA,0","Lobster":"YAD8SnSjSFI,0","Lora":"YACgEXvxf8Q,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YAFdtQi73Xs,0","Nunito":"YAFdJoNRMmU,1","Oleo Script":"YACgEQQ14jI,0","Oswald":"YACgEQY10lw,0","Pacifico":"YADLjORQ1u4,0","Phantom Sans":"YAFdJvgJ5TU,0","Playfair Display":"YAFdJhem5V8,1","Plus Jakarta Sans":"YAGvf3_u0_Q,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YAFdJpYtCxE,1","Raleway":"YAFdJhmxbVQ,1","Roboto Slab":"YAFdJswIKAg,0","Rockwell":"YAFcfyVZnN0,0","Rye":"YACgEdQP21k,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Source Serif 4":"YACgEfdj394,0","Space Grotesk":"YADZ-dYEmhg,0","Space Mono":"YADW1-vpsoc,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Trebuchet MS":"YAFcfrglpVA,0","UV Display":"YAEdVfSSpYo,0","UV Sans":"YAFdJvgJ5TU,0","Ubuntu":"YACgERDU--Q,0","Verdana":"YAGzXTctYtQ,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YAD1aFjegN8,0","ui-sans-serif":"YACkoD1yZN0,0"}}');</script>
+    <script src="/_sdk/83d6dfdadcd4750a.telemetry_sdk.js"
+        integrity="sha512-XS4Dvzp6vbagZS9vFErihvr8aO3S0tH78KWUefn06fmL4WYqryBtZj/IOLITYj7dFA4gPVvPg1W/JB1DK3uLNQ=="></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top K Frequent Elements Interactive Visualizer</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
+    <script src="/_sdk/8de366929c5f3b48.data_sdk.js"
+        integrity="sha512-TyQ8k8cZj66xe/aENmn6RyZpdOFZXbAo5+KBG3PeFM+Q4qMTHU8xAqmq4ADClNfPrstgQYV6OzZHwLTnElzB2g=="></script>
+    <script src="/_sdk/22383239e6d7279e.editing_sdk.js"
+        integrity="sha512-qvtUeUgPbBuWkcjob5tx6AGU1PQHkx4zgZWqqpaXOQqF0FGg35lPkDg2Eh+f2u6Np/H74EENvDhGRPcQgwZA+Q=="></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&amp;family=Space+Mono:wght@400;700&amp;display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --ink: #041024;
+            --navy: #07162d;
+            --panel: #0d2342;
+            --panel-hi: #102b50;
+            --line: #24466d;
+            --blue: #36a8ff;
+            --mint: #54e1b3;
+            --yellow: #ffd166;
+            --white: #f6fbff;
+            --muted: #a9bfd6;
+            --danger: #ff8798;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            background: var(--ink);
+        }
+
+        body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            color: var(--white);
+            font-family: "Work Sans", sans-serif;
+            background-color: var(--ink);
+            background-image:
+                linear-gradient(rgba(67, 151, 221, .065) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 151, 221, .065) 1px, transparent 1px),
+                radial-gradient(circle at 85% 0%, rgba(54, 168, 255, .17), transparent 34rem);
+            background-size: 28px 28px, 28px 28px, auto;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .42;
+        }
+
+        button:focus-visible,
+        input:focus-visible {
+            outline: 3px solid var(--yellow);
+            outline-offset: 3px;
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 30px 22px 48px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 24px;
+            margin-bottom: 24px;
+            animation: enter .5s ease both;
+        }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            color: var(--mint);
+            font-family: "Space Mono", monospace;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            max-width: 850px;
+            margin: 0;
+            line-height: 1.04;
+            letter-spacing: -.055em;
+        }
+
+        .hero-copy {
+            max-width: 780px;
+            margin: 14px 0 0;
+            color: var(--muted);
+            line-height: 1.58;
+        }
+
+        .algorithm-badge {
+            flex: 0 0 auto;
+            border: 1px solid rgba(84, 225, 179, .48);
+            border-radius: 999px;
+            padding: 10px 14px;
+            background: rgba(84, 225, 179, .09);
+            color: var(--mint);
+            font-family: "Space Mono", monospace;
+            font-size: .78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(16, 43, 80, .97), rgba(7, 22, 45, .97));
+            box-shadow: 0 16px 36px rgba(0, 0, 0, .18);
+        }
+
+        .input-panel {
+            display: grid;
+            grid-template-columns: minmax(0, 1.65fr) minmax(130px, .45fr) auto auto;
+            gap: 13px;
+            align-items: end;
+            padding: 18px;
+            animation: enter .55s .06s ease both;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--muted);
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        .input-help {
+            margin: 7px 0 0;
+            color: #7fa0c1;
+            font-size: .76rem;
+            line-height: 1.35;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #345b87;
+            border-radius: 11px;
+            padding: 12px 13px;
+            color: var(--white);
+            background: #06172f;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(54, 168, 255, .16);
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 45px;
+            border: 1px solid transparent;
+            border-radius: 11px;
+            padding: 11px 16px;
+            color: var(--white);
+            font-weight: 750;
+            transition: transform .16s ease, filter .16s ease;
+        }
+
+        .button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+
+        .button-primary {
+            background: #167ed0;
+        }
+
+        .button-muted {
+            border-color: #3a5d84;
+            background: #102947;
+        }
+
+        .button-play {
+            min-width: 118px;
+            background: var(--mint);
+            color: #06172f;
+        }
+
+        .button-pause {
+            background: var(--yellow);
+            color: #352700;
+        }
+
+        .validation {
+            grid-column: 1 / -1;
+            min-height: 0;
+            margin: 0;
+            color: var(--danger);
+            font-size: .88rem;
+        }
+
+        .validation:empty {
+            display: none;
+        }
+
+        .control-panel {
+            padding: 17px 18px;
+            margin-top: 18px;
+            animation: enter .6s .12s ease both;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .step-readout {
+            margin-left: auto;
+            color: var(--muted);
+            font-family: "Space Mono", monospace;
+            font-size: .82rem;
+            font-weight: 700;
+        }
+
+        .progress-track {
+            height: 7px;
+            overflow: hidden;
+            margin-top: 16px;
+            border-radius: 99px;
+            background: #06172f;
+        }
+
+        .progress-fill {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--blue), var(--mint));
+            transition: width .3s ease;
+        }
+
+        .story {
+            margin: 14px 0 0;
+            color: var(--white);
+            font-size: 1.04rem;
+            font-weight: 650;
+            line-height: 1.5;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(300px, .82fr);
+            gap: 18px;
+            margin-top: 18px;
+            animation: enter .65s .18s ease both;
+        }
+
+        .main-column,
+        .side-column {
+            display: grid;
+            gap: 18px;
+            align-content: start;
+        }
+
+        .panel-pad {
+            padding: 20px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin: 0 0 16px;
+        }
+
+        .panel-heading span {
+            color: var(--mint);
+            font-family: "Space Mono", monospace;
+            font-size: .72rem;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+        }
+
+        .array-row {
+            display: flex;
+            gap: 11px;
+            overflow-x: auto;
+            padding: 10px 2px 7px;
+            scrollbar-color: var(--line) transparent;
+        }
+
+        .array-cell {
+            position: relative;
+            flex: 0 0 82px;
+            min-height: 91px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #345775;
+            border-radius: 15px;
+            background: #081c36;
+            transition: .22s ease;
+        }
+
+        .array-cell.current {
+            border-color: var(--blue);
+            background: rgba(54, 168, 255, .17);
+            transform: translateY(-5px);
+            box-shadow: 0 0 21px rgba(54, 168, 255, .13);
+        }
+
+        .array-index {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            color: var(--muted);
+            font-family: "Space Mono", monospace;
+            font-size: .66rem;
+        }
+
+        .array-value {
+            color: var(--white);
+            font-size: 1.48rem;
+            font-weight: 800;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 15px;
+            color: var(--muted);
+            font-size: .78rem;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--blue);
+        }
+
+        .legend-dot.mint {
+            background: var(--mint);
+        }
+
+        .legend-dot.yellow {
+            background: var(--yellow);
+        }
+
+        .visual-grid {
+            display: grid;
+            grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+            gap: 18px;
+        }
+
+        .memory-list {
+            display: grid;
+            gap: 9px;
+        }
+
+        .memory-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 11px;
+            border: 1px solid #2e5279;
+            border-radius: 10px;
+            background: #071a34;
+            color: var(--mint);
+            font-family: "Space Mono", monospace;
+            font-size: .86rem;
+            animation: pop .2s ease;
+        }
+
+        .empty-copy {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: .9rem;
+        }
+
+        .bucket-stack {
+            display: grid;
+            gap: 8px;
+        }
+
+        .bucket-row {
+            display: grid;
+            grid-template-columns: 76px minmax(0, 1fr);
+            gap: 10px;
+            align-items: stretch;
+            min-height: 53px;
+            padding: 8px;
+            border: 1px solid #2e5279;
+            border-radius: 11px;
+            background: #071a34;
+            transition: .2s ease;
+        }
+
+        .bucket-row.active {
+            border-color: var(--yellow);
+            background: rgba(255, 209, 102, .08);
+            box-shadow: 0 0 20px rgba(255, 209, 102, .08);
+        }
+
+        .bucket-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--muted);
+            font-family: "Space Mono", monospace;
+            font-size: .73rem;
+        }
+
+        .bucket-values {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .value-pill {
+            border: 1px solid rgba(84, 225, 179, .55);
+            border-radius: 999px;
+            padding: 5px 9px;
+            color: var(--mint);
+            background: rgba(84, 225, 179, .09);
+            font-family: "Space Mono", monospace;
+            font-weight: 700;
+            animation: pop .2s ease;
+        }
+
+        .value-pill.selected {
+            border-color: var(--mint);
+            background: var(--mint);
+            color: #06172f;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .code-value {
+            margin: 15px 0 0;
+            color: var(--yellow);
+            font-family: "Space Mono", monospace;
+            font-size: clamp(1.03rem, 2.2vw, 1.45rem);
+            font-weight: 700;
+            line-height: 1.42;
+            word-break: break-word;
+        }
+
+        .detail-copy {
+            margin: 11px 0 0;
+            color: var(--muted);
+            line-height: 1.52;
+            font-size: .9rem;
+        }
+
+        .result-box {
+            display: flex;
+            align-items: center;
+            min-height: 106px;
+            padding: 15px;
+            border: 1px solid #345775;
+            border-radius: 13px;
+            background: #071a34;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .result-box.success {
+            border-color: var(--mint);
+            background: rgba(84, 225, 179, .1);
+            color: var(--mint);
+            font-weight: 700;
+        }
+
+        .what-card {
+            border-color: rgba(54, 168, 255, .52);
+            background: linear-gradient(135deg, rgba(54, 168, 255, .12), rgba(13, 35, 66, .96));
+        }
+
+        .what-copy {
+            margin: 0;
+            color: var(--white);
+            line-height: 1.58;
+        }
+
+        .complexity-row {
+            display: grid;
+            gap: 10px;
+        }
+
+        .complexity-chip {
+            padding: 12px;
+            border-radius: 12px;
+            background: #071a34;
+        }
+
+        .complexity-chip strong {
+            display: block;
+            color: var(--blue);
+            font-family: "Space Mono", monospace;
+            font-size: .92rem;
+        }
+
+        .complexity-chip span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: .78rem;
+        }
+
+        .pseudo {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: lines;
+        }
+
+        .pseudo li {
+            counter-increment: lines;
+            position: relative;
+            padding: 7px 8px 7px 38px;
+            border-radius: 7px;
+            color: var(--muted);
+            font-family: "Space Mono", monospace;
+            font-size: .73rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            transition: .16s ease;
+        }
+
+        .pseudo li::before {
+            content: counter(lines);
+            position: absolute;
+            left: 9px;
+            color: #547696;
+        }
+
+        .pseudo li.active {
+            color: #06172f;
+            background: var(--yellow);
+            font-weight: 700;
+        }
+
+        .pseudo li.active::before {
+            color: #5c4800;
+        }
+
+        .learn-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+        .learn-controls label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .learn-label {
+            color: var(--mint);
+            font-family: "Space Mono", monospace;
+            font-weight: 700;
+        }
+
+        .pause-status {
+            margin-left: auto;
+            color: var(--yellow);
+            font-weight: 700;
+        }
+
+        .continue-button {
+            min-height: 34px;
+            padding: 7px 11px;
+        }
+
+        .milestone-strip {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin: -4px 0 14px;
+        }
+
+        .milestone-strip span {
+            padding: 7px 4px;
+            border: 1px solid #2e5279;
+            border-radius: 7px;
+            color: var(--muted);
+            text-align: center;
+            font-family: "Space Mono", monospace;
+            font-size: .68rem;
+        }
+
+        .milestone-strip span.done {
+            color: var(--mint);
+            border-color: var(--mint);
+        }
+
+        .milestone-strip span.current {
+            color: #06172f;
+            background: var(--yellow);
+            border-color: var(--yellow);
+            font-weight: 700;
+        }
+
+        .code-explanation {
+            margin: 0 0 10px;
+            color: var(--white);
+            line-height: 1.45;
+            font-size: .9rem;
+        }
+
+        .why-line {
+            margin-bottom: 10px;
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+        .why-line summary {
+            cursor: pointer;
+            color: var(--blue);
+            font-weight: 700;
+        }
+
+        .why-line p {
+            margin: 7px 0 0;
+            line-height: 1.45;
+        }
+
+        @keyframes enter {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pop {
+            from {
+                opacity: .35;
+                transform: scale(.93);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 980px) {
+            .hero {
+                align-items: start;
+                flex-direction: column;
+            }
+
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .input-panel {
+                grid-template-columns: 1fr 150px auto auto;
+            }
+        }
+
+        @media (max-width: 660px) {
+            .app-shell {
+                padding: 20px 14px 34px;
+            }
+
+            .input-panel,
+            .visual-grid,
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-panel .field:first-child {
+                grid-column: auto;
+            }
+
+            .input-panel .button {
+                width: 100%;
+            }
+
+            .control-row .button {
+                flex: 1 1 calc(50% - 7px);
+            }
+
+            .step-readout {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
+    <script src="/_sdk/a558f474cd01d324.resizing_sdk.js" type="text/javascript"
+        integrity="sha512-evIEjzvRDdaV6tHT4THeYa18+ppfgUj4Zpx5W8R1gaF2VKcOba7TPP4x2YYqsfThPwuC5NaBFyUH6V81c3i8kA=="></script>
+</head>
+
+<body data-template-id="__page-root" style="background: rgb(4, 16, 36);">
+    <div class="app-shell">
+        <header class="hero">
+            <div>
+                <p data-template-id="eyebrow" class="canva-text eyebrow"
+                    style="color: rgb(84, 225, 179); font-weight: 700; font-style: normal; font-size: 12px; letter-spacing: 0.12rem;">
+                    JavaScript algorithm lab</p>
+                <h1 data-template-id="page-title" class="canva-text"
+                    style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 32px;">Top K
+                    Frequent Elements — Interactive Visualizer</h1>
+                <p data-template-id="page-subtitle" class="canva-text hero-copy"
+                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.58;">
+                    Given an integer array and k, return the k values that appear most often. Watch every count, bucket,
+                    and answer appear as the algorithm works.</p>
+            </div>
+            <div data-template-id="algorithm-badge" class="canva-tag algorithm-badge"
+                style="background: rgba(84, 225, 179, 0.09); color: rgb(84, 225, 179); font-weight: 700; font-style: normal; font-size: 12px;">
+                FREQUENCY MAP + BUCKETS</div>
+        </header>
+        <main>
+            <section data-template-id="input-panel" class="canva-panel panel input-panel" aria-labelledby="array-label"
+                style="background: rgb(13, 35, 66);">
+                <div class="field">
+                    <label id="array-label" data-template-id="array-label" class="canva-text" for="array-input"
+                        style="color: rgb(169, 191, 214); font-weight: 700; font-style: normal; font-size: 13px;">Integer
+                        array</label> <input id="array-input" class="canva-input" type="text" value="1, 1, 1, 2, 2, 3"
+                        autocomplete="off" spellcheck="false">
+                    <p data-template-id="array-help" class="canva-text input-help"
+                        style="color: rgb(127, 160, 193); font-weight: 400; font-style: normal; font-size: 12px;">
+                        Example: 1, 1, 1, 2, 2, 3</p>
+                </div>
+                <div class="field">
+                    <label data-template-id="k-label" class="canva-text" for="k-input"
+                        style="color: rgb(169, 191, 214); font-weight: 700; font-style: normal; font-size: 13px;">k
+                        answers</label> <input id="k-input" class="canva-input" type="text" value="2" autocomplete="off"
+                        inputmode="numeric">
+                    <p data-template-id="k-help" class="canva-text input-help"
+                        style="color: rgb(127, 160, 193); font-weight: 400; font-style: normal; font-size: 12px;">
+                        Example: 2</p>
+                </div><button id="apply-button" data-template-id="apply-button"
+                    class="canva-button button button-primary" type="button"
+                    style="background: rgb(22, 126, 208); color: rgb(246, 251, 255);"><i
+                        data-lucide="sparkles"></i><span data-template-id="apply-button-label" class="canva-text"
+                        style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Apply
+                        input</span></button> <button id="reset-button" data-template-id="reset-button"
+                    class="canva-button button button-muted" type="button"
+                    style="background: rgb(16, 41, 71); color: rgb(246, 251, 255);"><i
+                        data-lucide="rotate-ccw"></i><span data-template-id="reset-button-label" class="canva-text"
+                        style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Reset</span></button>
+                <p id="validation-message" class="validation" role="alert" aria-live="polite"></p>
+            </section>
+            <section data-template-id="control-panel" class="canva-panel panel control-panel"
+                aria-label="Simulation controls" style="background: rgb(13, 35, 66);">
+                <div class="control-row">
+                    <button id="play-button" data-template-id="play-button" class="canva-button button button-play"
+                        type="button" style="background: rgb(84, 225, 179); color: rgb(6, 23, 47);"><i
+                            data-lucide="play"></i><span data-template-id="play-button-label" class="canva-text"
+                            style="color: rgb(6, 23, 47); font-weight: 700; font-style: normal; font-size: 15px;">Play
+                            guided lesson</span></button> <button id="pause-button" data-template-id="pause-button"
+                        class="canva-button button button-pause" type="button" disabled=""
+                        style="background: rgb(255, 209, 102); color: rgb(53, 39, 0);"><i data-lucide="pause"></i><span
+                            data-template-id="pause-button-label" class="canva-text"
+                            style="color: rgb(53, 39, 0); font-weight: 700; font-style: normal; font-size: 15px;">Pause</span></button>
+                    <button id="previous-button" data-template-id="previous-button"
+                        class="canva-button button button-muted" type="button"
+                        style="background: rgb(16, 41, 71); color: rgb(246, 251, 255);"><i
+                            data-lucide="chevron-left"></i><span data-template-id="previous-button-label"
+                            class="canva-text"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Previous</span></button>
+                    <button id="next-button" data-template-id="next-button" class="canva-button button button-primary"
+                        type="button" style="background: rgb(22, 126, 208); color: rgb(246, 251, 255);"><i
+                            data-lucide="chevron-right"></i><span data-template-id="next-button-label"
+                            class="canva-text"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Next</span></button>
+                    <span id="step-counter" class="step-readout" aria-live="polite"></span>
+                </div>
+                <div class="learn-controls">
+                    <span class="learn-label">Learn mode</span><label><input id="guided-mode" type="radio"
+                            name="learn-mode" value="guided" checked=""> Guided pauses</label><label><input
+                            id="continuous-mode" type="radio" name="learn-mode" value="continuous">
+                        Continuous</label><span id="pause-status" class="pause-status" aria-live="polite"></span><button
+                        id="continue-button" class="button button-muted continue-button" type="button"
+                        hidden="">Continue</button><button id="replay-button" class="button button-muted"
+                        type="button">Replay milestone</button>
+                </div>
+                <div class="progress-track" aria-label="Lesson progress">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <p id="story-message" class="story" aria-live="polite"></p>
+            </section>
+            <section class="workspace" aria-label="Top K Frequent Elements algorithm visualization">
+                <div class="main-column">
+                    <section data-template-id="array-panel" class="canva-panel panel panel-pad"
+                        style="background: rgb(13, 35, 66);">
+                        <h2 class="panel-heading"><span data-template-id="array-heading" class="canva-text"
+                                style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 16px;">Input
+                                array</span><span data-template-id="array-kicker" class="canva-text"
+                                style="color: rgb(84, 225, 179); font-weight: 700; font-style: normal; font-size: 11px;">READ
+                                LEFT TO RIGHT</span></h2>
+                        <div id="array-row" class="array-row" aria-label="Input array"></div>
+                        <div class="legend" aria-label="Visualization legend">
+                            <span class="legend-item"><b class="legend-dot"></b><span data-template-id="legend-current"
+                                    class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">Current
+                                    counting value</span></span> <span class="legend-item"><b
+                                    class="legend-dot mint"></b><span data-template-id="legend-memory"
+                                    class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">Saved
+                                    count</span></span> <span class="legend-item"><b class="legend-dot yellow"></b><span
+                                    data-template-id="legend-bucket" class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">Active
+                                    bucket</span></span>
+                        </div>
+                    </section>
+                    <div class="visual-grid">
+                        <section data-template-id="map-panel" class="canva-panel panel panel-pad"
+                            style="background: rgb(13, 35, 66);">
+                            <h2 class="panel-heading"><span data-template-id="map-heading" class="canva-text"
+                                    style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 16px;">Count
+                                    memory</span><span data-template-id="map-kicker" class="canva-text"
+                                    style="color: rgb(84, 225, 179); font-weight: 700; font-style: normal; font-size: 11px;">NUMBER
+                                    → COUNT</span></h2>
+                            <div id="map-list" class="memory-list" aria-live="polite"></div>
+                        </section>
+                        <section data-template-id="bucket-panel" class="canva-panel panel panel-pad"
+                            style="background: rgb(13, 35, 66);">
+                            <h2 class="panel-heading"><span data-template-id="bucket-heading" class="canva-text"
+                                    style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 16px;">Frequency
+                                    buckets</span><span data-template-id="bucket-kicker" class="canva-text"
+                                    style="color: rgb(84, 225, 179); font-weight: 700; font-style: normal; font-size: 11px;">HIGH
+                                    → LOW</span></h2>
+                            <div id="bucket-stack" class="bucket-stack" aria-live="polite"></div>
+                        </section>
+                    </div>
+                    <div class="detail-grid">
+                        <section data-template-id="calculation-panel" class="canva-panel panel panel-pad"
+                            style="background: rgb(13, 35, 66);">
+                            <h2 data-template-id="calculation-heading" class="canva-text"
+                                style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                                Current calculation</h2>
+                            <p id="calculation-value" class="code-value" aria-live="polite"></p>
+                            <p id="calculation-copy" class="detail-copy"></p>
+                        </section>
+                        <section data-template-id="result-panel" class="canva-panel panel panel-pad"
+                            style="background: rgb(13, 35, 66);">
+                            <h2 data-template-id="result-heading" class="canva-text"
+                                style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                                Final result</h2>
+                            <div id="result-box" class="result-box" aria-live="polite"></div>
+                        </section>
+                    </div>
+                    <section data-template-id="what-panel" class="canva-panel panel panel-pad what-card"
+                        style="background: linear-gradient(135deg, rgba(54, 168, 255, 0.12), rgba(13, 35, 66, 0.96));">
+                        <h2 data-template-id="what-heading" class="canva-text"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                            What just happened?</h2>
+                        <p id="what-copy" class="what-copy" aria-live="polite"></p>
+                    </section>
+                </div>
+                <aside class="side-column">
+                    <section data-template-id="complexity-panel" class="canva-panel panel panel-pad"
+                        style="background: rgb(13, 35, 66);">
+                        <h2 data-template-id="complexity-heading" class="canva-text"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                            Complexity</h2>
+                        <div class="complexity-row">
+                            <div class="complexity-chip"><strong data-template-id="time-complexity" class="canva-text"
+                                    style="color: rgb(54, 168, 255); font-weight: 700; font-style: normal; font-size: 15px;">O(n)
+                                    time</strong><span data-template-id="time-copy" class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">Counting
+                                    + bucket scan</span>
+                            </div>
+                            <div class="complexity-chip"><strong data-template-id="space-complexity" class="canva-text"
+                                    style="color: rgb(54, 168, 255); font-weight: 700; font-style: normal; font-size: 15px;">O(n)
+                                    space</strong><span data-template-id="space-copy" class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">Frequency
+                                    map + buckets</span>
+                            </div>
+                        </div>
+                    </section>
+                    <section data-template-id="pseudo-panel" class="canva-panel panel panel-pad"
+                        style="background: rgb(13, 35, 66);">
+                        <h2 data-template-id="pseudo-heading" class="canva-text"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                            Pseudocode</h2>
+                        <div id="milestone-strip" class="milestone-strip" aria-label="Algorithm milestones">
+                            <span data-milestone="Count">Count</span><span data-milestone="Bucket">Bucket</span><span
+                                data-milestone="Scan">Scan</span><span data-milestone="Select">Select</span><span
+                                data-milestone="Return">Return</span>
+                        </div>
+                        <p id="code-explanation" class="code-explanation" aria-live="polite"></p>
+                        <details class="why-line">
+                            <summary>Why this line?</summary>
+                            <p id="why-copy"></p>
+                        </details>
+                        <ol class="pseudo" aria-label="Top K Frequent Elements JavaScript algorithm">
+                            <li data-template-id="code-line-1" class="canva-text" data-line="1"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                count = {}</li>
+                            <li data-template-id="code-line-2" class="canva-text" data-line="2"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                for value in nums: count[value] += 1</li>
+                            <li data-template-id="code-line-3" class="canva-text" data-line="3"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                buckets = array of empty lists</li>
+                            <li data-template-id="code-line-4" class="canva-text" data-line="4"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                for each value, frequency in count:</li>
+                            <li data-template-id="code-line-5" class="canva-text" data-line="5"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                put value in buckets[frequency]</li>
+                            <li data-template-id="code-line-6" class="canva-text" data-line="6"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                for frequency from n down to 1:</li>
+                            <li data-template-id="code-line-7" class="canva-text" data-line="7"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                collect values until k answers</li>
+                            <li data-template-id="code-line-8" class="canva-text" data-line="8"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                return the collected values</li>
+                        </ol>
+                    </section>
+                </aside>
+            </section>
+        </main>
+    </div>
+    <script>
+        (() => {
+            const els = {
+                arrayInput: document.getElementById("array-input"),
+                kInput: document.getElementById("k-input"),
+                apply: document.getElementById("apply-button"),
+                reset: document.getElementById("reset-button"),
+                play: document.getElementById("play-button"),
+                pause: document.getElementById("pause-button"),
+                previous: document.getElementById("previous-button"),
+                next: document.getElementById("next-button"),
+                validation: document.getElementById("validation-message"),
+                stepCounter: document.getElementById("step-counter"),
+                progress: document.getElementById("progress-fill"),
+                story: document.getElementById("story-message"),
+                arrayRow: document.getElementById("array-row"),
+                mapList: document.getElementById("map-list"),
+                bucketStack: document.getElementById("bucket-stack"),
+                calculationValue: document.getElementById("calculation-value"),
+                calculationCopy: document.getElementById("calculation-copy"),
+                result: document.getElementById("result-box"),
+                what: document.getElementById("what-copy"),
+                codeLines: [...document.querySelectorAll(".pseudo li")],
+                guided: document.getElementById("guided-mode"),
+                continuous: document.getElementById("continuous-mode"),
+                pauseStatus: document.getElementById("pause-status"),
+                continueButton: document.getElementById("continue-button"),
+                replay: document.getElementById("replay-button"),
+                codeExplanation: document.getElementById("code-explanation"),
+                whyCopy: document.getElementById("why-copy"),
+                milestones: [...document.querySelectorAll("[data-milestone]")]
+            };
+
+            let values = [1, 1, 1, 2, 2, 3];
+            let k = 2;
+            let states = [];
+            let currentStep = 0;
+            let playTimer = null;
+            let record = null;
+            let initialized = false;
+            let saveTimer = null;
+
+            function parseInputs() {
+                const rawArray = els.arrayInput.value.trim();
+                const rawK = els.kInput.value.trim();
+                if (!rawArray) return { error: "Add at least one whole number to the array." };
+                if (!rawK) return { error: "Choose how many frequent values you want to return." };
+
+                const cleaned = rawArray.replace(/^\[|\]$/g, "").trim();
+                const parts = cleaned.split(",").map(part => part.trim());
+                if (!parts.length || parts.some(part => !/^-?\d+$/.test(part))) {
+                    return { error: "Use comma-separated whole numbers, like 1, 1, 1, 2, 2, 3." };
+                }
+                if (!/^\d+$/.test(rawK) || Number(rawK) < 1) {
+                    return { error: "k must be a whole number of 1 or more." };
+                }
+
+                const parsedValues = parts.map(Number);
+                const parsedK = Number(rawK);
+                const distinctCount = new Set(parsedValues).size;
+                if (parsedK > distinctCount) {
+                    return { error: `There are only ${distinctCount} distinct value${distinctCount === 1 ? "" : "s"}. Choose k between 1 and ${distinctCount}.` };
+                }
+                return { values: parsedValues, k: parsedK };
+            }
+
+            function cloneMap(map) {
+                return Object.keys(map).map(key => ({ value: Number(key), count: map[key] })).sort((a, b) => a.value - b.value);
+            }
+
+            function cloneBuckets(buckets) {
+                return buckets.map(bucket => bucket ? [...bucket] : []);
+            }
+
+            function makeState(kind, extras) {
+                return Object.assign({
+                    kind,
+                    currentIndex: null,
+                    currentValue: null,
+                    frequencyMap: [],
+                    buckets: [],
+                    activeBucket: null,
+                    selected: [],
+                    line: 1,
+                    story: "",
+                    explanation: "",
+                    calculation: "",
+                    calculationCopy: ""
+                }, extras);
+            }
+
+            function buildStates(numbers, amount) {
+                const sequence = [];
+                const counts = {};
+                const maxFrequency = numbers.length;
+
+                sequence.push(makeState("start", {
+                    line: 1,
+                    buckets: Array.from({ length: maxFrequency + 1 }, () => []),
+                    story: "We will count each number first, then group numbers by how often they appear.",
+                    explanation: "A frequency is simply the number of times something shows up. We will keep that count in a small memory table.",
+                    calculation: "count memory = {}",
+                    calculationCopy: "Start with an empty place to remember each number’s count."
+                }));
+
+                numbers.forEach((value, index) => {
+                    counts[value] = (counts[value] || 0) + 1;
+                    sequence.push(makeState("count", {
+                        currentIndex: index,
+                        currentValue: value,
+                        frequencyMap: cloneMap(counts),
+                        buckets: Array.from({ length: maxFrequency + 1 }, () => []),
+                        line: 2,
+                        story: `${value} has appeared ${counts[value]} time${counts[value] === 1 ? "" : "s"}.`,
+                        explanation: `Look at array position ${index}. Add one to the saved count for ${value}.`,
+                        calculation: `frequency of ${value} = ${counts[value]}`,
+                        calculationCopy: "The count memory updates as we read the array from left to right."
+                    }));
+                });
+
+                const buckets = Array.from({ length: maxFrequency + 1 }, () => []);
+                sequence.push(makeState("bucket-ready", {
+                    frequencyMap: cloneMap(counts),
+                    buckets: cloneBuckets(buckets),
+                    line: 4,
+                    story: "Counting is complete. Now we make buckets for each possible frequency.",
+                    explanation: "A bucket is a labeled group. Bucket 3 will hold values that appeared exactly 3 times.",
+                    calculation: "make buckets 1 → n",
+                    calculationCopy: "Each bucket label is a possible frequency."
+                }));
+
+                Object.keys(counts).map(Number).sort((a, b) => a - b).forEach(value => {
+                    const frequency = counts[value];
+                    buckets[frequency].push(value);
+                    sequence.push(makeState("bucket", {
+                        currentValue: value,
+                        frequencyMap: cloneMap(counts),
+                        buckets: cloneBuckets(buckets),
+                        activeBucket: frequency,
+                        line: 5,
+                        story: `Put ${value} in bucket ${frequency}.`,
+                        explanation: `${value} appeared ${frequency} times, so it belongs in the bucket with the same label.`,
+                        calculation: `${value} → bucket ${frequency}`,
+                        calculationCopy: `Bucket ${frequency} stores values that appear ${frequency} times.`
+                    }));
+                });
+
+                sequence.push(makeState("scan-start", {
+                    frequencyMap: cloneMap(counts),
+                    buckets: cloneBuckets(buckets),
+                    activeBucket: maxFrequency,
+                    line: 6,
+                    story: "Start at the highest frequency and scan downward.",
+                    explanation: "The fullest-frequency buckets contain the most frequent values, so looking from high to low gives us answers in the right order.",
+                    calculation: `scan buckets: ${maxFrequency} down to 1`,
+                    calculationCopy: "We inspect high-frequency buckets before lower-frequency buckets."
+                }));
+
+                const selected = [];
+                for (let frequency = maxFrequency; frequency >= 1; frequency--) {
+                    sequence.push(makeState("scan", {
+                        frequencyMap: cloneMap(counts),
+                        buckets: cloneBuckets(buckets),
+                        activeBucket: frequency,
+                        selected: [...selected],
+                        line: 6,
+                        story: buckets[frequency].length ? `Scan bucket ${frequency}: it has ${buckets[frequency].length} value${buckets[frequency].length === 1 ? "" : "s"}.` : `Scan bucket ${frequency}: it is empty.`,
+                        explanation: buckets[frequency].length ? `This bucket contains values that appeared ${frequency} times.` : "There are no values with this frequency, so we continue downward.",
+                        calculation: `bucket ${frequency} = [${buckets[frequency].join(", ")}]`,
+                        calculationCopy: "Only non-empty buckets can add answers."
+                    }));
+
+                    for (const value of buckets[frequency]) {
+                        selected.push(value);
+                        sequence.push(makeState("collect", {
+                            currentValue: value,
+                            frequencyMap: cloneMap(counts),
+                            buckets: cloneBuckets(buckets),
+                            activeBucket: frequency,
+                            selected: [...selected],
+                            line: 7,
+                            story: `Collect ${value}. We now have ${selected.length} answer${selected.length === 1 ? "" : "s"}.`,
+                            explanation: `${value} is one of the most frequent values still available. Add it to the answer list.`,
+                            calculation: `Top ${amount} values: [${selected.join(", ")}]`,
+                            calculationCopy: `Keep collecting until the answer list has ${amount} values.`
+                        }));
+                        if (selected.length === amount) {
+                            sequence.push(makeState("complete", {
+                                frequencyMap: cloneMap(counts),
+                                buckets: cloneBuckets(buckets),
+                                activeBucket: frequency,
+                                selected: [...selected],
+                                line: 8,
+                                story: `We found ${amount} answers.`,
+                                explanation: "Stop here. We collected exactly the number of frequent values requested.",
+                                calculation: `Top ${amount} values: [${selected.join(", ")}]`,
+                                calculationCopy: "The result is ready."
+                            }));
+                            return sequence;
+                        }
+                    }
+                }
+                return sequence;
+            }
+
+            function renderArray(state) {
+                els.arrayRow.replaceChildren();
+                values.forEach((value, index) => {
+                    const cell = document.createElement("div");
+                    cell.className = "array-cell";
+                    if (state.kind === "count" && state.currentIndex === index) cell.classList.add("current");
+
+                    const indexLabel = document.createElement("span");
+                    indexLabel.className = "array-index";
+                    indexLabel.textContent = `#${index}`;
+                    const number = document.createElement("span");
+                    number.className = "array-value";
+                    number.textContent = value;
+                    cell.append(indexLabel, number);
+                    els.arrayRow.appendChild(cell);
+                });
+            }
+
+            function renderMap(entries) {
+                els.mapList.replaceChildren();
+                if (!entries.length) {
+                    const copy = document.createElement("p");
+                    copy.className = "empty-copy";
+                    copy.textContent = "Count memory is empty. Press Next or Play to begin counting.";
+                    els.mapList.appendChild(copy);
+                    return;
+                }
+                entries.forEach(entry => {
+                    const row = document.createElement("div");
+                    row.className = "memory-entry";
+                    const value = document.createElement("span");
+                    value.textContent = entry.value;
+                    const count = document.createElement("span");
+                    count.textContent = `→ ${entry.count}`;
+                    row.append(value, count);
+                    els.mapList.appendChild(row);
+                });
+            }
+
+            function renderBuckets(state) {
+                els.bucketStack.replaceChildren();
+                const maximum = values.length;
+                for (let frequency = maximum; frequency >= 1; frequency--) {
+                    const row = document.createElement("div");
+                    row.className = "bucket-row";
+                    if (state.activeBucket === frequency) row.classList.add("active");
+
+                    const label = document.createElement("div");
+                    label.className = "bucket-label";
+                    label.textContent = `Bucket ${frequency}`;
+
+                    const valuesBox = document.createElement("div");
+                    valuesBox.className = "bucket-values";
+                    const bucket = state.buckets[frequency] || [];
+                    if (!bucket.length) {
+                        const empty = document.createElement("span");
+                        empty.className = "empty-copy";
+                        empty.textContent = "empty";
+                        valuesBox.appendChild(empty);
+                    } else {
+                        bucket.forEach(value => {
+                            const pill = document.createElement("span");
+                            pill.className = "value-pill";
+                            if (state.selected.includes(value)) pill.classList.add("selected");
+                            pill.textContent = state.selected.includes(value) ? `✓ ${value}` : value;
+                            valuesBox.appendChild(pill);
+                        });
+                    }
+                    row.append(label, valuesBox);
+                    els.bucketStack.appendChild(row);
+                }
+            }
+
+            function renderResult(state) {
+                els.result.className = "result-box";
+                if (state.kind === "complete") {
+                    els.result.classList.add("success");
+                    els.result.textContent = `Top ${k} frequent element${k === 1 ? "" : "s"}: [${state.selected.join(", ")}]`;
+                } else if (state.selected.length) {
+                    els.result.textContent = `Answers collected so far: [${state.selected.join(", ")}]`;
+                } else {
+                    els.result.textContent = `Your final Top ${k} frequent element${k === 1 ? "" : "s"} will appear here.`;
+                }
+            }
+
+            function render() {
+                if (!states.length) return;
+                const state = states[currentStep];
+                renderArray(state);
+                renderMap(state.frequencyMap);
+                renderBuckets(state);
+                els.story.textContent = state.story;
+                els.what.textContent = state.explanation;
+                els.calculationValue.textContent = state.calculation;
+                els.calculationCopy.textContent = state.calculationCopy;
+                renderResult(state);
+
+                const atStart = currentStep === 0;
+                const atEnd = currentStep === states.length - 1;
+                els.previous.disabled = atStart;
+                els.next.disabled = atEnd || Boolean(playTimer);
+                els.play.disabled = atEnd || Boolean(playTimer);
+                els.pause.disabled = !playTimer;
+                els.stepCounter.textContent = `STEP ${currentStep + 1} / ${states.length}`;
+                els.progress.style.width = `${((currentStep + 1) / states.length) * 100}%`;
+                els.codeLines.forEach(line => line.classList.toggle("active", Number(line.dataset.line) === state.line));
+                const milestone = state.kind === "count" ? "Count" : state.kind === "bucket" ? "Bucket" : state.kind === "scan" || state.kind === "scan-start" ? "Scan" : state.kind === "collect" ? "Select" : state.kind === "complete" ? "Return" : "Count";
+                const explanations = { Count: "We counted every value. Now the map tells us how often each number appears.", Bucket: "A bucket’s label is the frequency. Numbers with the same frequency share a bucket.", Scan: "We start at the largest frequency so the most frequent values are chosen first.", Select: "This value belongs in the answer because it is among the k most frequent.", Return: "We can stop because we have collected exactly k values." };
+                els.codeExplanation.textContent = explanations[milestone];
+                els.whyCopy.textContent = milestone === "Count" ? "Map stores each number as a key and its frequency as the count." : milestone === "Bucket" ? "frequency is the bucket label; values with the same frequency go together." : milestone === "Scan" ? "The loop checks frequency from nums.length down to 1." : milestone === "Select" ? "result grows one value at a time until its length equals k." : "return gives back exactly k selected values.";
+                els.milestones.forEach((item, index) => { const order = ["Count", "Bucket", "Scan", "Select", "Return"]; item.classList.toggle("current", item.dataset.milestone === milestone); item.classList.toggle("done", index < order.indexOf(milestone)); });
+                els.pauseStatus.textContent = playTimer ? "" : `Paused at: ${milestone}`;
+            }
+
+            function isCritical(state, index) {
+                if (!els.guided.checked) return false;
+                if (state.kind === "complete" || state.kind === "collect" || state.kind === "scan-start") return true;
+                if (state.kind === "count") return index === states.findIndex(s => s.kind === "count") + values.length - 1;
+                if (state.kind === "bucket") return index === states.map(s => s.kind).lastIndexOf("bucket");
+                return false;
+            }
+
+            function stopPlaying() {
+                if (playTimer) {
+                    clearInterval(playTimer);
+                    playTimer = null;
+                }
+            }
+
+            function saveState() {
+                if (!initialized) return;
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(async () => {
+                    const payload = {
+                        array_input: els.arrayInput.value,
+                        k_input: els.kInput.value,
+                        current_step: currentStep,
+                        simulator_state: JSON.stringify({ valid: states.length > 0, values, k, total_steps: states.length }),
+                        learn_mode: els.guided.checked ? "guided" : "continuous"
+                    };
+                    const result = record
+                        ? await window.dataSdk.update({ ...record, ...payload })
+                        : await window.dataSdk.create(payload);
+                    if (!result.isOk) {
+                        els.validation.textContent = "Your visualizer is working, but saving your latest progress is temporarily unavailable.";
+                    }
+                }, 600);
+            }
+
+            function showInvalid(message) {
+                states = [];
+                currentStep = 0;
+                els.validation.textContent = message;
+                els.arrayRow.replaceChildren();
+                els.mapList.replaceChildren();
+                els.bucketStack.replaceChildren();
+                els.story.textContent = "Fix the input above, then apply it to build a fresh lesson.";
+                els.what.textContent = "We need valid whole numbers and a valid k before the algorithm can begin.";
+                els.calculationValue.textContent = "Waiting for valid input";
+                els.calculationCopy.textContent = "Try the example shown in the inputs.";
+                els.result.className = "result-box";
+                els.result.textContent = "No simulation is running yet.";
+                els.stepCounter.textContent = "STEP —";
+                els.progress.style.width = "0%";
+                els.play.disabled = true;
+                els.pause.disabled = true;
+                els.previous.disabled = true;
+                els.next.disabled = true;
+                els.codeLines.forEach(line => line.classList.remove("active"));
+            }
+
+            function applyInput() {
+                stopPlaying();
+                const parsed = parseInputs();
+                if (parsed.error) {
+                    showInvalid(parsed.error);
+                    saveState();
+                    return;
+                }
+                els.validation.textContent = "";
+                values = parsed.values;
+                k = parsed.k;
+                states = buildStates(values, k);
+                currentStep = 0;
+                render();
+                saveState();
+            }
+
+            function resetSimulation() {
+                stopPlaying();
+                if (!states.length) {
+                    applyInput();
+                    return;
+                }
+                currentStep = 0;
+                render();
+                saveState();
+            }
+
+            function moveStep(amount) {
+                if (!states.length) return;
+                stopPlaying();
+                currentStep = Math.max(0, Math.min(states.length - 1, currentStep + amount));
+                render();
+                saveState();
+            }
+
+            function playSimulation() {
+                if (!states.length || currentStep >= states.length - 1) return;
+                playTimer = setInterval(() => {
+                    if (currentStep >= states.length - 1) {
+                        stopPlaying();
+                        render();
+                        saveState();
+                        return;
+                    }
+                    currentStep++;
+                    render();
+                    if (isCritical(states[currentStep], currentStep) && currentStep < states.length - 1) {
+                        stopPlaying();
+                        els.continueButton.hidden = false;
+                        render();
+                        return;
+                    }
+                    if (currentStep >= states.length - 1) {
+                        stopPlaying();
+                        render();
+                        saveState();
+                    }
+                }, 950);
+                render();
+            }
+
+            els.apply.addEventListener("click", applyInput);
+            els.reset.addEventListener("click", resetSimulation);
+            els.previous.addEventListener("click", () => moveStep(-1));
+            els.next.addEventListener("click", () => moveStep(1));
+            els.play.addEventListener("click", playSimulation);
+            els.pause.addEventListener("click", () => {
+                stopPlaying();
+                render();
+                saveState();
+            });
+            els.arrayInput.addEventListener("change", saveState);
+            els.kInput.addEventListener("change", saveState);
+            [els.guided, els.continuous].forEach(control => control.addEventListener("change", () => { els.continueButton.hidden = true; saveState(); render(); }));
+            els.continueButton.addEventListener("click", () => { els.continueButton.hidden = true; playSimulation(); });
+            els.replay.addEventListener("click", () => { els.codeExplanation.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 350 }); els.whyCopy.parentElement.open = true; });
+
+            const handler = {
+                onDataChanged(data) {
+                    if (!data.length) return;
+                    record = data[data.length - 1];
+                    if (!initialized) {
+                        initialized = true;
+                        if (record.array_input) els.arrayInput.value = record.array_input;
+                        if (record.k_input) els.kInput.value = record.k_input;
+                        if (record.learn_mode === "continuous") els.continuous.checked = true;
+                        const parsed = parseInputs();
+                        if (parsed.error) {
+                            showInvalid(parsed.error);
+                            return;
+                        }
+                        values = parsed.values;
+                        k = parsed.k;
+                        states = buildStates(values, k);
+                        currentStep = Math.max(0, Math.min(Number(record.current_step) || 0, states.length - 1));
+                        render();
+                    }
+                }
+            };
+
+            async function init() {
+                if (window.lucide) window.lucide.createIcons();
+                const result = await window.dataSdk.init(handler);
+                if (!result.isOk) {
+                    initialized = true;
+                    applyInput();
+                    els.validation.textContent = "Your visualizer is ready, but saved progress is unavailable right now.";
+                    return;
+                }
+                window.setTimeout(() => {
+                    if (!initialized) {
+                        initialized = true;
+                        applyInput();
+                    }
+                }, 700);
+            }
+
+            init();
+        })();
+    </script>
+
+</body>
+
+</html>

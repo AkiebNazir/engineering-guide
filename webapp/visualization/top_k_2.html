@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top K Frequent Elements | Pro Visualizer</title>
+    
+    <!-- Modern Typography: Inter for UI, JetBrains Mono for Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.292.0/dist/umd/lucide.min.js"></script>
+    
+    <style>
+        :root {
+            /* Vercel/Linear inspired Dark Theme */
+            --bg-base: #000000;
+            --bg-panel: rgba(255, 255, 255, 0.03);
+            --bg-panel-hover: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --border-glow: rgba(56, 189, 248, 0.3);
+            
+            --accent-blue: #38bdf8;
+            --accent-emerald: #34d399;
+            --accent-purple: #c084fc;
+            --accent-amber: #fbbf24;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+            --transition-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            /* Modern subtle radial mesh background */
+            background-image: radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(192, 132, 252, 0.05), transparent 25%);
+            background-attachment: fixed;
+            padding: 40px 24px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* --- Glassmorphic Panels --- */
+        .glass-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* --- Header & Typography --- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--accent-emerald);
+            border-radius: 99px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        h1 { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.04em; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 800px; }
+        
+        .panel-heading {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- Inputs & Controls --- */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+        
+        input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s var(--transition-spring);
+        }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        button:active:not(:disabled) { transform: scale(0.96); }
+
+        .btn-primary { background: var(--text-main); color: var(--bg-base); }
+        .btn-primary:hover:not(:disabled) { background: #e2e8f0; }
+        
+        .btn-play { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .btn-play:hover:not(:disabled) { background: rgba(56, 189, 248, 0.25); box-shadow: var(--shadow-glow); }
+        
+        .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-ghost:hover:not(:disabled) { background: var(--bg-panel-hover); }
+
+        /* --- Workspace Layout --- */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+        }
+        .main-col { display: flex; flex-direction: column; gap: 24px; }
+
+        /* --- Array Visualization --- */
+        .array-track {
+            display: flex;
+            gap: 12px;
+            padding: 10px 4px;
+            overflow-x: auto;
+        }
+        .array-node {
+            position: relative;
+            min-width: 72px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: all 0.4s var(--transition-spring);
+        }
+        .array-node.active {
+            border-color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.1);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: var(--shadow-glow);
+            color: var(--accent-blue);
+        }
+        .node-index {
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* --- Data Structures (Map & Buckets) --- */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .memory-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            animation: slideIn 0.3s var(--transition-spring) forwards;
+        }
+        
+        .bucket-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            min-height: 60px;
+            transition: all 0.3s ease;
+        }
+        .bucket-row.active {
+            border-color: var(--accent-amber);
+            background: rgba(251, 191, 36, 0.08);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.1);
+        }
+        .bucket-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            width: 70px;
+        }
+        .pill {
+            padding: 6px 12px;
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: 99px;
+            color: var(--accent-emerald);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            animation: popIn 0.3s var(--transition-spring) forwards;
+        }
+        .pill.selected {
+            background: var(--accent-emerald);
+            color: var(--bg-base);
+        }
+
+        /* --- Code & Execution Panel --- */
+        .pseudo-code {
+            list-style: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .pseudo-code li {
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            position: relative;
+            padding-left: 32px;
+        }
+        .pseudo-code li::before {
+            content: attr(data-line);
+            position: absolute;
+            left: 8px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+        .pseudo-code li.active {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--text-main);
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        /* --- Result & Status --- */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 24px;
+            padding: 16px 24px;
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 12px;
+        }
+        .progress-container { flex-grow: 1; margin: 0 24px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;}
+        .progress-bar { height: 100%; background: var(--accent-blue); width: 0%; transition: width 0.3s ease; }
+
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes slideIn { 0% { opacity: 0; transform: translateX(-10px); } 100% { opacity: 1; transform: translateX(0); } }
+        
+        /* Error text */
+        .text-error { color: #f87171; font-size: 0.85rem; margin-top: 8px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="badge"><i data-lucide="zap" size="14"></i> FREQUENCY MAP + BUCKETS</div>
+        <h1>Top K Frequent Elements</h1>
+        <p class="subtitle">O(N) Time & Space visually decoded. Watch the array transform into frequency maps, then bucketed arrays, and finally the top K results.</p>
+    </header>
+
+    <!-- Controls -->
+    <div class="glass-panel controls-grid">
+        <div>
+            <label>Input Array (Comma separated)</label>
+            <input type="text" id="input-array" value="1, 1, 1, 2, 2, 3">
+        </div>
+        <div>
+            <label>K (Target count)</label>
+            <input type="number" id="input-k" value="2" min="1">
+        </div>
+        <button id="btn-apply" class="btn-primary">Initialize State</button>
+        <button id="btn-play" class="btn-play"><i data-lucide="play" size="18"></i> Auto-Run</button>
+    </div>
+    <div id="error-msg" class="text-error"></div>
+
+    <div class="workspace">
+        <!-- Main Visualization Column -->
+        <div class="main-col">
+            <!-- Array -->
+            <div class="glass-panel">
+                <div class="panel-heading">Memory: Raw Array <span id="step-desc" style="color: var(--accent-blue);"></span></div>
+                <div class="array-track" id="array-container"></div>
+            </div>
+
+            <!-- Hash Map & Buckets -->
+            <div class="data-grid">
+                <div class="glass-panel">
+                    <div class="panel-heading">Frequency Map (O(N) Space)</div>
+                    <div id="map-container"></div>
+                </div>
+                <div class="glass-panel">
+                    <div class="panel-heading">Bucket Array (Index = Frequency)</div>
+                    <div id="bucket-container"></div>
+                </div>
+            </div>
+            
+            <!-- Result -->
+            <div class="glass-panel" style="background: rgba(52, 211, 153, 0.05); border-color: rgba(52, 211, 153, 0.2);">
+                <div class="panel-heading" style="color: var(--accent-emerald);">Final Output</div>
+                <div id="result-container" style="font-family: 'JetBrains Mono'; font-size: 1.2rem; color: var(--text-main);">Awaiting processing...</div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Code -->
+        <div class="glass-panel">
+            <div class="panel-heading">Execution Trace</div>
+            <ul class="pseudo-code">
+                <li data-line="1">const count = new Map();</li>
+                <li data-line="2">for (const num of nums) {</li>
+                <li data-line="3">&nbsp;&nbsp;count.set(num, (count.get(num)||0)+1);</li>
+                <li data-line="4">}</li>
+                <li data-line="5">const buckets = Array(nums.length + 1).fill([]);</li>
+                <li data-line="6">for (const [num, freq] of count) {</li>
+                <li data-line="7">&nbsp;&nbsp;buckets[freq].push(num);</li>
+                <li data-line="8">}</li>
+                <li data-line="9">const res = [];</li>
+                <li data-line="10">for (let i = buckets.length-1; i >= 0; i--) {</li>
+                <li data-line="11">&nbsp;&nbsp;if (buckets[i].length) res.push(...buckets[i]);</li>
+                <li data-line="12">&nbsp;&nbsp;if (res.length === k) return res;</li>
+                <li data-line="13">}</li>
+            </ul>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button id="btn-prev" class="btn-ghost" style="flex: 1;" disabled><i data-lucide="arrow-left" size="18"></i> Prev</button>
+                <button id="btn-next" class="btn-ghost" style="flex: 1;"><i data-lucide="arrow-right" size="18"></i> Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar">
+        <div style="font-family: 'JetBrains Mono'; font-size: 0.85rem;" id="step-counter">Step 0 / 0</div>
+        <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+        <div style="font-size: 0.9rem; font-weight: 500;" id="milestone-status">Ready</div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // DOM Elements
+    const els = {
+        inputArray: document.getElementById('input-array'),
+        inputK: document.getElementById('input-k'),
+        btnApply: document.getElementById('btn-apply'),
+        btnPlay: document.getElementById('btn-play'),
+        btnPrev: document.getElementById('btn-prev'),
+        btnNext: document.getElementById('btn-next'),
+        errorMsg: document.getElementById('error-msg'),
+        arrayContainer: document.getElementById('array-container'),
+        mapContainer: document.getElementById('map-container'),
+        bucketContainer: document.getElementById('bucket-container'),
+        resultContainer: document.getElementById('result-container'),
+        codeLines: document.querySelectorAll('.pseudo-code li'),
+        stepCounter: document.getElementById('step-counter'),
+        progressBar: document.getElementById('progress-bar'),
+        stepDesc: document.getElementById('step-desc'),
+        milestoneStatus: document.getElementById('milestone-status')
+    };
+
+    // State Variables (Adapted from original logic)
+    let states = [];
+    let currentStep = 0;
+    let playInterval = null;
+    let values = [];
+    let targetK = 0;
+
+    // Build the state sequence based on the original algorithm logic
+    function buildStates(nums, k) {
+        const seq = [];
+        const counts = {};
+        const maxFreq = nums.length;
+        
+        seq.push({ kind: 'init', line: 1, desc: "Initialize empty map.", map: {}, buckets: Array(maxFreq+1).fill([]), res: [] });
+
+        // Phase 1: Counting
+        nums.forEach((val, idx) => {
+            counts[val] = (counts[val] || 0) + 1;
+            seq.push({
+                kind: 'count', line: 3, activeIdx: idx, val,
+                map: JSON.parse(JSON.stringify(counts)),
+                buckets: Array(maxFreq+1).fill([]),
+                res: [],
+                desc: `Increment frequency for ${val}`
+            });
+        });
+
+        const buckets = Array.from({ length: maxFreq + 1 }, () => []);
+        seq.push({ kind: 'bucket-init', line: 5, map: counts, buckets: JSON.parse(JSON.stringify(buckets)), res: [], desc: "Create empty buckets." });
+
+        // Phase 2: Bucketing
+        Object.keys(counts).map(Number).forEach(val => {
+            const freq = counts[val];
+            buckets[freq].push(val);
+            seq.push({
+                kind: 'bucket-fill', line: 7, map: counts, activeBucket: freq,
+                buckets: JSON.parse(JSON.stringify(buckets)), res: [], desc: `Place ${val} in Bucket ${freq}`
+            });
+        });
+
+        // Phase 3: Scanning & Collecting
+        const res = [];
+        let done = false;
+        for (let freq = maxFreq; freq >= 1 && !done; freq--) {
+            seq.push({
+                kind: 'scan', line: 10, map: counts, buckets: JSON.parse(JSON.stringify(buckets)), 
+                activeBucket: freq, res: [...res], desc: `Check Bucket ${freq}`
+            });
+
+            if (buckets[freq].length > 0) {
+                for (const val of buckets[freq]) {
+                    res.push(val);
+                    seq.push({
+                        kind: 'collect', line: 11, map: counts, buckets: JSON.parse(JSON.stringify(buckets)),
+                        activeBucket: freq, res: [...res], desc: `Found ${val}, added to results.`
+                    });
+                    if (res.length === k) {
+                        seq.push({
+                            kind: 'complete', line: 12, map: counts, buckets: JSON.parse(JSON.stringify(buckets)),
+                            activeBucket: freq, res: [...res], desc: `Target K (${k}) reached! Return result.`
+                        });
+                        done = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return seq;
+    }
+
+    function renderState() {
+        if (!states.length) return;
+        const s = states[currentStep];
+
+        // 1. Array
+        els.arrayContainer.innerHTML = values.map((v, i) => 
+            `<div class="array-node ${s.activeIdx === i ? 'active' : ''}">
+                <div class="node-index">[${i}]</div>${v}
+            </div>`
+        ).join('');
+
+        // 2. Map
+        const mapEntries = Object.entries(s.map);
+        els.mapContainer.innerHTML = mapEntries.length ? mapEntries.map(([k, v]) => 
+            `<div class="memory-row"><span>Key: ${k}</span><span style="color:var(--accent-blue)">Count: ${v}</span></div>`
+        ).join('') : '<div style="color:var(--text-muted);font-size:0.85rem">Map is empty</div>';
+
+        // 3. Buckets
+        const maxFreq = values.length;
+        let bucketHTML = '';
+        for(let i = maxFreq; i >= 1; i--) {
+            const b = s.buckets[i] || [];
+            const isActive = s.activeBucket === i;
+            const pills = b.map(v => `<div class="pill ${s.res.includes(v) ? 'selected' : ''}">${v}</div>`).join('');
+            bucketHTML += `
+                <div class="bucket-row ${isActive ? 'active' : ''}">
+                    <div class="bucket-label">Freq ${i}</div>
+                    <div style="display:flex;gap:8px">${pills || '<span style="color:var(--text-muted);font-size:0.75rem;">empty</span>'}</div>
+                </div>`;
+        }
+        els.bucketContainer.innerHTML = bucketHTML;
+
+        // 4. Code Highlight
+        els.codeLines.forEach(li => li.classList.remove('active'));
+        const activeLine = document.querySelector(`.pseudo-code li[data-line="${s.line}"]`);
+        if (activeLine) activeLine.classList.add('active');
+
+        // 5. Result & Status
+        if (s.kind === 'complete') {
+            els.resultContainer.innerHTML = `[${s.res.join(', ')}]`;
+            els.resultContainer.style.color = "var(--accent-emerald)";
+        } else {
+            els.resultContainer.innerHTML = `[${s.res.join(', ')}]`;
+            els.resultContainer.style.color = "var(--text-main)";
+        }
+
+        els.stepDesc.innerText = `- ${s.desc}`;
+        els.stepCounter.innerText = `Step ${currentStep + 1} / ${states.length}`;
+        els.progressBar.style.width = `${((currentStep + 1) / states.length) * 100}%`;
+        els.milestoneStatus.innerText = s.kind.toUpperCase().replace('-', ' ');
+
+        // Button states
+        els.btnPrev.disabled = currentStep === 0;
+        els.btnNext.disabled = currentStep === states.length - 1;
+        
+        if (currentStep === states.length - 1) pausePlay();
+    }
+
+    function parseInput() {
+        els.errorMsg.style.display = 'none';
+        const rawArr = els.inputArray.value.split(',').map(n => parseInt(n.trim()));
+        const rawK = parseInt(els.inputK.value);
+        
+        if (rawArr.some(isNaN)) {
+            els.errorMsg.innerText = "Invalid array format. Use comma separated numbers.";
+            els.errorMsg.style.display = 'block'; return false;
+        }
+        const distinct = new Set(rawArr).size;
+        if (isNaN(rawK) || rawK < 1 || rawK > distinct) {
+            els.errorMsg.innerText = `K must be between 1 and ${distinct} (distinct elements).`;
+            els.errorMsg.style.display = 'block'; return false;
+        }
+        
+        values = rawArr;
+        targetK = rawK;
+        states = buildStates(values, targetK);
+        currentStep = 0;
+        return true;
+    }
+
+    // Event Listeners
+    els.btnApply.addEventListener('click', () => {
+        pausePlay();
+        if(parseInput()) renderState();
+    });
+
+    els.btnNext.addEventListener('click', () => {
+        if (currentStep < states.length - 1) { currentStep++; renderState(); }
+    });
+
+    els.btnPrev.addEventListener('click', () => {
+        if (currentStep > 0) { currentStep--; renderState(); }
+    });
+
+    function pausePlay() {
+        clearInterval(playInterval);
+        playInterval = null;
+        els.btnPlay.innerHTML = '<i data-lucide="play" size="18"></i> Auto-Run';
+        lucide.createIcons();
+    }
+
+    els.btnPlay.addEventListener('click', () => {
+        if (playInterval) {
+            pausePlay();
+        } else {
+            if (currentStep === states.length - 1) currentStep = 0;
+            els.btnPlay.innerHTML = '<i data-lucide="pause" size="18"></i> Pause';
+            lucide.createIcons();
+            playInterval = setInterval(() => {
+                if (currentStep < states.length - 1) { currentStep++; renderState(); }
+                else pausePlay();
+            }, 800); // 800ms per step
+        }
+    });
+
+    // Init
+    parseInput();
+    renderState();
+</script>
+</body>
+</html>
