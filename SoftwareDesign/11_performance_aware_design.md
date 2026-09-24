@@ -131,6 +131,46 @@ An interface that takes **one item per call** forces every caller into a loop of
 that interface is backed by a network or database, the loop becomes **N+1 round trips** — the
 most common performance bug in business software.
 
+The shape of the problem, minimal, before a real database enters the picture:
+
+```python
+import time
+
+
+def fetch_one(user_id: int) -> str:
+    time.sleep(0.001)                   # simulates one network round trip
+    return f"user-{user_id}"
+
+
+def fetch_many(user_ids: range) -> dict[int, str]:
+    time.sleep(0.001)                   # simulates ONE round trip for the whole batch
+    return {i: f"user-{i}" for i in user_ids}
+
+
+ids = range(30)
+
+t = time.perf_counter()
+one_by_one = [fetch_one(i) for i in ids]
+print(f"one-by-one (30 calls): {(time.perf_counter() - t) * 1000:6.1f} ms")
+
+t = time.perf_counter()
+batched = fetch_many(ids)
+print(f"batched (1 call):      {(time.perf_counter() - t) * 1000:6.1f} ms")
+
+assert one_by_one == list(batched.values())
+```
+
+Output:
+
+```
+one-by-one (30 calls):   32.7 ms
+batched (1 call):         1.1 ms
+```
+
+Same 30 results either way; the only difference is how many times the network was
+crossed. The example below shows the same thing against a real database, with query
+counts instead of a `sleep()` standing in for latency.
+
 ```python
 # The chatty interface: N+1 queries vs. a batch-shaped API. Same result, different design.
 import sqlite3
@@ -389,6 +429,43 @@ A cache trades memory and staleness for speed. Before adding one, answer: **what
 rate, how stale may data be, how is it invalidated, and what bounds its size?** If any answer
 is "not sure", the cache is a future incident.
 
+The idea itself, before the pitfalls below:
+
+```python
+calls = 0
+cache: dict[int, int] = {}
+
+
+def expensive(n: int) -> int:
+    global calls
+    calls += 1
+    return n * n
+
+
+def cached(n: int) -> int:
+    if n not in cache:
+        cache[n] = expensive(n)
+    return cache[n]
+
+
+for n in [2, 3, 2, 2, 4, 3]:
+    cached(n)
+
+print("lookups: 6   calls to expensive():", calls)
+assert calls == 3
+print("ALL PASSED")
+```
+
+Output:
+
+```
+lookups: 6   calls to expensive(): 3
+ALL PASSED
+```
+
+Six calls to `cached()`, three of which actually did the work — a hit rate of 50%. Real
+caches fail in three specific ways this minimal dict doesn't show yet:
+
 ```python
 # Caching pitfalls that turn a speed-up into a leak or a correctness bug.
 import gc
@@ -511,6 +588,30 @@ Further rules:
 
 Users experience the **slow requests**, and systems that fan out experience them far more
 often than a single call suggests ("The Tail at Scale", Dean & Barroso, 2013).
+
+Why "the mean is fine" is misleading, in eight numbers:
+
+```python
+latencies_ms = [10, 11, 9, 10, 12, 500, 10, 11]   # one slow request among seven fast ones
+
+mean = sum(latencies_ms) / len(latencies_ms)
+worst = max(latencies_ms)
+
+print(f"mean:  {mean:5.1f} ms")
+print(f"worst: {worst:5.1f} ms")
+```
+
+Output:
+
+```
+mean:   71.6 ms
+worst: 500.0 ms
+```
+
+One slow request among seven drags the mean to 72 ms, but a user who happened to hit
+that one request waited 500 ms — and the mean doesn't tell you that happened, let alone
+how often. The simulation below makes that concrete at scale, across many requests and
+many backend calls fanned out per page.
 
 ```python
 # Tail latency: fan-out amplifies it; hedged requests cut it. Deterministic simulation.
@@ -795,6 +896,47 @@ are fast. Performance design in Python is mostly about **moving loops out of Pyt
 | `json` for large payloads | `orjson` / `msgspec` | 3–10× |
 | CPU-bound work in threads | Processes, native extensions that release the GIL, or free-threaded 3.13t (`07` §13) | Scales with cores |
 | Hot inner algorithm in pure Python | Cython, mypyc, Rust via PyO3 — as a last step | 10–100× |
+
+One row of that table, measured rather than asserted — a manual per-character loop
+against the same work done by a C-implemented built-in:
+
+```python
+import timeit
+
+text = "the quick brown fox jumps over the lazy dog " * 20_000
+
+
+def count_loop(s: str, ch: str) -> int:
+    n = 0
+    for c in s:
+        if c == ch:
+            n += 1
+    return n
+
+
+def count_builtin(s: str, ch: str) -> int:
+    return s.count(ch)
+
+
+t_loop = timeit.timeit(lambda: count_loop(text, "o"), number=5) / 5
+t_builtin = timeit.timeit(lambda: count_builtin(text, "o"), number=5) / 5
+print(f"python loop:  {t_loop * 1000:7.2f} ms")
+print(f"str.count():  {t_builtin * 1000:7.3f} ms   ({t_loop / t_builtin:,.0f}x faster)")
+assert count_loop(text, "o") == count_builtin(text, "o")
+print("ALL PASSED")
+```
+
+Output:
+
+```
+python loop:    18.16 ms
+str.count():    0.626 ms   (29x faster)
+```
+
+Same result, ~29× faster, with no algorithmic change at all — the loop moved from the
+Python bytecode interpreter into a C function that never leaves the CPU's cache-friendly
+inner loop. `sum`, `min`, `max`, `sorted`, comprehensions, NumPy, and a database's query
+engine are all the same move at different scales: get the per-element work out of Python.
 
 Design rules:
 
