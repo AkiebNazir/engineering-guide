@@ -65,7 +65,7 @@ Guides, Agentic AI, CS Fundamentals and Google Behavioral each get:
 | **Sidebar row** | One row with its own progress; the contents are on its landing page, not in the rail. |
 | **Category rail** | A module with more than one group gets a sticky chip rail above the cards — every group with its done count, click to jump, and it marks the group you are scrolled into. |
 | **Landing page** | A drawing of the subject that shows your progress (the roadmap path is drawn as far as you've read), a Continue button, and grouped cards. |
-| **Reader** | On-this-page rail with scroll-spy, "Got it" check per section, highlights (select text), callout cards for 💡/⚠️/**Analogy:**/**Example:** blocks, highlighted code with copy, zoomable diagrams, reading position restored. |
+| **Reader** | On-this-page rail with scroll-spy, "Got it" check per section, highlights (select text), callout cards for 💡/⚠️/**Analogy:**/**Example:** blocks, highlighted code with copy, zoomable diagrams (architecture and flow diagrams are ` ```arch ` blocks drawn in AWS reference style; see [`ARCH_DIAGRAMS.md`](ARCH_DIAGRAMS.md)), reading position restored. |
 | **Page themes** | `Aa` menu: App / Sepia / Night, text size, line length, sans or serif. |
 | **Practice problems** | System design problems hide the reference design until you choose to open it. |
 
