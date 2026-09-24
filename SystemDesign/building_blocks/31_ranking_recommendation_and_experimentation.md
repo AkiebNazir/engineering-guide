@@ -13,18 +13,18 @@ Scoring every item with the best model costs corpus size × model cost per reque
 ```arch
 %% caption: Each stage sees fewer items and spends more per item, so total cost is set by how many candidates reach the heavy ranker.
 grid 160x105
-node corpus "Corpus" at 1.5,0 icon=db sub="10^8 items"
+node corpus "Corpus" at 1,0 icon=db sub="10^8 items"
 group ret "Candidate retrieval" color=teal icon=search
 node R1 "Two-tower ANN" at 0,1 in ret icon=vector
 node R2 "Graph 2-hop" at 1,1 in ret icon=graph
 node R3 "Co-visitation" at 2,1 in ret icon=link
 node R4 "Popular and fresh" at 3,1 in ret icon=news
-node M "Merge, dedupe, filter" at 1.5,2 color=slate sub="10^4"
-node L "Light ranker" at 1.5,3 color=blue sub="10^4 to 500"
-node H "Heavy ranker" at 1.5,4 color=purple sub="500 to 50"
-node B "Re-rank and blend" at 1.5,5 color=indigo sub="50 to 20"
-node P "Page" at 0.5,6 shape=pill color=green
-node LOG "Impression log" at 2.5,6 icon=logs
+node M "Merge, dedupe, filter" at 1,2 color=slate sub="10^4"
+node L "Light ranker" at 1,3 color=blue sub="10^4 to 500"
+node H "Heavy ranker" at 1,4 color=purple sub="500 to 50"
+node B "Re-rank and blend" at 1,5 color=indigo sub="50 to 20"
+node P "Page" at 0,6 shape=pill color=green
+node LOG "Impression log" at 2,6 icon=logs sub="items, positions, scores, features"
 corpus -> R1
 corpus -> R2
 corpus -> R3
@@ -35,7 +35,7 @@ R3 -> M
 R4 -> M
 M -> L -> H -> B
 B -> P
-B ..> LOG : "shown items, positions, scores, features"
+B ..> LOG : "shown"
 ```
 
 Assumptions (ours, not a real system's): 200M DAU × 10 ranked requests/day = 2×10^9/day ÷ 86,400 = 23k/s average, ×3 peak ≈ 70k/s, p99 budget 200 ms.

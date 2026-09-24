@@ -77,6 +77,7 @@ subsystem, which talks to the actual hardware:
 
 ```arch
 %% caption: Every request crosses one guarded door, the system call interface, into the kernel subsystem that owns the hardware.
+grid 130x120
 group us "User Space: your code, no direct hardware access" color=blue icon=user
 node app1 "Your Application" at 1,0 in us icon=app
 node app2 "Another Application" at 3,0 in us icon=app
@@ -90,7 +91,7 @@ node net "Network Stack" at 4,2 in ks icon=network sub="§7"
 group hw "Hardware" color=slate icon=cpu
 node cpu "CPU cores" at 0,3 in hw icon=cpu
 node ram "RAM" at 1,3 in hw icon=memory
-node disk "Disk" at 2.5,3 in hw icon=disk
+node disk "Disk" at 2,3 in hw icon=disk
 node nic "Network Card" at 4,3 in hw icon=wifi
 app1 -> sys
 app2 -> sys

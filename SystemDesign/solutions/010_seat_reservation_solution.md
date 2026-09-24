@@ -263,20 +263,20 @@ snap -> cdn -> client
 
 ```arch
 %% caption: Admission is the minimum of a database-rate limit, a seat-supply limit, and a latency guard, so the room slows down when any of them tightens.
-grid 180x100
+grid 150x100
 group loop "Budget loop, every second" color=blue icon=timer
 node tick "Every second" at 1,0 in loop shape=pill
-node supply "Supply limit" at 0,1 in loop sub="2 x available seats / party size, minus users inside"
+node supply "Supply limit" at 0,1 in loop sub="2 x available seats / party size, minus users inside" w=170
 node dbcap "Rate cap" at 1,1 in loop sub="DB sustainable rate"
 node lat "Hold p99 above 150 ms?" at 2,1 in loop shape=diamond color=amber
 node cut "Rate x 0.7" at 2,2 in loop color=red
-node grow "Rate + 5 percent" at 3,1 in loop color=green sub="up to cap"
-node budget "Budget" at 1,3 in loop sub="min of supply, rate, cap"
-node pointer "Advance pointer" at 1,4 in loop sub="by budget / show-up rate"
-node publish "Publish serving.json to CDN" at 1,5 in loop shape=pill
+node grow "Rate + 5 percent" at 3,1 in loop color=green sub="up to cap" w=140
+node budget "Budget" at 1,3 in loop sub="min of supply, rate, cap" w=170
+node pointer "Advance pointer" at 1,4 in loop sub="by budget / show-up rate" w=170
+node publish "Publish to CDN" at 1,5 in loop shape=pill sub="serving.json"
 group adm "Per request" color=purple icon=api
-node admit "Client calls admit with ticket" at 1,6 in adm shape=pill
-node bucket "Token bucket has budget and ticket at or below pointer?" at 1,7 in adm shape=diamond color=amber w=240
+node admit "Client calls admit" at 1,6 in adm shape=pill sub="with ticket"
+node bucket "Token bucket has budget and ticket at or below pointer?" at 1,7 in adm shape=diamond color=amber w=220
 node tok "Issue single-use signed token" at 0,8 in adm color=green
 node retry "425" at 2,8 in adm color=red sub="jittered Retry-After"
 tick -> supply
