@@ -63,6 +63,7 @@ several packages below turned up genuine, sometimes counter-intuitive results th
 | 13 | `errors` | `errors.New` vs `%w`, `Is`/`As` through wrap chains, custom error types, `errors.Join` |
 | 14 | `regexp` | Compile vs MustCompile, named groups, ReplaceAll, compile-once-reuse, the RE2-vs-PCRE limitation |
 | 15 | `slices` (Go 1.21+) | Sort/SortFunc, Contains/Index, Clone (the aliasing bug without it), Compact, Insert/Delete, BinarySearch |
+| 16 | `net/http` | GET/POST, Client timeouts, custom Requests, Handlers, Server timeouts, transport pooling, connection leaks |
 
 Deliberately **not** duplicated here because `../GoEngineering` (topics 26-35) already
 deep-dives them: `context` internals, `sync` primitives/deadlocks, `reflect`, `unsafe`/cgo,

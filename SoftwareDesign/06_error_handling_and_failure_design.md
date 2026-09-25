@@ -83,7 +83,7 @@ Three mechanisms, each with a place:
 | Mechanism | Languages | Strength | Weakness |
 |---|---|---|---|
 | **Exceptions** | Python, Java, C++ | Happy path stays clean; errors propagate automatically to whoever can handle them | Invisible in signatures — any call might raise anything |
-| **Error values** | Go, C | Every failure point is visible at the call site | Verbose; easy to write `if err != nil { return err }` without adding context |
+| **Error values** | Go, C | Every failure point is visible at the call site | Verbose; easy to write `if err != nil { return err }` without adding context. *(See [GoStdLib's `errors` guide](../GoStdLib/13_errors/GUIDE.md) for Go's idiom.)* |
 | **Result / sum types** | Rust `Result`, Haskell `Either`, Python unions | Type checker forces callers to handle each outcome | Clumsy for errors that should just propagate |
 
 **In Python, use exceptions for failures, and return values for expected outcomes the
@@ -323,7 +323,7 @@ must be released on **every** path — success, error, and cancellation.
 
 | Language | Mechanism |
 |---|---|
-| Python | `with` (context managers), `contextlib.ExitStack` for a dynamic number, `try/finally` |
+| Python | `with` (context managers), `contextlib.ExitStack` for a dynamic number, `try/finally`. *(See [PyStdLib's `contextlib` guide](../PyStdLib/15_contextlib/GUIDE.md))* |
 | Go | `defer` immediately after successful acquisition |
 | Java | try-with-resources |
 | C++ / Rust | Destructors (RAII) / `Drop` |
