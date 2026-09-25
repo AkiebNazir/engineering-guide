@@ -7,6 +7,19 @@ implement this. It is also a place where it's easy to be *more confident than th
 guarantee actually deserves* — so this level ends with the honest limits, not just the
 happy path.
 
+```arch
+%% caption: A Redis distributed lock combines mutual exclusion (NX), a safety timeout (PX), and a unique owner token in one atomic command.
+node c1 "Client A\n(Token: 123)" at 0,0 icon=client color=blue
+node c2 "Client B\n(Token: 456)" at 0,2 icon=client color=amber
+node r "Redis" at 3,1 icon=redis color=red
+node res "Shared Resource" at 6,1 icon=db color=slate
+
+c1 ==> r : "1. SET lock 123 NX PX 5000\n(Success)"
+c2 -> r : "2. SET lock 456 NX PX 5000\n(Fails: already exists)"
+c1 ==> res : "3. Access resource"
+r ..> r : "4. Auto-expires\nafter 5s"
+```
+
 ## The `SET key value NX PX milliseconds` pattern
 
 ```python

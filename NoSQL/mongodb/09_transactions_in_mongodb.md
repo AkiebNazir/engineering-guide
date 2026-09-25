@@ -4,6 +4,18 @@ Every single `updateOne`/`insertOne` call is already atomic **at the document le
 
 The lab environment for this module runs `mongo:7` as a **single-node replica set** (one member, `rs.initiate()`'d) specifically so this level's transaction code could be run for real rather than only described — a genuine single-primary replica set, just with a replication factor of one. Everything below is real output from that instance.
 
+```arch
+%% caption: Multi-document transactions allow MongoDB to safely update independent documents across a replica set or sharded cluster in a single atomic unit.
+node c "Client\n(Session Context)" at 0,1 icon=client color=blue
+group mdb "MongoDB Cluster (Multi-Doc Txn)" color=slate style=dashed
+node da "Doc A (Balance)" at 3,0 in mdb icon=doc color=green
+node db "Doc B (Balance)" at 3,2 in mdb icon=doc color=green
+
+c -> da : "1. update(A)"
+c -> db : "2. update(B)"
+c ==> da : "3. COMMIT"
+```
+
 ## The worked example: a funds transfer
 
 ```python

@@ -105,6 +105,19 @@ flushed to disk (as opposed to just handed to the <abbr title="Operating System.
 | `everysec` (default) | Fsync once per second in a background thread | Good default — at most ~1 second of writes lost on a crash |
 | `no` | Let the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> decide when to flush | Fastest, but a crash can lose whatever the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> hadn't flushed yet |
 
+```arch
+%% caption: RDB takes a periodic point-in-time snapshot (compact but loses recent writes); AOF logs every command (durable but requires log compaction).
+group rdb "RDB (Snapshot)" color=slate style=dashed
+node r1 "Redis RAM" at 0,1 in rdb icon=redis color=red
+node dump "dump.rdb\n(Compact State)" at 2,1 in rdb icon=file color=blue
+r1 -> dump : "periodic\nBGSAVE"
+
+group aof "AOF (Append Only)" color=slate style=dashed
+node r2 "Redis RAM" at 4,1 in aof icon=redis color=red
+node log "appendonly.aof\n(Command Log)" at 6,1 in aof icon=file color=amber
+r2 ==> log : "fsync every sec"
+```
+
 ## The actual tradeoff
 
 | | RDB | AOF |
