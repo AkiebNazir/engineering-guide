@@ -83,6 +83,25 @@ State explicitly which failure domain your redundancy actually covers. "We have 
 
 ## Safe deployment: canary, blue-green, feature flags, rollback
 
+
+```arch
+%% caption: Canary limits risk by routing a small percentage of traffic to new code; Blue-Green enables instant rollback via a load balancer flip.
+group canary "Canary Deployment (1% Traffic)" color=slate
+node clb "Load Balancer" at 0,1 in canary icon=internet
+node cv1 "v1 (Baseline)" at 2,0 in canary icon=server color=blue
+node cv2 "v2 (Canary)" at 2,2 in canary icon=server color=green
+
+clb -> cv1 : "99%"
+clb -> cv2 : "1%"
+
+group bg "Blue-Green Deployment" color=slate
+node bglb "Load Balancer" at 4,1 in bg icon=internet
+node bgv1 "v1 (Blue)" at 6,0 in bg icon=server color=blue
+node bgv2 "v2 (Green)" at 6,2 in bg icon=server color=green
+
+bglb ==> bgv2 : "flipped to v2"
+bglb ..> bgv1 : "instant rollback\nif needed"
+```
 Most outages are caused by changes. Safe delivery limits the blast radius of a bad change and shortens time to detect and revert it.
 
 | Technique | How | Protects against | Cost |

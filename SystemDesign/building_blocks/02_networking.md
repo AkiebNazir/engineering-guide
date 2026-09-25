@@ -35,10 +35,10 @@ Every hop is a place latency, failure, or a trust boundary is introduced. Treat 
 
 ```arch
 %% caption: DNS resolution walks a hierarchy, but caching at the OS and ISP levels means changes take time to propagate.
-node client "Client / Browser" at 0,0 icon=laptop color=blue
-node isp "ISP Resolver\n(Cache)" at 2,0 icon=server color=grey style=dashed
-node root "Root Server\n(.)" at 4,-1 icon=server color=yellow
-node tld "TLD Server\n(.com)" at 4,0 icon=server color=yellow
+node client "Client / Browser" at 0,0 icon=client color=blue
+node isp "ISP Resolver\n(Cache)" at 2,0 icon=server color=slate style=dashed
+node root "Root Server\n(.)" at 4,-1 icon=server color=amber
+node tld "TLD Server\n(.com)" at 4,0 icon=server color=amber
 node auth "Authoritative\n(example.com)" at 4,1 icon=server color=green
 
 client -> isp : "query"

@@ -84,10 +84,10 @@ The classic arrangement (also called n-tier):
 
 ```arch
 %% caption: In a traditional layered architecture, dependencies point downward toward the database.
-node pres "Presentation\n(HTTP, CLI, UI)" at 0,0 icon=globe color=blue
+node pres "Presentation\n(HTTP, CLI, UI)" at 0,0 icon=internet color=blue
 node biz "Business / service layer" at 0,1 icon=app color=green
-node data "Data access\n(ORM, SQL)" at 0,2 icon=db color=yellow
-node db "Database" at 0,3 icon=db color=grey
+node data "Data access\n(ORM, SQL)" at 0,2 icon=db color=amber
+node db "Database" at 0,3 icon=db color=slate
 
 pres -> biz : "depends on"
 biz -> data : "depends on"
@@ -150,17 +150,17 @@ interface in its own vocabulary**, and the outside **implements** it.
 ```arch
 %% caption: In a clean/hexagonal architecture, dependencies point inward. The domain is at the center, isolated from I/O.
 group drv "Driving Side (Calls us)" color=blue
-node http "HTTP handler" at 0,0 in drv icon=globe
+node http "HTTP handler" at 0,0 in drv icon=internet
 node q "Queue consumer" at 0,2 in drv icon=queue
 
-group dpt "Driven Side (We call)" color=yellow
+group dpt "Driven Side (We call)" color=amber
 node pg "SQLite / Postgres" at 4,0 in dpt icon=db
 node st "Stripe client" at 4,2 in dpt icon=app
 
 group core "Core / Domain" color=green
 node uc "Driving Port\n(Use Case)" at 2,1 in core icon=function
 node pt "Driven Ports\n(Interfaces)" at 3,1 in core icon=code style=dashed
-node dom "DOMAIN\n(Pure logic)" at 2,3 in core icon=cube
+node dom "DOMAIN\n(Pure logic)" at 2,3 in core icon=layers
 
 http -> uc : "calls"
 q -> uc : "calls"
@@ -991,13 +991,13 @@ construction, and pressure to add display-only getters to domain objects.
 ```arch
 %% caption: CQRS-lite splits the read path (optimized for display) from the write path (optimized for domain rules).
 group w "Commands (Writes)" color=red
-node h1 "HTTP" at 0,0 in w icon=globe
+node h1 "HTTP" at 0,0 in w icon=internet
 node uc "Use Case\n(Rules, UoW)" at 1,0 in w icon=function
-node dom "Domain" at 2,0 in w icon=cube
+node dom "Domain" at 2,0 in w icon=layers
 node repo "Repository" at 3,0 in w icon=db
 
 group r "Queries (Reads)" color=green
-node h2 "HTTP" at 0,1 in r icon=globe
+node h2 "HTTP" at 0,1 in r icon=internet
 node qs "Query Service\n(No UoW)" at 1,1 in r icon=search
 node sql "SQL\n(No domain objs)" at 2,1 in r icon=db
 node dto "DTO" at 3,1 in r icon=file

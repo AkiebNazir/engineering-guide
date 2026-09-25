@@ -54,6 +54,19 @@ Latitude and longitude are two dimensions; B-trees index one. The trick is to ma
 
 For moving objects (drivers updating every few seconds) the usual design is: an in-memory index per region keyed by cell ID, drivers re-indexed on each update, and queries that scan the rider's cell plus neighbours at a precision where each cell holds a manageable number of drivers.
 
+```arch
+%% caption: Geohashing converts 2D coordinates into a 1D string where a shared prefix implies spatial proximity, allowing B-tree range queries.
+node latlon "Point (Lat, Lon)" at 0,1 icon=internet color=blue
+node hash "Geohash (e.g. 9q8yy)" at 2,1 icon=code color=amber
+group db "Standard B-Tree DB" color=slate style=dashed
+node prefix "Prefix Range Query\n(WHERE hash LIKE '9q8%')" at 4,0 in db icon=search color=green
+node pts "Points in bounding box" at 4,2 in db icon=db color=green
+
+latlon -> hash : "encode\n(interleave bits)"
+hash -> prefix : "query\nneighborhood"
+prefix -> pts : "returns"
+```
+
 ## Inverted indexes and ranking
 
 An inverted index maps each **term** to a **posting list**: the sorted document IDs containing it, often with positions and term frequencies. A query `"distributed cache"` intersects the posting lists for both terms (sorted lists intersect in linear time, and skip pointers make it faster).

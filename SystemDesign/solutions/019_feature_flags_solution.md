@@ -70,8 +70,8 @@ POST /sdk/eval                  { context } → { flags:{key:{value, variation, 
 ```arch
 %% caption: Feature flag evaluation happens entirely locally in the SDK, using rules distributed from the Control Plane via Relays.
 node eng "Engineer" at 0,0 icon=user color=blue
-node cp "Control Plane\n(Validation, RBAC, DB)" at 2,0 icon=server color=grey
-node relay "Regional Relays\n(SSE Fan-out / Polling)" at 4,0 icon=globe color=yellow
+node cp "Control Plane\n(Validation, RBAC, DB)" at 2,0 icon=server color=slate
+node relay "Regional Relays\n(SSE Fan-out / Polling)" at 4,0 icon=internet color=amber
 group svc "Application Service" color=green style=dashed
 node sdk "Feature Flag SDK\n(Local Rule Cache)" at 4,2 in svc icon=code
 node eval "evaluate(context)\n-> decision" at 2,2 in svc icon=function

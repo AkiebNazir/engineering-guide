@@ -61,10 +61,10 @@ The debugging workflow uses them in sequence:
 
 ```arch
 %% caption: The standard observability workflow moves from aggregate metrics down to specific traces, logs, and code.
-node metric "ALERT (Metric)\n'p99 latency > 800ms'" at 0,0 icon=chart color=red
-node slice "Slice by Labels\n'region=br, version=1.4'" at 2,0 icon=filter color=grey style=dashed
-node trace "EXEMPLAR / TRACE\n'payments = 790ms'" at 0,1 icon=search color=yellow
-node traceid "Follow trace_id" at 2,1 icon=link color=grey style=dashed
+node metric "ALERT (Metric)\n'p99 latency > 800ms'" at 0,0 icon=metrics color=red
+node slice "Slice by Labels\n'region=br, version=1.4'" at 2,0 icon=filter color=slate style=dashed
+node trace "EXEMPLAR / TRACE\n'payments = 790ms'" at 0,1 icon=search color=amber
+node traceid "Follow trace_id" at 2,1 icon=link color=slate style=dashed
 node log "LOGS (for trace_id)\n'retrying charge...'" at 0,2 icon=file color=blue
 node code "PROFILE / CODE\n'connection pool exhausted'" at 0,3 icon=code color=green
 

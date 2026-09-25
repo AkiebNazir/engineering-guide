@@ -25,6 +25,21 @@ An estimate in a design interview has one job: to force a decision. "12,000 writ
 
 Use the estimator to practise: set a preset, estimate in your head first, then check.
 
+```arch
+%% caption: The estimation workflow moves from business assumptions to system constraints, culminating in an architectural decision.
+route straight
+node assum "1. Assumptions\n(DAU, Actions)" at 0,0 icon=user color=blue
+node req "2. Per-second rate\n(RPS / QPS)" at 2,0 icon=metrics color=amber
+node peak "3. Peak factor\n(x2 or x3 multiplier)" at 4,0 icon=timer color=red
+node store "4. Storage & IO\n(Size x Time)" at 6,0 icon=db color=slate
+node dec "5. Arch Decision\n(Implications)" at 8,0 icon=app color=green
+
+assum -> req
+req -> peak
+peak -> store
+store -> dec
+```
+
 ## Latency numbers and tail latency
 
 Memorise the orders of magnitude, not the digits. The ratios are what matter: memory is roughly 1,000× faster than an <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> random read, a datacenter round trip is 300× faster than crossing an ocean.

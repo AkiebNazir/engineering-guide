@@ -113,9 +113,9 @@ Streaming modes matter for <abbr title="Application Programming Interface">API</
 
 ```arch
 %% caption: Token bucket enforces an average rate limit (refill rate) while allowing short bursts (bucket capacity).
-node client "Client" at 0,1 icon=laptop color=blue
-node bucket "Token Bucket\n(Capacity: B)" at 2,1 icon=db color=yellow
-node refill "Refill Process\n(Rate: r/sec)" at 2,0 icon=timer color=grey
+node client "Client" at 0,1 icon=client color=blue
+node bucket "Token Bucket\n(Capacity: B)" at 2,1 icon=db color=amber
+node refill "Refill Process\n(Rate: r/sec)" at 2,0 icon=timer color=slate
 node api "API / Backend" at 4,1 icon=server color=green
 
 refill -> bucket : "adds tokens"

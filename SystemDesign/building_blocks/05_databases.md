@@ -71,9 +71,9 @@ Normalize the **source of truth** so each fact is stored once: no update anomali
 
 ```arch
 %% caption: Asynchronous replication means a read immediately following a write might hit a replica that hasn't seen the update yet.
-node client "Client" at 0,1 icon=laptop color=blue
+node client "Client" at 0,1 icon=client color=blue
 node primary "Primary DB" at 2,0 icon=db color=green
-node replica "Read Replica" at 2,2 icon=db color=yellow
+node replica "Read Replica" at 2,2 icon=db color=amber
 
 client -> primary : "1. write(x=1)"
 primary ..> replica : "async replication\n(lag)"

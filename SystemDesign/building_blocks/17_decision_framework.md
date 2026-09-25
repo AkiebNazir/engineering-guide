@@ -50,24 +50,23 @@ Every blank maps to a file in this module: "source of truth" and "idempotency ke
 
 When given any unfamiliar prompt, walk this tree in order — do not skip to "which database" before the first two questions are answered:
 
-```text
-What is the user-visible action and success invariant?
-  |
-What volume, object size, latency, availability, geography, and privacy matter?
-  |
-Can one modular service + relational DB meet the launch need?
-  +-- yes -> use it; add cache/async processing only for clear, stated pressure.
-  +-- no  -> identify the exact limit: read, write, bytes, fanout, latency,
-             isolation, or correctness.
-                |
-             Which component directly solves that limit, and what new
-             failure does it introduce?
-                |
-             What is the source of truth, idempotency story, consistency
-             promise, and recovery plan?
-                |
-             How will users, operators, and future engineers know it
-             is working?
+```arch
+%% caption: The decision tree for system design forces you to earn complexity by proving the default architecture cannot meet the requirements.
+route straight
+node start "1. Identify Action\n& Success Invariant" at 2,0 icon=search color=blue
+node scale "2. Quantify constraints\n(Volume, Latency, SLA)" at 2,1 icon=metrics color=blue
+node def "3. Can one Service + SQL DB\nmeet the launch need?" at 2,2 icon=question color=amber
+node yes "Yes:\nUse it." at 0,3 icon=check color=green
+node no "No:\nIdentify exact limit" at 4,3 icon=error color=red
+node comp "4. Choose specific component\nto break limit" at 4,4 icon=layers color=slate
+node safe "5. Address new failures\n(Idempotency, Recovery)" at 4,5 icon=shield color=green
+
+start -> scale
+scale -> def
+def -> yes
+def -> no
+no -> comp
+comp -> safe
 ```
 
 The tree's whole point is to force you to earn complexity. "One service + relational DB" is the default answer; every deviation from it must be justified by a named limit from the second box, not by familiarity with a fancier tool.

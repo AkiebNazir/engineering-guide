@@ -94,8 +94,8 @@ A synchronous contract (`POST /orders` returns the created order in the response
 
 ```arch
 %% caption: The API Gateway intercepts external traffic, enforces cross-cutting concerns, and routes to internal services.
-node ext "External Client" at 0,0 icon=laptop color=blue
-node gw "API Gateway\n(Auth, Quotas, Routing)" at 2,0 icon=server color=grey
+node ext "External Client" at 0,0 icon=client color=blue
+node gw "API Gateway\n(Auth, Quotas, Routing)" at 2,0 icon=server color=slate
 group svcs "Internal Microservices" color=green style=dashed
 node s1 "Order Service" at 4,-1 in svcs icon=app
 node s2 "User Service" at 4,1 in svcs icon=app

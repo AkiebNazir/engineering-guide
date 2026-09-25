@@ -24,7 +24,7 @@ Pick by access pattern, not by hype: point lookups at massive scale → key-valu
 %% caption: LSM trees buffer writes in memory, then flush sequential immutable files to disk, merging them in the background.
 node write "Write" at 0,1 icon=edit color=blue
 node mem "Memtable\n(In-Memory)" at 2,1 icon=cpu color=green
-group disk "Disk (Immutable)" color=grey style=dashed
+group disk "Disk (Immutable)" color=slate style=dashed
 node sst1 "SSTable (L0)" at 4,0 in disk icon=file
 node sst2 "SSTable (L1)" at 4,2 in disk icon=file
 

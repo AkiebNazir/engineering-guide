@@ -77,10 +77,10 @@ At-least-once delivery is the practical default — a message can be redelivered
 ```arch
 %% caption: The outbox pattern guarantees a database mutation and its corresponding event are committed atomically before a background relay publishes it.
 node app "Application" at 0,0 icon=app color=blue
-group db "Database Transaction" color=yellow style=dashed
+group db "Database Transaction" color=amber style=dashed
 node tbl "Domain Table" at 2,-1 in db icon=db
 node out "Outbox Table" at 2,1 in db icon=db
-node relay "Relay Process\n(Polling / CDC)" at 4,1 icon=timer color=grey
+node relay "Relay Process\n(Polling / CDC)" at 4,1 icon=timer color=slate
 node q "Message Broker" at 6,1 icon=queue color=green
 
 app -> tbl : "1. write"

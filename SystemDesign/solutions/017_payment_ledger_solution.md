@@ -92,9 +92,9 @@ POST /internal/settlement-events                { provider, provider_ref, amount
 
 ```arch
 %% caption: The Transfer API coordinates a cross-shard transfer by writing to the source shard locally, then calling the destination shard.
-node client "Client" at 0,0 icon=laptop color=blue
-node api "Transfer API" at 2,0 icon=server color=grey
-group sA "Shard A (Source)" color=yellow style=dashed
+node client "Client" at 0,0 icon=client color=blue
+node api "Transfer API" at 2,0 icon=server color=slate
+group sA "Shard A (Source)" color=amber style=dashed
 node tblA "Accounts A" at 4,-1 in sA icon=db
 node clA "Clearing A->B" at 4,0 in sA icon=db
 group sB "Shard B (Destination)" color=green style=dashed

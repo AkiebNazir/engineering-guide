@@ -44,6 +44,25 @@ A query on a non-key attribute ("orders by status", "users by email") needs a se
 | Consistency | Immediately consistent with the row. | Often eventually consistent (DynamoDB global secondary indexes). |
 | Choose when | Queries also filter by the shard key, or fan-out is acceptable. | Selective lookups on the indexed field at high read volume. |
 
+```arch
+%% caption: Local indexes force a scatter-gather read across all shards; Global indexes allow a targeted read but complicate writes.
+group local "Local Indexes (Scatter-Gather Read)" color=slate style=dashed
+node client1 "Client" at 0,1 in local icon=client color=blue
+node s1 "Shard A\n(Data + Index)" at 2,0 in local icon=db color=amber
+node s2 "Shard B\n(Data + Index)" at 2,2 in local icon=db color=amber
+
+client1 -> s1 : "query index"
+client1 -> s2 : "query index"
+
+group global "Global Index (Targeted Read)" color=slate style=dashed
+node client2 "Client" at 4,1 in global icon=client color=blue
+node gidx "Global Index\nShard" at 6,1 in global icon=search color=green
+node s3 "Data Shard" at 8,1 in global icon=db color=amber
+
+client2 -> gidx : "1. query index"
+gidx -> s3 : "2. fetch row"
+```
+
 A **covering index** stores the columns a query needs alongside the index key, so the query never has to fetch the base row — valuable when the base row lives on another shard.
 
 ## Rebalancing

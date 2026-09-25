@@ -404,6 +404,26 @@
     "sd:building_blocks/00_overview": {
       "last": 1790178028374
     },
+    "sd:building_blocks/01_operating_systems": {
+      "last": 1790326178034,
+      "pct": 100,
+      "pos": 0.9105
+    },
+    "sd:building_blocks/02_networking": {
+      "last": 1790326540946,
+      "pct": 100,
+      "pos": 0.1104
+    },
+    "sd:building_blocks/03_api_design_high_level": {
+      "last": 1790326488244,
+      "pct": 100,
+      "pos": 0.7978
+    },
+    "sd:building_blocks/04_api_design_low_level": {
+      "last": 1790326293756,
+      "pct": 71,
+      "pos": 0
+    },
     "sd:building_blocks/13_scaling_and_load_balancing": {
       "last": 1789507035681
     },

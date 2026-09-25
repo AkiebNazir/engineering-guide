@@ -17,8 +17,8 @@ The rule: your database holds the *fact* that an object exists and its metadata;
 
 ```arch
 %% caption: By generating a presigned URL, the API server authorizes the upload without handling the large payload bytes itself.
-node client "Client" at 0,1 icon=laptop color=blue
-node api "API Server\n(Generates URL)" at 2,0 icon=server color=grey
+node client "Client" at 0,1 icon=client color=blue
+node api "API Server\n(Generates URL)" at 2,0 icon=server color=slate
 node obj "Object Storage\n(S3 / GCS)" at 2,2 icon=db color=green
 
 client -> api : "1. Request upload URL"

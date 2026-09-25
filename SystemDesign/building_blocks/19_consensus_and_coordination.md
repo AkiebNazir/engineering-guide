@@ -24,6 +24,21 @@ With `N` replicas, a write succeeds after `W` acknowledgements and a read querie
 
 Quorums are not linearizability by themselves: concurrent writes, clock-based versions, and "sloppy" quorums that accept writes on stand-in nodes during partitions can still expose anomalies. Dynamo-style stores trade that away deliberately for availability.
 
+```arch
+%% caption: If R + W > N, the read and write quorums must overlap on at least one node, guaranteeing the read sees the latest write.
+node cw "Client (Write)" at 0,0 icon=client color=blue
+node cr "Client (Read)" at 0,2 icon=client color=green
+group rep "Replicas (N=3)" color=slate style=dashed
+node r1 "Node 1" at 3,-1 in rep icon=db color=blue
+node r2 "Node 2 (Overlap)" at 3,1 in rep icon=db color=amber
+node r3 "Node 3" at 3,3 in rep icon=db color=green
+
+cw -> r1 : "writes"
+cw -> r2 : "writes (W=2)"
+cr -> r3 : "reads"
+cr -> r2 : "reads (R=2)"
+```
+
 ## Raft
 
 Raft is the consensus algorithm most systems implement today (etcd, Consul, CockroachDB, TiKV, many internal Google-style control planes use Paxos-family equivalents). It turns consensus into two sub-problems you can explain in an interview:

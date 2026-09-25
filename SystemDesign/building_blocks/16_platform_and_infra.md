@@ -37,10 +37,19 @@ Kubernetes is a good answer when an organization already has multiple teams, mul
 
 A service mesh adds a uniform layer of service-to-service traffic policy, mutual <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>, retries/timeouts at the network layer, and telemetry — implemented via sidecar proxies (or increasingly, node-level/eBPF-based dataplanes) rather than per-service library code.
 
-```text
-service A ── proxy ⇄ proxy ── service B
-             (mTLS, retry/timeout
-              policy, telemetry)
+```arch
+%% caption: A service mesh moves network concerns (mTLS, retries, telemetry) out of application code and into an adjacent sidecar proxy.
+group podA "Pod A" color=blue style=dashed
+node svcA "Service A" at 0,0 in podA icon=app
+node prxA "Sidecar Proxy" at 0,1 in podA icon=internet color=slate
+
+group podB "Pod B" color=green style=dashed
+node svcB "Service B" at 2,0 in podB icon=app
+node prxB "Sidecar Proxy" at 2,1 in podB icon=internet color=slate
+
+svcA -> prxA : "localhost"
+prxA <-> prxB : "mTLS + Retries"
+prxB -> svcB : "localhost"
 ```
 
 What it buys: consistent security and traffic controls applied at the infra layer instead of reimplemented in every service's application code, across languages.

@@ -26,7 +26,7 @@ node v2 "Big Server\n(32 Cores)" at 0,2 in vert icon=cpu
 v1 ==> v2 : "replace with\nbigger box"
 
 group horiz "Horizontal Scaling (Scale Out)" color=green
-node lb "Load Balancer" at 3,1 in horiz icon=globe
+node lb "Load Balancer" at 3,1 in horiz icon=internet
 node h1 "Instance 1" at 5,0 in horiz icon=server
 node h2 "Instance 2" at 5,1 in horiz icon=server
 node h3 "Instance 3" at 5,2 in horiz icon=server

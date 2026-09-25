@@ -137,7 +137,7 @@ Use this as the definitions table; the last column says where the pattern is wor
 ```arch
 %% caption: The Context delegates to an abstract Strategy interface, and the exact algorithm is injected at runtime.
 node ctx "Context\n(ParkingLot)" at 0,0 icon=app color=blue
-node iface "IPricingRule" at 2,0 icon=code color=yellow style=dashed
+node iface "IPricingRule" at 2,0 icon=code color=amber style=dashed
 group strat "Concrete Strategies" color=green style=solid
 node s1 "HourlyPricing" at 4,-1 in strat icon=function
 node s2 "FlatPricing" at 4,1 in strat icon=function
@@ -442,11 +442,11 @@ source shouldn't know who they are.
 ```arch
 %% caption: The Subject publishes an event to an abstract bus, keeping the core domain decoupled from the side-effect handlers.
 node sub "Subject" at 0,0 icon=server color=blue
-node bus "EventBus" at 2,0 icon=queue color=yellow
+node bus "EventBus" at 2,0 icon=queue color=amber
 group obs "Observers" style=dashed color=green
 node o1 "Logger" at 4,-1 in obs icon=file
 node o2 "EmailNotifier" at 4,0 in obs icon=email
-node o3 "MetricCounter" at 4,1 in obs icon=chart
+node o3 "MetricCounter" at 4,1 in obs icon=metrics
 
 sub -> bus : "change(42)"
 bus -> o1 : "notify"
