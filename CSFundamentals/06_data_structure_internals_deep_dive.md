@@ -55,6 +55,20 @@ actually build each structure, and the performance consequences worth knowing.
 
 Average O(1) lookup relies on a good hash function and a bounded load factor. Worst case is O(n) when many keys collide.
 
+```arch
+%% caption: Hash map lookups compute an index, then probe slots until the key is found or an empty slot proves it is missing.
+route straight
+node hash "hash('foo') % 4 = 1" at 2,0 shape=pill color=amber
+group array "Table Array" color=slate style=dashed
+node s0 "Slot 0" at 0,1 in array icon=file color=slate
+node s1 "Slot 1\n(Occupied: 'bar')" at 2,1 in array icon=db color=blue
+node s2 "Slot 2\n(Target: 'foo')" at 4,1 in array icon=db color=green
+node s3 "Slot 3" at 6,1 in array icon=file color=slate
+
+hash -> s1 : "probe 1\n(collision)"
+s1 -> s2 : "probe 2\n(match)"
+```
+
 ### Collision strategies
 
 | Strategy | How | Pros | Cons |

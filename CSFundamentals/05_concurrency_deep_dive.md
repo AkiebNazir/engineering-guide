@@ -93,6 +93,19 @@ Break any one and deadlock is impossible. The practical ones:
 
 Detection in systems: databases build a waits-for graph and abort a victim transaction (a cycle detection problem, see `PyDSA/14_graphs/011_course_schedule`).
 
+```arch
+%% caption: Deadlock occurs when threads hold one resource while waiting for another, forming a circular wait.
+node t1 "Thread 1" at 0,0 icon=thread color=blue
+node resA "Lock A" at 2,0 icon=lock color=red
+node resB "Lock B" at 0,2 icon=lock color=red
+node t2 "Thread 2" at 2,2 icon=thread color=blue
+
+t1 -> resA : "holds"
+resA -> t2 : "waits for"
+t2 -> resB : "holds"
+resB -> t1 : "waits for"
+```
+
 ## 4. Condition Variables Done Right: a Bounded Blocking Queue (Python)
 
 This is the most common "implement it" concurrency question (LeetCode 1188). Verified: 4 producers and 4 consumers moving 40,000 items through a capacity-8 queue lose and duplicate nothing.

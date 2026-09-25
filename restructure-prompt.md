@@ -43,7 +43,7 @@ deep dive and the SD solutions:
 - [x] ~~**API/Fundamentals/02_http_and_web_foundations.md** — arch diagrams added.~~
 - [x] ~~**API/Fundamentals/03_cross_cutting_concerns.md** — arch diagrams added.~~
 - [x] ~~**API/REST/Theory.md** — arch diagrams added.~~
-- [ ] **CSFundamentals/** — topics 05 through 10 have zero arch diagrams.
+- [x] ~~**CSFundamentals/** — arch diagrams added to topics 05 through 10.~~
       Topic 01 (OS) has 6, topic 02 has 3, topics 03–04 have 1–2 each.
 
 ### Interactive animation lab gaps

@@ -80,6 +80,23 @@ od = OrderedDict()                               # LRU in 6 lines:
 od.move_to_end(key)                              # O(1) mark as recently used
 od.popitem(last=False)                           # O(1) evict least recently used
 ```
+```arch
+%% caption: A deque is implemented as a doubly linked list of fixed-size blocks, allowing O(1) appends and pops from both ends without shifting elements.
+group d "collections.deque" color=slate style=dashed
+node head "Head Block" at 0,1 in d icon=package color=blue
+node mid "Middle Block" at 2,1 in d icon=package color=blue
+node tail "Tail Block" at 4,1 in d icon=package color=blue
+
+head <-> mid
+mid <-> tail
+
+node pl "popleft()\nO(1)" at 0,0 shape=pill color=green
+node p "pop()\nO(1)" at 4,0 shape=pill color=green
+
+pl -> head
+p -> tail
+```
+
 Trap: reading `defaultdict[missing]` **inserts** the key. Use `key in d` to test without inserting.
 
 ## 3. `heapq` — Min-Heap Only

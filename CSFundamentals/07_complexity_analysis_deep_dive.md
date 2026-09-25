@@ -134,6 +134,22 @@ Total work is O(n + n) = O(n) because the inner loop's work is bounded across th
 
 **Time = (number of calls) × (work per call, excluding recursive calls).** Draw the tree: branching factor b, depth d, work per node w.
 
+```arch
+%% caption: A naive Fibonacci recursion tree branches exponentially; time complexity is the total number of nodes, while space is just the maximum depth (the call stack).
+route straight
+grid 90x60
+node f5 "f(5)" at 3,0 shape=circle color=blue
+node f4 "f(4)" at 1.5,1 shape=circle color=blue
+node f3a "f(3)" at 4.5,1 shape=circle color=blue
+node f3b "f(3)" at 0.5,2 shape=circle color=blue
+node f2a "f(2)" at 2.5,2 shape=circle color=blue
+
+f5 -- f4
+f5 -- f3a
+f4 -- f3b
+f4 -- f2a
+```
+
 ```text
 fib(n) naive:            fib(5)
                        /        \

@@ -46,6 +46,22 @@ Details on the probabilistic structures: `SystemDesign/building_blocks/20_specia
 
 Always mention: **network is the bottleneck** (minimize shuffles), **skew** (one hot key overloads a partition — salt it), and **stragglers/failures** (retries, speculative execution).
 
+```arch
+%% caption: When data is too large for one machine, hash partitioning ensures that all instances of the same key route to the same worker for aggregation.
+group m "Map (Hash Split)" color=slate style=dashed
+node r1 "Record (Key A)" at 0,0 in m icon=file color=blue
+node r2 "Record (Key B)" at 0,1 in m icon=file color=green
+node r3 "Record (Key A)" at 0,2 in m icon=file color=blue
+
+group r "Reduce (Process)" color=slate style=dashed
+node w1 "Worker 1\n(Handles Hash A)" at 3,0 in r icon=worker color=amber
+node w2 "Worker 2\n(Handles Hash B)" at 3,2 in r icon=worker color=amber
+
+r1 -> w1 : "hash(A) % 2"
+r3 -> w1 : "hash(A) % 2"
+r2 -> w2 : "hash(B) % 2"
+```
+
 ## 3. Toolkit: Millions of Queries (Precompute)
 
 | Query | Precompute | Query time |

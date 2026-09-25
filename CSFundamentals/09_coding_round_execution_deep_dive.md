@@ -33,6 +33,21 @@ This file is the execution layer: the timeline, a clarifying-question list you c
 
 If part 1 is easy, **go faster**: you're expected to reach part 2. If you're at minute 25 and haven't started coding, say so and pick the approach you can finish.
 
+```arch
+%% caption: The coding round follows a strict progression; getting agreement on the design before coding is the most critical gate.
+route straight
+node clarify "1. Clarify\n(0-5 min)" at 0,0 icon=question color=blue
+node design "2. Design & Agree\n(5-12 min)" at 2,0 icon=idea color=amber
+node code "3. Code\n(12-30 min)" at 4,0 icon=code color=green
+node verify "4. Verify / Trace\n(30-38 min)" at 6,0 icon=check color=green
+node fup "5. Follow-ups\n(38-45 min)" at 8,0 icon=time color=slate
+
+clarify -> design
+design -> code
+code -> verify
+verify -> fup
+```
+
 ## 3. Clarifying Questions — Your Personal List
 
 Use this on every practice problem until you no longer need to look.
