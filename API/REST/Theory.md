@@ -1,9 +1,9 @@
 ---
-title: "REST API Theory"
+title: "REST <abbr title="Application Programming Interface">API</abbr> Theory"
 description: "Master Representational State Transfer (REST): constraints, resource design, methods, status codes, PATCH, HATEOAS, pagination, caching, with wire-level examples and Python + Go code."
 ---
 
-# REST API Theory
+# REST <abbr title="Application Programming Interface">API</abbr> Theory
 
 <div data-viz="api-rest"></div>
 
@@ -11,7 +11,7 @@ description: "Master Representational State Transfer (REST): constraints, resour
 ## What is REST?
 REST (Representational State Transfer) is an architectural style that relies on stateless communication, usually over HTTP. In REST, everything is a **Resource** (e.g., a User, a Book, an Order). Resources are identified by standard URLs, and actions are performed using standard HTTP verbs.
 
-REST was described by Roy Fielding in his 2000 doctoral dissertation, as a name for *why the web scales*. It is a set of **constraints**, not a protocol, and not a spec. An API is "RESTful" to the degree that it follows them.
+REST was described by Roy Fielding in his 2000 doctoral dissertation, as a name for *why the web scales*. It is a set of **constraints**, not a protocol, and not a spec. An <abbr title="Application Programming Interface">API</abbr> is "RESTful" to the degree that it follows them.
 
 > **Analogy:** A library. Every book has an address (the shelf number = URL). You do not tell the librarian *how* to find a book; you use a small fixed vocabulary (borrow, return, renew = HTTP verbs) that works the same way for every book. You receive a *copy or description* of the book (a representation), never the physical shelf itself.
 
@@ -80,9 +80,9 @@ PUT  /users/42/password            -> replace the password resource
 
 See `Fundamentals/02_http_and_web_foundations.md` for the full table and the subtle distinctions (401 vs 403, 400 vs 422).
 
-## Walk-Through: A Complete Task API on the Wire
+## Walk-Through: A Complete Task <abbr title="Application Programming Interface">API</abbr> on the Wire
 
-This is the exact traffic for a small to-do API. Read every line; it is the whole of REST in a page.
+This is the exact traffic for a small to-do <abbr title="Application Programming Interface">API</abbr>. Read every line; it is the whole of REST in a page.
 
 **1. Create** - `POST` to the *collection*. The server picks the id and answers `201` with `Location`.
 
@@ -137,7 +137,7 @@ HTTP/1.1 422 Unprocessable Content
 {"type":"validation","title":"Validation failed","errors":[{"field":"title","message":"must not be empty"}]}
 ```
 
-### The same API in Python (FastAPI)
+### The same <abbr title="Application Programming Interface">API</abbr> in Python (FastAPI)
 
 ```python
 from fastapi import FastAPI, HTTPException, Response, status
@@ -197,7 +197,7 @@ def delete(task_id: int):
 
 Run with `uvicorn main:app --reload`, then open `http://127.0.0.1:8000/docs` for the auto-generated OpenAPI UI.
 
-### The same API in Go (standard library, Go 1.22+)
+### The same <abbr title="Application Programming Interface">API</abbr> in Go (standard library, Go 1.22+)
 
 Go 1.22 added method and wildcard patterns to `http.ServeMux`, so a framework is optional.
 
@@ -274,7 +274,7 @@ func main() {
 }
 ```
 
-> **Try it:** `curl -i -X POST localhost:8080/tasks -d '{"title":"write docs"}'` then `curl -i localhost:8080/tasks/1`. The same API, grown up, is in Python lab 2 (`labs/python/02_fastapi_validation_openapi.py`) and Go lab 2 (`labs/golang/02_json_crud_validation`).
+> **Try it:** `curl -i -X POST localhost:8080/tasks -d '{"title":"write docs"}'` then `curl -i localhost:8080/tasks/1`. The same <abbr title="Application Programming Interface">API</abbr>, grown up, is in Python lab 2 (`labs/python/02_fastapi_validation_openapi.py`) and Go lab 2 (`labs/golang/02_json_crud_validation`).
 
 ## PATCH: Two Standard Formats
 
@@ -376,7 +376,7 @@ Caching is REST's superpower. CDNs, browsers and proxies handle `GET` caching fo
 
 ## The Richardson Maturity Model
 
-A ladder that shows how "RESTful" an API is:
+A ladder that shows how "RESTful" an <abbr title="Application Programming Interface">API</abbr> is:
 
 | Level | Description | Example |
 | :---: | :--- | :--- |
@@ -422,7 +422,7 @@ sequenceDiagram
     API-->>Client: 201 Created {"id": 1, "name": "Alice"}
 ```
 
-Because the API is stateless, the load balancer can send the next request to **any** instance, and you scale by adding instances.
+Because the <abbr title="Application Programming Interface">API</abbr> is stateless, the load balancer can send the next request to **any** instance, and you scale by adding instances.
 
 ## REST vs RPC Style over HTTP
 
@@ -466,7 +466,7 @@ Neither is wrong. Problems start when you mix them accidentally.
 
 ## Hands-On Labs
 
-Every lab is a single file that starts its own server, calls it, prints the exchange, and asserts the result. Labs 1-2 teach the basics; labs 3-5 are production topics; Go labs 6-7 show the same CRUD API built with the two most-used Go web frameworks, for comparison against lab 2's plain `net/http`. **Python and Go teach different things**, so do both.
+Every lab is a single file that starts its own server, calls it, prints the exchange, and asserts the result. Labs 1-2 teach the basics; labs 3-5 are production topics; Go labs 6-7 show the same CRUD <abbr title="Application Programming Interface">API</abbr> built with the two most-used Go web frameworks, for comparison against lab 2's plain `net/http`. **Python and Go teach different things**, so do both.
 
 Run from the `API/` folder (Python: `pip install -r requirements.txt` first).
 
@@ -484,9 +484,9 @@ Run from the `API/` folder (Python: `pip install -r requirements.txt` first).
 | 2 | `02_json_crud_validation` | Strict JSON decoding (`MaxBytesReader`, `DisallowUnknownFields`), problem+json, `PATCH` with pointers |
 | 3 | `03_middleware_and_graceful_shutdown` | Middleware chain, request-id via `context`, panic recovery, `TimeoutHandler`, server timeouts, `Shutdown` |
 | 4 | `04_rate_limit_middleware` | Token bucket per client, `429` + `Retry-After`, injectable clock, eviction, why fixed windows fail |
-| 5 | `05_api_key_auth_and_ownership` | Hashed API keys, constant-time compare, scope middleware, ownership check, revocation |
-| 6 | `06_gin_crud_middleware` | Same CRUD API in Gin: `c.Param`/`c.Query`, `ShouldBindJSON`, `r.Use(...)`, a hand-written request-id middleware |
-| 7 | `07_echo_crud_middleware` | Same CRUD API in Echo: `c.Param`/`c.QueryParam`, `c.Bind`, `e.Use(...)`, a hand-written request-id middleware |
+| 5 | `05_api_key_auth_and_ownership` | Hashed <abbr title="Application Programming Interface">API</abbr> keys, constant-time compare, scope middleware, ownership check, revocation |
+| 6 | `06_gin_crud_middleware` | Same CRUD <abbr title="Application Programming Interface">API</abbr> in Gin: `c.Param`/`c.Query`, `ShouldBindJSON`, `r.Use(...)`, a hand-written request-id middleware |
+| 7 | `07_echo_crud_middleware` | Same CRUD <abbr title="Application Programming Interface">API</abbr> in Echo: `c.Param`/`c.QueryParam`, `c.Bind`, `e.Use(...)`, a hand-written request-id middleware |
 
 ```bash
 python REST/labs/python/03_jwt_auth_and_scopes.py
@@ -500,11 +500,11 @@ Labs 1 in each language also accept `--serve` / `-serve` to stay up so you can p
 
 1.  Add `sort=-created_at` and cursor pagination to Go lab 2, then reuse the cursor code from Python lab 5.
 2.  Combine Python lab 3 (JWT) with lab 5 (idempotency) so the key is scoped per user.
-3.  Port the ETag / `If-Match` logic of Python lab 4 to the Go task API.
-4.  Put Go lab 4's limiter in front of Go lab 5's API and give read-only keys a lower rate.
-5.  Write an OpenAPI 3.1 file for the Task API and generate a client from it.
+3.  Port the ETag / `If-Match` logic of Python lab 4 to the Go task <abbr title="Application Programming Interface">API</abbr>.
+4.  Put Go lab 4's limiter in front of Go lab 5's <abbr title="Application Programming Interface">API</abbr> and give read-only keys a lower rate.
+5.  Write an OpenAPI 3.1 file for the Task <abbr title="Application Programming Interface">API</abbr> and generate a client from it.
 
 ## Where To Go Next
 
-*   **Shared toolbox:** `Fundamentals/03_cross_cutting_concerns.md` for auth, versioning, errors, idempotency and rate limiting in every API style.
+*   **Shared toolbox:** `Fundamentals/03_cross_cutting_concerns.md` for auth, versioning, errors, idempotency and rate limiting in every <abbr title="Application Programming Interface">API</abbr> style.
 *   **Compare styles:** `GraphQL/` (client-shaped responses), `gRPC/` (typed internal calls), `Webhooks/` (server-to-server events).

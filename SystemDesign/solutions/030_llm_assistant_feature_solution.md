@@ -1,4 +1,4 @@
-# 030 — LLM-Powered Assistant Feature: Full System Design Solution
+# 030 — <abbr title="Large Language Model">LLM</abbr>-Powered Assistant Feature: Full System Design Solution
 
 ## Goal and contract
 
@@ -137,8 +137,8 @@ Trade-off to state: "I route most traffic to a small model and trim context aggr
 - **Migration and rollout.** Roll by capability and cohort: summarise first (lowest risk), then drafting, then free-form ask, with per-org enable flags for staged enterprise rollout. Keep two model versions live so a regression is a routing change, and pin model and prompt versions together.
 - **Cost model.** Report cost per 1,000 requests and per user per month (about $0.12 and $0.02 under the assumptions above), and rank the levers: routing, prefix cache, trimming, quantisation, off-peak precompute.
 - **Ownership and blast radius.** Serving, orchestration and prompts, safety guards, and retrieval belong to different owners. A bad prompt affects only its template cohort, and per-tenant concurrency caps stop one large tenant starving the shared pools (the same idea as the noisy-neighbour layers in [the multi-tenant gateway](021_multi_tenant_api_gateway_solution.md)). See also [ML and LLM systems](../building_blocks/23_ml_and_llm_systems.md).
-- **Build versus buy.** Start on a hosted model API to learn the real token distribution, and self-host GPUs only when volume makes it cheaper (at hundreds of GPUs, not tens). Build the orchestrator, ACL-aware retrieval and guards, since they depend on mail data and policy.
-- **Phased evolution and what to measure first.** Ship summarise on a hosted API, then add routing and prefix caching, then self-hosting. Measure first: the prompt-length distribution (a 3,000-token average can hide a 20K-token tail), the quality gap between small and large on real tasks, the prefix-cache hit potential, and the task mix.
+- **Build versus buy.** Start on a hosted model <abbr title="Application Programming Interface">API</abbr> to learn the real token distribution, and self-host GPUs only when volume makes it cheaper (at hundreds of GPUs, not tens). Build the orchestrator, ACL-aware retrieval and guards, since they depend on mail data and policy.
+- **Phased evolution and what to measure first.** Ship summarise on a hosted <abbr title="Application Programming Interface">API</abbr>, then add routing and prefix caching, then self-hosting. Measure first: the prompt-length distribution (a 3,000-token average can hide a 20K-token tail), the quality gap between small and large on real tasks, the prefix-cache hit potential, and the task mix.
 
 ## Build exercise
 

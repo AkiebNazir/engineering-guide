@@ -1,8 +1,8 @@
-# Day 135: Code Agents (AI-Powered Software Development)
+# Day 135: Code Agents (<abbr title="Artificial Intelligence">AI</abbr>-Powered Software Development)
 
 Welcome to Day 135. 
 
-You have likely seen viral demos of AI software engineers like **Devin**, **Aider**, or the open-source **SWE-Agent**. These are not just standard LLMs (like ChatGPT) where you paste code and ask for a fix. 
+You have likely seen viral demos of <abbr title="Artificial Intelligence">AI</abbr> software engineers like **Devin**, **Aider**, or the open-source **SWE-Agent**. These are not just standard LLMs (like ChatGPT) where you paste code and ask for a fix. 
 These are **Agents** that literally live inside your computer. They can type terminal commands, read file structures, run tests, and push commits.
 
 Today, we learn the architecture behind autonomous coding agents.
@@ -12,9 +12,9 @@ Today, we learn the architecture behind autonomous coding agents.
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Agent-Computer Interface (ACI)
-An LLM cannot naturally type on a keyboard. We must build an **Agent-Computer Interface (ACI)**.
-The ACI translates the LLM's text output into bash commands, and translates the computer's bash output back into text the LLM can read.
-A bad ACI just feeds raw `stdout` to the LLM. If the Agent runs `cat giant_log.txt`, the terminal spits out 500,000 tokens, overflowing the LLM's context window and crashing the agent! A good ACI intercepts this, paginates the output, and tells the LLM: *"File is too large. Showing first 100 lines."*
+An <abbr title="Large Language Model">LLM</abbr> cannot naturally type on a keyboard. We must build an **Agent-Computer Interface (ACI)**.
+The ACI translates the <abbr title="Large Language Model">LLM</abbr>'s text output into bash commands, and translates the computer's bash output back into text the <abbr title="Large Language Model">LLM</abbr> can read.
+A bad ACI just feeds raw `stdout` to the <abbr title="Large Language Model">LLM</abbr>. If the Agent runs `cat giant_log.txt`, the terminal spits out 500,000 tokens, overflowing the <abbr title="Large Language Model">LLM</abbr>'s context window and crashing the agent! A good ACI intercepts this, paginates the output, and tells the <abbr title="Large Language Model">LLM</abbr>: *"File is too large. Showing first 100 lines."*
 
 ### 2. Repository Understanding (Context Building)
 An enterprise codebase has 1 Million lines of code. The Agent cannot read it all. 
@@ -24,7 +24,7 @@ How does it find the bug?
 3. **Symbol Extraction:** The Agent uses tools like `ctags` to only read the function signatures and docstrings, ignoring the actual implementation until it finds the file it needs.
 
 ### 3. The SWE-Agent Action Space
-Instead of raw bash, SWE-Agent provides the LLM with highly optimized custom tools:
+Instead of raw bash, SWE-Agent provides the <abbr title="Large Language Model">LLM</abbr> with highly optimized custom tools:
 - `search_dir(pattern)`
 - `open_file(path)`
 - `goto_line(number)`
@@ -32,7 +32,7 @@ Instead of raw bash, SWE-Agent provides the LLM with highly optimized custom too
 - `run_tests(test_file)`
 
 ### 4. SWE-Bench
-This is the ultimate benchmark for Code Agents. Researchers took 2,000 real-world, highly complex GitHub Issues from popular Python libraries (like `django` and `scikit-learn`). The Agent is dropped into the repo and told to fix the issue. Currently, the best AI agents in the world can only solve about $40\%$ of them!
+This is the ultimate benchmark for Code Agents. Researchers took 2,000 real-world, highly complex GitHub Issues from popular Python libraries (like `django` and `scikit-learn`). The Agent is dropped into the repo and told to fix the issue. Currently, the best <abbr title="Artificial Intelligence">AI</abbr> agents in the world can only solve about $40\%$ of them!
 
 ---
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The Feedback Loop:** The Agent didn't just write code blindly. It read the file, edited it, and *crucially*, it ran the tests to verify its own work. If the tests had failed, the Agent would have stayed in the loop, read the traceback, and tried again (Generator-Critic architecture).
-2. **Diff Editing:** Notice the `aci_edit_file` tool. Asking an LLM to rewrite a 10,000-line file just to change a plus sign wastes thousands of tokens. Good ACIs use strict string replacement or diff-formats so the LLM only outputs the exact line it wants to change.
+2. **Diff Editing:** Notice the `aci_edit_file` tool. Asking an <abbr title="Large Language Model">LLM</abbr> to rewrite a 10,000-line file just to change a plus sign wastes thousands of tokens. Good ACIs use strict string replacement or diff-formats so the <abbr title="Large Language Model">LLM</abbr> only outputs the exact line it wants to change.
 
 ---
 
@@ -139,18 +139,18 @@ Your Code Agent keeps crashing because `npm install` outputs 10,000 lines of log
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design the architecture for an AI coding assistant that works on legacy enterprise repositories with over 1 Million lines of code. How does it build context, make changes safely, and validate its work without hallucinations?"*
+*"Design the architecture for an <abbr title="Artificial Intelligence">AI</abbr> coding assistant that works on legacy enterprise repositories with over 1 Million lines of code. How does it build context, make changes safely, and validate its work without hallucinations?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Context Building (Vector Search + Graph):** 
-   - 1M lines cannot fit in context. The system must index the codebase nightly using a Vector Database (RAG). 
+   - 1M lines cannot fit in context. The system must index the codebase nightly using a Vector Database (<abbr title="Retrieval-Augmented Generation">RAG</abbr>). 
    - Furthermore, the system must build an Abstract Syntax Tree (AST) to map dependencies (e.g., "If I change this `User` class, which other files import it?").
 2. **Safe Changes (The Sandbox):**
    - The Agent MUST NOT run in the developer's raw environment. The Agent runs in an isolated Docker container with a clone of the repo. It makes changes there.
-3. **Validation (CI/CD):**
-   - The Agent creates a Pull Request. The enterprise CI/CD pipeline runs all unit and integration tests. If the tests fail, the CI pipeline automatically tags the Agent in the PR with the failure logs, triggering the Agent to fix its own PR!
+3. **Validation (<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>):**
+   - The Agent creates a Pull Request. The enterprise <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline runs all unit and integration tests. If the tests fail, the CI pipeline automatically tags the Agent in the PR with the failure logs, triggering the Agent to fix its own PR!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

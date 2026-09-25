@@ -1,10 +1,10 @@
-# Day 85: Advanced RAG Patterns (HyDE, RAPTOR, GraphRAG)
+# Day 85: Advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> Patterns (HyDE, RAPTOR, GraphRAG)
 
 Welcome to Day 85. In Day 84, we built Hybrid Search. It is perfect for exact keyword matches and clear semantic queries. 
 
 But what if a user asks a complex, multi-hop question? What if they ask a "Global" question that requires summarizing 50 different documents at once? A standard Vector Database will fail completely.
 
-Today, we explore the cutting-edge of RAG architectures: **HyDE, RAPTOR, Query Decomposition, and GraphRAG**.
+Today, we explore the cutting-edge of <abbr title="Retrieval-Augmented Generation">RAG</abbr> architectures: **HyDE, RAPTOR, Query Decomposition, and GraphRAG**.
 
 ---
 
@@ -12,30 +12,30 @@ Today, we explore the cutting-edge of RAG architectures: **HyDE, RAPTOR, Query D
 
 ### 1. HyDE (Hypothetical Document Embeddings)
 - **The Flaw:** If a user asks a 5-word question (*"What is the PTO policy?"*), the 5-word embedding vector is very small and lacks semantic depth. It might fail to match the 500-word HR document in the database.
-- **The HyDE Hack:** Before searching the database, we ask an LLM to generate a *fake, hallucinated answer* to the question. 
+- **The HyDE Hack:** Before searching the database, we ask an <abbr title="Large Language Model">LLM</abbr> to generate a *fake, hallucinated answer* to the question. 
 - **The Magic:** We embed the fake answer! The fake answer contains words like *"vacation, days, human resources, sick leave"*. This hallucinated vector is mathematically **much closer** to the real HR document in the vector space than the 5-word question was!
 
 ### 2. Query Decomposition (Multi-Hop Reasoning)
 - **The Flaw:** *"Who won the Super Bowl the year the iPhone was released?"* A Vector DB cannot answer this because there is no single document that contains both facts together.
-- **The Fix:** We ask an LLM to decompose the prompt into sub-queries.
-  - Sub-Query 1: *"What year was the first iPhone released?"* $\rightarrow$ RAG searches and returns **2007**.
-  - Sub-Query 2: *"Who won the Super Bowl in 2007?"* $\rightarrow$ RAG searches and returns **The Colts**.
-  - Final Generation: The LLM combines the sub-answers!
+- **The Fix:** We ask an <abbr title="Large Language Model">LLM</abbr> to decompose the prompt into sub-queries.
+  - Sub-Query 1: *"What year was the first iPhone released?"* $\rightarrow$ <abbr title="Retrieval-Augmented Generation">RAG</abbr> searches and returns **2007**.
+  - Sub-Query 2: *"Who won the Super Bowl in 2007?"* $\rightarrow$ <abbr title="Retrieval-Augmented Generation">RAG</abbr> searches and returns **The Colts**.
+  - Final Generation: The <abbr title="Large Language Model">LLM</abbr> combines the sub-answers!
 
 ### 3. RAPTOR (Tree-Organized Retrieval)
-- **The Flaw:** Standard chunking shatters a 500-page book into 2,000 tiny paragraphs. If a user asks *"What is the main theme of this book?"*, the RAG system retrieves 3 random paragraphs and completely fails. It lost the Global Context.
-- **RAPTOR:** We cluster the 2,000 chunks mathematically. We ask an LLM to summarize each cluster. Then we cluster the summaries, and summarize *those* clusters! We build a Tree. 
-- When the user asks a specific question, RAG retrieves the "Leaves" (paragraphs). When the user asks a global question, RAG retrieves the "Root" (the high-level summaries)!
+- **The Flaw:** Standard chunking shatters a 500-page book into 2,000 tiny paragraphs. If a user asks *"What is the main theme of this book?"*, the <abbr title="Retrieval-Augmented Generation">RAG</abbr> system retrieves 3 random paragraphs and completely fails. It lost the Global Context.
+- **RAPTOR:** We cluster the 2,000 chunks mathematically. We ask an <abbr title="Large Language Model">LLM</abbr> to summarize each cluster. Then we cluster the summaries, and summarize *those* clusters! We build a Tree. 
+- When the user asks a specific question, <abbr title="Retrieval-Augmented Generation">RAG</abbr> retrieves the "Leaves" (paragraphs). When the user asks a global question, <abbr title="Retrieval-Augmented Generation">RAG</abbr> retrieves the "Root" (the high-level summaries)!
 
 ### 4. GraphRAG (Knowledge Graphs)
-Microsoft's GraphRAG takes RAPTOR a step further. It uses an LLM to read the raw text and extract **Entities** (Person: John, Company: Apple) and **Relationships** (John -> works at -> Apple). 
-It builds a massive mathematical NetworkX Graph. It uses Community Detection algorithms to find connected nodes. It allows RAG to trace complex, hidden relationships across thousands of completely separate documents!
+Microsoft's GraphRAG takes RAPTOR a step further. It uses an <abbr title="Large Language Model">LLM</abbr> to read the raw text and extract **Entities** (Person: John, Company: Apple) and **Relationships** (John -> works at -> Apple). 
+It builds a massive mathematical NetworkX Graph. It uses Community Detection algorithms to find connected nodes. It allows <abbr title="Retrieval-Augmented Generation">RAG</abbr> to trace complex, hidden relationships across thousands of completely separate documents!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's implement the HyDE (Hypothetical Document Embeddings) algorithm. We will simulate asking an LLM for a hallucination, embedding it, and running the retrieval!
+Let's implement the HyDE (Hypothetical Document Embeddings) algorithm. We will simulate asking an <abbr title="Large Language Model">LLM</abbr> for a hallucination, embedding it, and running the retrieval!
 
 Create a file named `advanced_rag.py`:
 
@@ -112,8 +112,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **HyDE Trade-offs:** HyDE dramatically increases retrieval accuracy for vague questions. However, it requires a full LLM generation step *before* the search even begins. This doubles the latency of your RAG pipeline. It is not suitable for ultra-fast, real-time chatbots.
-2. **Multi-Hop Reasoning:** Query decomposition is mandatory for analytical RAG systems. A single vector simply cannot capture the intersecting logic of three different historical facts.
+1. **HyDE Trade-offs:** HyDE dramatically increases retrieval accuracy for vague questions. However, it requires a full <abbr title="Large Language Model">LLM</abbr> generation step *before* the search even begins. This doubles the latency of your <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline. It is not suitable for ultra-fast, real-time chatbots.
+2. **Multi-Hop Reasoning:** Query decomposition is mandatory for analytical <abbr title="Retrieval-Augmented Generation">RAG</abbr> systems. A single vector simply cannot capture the intersecting logic of three different historical facts.
 
 ---
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 1. Conceptually design the RAPTOR tree-building algorithm.
 2. You have 1,000 text chunks. Embed them all.
 3. Use a clustering algorithm like `GaussianMixture` or `KMeans` to group them into 50 clusters.
-4. Loop through the 50 clusters. For each cluster, paste all its chunks into an LLM and prompt: *"Summarize the overarching theme of these texts."*
+4. Loop through the 50 clusters. For each cluster, paste all its chunks into an <abbr title="Large Language Model">LLM</abbr> and prompt: *"Summarize the overarching theme of these texts."*
 5. You now have 50 Summaries. Treat these summaries as NEW chunks! Embed them, cluster them into 5 groups, and summarize again! You have built a semantic tree.
 
 ### 🎤 MAANG Technical Interview Prep
@@ -132,21 +132,21 @@ if __name__ == "__main__":
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Compare naive RAG, HyDE, RAPTOR, and GraphRAG for a B2B customer support use case with 50,000 FAQ articles and product manuals. Discuss retrieval quality, latency, cost, and maintenance burden."*
+*"Compare naive <abbr title="Retrieval-Augmented Generation">RAG</abbr>, HyDE, RAPTOR, and GraphRAG for a B2B customer support use case with 50,000 FAQ articles and product manuals. Discuss retrieval quality, latency, cost, and maintenance burden."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
-1. **Naive RAG (The Baseline):** 
+1. **Naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> (The Baseline):** 
    - Low cost, extremely low latency (50ms). Perfect for explicit queries ("How do I reset my password?"). Terrible for vague or highly technical multi-step troubleshooting.
 2. **HyDE (The Vague Query Fix):**
-   - High retrieval quality for poorly phrased user questions. High latency (adds 1-2 seconds of LLM generation time before search). Moderate cost increase.
+   - High retrieval quality for poorly phrased user questions. High latency (adds 1-2 seconds of <abbr title="Large Language Model">LLM</abbr> generation time before search). Moderate cost increase.
 3. **RAPTOR / GraphRAG (The Global Context):**
    - Essential if users ask global questions ("What are all the security protocols across your 5 software products?"). 
-   - **The Maintenance Burden:** Massive! Every time an FAQ article is updated, Naive RAG just updates one vector. GraphRAG and RAPTOR require you to re-compute community summaries and re-build the graph edges, which can cost thousands of dollars in LLM API calls for a large dataset!
+   - **The Maintenance Burden:** Massive! Every time an FAQ article is updated, Naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> just updates one vector. GraphRAG and RAPTOR require you to re-compute community summaries and re-build the graph edges, which can cost thousands of dollars in <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> calls for a large dataset!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-You have mastered the architecture of RAG. But everything relies on one fundamental assumption: that your Embedding Model works.
+You have mastered the architecture of <abbr title="Retrieval-Augmented Generation">RAG</abbr>. But everything relies on one fundamental assumption: that your Embedding Model works.
 What if it doesn't? Tomorrow, in **Day 86**, we learn how to train our own mathematical Embedding Models from scratch!

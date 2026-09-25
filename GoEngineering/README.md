@@ -7,7 +7,7 @@ in a real backend codebase, not an interview whiteboard.
 
 Assume competence. No beginner syntax explanations — every file explains *design
 decisions*, trade-offs, performance, error handling, concurrency safety, and real-world
-API/service design.
+<abbr title="Application Programming Interface">API</abbr>/service design.
 
 ## Layout
 
@@ -43,9 +43,9 @@ immediately" requires.
 
 | # | Problem | Core concepts |
 |---|---|---|
-| 01 | REST API service | `net/http` 1.22+ routing, JSON, validation, graceful shutdown |
+| 01 | REST <abbr title="Application Programming Interface">API</abbr> service | `net/http` 1.22+ routing, JSON, validation, graceful shutdown |
 | 02 | Middleware chain | `log/slog`, request IDs, panic recovery, timeouts, auth |
-| 03 | API client with retries | Backoff, jitter, circuit breaker, context deadlines |
+| 03 | <abbr title="Application Programming Interface">API</abbr> client with retries | Backoff, jitter, circuit breaker, context deadlines |
 | 04 | Custom `io.Reader`/`io.Writer` | Streaming transforms, `io.Pipe`, backpressure |
 | 05 | Large file line processor | `bufio.Scanner` limits, chunked reads, bounded memory |
 | 06 | Atomic file store | Temp file + rename, fsync, permissions, crash safety |

@@ -32,7 +32,7 @@ program is running in.
 
 ## What the 10 levels cover
 
-Levels 1-3 build up the everyday API: reading/writing whole files, opening
+Levels 1-3 build up the everyday <abbr title="Application Programming Interface">API</abbr>: reading/writing whole files, opening
 with explicit flags plus `Stat`, and the working-directory/environment
 functions (`Getwd`, `Chdir`, `Getenv`, `LookupEnv`, `Setenv`). Level 4 triggers
 a real not-exist error and handles it with `errors.Is`. Level 5 contrasts

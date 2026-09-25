@@ -129,7 +129,7 @@ At 100× traffic (100 M IDs/s) the layout still has about 42× aggregate headroo
 ## Common mistakes
 
 1. **Sizing worker bits from the classic 10-bit diagram.** 1,024 identities cannot cover 10,000 embedded servers. Count the fleet first (10,000 needs 14 bits), then either re-split the bits or move to a pooled ID service.
-2. **Sending 64-bit IDs as JSON numbers.** A 2026 ID with a 2020 epoch is about 8.9 × 10¹⁷, roughly 99× larger than 2⁵³, so JavaScript clients silently round it and two different IDs compare equal. Serialise as strings in every external API.
+2. **Sending 64-bit IDs as JSON numbers.** A 2026 ID with a 2020 epoch is about 8.9 × 10¹⁷, roughly 99× larger than 2⁵³, so JavaScript clients silently round it and two different IDs compare equal. Serialise as strings in every external <abbr title="Application Programming Interface">API</abbr>.
 3. **Trusting the wall clock without a monotonic guard.** An NTP step or VM resume reuses (timestamp, worker, sequence) triples and creates duplicates, which show up weeks later as primary-key violations or, worse, silent overwrites. Track `lastTs`, and decide up front between wait, borrow and refuse.
 4. **Assigning worker IDs from hostnames or config files.** Cloned images and autoscaling produce two live processes with the same ID. Use a lease from a coordination service, and check the lease's remaining validity against a monotonic clock before every batch, because a garbage-collection pause longer than the TTL lets a stale process keep generating after the ID has been re-leased.
 5. **Choosing a 1970 epoch.** 41 bits from 1970 run out in about 2039; from 2020 they last to about 2089. The epoch is a one-way door, so pick it at launch and write it down.
@@ -156,4 +156,4 @@ Named assertions:
 - `test_clock_rollback_5ms_waits`: inject a clock that steps back 5 ms; assert no duplicate and that the call returns within the guard bound.
 - `test_clock_rollback_5s_refuses`: assert the generator raises and the health check flips to unhealthy.
 - `test_duplicate_worker_id_blocked_by_lease`: start two generators requesting the same worker ID; assert the second is refused or waits out the TTL.
-- `test_json_ids_are_strings`: assert the API serialises an ID above 2⁵³ as a string and that a round trip through a float-based parser is never used.
+- `test_json_ids_are_strings`: assert the <abbr title="Application Programming Interface">API</abbr> serialises an ID above 2⁵³ as a string and that a round trip through a float-based parser is never used.

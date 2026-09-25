@@ -29,7 +29,7 @@ The formula for KV-Cache memory per token is:
 For a 70B model, processing a massive 32,000 token document might consume **30GB of VRAM just for the cache**, completely independent of the model weights! 
 
 ### 3. Prefix Caching (The Compute Saver)
-Imagine you have an AI coding assistant. Every time a user asks a question, your system secretly injects a massive 2,000-token System Prompt explaining exactly how the AI should behave.
+Imagine you have an <abbr title="Artificial Intelligence">AI</abbr> coding assistant. Every time a user asks a question, your system secretly injects a massive 2,000-token System Prompt explaining exactly how the <abbr title="Artificial Intelligence">AI</abbr> should behave.
 If 500 users ask a question, your GPU has to process that same 2,000-token System Prompt 500 times, wasting immense compute.
 **Prefix Caching** allows vLLM to compute the KV-Cache for the System Prompt *once*, save it in VRAM, and instantly share it with all 500 users! This reduces the Time-To-First-Token (TTFT) from 2 seconds to 50 milliseconds!
 
@@ -119,7 +119,7 @@ Calculate exactly how many 24GB GPUs (like the RTX 3090 or AWS g5) you would nee
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"You're building an AI Code Editor (like GitHub Copilot). Every time the user types a character, you send their entire 5,000-line code file as the prompt so the LLM has context. The latency is currently 3 seconds per keystroke, which is unacceptable. How do you optimize this?"*
+*"You're building an <abbr title="Artificial Intelligence">AI</abbr> Code Editor (like GitHub Copilot). Every time the user types a character, you send their entire 5,000-line code file as the prompt so the <abbr title="Large Language Model">LLM</abbr> has context. The latency is currently 3 seconds per keystroke, which is unacceptable. How do you optimize this?"*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
@@ -133,4 +133,4 @@ A "Strong Hire" candidate must articulate:
 ---
 **Task for the end of the day:** Read up on the difference between GPTQ and AWQ quantization formats.
 
-Tomorrow, in **Day 153**, we step away from the GPU internals and move up the stack to **API Design**. We will learn how to wrap these engines into robust, OpenAI-Compatible APIs with SSE Streaming and rate limits!
+Tomorrow, in **Day 153**, we step away from the GPU internals and move up the stack to **<abbr title="Application Programming Interface">API</abbr> Design**. We will learn how to wrap these engines into robust, OpenAI-Compatible APIs with SSE Streaming and rate limits!

@@ -1,4 +1,4 @@
-# NumPy Mastery: The Bedrock of AI Mathematics (Ultimate Master Guide)
+# NumPy Mastery: The Bedrock of <abbr title="Artificial Intelligence">AI</abbr> Mathematics (Ultimate Master Guide)
 
 ## 1. The Core Concept (What and Why)
 
@@ -33,7 +33,7 @@ print(np.__version__)
 
 ## 3. The "Hello World": Python vs NumPy
 
-Let's look at why NumPy is mandatory for AI. We want to take a massive list of numbers and multiply them all by 2.
+Let's look at why NumPy is mandatory for <abbr title="Artificial Intelligence">AI</abbr>. We want to take a massive list of numbers and multiply them all by 2.
 
 **The Speed Test (Why NumPy Wins):**
 ```python
@@ -60,7 +60,7 @@ print(f"NumPy Time:  {(time.time() - start) * 1000:.0f}ms") # ~15ms (30x faster!
 
 ## 4. Deep Dive: Tensors, Shapes, & Data Types
 
-In AI, data is stored in n-dimensional arrays (Tensors).
+In <abbr title="Artificial Intelligence">AI</abbr>, data is stored in n-dimensional arrays (Tensors).
 - **0D (Scalar):** A single number. `np.array(5)`
 - **1D (Vector):** A list of numbers. `np.array([1, 2, 3])`
 - **2D (Matrix):** A grid (like an Excel sheet). `np.array([[1, 2], [3, 4]])`
@@ -112,7 +112,7 @@ print(normalized_images.shape) # (100, 64, 64, 3)
 
 ## 6. Advanced Indexing & Masking
 
-In ML, you rarely loop over arrays. You use Masks and Fancy Indexing to filter data instantly.
+In <abbr title="Machine Learning">ML</abbr>, you rarely loop over arrays. You use Masks and Fancy Indexing to filter data instantly.
 
 ### Boolean Masking
 Imagine you have a dataset of 1,000 ages, and you want to isolate the adults.
@@ -129,7 +129,7 @@ print(adults) # [45, 18, 30, 81]
 ```
 
 ### `np.where` (Conditional Logic without loops)
-Used constantly in ML to cap values (e.g., implementing the ReLU activation function).
+Used constantly in <abbr title="Machine Learning">ML</abbr> to cap values (e.g., implementing the ReLU activation function).
 ```python
 data = np.array([-5, 10, -2, 20])
 
@@ -143,7 +143,7 @@ print(relu_output) # [ 0 10  0 20]
 
 ## 7. Math, UFuncs, and the Axis Argument
 
-Almost all operations in ML (sum, mean, max) happen along a specific **Axis**. Universal Functions (UFuncs) are NumPy functions that operate element-by-element.
+Almost all operations in <abbr title="Machine Learning">ML</abbr> (sum, mean, max) happen along a specific **Axis**. Universal Functions (UFuncs) are NumPy functions that operate element-by-element.
 
 - `axis=0`: Operate *down* the rows (collapse the rows, giving column summaries).
 - `axis=1`: Operate *across* the columns (collapse the columns, giving row summaries).
@@ -183,7 +183,7 @@ print(outputs) # [0.9 1.5]
 
 ## 8. Randomness & Reproducibility
 
-In ML, you must set a **Seed**. If you initialize your neural network weights randomly and your model crashes, you can never debug it if you can't recreate those exact random numbers.
+In <abbr title="Machine Learning">ML</abbr>, you must set a **Seed**. If you initialize your neural network weights randomly and your model crashes, you can never debug it if you can't recreate those exact random numbers.
 
 ```python
 # The legacy way (Still very common in older tutorials)
@@ -200,7 +200,7 @@ weights_new = rng.random((3, 3))
 
 ## 9. Linear Algebra (`np.linalg`)
 
-NumPy has a built-in module for advanced linear algebra. This is critical for classical ML algorithms like PCA (Principal Component Analysis) or solving linear regression algebraically.
+NumPy has a built-in module for advanced linear algebra. This is critical for classical <abbr title="Machine Learning">ML</abbr> algorithms like PCA (Principal Component Analysis) or solving linear regression algebraically.
 
 ```python
 matrix = np.array([[1, 2], 
@@ -279,7 +279,7 @@ def process_image_batch():
 
 ## 12. MAANG Interview Preparation (Coding Scenarios)
 
-If you interview for an ML Engineer role at Google or Meta, you will be asked to implement ML primitives from scratch using NumPy. No `for` loops allowed!
+If you interview for an <abbr title="Machine Learning">ML</abbr> Engineer role at Google or Meta, you will be asked to implement <abbr title="Machine Learning">ML</abbr> primitives from scratch using NumPy. No `for` loops allowed!
 
 ### Scenario 1: Implement Softmax
 *Prompt:* Write the Softmax function. Ensure it is numerically stable (prevent overflow when $e^x$ gets too large).

@@ -3,9 +3,9 @@
 Welcome to Day 130. 
 
 You built a powerful Agent. You ran it locally on your laptop, and it successfully wrote a python script and emailed it to you. You deployed it to production.
-Ten minutes later, the Agent went into an infinite loop, hallucinated a fake SQL query, and burned through $50 of API credits before crashing.
+Ten minutes later, the Agent went into an infinite loop, hallucinated a fake SQL query, and burned through $50 of <abbr title="Application Programming Interface">API</abbr> credits before crashing.
 
-Why did this happen? Because **Agents are non-deterministic**. Traditional software engineering uses Unit Tests (e.g., `assert 2+2 == 4`). But you cannot write a Unit Test for an LLM because it might say "4" today, and "four" tomorrow.
+Why did this happen? Because **Agents are non-deterministic**. Traditional software engineering uses Unit Tests (e.g., `assert 2+2 == 4`). But you cannot write a Unit Test for an <abbr title="Large Language Model">LLM</abbr> because it might say "4" today, and "four" tomorrow.
 
 Today, we learn the dark art of **Agent Evaluation and Testing**.
 
@@ -26,9 +26,9 @@ If the agent needed to find the weather in Tokyo, the optimal trajectory is `[Th
 If the agent did `[Thought -> Tool(WebSearch) -> Thought -> Tool(Calculator) -> Thought -> Tool(Weather) -> Final Answer]`, it took 7 steps! The trajectory is wildly inefficient and points to a flawed system prompt.
 
 ### 3. The Agent Testing Pyramid
-- **Unit Tests:** You test your pure Python Tool functions completely isolated from the LLM.
-- **Integration Tests (Mocking):** You replace the real OpenAI API with a `MockLLM` that returns deterministic, hardcoded strings. You verify that your LangGraph orchestrator correctly parses the mocked string and routes to the correct node.
-- **E2E Evaluations (LLM-as-a-Judge):** You run the real Agent against a dataset of 50 tasks. You use GPT-4o as a "Judge" to read the 50 outputs and score them from 1-10 based on a strict rubric.
+- **Unit Tests:** You test your pure Python Tool functions completely isolated from the <abbr title="Large Language Model">LLM</abbr>.
+- **Integration Tests (Mocking):** You replace the real OpenAI <abbr title="Application Programming Interface">API</abbr> with a `MockLLM` that returns deterministic, hardcoded strings. You verify that your LangGraph orchestrator correctly parses the mocked string and routes to the correct node.
+- **E2E Evaluations (<abbr title="Large Language Model">LLM</abbr>-as-a-Judge):** You run the real Agent against a dataset of 50 tasks. You use GPT-4o as a "Judge" to read the 50 outputs and score them from 1-10 based on a strict rubric.
 
 ### 4. Benchmarks
 How do researchers prove their Agent is better than yours? They use public benchmarks:
@@ -39,7 +39,7 @@ How do researchers prove their Agent is better than yours? They use public bench
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build an **Integration Test** for an Agent. We will use a Mock LLM so our CI/CD pipeline runs instantly without spending money on API calls. We will also implement a basic **Trajectory Evaluator**!
+Let's build an **Integration Test** for an Agent. We will use a Mock <abbr title="Large Language Model">LLM</abbr> so our <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline runs instantly without spending money on <abbr title="Application Programming Interface">API</abbr> calls. We will also implement a basic **Trajectory Evaluator**!
 
 Create a file named `agent_evaluation.py`:
 
@@ -109,19 +109,19 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **Deterministic Testing:** We tested the *architecture* (the loop, the timeout logic, the trajectory counting) without making a single real API call. This is how you run tests in GitHub Actions.
-2. **Trajectory Enforcement:** We explicitly asserted that the agent must solve the task in `<= 3` steps. If a developer accidentally updates the system prompt and the agent suddenly starts taking 5 steps, the CI/CD pipeline will fail and block the deployment, catching the inefficiency before it burns money in production!
+1. **Deterministic Testing:** We tested the *architecture* (the loop, the timeout logic, the trajectory counting) without making a single real <abbr title="Application Programming Interface">API</abbr> call. This is how you run tests in GitHub Actions.
+2. **Trajectory Enforcement:** We explicitly asserted that the agent must solve the task in `<= 3` steps. If a developer accidentally updates the system prompt and the agent suddenly starts taking 5 steps, the <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline will fail and block the deployment, catching the inefficiency before it burns money in production!
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: Regression Test Fixtures
-When you change an LLM's system prompt to fix a new bug, you often accidentally break an old capability.
+When you change an <abbr title="Large Language Model">LLM</abbr>'s system prompt to fix a new bug, you often accidentally break an old capability.
 **Your Task:**
 1. Conceptually design a Regression Test framework.
 2. You maintain a `datasets/gold_standard.jsonl` file containing 50 historical inputs and their expected perfect outputs.
-3. Every time you push code to `main`, a script fires up the *real* LLM, runs all 50 inputs, and uses another LLM (GPT-4o) to grade the semantic similarity between the new outputs and the gold standard outputs.
+3. Every time you push code to `main`, a script fires up the *real* <abbr title="Large Language Model">LLM</abbr>, runs all 50 inputs, and uses another <abbr title="Large Language Model">LLM</abbr> (GPT-4o) to grade the semantic similarity between the new outputs and the gold standard outputs.
 4. If the overall score drops below 95%, the PR is blocked!
 
 ### 🎤 MAANG Technical Interview Prep
@@ -135,7 +135,7 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Testing (The Foundation):** 
-   - Propose a 3-tier approach: Pytest for deterministic Python logic, Mock LLMs for routing logic, and LLM-as-a-Judge for prompt evaluation.
+   - Propose a 3-tier approach: Pytest for deterministic Python logic, Mock LLMs for routing logic, and <abbr title="Large Language Model">LLM</abbr>-as-a-Judge for prompt evaluation.
 2. **Monitoring & Tracing (Observability):**
    - State that raw logs are useless for agents. You must deploy an tracing platform (like LangSmith or Phoenix) to capture the exact tree-structure of the Agent's reasoning. You need dashboards tracking Token Cost per Session and Step Count.
 3. **Continuous Improvement (Data Flywheel):**

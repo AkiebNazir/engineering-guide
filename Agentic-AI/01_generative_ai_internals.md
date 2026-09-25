@@ -1,4 +1,4 @@
-# Module 1 — Generative AI: LLM Architecture & Runtime Internals
+# Module 1 — Generative <abbr title="Artificial Intelligence">AI</abbr>: <abbr title="Large Language Model">LLM</abbr> Architecture & Runtime Internals
 
 > Scope: the actual tensor mechanics, memory arithmetic, and runtime bottlenecks of
 > transformer-based autoregressive LLMs. No product-level abstractions.
@@ -7,7 +7,7 @@
 
 ## 0. The Picture First — read this before the math
 
-> 💡 An LLM is a **very, very good autocomplete**. Give it some text, it guesses the next small
+> 💡 An <abbr title="Large Language Model">LLM</abbr> is a **very, very good autocomplete**. Give it some text, it guesses the next small
 > piece of text (a *token*), glues it on, and guesses again. Everything in this module —
 > attention, the KV cache, PagedAttention, sampling — exists to make that one guess **good**
 > and **fast**.
@@ -87,7 +87,7 @@ p3 -> s3
 
 ## 1. Core Intuition & Mechanical Problem Statement
 
-An LLM at inference time is a **stateful, autoregressive function approximator** that
+An <abbr title="Large Language Model">LLM</abbr> at inference time is a **stateful, autoregressive function approximator** that
 repeatedly solves one mechanical problem: given a sequence of token embeddings, produce
 a probability distribution over the next token, then feed the sampled token back in.
 

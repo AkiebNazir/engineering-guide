@@ -2,7 +2,7 @@
 
 > Scope: the storage-engine-level reason graph traversal outperforms relational
 > JOINs on relationship-heavy queries, the exact traversal/ranking algorithms, and
-> the mechanics of building and querying an LLM-extracted knowledge graph for
+> the mechanics of building and querying an <abbr title="Large Language Model">LLM</abbr>-extracted knowledge graph for
 > multi-hop retrieval.
 
 ---
@@ -38,7 +38,7 @@ s -> p : "LOCATED_IN" thick
 pc -> mc : "COLLABORATED_WITH"
 ```
 
-### 0.2 Why plain vector RAG struggles here
+### 0.2 Why plain vector <abbr title="Retrieval-Augmented Generation">RAG</abbr> struggles here
 
 | Sentence | Shares words/meaning with the question? | Likely retrieved by vector search? |
 |---|---|---|
@@ -82,7 +82,7 @@ friends of friends of friends who work at companies located in cities where X"),
 relational JOINs compound this per-hop cost multiplicatively across tables, while
 graph traversal compounds it as a constant per hop.
 
-GraphRAG extends this by using an LLM to **construct** the graph (extracting entities
+GraphRAG extends this by using an <abbr title="Large Language Model">LLM</abbr> to **construct** the graph (extracting entities
 and relations from unstructured text) rather than requiring pre-structured data, and
 then using graph traversal — instead of, or alongside, vector similarity — to gather
 context for generation, specifically targeting the multi-hop and holistic/summarizing
@@ -104,21 +104,21 @@ each carrying a **label** (type) and an arbitrary set of **key-value properties*
 
 Both the node and the edge itself can hold properties — the relationship "DISCOVERED"
 can carry its own attributes (e.g. `year`) independent of either endpoint. This is the
-model used by Neo4j, and most "graph database" products in the LLM-tooling space.
+model used by Neo4j, and most "graph database" products in the <abbr title="Large Language Model">LLM</abbr>-tooling space.
 
 **RDF (Resource Description Framework) Triples**: every fact is a strict
 `(subject, predicate, object)` triple — no property maps on nodes or edges directly;
 additional attributes must themselves be expressed as more triples (reification), or
 via extensions (RDF-star). This is a more rigid, more standardized (W3C) model, common
 in enterprise knowledge-graph and semantic-web contexts, and the native format many
-LLM entity-relation extraction pipelines default to, since "subject-predicate-object"
+<abbr title="Large Language Model">LLM</abbr> entity-relation extraction pipelines default to, since "subject-predicate-object"
 maps directly onto how relation-extraction prompts are typically framed.
 
 | | LPG | RDF Triples |
 |---|---|---|
 | Node/edge attributes | native property maps | requires reification or RDF-star |
 | Query language | Cypher, Gremlin | SPARQL |
-| Natural fit for LLM extraction | requires a schema step | maps directly onto (subj, pred, obj) |
+| Natural fit for <abbr title="Large Language Model">LLM</abbr> extraction | requires a schema step | maps directly onto (subj, pred, obj) |
 | Typical use | application graphs, GraphRAG | semantic web, enterprise ontologies |
 
 #### 🧮 Worked example — the same fact stored both ways
@@ -412,7 +412,7 @@ How to read it:
 
 ### 2.4 GraphRAG architecture
 
-**Stage 1 — Knowledge graph extraction**: an LLM is prompted, per document chunk, to
+**Stage 1 — Knowledge graph extraction**: an <abbr title="Large Language Model">LLM</abbr> is prompted, per document chunk, to
 extract structured `(entity, relation, entity)` triples (and often entity type labels
 and short descriptions) using a **constrained/structured output format** — the exact
 same JSON-grammar-constrained decoding mechanism covered in Module 2 §2.3, just applied
@@ -431,7 +431,7 @@ outside the group. Leiden operates by iteratively (1) moving nodes between
 communities to greedily maximize a modularity-like objective (edge density inside
 communities vs. what random chance would predict), then (2) aggregating each
 community into a single super-node and repeating on the coarser graph, producing a
-**hierarchy** of communities at multiple resolutions. An LLM then generates a natural-
+**hierarchy** of communities at multiple resolutions. An <abbr title="Large Language Model">LLM</abbr> then generates a natural-
 language **summary per community** (and per higher-level aggregated community, up the
 hierarchy) — these summaries become retrievable units in their own right, enabling
 **global** queries ("what are the main themes in this corpus") that no single
@@ -450,12 +450,12 @@ at the aggregate/community level.
    facts — trading granularity for the ability to answer questions requiring a
    corpus-wide view.
 
-This hybrid approach directly targets what flat-chunk RAG (Module 3) cannot do well:
+This hybrid approach directly targets what flat-chunk <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Module 3) cannot do well:
 **multi-hop reasoning** ("what connects entity A to entity C") and **global/holistic
 questions** (no single chunk contains a corpus-wide answer, but a community summary
 might), at the cost of a substantially more expensive offline indexing pipeline
 (entity extraction + resolution + community detection + hierarchical summarization,
-all LLM-call-heavy) compared to flat chunking and embedding.
+all <abbr title="Large Language Model">LLM</abbr>-call-heavy) compared to flat chunking and embedding.
 
 ---
 
@@ -491,7 +491,7 @@ sum ..> glo
 
 Chunk: *"Marie Curie, who worked at the Sorbonne, discovered radium in 1898."*
 
-The LLM is asked for JSON that matches a fixed schema (same constrained-decoding idea as tool
+The <abbr title="Large Language Model">LLM</abbr> is asked for JSON that matches a fixed schema (same constrained-decoding idea as tool
 calls in Module 2 §2.3):
 
 ```json
@@ -551,13 +551,13 @@ mc .. so : "one bridge edge"
 
 | Question | Type | Best route |
 |---|---|---|
-| "When did Marie Curie discover radium?" | single fact | plain vector RAG is enough |
+| "When did Marie Curie discover radium?" | single fact | plain vector <abbr title="Retrieval-Augmented Generation">RAG</abbr> is enough |
 | "In which city did the discoverer of Radium work?" | multi-hop | **local**: match "Radium" → BFS Radium → Marie Curie → Sorbonne → Paris |
 | "What are the main themes of this collection?" | global | **global**: read community summaries — no single chunk says it |
 
-| | Vector RAG (Module 3) | GraphRAG |
+| | Vector <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Module 3) | GraphRAG |
 |---|---|---|
-| Indexing cost | embed each chunk | LLM extraction per chunk + resolution + clustering + summaries — **much higher** |
+| Indexing cost | embed each chunk | <abbr title="Large Language Model">LLM</abbr> extraction per chunk + resolution + clustering + summaries — **much higher** |
 | Single-fact lookup | ✔ great | ✔ fine |
 | Multi-hop questions | ✘ weak | ✔ strong |
 | "Big picture" questions | ✘ weak | ✔ via community summaries |
@@ -607,14 +607,14 @@ target node ID, not a value requiring a secondary index lookup to resolve.
 
 ## 4. Edge Cases, Failure Modes & Hardware Bottlenecks
 
-- **Entity resolution collisions and splits**: LLM-extracted entity names are
+- **Entity resolution collisions and splits**: <abbr title="Large Language Model">LLM</abbr>-extracted entity names are
   inconsistent across chunks ("Marie Curie", "Dr. Curie", "M. Curie") — naive
   string-exact matching creates duplicate nodes for the same real-world entity
   (fragmenting the graph and silently reducing effective connectivity), while overly
   aggressive fuzzy matching can incorrectly merge distinct entities that happen to
   share a name — this single step dominates GraphRAG quality far more than any
   traversal algorithm choice.
-- **Relation extraction hallucination**: an LLM asked to extract triples from text can
+- **Relation extraction hallucination**: an <abbr title="Large Language Model">LLM</abbr> asked to extract triples from text can
   invent plausible-sounding but unsupported relations, especially for text with
   implicit/indirect relationships — the resulting graph edge looks structurally
   identical to a correctly-extracted one, with no built-in confidence signal unless
@@ -634,7 +634,7 @@ target node ID, not a value requiring a secondary index lookup to resolve.
   internally *disconnected* — Leiden's guarantee of well-connectedness is the direct
   fix for this specific bug class.
 - **Non-uniform community sizes distorting summaries**: a community with thousands of
-  entities compressed into a single LLM-generated summary loses far more detail per
+  entities compressed into a single <abbr title="Large Language Model">LLM</abbr>-generated summary loses far more detail per
   entity than a community with ten entities — hierarchical summarization needs
   explicit budget/depth control per community size, or global-query answer quality
   varies unpredictably by which region of the graph a query happens to touch.

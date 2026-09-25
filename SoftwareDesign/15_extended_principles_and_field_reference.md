@@ -385,7 +385,7 @@ This is the compressed version — read it in the elevator, not instead of `14`.
 |---|---|---|---|
 | 1. Clarify | 0–5 | Functional AND non-functional requirements (`00` §7). State what's out of scope out loud. | You design the wrong thing confidently. |
 | 2. Model | 5–12 | Entities, relationships, invariants, who owns each one. | A god class, or invariants enforced nowhere. |
-| 3. API | 12–17 | Public methods and the key flows, in words or a quick class diagram (`02` §13). | You start typing before you know the shape. |
+| 3. <abbr title="Application Programming Interface">API</abbr> | 12–17 | Public methods and the key flows, in words or a quick class diagram (`02` §13). | You start typing before you know the shape. |
 | 4. Code | 17–37 | The core, with the ONE thing that varies behind an interface (`04` §1–§2). | Everything hardcoded; the first follow-up breaks it. |
 | 5. Extend | 37–45 | Concurrency, a follow-up requirement, tests out loud. | Looks like you never think past the happy path. |
 

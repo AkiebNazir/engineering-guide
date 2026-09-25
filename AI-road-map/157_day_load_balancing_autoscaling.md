@@ -2,7 +2,7 @@
 
 Welcome to Day 157.
 
-Imagine you build a successful AI application. You launch it on Product Hunt. Traffic spikes from 10 requests per minute to 10,000 requests per minute. 
+Imagine you build a successful <abbr title="Artificial Intelligence">AI</abbr> application. You launch it on Product Hunt. Traffic spikes from 10 requests per minute to 10,000 requests per minute. 
 If your infrastructure is static, your vLLM nodes will OOM (Out of Memory) and crash. 
 
 Today, we learn how to architect **Traffic Management Systems**. We will learn how to intelligently distribute traffic (Load Balancing) and how to automatically spin up massive GPU clusters exactly when you need them, and spin them down when you don't (Auto-Scaling).
@@ -15,14 +15,14 @@ Today, we learn how to architect **Traffic Management Systems**. We will learn h
 *Analogy:* You have 3 grocery store checkout lanes (GPUs). A standard load balancer uses "Round Robin"—it sends Customer 1 to Lane A, Customer 2 to Lane B, Customer 3 to Lane C.
 But what if Customer 1 has a cart with 500 items (a 30,000 token prompt), and Customers 2 and 3 have 1 item each? If you use Round Robin, Lane A will be choked for 10 minutes while B and C sit idle!
 
-LLM Load Balancing is incredibly difficult because request sizes vary wildly.
+<abbr title="Large Language Model">LLM</abbr> Load Balancing is incredibly difficult because request sizes vary wildly.
 **Least-Tokens-In-Flight (LTIF) Routing:** The Load Balancer constantly queries the vLLM nodes: *"How many tokens are you currently processing?"* It routes new requests to the GPU with the fewest tokens currently in memory, maximizing throughput.
 
 ### 2. Auto-Scaling with Kubernetes HPA
 The Kubernetes **Horizontal Pod Autoscaler (HPA)** automatically increases the number of vLLM Pods when traffic spikes.
 - **CPU Scaling (Flawed):** Scaling based on CPU is a bad idea for LLMs, because inference is heavily bottlenecked by GPU VRAM, not CPU.
 - **GPU Scaling (Better):** You can configure HPA to scale when GPU Utilization hits >85%.
-- **Queue Scaling (Best):** Using **KEDA (Kubernetes Event-driven Autoscaling)**, you configure K8s to watch a Redis Queue. If there are 500 pending requests in the queue, K8s instantly spins up 10 new GPU pods to chew through the backlog.
+- **Queue Scaling (Best):** Using **KEDA (Kubernetes Event-driven Autoscaling)**, you configure <abbr title="Kubernetes">K8s</abbr> to watch a Redis Queue. If there are 500 pending requests in the queue, <abbr title="Kubernetes">K8s</abbr> instantly spins up 10 new GPU pods to chew through the backlog.
 
 ### 3. The Cold Start Problem
 If traffic spikes and Kubernetes requests a new GPU pod, it takes time.
@@ -33,14 +33,14 @@ This 5-minute **Cold Start** is a killer. By the time the GPU is ready, the user
 **Solution:** Keep a baseline of "Warm" GPUs running 24/7. When traffic starts rising, scale *proactively* (predictive scaling) rather than reactively.
 
 ### 4. Circuit Breakers & Backpressure
-If traffic exceeds your maximum scaling budget (e.g., you hard-capped K8s at 20 GPUs so you don't go bankrupt), you must apply **Backpressure**.
-The API Gateway monitors the queue. If the queue hits 1,000 requests, it instantly returns an `HTTP 503 Service Unavailable: High Load` to new users. It is better to reject new users instantly than to let them wait 10 minutes and crash the system for everyone.
+If traffic exceeds your maximum scaling budget (e.g., you hard-capped <abbr title="Kubernetes">K8s</abbr> at 20 GPUs so you don't go bankrupt), you must apply **Backpressure**.
+The <abbr title="Application Programming Interface">API</abbr> Gateway monitors the queue. If the queue hits 1,000 requests, it instantly returns an `HTTP 503 Service Unavailable: High Load` to new users. It is better to reject new users instantly than to let them wait 10 minutes and crash the system for everyone.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-We cannot launch a multi-GPU cluster locally, but we can build a conceptual **LLM Load Balancer** in Python that implements "Least-Tokens-in-Flight" routing instead of naive Round Robin!
+We cannot launch a multi-GPU cluster locally, but we can build a conceptual **<abbr title="Large Language Model">LLM</abbr> Load Balancer** in Python that implements "Least-Tokens-in-Flight" routing instead of naive Round Robin!
 
 ```python
 import time
@@ -136,7 +136,7 @@ If ALL nodes have `active_tokens_in_flight > 8000`, the `route_request` function
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your LLM service has unpredictable traffic: a 100 req/min baseline, but massive spikes to 10,000 req/min during marketing launches. You are paying $10/hour per GPU. Design the auto-scaling architecture with cost optimization (you can't just keep 1,000 GPUs idle 24/7)."*
+*"Your <abbr title="Large Language Model">LLM</abbr> service has unpredictable traffic: a 100 req/min baseline, but massive spikes to 10,000 req/min during marketing launches. You are paying $10/hour per GPU. Design the auto-scaling architecture with cost optimization (you can't just keep 1,000 GPUs idle 24/7)."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
@@ -147,6 +147,6 @@ A "Strong Hire" candidate must articulate:
 5. **Cold Start Mitigation:** Implement a "predictive" scaling algorithm that watches traffic velocity. If traffic is increasing 20% minute-over-minute, spin up GPUs *before* the queue gets clogged, anticipating the 5-minute GPU startup delay.
 
 ---
-**Task for the end of the day:** Read up on **KEDA** (Kubernetes Event-driven Autoscaling). It is the industry standard for scaling AI workloads.
+**Task for the end of the day:** Read up on **KEDA** (Kubernetes Event-driven Autoscaling). It is the industry standard for scaling <abbr title="Artificial Intelligence">AI</abbr> workloads.
 
 Tomorrow, in **Day 158**, we switch from Infrastructure to **Prompt Engineering for Production**. We will learn how to version control prompts and automatically optimize them using Stanford's DSPy!

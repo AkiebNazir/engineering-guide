@@ -1,9 +1,9 @@
 # Day 48: Word Embeddings (Word2Vec & Skip-gram)
 
 Welcome to Day 48. Until today, we have fed words into our Neural Networks by assigning them random ID numbers (e.g., `Dog = 45`, `Cat = 12`, `Apple = 99`). 
-This is fundamentally flawed. In math, 45 is closer to 12 than it is to 99. But the AI doesn't know that. It treats them as completely arbitrary numbers.
+This is fundamentally flawed. In math, 45 is closer to 12 than it is to 99. But the <abbr title="Artificial Intelligence">AI</abbr> doesn't know that. It treats them as completely arbitrary numbers.
 
-Today, we teach the AI the absolute geometric meaning of human language. We are going to map every word in the dictionary into a 300-dimensional coordinate space.
+Today, we teach the <abbr title="Artificial Intelligence">AI</abbr> the absolute geometric meaning of human language. We are going to map every word in the dictionary into a 300-dimensional coordinate space.
 
 ---
 
@@ -16,7 +16,7 @@ If I tell you the sentence: *"I poured the blicket into a glass and drank it,"* 
 
 ### 2. The Skip-gram Architecture
 Word2Vec is actually a tiny Neural Network with a very specific, fake task.
-**The Task:** You give the AI a Center Word (e.g., *"Apple"*). It must predict the Context Words surrounding it (e.g., *"Eating"*, *"Juice"*).
+**The Task:** You give the <abbr title="Artificial Intelligence">AI</abbr> a Center Word (e.g., *"Apple"*). It must predict the Context Words surrounding it (e.g., *"Eating"*, *"Juice"*).
 **The Architecture:** 
 1. Input: The word *"Apple"* (represented as a One-Hot Vector, e.g., `[0, 0, 1, 0...]`).
 2. Hidden Layer: A linear layer with no activation function. This is the **Embedding Matrix**. (e.g., 300 neurons).
@@ -27,15 +27,15 @@ Once the network is trained, we literally **throw away the Output Layer**. The o
 ### 3. Negative Sampling (The Math Trick)
 If your dictionary has 100,000 words, running a Softmax over 100,000 words at every single step of training is computationally impossible. 
 **Negative Sampling** is a genius trick. Instead of predicting the 1 correct context word out of 100,000, we change the game.
-1. We give the AI the true pair: `("Apple", "Juice")` $\rightarrow$ Target: $1.0$
-2. We give the AI 5 completely random "Negative" pairs: `("Apple", "Car")` $\rightarrow$ Target: $0.0$.
+1. We give the <abbr title="Artificial Intelligence">AI</abbr> the true pair: `("Apple", "Juice")` $\rightarrow$ Target: $1.0$
+2. We give the <abbr title="Artificial Intelligence">AI</abbr> 5 completely random "Negative" pairs: `("Apple", "Car")` $\rightarrow$ Target: $0.0$.
 We turned a massive 100,000-class Softmax problem into a tiny, blazing-fast Binary Classification problem (Sigmoid). This speeds up training by 1000x!
 
 ### 4. Vector Arithmetic (The Magic)
 Because words are now geometric coordinates, you can do math on them!
 If you take the coordinate vector for $King$, subtract $Man$, and add $Woman$, the resulting coordinate will land exactly on top of the vector for $Queen$!
 `King - Man + Woman = Queen`. 
-The AI learned the mathematical vector for "Gender" purely by reading text!
+The <abbr title="Artificial Intelligence">AI</abbr> learned the mathematical vector for "Gender" purely by reading text!
 
 ---
 
@@ -163,7 +163,7 @@ To find synonyms, you don't use Euclidean Distance (ruler distance). You use **C
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Word embeddings like Word2Vec and GloVe revolutionized NLP, but they have one massive, fatal flaw when dealing with polysemous words (words with multiple meanings, like 'bank' or 'apple'). Explain this mathematical flaw, and explain how modern contextual models like ELMo and BERT solved it."*
+*"Word embeddings like Word2Vec and GloVe revolutionized <abbr title="Natural Language Processing">NLP</abbr>, but they have one massive, fatal flaw when dealing with polysemous words (words with multiple meanings, like 'bank' or 'apple'). Explain this mathematical flaw, and explain how modern contextual models like ELMo and BERT solved it."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -178,4 +178,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. You have successfully mapped human language into mathematical geometry.
 
-Tomorrow, in **Day 49**, we tackle the nightmare of Tokenization. How does the AI handle words it has never seen before? Welcome to **Byte Pair Encoding (BPE)!**
+Tomorrow, in **Day 49**, we tackle the nightmare of Tokenization. How does the <abbr title="Artificial Intelligence">AI</abbr> handle words it has never seen before? Welcome to **Byte Pair Encoding (<abbr title="Byte Pair Encoding">BPE</abbr>)!**

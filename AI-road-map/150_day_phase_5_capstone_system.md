@@ -2,7 +2,7 @@
 
 Welcome to Day 150. You made it.
 
-Over the last 30 days, you learned ReAct, Tool Creation (LATM), Multi-Modal interactions, MCP Ecosystems, LangChain LCEL, LangGraph orchestration, Subgraphs, Human-in-the-Loop, Docker deployment, and Circuit Breaker resilience.
+Over the last 30 days, you learned ReAct, Tool Creation (LATM), Multi-Modal interactions, <abbr title="Model Context Protocol">MCP</abbr> Ecosystems, LangChain LCEL, LangGraph orchestration, Subgraphs, Human-in-the-Loop, Docker deployment, and Circuit Breaker resilience.
 
 Today is the **Phase 5 Capstone**. We are bringing all of these concepts together into a single, cohesive, production-grade architecture.
 
@@ -10,18 +10,18 @@ Today is the **Phase 5 Capstone**. We are bringing all of these concepts togethe
 
 ## 🕒 HOUR 1: THE CAPSTONE ARCHITECTURE
 
-In a real enterprise, your AI system is not a single Python file. It is a distributed microservice architecture. 
+In a real enterprise, your <abbr title="Artificial Intelligence">AI</abbr> system is not a single Python file. It is a distributed microservice architecture. 
 
 ### The Complete Production Flow
-1. **API Gateway (FastAPI):** Authenticates the user, rate-limits the request, and validates the input payload.
+1. **<abbr title="Application Programming Interface">API</abbr> Gateway (FastAPI):** Authenticates the user, rate-limits the request, and validates the input payload.
 2. **Request Router (Queue):** Pushes the request to a Redis queue. Returns a `task_id` to the user instantly.
 3. **Agent Orchestrator (LangGraph Worker):** A background worker pulls the task. It runs a LangGraph `SupervisorNode`.
-4. **Adaptive Retrieval Subgraph:** If the user asks a knowledge question, the Supervisor routes to a LangGraph RAG Subgraph. It uses `MultiQueryRetriever` and semantic caching to save money.
+4. **Adaptive Retrieval Subgraph:** If the user asks a knowledge question, the Supervisor routes to a LangGraph <abbr title="Retrieval-Augmented Generation">RAG</abbr> Subgraph. It uses `MultiQueryRetriever` and semantic caching to save money.
 5. **CrewAI Execution Subgraph:** If the user asks for a complex multi-step task (e.g., "Research market trends and write a 5-page report"), the LangGraph Supervisor routes the task into a **CrewAI** crew (a specialized team of Agents).
-6. **Tool Layer (MCP Servers):** When Agents need to execute code, search the web, or read a database, they securely communicate with isolated Model Context Protocol (MCP) servers.
+6. **Tool Layer (<abbr title="Model Context Protocol">MCP</abbr> Servers):** When Agents need to execute code, search the web, or read a database, they securely communicate with isolated Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>) servers.
 7. **State Store (PostgreSQL):** After every node, LangGraph persists the state. If the agent needs to perform a destructive action, it triggers an `interrupt_before`, pausing the graph for a Human-in-the-Loop approval.
 8. **Observability (LangSmith):** Every token, tool execution, and latency metric is traced and logged in LangSmith.
-9. **Error Recovery:** If an API crashes, Tenacity retries. If it fails 3 times, a Circuit Breaker opens, and the agent falls back to a smaller, local LLM.
+9. **Error Recovery:** If an <abbr title="Application Programming Interface">API</abbr> crashes, Tenacity retries. If it fails 3 times, a Circuit Breaker opens, and the agent falls back to a smaller, local <abbr title="Large Language Model">LLM</abbr>.
 
 ---
 
@@ -174,12 +174,12 @@ Map out the **Observability layer** for this Capstone. Where would you inject La
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"You're the founding AI engineer at a startup building an 'AI Chief of Staff' for executives. Design the complete system: agent architecture, tool ecosystem, memory, security, and deployment."*
+*"You're the founding <abbr title="Artificial Intelligence">AI</abbr> engineer at a startup building an '<abbr title="Artificial Intelligence">AI</abbr> Chief of Staff' for executives. Design the complete system: agent architecture, tool ecosystem, memory, security, and deployment."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Agent Architecture:** A LangGraph Supervisor that delegates to specialized subgraphs (Email Agent, Calendar Agent, Research Agent).
-2. **Tool Ecosystem:** Using isolated MCP servers running in Docker containers. The Calendar Agent communicates securely with a Google Calendar MCP server, preventing hallucinated API calls from breaking the core logic.
+2. **Tool Ecosystem:** Using isolated <abbr title="Model Context Protocol">MCP</abbr> servers running in Docker containers. The Calendar Agent communicates securely with a Google Calendar <abbr title="Model Context Protocol">MCP</abbr> server, preventing hallucinated <abbr title="Application Programming Interface">API</abbr> calls from breaking the core logic.
 3. **Memory:** Short-term memory in the LangGraph Checkpointer (Postgres). Long-term semantic memory (Exec profiles, past decisions) embedded in a Vector Database (Pinecone).
 4. **Security:** Human-in-the-Loop for all outgoing emails or calendar modifications. Strict row-level security in the database so the Agent cannot cross-contaminate executive data.
 5. **Deployment:** FastAPI endpoints, Redis queues for async processing, Celery workers orchestrated in a Kubernetes cluster with HPA auto-scaling.

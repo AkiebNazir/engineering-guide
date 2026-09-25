@@ -36,7 +36,7 @@ Two rules carry a surprising amount of weight:
 
 | Term | Plain meaning | Why it matters |
 |---|---|---|
-| Availability | Fraction of eligible requests that succeed. | An API can be “up” while users get errors; measure at the request boundary. |
+| Availability | Fraction of eligible requests that succeed. | An <abbr title="Application Programming Interface">API</abbr> can be “up” while users get errors; measure at the request boundary. |
 | Latency | Time for one operation. Report percentiles, especially p95/p99, not only an average. | Long-tail pauses are what users notice and what exhaust connection pools. |
 | Throughput | Work completed per unit time: requests/s, messages/s, bytes/s. | Drives capacity and partition count. |
 | Durability | Probability acknowledged data survives over time. | A cache may be highly available but not durable. |

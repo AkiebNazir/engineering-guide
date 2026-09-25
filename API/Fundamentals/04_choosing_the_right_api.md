@@ -1,11 +1,11 @@
 ---
-title: "4. Choosing the Right API"
+title: "4. Choosing the Right <abbr title="Application Programming Interface">API</abbr>"
 description: "Side-by-side comparison of REST, GraphQL, gRPC, WebSockets, Webhooks and SOAP, a decision tree, a full e-commerce architecture using all of them, interview questions and a capstone."
 ---
 
-# Choosing the Right API Style
+# Choosing the Right <abbr title="Application Programming Interface">API</abbr> Style
 
-There is no best API style, only a best fit. This guide gives you the comparison, a decision procedure, a realistic system that uses several styles at once, and practice questions.
+There is no best <abbr title="Application Programming Interface">API</abbr> style, only a best fit. This guide gives you the comparison, a decision procedure, a realistic system that uses several styles at once, and practice questions.
 
 ## 1. The Big Comparison
 
@@ -107,7 +107,7 @@ orders -> erp : "SOAP adapter"
 | Link | Style | Why |
 | :--- | :--- | :--- |
 | Web / mobile -> gateway | **GraphQL** | One request returns the product, reviews, stock and recommendations each screen needs. |
-| Partners -> public API | **REST** | Universal, cacheable, documented with OpenAPI, easy to try with `curl`. |
+| Partners -> public <abbr title="Application Programming Interface">API</abbr> | **REST** | Universal, cacheable, documented with OpenAPI, easy to try with `curl`. |
 | Service -> service | **gRPC** | Typed contracts, small binary payloads, deadlines that propagate, streaming. |
 | Payment provider -> you | **Webhook** | The bank confirms asynchronously, minutes after the request. Polling would be wasteful. |
 | Order status -> browser | **WebSocket** | "Your parcel is out for delivery" appears instantly. |
@@ -117,7 +117,7 @@ Walk through one order:
 
 1.  The web app sends a GraphQL `mutation placeOrder`. The gateway calls `Order.Create` over **gRPC**.
 2.  The Order service calls `Inventory.Reserve` (gRPC) and `Payment.Charge` (gRPC) with a **deadline** and an **idempotency key**.
-3.  The Payment service calls the provider's **REST** API. The response is `processing`.
+3.  The Payment service calls the provider's **REST** <abbr title="Application Programming Interface">API</abbr>. The response is `processing`.
 4.  Minutes later the provider sends a **webhook**. The receiver verifies the signature, dedupes on the event id, and emits an internal event.
 5.  The Order service marks the order paid, calls the ERP through a **SOAP** adapter, and pushes the new state over a **WebSocket** to the customer's open tab.
 
@@ -139,13 +139,13 @@ Walk through one order:
 4.  **Webhooks without retries or dedupe on the receiver.** Delivery is at-least-once; you *will* get duplicates.
 5.  **REST with verbs in URLs** (`/getUser`, `/createOrder`). Use nouns and HTTP methods, or admit you want RPC and pick gRPC.
 6.  **Ignoring versioning until the first breaking change.**
-7.  **Exposing the database schema as the API.** The API is a product with its own lifecycle.
+7.  **Exposing the database schema as the <abbr title="Application Programming Interface">API</abbr>.** The <abbr title="Application Programming Interface">API</abbr> is a product with its own lifecycle.
 
 ## 6. Practice Interview Questions
 
-> ❓ **Q1. Design the API for a food-delivery app: customers browse restaurants, place orders, and watch the courier on a map.**
+> ❓ **Q1. Design the <abbr title="Application Programming Interface">API</abbr> for a food-delivery app: customers browse restaurants, place orders, and watch the courier on a map.**
 >
-> ❓ **Q2. Your public REST API returns a 40-field user object and the mobile app needs 3 fields. What are your options?**
+> ❓ **Q2. Your public REST <abbr title="Application Programming Interface">API</abbr> returns a 40-field user object and the mobile app needs 3 fields. What are your options?**
 >
 > ❓ **Q3. You are migrating 30 internal REST services to gRPC. What can go wrong?**
 >
@@ -181,7 +181,7 @@ Do it once in Python and once in Go, using the labs listed in `03_cross_cutting_
 
 | If you hear... | Think... |
 | :--- | :--- |
-| "Public API for third-party developers" | REST + OpenAPI, versioned, rate limited, API keys / OAuth |
+| "Public <abbr title="Application Programming Interface">API</abbr> for third-party developers" | REST + OpenAPI, versioned, rate limited, <abbr title="Application Programming Interface">API</abbr> keys / OAuth |
 | "Mobile app is slow: too many calls / too much data" | GraphQL BFF, or purpose-built endpoints |
 | "Microservices talking to each other, latency matters" | gRPC + Protobuf, mTLS, deadlines |
 | "Live prices, chat, presence, multiplayer" | WebSockets (+ Redis pub/sub to scale) |

@@ -12,8 +12,8 @@ If you download a "Base Model" (like `Llama-3-8B`) and ask it: *"What is the cap
 Why? Because Base Models are only trained to predict the next word on Wikipedia. They are not trained to answer questions.
 
 To turn a Base Model into an Instruct/Chat model, you must put it through a two-step pipeline:
-1. **SFT (Supervised Fine-Tuning):** You show the model 10,000 examples of a Human asking a question, and an AI answering politely. The model learns the *format* of conversation.
-2. **Preference Optimization (RLHF / DPO):** You show the model two different answers to the same question. You tell it: *"Answer A is polite. Answer B is rude. Mathematically penalize yourself if you act like Answer B."* The model learns human values.
+1. **SFT (Supervised Fine-Tuning):** You show the model 10,000 examples of a Human asking a question, and an <abbr title="Artificial Intelligence">AI</abbr> answering politely. The model learns the *format* of conversation.
+2. **Preference Optimization (<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> / <abbr title="Direct Preference Optimization">DPO</abbr>):** You show the model two different answers to the same question. You tell it: *"Answer A is polite. Answer B is rude. Mathematically penalize yourself if you act like Answer B."* The model learns human values.
 
 TRL provides the `SFTTrainer` and the `DPOTrainer` to do this automatically.
 
@@ -81,9 +81,9 @@ trainer = SFTTrainer(
 ## 4. Step 2: The `DPOTrainer` (Teaching Human Values)
 
 SFT teaches the model *how* to talk. But it doesn't stop the model from hallucinating or saying terrible things. 
-Historically, OpenAI solved this using **RLHF** (Reinforcement Learning from Human Feedback), which required training three separate massive neural networks simultaneously (a nightmare). 
+Historically, OpenAI solved this using **<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>** (Reinforcement Learning from Human Feedback), which required training three separate massive neural networks simultaneously (a nightmare). 
 
-In 2023, Stanford researchers invented **DPO (Direct Preference Optimization)**. It requires no reinforcement learning, no reward model, and trains stably using standard Cross-Entropy loss. TRL implemented this via the `DPOTrainer`.
+In 2023, Stanford researchers invented **<abbr title="Direct Preference Optimization">DPO</abbr> (Direct Preference Optimization)**. It requires no reinforcement learning, no reward model, and trains stably using standard Cross-Entropy loss. TRL implemented this via the `DPOTrainer`.
 
 ### Parameter Breakdown: `DPOTrainer`
 You must provide a dataset with three specific columns:
@@ -91,7 +91,7 @@ You must provide a dataset with three specific columns:
 2. `chosen`: The polite/helpful answer.
 3. `rejected`: The rude/hallucinated answer.
 
-- `beta` (float): The most critical parameter in DPO. It controls how strictly the model must stick to its original Base Model knowledge.
+- `beta` (float): The most critical parameter in <abbr title="Direct Preference Optimization">DPO</abbr>. It controls how strictly the model must stick to its original Base Model knowledge.
   - *Effect of increasing (e.g., 0.5):* The model becomes terrified of deviating from its base pre-training. It will barely learn your preferences.
   - *Effect of decreasing (e.g., 0.01):* The model will heavily prioritize maximizing the "reward" difference between Chosen and Rejected. It will over-optimize, causing "Reward Hacking" where it starts outputting weird grammatical tics just to score higher math points. The sweet spot is usually `0.1`.
 
@@ -132,20 +132,20 @@ dpo_trainer = DPOTrainer(
 
 *Answer:* "The Tokenizer's Chat Template. Base models don't naturally understand who is speaking. During SFT, we wrap the text in special control tokens (e.g., `<|start_header_id|>user<|end_header_id|>`). We MUST define these special tokens in the Tokenizer, add them to the vocabulary, and configure the `StoppingCriteria` during inference so the generation loop explicitly halts when the model attempts to generate the `<|end_of_text|>` token."
 
-### Scenario 2: RLHF (PPO) vs. DPO
-*Interviewer:* "Why did the entire industry abandon PPO (Proximal Policy Optimization) in favor of DPO (Direct Preference Optimization) for aligning LLMs?"
+### Scenario 2: <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> (PPO) vs. <abbr title="Direct Preference Optimization">DPO</abbr>
+*Interviewer:* "Why did the entire industry abandon PPO (Proximal Policy Optimization) in favor of <abbr title="Direct Preference Optimization">DPO</abbr> (Direct Preference Optimization) for aligning LLMs?"
 
-*Answer:* "PPO is highly unstable and computationally disastrous. PPO requires running four models simultaneously in VRAM: The Actor (the LLM), the Reference Model, the Reward Model (a separate LLM trained to act as a judge), and the Value Head. The gradients must flow through the reinforcement learning policy, which suffers from massive variance. 
-DPO proved mathematically that you can bypass the Reward Model entirely. DPO derives the implicit reward directly from the LLM's own log-probabilities. It only requires two models in memory (The LLM and the Reference model), uses standard, stable classification loss, trains 3x faster, uses half the VRAM, and achieves identical or superior win-rates on human evaluation benchmarks."
+*Answer:* "PPO is highly unstable and computationally disastrous. PPO requires running four models simultaneously in VRAM: The Actor (the <abbr title="Large Language Model">LLM</abbr>), the Reference Model, the Reward Model (a separate <abbr title="Large Language Model">LLM</abbr> trained to act as a judge), and the Value Head. The gradients must flow through the reinforcement learning policy, which suffers from massive variance. 
+<abbr title="Direct Preference Optimization">DPO</abbr> proved mathematically that you can bypass the Reward Model entirely. <abbr title="Direct Preference Optimization">DPO</abbr> derives the implicit reward directly from the <abbr title="Large Language Model">LLM</abbr>'s own log-probabilities. It only requires two models in memory (The <abbr title="Large Language Model">LLM</abbr> and the Reference model), uses standard, stable classification loss, trains 3x faster, uses half the VRAM, and achieves identical or superior win-rates on human evaluation benchmarks."
 
 ---
 
 ## 6. Common Pitfalls & Debugging in Production
 
-### ⚠️ Pitfall 1: OOM during DPO
-DPO requires having both the model you are training AND the frozen Reference Model in VRAM at the same time. If you barely fit your model in memory during SFT, DPO will crash your server instantly because it requires double the memory.
-*Fix:* Use `peft` (LoRA) for DPO. Because the Base Model is frozen, TRL is smart enough to use the exact same Base Model as the Reference Model, and it only trains the tiny 100MB LoRA adapter. This eliminates the duplicate memory footprint entirely!
+### ⚠️ Pitfall 1: OOM during <abbr title="Direct Preference Optimization">DPO</abbr>
+<abbr title="Direct Preference Optimization">DPO</abbr> requires having both the model you are training AND the frozen Reference Model in VRAM at the same time. If you barely fit your model in memory during SFT, <abbr title="Direct Preference Optimization">DPO</abbr> will crash your server instantly because it requires double the memory.
+*Fix:* Use `peft` (<abbr title="Low-Rank Adaptation">LoRA</abbr>) for <abbr title="Direct Preference Optimization">DPO</abbr>. Because the Base Model is frozen, TRL is smart enough to use the exact same Base Model as the Reference Model, and it only trains the tiny 100MB <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter. This eliminates the duplicate memory footprint entirely!
 
 ### ⚠️ Pitfall 2: Too many Epochs on SFT
-In standard Deep Learning (Guide 05), you often train for 100 epochs. If you train an LLM for 100 epochs on a small SFT conversational dataset, it will "overfit" spectacularly. It will memorize the exact conversations and lose its ability to reason about anything else.
-*Fix:* SFT on LLMs is incredibly fast. Most frontier models (like Llama-3) reach optimal convergence in exactly **1 to 3 epochs**. Never train an LLM for 100 epochs unless you are pre-training from scratch on trillions of tokens.
+In standard Deep Learning (Guide 05), you often train for 100 epochs. If you train an <abbr title="Large Language Model">LLM</abbr> for 100 epochs on a small SFT conversational dataset, it will "overfit" spectacularly. It will memorize the exact conversations and lose its ability to reason about anything else.
+*Fix:* SFT on LLMs is incredibly fast. Most frontier models (like Llama-3) reach optimal convergence in exactly **1 to 3 epochs**. Never train an <abbr title="Large Language Model">LLM</abbr> for 100 epochs unless you are pre-training from scratch on trillions of tokens.

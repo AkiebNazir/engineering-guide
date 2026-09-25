@@ -21,7 +21,7 @@ The idea of remote procedure calls is old (1980s). gRPC's contribution is a mode
 | :--- | :--- | :--- |
 | **Format** | JSON (text) | Protobuf (binary) |
 | **Transport** | HTTP/1.1 or HTTP/2 | HTTP/2 only |
-| **API model** | Resources + verbs (`GET /users/7`) | Functions (`GetUser`) |
+| **<abbr title="Application Programming Interface">API</abbr> model** | Resources + verbs (`GET /users/7`) | Functions (`GetUser`) |
 | **Contract** | OpenAPI (optional, often drifts) | `.proto` (mandatory, generates code) |
 | **Streaming** | No (SSE / WebSockets bolted on) | First-class, 4 shapes |
 | **Errors** | HTTP status + JSON body | 17 gRPC status codes + typed details |
@@ -339,7 +339,7 @@ In Kubernetes a plain ClusterIP service has exactly this problem; use a **headle
 
 ## Real-World Scenario & Architecture
 
-**Scenario:** A Microservices architecture where an API Gateway (acting as a gRPC client) calls a User Microservice (gRPC Server) to fetch data extremely fast.
+**Scenario:** A Microservices architecture where an <abbr title="Application Programming Interface">API</abbr> Gateway (acting as a gRPC client) calls a User Microservice (gRPC Server) to fetch data extremely fast.
 
 ```mermaid
 sequenceDiagram

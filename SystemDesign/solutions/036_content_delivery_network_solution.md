@@ -24,7 +24,7 @@ The one hard decision is what gives when these conflict: keep the request path l
 | Certificates | 5M hostnames, 80% managed, 4 KB each = 20 GB. CA/Browser Forum SC-081v3 (2025): maximum validity 200 days from Mar 2026, 100 from Mar 2027, 47 from Mar 2029. Renew at 2/3 | 4M ÷ 31 days = **128K renewals/day** at 47 days. Automate, and load by SNI. |
 | DDoS | 2 Tbps ÷ 500 POPs = 4 Gbps each. A 20 Tbps attack at 10× skew: 400 Gbps at one POP vs 200 Gbps (2 × 100) at tier C | Small POPs need edge filtering and spill (fleet spare 65 Tbps). |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 PUT  /v1/zones/{zone}/config    {base_version, rules:[{match, ttl, key, swr, sie}]}
@@ -81,7 +81,7 @@ Mechanics are in [27](../building_blocks/27_multi_region_and_global_traffic.md).
 - **DNS mapping** (Akamai-style, Nygren et al., 2010) gives load-aware answers and per-POP capacity control, but the resolver is not the client (ECS, RFC 7871, helps) and a 30 s TTL plus 3 × 5 s checks is **45 s** to drain.
 - **Anycast** (Cloudflare publicly describes it) spreads attacks over all POPs with no TTL, but BGP ignores capacity, so shedding is by prepend or withdraw, and flaps break long TCP flows.
 
-**Decision:** anycast for authoritative DNS and the web/API pool, DNS mapping for the few hundred zones that carry most bytes. That gives DDoS spreading and per-POP load control where each matters, at the cost of two steering systems, acceptable because the mapper only handles the head and freezes its last map if it fails.
+**Decision:** anycast for authoritative DNS and the web/<abbr title="Application Programming Interface">API</abbr> pool, DNS mapping for the few hundred zones that carry most bytes. That gives DDoS spreading and per-POP load control where each matters, at the cost of two steering systems, acceptable because the mapper only handles the head and freezes its last map if it fails.
 
 **DDoS layers.** Spread by anycast. Drop L3/L4 floods in the NIC driver (XDP/eBPF, SYN cookies) before the kernel stack. The cache absorbs cacheable floods and per-zone rate limits handle the rest. Cache-busting (`?x=random`) bypasses the cache, so unknown parameters on static paths leave the key and each origin has a fetch cap. A flood beyond a small POP's 200 Gbps means spilling legitimate traffic to neighbours and scrubbing upstream.
 
@@ -196,10 +196,10 @@ Trade-off to state: "I keep the data plane autonomous and only eventually consis
 
 1. **"How do you do multi-region?"** A CDN is multi-region by construction, so the question is the control plane. Config and cert stores are consensus-replicated across 3 regions with a leader (rare writes, so a 150 ms commit is fine), purges are accepted anywhere, POPs pull from the nearest of three, and losing a region never touches serving.
 2. **"What changes at 10× and 100×?"** At 500 Tbps bandwidth alone needs 500 × 1.5 ÷ 0.07 = 10,700 servers, about 16,500 with redundancy floors. Bytes outgrow POP count, so ports, power and index memory bind first, while purge and config volume scale with tenants, and at 100× the hot set must live inside ISPs.
-3. **"Make purge strongly consistent."** Give each POP a 30 s lease renewed by heartbeat. The purge API succeeds when every live-lease POP has acked or its lease expired, and a POP without a lease stops serving purge-critical zones. Worst-case purge latency is the lease and a partitioned POP loses availability for those tenants, so it is paid.
+3. **"Make purge strongly consistent."** Give each POP a 30 s lease renewed by heartbeat. The purge <abbr title="Application Programming Interface">API</abbr> succeeds when every live-lease POP has acked or its lease expired, and a POP without a lease stops serving purge-critical zones. Worst-case purge latency is the lease and a partitioned POP loses availability for those tenants, so it is paid.
 4. **"What dominates cost?"** Bandwidth. One point of edge byte hit ratio is 0.5 Tbps = 500,000 Mbps, about $100K/month at an assumed $0.20 per Mbps-month if it all rode paid transit, so peering and embedded caches beat tuning. Then flash, then the tier-C tail (5.5× cost per Gbps).
 5. **"How do you handle abuse?"** Cache-busting (normalised keys, per-origin caps), open-proxy and reflection use (verified hostnames only, private-range and cloud-metadata origins rejected), free-tier abuse (quotas, takedown via the purge path), request smuggling (strict parsing) and slow requests (timeouts).
-6. **"Just use anycast for everything."** For web and API traffic I agree, since it is simpler and better against DDoS. I would keep DNS mapping only for the media head. Without it I lose per-POP load control and shed by prepending or splitting prefixes.
+6. **"Just use anycast for everything."** For web and <abbr title="Application Programming Interface">API</abbr> traffic I agree, since it is simpler and better against DDoS. I would keep DNS mapping only for the media head. Without it I lose per-POP load control and shed by prepending or splitting prefixes.
 
 ## Common mistakes
 

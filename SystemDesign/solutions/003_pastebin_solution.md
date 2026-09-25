@@ -41,10 +41,10 @@ Other
 - **Bytes and metadata are different workloads, 50× apart.** So bodies go to object storage and metadata to a relational store; the metadata (110 GB/year) sits on one primary with read replicas for years, and sharding waits for measurements.
 - **The CDN carries the bytes; the origin carries lookups.** 7 Gbps at peak is a CDN job. The origin's ~11k requests/s are mostly small metadata lookups (`id → status, visibility, expires_at, object_key`), so put a short-TTL metadata cache and read replicas in front of the database rather than sharding it.
 - **The 150 ms p99 lands on the miss path.** With 10% of cacheable reads and all private reads going to origin, far more than 1% of requests are misses, so the p99 *is* a miss-path latency. A cross-ocean origin call alone can be 150 ms (assumption), so the origin needs regional replicas of metadata and objects or an origin shield near each edge cluster. Define the target as time to first byte for large snippets, because a 10 MB body cannot arrive in 150 ms on a 100 Mbps link. Serve large text compressed (text often shrinks several times, an assumption) and stream it.
-- **Large uploads must bypass the API tier.** The 4.6 Gbps abuse case says never proxy a 10 MB body through API servers: above ~64 KB use a signed direct upload to a staging key, and enforce a per-account bytes-per-day quota (say 100 MB/day) besides the rate limit.
+- **Large uploads must bypass the <abbr title="Application Programming Interface">API</abbr> tier.** The 4.6 Gbps abuse case says never proxy a 10 MB body through <abbr title="Application Programming Interface">API</abbr> servers: above ~64 KB use a signed direct upload to a staging key, and enforce a per-account bytes-per-day quota (say 100 MB/day) besides the rate limit.
 - **A mean-based CDN bound is optimistic.** With an average of 1,000 reads per snippet spread over at most ~50 edge locations, a snippet needs at most 50 origin fetches, so the hit ratio could be up to 95%. But the mean hides a tail: most snippets are read a handful of times, so plan for 90% and measure.
 
-## Data, API, and IDs
+## Data, <abbr title="Application Programming Interface">API</abbr>, and IDs
 
 ```text
 Snippet(id PK, owner_id, visibility, status, object_key, checksum,
@@ -120,7 +120,7 @@ sequenceDiagram
 
 For small snippets, storing body in relational storage can be acceptable. At 10 MB and read-heavy global delivery, object storage separates blob capacity/egress from metadata transactions and works naturally with CDN/lifecycle policies. Metadata is still truth for expiry, visibility, and deletion.
 
-Bodies are immutable, which is what makes edge caching safe. Small bodies (≤ ~64 KB, 99% of snippets by count) can be posted inline in the create request; larger ones use a signed upload URL straight to object storage so the 10 MB body never crosses the API tier.
+Bodies are immutable, which is what makes edge caching safe. Small bodies (≤ ~64 KB, 99% of snippets by count) can be posted inline in the create request; larger ones use a signed upload URL straight to object storage so the 10 MB body never crosses the <abbr title="Application Programming Interface">API</abbr> tier.
 
 Upload flow must avoid a visible metadata record pointing to a missing object. Either store body first into a private staging key then transactionally create metadata/commit state, or use an upload state machine (`PENDING_UPLOAD`, `ACTIVE`, `FAILED`) with cleanup. Validate size, encoding/content policy, and abuse limits; never trust only filename/content-type.
 
@@ -158,7 +158,7 @@ At scale, CDN absorbs read bandwidth, object store handles bytes, and metadata D
 1. **Treating "unlisted" as "private".** Anyone with the link can read an unlisted snippet. Give private snippets an authenticated resource-level check and no shared-cache entry.
 2. **Relying on TTL alone for expiry and deletion.** A long CDN TTL keeps an expired or taken-down snippet visible for hours. Align `s-maxage` to expiry, purge on delete, and check status at the origin.
 3. **Serving user content from the application's origin.** A pasted HTML page then runs with the app's cookies. Use a separate content domain, `nosniff`, and a safe content type.
-4. **Proxying 10 MB uploads through the API tier.** A few dozen concurrent large uploads pin workers and memory. Use a signed direct upload and a bytes quota.
+4. **Proxying 10 MB uploads through the <abbr title="Application Programming Interface">API</abbr> tier.** A few dozen concurrent large uploads pin workers and memory. Use a signed direct upload and a bytes quota.
 5. **Metadata that points at a missing object, or an object nobody points at.** Use `PENDING_UPLOAD → ACTIVE` with cleanup for orphans, and report the orphan count.
 6. **Sizing from the mean.** The 1% large snippets are about two thirds of the bytes and drive storage and egress; model the distribution, not just the average.
 7. **Handing out long-lived object URLs for private content.** A leaked URL is a permanent leak. Authorize first and issue a short-lived signed URL, or proxy the read.

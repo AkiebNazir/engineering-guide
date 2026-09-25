@@ -2,7 +2,7 @@
 
 Welcome to Day 35. You have built the network, initialized the weights, and run the forward pass. The network just made its very first guess. Because it was initialized with random noise, the guess is completely wrong.
 
-To trigger Backpropagation (Day 33), we must mathematically calculate exactly *how* wrong the AI is. We do this using a **Loss Function**. Today, we move past basic Mean Squared Error and look at the advanced Loss Functions used in modern Computer Vision and Large Language Models.
+To trigger Backpropagation (Day 33), we must mathematically calculate exactly *how* wrong the <abbr title="Artificial Intelligence">AI</abbr> is. We do this using a **Loss Function**. Today, we move past basic Mean Squared Error and look at the advanced Loss Functions used in modern Computer Vision and Large Language Models.
 
 ---
 
@@ -11,20 +11,20 @@ To trigger Backpropagation (Day 33), we must mathematically calculate exactly *h
 ### 1. Cross-Entropy Loss (The Standard)
 If you are classifying images (Cat vs. Dog), you use **Cross-Entropy Loss**. 
 It utilizes the $Log$ function. Why? Because $Log$ heavily punishes arrogance.
-- If the AI is 51% confident it's a Dog, and it's actually a Cat, the Loss is small. The AI was unsure.
-- If the AI is **99.9% confident** it's a Dog, and it's actually a Cat, the $Log$ equation explodes to Infinity! The AI receives a massive mathematical punishment for being arrogantly wrong, which causes a massive Weight Update during Backpropagation.
+- If the <abbr title="Artificial Intelligence">AI</abbr> is 51% confident it's a Dog, and it's actually a Cat, the Loss is small. The <abbr title="Artificial Intelligence">AI</abbr> was unsure.
+- If the <abbr title="Artificial Intelligence">AI</abbr> is **99.9% confident** it's a Dog, and it's actually a Cat, the $Log$ equation explodes to Infinity! The <abbr title="Artificial Intelligence">AI</abbr> receives a massive mathematical punishment for being arrogantly wrong, which causes a massive Weight Update during Backpropagation.
 
 ### 2. Focal Loss (The Imbalance Savior)
-Imagine you are building an AI to detect Cancer. Your dataset is 99% Healthy, and 1% Cancer.
-If you use standard Cross-Entropy, the AI will instantly realize: *"If I just guess 'Healthy' every single time, I will get 99% accuracy!"* The AI will ignore the cancer completely.
+Imagine you are building an <abbr title="Artificial Intelligence">AI</abbr> to detect Cancer. Your dataset is 99% Healthy, and 1% Cancer.
+If you use standard Cross-Entropy, the <abbr title="Artificial Intelligence">AI</abbr> will instantly realize: *"If I just guess 'Healthy' every single time, I will get 99% accuracy!"* The <abbr title="Artificial Intelligence">AI</abbr> will ignore the cancer completely.
 **Focal Loss** fixes this. It adds a modifier to the equation: $(1 - p_t)^\gamma$.
-- If the AI gets a "Healthy" patient correct with 99% confidence ($p=0.99$), the modifier becomes $(1 - 0.99) = 0.01$. The Loss is multiplied by $0.01$, dropping to zero!
-- **The Result:** The AI is mathematically forced to completely ignore the "easy" healthy examples, and focus 100% of its gradient updates on learning the "hard" cancer examples!
+- If the <abbr title="Artificial Intelligence">AI</abbr> gets a "Healthy" patient correct with 99% confidence ($p=0.99$), the modifier becomes $(1 - 0.99) = 0.01$. The Loss is multiplied by $0.01$, dropping to zero!
+- **The Result:** The <abbr title="Artificial Intelligence">AI</abbr> is mathematically forced to completely ignore the "easy" healthy examples, and focus 100% of its gradient updates on learning the "hard" cancer examples!
 
 ### 3. InfoNCE Loss (Contrastive Learning)
 How did OpenAI train CLIP, the vision model behind DALL-E? There were no "Labels" (Cat/Dog). They just scraped millions of images and their text captions off the internet.
 They used **InfoNCE Loss** (Contrastive Learning).
-1. The AI looks at an image of a Dog, and the sentence "A happy dog". 
+1. The <abbr title="Artificial Intelligence">AI</abbr> looks at an image of a Dog, and the sentence "A happy dog". 
 2. The Loss function mathematically acts like a magnet. It pulls the mathematical coordinates of the Image and the Text *closer together* in high-dimensional space.
 3. Simultaneously, it grabs the other 255 random images in the training batch, and mathematically pushes them *far apart* from the "happy dog" sentence.
 It learns by Contrast!
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Focusing Parameter (`gamma=2.0`):** Look at `(1.0 - p_t) ** self.gamma`. If the AI guesses correctly with 95% confidence (`p_t = 0.95`), the math is `(0.05)^2 = 0.0025`. The Loss is multiplied by `0.0025`, effectively deleting it!
+1. **The Focusing Parameter (`gamma=2.0`):** Look at `(1.0 - p_t) ** self.gamma`. If the <abbr title="Artificial Intelligence">AI</abbr> guesses correctly with 95% confidence (`p_t = 0.95`), the math is `(0.05)^2 = 0.0025`. The Loss is multiplied by `0.0025`, effectively deleting it!
 2. **Logits:** Notice we use `binary_cross_entropy_with_logits`. In PyTorch, you should rarely calculate `sigmoid()` and then pass it to the loss. Passing the raw output numbers (logits) directly to the loss function allows PyTorch to use a highly optimized C++ math trick that prevents `NaN` explosions.
 
 ---
@@ -118,7 +118,7 @@ Before InfoNCE, facial recognition used **Triplet Loss**. You pass 3 images: An 
 1. Use `torch.nn.TripletMarginLoss(margin=1.0)`.
 2. Generate 3 random tensors: `anchor`, `positive`, `negative` of shape `(1, 128)` (simulating 128-dimensional face embeddings).
 3. Calculate the loss. 
-4. Move the `negative` tensor to equal the `anchor` tensor exactly. Run it again. The loss will explode, because the AI is heavily punished for thinking the stranger is the exact same as the target!
+4. Move the `negative` tensor to equal the `anchor` tensor exactly. Run it again. The loss will explode, because the <abbr title="Artificial Intelligence">AI</abbr> is heavily punished for thinking the stranger is the exact same as the target!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -132,12 +132,12 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The InfoNCE Mechanism:** 
    - State that InfoNCE takes an Image-Text pair (the Positive) and pulls their embeddings together using Cosine Similarity.
-   - However, to prevent the AI from just collapsing all images into the exact same point in space, it must push *Negative Samples* away. It treats every *other* image in the current training batch as a Negative Sample.
+   - However, to prevent the <abbr title="Artificial Intelligence">AI</abbr> from just collapsing all images into the exact same point in space, it must push *Negative Samples* away. It treats every *other* image in the current training batch as a Negative Sample.
 2. **The Batch Size Constraint:**
-   - Explain that if your Batch Size is only 32, the AI only has 31 "Negatives" to push against. The contrastive signal is incredibly weak. 
-   - State that Contrastive Learning requires a **massive batch size** (e.g., CLIP used a batch size of 32,768). A massive batch size ensures that the denominator of the InfoNCE Softmax equation contains thousands of diverse negative comparisons, forcing the AI to learn highly intricate, distinct boundaries between concepts.
+   - Explain that if your Batch Size is only 32, the <abbr title="Artificial Intelligence">AI</abbr> only has 31 "Negatives" to push against. The contrastive signal is incredibly weak. 
+   - State that Contrastive Learning requires a **massive batch size** (e.g., CLIP used a batch size of 32,768). A massive batch size ensures that the denominator of the InfoNCE Softmax equation contains thousands of diverse negative comparisons, forcing the <abbr title="Artificial Intelligence">AI</abbr> to learn highly intricate, distinct boundaries between concepts.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have successfully controlled how the AI learns from its mistakes.
+**Task for the end of the day:** Commit your code to Git. You have successfully controlled how the <abbr title="Artificial Intelligence">AI</abbr> learns from its mistakes.
 
 Tomorrow, in **Day 36**, we address the chaos of training. What happens when Layer 1 updates, completely changing the math for Layer 2? We fix it with **Normalization (BatchNorm vs LayerNorm vs RMSNorm)!**

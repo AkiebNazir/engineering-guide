@@ -28,7 +28,7 @@ sequenceDiagram
     end
 ```
 
-Every hop is a place latency, failure, or a trust boundary is introduced. Treat this as a checklist when asked "walk me through what happens when a user hits your API," not just a diagram to memorize.
+Every hop is a place latency, failure, or a trust boundary is introduced. Treat this as a checklist when asked "walk me through what happens when a user hits your <abbr title="Application Programming Interface">API</abbr>," not just a diagram to memorize.
 
 ## DNS
 

@@ -1,11 +1,11 @@
-# Day 161: ML Pipeline Orchestration (Airflow, Dagster & Prefect)
+# Day 161: <abbr title="Machine Learning">ML</abbr> Pipeline Orchestration (Airflow, Dagster & Prefect)
 
 Welcome to Day 161.
 
 We are entering the final weeks of the 180-day roadmap. It is time to learn **MLOps (Machine Learning Operations)**.
 If you manually run a Jupyter Notebook to download data, clean it, and train a model, you are not doing MLOps. What happens if the data download fails halfway through? What happens when the model needs to be retrained every Sunday at 3:00 AM?
 
-Today, we learn how to automate the entire lifecycle of an ML project using **DAG Orchestrators**. We will learn how to build pipelines that are fault-tolerant, retryable, and heavily monitored.
+Today, we learn how to automate the entire lifecycle of an <abbr title="Machine Learning">ML</abbr> project using **DAG Orchestrators**. We will learn how to build pipelines that are fault-tolerant, retryable, and heavily monitored.
 
 ---
 
@@ -24,7 +24,7 @@ If Step A fails, the Orchestrator pauses the entire graph, automatically retries
 2. **Prefect:** The modern, Pythonic alternative. It feels exactly like writing normal Python code with `@task` decorators.
 3. **Dagster:** The future. Built around "Software-Defined Assets". Instead of defining *tasks* (e.g., "Run SQL Script"), you define the *asset* (e.g., "Clean User Table"), and Dagster figures out how to build it and track its lineage.
 
-### 4. The Anatomy of an ML Pipeline
+### 4. The Anatomy of an <abbr title="Machine Learning">ML</abbr> Pipeline
 A production MLOps pipeline generally follows this DAG:
 1. **Extract:** Pull 10GB of raw logs from Snowflake.
 2. **Validate (Data Quality):** Check if there are null values or weird anomalies. (If yes, HALT).
@@ -37,7 +37,7 @@ A production MLOps pipeline generally follows this DAG:
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a fully automated ML Training Pipeline using **Dagster**. 
+Let's build a fully automated <abbr title="Machine Learning">ML</abbr> Training Pipeline using **Dagster**. 
 Notice how we define *Assets* (the data objects we are creating) and how Dagster automatically wires them together based on their input arguments!
 
 *(Note: To run this exactly, you need `pip install dagster dagster-webserver scikit-learn`)*
@@ -137,16 +137,16 @@ Modify the Dagster configuration to add a **Schedule**. Configure the pipeline t
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Design the ML pipeline infrastructure for a team of 50 ML engineers. Cover: pipeline definition, scheduling, monitoring, resource management, and multi-tenancy."*
+*"Design the <abbr title="Machine Learning">ML</abbr> pipeline infrastructure for a team of 50 <abbr title="Machine Learning">ML</abbr> engineers. Cover: pipeline definition, scheduling, monitoring, resource management, and multi-tenancy."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Orchestrator:** Propose Airflow (for stability) or Dagster (for data lineage). Explain that the orchestrator itself does NOT do the heavy lifting; it just acts as the traffic cop.
-2. **Resource Management:** When Airflow triggers the `Train_Model` task, it should use the `KubernetesPodOperator`. Airflow tells K8s: "Spin up a pod with 4 GPUs, run this Docker container, and destroy the pod when it finishes." This keeps the Airflow server extremely lightweight.
+2. **Resource Management:** When Airflow triggers the `Train_Model` task, it should use the `KubernetesPodOperator`. Airflow tells <abbr title="Kubernetes">K8s</abbr>: "Spin up a pod with 4 GPUs, run this Docker container, and destroy the pod when it finishes." This keeps the Airflow server extremely lightweight.
 3. **Multi-Tenancy:** 50 engineers means 50 different projects. Create isolated "Workspaces" in Dagster or separate DAG folders in Airflow, ensuring Team A's broken code cannot crash Team B's production pipeline.
 4. **Data Lineage:** If the Fraud Model starts hallucinating, we must trace the error backward. The orchestrator must track exactly which version of the dataset was used, which version of the Git code executed the training, and which Git commit caused the failure.
 
 ---
 **Task for the end of the day:** Watch a 5-minute YouTube video comparing Airflow vs Prefect vs Dagster.
 
-Tomorrow, in **Day 162**, we dive into the most critical tool for ML Engineers: **Experiment Tracking**. We will learn how to use MLflow and Weights & Biases to track thousands of hyperparameter experiments!
+Tomorrow, in **Day 162**, we dive into the most critical tool for <abbr title="Machine Learning">ML</abbr> Engineers: **Experiment Tracking**. We will learn how to use MLflow and Weights & Biases to track thousands of hyperparameter experiments!

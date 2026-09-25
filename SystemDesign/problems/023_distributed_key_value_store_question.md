@@ -22,7 +22,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope storage, node count, and per-node load.
-3. API contract, including consistency parameters and version/conflict semantics.
+3. <abbr title="Application Programming Interface">API</abbr> contract, including consistency parameters and version/conflict semantics.
 4. Baseline architecture: request coordination, partitioning, and replication.
 5. Consistency: quorums, conflict detection and resolution, and read repair.
 6. Membership, failure detection, hinted handoff, anti-entropy, and the storage engine.

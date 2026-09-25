@@ -109,7 +109,7 @@ Same story as Python's 7.8x, and an even bigger gap here (37.1x) because
 connection-handshake overhead on every single call — the qualitative point is
 identical either language: reusing connections beats opening one per request, and
 both Go pooling styles land at essentially the same per-request cost once warm
-(0.11ms vs 0.12ms) — the choice between them (covered fully in level 19) is about API
+(0.11ms vs 0.12ms) — the choice between them (covered fully in level 19) is about <abbr title="Application Programming Interface">API</abbr>
 surface and portability, not raw speed.
 
 ## PgBouncer: pooling at the infrastructure level

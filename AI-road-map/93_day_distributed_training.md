@@ -147,7 +147,7 @@ if __name__ == "__main__":
 2. **Weights:** $70\text{B} \times 4\text{ bytes}$
 3. **Gradients:** $70\text{B} \times 4\text{ bytes}$
 4. **AdamW Optimizer States:** AdamW requires saving the *momentum* and the *variance* for every parameter. That is 2 extra matrices! $(70\text{B} \times 4) + (70\text{B} \times 4)$.
-5. Add them all up. You will see why FSDP is mandatory for modern AI.
+5. Add them all up. You will see why FSDP is mandatory for modern <abbr title="Artificial Intelligence">AI</abbr>.
 
 ### 🎤 MAANG Technical Interview Prep
 

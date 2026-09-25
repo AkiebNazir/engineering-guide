@@ -98,7 +98,7 @@ Levels 16-18 used native `pgxpool` throughout. Here's the other real option — 
 `database/sql` with `pgx`'s driver registered underneath it
 (`_ "github.com/jackc/pgx/v5/stdlib"`), which is what you'd reach for if the rest of
 your codebase already standardizes on `database/sql` (ORMs, migration tools, and a lot
-of existing Go code assume it) instead of pgx's richer native API:
+of existing Go code assume it) instead of pgx's richer native <abbr title="Application Programming Interface">API</abbr>:
 
 ```go
 db, _ := sql.Open("pgx", "postgresql://dsa:dsa@localhost:5544/dsa")

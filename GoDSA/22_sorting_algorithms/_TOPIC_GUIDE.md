@@ -465,7 +465,7 @@ slices.SortFunc(ps, func(a, b P) int { return cmp.Or(cmp.Compare(b.age, a.age), 
 **Never write `a - b` as the comparator.** It overflows, silently. Measured: `slices.SortFunc(xs, func(a, b int) int { return a - b })`
 on `[MaxInt64, -5, MinInt64+1, 3]` returned `[9223372036854775807 -9223372036854775807 -5 3]` — not sorted — while
 `cmp.Compare[int]` sorted it. The same bug shows up with `int32` keys: `int(a - b)` on `[2000000000, -2000000000, 0, 5]`
-computes the subtraction in `int32`, wraps, and leaves the slice unsorted. Other API facts: `sort.Sort(sort.Reverse(sort.IntSlice(xs)))`
+computes the subtraction in `int32`, wraps, and leaves the slice unsorted. Other <abbr title="Application Programming Interface">API</abbr> facts: `sort.Sort(sort.Reverse(sort.IntSlice(xs)))`
 also sorts descending; `slices.Sort` orders **NaN before every other float** (`[3 NaN 1 NaN 2]` → `[NaN NaN 1 2 3]`); `slices.Sort`
 works directly on `[]rune` and `[]byte` (`"hello"` → `"ehllo"`), and `sort.Slice(5, …)` panics because it needs a slice.
 

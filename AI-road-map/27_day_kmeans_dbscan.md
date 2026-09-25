@@ -1,10 +1,10 @@
 # Day 27: Unsupervised Learning, K-Means & DBSCAN
 
-Welcome to Day 27. Every single algorithm we have learned so far has been **Supervised**. We always gave the AI a dataset that contained the "Answers" (e.g., this picture is a Cat, this house costs $500k). 
+Welcome to Day 27. Every single algorithm we have learned so far has been **Supervised**. We always gave the <abbr title="Artificial Intelligence">AI</abbr> a dataset that contained the "Answers" (e.g., this picture is a Cat, this house costs $500k). 
 
 Today, we enter **Unsupervised Learning**. 
 Imagine you are a Data Scientist at Netflix. You have a massive database of 10 million users and their watch histories. There are no "Labels". No one has labeled the users as "Horror Fans" or "Comedy Fans." 
-Your job is to ask the AI to mathematically discover hidden groupings (Clusters) inside the raw data, entirely on its own.
+Your job is to ask the <abbr title="Artificial Intelligence">AI</abbr> to mathematically discover hidden groupings (Clusters) inside the raw data, entirely on its own.
 
 ---
 
@@ -14,10 +14,10 @@ Your job is to ask the AI to mathematically discover hidden groupings (Clusters)
 The most famous clustering algorithm is **K-Means**. It relies on an incredibly elegant, 2-step mathematical loop called **Expectation-Maximization (EM)**.
 
 Let's say we want to group our Netflix users into $K=3$ distinct clusters.
-1. **Initialization:** The AI randomly drops $3$ points (called **Centroids**) anywhere on the graph.
-2. **Step 1 (Expectation):** The AI calculates the Euclidean Distance between every single user and the 3 Centroids. It assigns each user to whichever Centroid is closest. (We now have 3 rough groups).
-3. **Step 2 (Maximization):** The AI calculates the exact mathematical average (mean) of all the users in Group 1. It physically picks up Centroid 1 and moves it to that exact coordinate. It does the same for Centroids 2 and 3.
-4. **Repeat:** Because the Centroids moved, the AI repeats Step 1 (some users might now be closer to a different Centroid). This loop repeats until the Centroids literally stop moving. The clusters are locked in!
+1. **Initialization:** The <abbr title="Artificial Intelligence">AI</abbr> randomly drops $3$ points (called **Centroids**) anywhere on the graph.
+2. **Step 1 (Expectation):** The <abbr title="Artificial Intelligence">AI</abbr> calculates the Euclidean Distance between every single user and the 3 Centroids. It assigns each user to whichever Centroid is closest. (We now have 3 rough groups).
+3. **Step 2 (Maximization):** The <abbr title="Artificial Intelligence">AI</abbr> calculates the exact mathematical average (mean) of all the users in Group 1. It physically picks up Centroid 1 and moves it to that exact coordinate. It does the same for Centroids 2 and 3.
+4. **Repeat:** Because the Centroids moved, the <abbr title="Artificial Intelligence">AI</abbr> repeats Step 1 (some users might now be closer to a different Centroid). This loop repeats until the Centroids literally stop moving. The clusters are locked in!
 
 ### 2. How to choose K? (The Elbow Method)
 How do you know if you should group your customers into 3 clusters or 10 clusters?

@@ -3,8 +3,8 @@
 Welcome to Day 53. If you build a Seq2Seq translation model, you cannot evaluate it using standard Accuracy.
 
 - **Human Reference:** *"The cat sat on the mat."*
-- **AI Prediction 1:** *"The feline rested on the rug."*
-- **AI Prediction 2:** *"The mat on sat cat the."*
+- **<abbr title="Artificial Intelligence">AI</abbr> Prediction 1:** *"The feline rested on the rug."*
+- **<abbr title="Artificial Intelligence">AI</abbr> Prediction 2:** *"The mat on sat cat the."*
 
 If you use strict mathematical Accuracy, both Prediction 1 and Prediction 2 get $0\%$. But Prediction 1 is a perfect, fluent translation! Prediction 2 is complete garbage. 
 How do we mathematically teach a computer to grade fluency and meaning?
@@ -16,17 +16,17 @@ How do we mathematically teach a computer to grade fluency and meaning?
 ### 1. BLEU Score (Bilingual Evaluation Understudy)
 In 2002, IBM invented the **BLEU Score**. It became the absolute industry standard for grading translations.
 Instead of checking if the entire sentence matches perfectly, BLEU checks the overlap of **N-grams** (1-word, 2-word, 3-word, and 4-word phrases).
-- If the AI writes *"rested on the rug"*, and the human reference contains the exact 4-word phrase *"rested on the rug"*, the AI gets a massive score boost for matching a 4-gram. 
-- Matching a 4-gram mathematically proves that the AI understands grammar and word ordering, because guessing 4 words in a row perfectly by pure chance is impossible.
+- If the <abbr title="Artificial Intelligence">AI</abbr> writes *"rested on the rug"*, and the human reference contains the exact 4-word phrase *"rested on the rug"*, the <abbr title="Artificial Intelligence">AI</abbr> gets a massive score boost for matching a 4-gram. 
+- Matching a 4-gram mathematically proves that the <abbr title="Artificial Intelligence">AI</abbr> understands grammar and word ordering, because guessing 4 words in a row perfectly by pure chance is impossible.
 
 ### 2. The Brevity Penalty
-What if the AI figures out a cheat code? What if the human writes a 10-word sentence, and the AI just outputs the word *"The"* and stops. The 1-gram precision is $100\%$ because *"The"* is in the reference!
-To stop this, BLEU introduces the **Brevity Penalty (BP)**. If the AI's translation is shorter than the human's reference, BLEU mathematically slashes the final score, forcing the AI to output full-length sentences.
+What if the <abbr title="Artificial Intelligence">AI</abbr> figures out a cheat code? What if the human writes a 10-word sentence, and the <abbr title="Artificial Intelligence">AI</abbr> just outputs the word *"The"* and stops. The 1-gram precision is $100\%$ because *"The"* is in the reference!
+To stop this, BLEU introduces the **Brevity Penalty (BP)**. If the <abbr title="Artificial Intelligence">AI</abbr>'s translation is shorter than the human's reference, BLEU mathematically slashes the final score, forcing the <abbr title="Artificial Intelligence">AI</abbr> to output full-length sentences.
 
 ### 3. Modern Metrics: METEOR & BERTScore
 BLEU is fast, but it is flawed because it does not understand synonyms (*cat* vs *feline*).
-- **METEOR:** A metric that literally includes a dictionary. If the AI guesses a synonym of the reference word, it still gets points!
-- **BERTScore:** The modern state-of-the-art. It uses a pre-trained Transformer (BERT) to convert the AI's sentence and the Human's sentence into 300D Word Embeddings, and then calculates the Cosine Similarity between the math vectors!
+- **METEOR:** A metric that literally includes a dictionary. If the <abbr title="Artificial Intelligence">AI</abbr> guesses a synonym of the reference word, it still gets points!
+- **BERTScore:** The modern state-of-the-art. It uses a pre-trained Transformer (BERT) to convert the <abbr title="Artificial Intelligence">AI</abbr>'s sentence and the Human's sentence into 300D Word Embeddings, and then calculates the Cosine Similarity between the math vectors!
 
 ### 4. Back-Translation (Data Augmentation)
 To train Google Translate, you need 10 million pairs of `(English, French)` sentences translated by a highly paid human. This is incredibly expensive.
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Clipping Hack:** In `modified_precision`, notice the `min(count, ref_counts)`. Without this, an AI could achieve 100% precision by translating everything as `"the the the the the"`. By clipping it against the reference, the AI is mathematically stopped from repeating high-frequency words!
+1. **The Clipping Hack:** In `modified_precision`, notice the `min(count, ref_counts)`. Without this, an <abbr title="Artificial Intelligence">AI</abbr> could achieve 100% precision by translating everything as `"the the the the the"`. By clipping it against the reference, the <abbr title="Artificial Intelligence">AI</abbr> is mathematically stopped from repeating high-frequency words!
 2. **Geometric Mean:** BLEU averages the 1-gram, 2-gram, 3-gram, and 4-gram scores using a `log` Geometric Mean. This means if the 4-gram score is $0$, the entire BLEU score drops to $0$. It is extremely strict.
 
 ---
@@ -171,7 +171,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Metric Ensemble Strategy:**
    - Propose using a suite of automated metrics. Keep BLEU for legacy baselines, but implement **chrF** (Character F-score) which excels at morphologically rich languages (because it matches sub-word prefixes/suffixes), and **COMET / BERTScore** to evaluate deep semantic meaning instead of surface tokens.
 3. **The Human-in-the-Loop Strategy:**
-   - Conclude that automated metrics are never enough for production. Propose an A/B testing pipeline where 1% of live traffic is evaluated by professional linguists using the **MQM (Multidimensional Quality Metrics)** framework to grade specific errors (fluency vs accuracy), giving the ML team actionable feedback.
+   - Conclude that automated metrics are never enough for production. Propose an A/B testing pipeline where 1% of live traffic is evaluated by professional linguists using the **MQM (Multidimensional Quality Metrics)** framework to grade specific errors (fluency vs accuracy), giving the <abbr title="Machine Learning">ML</abbr> team actionable feedback.
 
 ---
 **Task for the end of the day:** Commit your code to Git. You now know how to grade sequence models.

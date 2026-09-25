@@ -247,7 +247,7 @@ payload2 as literal credentials: []
   query built with an f-string through an ORM is exactly as vulnerable as the
   `vulnerable_login` function above.
 - **Trusting client-side validation.** Nothing stops an attacker from sending
-  requests directly to your API, bypassing whatever a browser form does — the
+  requests directly to your <abbr title="Application Programming Interface">API</abbr>, bypassing whatever a browser form does — the
   parameterization has to happen at the query layer, not the input form.
 - **In Go specifically: building a query with `fmt.Sprintf` "just this once."**
   `database/sql` and pgx are exactly as safe as psycopg when you use `$1`/`$2`

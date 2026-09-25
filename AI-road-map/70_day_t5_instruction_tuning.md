@@ -2,7 +2,7 @@
 
 Welcome to Day 70. A base GPT model trained on the internet is an incredible autocomplete engine, but it is not an assistant. If you prompt a base model with *"Write a poem about the ocean"*, it might autocomplete it with *"Write a poem about the sky"*, because it thinks you are just listing writing prompts!
 
-How do we force the AI to follow our instructions? Today we look at Google's **T5** and the paradigm shift of **Instruction Tuning (Flan)**.
+How do we force the <abbr title="Artificial Intelligence">AI</abbr> to follow our instructions? Today we look at Google's **T5** and the paradigm shift of **Instruction Tuning (Flan)**.
 
 ---
 
@@ -28,12 +28,12 @@ The Encoder reads the corrupted input. The Decoder is trained to autoregressivel
 
 ### 3. Instruction Tuning (The Flan Paper)
 If you pre-train T5, it understands grammar. But if you give it a completely new task, it will fail.
-Google released **Flan-T5**. They took 1,000 different NLP datasets (translation, math, logic, summaries) and rewrote them all as human instructions.
+Google released **Flan-T5**. They took 1,000 different <abbr title="Natural Language Processing">NLP</abbr> datasets (translation, math, logic, summaries) and rewrote them all as human instructions.
 - *"Please solve this math problem step-by-step: 5 + 5"*
 - *"Can you read this paragraph and tell me the main character's name?"*
 
 By fine-tuning the model on thousands of *instructions*, a magical emergent property occurred: **Zero-Shot Generalization**. 
-The AI didn't just learn math or translation. It learned the *meta-skill of following instructions*. If you give Flan-T5 a completely brand new task it was never trained on, it will succeed simply because you phrased it as an instruction! This is the exact mechanism that turned base GPT-3 into ChatGPT!
+The <abbr title="Artificial Intelligence">AI</abbr> didn't just learn math or translation. It learned the *meta-skill of following instructions*. If you give Flan-T5 a completely brand new task it was never trained on, it will succeed simply because you phrased it as an instruction! This is the exact mechanism that turned base GPT-3 into ChatGPT!
 
 ---
 
@@ -123,7 +123,7 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Model Management (The Winner: T5):** 
-   - State that with BERT, if your company has 50 NLP tasks (NER, Sentiment, Classification), you must manage, version, and store 50 separate fine-tuned BERT models. 
+   - State that with BERT, if your company has 50 <abbr title="Natural Language Processing">NLP</abbr> tasks (NER, Sentiment, Classification), you must manage, version, and store 50 separate fine-tuned BERT models. 
    - With T5, you manage exactly **ONE** model. You just change the string prompt.
 2. **Serving Infrastructure (The Winner: T5):**
    - Explain that serving 50 BERT models requires massive VRAM routing. With T5, you can batch requests from completely different tasks (a translation request and a sentiment request) into the exact same GPU matrix multiplication, maximizing GPU utilization!
@@ -132,6 +132,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - BERT only requires a single forward pass through an Encoder. Therefore, for a strict, high-speed classification task, BERT is significantly faster and cheaper to run than T5.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You now understand how raw AI becomes a conversational assistant!
+**Task for the end of the day:** Commit your code to Git. You now understand how raw <abbr title="Artificial Intelligence">AI</abbr> becomes a conversational assistant!
 
 Tomorrow, in **Day 71**, we leave text behind. Can a Transformer process an Image? Yes! We will build the **Vision Transformer (ViT)** and the famous **CLIP** model!

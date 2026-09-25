@@ -10,13 +10,13 @@
 NumPy (from Guide 01) is amazing for pure numbers, but it has no concept of "Column Names", "Dates", or "Missing Values". 
 Pandas/Polars wrap NumPy arrays with metadata (column names, indexes) and provide high-level SQL-like APIs for joining, grouping, and filtering data.
 
-In AI, 80% of your time is spent cleaning data and engineering features before it ever touches a Neural Network. If you cannot manipulate DataFrames fluently, you cannot build AI.
+In <abbr title="Artificial Intelligence">AI</abbr>, 80% of your time is spent cleaning data and engineering features before it ever touches a Neural Network. If you cannot manipulate DataFrames fluently, you cannot build <abbr title="Artificial Intelligence">AI</abbr>.
 
 ---
 
 ## 2. Setup & Installation
 
-You need both libraries. We also install `pyarrow` to handle Parquet files (the industry standard file format for ML datasets).
+You need both libraries. We also install `pyarrow` to handle Parquet files (the industry standard file format for <abbr title="Machine Learning">ML</abbr> datasets).
 
 ```bash
 pip install pandas polars pyarrow
@@ -186,8 +186,8 @@ query = (
 final_df = query.collect() 
 ```
 
-### The Polars Expression API
-Pandas code often requires creating intermediate variables. Polars uses a fluid Expression API that chains cleanly.
+### The Polars Expression <abbr title="Application Programming Interface">API</abbr>
+Pandas code often requires creating intermediate variables. Polars uses a fluid Expression <abbr title="Application Programming Interface">API</abbr> that chains cleanly.
 
 ```python
 # Polars Contexts: select(), with_columns(), filter(), groupby()

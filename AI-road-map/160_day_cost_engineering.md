@@ -1,9 +1,9 @@
-# Day 160: Cost Engineering & FinOps for LLM Systems
+# Day 160: Cost Engineering & FinOps for <abbr title="Large Language Model">LLM</abbr> Systems
 
 Welcome to Day 160.
 
-AI is the most expensive software paradigm in history.
-If you build an image resizer, it costs a fraction of a cent in CPU compute. If you build an LLM Agent that loops 15 times parsing a 50-page PDF, it can easily cost $2.00 *per click*. If a malicious user writes a script to click that button 10,000 times while you sleep, you wake up to a $20,000 AWS bill.
+<abbr title="Artificial Intelligence">AI</abbr> is the most expensive software paradigm in history.
+If you build an image resizer, it costs a fraction of a cent in CPU compute. If you build an <abbr title="Large Language Model">LLM</abbr> Agent that loops 15 times parsing a 50-page PDF, it can easily cost $2.00 *per click*. If a malicious user writes a script to click that button 10,000 times while you sleep, you wake up to a $20,000 AWS bill.
 
 Today, we learn **FinOps (Financial Operations)**. We will learn how to aggressively monitor costs, attribute them to specific teams, and implement **Cascade Routing** to slash your OpenAI bill by 80%.
 
@@ -11,27 +11,27 @@ Today, we learn **FinOps (Financial Operations)**. We will learn how to aggressi
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Anatomy of LLM Costs
+### 1. The Anatomy of <abbr title="Large Language Model">LLM</abbr> Costs
 Unlike traditional APIs, LLMs charge per **Token**.
 - **Input Tokens (Cheap):** The prompt you send.
 - **Output Tokens (Expensive):** The text the model generates. Output tokens are often 3x to 5x more expensive because of the memory-bound decoding bottleneck.
-*Rule of Thumb:* Never ask the LLM to output massive blocks of text if you just need a Boolean `True/False` or a tiny JSON object. Use `max_tokens` aggressively.
+*Rule of Thumb:* Never ask the <abbr title="Large Language Model">LLM</abbr> to output massive blocks of text if you just need a Boolean `True/False` or a tiny JSON object. Use `max_tokens` aggressively.
 
 ### 2. Cascade Routing (The 80% Cost Saver)
 *Analogy:* If you need to solve $5 + 5$, you don't hire a PhD Mathematician ($500/hour). You hire a high school student ($15/hour). If you need to invent a new quantum algorithm, *then* you hire the PhD.
 
 Most queries to your application are simple ("Summarize this paragraph"). You do not need GPT-4o for this.
-**Cascade Routing** uses a tiny, lightning-fast LLM (like Llama-3-8B or Haiku) to classify the difficulty of the prompt.
+**Cascade Routing** uses a tiny, lightning-fast <abbr title="Large Language Model">LLM</abbr> (like Llama-3-8B or Haiku) to classify the difficulty of the prompt.
 - If Difficulty = Easy $\rightarrow$ Route to Haiku (Costs $0.25 / 1M tokens).
 - If Difficulty = Hard $\rightarrow$ Route to GPT-4o (Costs $5.00 / 1M tokens).
 By routing 80% of traffic to the cheap model, your monthly bill plummets.
 
 ### 3. Prompt Compression
-If you have a 10,000 token System Prompt containing 50 few-shot examples, you pay for those 10,000 tokens *on every single API call*.
-**Prompt Compression** uses an LLM (once) to read the prompt and rewrite it, removing stop words and condensing instructions. You can often shrink a prompt by 40% with zero loss in generation quality. (Or, as we learned in Day 152, use Prefix Caching!).
+If you have a 10,000 token System Prompt containing 50 few-shot examples, you pay for those 10,000 tokens *on every single <abbr title="Application Programming Interface">API</abbr> call*.
+**Prompt Compression** uses an <abbr title="Large Language Model">LLM</abbr> (once) to read the prompt and rewrite it, removing stop words and condensing instructions. You can often shrink a prompt by 40% with zero loss in generation quality. (Or, as we learned in Day 152, use Prefix Caching!).
 
 ### 4. Hard Limits & Billing Attribution
-In an enterprise, the "Marketing Team" and the "Engineering Team" might both use your internal API Gateway.
+In an enterprise, the "Marketing Team" and the "Engineering Team" might both use your internal <abbr title="Application Programming Interface">API</abbr> Gateway.
 You must attach a `team_id` to every request. The Gateway tracks the tokens used and bills them to the correct department's budget.
 **Hard Limits:** If a user/team exceeds their monthly $500 budget, the Gateway must physically block them with an `HTTP 402 Payment Required` error. Never rely on "soft alerts"—a runaway `while` loop can burn $10,000 in an hour before you read the email alert.
 
@@ -131,19 +131,19 @@ Furthermore, notice how the Gateway accurately tracks fractions of a cent, and p
 
 ### 🛠️ The Challenge
 Currently, our cascade router uses a simple python `if/else` keyword check. This is brittle.
-**Your Task:** Research **Semantic Routing**. There are open-source libraries (like `semantic-router`) that use blazing fast vector embeddings (running locally in 5ms) to classify the intent of a prompt with 99% accuracy before deciding which LLM to call. 
+**Your Task:** Research **Semantic Routing**. There are open-source libraries (like `semantic-router`) that use blazing fast vector embeddings (running locally in 5ms) to classify the intent of a prompt with 99% accuracy before deciding which <abbr title="Large Language Model">LLM</abbr> to call. 
 
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"You're the engineering manager for an AI platform. The CEO asks: 'Why does our AI feature cost $1M/month?' Build the FinOps framework: cost attribution, optimization roadmap, and reporting."*
+*"You're the engineering manager for an <abbr title="Artificial Intelligence">AI</abbr> platform. The CEO asks: 'Why does our <abbr title="Artificial Intelligence">AI</abbr> feature cost $1M/month?' Build the FinOps framework: cost attribution, optimization roadmap, and reporting."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Attribution:** We cannot just look at the AWS/OpenAI bill. The Gateway must inject headers (`TeamID`, `FeatureID`) into every request. Logs must be pushed to a Data Warehouse (Snowflake) to create a dashboard showing exactly which feature/team is burning the money.
 2. **Immediate Optimization (Caching & Routing):** 
    - Deploy a Semantic Cache (Saves 30-40% instantly on redundant queries).
-   - Implement Cascade Routing (Route simple queries to Llama-3-8B hosted internally on cheap hardware, saving 80% on API costs).
+   - Implement Cascade Routing (Route simple queries to Llama-3-8B hosted internally on cheap hardware, saving 80% on <abbr title="Application Programming Interface">API</abbr> costs).
 3. **Long-Term Optimization (Fine-Tuning):** If the highest cost is a massive 5,000-token prompt for JSON extraction, we should collect 10,000 logs of GPT-4 doing this perfectly. We then Fine-Tune a tiny 3B parameter model on that dataset. The tiny model can now do the extraction perfectly with zero prompting, cutting costs by 99% and latency by 80%.
 4. **Safety Mechanisms:** Hard rate limits per user, circuit breakers, and automated PagerDuty alerts if spend velocity exceeds $X per hour.
 

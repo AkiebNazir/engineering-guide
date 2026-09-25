@@ -56,8 +56,8 @@ chips narrow the DSA half of those results.
 
 ## Learning modules
 
-System Design, Software Design, Go Engineering, Py Engineering, AI Roadmap, AI Library
-Guides, Agentic AI, CS Fundamentals and Google Behavioral each get:
+System Design, Software Design, Go Engineering, Py Engineering, <abbr title="Artificial Intelligence">AI</abbr> Roadmap, <abbr title="Artificial Intelligence">AI</abbr> Library
+Guides, Agentic <abbr title="Artificial Intelligence">AI</abbr>, CS Fundamentals and Google Behavioral each get:
 
 | | |
 |---|---|

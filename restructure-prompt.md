@@ -28,7 +28,7 @@ Unchecked = not yet done.
       21 through problem 40 — currently stops at 21 despite being advertised
       as "a condensed pass across all 41 problems in one sitting." Missing:
       KV store, CRDT editor, web search, geo, ad-click streaming, leaderboard,
-      LLM systems, message queue, ranked feed, live streaming, maps/ETA, CDN,
+      <abbr title="Large Language Model">LLM</abbr> systems, message queue, ranked feed, live streaming, maps/ETA, CDN,
       experimentation, video conferencing, social graph, lock service.
 - [ ] Link `best_practices/` (8 files, SOLID/GoF/architectural
       patterns/anti-patterns) into the module's own navigation (README,
@@ -64,7 +64,7 @@ Unchecked = not yet done.
 - [ ] Add the missing Go solution for `27_algorithms/009_implement_rand10_using_rand7`
       — exists in PyDSA (9 problems in that topic) but GoDSA only has 8.
 
-## AI-road-map/
+## <abbr title="Artificial Intelligence">AI</abbr>-road-map/
 
 - [ ] Resolve the duplicate-topic pair `74_day_pretraining_data.md` vs.
       `92_day_pretraining_data.md` (different angles — dedup pipeline vs.
@@ -79,7 +79,7 @@ Unchecked = not yet done.
       actually trained/served.
 - [ ] Name and cover modern quantized/optimized serving formats and engines
       (GPTQ, AWQ, SGLang) — day 78 (quantization) and day 151 (serving)
-      currently only mention vLLM/TGI/TensorRT-LLM and generic quantization.
+      currently only mention vLLM/TGI/TensorRT-<abbr title="Large Language Model">LLM</abbr> and generic quantization.
 - [ ] Add coverage of computer-use / GUI-driving agents — only browser agents
       (136) and code agents (135) exist today; screen/GUI agents are a
       standard agentic pattern with no treatment.
@@ -87,9 +87,9 @@ Unchecked = not yet done.
       merges above) should go toward the reasoning-model and modern-serving
       gaps rather than staying padding.
 
-## Agentic-AI/
+## Agentic-<abbr title="Artificial Intelligence">AI</abbr>/
 
-- [ ] Bring Module 7 (Multi-Agent Orchestration & MCP) up to the depth of
+- [ ] Bring Module 7 (Multi-Agent Orchestration & <abbr title="Model Context Protocol">MCP</abbr>) up to the depth of
       Modules 1–5 — currently the thinnest file in the whole module (582
       words, no code, no diagrams, no worked example) despite covering the
       most central "agentic" topic; Module 2 (single-agent internals) is
@@ -100,27 +100,27 @@ Unchecked = not yet done.
 - [ ] Add evaluation/observability content — zero mentions anywhere of
       "observability," "guardrail," "monitoring," or "red team"; only passing
       mentions of evaluation/hallucination/safety. The module's stated arc
-      ("all the way to advanced Agentic AI architectures") doesn't currently
+      ("all the way to advanced Agentic <abbr title="Artificial Intelligence">AI</abbr> architectures") doesn't currently
       reach deployment/ops.
 - [ ] Add a standalone deployment/production module or section — rate
       limiting, retries, rollout, prompt versioning for a deployed agent
       aren't addressed anywhere (Module 8 touches infra but not this).
 
-## AI-Libraries-Guides/
+## <abbr title="Artificial Intelligence">AI</abbr>-Libraries-Guides/
 
 - [ ] Add a top-level README/index — currently none; 25 standalone guides
       with no navigational scaffolding or suggested order.
 - [ ] Add a data visualization library guide (matplotlib and/or seaborn) —
-      glaring omission for an ML curriculum; referenced nowhere except in
+      glaring omission for an <abbr title="Machine Learning">ML</abbr> curriculum; referenced nowhere except in
       passing in `04_xgboost.md`.
-- [ ] Add a general-purpose LLM/agent evaluation framework guide (e.g.
-      DeepEval, promptfoo) — Ragas (25) only covers RAG-specific metrics, not
+- [ ] Add a general-purpose <abbr title="Large Language Model">LLM</abbr>/agent evaluation framework guide (e.g.
+      DeepEval, promptfoo) — Ragas (25) only covers <abbr title="Retrieval-Augmented Generation">RAG</abbr>-specific metrics, not
       general chat/agent output evaluation.
-- [ ] Add a guardrails/safety library guide (e.g. Guardrails AI, NeMo
-      Guardrails, LLM Guard) — absent despite deep fine-tuning/serving
+- [ ] Add a guardrails/safety library guide (e.g. Guardrails <abbr title="Artificial Intelligence">AI</abbr>, NeMo
+      Guardrails, <abbr title="Large Language Model">LLM</abbr> Guard) — absent despite deep fine-tuning/serving
       coverage elsewhere in the module.
 - [ ] Add a sentence-transformers (embedding models) guide — embeddings are
-      central to every RAG guide in this module (LangChain, LlamaIndex,
+      central to every <abbr title="Retrieval-Augmented Generation">RAG</abbr> guide in this module (LangChain, LlamaIndex,
       FAISS/Chroma/Qdrant) but the embedding-model library itself is never
       covered directly.
 - [ ] Add a Streamlit or Gradio guide — no covered way to quickly demo/serve
@@ -128,12 +128,12 @@ Unchecked = not yet done.
 - [ ] Consider trimming one of the three vector-DB guides (FAISS/ChromaDB/
       Qdrant, currently back-to-back) to make room for the gaps above.
 
-## API/
+## <abbr title="Application Programming Interface">API</abbr>/
 
 - [ ] Add OIDC (OpenID Connect) coverage — OAuth2 and JWT are covered well in
       `Fundamentals/03`, but OIDC (the identity layer used for SSO) has zero
       mentions anywhere.
-- [ ] Add a hands-on API gateway lab (e.g. Kong/Envoy, rate-limiting at the
+- [ ] Add a hands-on <abbr title="Application Programming Interface">API</abbr> gateway lab (e.g. Kong/Envoy, rate-limiting at the
       edge) — "gateway" currently appears only in prose/comparison tables,
       never as an exercise.
 - [ ] Add contract testing (Pact/consumer-driven contracts) for REST and
@@ -143,7 +143,7 @@ Unchecked = not yet done.
       in `GraphQL/Theory.md` — no Apollo Federation/schema-stitching exercise
       currently exists.
 - [ ] Add an end-to-end observability lab (e.g. OpenTelemetry tracing +
-      metrics instrumented through a real API) — currently only one writeup
+      metrics instrumented through a real <abbr title="Application Programming Interface">API</abbr>) — currently only one writeup
       (`Fundamentals/03` §11) and passing mentions elsewhere, no hands-on lab.
 - [ ] Extend Protobuf's Go Foundation track from level 06 up to parity with
       Python's 14 levels (oneof, protoc-vs-buf, generated-code-in-real-program,
@@ -219,7 +219,7 @@ Unchecked = not yet done.
 
 ## Already confirmed fine — no action needed
 
-API's core structure, SQL's and NoSQL's core structure, CSFundamentals'
+<abbr title="Application Programming Interface">API</abbr>'s core structure, SQL's and NoSQL's core structure, CSFundamentals'
 core scope, PyStdLib/GoStdLib symmetry, PyDSA's 28-topic taxonomy and its
-question/solution pairing, AI-road-map's day-numbering scaffolding and
+question/solution pairing, <abbr title="Artificial Intelligence">AI</abbr>-road-map's day-numbering scaffolding and
 README-to-disk consistency (outside the two duplicate pairs above).

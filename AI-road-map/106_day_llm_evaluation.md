@@ -1,11 +1,11 @@
-# Day 106: LLM Evaluation & Contamination
+# Day 106: <abbr title="Large Language Model">LLM</abbr> Evaluation & Contamination
 
 Welcome to Day 106. We have a fully trained, fine-tuned, aligned, and safe model. 
 
-Is it actually good? You cannot evaluate an LLM using standard software unit tests because language is inherently open-ended and subjective. 
+Is it actually good? You cannot evaluate an <abbr title="Large Language Model">LLM</abbr> using standard software unit tests because language is inherently open-ended and subjective. 
 If your CEO asks: *"Is our model smarter than LLaMA 3?"*, how do you mathematically prove it?
 
-Today, we face the final boss of AI Engineering: **LLM Evaluation, Benchmarks, and Data Contamination**.
+Today, we face the final boss of <abbr title="Artificial Intelligence">AI</abbr> Engineering: **<abbr title="Large Language Model">LLM</abbr> Evaluation, Benchmarks, and Data Contamination**.
 
 ---
 
@@ -15,7 +15,7 @@ Today, we face the final boss of AI Engineering: **LLM Evaluation, Benchmarks, a
 To measure intelligence, the industry created standardized tests:
 - **MMLU (Massive Multitask Language Understanding):** 57 subjects ranging from elementary math to professional law and medicine. (Multiple Choice).
 - **GSM8k:** Grade School Math word problems. Tests multi-step reasoning.
-- **HumanEval:** Python coding challenges. The LLM must write a function to pass a hidden set of unit tests.
+- **HumanEval:** Python coding challenges. The <abbr title="Large Language Model">LLM</abbr> must write a function to pass a hidden set of unit tests.
 - **TruthfulQA:** Tests if the model mimics human falsehoods (e.g., *"If you crack your knuckles, what happens?"* -> Bad models say *"Arthritis"*. Good models say *"Nothing"*).
 
 ### 2. The Nightmare of Data Contamination
@@ -24,10 +24,10 @@ LLMs are trained on 15 Trillion tokens scraped from the internet. The MMLU bench
 This is called **Data Contamination** (or Data Leakage). 
 Before training, you must run an **N-Gram Overlap check**. You hash every 13-word sequence in your Test Set, and search your Petabytes of training data. If you find a match, you physically delete it from the training corpus!
 
-### 3. LLM-as-a-Judge (MT-Bench)
+### 3. <abbr title="Large Language Model">LLM</abbr>-as-a-Judge (MT-Bench)
 Static multiple-choice benchmarks are easily gamed. The modern standard for evaluating Chatbots is **MT-Bench (Multi-Turn Benchmark)**. 
-- You ask the LLM a complex, open-ended question (e.g., *"Draft a polite email declining a job offer."*).
-- You take the LLM's response, and you feed it into **GPT-4**.
+- You ask the <abbr title="Large Language Model">LLM</abbr> a complex, open-ended question (e.g., *"Draft a polite email declining a job offer."*).
+- You take the <abbr title="Large Language Model">LLM</abbr>'s response, and you feed it into **GPT-4**.
 - You prompt GPT-4: *"You are an impartial judge. Grade this response on a scale of 1 to 10 based on helpfulness and tone."*
 GPT-4's automated grades correlate with human preferences $85\%$ of the time, allowing you to run 10,000 evaluations for \$50!
 
@@ -42,7 +42,7 @@ The ultimate, un-gameable test. UC Berkeley created the Chatbot Arena.
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's implement an **LLM-as-a-Judge Pairwise Evaluation** script. 
+Let's implement an **<abbr title="Large Language Model">LLM</abbr>-as-a-Judge Pairwise Evaluation** script. 
 We will simulate passing two responses into GPT-4, having it declare a winner, and then we will implement the actual math for calculating an ELO rating update!
 
 Create a file named `llm_eval.py`:
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 ### 🛠️ The Challenge: Custom Domain Evaluation
 You cannot use MMLU to test a model fine-tuned for Medical Law.
 **Your Task:**
-1. Conceptually design an evaluation suite for a Medical Law LLM.
+1. Conceptually design an evaluation suite for a Medical Law <abbr title="Large Language Model">LLM</abbr>.
 2. How do you create the golden answers? (Hint: Hire real Medical Lawyers to write 500 benchmark questions and the rubrics for grading them).
 3. Write a System Prompt for GPT-4 to act as the Medical Judge, passing the Lawyer's rubric into the prompt so GPT-4 knows exactly how to grade it!
 
@@ -143,19 +143,19 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **Diagnosis (Goodhart's Law & Overfitting):** 
    - State that the MMLU score is likely an illusion caused by Data Contamination or overfitting. The model memorized multiple-choice formats but lost conversational intelligence.
 2. **Diagnosis (Alignment Tax):**
-   - Explain the "Alignment Tax". If you apply too much Safety training (RLHF/DPO), the model becomes overly cautious. It refuses to write Python code because it thinks a simple `os.system()` call is a dangerous hacking attempt.
+   - Explain the "Alignment Tax". If you apply too much Safety training (<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>/<abbr title="Direct Preference Optimization">DPO</abbr>), the model becomes overly cautious. It refuses to write Python code because it thinks a simple `os.system()` call is a dangerous hacking attempt.
 3. **The Comprehensive Evaluation Strategy:**
    - Propose abandoning static multiple-choice tests.
-   - Implement an automated LLM-as-a-judge pipeline for internal CI/CD.
+   - Implement an automated <abbr title="Large Language Model">LLM</abbr>-as-a-judge pipeline for internal <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>.
    - Implement **A/B Testing in Production** (Shadow Deployment). Send $5\%$ of user traffic to the new model, and measure the Implicit Feedback (e.g., do users copy/paste the code, or do they immediately regenerate?). If the copy/paste rate drops, roll back the deployment regardless of the MMLU score!
 
 ---
 
 ### 🎉 CONGRATULATIONS!
 You have successfully completed **Days 97-106**!
-You have mastered LoRA, QLoRA, Synthetic Data, PPO, DPO, Constitutional AI, and Evaluation!
+You have mastered <abbr title="Low-Rank Adaptation">LoRA</abbr>, <abbr title="Quantized Low-Rank Adaptation">QLoRA</abbr>, Synthetic Data, PPO, <abbr title="Direct Preference Optimization">DPO</abbr>, Constitutional <abbr title="Artificial Intelligence">AI</abbr>, and Evaluation!
 
-You are officially a Senior LLM Engineer. You know how to take a raw statistical predictor and craft it into a safe, aligned, intelligent entity.
+You are officially a Senior <abbr title="Large Language Model">LLM</abbr> Engineer. You know how to take a raw statistical predictor and craft it into a safe, aligned, intelligent entity.
 
 Take a deep breath. 
 When you are ready, we will tackle the next block of the roadmap, diving into **Model Merging, Continuous Pre-Training, Speculative Decoding, and Multi-Agent Systems!**

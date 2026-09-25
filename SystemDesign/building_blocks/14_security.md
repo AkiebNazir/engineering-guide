@@ -45,7 +45,7 @@ Never trust a caller-supplied `tenant_id`, `user_id`, or role header as authoriz
 |---|---|
 | No hard-coded secrets in code/config/images | A leaked repo or image layer should not leak credentials. |
 | Secret manager (Vault, cloud KMS-backed store) | Centralizes rotation, access audit, and revocation. |
-| Short-lived credentials over static ones | A leaked static API key is valid until manually revoked; a leaked 15-minute token expires itself. |
+| Short-lived credentials over static ones | A leaked static <abbr title="Application Programming Interface">API</abbr> key is valid until manually revoked; a leaked 15-minute token expires itself. |
 | Workload identity (e.g., a service's cloud IAM role, not an embedded key) | Removes the secret-distribution problem entirely for service-to-service and service-to-cloud-resource calls. |
 | Never log secrets, tokens, or full PII | Logs are widely read, widely retained, and rarely encrypted at the same level as the primary store. |
 
@@ -56,7 +56,7 @@ Never trust a caller-supplied `tenant_id`, `user_id`, or role header as authoriz
 
 ## Input validation is a security boundary, not just UX
 
-Client-side validation improves the experience for honest clients. It does nothing for a client that skips your UI and calls the API directly. Every input needs server-side validation, because the server is the actual trust boundary:
+Client-side validation improves the experience for honest clients. It does nothing for a client that skips your UI and calls the <abbr title="Application Programming Interface">API</abbr> directly. Every input needs server-side validation, because the server is the actual trust boundary:
 
 - Reject malformed input rather than "helpfully" coercing it — coercion is where injection lives.
 - Bound sizes (payload size, array length, string length) so validation itself cannot be a resource-exhaustion vector.
@@ -150,7 +150,7 @@ store: ciphertext + ENCRYPTED DEK (wrapped by the KEK) side by side
 | Logs | Minimize PII in logs; short retention; tokenize identifiers |
 | Backups | Can't be edited cheaply: expire within the retention window, or crypto-shred per-user keys |
 | Third-party processors | Propagate deletion via their APIs; record confirmation |
-| ML training data / features | Remove from future training sets; document model retraining policy |
+| <abbr title="Machine Learning">ML</abbr> training data / features | Remove from future training sets; document model retraining policy |
 
 Implementation pattern: a **deletion orchestrator** (a saga) records the request, fans out a `UserDeleted` event, tracks acknowledgement from every registered data owner, retries failures, and produces an auditable completion record. Legal holds and financial record-keeping obligations override deletion for specific data; the system must represent those exceptions explicitly.
 

@@ -1,8 +1,8 @@
-# 021 — Multi-Tenant API Gateway: Full System Design Solution
+# 021 — Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway: Full System Design Solution
 
 ## Goal and contract
 
-An API gateway is the single edge every external and internal-tenant request passes through before reaching backend services. The invariant is not "the gateway secures everything" — it is: the gateway verifies identity, enforces route/version policy, quota, and deadlines, and propagates trustworthy tenant/tracing context, while backend services remain the source of truth for fine-grained resource authorization and never trust a caller-supplied tenant identifier as-is.
+An <abbr title="Application Programming Interface">API</abbr> gateway is the single edge every external and internal-tenant request passes through before reaching backend services. The invariant is not "the gateway secures everything" — it is: the gateway verifies identity, enforces route/version policy, quota, and deadlines, and propagates trustworthy tenant/tracing context, while backend services remain the source of truth for fine-grained resource authorization and never trust a caller-supplied tenant identifier as-is.
 
 The question's numbers are the contract: **500k requests/s** at peak, **800 tenants**, **300 APIs × about 3 live versions** (900 pairs), **added gateway latency p99 under 10 ms** (upstream time excluded), **per-tenant quota accurate within a 1-second window**, **zero-downtime route and version changes**.
 
@@ -14,11 +14,11 @@ Everything beyond the question's constraints is a labelled assumption.
 
 - **Skew.** 500k ÷ 800 = 625 rps average, but assume the top 20 tenants carry 60%: 300k ÷ 20 = **15k rps each**; the other 780 average 200k ÷ 780 = **256 rps**. So quotas must work at both scales.
 - **Fleet.** Assume 20k rps per 8-vCPU node with TLS, JWT and mTLS (load-test it first). 500k ÷ 60 ÷ 20k = 42% CPU, and **62.5%** after losing a zone (500k ÷ 40 ÷ 20k). So headroom, not throughput (25 nodes would be 100% busy), sizes it: **60 nodes, 20 per zone**. At an assumed 1 KB in and 4 KB out per request, a node moves about 0.67 Gbps, so NICs do not bind.
-- **Route table.** 900 pairs × an assumed 30 operations = 27,000 routes × 1 KB = 27 MB; entitlements 800 × 300 × 100 B = 24 MB; about 50 MB. So config sits in every node's memory (twice during a swap) and lookup is a hash plus radix walk (~1 µs). A full push is 50 MB × 60 = 3 GB but one API version's delta is 30 KB × 60 = 1.8 MB, so push deltas.
+- **Route table.** 900 pairs × an assumed 30 operations = 27,000 routes × 1 KB = 27 MB; entitlements 800 × 300 × 100 B = 24 MB; about 50 MB. So config sits in every node's memory (twice during a swap) and lookup is a hash plus radix walk (~1 µs). A full push is 50 MB × 60 = 3 GB but one <abbr title="Application Programming Interface">API</abbr> version's delta is 30 KB × 60 = 1.8 MB, so push deltas.
 - **Auth CPU.** At an assumed 100 µs per ES256 verify, even uncached 8.3k rps × 100 µs = 0.83 core of 8, so verification is not the bottleneck; an invalid-token flood is the risk.
 - **Quota state.** 800 buckets × 32 B = 26 KB, yet a central check per request is 500k ops/s plus a round trip. With 25 ms leases each active (tenant, node) pair renews at most 40 times/s: about 3 nodes per tenant gives 2,400 pairs × 40 = **96k ops/s** (2,400 batched RPCs/s). So the shared service is tiny; the issue is latency and availability coupling.
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 ANY  https://{tenant}.api.example.com/{api}/v{n}/...    Authorization: Bearer <JWT>
@@ -223,7 +223,7 @@ Measure auth failures, quota rejects by tenant, upstream p99 and errors, config 
 
 **The one paging alert:** gateway-added p99 above 10 ms for 5 minutes, the promise made to every tenant. Quota audit, staleness and lease fallback are tickets; a snapshot NACK halts its own rollout.
 
-Interview close: "The gateway owns everything that's identical across every API — auth, quota, routing, deadlines, tracing — and stops exactly at business authorization, because only the owning service can correctly answer 'can this principal touch this resource.' Tenant identity always comes from the verified token claim, never from anything the caller can set directly, because that's the one shortcut that turns a convenience header into a cross-tenant data leak."
+Interview close: "The gateway owns everything that's identical across every <abbr title="Application Programming Interface">API</abbr> — auth, quota, routing, deadlines, tracing — and stops exactly at business authorization, because only the owning service can correctly answer 'can this principal touch this resource.' Tenant identity always comes from the verified token claim, never from anything the caller can set directly, because that's the one shortcut that turns a convenience header into a cross-tenant data leak."
 
 Trade-off to state: "I keep every shared service off the request path: pushed immutable config snapshots and local quota buckets with 25 ms leases. That meets 10 ms and survives the control plane dying, and costs a bounded 5% quota error and seconds of config staleness, which the requirements tolerate."
 
@@ -249,7 +249,7 @@ Trade-off to state: "I keep every shared service off the request path: pushed im
 
 - **Migration and rollout.** Run quotas in shadow mode (count and log, do not reject) for two weeks to calibrate limits from real traffic, then enforce tenant by tenant, with a tester route on the new gateway before any hostname moves. Every step rolls back by snapshot.
 - **Cost model.** Compute is the small number (about $14k a month, against a managed $0.5M or more; both from assumed inputs); the platform team, on-call and the log pipeline are the real cost, and 2% log sampling cuts 13 TB/day to 0.26.
-- **Ownership and blast radius.** The platform team owns the data plane and validators; API teams own routes through self-service changes that pass the same validation. Subsets, cells and zone-by-zone rollout confine failures to a slice of tenants.
+- **Ownership and blast radius.** The platform team owns the data plane and validators; <abbr title="Application Programming Interface">API</abbr> teams own routes through self-service changes that pass the same validation. Subsets, cells and zone-by-zone rollout confine failures to a slice of tenants.
 - **Build versus buy.** Buy the proxy (an Envoy-class data plane with xDS); build validation, rollout and the lease service, since the isolation policy lives there. For one hostname and coarse limits, buy a managed gateway.
 - **Phased evolution and what to measure first.** Start with an off-the-shelf gateway and a central limiter, adding leases once its hop and shared fate hurt. Measure first: per-node cost and queueing under load (validates 20k rps), each tenant's spread across nodes, config propagation time.
 

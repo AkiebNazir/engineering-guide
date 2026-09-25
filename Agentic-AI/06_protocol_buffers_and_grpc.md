@@ -2,7 +2,7 @@
 
 If you come from a web development background, you are likely very familiar with **JSON** (JavaScript Object Notation) and **REST APIs**. 
 
-JSON is great: it's human-readable and easy to write. But when you are building enterprise AI systems (like the AI Gateway project), JSON has massive performance bottlenecks. 
+JSON is great: it's human-readable and easy to write. But when you are building enterprise <abbr title="Artificial Intelligence">AI</abbr> systems (like the <abbr title="Artificial Intelligence">AI</abbr> Gateway project), JSON has massive performance bottlenecks. 
 
 This is where **Protocol Buffers** (`.proto`) and **gRPC** step in.
 
@@ -39,12 +39,12 @@ When you send this data, Protobuf compiles it into raw 1s and 0s (binary) using 
 
 ---
 
-## 2. Why use it in AI & Agentic Systems?
+## 2. Why use it in <abbr title="Artificial Intelligence">AI</abbr> & Agentic Systems?
 
-In our `05_secure_ai_gateway` project, we use a Golang API Gateway that talks to a Python Semantic Cache.
+In our `05_secure_ai_gateway` project, we use a Golang <abbr title="Application Programming Interface">API</abbr> Gateway that talks to a Python Semantic Cache.
 
 Why didn't we just use HTTP/JSON?
-1. **Speed & Latency**: LLM applications already suffer from high latency (generation time). We cannot afford to waste milliseconds serializing and parsing JSON between internal microservices. Binary transmission is lightning-fast.
+1. **Speed & Latency**: <abbr title="Large Language Model">LLM</abbr> applications already suffer from high latency (generation time). We cannot afford to waste milliseconds serializing and parsing JSON between internal microservices. Binary transmission is lightning-fast.
 2. **Type Safety across Languages**: Our Gateway is in **Golang**, and our Cache is in **Python**. Protobuf acts as a universal translator. You define the `.proto` file once, and a compiler automatically generates the Go struct and the Python class for you. If you change a variable from a `string` to an `int`, the compiler will catch the error before you even run the code.
 
 ---
@@ -53,7 +53,7 @@ Why didn't we just use HTTP/JSON?
 
 gRPC (gRPC Remote Procedure Calls) is the framework that *uses* Protobuf.
 
-In a traditional REST API, you make an HTTP request (like `GET /users/123`). 
+In a traditional REST <abbr title="Application Programming Interface">API</abbr>, you make an HTTP request (like `GET /users/123`). 
 In gRPC, you call a function as if it lives on your own machine, even if it's on a server halfway across the world.
 
 ### Defining a gRPC Service in `.proto`

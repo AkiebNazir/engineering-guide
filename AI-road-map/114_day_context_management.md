@@ -3,8 +3,8 @@
 Welcome to Day 114. You built a chatbot. You deployed it. 
 A user logs in and talks to it for 2 hours. Suddenly, the app crashes with an error: **"TokenLimitExceeded: Context Window exceeds 8192 tokens."**
 
-LLMs are entirely stateless. They have no internal memory of the conversation. When the user sends their 100th message, you (the developer) have to bundle up the previous 99 messages and send them ALL to the LLM again. 
-This means API costs grow exponentially with every turn, and eventually, the array of messages hits the physical VRAM limit of the Transformer architecture.
+LLMs are entirely stateless. They have no internal memory of the conversation. When the user sends their 100th message, you (the developer) have to bundle up the previous 99 messages and send them ALL to the <abbr title="Large Language Model">LLM</abbr> again. 
+This means <abbr title="Application Programming Interface">API</abbr> costs grow exponentially with every turn, and eventually, the array of messages hits the physical VRAM limit of the Transformer architecture.
 
 Today, we solve this by mastering **Context Management**.
 
@@ -13,23 +13,23 @@ Today, we solve this by mastering **Context Management**.
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Context Window Limit
-Every LLM has a Maximum Sequence Length (e.g., Llama 3 has 8192 tokens, GPT-4 has 128k tokens). This is the absolute maximum number of words the Attention Mechanism can process in a single mathematical pass. 
+Every <abbr title="Large Language Model">LLM</abbr> has a Maximum Sequence Length (e.g., Llama 3 has 8192 tokens, GPT-4 has 128k tokens). This is the absolute maximum number of words the Attention Mechanism can process in a single mathematical pass. 
 The "Context Budget" is divided into:
 `System Prompt + Tool Schemas + Chat History + User Message + Output Generation = Total Tokens`
-If your Chat History consumes $90\%$ of the budget, the LLM will only have enough tokens left to generate a 1-sentence response before crashing!
+If your Chat History consumes $90\%$ of the budget, the <abbr title="Large Language Model">LLM</abbr> will only have enough tokens left to generate a 1-sentence response before crashing!
 
 ### 2. Strategy 1: Truncation (The Goldfish)
 The easiest solution is a Sliding Window (FIFO - First In, First Out). 
 You only keep the last 10 messages in the array. When message 11 arrives, you delete message 1.
 **Pros:** Easy to code. Never crashes.
-**Cons:** The AI becomes a goldfish. If the user told the AI their name in message 1, by message 11, the AI has completely forgotten who the user is!
+**Cons:** The <abbr title="Artificial Intelligence">AI</abbr> becomes a goldfish. If the user told the <abbr title="Artificial Intelligence">AI</abbr> their name in message 1, by message 11, the <abbr title="Artificial Intelligence">AI</abbr> has completely forgotten who the user is!
 
 ### 3. Strategy 2: Rolling Summarization
 When the history array hits a certain limit (e.g., 3000 tokens), you pause the conversation. 
-You take the 3000 tokens of history and pass them to a fast, cheap LLM (like Llama 8B or GPT-4o-mini). You prompt it: *"Summarize this conversation into exactly 200 tokens."*
+You take the 3000 tokens of history and pass them to a fast, cheap <abbr title="Large Language Model">LLM</abbr> (like Llama 8B or GPT-4o-mini). You prompt it: *"Summarize this conversation into exactly 200 tokens."*
 You delete the 3000 tokens of history and replace them with the 200-token summary! The context window is completely cleared, but the core facts remain.
 
-### 4. Strategy 3: Retrieval-Augmented Memory (RAG Memory)
+### 4. Strategy 3: Retrieval-Augmented Memory (<abbr title="Retrieval-Augmented Generation">RAG</abbr> Memory)
 You treat the Chat History exactly like a PDF document!
 Every time the user sends a message, you embed it into a Vector Database.
 When the user asks *"What was that book you recommended earlier?"*, you embed their question, search the Vector DB for the top 5 most relevant past messages, and inject *only* those 5 messages into the context window. Infinite memory with zero token bloat!
@@ -139,25 +139,25 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The Rolling Aspect:** Notice that when we compress, we pass the *Old Summary* along with the *Oldest Messages*. This ensures that the new summary contains the entire cumulative knowledge of the 2-hour conversation!
-2. **The Prompt Injection:** We injected the summary directly into a `system` message. This anchors the LLM, ensuring it remembers the context without having to read the raw text of 100 previous messages.
+2. **The Prompt Injection:** We injected the summary directly into a `system` message. This anchors the <abbr title="Large Language Model">LLM</abbr>, ensuring it remembers the context without having to read the raw text of 100 previous messages.
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: Pinned Entity Memory
-Summaries are great, but sometimes the LLM summarizes too aggressively and deletes the user's name!
+Summaries are great, but sometimes the <abbr title="Large Language Model">LLM</abbr> summarizes too aggressively and deletes the user's name!
 **Your Task:**
 1. Conceptually design an **Entity Extraction** pipeline.
-2. Every 10 turns, pass the history to an LLM and prompt it: *"Extract any permanent facts about the user into a JSON object. E.g., Name, Age, Profession, Dietary Restrictions."*
-3. Pin this JSON object to the top of the System Prompt permanently. This ensures the LLM never forgets critical user preferences, even if the raw chat history is summarized away!
+2. Every 10 turns, pass the history to an <abbr title="Large Language Model">LLM</abbr> and prompt it: *"Extract any permanent facts about the user into a JSON object. E.g., Name, Age, Profession, Dietary Restrictions."*
+3. Pin this JSON object to the top of the System Prompt permanently. This ensures the <abbr title="Large Language Model">LLM</abbr> never forgets critical user preferences, even if the raw chat history is summarized away!
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your enterprise chatbot frequently handles 1000+ turn conversations. The users are complaining that it 'forgets' details from hour 1. However, if you pass all 1000 turns to the LLM, the API costs are bankrupting the company. Design an architecture to solve this."*
+*"Your enterprise chatbot frequently handles 1000+ turn conversations. The users are complaining that it 'forgets' details from hour 1. However, if you pass all 1000 turns to the <abbr title="Large Language Model">LLM</abbr>, the <abbr title="Application Programming Interface">API</abbr> costs are bankrupting the company. Design an architecture to solve this."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -168,14 +168,14 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Propose a 3-tier memory system.
    - **Tier 1 (Short-Term):** Keep the last 10 messages raw in the array for immediate conversational flow.
    - **Tier 2 (Entity Memory):** Run an asynchronous background task to extract hard facts (Name, Account ID) into a JSON block pinned to the System Prompt.
-   - **Tier 3 (Long-Term RAG):** Embed all older messages into a Vector Database. Use the user's current message to retrieve the Top 3 relevant past messages and inject them as "Context".
+   - **Tier 3 (Long-Term <abbr title="Retrieval-Augmented Generation">RAG</abbr>):** Embed all older messages into a Vector Database. Use the user's current message to retrieve the Top 3 relevant past messages and inject them as "Context".
 3. **Prompt Caching:**
-   - Mention modern API features (like Anthropic's Prompt Caching). If the system prompt and long-term memory remain static, the API can cache the KV-tensors on the GPU, dropping the cost of a 10,000-token prompt by $90\%$!
+   - Mention modern <abbr title="Application Programming Interface">API</abbr> features (like Anthropic's Prompt Caching). If the system prompt and long-term memory remain static, the <abbr title="Application Programming Interface">API</abbr> can cache the KV-tensors on the GPU, dropping the cost of a 10,000-token prompt by $90\%$!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
 We have mastered Tools and Context. But all our LLMs so far have been "Reactive". They just answer the user.
-What if we want the LLM to think, plan, and execute a 10-step strategy completely on its own?
+What if we want the <abbr title="Large Language Model">LLM</abbr> to think, plan, and execute a 10-step strategy completely on its own?
 
-Tomorrow, in **Day 115**, we enter the world of **LLM Cognition**: Chain-of-Thought, Tree-of-Thought, and the ReAct architecture!
+Tomorrow, in **Day 115**, we enter the world of **<abbr title="Large Language Model">LLM</abbr> Cognition**: Chain-of-Thought, Tree-of-Thought, and the ReAct architecture!

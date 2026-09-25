@@ -4,7 +4,7 @@ Welcome to Day 59. So far, all our data has been perfectly structured.
 Images are perfect 2D grids (CNNs). Text is a perfect 1D sequence (RNNs). 
 
 But what if your data is a **Social Network** (users connected by friendships)? Or a **Chemical Molecule** (atoms connected by bonds)? Or a **Map** (cities connected by roads)? 
-This data is completely unstructured. It is a web of connections called a **Graph**. CNNs and RNNs mathematically crash if you feed them a Graph. Today, we build AI that can read webs.
+This data is completely unstructured. It is a web of connections called a **Graph**. CNNs and RNNs mathematically crash if you feed them a Graph. Today, we build <abbr title="Artificial Intelligence">AI</abbr> that can read webs.
 
 ---
 
@@ -151,6 +151,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Conclude that architectures like **GraphSAGE** solve this using **Neighbor Sampling**. Instead of aggregating *all* friends, the algorithm randomly samples exactly 10 friends. By strictly capping the sample size, the compute cost becomes fixed, allowing GNNs to scale to infinite sizes!
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have expanded your AI toolkit to non-euclidean data.
+**Task for the end of the day:** Commit your code to Git. You have expanded your <abbr title="Artificial Intelligence">AI</abbr> toolkit to non-euclidean data.
 
-Tomorrow, in **Day 60**, we conclude Phase 2. We will build a massive multi-modal architecture that combines Vision and NLP into a single system!
+Tomorrow, in **Day 60**, we conclude Phase 2. We will build a massive multi-modal architecture that combines Vision and <abbr title="Natural Language Processing">NLP</abbr> into a single system!

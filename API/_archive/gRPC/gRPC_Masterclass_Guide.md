@@ -204,7 +204,7 @@ func main() {
 
 ## Part 4: The Client Implementation (Python)
 
-Let's consume this API from a Python microservice using modern `asyncio`.
+Let's consume this <abbr title="Application Programming Interface">API</abbr> from a Python microservice using modern `asyncio`.
 
 ### Step 1: Connecting (The Channel)
 A Channel represents the underlying HTTP/2 connection. We use `insecure_channel` for local dev, but in production, you use `secure_channel` with TLS certificates.

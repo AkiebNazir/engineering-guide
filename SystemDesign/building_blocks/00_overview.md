@@ -39,7 +39,7 @@ queue -> worker
 | CDN | Serves cacheable content near the user. | Static assets, media, public/cacheable responses, global latency. | Your authorization or primary database. |
 | WAF/DDoS edge | Filters malformed/known abusive traffic before origin. | Public endpoints. | Complete business-abuse prevention. |
 | Load balancer | Sends traffic to healthy instances. | More than one serving instance or managed ingress. | A database, queue, or authorization engine. |
-| API gateway | Routes APIs; centralizes coarse auth, quotas, request policy, telemetry. | Multiple APIs/clients or a need for a consistent edge contract. | A place for all business logic. |
+| <abbr title="Application Programming Interface">API</abbr> gateway | Routes APIs; centralizes coarse auth, quotas, request policy, telemetry. | Multiple APIs/clients or a need for a consistent edge contract. | A place for all business logic. |
 | Application service | Implements domain rules and orchestrates dependencies. | Any nontrivial product action. | The permanent home of user session or unreplicated critical state. |
 | Operating system | Schedules processes/threads, manages memory and I/O. | Always — it's the substrate everything else sits on. | Something you can ignore because "the cloud handles it." |
 | Database | Durable authoritative facts and constraints. | Any durable business state. | A high-speed cache or free full-text search engine. |
@@ -52,14 +52,14 @@ queue -> worker
 > 🎯 When an interviewer says "design X," the strongest opening move is naming which rows of this table X actually needs — out loud — before you draw a single box. It signals you're solving *this* requirement, not reciting a template.
 
 <details>
-<summary>Why does the diagram put the load balancer before the API gateway, not after?</summary>
+<summary>Why does the diagram put the load balancer before the <abbr title="Application Programming Interface">API</abbr> gateway, not after?</summary>
 
 They can be the same box, or two boxes in either order, depending on the product:
 
-- **LB → gateway** (most common): the load balancer just spreads TCP/HTTP connections across healthy gateway instances — it doesn't understand your API. The gateway then does the API-aware work: auth, rate limits, routing by path.
-- **Gateway → LB**: rarer, used when the gateway itself is a single managed edge (e.g. a cloud API gateway service) that then load-balances to backend pools per route.
+- **LB → gateway** (most common): the load balancer just spreads TCP/HTTP connections across healthy gateway instances — it doesn't understand your <abbr title="Application Programming Interface">API</abbr>. The gateway then does the <abbr title="Application Programming Interface">API</abbr>-aware work: auth, rate limits, routing by path.
+- **Gateway → LB**: rarer, used when the gateway itself is a single managed edge (e.g. a cloud <abbr title="Application Programming Interface">API</abbr> gateway service) that then load-balances to backend pools per route.
 
-The diagram picks the common case. In an interview, say which one you mean and why — "managed API gateway that fans out to per-service load balancers" is a complete, defensible sentence; "there's a gateway and a load balancer" is not.
+The diagram picks the common case. In an interview, say which one you mean and why — "managed <abbr title="Application Programming Interface">API</abbr> gateway that fans out to per-service load balancers" is a complete, defensible sentence; "there's a gateway and a load balancer" is not.
 
 </details>
 
@@ -96,7 +96,7 @@ Read these after the core sequence. They cover what the Google design round push
 | [20_specialized_data_structures.md](20_specialized_data_structures.md) | Bloom filters, HyperLogLog, count-min sketch, geohash/quadtree/S2, inverted indexes and BM25, sorted-set leaderboards, LSM trees. |
 | [21_batch_and_stream_processing.md](21_batch_and_stream_processing.md) | MapReduce, Spark, Dataflow/Flink, event time, windows, watermarks, exactly-once, lambda vs kappa. |
 | [22_realtime_and_collaboration.md](22_realtime_and_collaboration.md) | Polling vs SSE vs WebSockets, connection gateways, presence, operational transformation vs CRDTs. |
-| [23_ml_and_llm_systems.md](23_ml_and_llm_systems.md) | Feature stores, candidate generation → ranking, ANN search (HNSW, ScaNN), model serving, LLM serving and cost. |
+| [23_ml_and_llm_systems.md](23_ml_and_llm_systems.md) | Feature stores, candidate generation → ranking, ANN search (HNSW, ScaNN), model serving, <abbr title="Large Language Model">LLM</abbr> serving and cost. |
 | [24_google_papers.md](24_google_papers.md) | GFS, MapReduce, Bigtable, Chubby, Spanner, Dremel, Borg, Zanzibar, Dynamo, and the Dataflow model. |
 | [25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md) | Shard-key choice, range vs hash, local vs global secondary indexes, rebalancing, hot-key mitigation. |
 

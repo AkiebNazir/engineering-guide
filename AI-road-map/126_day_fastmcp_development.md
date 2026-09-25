@@ -2,26 +2,26 @@
 
 Welcome to Day 126. This is the final day of your current 20-day learning block!
 
-Yesterday, we learned the raw JSON-RPC 2.0 architecture of the Model Context Protocol (MCP). Writing raw JSON strings by hand is tedious.
-Today, we learn the **FastMCP Python SDK**. Just as `FastAPI` revolutionized web development by using Python type hints to automatically generate OpenAPI documentation, `FastMCP` automatically generates MCP Schemas!
+Yesterday, we learned the raw JSON-RPC 2.0 architecture of the Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>). Writing raw JSON strings by hand is tedious.
+Today, we learn the **FastMCP Python SDK**. Just as `FastAPI` revolutionized web development by using Python type hints to automatically generate OpenAPI documentation, `FastMCP` automatically generates <abbr title="Model Context Protocol">MCP</abbr> Schemas!
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The FastMCP SDK
-FastMCP is the official Python SDK built by Anthropic. It allows you to expose enterprise data and tools to *any* AI Agent with just a few lines of code.
+FastMCP is the official Python SDK built by Anthropic. It allows you to expose enterprise data and tools to *any* <abbr title="Artificial Intelligence">AI</abbr> Agent with just a few lines of code.
 
 ### 2. The Magic of Decorators
 You do not write JSON schemas in FastMCP. You just write standard Python functions!
-- **`@mcp.tool()`:** You add this decorator above a Python function. FastMCP uses Python's `inspect` module to read your function's signature and docstring, and automatically generates the perfect JSON Schema for the LLM!
+- **`@mcp.tool()`:** You add this decorator above a Python function. FastMCP uses Python's `inspect` module to read your function's signature and docstring, and automatically generates the perfect JSON Schema for the <abbr title="Large Language Model">LLM</abbr>!
 - **`@mcp.resource()`:** You use this to expose static data (like a log file or a database table). You assign it a URI like `logs://app/system.log`.
-- **`@mcp.prompt()`:** You use this to define complex, pre-written prompt templates that the LLM Client can pull from the server.
+- **`@mcp.prompt()`:** You use this to define complex, pre-written prompt templates that the <abbr title="Large Language Model">LLM</abbr> Client can pull from the server.
 
 ### 3. Transports (How they talk)
 How does the Claude Desktop app actually talk to your FastMCP server?
-- **stdio (Standard I/O):** The easiest method. The LLM Client physically spawns your Python script as a subprocess on your local machine and sends JSON messages via the terminal's standard input/output.
-- **SSE (Server-Sent Events) over HTTP:** The production method. You deploy the FastMCP server to the cloud. The LLM Client connects over the internet using a persistent HTTP connection.
+- **stdio (Standard I/O):** The easiest method. The <abbr title="Large Language Model">LLM</abbr> Client physically spawns your Python script as a subprocess on your local machine and sends JSON messages via the terminal's standard input/output.
+- **SSE (Server-Sent Events) over HTTP:** The production method. You deploy the FastMCP server to the cloud. The <abbr title="Large Language Model">LLM</abbr> Client connects over the internet using a persistent HTTP connection.
 
 ---
 
@@ -115,38 +115,38 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **Developer Experience (DX):** Notice how clean the code is. You did not write a single line of JSON-RPC routing logic. FastMCP handles the entire networking layer for you.
-2. **Type Hints are Mandatory:** FastMCP strictly requires Python Type Hints (`query: str`, `limit: int`). If you do not provide them, FastMCP cannot generate the JSON schema, and the LLM will not know what arguments to pass!
+2. **Type Hints are Mandatory:** FastMCP strictly requires Python Type Hints (`query: str`, `limit: int`). If you do not provide them, FastMCP cannot generate the JSON schema, and the <abbr title="Large Language Model">LLM</abbr> will not know what arguments to pass!
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The GitHub Wrapper Server
-You can build an MCP Server that wraps third-party REST APIs.
+You can build an <abbr title="Model Context Protocol">MCP</abbr> Server that wraps third-party REST APIs.
 **Your Task:**
-1. Conceptually design an MCP Server for GitHub.
+1. Conceptually design an <abbr title="Model Context Protocol">MCP</abbr> Server for GitHub.
 2. Define a `@mcp.tool()` called `create_issue(repo: str, title: str, body: str)`.
 3. Inside the Python function, use the standard `requests` library to POST to `api.github.com`.
-4. Implement Error Handling: If the GitHub API returns a 429 Rate Limit error, the function should return a string: `"Error 429: Rate limit exceeded. Please wait 60 seconds."` This explicitly tells the LLM exactly why the tool failed so it can self-correct!
+4. Implement Error Handling: If the GitHub <abbr title="Application Programming Interface">API</abbr> returns a 429 Rate Limit error, the function should return a string: `"Error 429: Rate limit exceeded. Please wait 60 seconds."` This explicitly tells the <abbr title="Large Language Model">LLM</abbr> exactly why the tool failed so it can self-correct!
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You are building an MCP ecosystem for a Fortune 500 company. 50 internal microservices need to be exposed as MCP tools. Design the architecture: Server Registry, Authentication, Rate Limiting, and Versioning."*
+*"You are building an <abbr title="Model Context Protocol">MCP</abbr> ecosystem for a Fortune 500 company. 50 internal microservices need to be exposed as <abbr title="Model Context Protocol">MCP</abbr> tools. Design the architecture: Server Registry, Authentication, Rate Limiting, and Versioning."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Server Registry:** 
-   - Propose an internal Developer Portal where teams register their MCP Servers. Clients ping the Registry to dynamically discover new servers.
+   - Propose an internal Developer Portal where teams register their <abbr title="Model Context Protocol">MCP</abbr> Servers. Clients ping the Registry to dynamically discover new servers.
 2. **Authentication (SSE/HTTP):**
    - State that `stdio` transport is useless for a massive company. You must deploy the servers using `SSE (Server-Sent Events)`.
-   - Propose using standard OAuth 2.0. The AI Agent must pass a Bearer Token when connecting to the MCP Server.
+   - Propose using standard OAuth 2.0. The <abbr title="Artificial Intelligence">AI</abbr> Agent must pass a Bearer Token when connecting to the <abbr title="Model Context Protocol">MCP</abbr> Server.
 3. **Rate Limiting & Blast Radius:**
    - Warn that an Agent trapped in an infinite loop could DDoS your internal databases by calling a tool 1,000 times a second.
-   - Propose implementing a strict Redis-backed Rate Limiter in the FastMCP server, capping tool executions to 10 requests per minute per AI Agent.
+   - Propose implementing a strict Redis-backed Rate Limiter in the FastMCP server, capping tool executions to 10 requests per minute per <abbr title="Artificial Intelligence">AI</abbr> Agent.
 
 ---
 ### 🎉 CONGRATULATIONS ON COMPLETING YOUR 20-DAY SPRINT!

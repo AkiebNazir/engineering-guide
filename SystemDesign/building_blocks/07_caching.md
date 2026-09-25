@@ -65,7 +65,7 @@ Fastest write path and can batch/coalesce many writes into fewer source writes �
 
 ## Cache key, TTL, and invalidation design
 
-- **Key**: encode everything the value depends on — user ID, locale, API version, filter parameters. A key that's too coarse serves wrong data to some callers; too fine and you fragment the cache and tank hit rate.
+- **Key**: encode everything the value depends on — user ID, locale, <abbr title="Application Programming Interface">API</abbr> version, filter parameters. A key that's too coarse serves wrong data to some callers; too fine and you fragment the cache and tank hit rate.
 - **TTL**: bound by the product's actual staleness tolerance, not a default. "Product price" and "user's last-seen timestamp" do not deserve the same TTL.
 - **Invalidation**: either let TTL expire it naturally, or explicitly invalidate/update on write. Explicit invalidation is more correct but couples the write path to every place that might have cached the value — miss one and you serve stale data indefinitely. TTL-only is simpler and self-healing but bounds correctness by TTL length, not by "immediately."
 
@@ -187,7 +187,7 @@ A request can hit six caches before it reaches the disk. Each layer has its own 
 | Layer | Key | Typical TTL (example) | Invalidation | Watch out for |
 |---|---|---|---|---|
 | Browser | URL plus `Vary` headers | `max-age` of seconds to a year | Fingerprinted URLs (new content, new URL). You cannot purge a browser | Anything you cannot version is stale for the full lifetime |
-| CDN or edge | URL plus normalized headers and query | `s-maxage` of tens of seconds to hours | Purge API or surrogate keys ([29_cdn_and_streaming_media.md](29_cdn_and_streaming_media.md)) | Cookies or random query params in the key kill hit ratio |
+| CDN or edge | URL plus normalized headers and query | `s-maxage` of tens of seconds to hours | Purge <abbr title="Application Programming Interface">API</abbr> or surrogate keys ([29_cdn_and_streaming_media.md](29_cdn_and_streaming_media.md)) | Cookies or random query params in the key kill hit ratio |
 | App-local (in-process) | Domain key | 1 to 10 seconds | TTL only, or a pub/sub broadcast | Instances disagree, memory is multiplied by fleet size |
 | Distributed (Redis, Memcached) | Domain key | Seconds to hours | Delete on write, CDC, leases | Network hop of about a millisecond, hot keys ([25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md)) |
 | Database buffer pool | Page id | None, replacement policy | Automatic, since writes update pages in place | Cold after a restart, sized by RAM you buy |

@@ -1,5 +1,5 @@
-# 🧠 THE 180-DAY AI ENGINEERING MASTERPLAN
-## From Absolute Zero to Principal AI Engineer — 3 Hours/Day
+# 🧠 THE 180-DAY <abbr title="Artificial Intelligence">AI</abbr> ENGINEERING MASTERPLAN
+## From Absolute Zero to Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer — 3 Hours/Day
 
 > **Author's Note:** This is a production-grade, no-nonsense curriculum. Every day follows a strict 3-hour protocol. No hand-waving. No toy examples. You will build, break, and rebuild until the concepts are second nature. Every single day is fully specified — no skeletal placeholders, no gaps, no excuses.
 
@@ -13,7 +13,7 @@
 | **Daily Commitment** | 3 Hours (strict) |
 | **Total Hours** | 540 Hours |
 | **Prerequisites** | Basic Python, High-School Mathematics |
-| **Target Level** | Principal AI Engineer / MAANG Staff+ |
+| **Target Level** | Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer / MAANG Staff+ |
 | **Stack** | Python, PyTorch, HuggingFace, LangChain, LangGraph, CrewAI, FastMCP, vLLM, Ray, Kubernetes, Docker, MLflow |
 | **Start Date** | ____/____/________ |
 | **Target End Date** | ____/____/________ |
@@ -49,8 +49,8 @@ Before starting, ensure you can comfortably:
 | High-school algebra & basic calculus (derivatives) | ☐ Ready | Khan Academy Calculus (free) |
 | Basic statistics (mean, median, standard deviation) | ☐ Ready | Khan Academy Statistics (free) |
 
-### 🚨 Parallel Track: The Google AI Engineer Requirement (DSA & LeetCode)
-If your ultimate goal is a **Google AI Engineer** position, you CANNOT escape traditional Data Structures & Algorithms. Google conducts 2-3 standard coding interviews (medium/hard) for almost all ML/AI roles.
+### 🚨 Parallel Track: The Google <abbr title="Artificial Intelligence">AI</abbr> Engineer Requirement (DSA & LeetCode)
+If your ultimate goal is a **Google <abbr title="Artificial Intelligence">AI</abbr> Engineer** position, you CANNOT escape traditional Data Structures & Algorithms. Google conducts 2-3 standard coding interviews (medium/hard) for almost all <abbr title="Machine Learning">ML</abbr>/<abbr title="Artificial Intelligence">AI</abbr> roles.
 - **Requirement:** You must solve 1-2 LeetCode problems daily alongside this 180-day plan.
 - **Focus Areas:** Graphs (BFS/DFS), Dynamic Programming, Trees, Sliding Window, Two Pointers.
 - **Goal:** Consistently solve Mediums in 20 minutes and Hards in 40 minutes.
@@ -106,11 +106,11 @@ Every single day follows this exact protocol:
 ---
 
 # ═══════════════════════════════════════════════════════════════
-# PHASE 1: MATHEMATICAL FOUNDATIONS & CLASSICAL ML
+# PHASE 1: MATHEMATICAL FOUNDATIONS & CLASSICAL <abbr title="Machine Learning">ML</abbr>
 # Days 001–030 | "Build the Bedrock"
 # ═══════════════════════════════════════════════════════════════
 
-> **Phase Objective:** Internalize the mathematical machinery that powers every ML algorithm. You cannot shortcut this. Every gradient, every matrix decomposition, every probability distribution you master here pays compound interest in Phases 3–6.
+> **Phase Objective:** Internalize the mathematical machinery that powers every <abbr title="Machine Learning">ML</abbr> algorithm. You cannot shortcut this. Every gradient, every matrix decomposition, every probability distribution you master here pays compound interest in Phases 3–6.
 
 ### Phase 1 Milestone Checklist
 - [ ] Can derive gradient descent update rules from scratch
@@ -1479,35 +1479,35 @@ To fully grasp the theoretical and practical concepts across the 180 days, use t
 
 ### YouTube (Free, Full Courses)
 - **Phase 1 (Math & Classical ML):**
-  - [StatQuest with Josh Starmer](https://www.youtube.com/user/joshstarmer) — The absolute best for intuitive breakdowns of ML algorithms, PCA, and statistics.
+  - [StatQuest with Josh Starmer](https://www.youtube.com/user/joshstarmer) — The absolute best for intuitive breakdowns of <abbr title="Machine Learning">ML</abbr> algorithms, PCA, and statistics.
   - [MIT 18.06 Linear Algebra (Gilbert Strang)](https://www.youtube.com/playlist?list=PL49CF3715CB9EF31D) — The gold standard for linear algebra.
-  - [Stanford CS229: Machine Learning (Andrew Ng)](https://www.youtube.com/playlist?list=PLoROMvodv4rMiGQp3WXShtMGgzqpfVfbU) — Heavy math derivations for classical ML.
+  - [Stanford CS229: Machine Learning (Andrew Ng)](https://www.youtube.com/playlist?list=PLoROMvodv4rMiGQp3WXShtMGgzqpfVfbU) — Heavy math derivations for classical <abbr title="Machine Learning">ML</abbr>.
 - **Phase 2 (Deep Learning):**
   - [Andrej Karpathy's "Neural Networks: Zero to Hero"](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ) — Build micrograd, makemore, and GPT from scratch. (Mandatory viewing).
   - [Stanford CS231n: CNNs for Visual Recognition](https://www.youtube.com/playlist?list=PL3FW7Lu3i5JvHM8ljYj-zLfQRF3EO8sYv) — Excellent for backprop, CNNs, and computer vision.
-- **Phase 3 & 4 (Transformers, NLP, & LLMs):**
+- **Phase 3 & 4 (Transformers, <abbr title="Natural Language Processing">NLP</abbr>, & LLMs):**
   - [Stanford CS224n: NLP with Deep Learning](https://www.youtube.com/playlist?list=PLoROMvodv4rOSH4v6133s9LFPRHjEmbmJ) — Covers word vectors to transformers and prompt engineering.
   - [Let's build GPT: from scratch (Karpathy)](https://www.youtube.com/watch?v=kCc8FmEb1nY) — Essential for Day 69.
-  - [Umar Jamil's Paper Breakdowns](https://www.youtube.com/@UmarJamilAI) — Excellent for deep dives into LLaMA, LoRA, and FlashAttention architectures.
+  - [Umar Jamil's Paper Breakdowns](https://www.youtube.com/@UmarJamilAI) — Excellent for deep dives into LLaMA, <abbr title="Low-Rank Adaptation">LoRA</abbr>, and FlashAttention architectures.
 - **Phase 5 & 6 (Agents & MLOps):**
   - [LangChain & CrewAI Official YouTube Channels] — For the latest tutorials on agent orchestration.
   - [Made With ML (Goku Mohandas)](https://www.youtube.com/c/MadeWithML) — Phenomenal free MLOps content (also available on madewithml.com).
 
 ### Udemy (Paid, Structured Learning)
 - **"Machine Learning A-Z" (Kirill Eremenko & Hadelin de Ponteves)** — Great practical starting point for Phase 1.
-- **"Deep Learning A-Z" (Kirill Eremenko & Hadelin de Ponteves)** — Solid coverage of ANN, CNN, and RNN implementations.
+- **"Deep Learning A-Z" (Kirill Eremenko & Hadelin de Ponteves)** — Solid coverage of ANN, <abbr title="Convolutional Neural Network">CNN</abbr>, and <abbr title="Recurrent Neural Network">RNN</abbr> implementations.
 - **"PyTorch for Deep Learning in 202X: Zero to Mastery" (Daniel Bourke)** — Excellent, code-heavy, practical PyTorch foundation.
-- **"Deployment of Machine Learning Models" (Soledad Galli)** — Exceptional for Phase 6 (MLOps, CI/CD, Docker, API serving).
-- **"Generative AI with Large Language Models" (DeepLearning.AI / Coursera/Udemy)** — Industry-standard course on LLM lifecycle, RLHF, and fine-tuning.
+- **"Deployment of Machine Learning Models" (Soledad Galli)** — Exceptional for Phase 6 (MLOps, <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>, Docker, <abbr title="Application Programming Interface">API</abbr> serving).
+- **"Generative <abbr title="Artificial Intelligence">AI</abbr> with Large Language Models" (DeepLearning.<abbr title="Artificial Intelligence">AI</abbr> / Coursera/Udemy)** — Industry-standard course on <abbr title="Large Language Model">LLM</abbr> lifecycle, <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>, and fine-tuning.
 
 ---
 
-## Appendix J: The Google AI Engineer Track (JAX, TPUs, & Scale)
+## Appendix J: The Google <abbr title="Artificial Intelligence">AI</abbr> Engineer Track (JAX, TPUs, & Scale)
 
 If you are targeting Google (or DeepMind), you need to supplement the PyTorch-heavy curriculum with Google's internal stack:
 
 1. **JAX & Flax (Days 31-60 Supplement):** 
-   - Google heavily relies on JAX for high-performance ML. 
+   - Google heavily relies on JAX for high-performance <abbr title="Machine Learning">ML</abbr>. 
    - Learn JAX transformations: `jax.jit` (Just-In-Time compilation), `jax.grad` (autodiff), `jax.vmap` (vectorization), and `jax.pmap` (parallelization).
    - *Resource:* DeepMind's JAX tutorials on GitHub.
 2. **TPU Architecture (Days 91-100 Supplement):**

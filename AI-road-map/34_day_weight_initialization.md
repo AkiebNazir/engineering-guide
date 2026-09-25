@@ -1,6 +1,6 @@
 # Day 34: Weight Initialization (Xavier & Kaiming)
 
-Welcome to Day 34. You have built the neurons, the activations, and the Backpropagation engine. Now you are ready to turn the AI on.
+Welcome to Day 34. You have built the neurons, the activations, and the Backpropagation engine. Now you are ready to turn the <abbr title="Artificial Intelligence">AI</abbr> on.
 
 The very first step of training a Neural Network is choosing its starting weights. If you choose the wrong starting numbers, the math will literally explode to Infinity, or collapse to Zero, within a fraction of a second. Today, we learn the mathematical formulas required to stabilize the network before training even begins.
 
@@ -16,8 +16,8 @@ The neurons will remain identical forever. The network will act as if it only ha
 ### 2. Exploding & Vanishing Variance (The Snowball Analogy)
 We must use random noise. So why not just use `np.random.randn()`?
 **The Analogy:** Imagine rolling a snowball down a 100-mile mountain.
-- If the snowball picks up 10% more snow than it loses every second (Variance > 1), the snowball grows exponentially until it becomes a massive avalanche that destroys the mountain. In AI, the numbers explode to Infinity, and your loss outputs `NaN` (Not a Number).
-- If the snowball loses 10% more snow than it gains (Variance < 1), it melts away to nothing. In AI, the numbers collapse to `0.0`, and the network freezes.
+- If the snowball picks up 10% more snow than it loses every second (Variance > 1), the snowball grows exponentially until it becomes a massive avalanche that destroys the mountain. In <abbr title="Artificial Intelligence">AI</abbr>, the numbers explode to Infinity, and your loss outputs `NaN` (Not a Number).
+- If the snowball loses 10% more snow than it gains (Variance < 1), it melts away to nothing. In <abbr title="Artificial Intelligence">AI</abbr>, the numbers collapse to `0.0`, and the network freezes.
 **The Goal:** We need the Variance (the mathematical size of the signal) to stay *exactly* at $1.0$ as it travels through 100 layers.
 
 ### 3. Xavier (Glorot) Initialization
@@ -133,4 +133,4 @@ A "Strong Hire" candidate must articulate the following debugging steps clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. You have successfully stabilized the Neural Network.
 
-Tomorrow, in **Day 35**, we learn how to calculate exactly how wrong the AI is. We dive into **Loss Functions: Cross-Entropy, Focal Loss, and InfoNCE.**
+Tomorrow, in **Day 35**, we learn how to calculate exactly how wrong the <abbr title="Artificial Intelligence">AI</abbr> is. We dive into **Loss Functions: Cross-Entropy, Focal Loss, and InfoNCE.**

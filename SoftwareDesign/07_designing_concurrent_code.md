@@ -298,10 +298,10 @@ GIL entirely, so code that "worked because of the GIL" will break there first.
 
 ## 4 · APIs that make races impossible to write
 
-The best fix for a check-then-act race is an API that **doesn't let callers write the
+The best fix for a check-then-act race is an <abbr title="Application Programming Interface">API</abbr> that **doesn't let callers write the
 check and the act separately**. Give them the compound operation.
 
-| Racy API (caller composes) | Atomic API (object composes) |
+| Racy <abbr title="Application Programming Interface">API</abbr> (caller composes) | Atomic <abbr title="Application Programming Interface">API</abbr> (object composes) |
 |---|---|
 | `if k not in m: m[k] = v` | `m.setdefault(k, v)`, Go `sync.Map.LoadOrStore` |
 | `v = m.get(k); m[k] = v + 1` | `counter.increment(k)`, `atomic.AddInt64` |
@@ -611,7 +611,7 @@ Properties:
 
 Design details in the example:
 
-- **The public API never touches state** — it only enqueues messages. That makes the
+- **The public <abbr title="Application Programming Interface">API</abbr> never touches state** — it only enqueues messages. That makes the
   thread-safety contract trivial to audit.
 - **Replies travel back through a `Future`**, so callers can wait with a timeout.
 - **Snapshots are copies**, never the live dict.

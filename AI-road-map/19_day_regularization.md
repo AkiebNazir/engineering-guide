@@ -4,14 +4,14 @@ Welcome to Day 19. Over the last 4 days, we built powerful Optimization algorith
 
 But there is a dark side to optimization: **Overfitting**. If you train a model too well, it will simply memorize the answers to the training data. When you show it a new image it has never seen before, it completely crashes.
 
-Today, we learn **Regularization**: a set of mathematical techniques designed to intentionally sabotage the AI during training, preventing it from memorizing the data and forcing it to actually "learn" the underlying concepts.
+Today, we learn **Regularization**: a set of mathematical techniques designed to intentionally sabotage the <abbr title="Artificial Intelligence">AI</abbr> during training, preventing it from memorizing the data and forcing it to actually "learn" the underlying concepts.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & MATHEMATICS
 
 ### 1. The Bias-Variance Tradeoff
-Every single error your AI makes in the real world can be mathematically decomposed into three parts:
+Every single error your <abbr title="Artificial Intelligence">AI</abbr> makes in the real world can be mathematically decomposed into three parts:
 $$ \text{Total Error} = \text{Bias}^2 + \text{Variance} + \text{Irreducible Noise} $$
 
 - **Bias (Underfitting):** The model is too simple. (e.g., Trying to fit a straight line to a curved dataset). It has high error on the training data AND the test data.
@@ -19,28 +19,28 @@ $$ \text{Total Error} = \text{Bias}^2 + \text{Variance} + \text{Irreducible Nois
 - **The Tradeoff:** As you make a model bigger and train it longer, Bias drops but Variance explodes. Regularization is how we control Variance!
 
 ### 2. $L_2$ Regularization (Weight Decay / Ridge)
-The most common way an AI overfits is by assigning a massive weight (like $W = 500.0$) to a specific feature, obsessing over it. 
-$L_2$ Regularization stops this by modifying the Loss function to physically punish the AI for having large weights.
+The most common way an <abbr title="Artificial Intelligence">AI</abbr> overfits is by assigning a massive weight (like $W = 500.0$) to a specific feature, obsessing over it. 
+$L_2$ Regularization stops this by modifying the Loss function to physically punish the <abbr title="Artificial Intelligence">AI</abbr> for having large weights.
 
 **Algebraic Definition:**
 $$ \mathcal{L}_{total} = \mathcal{L}_{data} + \frac{\lambda}{2}\|\theta\|_2^2 $$
 *(We add the squared sum of all weights to the Loss. $\lambda$ controls how aggressive the penalty is).*
 
-> **AI Context (The Bayesian Connection):** 
-> In Day 10, we learned about MAP estimation. Adding an $L_2$ penalty is mathematically identical to applying a **Gaussian Prior** centered at zero. You are telling the AI: "I mathematically assume all weights should be zero unless the data overwhelming proves otherwise."
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (The Bayesian Connection):** 
+> In Day 10, we learned about MAP estimation. Adding an $L_2$ penalty is mathematically identical to applying a **Gaussian Prior** centered at zero. You are telling the <abbr title="Artificial Intelligence">AI</abbr>: "I mathematically assume all weights should be zero unless the data overwhelming proves otherwise."
 
 ### 3. $L_1$ Regularization (Lasso)
 Instead of squaring the weights, $L_1$ Regularization takes the Absolute Value: $+ \lambda |\theta|_1$.
-Because of the geometry of absolute values, $L_1$ doesn't just shrink weights; it aggressively forces useless weights to become **exactly $0.0$**. This creates a "sparse" network, which is incredibly useful if you want the AI to automatically delete useless features!
+Because of the geometry of absolute values, $L_1$ doesn't just shrink weights; it aggressively forces useless weights to become **exactly $0.0$**. This creates a "sparse" network, which is incredibly useful if you want the <abbr title="Artificial Intelligence">AI</abbr> to automatically delete useless features!
 
 ### 4. Dropout
 Invented by Geoffrey Hinton, **Dropout** is a chaotic, brilliant regularization trick for Neural Networks.
 During every single step of training, you flip a coin for every neuron in the network. If it's tails, you **turn the neuron off** (multiply its output by 0). 
 
-Because neurons keep randomly disappearing, the AI cannot rely on any single "super-neuron" to memorize the data. The remaining neurons are forced to learn robust, independent representations. It mathematically acts like training an ensemble of millions of different, smaller neural networks!
+Because neurons keep randomly disappearing, the <abbr title="Artificial Intelligence">AI</abbr> cannot rely on any single "super-neuron" to memorize the data. The remaining neurons are forced to learn robust, independent representations. It mathematically acts like training an ensemble of millions of different, smaller neural networks!
 
 ### 5. Early Stopping
-If you plot Training Loss and Validation (Test) Loss on a graph, they will both drop. But eventually, the Training Loss will keep dropping, while the Validation Loss will suddenly U-turn and start rising! This U-turn is the exact moment the AI stopped generalizing and started memorizing.
+If you plot Training Loss and Validation (Test) Loss on a graph, they will both drop. But eventually, the Training Loss will keep dropping, while the Validation Loss will suddenly U-turn and start rising! This U-turn is the exact moment the <abbr title="Artificial Intelligence">AI</abbr> stopped generalizing and started memorizing.
 **Early Stopping** is a script that watches the Validation Loss and literally just hits `Ctrl+C` to stop training the second it starts going up!
 
 ---
@@ -168,6 +168,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - If all else fails, the model is simply too massive for the dataset. Propose physically shrinking the model (reducing the number of layers or parameters) to artificially increase Bias and reduce Variance.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have mastered the art of holding your AI models back so they can actually succeed.
+**Task for the end of the day:** Commit your code to Git. You have mastered the art of holding your <abbr title="Artificial Intelligence">AI</abbr> models back so they can actually succeed.
 
 Tomorrow, in **Day 20**, we cover the absolute mathematical pinnacle of Convex Optimization: **Support Vector Machines (SVMs)**!

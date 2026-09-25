@@ -1,22 +1,22 @@
-# Day 103: The Full RLHF Pipeline
+# Day 103: The Full <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> Pipeline
 
 Welcome to Day 103. We have Supervised Fine-Tuning (SFT). We have a Reward Model (RM). We have the Proximal Policy Optimization (PPO) algorithm.
 
-Today, we assemble the holy grail of modern AI. We will combine all three pieces into the **Reinforcement Learning from Human Feedback (RLHF)** pipeline. This is exactly how OpenAI turned a raw, chaotic text-predictor (GPT-3) into the polite, helpful, and aligned ChatGPT.
+Today, we assemble the holy grail of modern <abbr title="Artificial Intelligence">AI</abbr>. We will combine all three pieces into the **Reinforcement Learning from Human Feedback (<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>)** pipeline. This is exactly how OpenAI turned a raw, chaotic text-predictor (GPT-3) into the polite, helpful, and aligned ChatGPT.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Three Stages of RLHF
+### 1. The Three Stages of <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>
 Let's review the complete pipeline from the famous InstructGPT paper:
 - **Stage 1 (SFT):** Train the Base Model on 10,000 human-written (Prompt, Answer) pairs. It learns the Chat format.
 - **Stage 2 (RM):** Collect 100,000 (Chosen, Rejected) pairs. Train a Reward Model to score them using the Bradley-Terry loss.
-- **Stage 3 (PPO):** The LLM generates text. The RM scores it. The PPO algorithm updates the LLM's weights.
+- **Stage 3 (PPO):** The <abbr title="Large Language Model">LLM</abbr> generates text. The RM scores it. The PPO algorithm updates the <abbr title="Large Language Model">LLM</abbr>'s weights.
 
 ### 2. The Four-Model VRAM Nightmare
-During Stage 3 (PPO), you cannot just load the LLM. You must load **FOUR** massive neural networks into VRAM simultaneously!
-1. **The Policy Model:** The LLM being trained (Requires Gradients).
+During Stage 3 (PPO), you cannot just load the <abbr title="Large Language Model">LLM</abbr>. You must load **FOUR** massive neural networks into VRAM simultaneously!
+1. **The Policy Model:** The <abbr title="Large Language Model">LLM</abbr> being trained (Requires Gradients).
 2. **The Reward Model:** The frozen model that scores the text.
 3. **The Value Model:** A secondary model used by PPO to predict the "Expected" reward of a state (so we can calculate the Advantage).
 4. **The Reference Model:** A frozen copy of the original SFT model. Why do we need this? Read below!
@@ -39,7 +39,7 @@ The KL Penalty forces the Policy Model to maximize the reward *while strictly ma
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's conceptually build the RLHF Stage 3 loop in Python. We will simulate generating text, calculating the Reward, applying the KL Penalty, and updating the model.
+Let's conceptually build the <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> Stage 3 loop in Python. We will simulate generating text, calculating the Reward, applying the KL Penalty, and updating the model.
 
 Create a file named `rlhf_pipeline.py`:
 
@@ -119,8 +119,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Beta Coefficient:** Notice the `beta = 0.1` variable. Tuning this is an absolute nightmare for ML Engineers. If $\beta$ is too high, the model is terrified of the KL penalty, so it refuses to change its weights at all (it learns nothing). If $\beta$ is too low, the model ignores the penalty, reward-hacks the RM, and destroys its grammar!
-2. **The Compute Bottleneck:** Because you have to run a Forward Pass through the Policy Model, the Reference Model, AND the Reward Model for every single training step, RLHF is incredibly slow.
+1. **The Beta Coefficient:** Notice the `beta = 0.1` variable. Tuning this is an absolute nightmare for <abbr title="Machine Learning">ML</abbr> Engineers. If $\beta$ is too high, the model is terrified of the KL penalty, so it refuses to change its weights at all (it learns nothing). If $\beta$ is too low, the model ignores the penalty, reward-hacks the RM, and destroys its grammar!
+2. **The Compute Bottleneck:** Because you have to run a Forward Pass through the Policy Model, the Reference Model, AND the Reward Model for every single training step, <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> is incredibly slow.
 
 ---
 
@@ -138,7 +138,7 @@ In production, nobody writes PPO from scratch. We use HuggingFace `trl` (Transfo
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Walk through the complete RLHF pipeline for a 70B model. How many total models must be loaded into VRAM simultaneously during the PPO phase? Estimate the massive VRAM bottleneck and propose a solution."*
+*"Walk through the complete <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> pipeline for a 70B model. How many total models must be loaded into VRAM simultaneously during the PPO phase? Estimate the massive VRAM bottleneck and propose a solution."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -149,15 +149,15 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Explain that a 70B model in FP16 is $140\text{GB}$. 
    - 4 models $\times 140\text{GB} = 560\text{GB}$ just for the weights!
    - Plus Optimizer states for the Policy and Value models ($280\text{GB}$).
-   - Total: $>800\text{GB}$ of VRAM! This requires a cluster of 16 A100s just to do RLHF!
-3. **The Solution (LoRA / QLoRA):**
-   - Propose using PEFT! Freeze the Base Model. Train a LoRA adapter for the Policy, a LoRA adapter for the Reward Model, and a LoRA adapter for the Value Model. 
-   - Now you only load ONE massive 70B Base Model into VRAM, and hot-swap the tiny LoRA adapters during the different passes! You just reduced the VRAM requirement from $800\text{GB}$ to $150\text{GB}$!
+   - Total: $>800\text{GB}$ of VRAM! This requires a cluster of 16 A100s just to do <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>!
+3. **The Solution (<abbr title="Low-Rank Adaptation">LoRA</abbr> / <abbr title="Quantized Low-Rank Adaptation">QLoRA</abbr>):**
+   - Propose using <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>! Freeze the Base Model. Train a <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter for the Policy, a <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter for the Reward Model, and a <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter for the Value Model. 
+   - Now you only load ONE massive 70B Base Model into VRAM, and hot-swap the tiny <abbr title="Low-Rank Adaptation">LoRA</abbr> adapters during the different passes! You just reduced the VRAM requirement from $800\text{GB}$ to $150\text{GB}$!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-RLHF works, but as you just saw, it is an engineering nightmare. It is highly unstable, requires 4 models in memory, and the hyperparameters are nearly impossible to tune. 
+<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> works, but as you just saw, it is an engineering nightmare. It is highly unstable, requires 4 models in memory, and the hyperparameters are nearly impossible to tune. 
 
-In 2023, researchers at Stanford published a mathematical breakthrough that made RLHF obsolete overnight. 
-Tomorrow, in **Day 104**, we learn **DPO (Direct Preference Optimization)**! We will align a model without a Reward Model and without PPO!
+In 2023, researchers at Stanford published a mathematical breakthrough that made <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> obsolete overnight. 
+Tomorrow, in **Day 104**, we learn **<abbr title="Direct Preference Optimization">DPO</abbr> (Direct Preference Optimization)**! We will align a model without a Reward Model and without PPO!

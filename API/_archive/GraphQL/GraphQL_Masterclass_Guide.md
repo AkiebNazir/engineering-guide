@@ -149,4 +149,4 @@ query { author { posts { author { posts { author { posts } } } } } }
 
 ### 3. Apollo Federation (The Supergraph)
 In a microservices architecture, you don't want a massive monolithic GraphQL server. 
-With **Federation**, the Auth Team owns `auth-graph`, the Checkout Team owns `checkout-graph`. An API Gateway stitches them together into a single "Supergraph". The client queries the gateway, and the gateway intelligently distributes the query fragments to the underlying microservices.
+With **Federation**, the Auth Team owns `auth-graph`, the Checkout Team owns `checkout-graph`. An <abbr title="Application Programming Interface">API</abbr> Gateway stitches them together into a single "Supergraph". The client queries the gateway, and the gateway intelligently distributes the query fragments to the underlying microservices.

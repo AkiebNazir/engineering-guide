@@ -10,7 +10,7 @@ description: "Master WebSockets: the HTTP upgrade handshake, frame format, opcod
 ## What are WebSockets?
 WebSockets provide a persistent, full-duplex communication channel over a single TCP connection. Unlike HTTP (where a client must request data and wait for a response), a WebSocket connection stays open. Both the client and the server can push messages to each other independently and instantly.
 
-They are standardised in **RFC 6455** (2011) and supported by every browser through the `WebSocket` API.
+They are standardised in **RFC 6455** (2011) and supported by every browser through the `WebSocket` <abbr title="Application Programming Interface">API</abbr>.
 
 > **Analogy:** HTTP is sending letters: every letter needs a stamped envelope, an address, and a reply is a separate letter. A WebSocket is a phone call: dial once (the handshake), then either side speaks at any time until someone hangs up.
 
@@ -194,7 +194,7 @@ Python lab 5 kills the connection 3 times during a 300-event stream and asserts 
 | Threat | Defence |
 | :--- | :--- |
 | **Cross-Site WebSocket Hijacking (CSWSH)**: browsers do **not** apply CORS to WebSockets and attach cookies to the handshake, so `evil.com` can open a socket to your server *as the logged-in user* | **Check `Origin`** against an allow-list; use tokens/tickets instead of ambient cookies |
-| No `Authorization` header in the browser `WebSocket` API | See authentication options below |
+| No `Authorization` header in the browser `WebSocket` <abbr title="Application Programming Interface">API</abbr> | See authentication options below |
 | Eavesdropping / tampering | `wss://` (TLS) only |
 | Huge messages | Server-side max message size (1009) |
 | Floods | Per-connection rate limit |
@@ -363,7 +363,7 @@ sequenceDiagram
 
 1.  Masking stops a malicious page from crafting bytes that an intermediary proxy could interpret as an HTTP request (cache poisoning). It is **not** encryption: the key is sent with each frame. Confidentiality comes from `wss://`.
 2.  Only through a **heartbeat**: a ping with no pong within the timeout. Without it, TCP may never report the loss and the connection leaks. (An abrupt close also shows up as code 1006 locally.)
-3.  The browser opens the socket and attaches the user's cookie, so `evil.com` talks to your API as that user (CSWSH). **CORS does not apply to WebSockets**, so it does not help. Check `Origin` on the handshake and prefer tickets/tokens over ambient cookies.
+3.  The browser opens the socket and attaches the user's cookie, so `evil.com` talks to your <abbr title="Application Programming Interface">API</abbr> as that user (CSWSH). **CORS does not apply to WebSockets**, so it does not help. Check `Origin` on the handshake and prefer tickets/tokens over ambient cookies.
 4.  A **message broker** (Redis pub/sub, NATS, Kafka). Each server publishes local messages and subscribes to the rooms its own clients are in, delivering to its local sockets.
 5.  Sequence numbers, a server-side replay buffer, a `resume{last_seq}` handshake, and client-side dedupe on `seq`. If the client is older than the buffer, send `reset` and make it refetch a snapshot.
 

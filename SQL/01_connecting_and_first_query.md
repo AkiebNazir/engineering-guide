@@ -73,7 +73,7 @@ query took.
 ## Connecting with Python (`psycopg` v3)
 
 `psycopg` is the standard PostgreSQL driver for Python. This module uses **v3**,
-whose API differs from the older, still-widely-deployed psycopg2 in a few ways worth
+whose <abbr title="Application Programming Interface">API</abbr> differs from the older, still-widely-deployed psycopg2 in a few ways worth
 knowing up front: v3 supports `with psycopg.connect(...) as conn:` to auto-close the
 connection, `conn.execute(...)` runs a statement directly on the connection without
 you creating a cursor first (though `conn.cursor()` still exists and is used when you
@@ -117,11 +117,11 @@ with psycopg.connect("postgresql://dsa:dsa@localhost:5544/dsa") as conn:
 Go has no single official driver the way Python has `psycopg` — the ecosystem
 converged on two different, both-legitimate ways in:
 
-- **`database/sql`** — Go's standard library defines a generic `database/sql` API
+- **`database/sql`** — Go's standard library defines a generic `database/sql` <abbr title="Application Programming Interface">API</abbr>
   that works against *any* SQL database, with the actual database-specific code living
   in a separate driver package you import purely for its side effect of registering
   itself (the blank `_` import below). `github.com/lib/pq` was the traditional Postgres
-  driver for this API for years and is still extremely common in existing codebases,
+  driver for this <abbr title="Application Programming Interface">API</abbr> for years and is still extremely common in existing codebases,
   but it's in maintenance mode (no new features) — `github.com/jackc/pgx/v5/stdlib`
   is the actively-maintained way to get a `database/sql`-compatible driver today,
   backed by pgx underneath. Reach for `database/sql` when you want your code portable

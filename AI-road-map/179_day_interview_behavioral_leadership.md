@@ -17,14 +17,14 @@ Today, we learn the Behavioral Interview. We will learn how to write 8 bulletpro
 ### 1. The Expectation Gap
 - **Junior Engineer:** "I was given a JIRA ticket, I wrote the code, it worked."
 - **Senior Engineer:** "I identified a bottleneck in our data pipeline. I researched three solutions, proposed the best one, got the team onboard, built it, and saved the company $50k/year."
-- **Staff/Principal Engineer:** "I saw that three different departments were building redundant ML models. I wrote a 6-page strategy document for a unified AI Platform, convinced the VPs of all three departments to fund it, led a cross-functional team of 15 engineers to build it, and shifted the technical trajectory of the company."
+- **Staff/Principal Engineer:** "I saw that three different departments were building redundant <abbr title="Machine Learning">ML</abbr> models. I wrote a 6-page strategy document for a unified <abbr title="Artificial Intelligence">AI</abbr> Platform, convinced the VPs of all three departments to fund it, led a cross-functional team of 15 engineers to build it, and shifted the technical trajectory of the company."
 
 ### 2. The STAR Method (Strict Adherence)
 You must structure your answers rigidly. If you don't, you will ramble.
-1. **S - Situation (15%):** Set the stage. "In 2024, I was Lead ML Engineer at Acme Corp. Our API was crashing daily due to bad LLM prompts."
-2. **T - Task (10%):** What was *your* specific goal? "I needed to stabilize the API without slowing down the product team's shipping velocity."
-3. **A - Action (50%):** What did *you* (not "we") do? This is where you shine. "I wrote a design doc proposing a DSPy automated prompt pipeline. I held a workshop to train the PMs. I personally coded the CI/CD integration..."
-4. **R - Result (25%):** The quantifiable business impact. "API crashes dropped by 99%. Time-to-deploy went from 3 days to 4 hours."
+1. **S - Situation (15%):** Set the stage. "In 2024, I was Lead <abbr title="Machine Learning">ML</abbr> Engineer at Acme Corp. Our <abbr title="Application Programming Interface">API</abbr> was crashing daily due to bad <abbr title="Large Language Model">LLM</abbr> prompts."
+2. **T - Task (10%):** What was *your* specific goal? "I needed to stabilize the <abbr title="Application Programming Interface">API</abbr> without slowing down the product team's shipping velocity."
+3. **A - Action (50%):** What did *you* (not "we") do? This is where you shine. "I wrote a design doc proposing a DSPy automated prompt pipeline. I held a workshop to train the PMs. I personally coded the <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> integration..."
+4. **R - Result (25%):** The quantifiable business impact. "<abbr title="Application Programming Interface">API</abbr> crashes dropped by 99%. Time-to-deploy went from 3 days to 4 hours."
 
 ### 3. The "We" vs "I" Trap
 The most common reason people fail behavioral interviews is saying "We built a recommendation engine." 
@@ -33,7 +33,7 @@ The interviewer is not hiring "we." They are hiring *you*. They need to know exa
 ### 4. Navigating Failure
 When asked about a failure, never use a "fake" failure (e.g., "I work too hard"). 
 Share a massive, painful, real failure. "I deployed a model that caused a 15% drop in revenue."
-The interviewer doesn't care about the failure. They care about the **Postmortem**. What did you learn? How did you change the CI/CD pipeline so that *no one in the company* could ever make that mistake again?
+The interviewer doesn't care about the failure. They care about the **Postmortem**. What did you learn? How did you change the <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline so that *no one in the company* could ever make that mistake again?
 
 ---
 
@@ -55,11 +55,11 @@ Think back on your career (or your portfolio projects) and identify:
 ### Step 2: Write the STAR Format (Example)
 Let's write out Story #7 (Pushing back on unrealistic timelines).
 
-**Situation:** The VP of Product promised a new generative AI feature to a major client in 2 weeks. The data science team told me it would take 6 weeks just to clean the data. 
+**Situation:** The VP of Product promised a new generative <abbr title="Artificial Intelligence">AI</abbr> feature to a major client in 2 weeks. The data science team told me it would take 6 weeks just to clean the data. 
 
 **Task:** As the Tech Lead, I had to prevent the team from burning out while still delivering value to the client on the promised date.
 
-**Action:** I did not just say "No." I came to the VP with a data-backed compromise. I mapped out a "Phase 1" approach using a zero-shot prompt with a frozen LLM (which bypassed the need for data cleaning entirely). I explained this would be 80% accurate, compared to the 95% accuracy of the fine-tuned model they originally wanted. I got the VP to agree that 80% was acceptable for the initial launch. I then shielded the engineering team from the client meetings so they could focus purely on building Phase 1.
+**Action:** I did not just say "No." I came to the VP with a data-backed compromise. I mapped out a "Phase 1" approach using a zero-shot prompt with a frozen <abbr title="Large Language Model">LLM</abbr> (which bypassed the need for data cleaning entirely). I explained this would be 80% accurate, compared to the 95% accuracy of the fine-tuned model they originally wanted. I got the VP to agree that 80% was acceptable for the initial launch. I then shielded the engineering team from the client meetings so they could focus purely on building Phase 1.
 
 **Result:** We delivered the zero-shot model in 12 days. The client was thrilled to have a working prototype. We then spent the next 4 weeks quietly building the 95% accurate fine-tuned model in the background and hot-swapped it into production with zero downtime. 
 
@@ -76,7 +76,7 @@ This answer guarantees a Senior/Staff level offer.
 
 ### 🛠️ The Challenge
 Open a Word document. Write out your 8 STAR stories. 
-Crucially, look at the **Result** section of every story. Is there a number? If your result is "The API was faster," rewrite it to "The API latency dropped from 2,000ms to 150ms, increasing user retention by 12%." **Quantify your impact.**
+Crucially, look at the **Result** section of every story. Is there a number? If your result is "The <abbr title="Application Programming Interface">API</abbr> was faster," rewrite it to "The <abbr title="Application Programming Interface">API</abbr> latency dropped from 2,000ms to 150ms, increasing user retention by 12%." **Quantify your impact.**
 
 ### 🎤 MAANG Technical Interview Prep
 

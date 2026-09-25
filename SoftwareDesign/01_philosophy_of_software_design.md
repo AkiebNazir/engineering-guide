@@ -1307,7 +1307,7 @@ complexity, and each is worked in full somewhere in this track — this table is
 | **Encapsulation / information hiding** | Expose behaviour, hide representation | Callers depending on internals that can then never change | §4; `02` §3 |
 | **Law of Demeter** | Talk to your immediate collaborators, not through them | `a.b().c().d()` chains that break when something deep inside moves | `02` §9 |
 | **Composition over inheritance** | Assemble behaviour from small parts | Fragile base classes, diamonds, N×M class explosions | `02` §4 |
-| **Least astonishment** | An API behaves as its name and shape suggest | A `save()` that also sends an email; callers stop reading docs and guess | `03` §9 |
+| **Least astonishment** | An <abbr title="Application Programming Interface">API</abbr> behaves as its name and shape suggest | A `save()` that also sends an email; callers stop reading docs and guess | `03` §9 |
 | **Postel's law** | Liberal in what you accept, conservative in what you send | Producers and consumers that break on harmless variation — but over-applied it silently accepts corrupt input, so pair it with validation and versioning | `03` §7; `09` §4 |
 | **Fail fast vs. defensive** | Fail fast on programmer errors and broken internal invariants, near the source; be defensive with untrusted external input | Corrupt state surfacing far from its cause (too defensive) or a system brittle to any input variance (too strict) | `06` §10–§11; `12` §1 |
 | **Immutability by default** | Make values unchangeable after construction; make mutation explicit | Action at a distance and races on shared mutable state | `07` §6; `02` §7 |
@@ -1380,7 +1380,7 @@ alongside correctness and complexity analysis. Cheap, visible wins:
 ### In a system design interview
 
 - **Design it twice** (§15) *is* the interview: present two options, compare, choose.
-- **Deep modules** at service level: a small, stable API hiding a lot of complexity.
+- **Deep modules** at service level: a small, stable <abbr title="Application Programming Interface">API</abbr> hiding a lot of complexity.
 - **Information hiding:** "Clients don't know which database we use; the storage service
   owns that decision so we can change it."
 - **Pull complexity downward:** the rate limiter is a shared component, not something

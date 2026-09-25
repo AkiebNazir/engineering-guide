@@ -19,10 +19,10 @@ The Decision Tree wants to separate the Cats from the Dogs. It tests a question:
 - **Yes Branch:** Goes to a new room. (Contains 45 Dogs, 2 Cats).
 - **No Branch:** Goes to a different room. (Contains 5 Dogs, 48 Cats).
 
-This was a brilliant question! It almost perfectly separated the animals. But how does the AI mathematically *know* it was a good question?
+This was a brilliant question! It almost perfectly separated the animals. But how does the <abbr title="Artificial Intelligence">AI</abbr> mathematically *know* it was a good question?
 
 ### 2. Gini Impurity (Measuring the "Messiness")
-To judge a question, the AI calculates the **Gini Impurity ($G$)** of the rooms. 
+To judge a question, the <abbr title="Artificial Intelligence">AI</abbr> calculates the **Gini Impurity ($G$)** of the rooms. 
 Gini Impurity measures how "messy" or "mixed up" a room is.
 
 **The Formula:**
@@ -40,9 +40,9 @@ $$ G = 1 - \sum (p_i)^2 $$
 >   - Math: $1 - (1.0^2 + 0.0^2) \rightarrow 1 - 1 = \mathbf{0.0}$ (Perfectly pure!)
 
 ### 3. Information Gain
-To pick the best question, the AI tests every possible question (e.g., "Weight > 1?", "Weight > 2?") and calculates the **Information Gain**:
+To pick the best question, the <abbr title="Artificial Intelligence">AI</abbr> tests every possible question (e.g., "Weight > 1?", "Weight > 2?") and calculates the **Information Gain**:
 $$ \text{Gain} = \text{Impurity Before Split} - \text{Weighted Average Impurity After Split} $$
-The AI permanently locks in the question that provides the highest Information Gain, splits the data, and then repeats the process on the new sub-rooms!
+The <abbr title="Artificial Intelligence">AI</abbr> permanently locks in the question that provides the highest Information Gain, splits the data, and then repeats the process on the new sub-rooms!
 
 ### 4. The Fatal Flaw: Infinite Overfitting (High Variance)
 If you let a Decision Tree run forever, it will keep asking questions until every single room has exactly 1 animal in it. It will achieve 100% training accuracy, but it will have completely memorized the noise in the data (Massive Overfitting / High Variance).
@@ -55,7 +55,7 @@ To stop this, we use **Pruning**:
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's write a Python script that calculates exactly how the AI "thinks" when deciding which question to ask. Then, we will build a real Decision Tree using `scikit-learn` and prove how Pre-Pruning saves the model from Overfitting.
+Let's write a Python script that calculates exactly how the <abbr title="Artificial Intelligence">AI</abbr> "thinks" when deciding which question to ask. Then, we will build a real Decision Tree using `scikit-learn` and prove how Pre-Pruning saves the model from Overfitting.
 
 Create a file named `decision_tree_mechanics.py`:
 
@@ -164,8 +164,8 @@ if __name__ == "__main__":
 ### 🛠️ The Challenge: The Regression Tree
 Decision trees can also predict continuous numbers (like House Prices)!
 **Your Task:**
-1. In a Classification Tree, the AI calculates "Gini Impurity."
-2. In a Regression Tree (`DecisionTreeRegressor`), the AI calculates "Mean Squared Error (MSE)."
+1. In a Classification Tree, the <abbr title="Artificial Intelligence">AI</abbr> calculates "Gini Impurity."
+2. In a Regression Tree (`DecisionTreeRegressor`), the <abbr title="Artificial Intelligence">AI</abbr> calculates "Mean Squared Error (MSE)."
 3. Write a Python function `calculate_mse_gain(parent_prices, left_prices, right_prices)`.
 4. To find the "Impurity" of a room of prices, just calculate the Variance (MSE from the mean): `np.mean((prices - np.mean(prices))**2)`.
 5. Prove that splitting a room of prices `[100k, 105k, 900k, 950k]` into `[100k, 105k]` and `[900k, 950k]` results in massive MSE Information Gain!
@@ -183,7 +183,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **Why they are High-Variance:** 
    - State that because Decision Trees make strict, hard binary splits (Yes/No), they are incredibly sensitive to the exact data they are trained on. If you change just a single data point at the top of the tree, the entire bottom of the tree will completely change its structure. They memorize noise instantly.
 2. **The Ensemble Connection (Why the flaw is a feature):**
-   - Explain that if you want to build a "Random Forest" (a committee of 100 AI models voting on an answer), you *want* the models to disagree with each other. If you train 100 stable, Low-Variance models (like Linear Regression), they will all vote exactly the same way, completely defeating the purpose of a committee!
+   - Explain that if you want to build a "Random Forest" (a committee of 100 <abbr title="Artificial Intelligence">AI</abbr> models voting on an answer), you *want* the models to disagree with each other. If you train 100 stable, Low-Variance models (like Linear Regression), they will all vote exactly the same way, completely defeating the purpose of a committee!
    - Because Decision Trees are High-Variance, training 100 trees on slightly different data will result in 100 wildly different, highly opinionated trees. When you mathematically average their votes together, the chaotic variance perfectly cancels out, leaving behind incredibly accurate, highly robust intelligence!
 
 ---

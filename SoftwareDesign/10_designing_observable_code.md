@@ -261,7 +261,7 @@ central redaction — is the same.
 | Level | Means | Who acts | Example |
 |---|---|---|---|
 | **ERROR** | A request/job failed and the system could not recover | Someone should look (often via a metric alert, not the log itself) | Unhandled exception at the boundary; data inconsistency detected |
-| **WARN** | Something unexpected, handled, but a trend would be a problem | Nobody now; dashboards | Retry succeeded on attempt 3; fallback used; deprecated API called |
+| **WARN** | Something unexpected, handled, but a trend would be a problem | Nobody now; dashboards | Retry succeeded on attempt 3; fallback used; deprecated <abbr title="Application Programming Interface">API</abbr> called |
 | **INFO** | Significant business or lifecycle events | Nobody; used for investigation | Service started with config hash; order placed; job completed |
 | **DEBUG** | Detail useful while developing or diagnosing one component | Off in production, or on dynamically per request/module | SQL text, cache hit/miss per key |
 
@@ -285,7 +285,7 @@ log 4xx at INFO or not at all, and count them in a metric.
 
 ### Don't log these
 
-- **Secrets and credentials:** passwords, tokens, API keys, session cookies,
+- **Secrets and credentials:** passwords, tokens, <abbr title="Application Programming Interface">API</abbr> keys, session cookies,
   `Authorization` headers, connection strings.
 - **Personal data you don't need:** full names, emails, addresses, card numbers, message
   bodies. Log the **ID** instead; the data is one lookup away for someone authorised.
@@ -471,7 +471,7 @@ second — and a page that makes 20 backend calls hits that tail on ~18% of page
 
 Histogram design notes:
 
-- **Bucket boundaries are part of the API.** Choose them around your SLO (if the target is
+- **Bucket boundaries are part of the <abbr title="Application Programming Interface">API</abbr>.** Choose them around your SLO (if the target is
   300 ms, have a bucket boundary at 0.3). Changing buckets later breaks historical
   comparisons.
 - Percentiles from histograms are **estimates bounded by bucket edges** ("≤ 1 s"). Native

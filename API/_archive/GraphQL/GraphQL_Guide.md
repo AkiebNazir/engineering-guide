@@ -36,8 +36,8 @@ sequenceDiagram
 **Pros:**
 - **No Over/Under-fetching**: The client gets exactly the data it asks for, no more, no less. Ideal for mobile networks.
 - **Single Request Payload**: Complex views requiring data from 5 different databases can be resolved in one HTTP request from the client's perspective.
-- **Strongly Typed**: The schema serves as strict API documentation. Tooling (GraphiQL, Apollo) auto-generates types for front-end frameworks.
-- **API Evolution**: You can deprecate individual fields in the schema without versioning the entire API (`/v1` vs `/v2`).
+- **Strongly Typed**: The schema serves as strict <abbr title="Application Programming Interface">API</abbr> documentation. Tooling (GraphiQL, Apollo) auto-generates types for front-end frameworks.
+- **<abbr title="Application Programming Interface">API</abbr> Evolution**: You can deprecate individual fields in the schema without versioning the entire <abbr title="Application Programming Interface">API</abbr> (`/v1` vs `/v2`).
 
 **Cons:**
 - **N+1 Query Problem**: If a query asks for a list of 10 users and their 5 recent posts, naive resolvers will hit the database 1 time for users, and 10 times for posts (1+10). (Requires DataLoader pattern to fix).
@@ -46,7 +46,7 @@ sequenceDiagram
 
 ### System Design Fit
 **Optimal Scenarios:**
-- **Backend-For-Frontend (BFF)**: An API Gateway aggregating data from multiple underlying microservices into one clean schema for mobile/web clients.
+- **Backend-For-Frontend (BFF)**: An <abbr title="Application Programming Interface">API</abbr> Gateway aggregating data from multiple underlying microservices into one clean schema for mobile/web clients.
 - **Complex UI Dashboards**: UIs where different components need vastly different slices of the data model.
 - **Federation**: Stitching together multiple independent GraphQL APIs across different teams into one "Supergraph" (Apollo Federation).
 
@@ -293,8 +293,8 @@ class Mutation:
 
 ---
 
-### Use Case 4: API Gateway / BFF (Wrapping REST)
-**System Design Fit:** The backend GraphQL server acts as a proxy, fetching data from an old REST API and providing it to the client via GraphQL.
+### Use Case 4: <abbr title="Application Programming Interface">API</abbr> Gateway / BFF (Wrapping REST)
+**System Design Fit:** The backend GraphQL server acts as a proxy, fetching data from an old REST <abbr title="Application Programming Interface">API</abbr> and providing it to the client via GraphQL.
 
 #### Golang (Resolver calling REST)
 ```go

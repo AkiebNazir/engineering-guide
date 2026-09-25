@@ -1,9 +1,9 @@
 # Day 109: Continued Pre-Training & Domain Adaptation
 
-Welcome to Day 109. You work for a pharmaceutical company. You want an LLM that understands complex genetics and biology.
-You try Supervised Fine-Tuning (SFT), but the model hallucinates wildly. You try RAG, but the model fails to comprehend the retrieved documents because it doesn't actually understand the fundamental vocabulary of molecular biology.
+Welcome to Day 109. You work for a pharmaceutical company. You want an <abbr title="Large Language Model">LLM</abbr> that understands complex genetics and biology.
+You try Supervised Fine-Tuning (SFT), but the model hallucinates wildly. You try <abbr title="Retrieval-Augmented Generation">RAG</abbr>, but the model fails to comprehend the retrieved documents because it doesn't actually understand the fundamental vocabulary of molecular biology.
 
-How do you inject massive, fundamental knowledge into an LLM? 
+How do you inject massive, fundamental knowledge into an <abbr title="Large Language Model">LLM</abbr>? 
 You do not use SFT. SFT is for *behavior*. To inject *raw knowledge*, you must use **Continued Pre-Training (CPT)**.
 
 ---
@@ -126,18 +126,18 @@ How do you know if your CPT worked? You measure **Perplexity** (how "surprised" 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"A pharmaceutical company wants an LLM specialized in drug discovery. They have 10 Million PDFs of internal research. Design the complete adaptation pipeline from base model to production deployment. Importantly, how do you validate the scientific accuracy?"*
+*"A pharmaceutical company wants an <abbr title="Large Language Model">LLM</abbr> specialized in drug discovery. They have 10 Million PDFs of internal research. Design the complete adaptation pipeline from base model to production deployment. Importantly, how do you validate the scientific accuracy?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
-1. **The Pipeline (CPT -> SFT -> DPO):** 
+1. **The Pipeline (CPT -> SFT -> <abbr title="Direct Preference Optimization">DPO</abbr>):** 
    - State that you extract the text from the 10M PDFs and run **Continued Pre-Training** (with $20\%$ General Replay data) to inject the biological vocabulary.
    - Then, you use GPT-4 to generate Q/A pairs based on those PDFs, and run **Supervised Fine-Tuning** to teach it how to act like a helpful lab assistant.
-   - Finally, you run **DPO** to align it for safety.
+   - Finally, you run **<abbr title="Direct Preference Optimization">DPO</abbr>** to align it for safety.
 2. **Validating Scientific Accuracy:**
    - Explain that Perplexity and standard benchmarks (MMLU) are not enough for enterprise Pharma. 
-   - Propose a customized **LLM-as-a-Judge** pipeline. You prompt GPT-4 with a strict grading rubric created by PhD Chemists to evaluate the model's generated drug synthesis pathways for factual hallucinations. You also enforce rigorous A/B testing with internal scientists.
+   - Propose a customized **<abbr title="Large Language Model">LLM</abbr>-as-a-Judge** pipeline. You prompt GPT-4 with a strict grading rubric created by PhD Chemists to evaluate the model's generated drug synthesis pathways for factual hallucinations. You also enforce rigorous A/B testing with internal scientists.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

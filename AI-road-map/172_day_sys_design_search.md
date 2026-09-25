@@ -17,8 +17,8 @@ A 2026 Search Engine (like Google or Perplexity) follows a 4-step pipeline:
 2. **Hybrid Retrieval (L0):** We use *two* systems to pull 1,000 candidate documents:
    - *BM25 (Exact Match):* Great for finding specific IDs or exact names.
    - *Dense Vector Search:* Great for semantic meaning ("notebook power cell").
-3. **Cross-Encoder Reranking (L1):** We take the 1,000 candidates and pass them through a heavy NLP model that looks at the query and the document *simultaneously*, scoring their relevance 1-100.
-4. **Answer Generation (L2):** We take the top 5 reranked documents and pass them into an LLM to generate the "Quick Answer" box at the top of the Google search results.
+3. **Cross-Encoder Reranking (L1):** We take the 1,000 candidates and pass them through a heavy <abbr title="Natural Language Processing">NLP</abbr> model that looks at the query and the document *simultaneously*, scoring their relevance 1-100.
+4. **Answer Generation (L2):** We take the top 5 reranked documents and pass them into an <abbr title="Large Language Model">LLM</abbr> to generate the "Quick Answer" box at the top of the Google search results.
 
 ### 2. The Bi-Encoder vs Cross-Encoder
 *Analogy:* 
@@ -137,12 +137,12 @@ Research **Reciprocal Rank Fusion (RRF)**. It is an algorithm that combines sear
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
-1. **Query Understanding:** Draw an API gateway that routes the query to an NLP service. The service fixes spelling (e.g., `iphne -> iphone`), detects intent (is this a brand search or a category search?), and extracts entities.
+1. **Query Understanding:** Draw an <abbr title="Application Programming Interface">API</abbr> gateway that routes the query to an <abbr title="Natural Language Processing">NLP</abbr> service. The service fixes spelling (e.g., `iphne -> iphone`), detects intent (is this a brand search or a category search?), and extracts entities.
 2. **Hybrid Indexing:** Draw an Elasticsearch cluster (for BM25 and filtering inventory > 0) side-by-side with a Vector Database (for semantic matching). 
 3. **The Indexing Pipeline (Freshness):** How does the database update when a seller changes a price? Explain a Kafka event-streaming architecture. When a price updates, a Kafka event triggers an update in Elasticsearch instantly (preventing the user from seeing stale prices).
-4. **Learning to Rank (LTR):** Explain that the Reranker isn't just a generic NLP model. It is trained on user click-data. If users search "apple" and click the iPhone 99% of the time, the reranker learns to boost the iPhone over an actual fruit.
+4. **Learning to Rank (LTR):** Explain that the Reranker isn't just a generic <abbr title="Natural Language Processing">NLP</abbr> model. It is trained on user click-data. If users search "apple" and click the iPhone 99% of the time, the reranker learns to boost the iPhone over an actual fruit.
 
 ---
 **Task for the end of the day:** Review **Elasticsearch**. It is the backbone of almost every text search engine on earth.
 
-Tomorrow, in **Day 173**, we design a system where latency is a matter of life and death: **Real-Time Fraud Detection**. How do you use ML to block a stolen credit card in under 50 milliseconds?
+Tomorrow, in **Day 173**, we design a system where latency is a matter of life and death: **Real-Time Fraud Detection**. How do you use <abbr title="Machine Learning">ML</abbr> to block a stolen credit card in under 50 milliseconds?

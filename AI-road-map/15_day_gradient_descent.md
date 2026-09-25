@@ -4,7 +4,7 @@ Welcome to Day 15! Today marks the beginning of **Phase 3: Optimization Theory**
 
 For the past two weeks, we defined the "Loss" of a model (how many mistakes it makes) using Calculus and Probability. But knowing *how many* mistakes you made doesn't fix the model. We need an algorithm that actually updates the Neural Network's weights to make it smarter.
 
-That algorithm is **Gradient Descent**. It is the engine that powers every single modern AI, from linear regression models to GPT-4. Today, we build that engine from scratch.
+That algorithm is **Gradient Descent**. It is the engine that powers every single modern <abbr title="Artificial Intelligence">AI</abbr>, from linear regression models to GPT-4. Today, we build that engine from scratch.
 
 ---
 
@@ -29,7 +29,7 @@ Where:
 - $\theta_{t+1}$: Your new, smarter weights after taking the step.
 
 ### 3. Convergence Conditions & The Learning Rate ($\eta$)
-The **Learning Rate** is the single most important hyperparameter in AI.
+The **Learning Rate** is the single most important hyperparameter in <abbr title="Artificial Intelligence">AI</abbr>.
 - **Too Large:** You take a massive step, overshoot the bottom of the valley entirely, and bounce up the other side. The model "explodes."
 - **Too Small:** You take microscopic baby steps. The model might take 5,000 years to reach the bottom.
 - **Just Right:** The model smoothly glides to the bottom in minimal steps.
@@ -197,4 +197,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. Look at your 3D plot and marvel at how simple calculus equations can find the mathematical center of the universe.
 
-Tomorrow, in **Day 16**, we realize that calculating the gradient for 1 million data points per step is far too slow. We will introduce **Stochastic Gradient Descent (SGD)** and add intentional noise to the system!
+Tomorrow, in **Day 16**, we realize that calculating the gradient for 1 million data points per step is far too slow. We will introduce **Stochastic Gradient Descent (<abbr title="Stochastic Gradient Descent">SGD</abbr>)** and add intentional noise to the system!

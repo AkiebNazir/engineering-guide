@@ -25,7 +25,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope QPS, storage, and bandwidth estimates.
-3. API contracts and core data model.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
 5. Request steering (DNS versus anycast), the cache hierarchy with placement inside a POP and hot-object handling, cache-key design and request collapsing, purge at scale, TLS and certificate management, and the split between control plane and data plane, including origin-failure behaviour.
 6. Cache, scale, abuse, failure, and observability plan.

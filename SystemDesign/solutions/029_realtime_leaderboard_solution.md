@@ -14,7 +14,7 @@
 - **Hot keys in the hybrid design**: each update costs 2 histogram increments (old bucket down, new bucket up), so the 20K/s burst puts 40K ops/s on one histogram key, while the 16 shards see only ~1,250 writes/s each. That is inside one Redis thread's ~100K ops/s but it is the tightest spot in the design, so split the histogram across a few keys by bucket range.
 - **Scale check**: 20M DAU × ~5 matches = 100M results/day ≈ 1.2K/s average, consistent with the 5K/s peak (4.3×). At an assumed 200 B per result that is 20 GB/day, about 7 TB/year in the score DB, which is the growing cost; the sorted sets are the small one.
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/matches/{match_id}/result      {player_id, score_delta, ...}   # from game servers, signed; idempotent by match_id
@@ -88,7 +88,7 @@ At 100M players and several boards, one node holds too much in one failure domai
 
 - **Global top set**: a single sorted set holding only the top ~1,000 scores (updaters add a player when their score beats the set's minimum and trim the rest). Top 100 and exact ranks for top players come from here.
 - **Player shards**: all players in N hash-partitioned sorted sets (e.g. 16 shards of ~6M each) for exact score and neighbour queries within a shard and for rebuilding.
-- **Score histogram**: per board, a count of players per score bucket (e.g. 10,000 buckets), updated on every score change (decrement old bucket, increment new). A player's global rank ≈ number of players in higher buckets + interpolated position within their bucket. `O(buckets)` memory (10,000 × 8 B = 80 KB). Use equi-depth boundaries taken from the nightly score quantiles (fixed-width buckets over a skewed distribution can put millions of players in one bucket): each bucket then holds about 10K players and the worst-case error is half a bucket, about 5,000 ranks, which is 0.4% at rank 1.2M. The read path does not scan buckets: each API instance caches the cumulative counts (80 KB) refreshed every second and binary-searches them, so a rank read is `O(log buckets)` and the histogram key sees one refresh per instance per second, not 50K reads/s.
+- **Score histogram**: per board, a count of players per score bucket (e.g. 10,000 buckets), updated on every score change (decrement old bucket, increment new). A player's global rank ≈ number of players in higher buckets + interpolated position within their bucket. `O(buckets)` memory (10,000 × 8 B = 80 KB). Use equi-depth boundaries taken from the nightly score quantiles (fixed-width buckets over a skewed distribution can put millions of players in one bucket): each bucket then holds about 10K players and the worst-case error is half a bucket, about 5,000 ranks, which is 0.4% at rank 1.2M. The read path does not scan buckets: each <abbr title="Application Programming Interface">API</abbr> instance caches the cumulative counts (80 KB) refreshed every second and binary-searches them, so a rank read is `O(log buckets)` and the histogram key sees one refresh per instance per second, not 50K reads/s.
 
 Rank read for a player: if their score ≥ top set minimum → exact rank from the top set; else → histogram estimate, flagged `rank_is_approx`.
 

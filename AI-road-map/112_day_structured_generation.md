@@ -2,30 +2,30 @@
 
 Welcome to Day 112. 
 
-If you use an LLM as the "brain" of a web application, you need the LLM to output structured data (like JSON) so your backend database can process it. 
+If you use an <abbr title="Large Language Model">LLM</abbr> as the "brain" of a web application, you need the <abbr title="Large Language Model">LLM</abbr> to output structured data (like JSON) so your backend database can process it. 
 
 You write a prompt: *"Extract the user's name and age from this text. Output strict JSON."*
-$95\%$ of the time, the LLM outputs perfect JSON.
+$95\%$ of the time, the <abbr title="Large Language Model">LLM</abbr> outputs perfect JSON.
 But $5\%$ of the time, it forgets a closing bracket `}`, or it adds a conversational prefix like *"Here is the JSON you requested:"*. 
 When your Python backend calls `json.loads(llm_output)`, your entire application crashes. 
 
-Today, we learn **Structured Generation**. We will mathematically force the LLM to output $100\%$ valid JSON, every single time!
+Today, we learn **Structured Generation**. We will mathematically force the <abbr title="Large Language Model">LLM</abbr> to output $100\%$ valid JSON, every single time!
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Parsing Nightmare
-Developers usually try to fix the $5\%$ failure rate by writing complex Regex scripts to strip away the conversational prefixes, or by writing "Retry Loops" (if it fails, ask the LLM to try again). 
-This increases latency and API costs massively.
+Developers usually try to fix the $5\%$ failure rate by writing complex Regex scripts to strip away the conversational prefixes, or by writing "Retry Loops" (if it fails, ask the <abbr title="Large Language Model">LLM</abbr> to try again). 
+This increases latency and <abbr title="Application Programming Interface">API</abbr> costs massively.
 
 ### 2. Constrained Decoding (Masking Logits)
-During Generation, an LLM outputs a probability distribution over its entire vocabulary of 32,000 words. 
+During Generation, an <abbr title="Large Language Model">LLM</abbr> outputs a probability distribution over its entire vocabulary of 32,000 words. 
 What if we just *delete* the probabilities of words that break our JSON syntax?
 
-If the LLM has already generated `{"name": "John"`, the JSON format dictates that the *only* valid next character is a comma `,` or a closing bracket `}`. 
-Before the LLM selects the next token, we intercept the probabilities. We set the probability of `,` and `}` to their normal values, and we set the probability of every other word in the dictionary to **Negative Infinity**! 
-The LLM is mathematically forced to output a valid JSON character!
+If the <abbr title="Large Language Model">LLM</abbr> has already generated `{"name": "John"`, the JSON format dictates that the *only* valid next character is a comma `,` or a closing bracket `}`. 
+Before the <abbr title="Large Language Model">LLM</abbr> selects the next token, we intercept the probabilities. We set the probability of `,` and `}` to their normal values, and we set the probability of every other word in the dictionary to **Negative Infinity**! 
+The <abbr title="Large Language Model">LLM</abbr> is mathematically forced to output a valid JSON character!
 
 ### 3. Finite State Machines (FSM)
 How do we know which characters are valid at any given microsecond?
@@ -112,33 +112,33 @@ if __name__ == "__main__":
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: SQL Constrained Decoding
-You want an LLM to generate SQL queries. But LLMs hallucinate table names!
+You want an <abbr title="Large Language Model">LLM</abbr> to generate SQL queries. But LLMs hallucinate table names!
 **Your Task:**
 1. Conceptually design an FSM constraint for SQL.
 2. If your database only has a `users` table and an `orders` table, you can write a Regex constraint: `SELECT \* FROM (users|orders)`.
-3. If you pass this Regex to `outlines.generate.regex(model, pattern)`, the LLM is mathematically prevented from querying any table that doesn't exist! It literally cannot hallucinate!
+3. If you pass this Regex to `outlines.generate.regex(model, pattern)`, the <abbr title="Large Language Model">LLM</abbr> is mathematically prevented from querying any table that doesn't exist! It literally cannot hallucinate!
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You need 100% valid JSON from an LLM in a high-traffic production app. Compare three approaches: OpenAI's 'JSON Mode', Constrained Decoding (Outlines), and Post-Processing Retry Loops. Discuss reliability and latency."*
+*"You need 100% valid JSON from an <abbr title="Large Language Model">LLM</abbr> in a high-traffic production app. Compare three approaches: OpenAI's 'JSON Mode', Constrained Decoding (Outlines), and Post-Processing Retry Loops. Discuss reliability and latency."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Post-Processing Retry Loops:** 
-   - Dismiss this immediately for high-traffic apps. Catching a `JSONDecodeError` and re-prompting the LLM doubles the API cost and doubles the latency for the user.
+   - Dismiss this immediately for high-traffic apps. Catching a `JSONDecodeError` and re-prompting the <abbr title="Large Language Model">LLM</abbr> doubles the <abbr title="Application Programming Interface">API</abbr> cost and doubles the latency for the user.
 2. **OpenAI JSON Mode:**
-   - Explain that API "JSON Mode" guarantees the output is syntactically valid JSON. *However*, it does NOT guarantee it matches your specific schema! It might output `{"first_name": "John"}` when your backend expected `{"name": "John"}`. Your app will still crash with a `KeyError`.
+   - Explain that <abbr title="Application Programming Interface">API</abbr> "JSON Mode" guarantees the output is syntactically valid JSON. *However*, it does NOT guarantee it matches your specific schema! It might output `{"first_name": "John"}` when your backend expected `{"name": "John"}`. Your app will still crash with a `KeyError`.
 3. **Constrained Decoding (Outlines):**
    - Crown this the winner for self-hosted models. It guarantees valid syntax AND guarantees exact schema adherence. Because it masks logits during the forward pass, it requires exactly zero retries, providing the lowest latency and highest reliability.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-We can now guarantee the LLM outputs perfect JSON. 
+We can now guarantee the <abbr title="Large Language Model">LLM</abbr> outputs perfect JSON. 
 But what do we *do* with that JSON? What if that JSON represents a command to execute a Python function or search the web?
 
-Tomorrow, in **Day 113**, we learn the foundation of Agentic AI: **Tool Use and Function Calling Architecture**!
+Tomorrow, in **Day 113**, we learn the foundation of Agentic <abbr title="Artificial Intelligence">AI</abbr>: **Tool Use and Function Calling Architecture**!

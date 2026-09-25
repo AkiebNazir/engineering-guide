@@ -22,7 +22,7 @@ To turn Common Crawl into a dataset like **RedPajama** or **FineWeb**, you must 
 
 ### 3. The Deduplication Problem (MinHash)
 The internet is full of duplicates. The WordPress footer *"Proudly powered by WordPress"* exists on 100 Million websites.
-If you train an LLM on 100 Million identical sentences, the LLM will overfit. It will literally memorize the string and spit it out randomly.
+If you train an <abbr title="Large Language Model">LLM</abbr> on 100 Million identical sentences, the <abbr title="Large Language Model">LLM</abbr> will overfit. It will literally memorize the string and spit it out randomly.
 **The Solution: MinHash & Jaccard Similarity.**
 Exact string matching ($O(N^2)$) would take years for petabytes of data. 
 MinHash mathematically hashes every document into a tiny "Signature" vector. It then compares the signatures to calculate the Approximate Jaccard Similarity. It can find documents that are $95\%$ identical in milliseconds, allowing you to delete the 99 Million duplicate footers!
@@ -140,10 +140,10 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **The Pipeline Scale:** 
    - State that you cannot run this on a single machine. You must use Apache Spark or Ray clusters to distribute the MinHash LSH and Quality Filtering logic across hundreds of CPU nodes.
 2. **PII Scrubbing:**
-   - Explain that LLMs memorize data. If a Social Security Number is in the dataset, the LLM might output it during a chat. You must use regex pipelines (like Microsoft's Presidio) to mask `[PHONE_NUMBER]` or `[EMAIL]` during the extraction phase.
+   - Explain that LLMs memorize data. If a Social Security Number is in the dataset, the <abbr title="Large Language Model">LLM</abbr> might output it during a chat. You must use regex pipelines (like Microsoft's Presidio) to mask `[PHONE_NUMBER]` or `[EMAIL]` during the extraction phase.
 3. **Decontamination (The Holy Grail):**
    - Decontamination means ensuring your test sets (like the GSM8k math benchmark or the Bar Exam questions) are **NOT** in your training data! 
-   - If the LLM reads the Bar Exam during training, it will get a 100% on the test, but it didn't actually learn law—it just memorized the answer key (Data Leakage). You must run strict N-Gram deduplication against all known public benchmarks *before* training begins!
+   - If the <abbr title="Large Language Model">LLM</abbr> reads the Bar Exam during training, it will get a 100% on the test, but it didn't actually learn law—it just memorized the answer key (Data Leakage). You must run strict N-Gram deduplication against all known public benchmarks *before* training begins!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

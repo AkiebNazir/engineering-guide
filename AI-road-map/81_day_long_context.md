@@ -1,7 +1,7 @@
 # Day 81: Long Context (Ring Attention & PI)
 
 Welcome to Day 81. In Day 72, we learned that Flash Attention solves the GPU memory bottleneck for sequences up to 8,000 words. 
-But what if a lawyer wants to upload a 1-Million word legal case into an LLM? 
+But what if a lawyer wants to upload a 1-Million word legal case into an <abbr title="Large Language Model">LLM</abbr>? 
 
 Even with Flash Attention, a 1-Million word sequence will instantly crash the GPU. Today, we learn the mathematical tricks that companies like Google and Anthropic use to achieve infinite context windows.
 
@@ -30,7 +30,7 @@ The 8 GPUs are connected in a physical ring network (NVLink).
 They pass the blocks in a circle until every GPU has seen every block. By overlapping the network communication with the math, the GPUs achieve infinite context scaling without crashing!
 
 ### 3. Position Interpolation (PI)
-There is a second problem. Even if you have the hardware, the AI's math breaks. 
+There is a second problem. Even if you have the hardware, the <abbr title="Artificial Intelligence">AI</abbr>'s math breaks. 
 LLaMA 2 was only trained on 4,000 words. It uses RoPE (Rotary Position Embeddings), which rotates vectors based on their position index ($0, 1, 2... 4000$).
 If you give it Word 4001, the math is "Extrapolating" into unseen angles. The model instantly hallucinates gibberish.
 
@@ -121,21 +121,21 @@ if __name__ == "__main__":
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design a system that can answer questions over 1-Million token documents. Discuss chunking, retrieval (RAG), and long-context model strategies. When is a RAG pipeline fundamentally better than simply dumping 1M tokens into a Long-Context LLM?"*
+*"Design a system that can answer questions over 1-Million token documents. Discuss chunking, retrieval (<abbr title="Retrieval-Augmented Generation">RAG</abbr>), and long-context model strategies. When is a <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline fundamentally better than simply dumping 1M tokens into a Long-Context <abbr title="Large Language Model">LLM</abbr>?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Cost and Latency Trade-off:** 
    - State that dumping 1M tokens into Gemini 1.5 Pro or Claude 3 takes ~30 to 60 seconds to process the prompt, and costs several dollars *per query*. It is economically unviable for high-traffic B2C applications.
-   - RAG (Retrieval-Augmented Generation) takes the 1M words, chunks them, and stores them in a Vector Database. The query runs in 50 milliseconds, extracts only the relevant 2,000 words, and costs fractions of a cent to generate an answer.
+   - <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval-Augmented Generation) takes the 1M words, chunks them, and stores them in a Vector Database. The query runs in 50 milliseconds, extracts only the relevant 2,000 words, and costs fractions of a cent to generate an answer.
 2. **The "Lost in the Middle" Phenomenon:**
    - Explain that even the best long-context LLMs suffer from "Lost in the Middle". They perfectly remember the first 10% and the last 10% of the document, but often hallucinate or fail to retrieve specific facts buried in the middle 500k words.
 3. **When to use Long-Context:**
-   - Conclude that RAG is superior for *Fact Retrieval* ("What is the specific clause in section 4?"). 
-   - Long-Context is mandatory for *Holistic Reasoning* ("Summarize the entire 1M document and identify overarching thematic contradictions"). RAG fails here because chunking destroys the global context!
+   - Conclude that <abbr title="Retrieval-Augmented Generation">RAG</abbr> is superior for *Fact Retrieval* ("What is the specific clause in section 4?"). 
+   - Long-Context is mandatory for *Holistic Reasoning* ("Summarize the entire 1M document and identify overarching thematic contradictions"). <abbr title="Retrieval-Augmented Generation">RAG</abbr> fails here because chunking destroys the global context!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-Tomorrow, in **Day 82**, we solve the final architectural hurdle: Giving the LLM eyes. We will build **LLaVA**, the Multi-Modal Transformer!
+Tomorrow, in **Day 82**, we solve the final architectural hurdle: Giving the <abbr title="Large Language Model">LLM</abbr> eyes. We will build **LLaVA**, the Multi-Modal Transformer!

@@ -5,7 +5,7 @@ Take a pre-trained open-source Base Model that knows nothing about you. Fine-tun
 
 ## Tech Stack to Use
 - **Base Model:** `meta-llama/Meta-Llama-3-8B` (from Hugging Face)
-- **Fine-Tuning:** `Transformers`, `TRL`, `PEFT`, `bitsandbytes` (QLoRA)
+- **Fine-Tuning:** `Transformers`, `TRL`, `PEFT`, `bitsandbytes` (<abbr title="Quantized Low-Rank Adaptation">QLoRA</abbr>)
 - **Deployment:** `llama.cpp` or `vLLM`
 - **Hardware:** Apple Silicon Mac (using MLX) OR an NVIDIA GPU (using standard PyTorch)
 
@@ -16,17 +16,17 @@ Take a pre-trained open-source Base Model that knows nothing about you. Fine-tun
 2. Format the data into a JSONL file containing Chat Templates.
    - Example format: `{"messages": [{"role": "user", "content": "Hey, when are you free?"}, {"role": "assistant", "content": "im super busy today tbh, maybe tmrw night?"}]}`
 
-### Step 2: QLoRA Fine-Tuning (The Training)
+### Step 2: <abbr title="Quantized Low-Rank Adaptation">QLoRA</abbr> Fine-Tuning (The Training)
 1. Write a script to load the Base Model in 4-bit quantization using `bitsandbytes`.
-2. Initialize a `LoraConfig` (PEFT). 
+2. Initialize a `LoraConfig` (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>). 
    - Set `r=16` and `lora_alpha=32`.
    - Target the `q_proj` and `v_proj` modules of the Transformer.
-3. Pass the quantized model, the LoRA config, and your JSONL dataset into TRL's `SFTTrainer`.
+3. Pass the quantized model, the <abbr title="Low-Rank Adaptation">LoRA</abbr> config, and your JSONL dataset into TRL's `SFTTrainer`.
 4. Run the training for exactly 1 or 2 epochs. (Do NOT overfit!)
 
 ### Step 3: Merging the Adapters
-1. The training will output a tiny 100MB LoRA adapter file. 
-2. Write a script to load the original Base Model in full precision, apply the LoRA adapter to it, and merge the weights back into the main matrices (`model.merge_and_unload()`).
+1. The training will output a tiny 100MB <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter file. 
+2. Write a script to load the original Base Model in full precision, apply the <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter to it, and merge the weights back into the main matrices (`model.merge_and_unload()`).
 3. Save the final merged model to your hard drive.
 
 ### Step 4: Quantization and GGUF Conversion
@@ -36,6 +36,6 @@ Take a pre-trained open-source Base Model that knows nothing about you. Fine-tun
    - Command: `python convert_hf_to_gguf.py ./my-merged-model --outtype q4_k_m`
 
 ### Step 5: Local Serving
-1. Start the `llama-cpp-python` API server using your new `.gguf` file.
+1. Start the `llama-cpp-python` <abbr title="Application Programming Interface">API</abbr> server using your new `.gguf` file.
 2. Write a simple Python script using the standard `openai` library to connect to `localhost:8000`.
-3. Have a conversation with the AI clone of yourself, running completely offline!
+3. Have a conversation with the <abbr title="Artificial Intelligence">AI</abbr> clone of yourself, running completely offline!

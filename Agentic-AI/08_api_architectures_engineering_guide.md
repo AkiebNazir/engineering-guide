@@ -1,4 +1,4 @@
-# Module 8 — API Architectures: REST, GraphQL, gRPC, and WebSockets
+# Module 8 — <abbr title="Application Programming Interface">API</abbr> Architectures: REST, GraphQL, gRPC, and WebSockets
 
 This is the ultimate engineering guide to the four dominant communication protocols in modern backend systems. 
 
@@ -242,7 +242,7 @@ sequenceDiagram
   ```
 
 #### 2. Server Streaming
-**Use Case**: Streaming LLM token generation back to the client.
+**Use Case**: Streaming <abbr title="Large Language Model">LLM</abbr> token generation back to the client.
 * **Python**:
   ```python
   def ServerStream(self, request, context):
@@ -412,12 +412,12 @@ sequenceDiagram
 
 ## 5. Interview Prep Guide (System Design)
 
-When asked to design a system, your choice of API protocol dictates the entire architecture. Memorize these tradeoffs:
+When asked to design a system, your choice of <abbr title="Application Programming Interface">API</abbr> protocol dictates the entire architecture. Memorize these tradeoffs:
 
 ### REST
 - **When to use**: Public APIs, simple CRUD, high cacheability.
 - **Pros**: Every CDN (Cloudflare, Fastly) knows how to cache standard HTTP GET requests out of the box. Extremely simple to debug.
-- **Cons**: Over-fetching (getting 50 fields when you need 2) and Under-fetching (having to make 5 sequential API calls to get related data).
+- **Cons**: Over-fetching (getting 50 fields when you need 2) and Under-fetching (having to make 5 sequential <abbr title="Application Programming Interface">API</abbr> calls to get related data).
 
 ### GraphQL
 - **When to use**: Complex frontend UIs (React/Next.js) that need highly specific, deeply nested data from multiple microservices.
@@ -425,7 +425,7 @@ When asked to design a system, your choice of API protocol dictates the entire a
 - **Cons**: Extremely hard to cache at the CDN level because every request is an `HTTP POST` to `/graphql`. Prone to the N+1 database query problem if resolvers aren't optimized with DataLoaders.
 
 ### gRPC / Protobuf
-- **When to use**: Internal Microservice-to-Microservice communication (e.g., your API Gateway talking to an AI inference engine).
+- **When to use**: Internal Microservice-to-Microservice communication (e.g., your <abbr title="Application Programming Interface">API</abbr> Gateway talking to an <abbr title="Artificial Intelligence">AI</abbr> inference engine).
 - **Pros**: Binary serialization is CPU-efficient and network-efficient. HTTP/2 multiplexing allows thousands of requests over a single TCP connection.
 - **Cons**: Not easily consumable by web browsers (requires gRPC-Web proxy). Hard to debug without specific CLI tools like `grpcurl`.
 

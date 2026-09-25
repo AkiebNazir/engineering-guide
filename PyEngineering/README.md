@@ -9,7 +9,7 @@ context managers instead of `defer`, exception hierarchies instead of error wrap
 
 Assume competence. No beginner syntax explanations — every file explains *design
 decisions*, trade-offs, performance, error handling, concurrency safety, and real-world
-API/service design. Target **Python 3.12+** idioms: `asyncio.TaskGroup`, PEP 695 generics
+<abbr title="Application Programming Interface">API</abbr>/service design. Target **Python 3.12+** idioms: `asyncio.TaskGroup`, PEP 695 generics
 (`class Foo[T]`), `tomllib`, structural pattern matching, `ExceptionGroup`.
 
 ## Layout
@@ -58,9 +58,9 @@ each problem's header comment states why. Fixed choices for consistency across p
 
 | # | Problem | Core concepts |
 |---|---|---|
-| 01 | REST API service | FastAPI routing, Pydantic validation, JSON, graceful shutdown |
+| 01 | REST <abbr title="Application Programming Interface">API</abbr> service | FastAPI routing, Pydantic validation, JSON, graceful shutdown |
 | 02 | Middleware chain | Structured logging, request IDs, exception handling, timeouts, auth |
-| 03 | API client with retries | Backoff, jitter, circuit breaker, `httpx` timeouts/cancellation |
+| 03 | <abbr title="Application Programming Interface">API</abbr> client with retries | Backoff, jitter, circuit breaker, `httpx` timeouts/cancellation |
 | 04 | Custom stream reader/writer | `io` subclassing, generators as transforms, backpressure |
 | 05 | Large file line processor | Chunked reads, memory-bounded parsing, iterator pipelines |
 | 06 | Atomic file store | Temp file + `os.replace`, `fsync`, permissions, crash safety |

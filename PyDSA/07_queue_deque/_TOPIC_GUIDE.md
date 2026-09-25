@@ -732,7 +732,7 @@ q.put(None); q.join()                                # join() waits until every 
 ```
 
 `queue.LifoQueue` is the thread-safe stack and `queue.PriorityQueue` the thread-safe heap. Across processes use
-`multiprocessing.Queue`; in `asyncio` use `asyncio.Queue` (the same API, awaitable).
+`multiprocessing.Queue`; in `asyncio` use `asyncio.Queue` (the same <abbr title="Application Programming Interface">API</abbr>, awaitable).
 
 ### 11.6 Two kinds of "full"
 

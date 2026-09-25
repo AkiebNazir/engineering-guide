@@ -13,7 +13,7 @@ Boosting algorithms (specifically XGBoost and LightGBM) are the undisputed champ
 
 ### 1. The Concept of "Weak Learners"
 Random Forests require massive, deep, overfitted trees. 
-Boosting requires **Weak Learners**. A weak learner is an AI model that is only *slightly* better than random guessing. Usually, we use a Decision Tree that is only allowed to ask a single question (Max Depth = 1). This is called a **Stump**.
+Boosting requires **Weak Learners**. A weak learner is an <abbr title="Artificial Intelligence">AI</abbr> model that is only *slightly* better than random guessing. Usually, we use a Decision Tree that is only allowed to ask a single question (Max Depth = 1). This is called a **Stump**.
 
 ### 2. AdaBoost (Adaptive Boosting)
 AdaBoost was the very first successful boosting algorithm. 
@@ -155,6 +155,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - The Hessian ($h_i$) acts as the denominator. It provides exact, mathematically perfect scaling, allowing XGBoost to jump instantly to the absolute minimum error in a single step, while the $\lambda$ provides L2 regularization to prevent the denominator from exploding.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You now possess the most powerful Classical ML tools on the planet: Random Forests and XGBoost.
+**Task for the end of the day:** Commit your code to Git. You now possess the most powerful Classical <abbr title="Machine Learning">ML</abbr> tools on the planet: Random Forests and XGBoost.
 
-Tomorrow, in **Day 27**, we will explore Unsupervised Learning. How do you train an AI when you *don't have the answers*? Enter **K-Means Clustering & DBSCAN!**
+Tomorrow, in **Day 27**, we will explore Unsupervised Learning. How do you train an <abbr title="Artificial Intelligence">AI</abbr> when you *don't have the answers*? Enter **K-Means Clustering & DBSCAN!**

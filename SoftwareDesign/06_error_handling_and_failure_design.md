@@ -20,12 +20,12 @@ run; outputs shown are real.
 
 | Topic | Where |
 |---|---|
-| Designing error *contracts* for an API (categories, `%w` as API) | `03_modularity_coupling_and_api_design.md` §8 |
+| Designing error *contracts* for an <abbr title="Application Programming Interface">API</abbr> (categories, `%w` as <abbr title="Application Programming Interface">API</abbr>) | `03_modularity_coupling_and_api_design.md` §8 |
 | Defining errors out of existence | `01_philosophy_of_software_design.md` §7 |
 | Circuit breakers, bulkheads, retry storms, backpressure (system scale) | `SystemDesign/building_blocks/12_application_resilience_patterns.md` |
 | Sagas, outbox, 2PC across services | `CSFundamentals/04_software_engineering_deep_dive.md` §2–§3 |
 | Save-pending → idempotent call → save-outcome in a use case | `08_application_architecture_in_code.md` §4.3 |
-| Runnable error taxonomy / retrying API client projects | `PyEngineering/17_error_taxonomy`, `03_api_client_with_retries`, `GoEngineering/17_*`, `03_*`, `32_context_and_timeouts_deep_dive` |
+| Runnable error taxonomy / retrying <abbr title="Application Programming Interface">API</abbr> client projects | `PyEngineering/17_error_taxonomy`, `03_api_client_with_retries`, `GoEngineering/17_*`, `03_*`, `32_context_and_timeouts_deep_dive` |
 
 ---
 
@@ -278,7 +278,7 @@ Rules:
    with credentials. An exception message is a log line waiting to happen.
 5. **Separate the internal message from the client message.** Clients get a stable
    code and a safe message; logs get the full chain. Leaking `psycopg2.errors...` text
-   to an API response reveals your stack and schema.
+   to an <abbr title="Application Programming Interface">API</abbr> response reveals your stack and schema.
 6. **Make errors structured when machines consume them:** a code/category field, not
    a sentence to grep.
 
@@ -1080,7 +1080,7 @@ widget nobody notices.
 
 | Situation | Strategy | Why |
 |---|---|---|
-| User-facing form or API request body | **Collect all** field errors | The user fixes everything in one round trip |
+| User-facing form or <abbr title="Application Programming Interface">API</abbr> request body | **Collect all** field errors | The user fixes everything in one round trip |
 | Batch import of a million rows | **Collect per row**, continue, report a summary; abort if error rate > threshold | One bad row shouldn't block the batch; 90% bad means a wrong file |
 | Precondition inside domain logic | **Fail on first** | Later checks may depend on earlier ones |
 | Config at startup | **Collect all**, then refuse to start | Fix the deployment once, not five times |

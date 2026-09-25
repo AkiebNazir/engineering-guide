@@ -90,9 +90,9 @@ So we need a cache-fronted, `id1`-sharded store where MySQL sees only 1% of read
 
 ## Part 2 — TAO
 
-Before TAO, Facebook's web tier used memcache look-aside for the graph. The paper lists the reasons it stopped: a key-value cache fits edge lists badly (a change to one edge reloads the whole list), control logic ran on clients that never talk to each other (more failure modes, harder to avoid thundering herds), and read-after-write consistency was expensive on top of asynchronous MySQL replication. TAO is a service that implements the objects-and-associations API directly.
+Before TAO, Facebook's web tier used memcache look-aside for the graph. The paper lists the reasons it stopped: a key-value cache fits edge lists badly (a change to one edge reloads the whole list), control logic ran on clients that never talk to each other (more failure modes, harder to avoid thundering herds), and read-after-write consistency was expensive on top of asynchronous MySQL replication. TAO is a service that implements the objects-and-associations <abbr title="Application Programming Interface">API</abbr> directly.
 
-**API.** Objects: `obj_add`, `obj_get`, `obj_update`, `obj_delete`. Associations: `assoc_add`, `assoc_delete`, `assoc_get(id1, atype, id2set, high, low)`, `assoc_count(id1, atype)`, `assoc_range(id1, atype, pos, limit)`, `assoc_time_range(id1, atype, high, low, limit)`. Cache servers know the semantics, so a cached count of zero answers a range query without touching the database.
+**<abbr title="Application Programming Interface">API</abbr>.** Objects: `obj_add`, `obj_get`, `obj_update`, `obj_delete`. Associations: `assoc_add`, `assoc_delete`, `assoc_get(id1, atype, id2set, high, low)`, `assoc_count(id1, atype)`, `assoc_range(id1, atype, pos, limit)`, `assoc_time_range(id1, atype, high, low, limit)`. Cache servers know the semantics, so a cached count of zero answers a range query without touching the database.
 
 ```arch
 %% caption: Clients read from a nearby follower tier, followers forward misses and writes to the region's leader, and slave regions send writes to the master region while reading their local replica.

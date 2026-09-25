@@ -64,7 +64,7 @@ a -> b dashed color=red     flags: dashed thick straight, color=<c>
 
 `blue purple green orange red pink teal slate amber indigo cyan`. Tiles pick their
 colour from the icon's category (compute orange, network purple, storage green,
-database blue, security red, messaging pink, AI teal, observability pink, client
+database blue, security red, messaging pink, <abbr title="Artificial Intelligence">AI</abbr> teal, observability pink, client
 slate), which gives the AWS look for free. Use `color=` on groups, boxes, circles and
 decisions to group meaning: e.g. green = success path, red = failure, amber =
 decision.
@@ -80,7 +80,7 @@ Generic (drawn white on the category-coloured tile):
 * **messaging**: queue stream topic event webhook email notify message chat sync workflow sitemap forum
 * **security**: auth lock key secrets identity shield alert
 * **observability**: metrics dashboard logs monitor gauge trace timer speed eye time
-* **AI**: llm model agent bot tool prompt embed idea
+* **<abbr title="Artificial Intelligence">AI</abbr>**: llm model agent bot tool prompt embed idea
 * **misc**: payment cart store delivery map video image music news feed tag id decision check error warn question start stop edit delete flag learn group text number
 
 Brand logos (full colour; `logos:` prefix optional): `aws-*` (api-gateway, aurora,

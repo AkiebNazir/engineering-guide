@@ -2,10 +2,10 @@
 
 Welcome to Day 156.
 
-If you are running a massive production API, you will notice a trend: users ask the same questions repeatedly.
-If 1,000 users ask "How do I reset my password?", and your LLM API costs $0.01 per query, you just spent $10 generating the exact same text 1,000 times.
+If you are running a massive production <abbr title="Application Programming Interface">API</abbr>, you will notice a trend: users ask the same questions repeatedly.
+If 1,000 users ask "How do I reset my password?", and your <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> costs $0.01 per query, you just spent $10 generating the exact same text 1,000 times.
 
-Today, we learn how to slash API costs by up to 40% and drop latency to 5 milliseconds by implementing a **Semantic Cache**.
+Today, we learn how to slash <abbr title="Application Programming Interface">API</abbr> costs by up to 40% and drop latency to 5 milliseconds by implementing a **Semantic Cache**.
 
 ---
 
@@ -24,7 +24,7 @@ A **Semantic Cache** uses vector embeddings.
 2. We convert the question into an Embedding Vector (a string of numbers representing its meaning).
 3. We search our Cache Database (e.g., Redis Vector Store or Pinecone).
 4. If we find a past question with a **Cosine Similarity > 0.95**, we declare a "Semantic Hit!"
-5. We instantly return the past answer. The LLM is never called. Latency drops from 3,000ms to 10ms. Cost drops to zero.
+5. We instantly return the past answer. The <abbr title="Large Language Model">LLM</abbr> is never called. Latency drops from 3,000ms to 10ms. Cost drops to zero.
 
 ### 3. The Multi-Layer Cache Architecture
 In production, you don't just use one cache. You use three:
@@ -139,8 +139,8 @@ def run_caching_simulation():
 ```
 
 ### 🔍 Understanding the Savings
-On Query 1, the LLM was called. It took 3 seconds and cost API tokens.
-On Query 2, the user typed a completely different string. But the local embedding model recognized the *semantic meaning* was 93% identical. It bypassed the LLM entirely, returning the answer in 0.05 seconds for exactly $0.00.
+On Query 1, the <abbr title="Large Language Model">LLM</abbr> was called. It took 3 seconds and cost <abbr title="Application Programming Interface">API</abbr> tokens.
+On Query 2, the user typed a completely different string. But the local embedding model recognized the *semantic meaning* was 93% identical. It bypassed the <abbr title="Large Language Model">LLM</abbr> entirely, returning the answer in 0.05 seconds for exactly $0.00.
 
 ---
 
@@ -154,16 +154,16 @@ If User A asks "Write me a Python script to sort an array," and User B asks "Wri
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your LLM API costs $200,000/month. Analysis shows 40% of queries are semantically similar. Design a caching strategy that reduces costs. Discuss cache architecture, invalidation, and quality risks."*
+*"Your <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> costs $200,000/month. Analysis shows 40% of queries are semantically similar. Design a caching strategy that reduces costs. Discuss cache architecture, invalidation, and quality risks."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Architecture:** Redis with the RediSearch module (or a dedicated service like GPTCache). The Gateway hashes incoming prompts for Layer 1 Exact Match. If missed, it embeds the prompt and queries Redis for Layer 2 Semantic Match.
 2. **Quality Risks (False Positives):** Acknowledge that a 40% cache hit rate might include 5% False Positives (giving users slightly wrong context). Propose strict similarity thresholds (e.g., `> 0.98`) to mitigate this.
 3. **Context Awareness:** Explain that caching multi-turn chat is dangerous. You cannot just cache `query="What is it?"`. The cache key MUST include the conversation history!
-4. **Invalidation Strategy:** Set a strict 24-hour TTL on the cache. Automatically flush the entire cache whenever the underlying RAG documents are updated, ensuring users don't get cached answers based on stale data.
+4. **Invalidation Strategy:** Set a strict 24-hour TTL on the cache. Automatically flush the entire cache whenever the underlying <abbr title="Retrieval-Augmented Generation">RAG</abbr> documents are updated, ensuring users don't get cached answers based on stale data.
 
 ---
-**Task for the end of the day:** Look up **GPTCache**, an open-source library specifically designed for semantic caching of LLM APIs.
+**Task for the end of the day:** Look up **GPTCache**, an open-source library specifically designed for semantic caching of <abbr title="Large Language Model">LLM</abbr> APIs.
 
 Tomorrow, in **Day 157**, we will tackle **Traffic Management**. What happens when your traffic spikes from 100 requests to 10,000 requests in a minute? We will learn Kubernetes Auto-Scaling (HPA and KEDA)!

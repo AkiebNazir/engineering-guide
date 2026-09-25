@@ -2,8 +2,8 @@
 
 > "Design a data structure" problems don't test whether you know a new algorithm —
 > they test whether you can compose the structures you already built in earlier
-> topics behind a clean API. Go has no classes, no constructors, and no
-> `private`/`protected` keywords, so "clean API" means something narrower and more
+> topics behind a clean <abbr title="Application Programming Interface">API</abbr>. Go has no classes, no constructors, and no
+> `private`/`protected` keywords, so "clean <abbr title="Application Programming Interface">API</abbr>" means something narrower and more
 > mechanical here than it does in Python or Java. This document is about that
 > narrower mechanism, not about re-deriving LRU caches from scratch again.
 

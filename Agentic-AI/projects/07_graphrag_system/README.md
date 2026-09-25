@@ -1,4 +1,4 @@
-# Graph-Augmented RAG System (GraphRAG)
+# Graph-Augmented <abbr title="Retrieval-Augmented Generation">RAG</abbr> System (GraphRAG)
 
 ## Overview
 This enterprise project explores the integration of semantic search (ChromaDB) with structural knowledge traversal (Neo4j) using LangGraph. This pattern solves complex multi-hop reasoning tasks that traditional vector databases fail at.

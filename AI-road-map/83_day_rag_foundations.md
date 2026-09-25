@@ -1,19 +1,19 @@
-# Day 83: Retrieval-Augmented Generation (RAG) v1
+# Day 83: Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>) v1
 
-Welcome to Day 83. We begin the **RAG Masterclass**.
+Welcome to Day 83. We begin the **<abbr title="Retrieval-Augmented Generation">RAG</abbr> Masterclass**.
 If you ask ChatGPT about a private document on your laptop, it will either say *"I don't know"* or it will hallucinate a lie. 
 
-LLMs only know what they were trained on (**Parametric Knowledge**). If you want an LLM to answer questions about your company's private wiki, you must connect the LLM to a database (**Non-Parametric Knowledge**). This is Retrieval-Augmented Generation (RAG).
+LLMs only know what they were trained on (**Parametric Knowledge**). If you want an <abbr title="Large Language Model">LLM</abbr> to answer questions about your company's private wiki, you must connect the <abbr title="Large Language Model">LLM</abbr> to a database (**Non-Parametric Knowledge**). This is Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>).
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The RAG Pipeline
-RAG is fundamentally a search engine duct-taped to an LLM. It has three steps:
+### 1. The <abbr title="Retrieval-Augmented Generation">RAG</abbr> Pipeline
+<abbr title="Retrieval-Augmented Generation">RAG</abbr> is fundamentally a search engine duct-taped to an <abbr title="Large Language Model">LLM</abbr>. It has three steps:
 1. **Index:** Read 1,000 PDFs. Break them into small paragraphs (Chunks). Convert each chunk into a mathematical vector using an Embedding Model. Save them in a Vector Database (like FAISS).
 2. **Retrieve:** The user asks a question. Convert the question into a vector. Calculate the Cosine Similarity between the Question vector and the Database vectors. Extract the Top 5 most similar paragraphs.
-3. **Generate:** Take the 5 paragraphs, format them as text, and paste them into the LLM prompt. Tell the LLM: *"Read these 5 paragraphs, and answer the user's question."*
+3. **Generate:** Take the 5 paragraphs, format them as text, and paste them into the <abbr title="Large Language Model">LLM</abbr> prompt. Tell the <abbr title="Large Language Model">LLM</abbr>: *"Read these 5 paragraphs, and answer the user's question."*
 
 ### 2. Dense Retrieval (The Bi-Encoder)
 How do we turn paragraphs into vectors? We use a **Bi-Encoder** (like `Sentence-BERT` or `OpenAI text-embedding-3`).
@@ -22,14 +22,14 @@ This makes the database highly efficient to pre-compute!
 
 ### 3. FAISS & Vector Databases
 If you have 100 Million documents, calculating Cosine Similarity (Dot Product) against the query takes too long ($O(N)$).
-Facebook released **FAISS** (Facebook AI Similarity Search). It uses Approximate Nearest Neighbor (ANN) algorithms.
+Facebook released **FAISS** (Facebook <abbr title="Artificial Intelligence">AI</abbr> Similarity Search). It uses Approximate Nearest Neighbor (ANN) algorithms.
 Instead of scanning every document, it clusters documents into mathematical "neighborhoods" (like cities on a map). If your query is about "Taxes", FAISS instantly teleports to the "Finance City" cluster and only searches the documents in that neighborhood, reducing search time to $O(\log N)$!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a pure RAG pipeline from scratch. We will embed 3 documents, load them into FAISS, query the database, and print the exact prompt we would send to the LLM.
+Let's build a pure <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline from scratch. We will embed 3 documents, load them into FAISS, query the database, and print the exact prompt we would send to the <abbr title="Large Language Model">LLM</abbr>.
 
 *(Mentally run `pip install sentence-transformers faiss-cpu`)*
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **`faiss.normalize_L2`:** By mathematically forcing the length of every vector to equal $1.0$, the Dot Product (`IndexFlatIP`) becomes exactly equivalent to Cosine Similarity. This is the fastest way to calculate similarity on a CPU!
-2. **The Prompt Restriction:** The most critical part of RAG is the system prompt: *"Answer based ONLY on the provided context"*. This instruction is what forces the LLM to stop hallucinating and act strictly as a reading comprehension engine.
+2. **The Prompt Restriction:** The most critical part of <abbr title="Retrieval-Augmented Generation">RAG</abbr> is the system prompt: *"Answer based ONLY on the provided context"*. This instruction is what forces the <abbr title="Large Language Model">LLM</abbr> to stop hallucinating and act strictly as a reading comprehension engine.
 
 ---
 
@@ -129,21 +129,21 @@ If you feed FAISS a massive 1,000-page PDF, you must "chunk" it. If you chunk pu
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your RAG system retrieves the perfectly correct documents, but the LLM still generates answers that contradict the context. Diagnose the issue and discuss how you would programmatically evaluate 'Grounding' in production."*
+*"Your <abbr title="Retrieval-Augmented Generation">RAG</abbr> system retrieves the perfectly correct documents, but the <abbr title="Large Language Model">LLM</abbr> still generates answers that contradict the context. Diagnose the issue and discuss how you would programmatically evaluate 'Grounding' in production."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Diagnosing the Contradiction:** 
-   - State that the LLM is suffering from **Prior Knowledge Override**. If the context says *"The sky is green"*, but the LLM was pre-trained to know the sky is blue, the massive pre-trained weights will overpower the context prompt. 
+   - State that the <abbr title="Large Language Model">LLM</abbr> is suffering from **Prior Knowledge Override**. If the context says *"The sky is green"*, but the <abbr title="Large Language Model">LLM</abbr> was pre-trained to know the sky is blue, the massive pre-trained weights will overpower the context prompt. 
    - Fix: Use a strictly Instruction-Tuned model (like LLaMA-3-Instruct), set Temperature to $0.0$, and aggressively engineer the prompt to penalize outside knowledge.
 2. **Evaluating Grounding (RAGAS framework):**
-   - Propose using the **LLM-as-a-Judge** pattern (e.g., RAGAS).
+   - Propose using the **<abbr title="Large Language Model">LLM</abbr>-as-a-Judge** pattern (e.g., RAGAS).
    - *Faithfulness Metric:* Pass the retrieved context and the generated answer to GPT-4. Ask GPT-4 to extract every single factual claim from the answer, and verify if each claim is explicitly stated in the context.
-   - *Answer Relevance Metric:* Measure the cosine similarity between the generated answer and the original user query to ensure the LLM actually answered the question instead of just summarizing the context.
+   - *Answer Relevance Metric:* Measure the cosine similarity between the generated answer and the original user query to ensure the <abbr title="Large Language Model">LLM</abbr> actually answered the question instead of just summarizing the context.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-You have built RAG v1. But Dense Retrieval has a fatal flaw: it is terrible at exact keyword searches (like searching for a specific serial number).
-Tomorrow, in **Day 84**, we build production-grade RAG: **Hybrid Search with Cross-Encoder Reranking**!
+You have built <abbr title="Retrieval-Augmented Generation">RAG</abbr> v1. But Dense Retrieval has a fatal flaw: it is terrible at exact keyword searches (like searching for a specific serial number).
+Tomorrow, in **Day 84**, we build production-grade <abbr title="Retrieval-Augmented Generation">RAG</abbr>: **Hybrid Search with Cross-Encoder Reranking**!

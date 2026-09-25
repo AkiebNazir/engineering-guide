@@ -3,9 +3,9 @@
 Welcome to Day 138. 
 
 We have integrated our Agents into powerful enterprise workflows. But with great power comes extreme liability. 
-If an Agent decides to refund a customer $\$10,000$, delete a production database, or send a legally binding contract to a client, you cannot rely purely on the LLM's reasoning to be $100\%$ flawless.
+If an Agent decides to refund a customer $\$10,000$, delete a production database, or send a legally binding contract to a client, you cannot rely purely on the <abbr title="Large Language Model">LLM</abbr>'s reasoning to be $100\%$ flawless.
 
-Today, we learn the ultimate safety mechanism for production AI: **Human-in-the-Loop (HITL)** and **Approval Gates**.
+Today, we learn the ultimate safety mechanism for production <abbr title="Artificial Intelligence">AI</abbr>: **Human-in-the-Loop (HITL)** and **Approval Gates**.
 
 ---
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The Pause:** Notice how the `input()` function physically blocks the Python script from continuing until the human responds. In enterprise LangGraph, the `input()` is replaced by a database pause (Checkpointing), allowing the Python server to handle other requests while waiting for the human.
-2. **Safe Scaling:** This architecture allows you to deploy AI today. You don't have to wait for the LLM to be $100\%$ perfect. You deploy it at $80\%$ accuracy and use Human Managers to catch the $20\%$ edge cases safely.
+2. **Safe Scaling:** This architecture allows you to deploy <abbr title="Artificial Intelligence">AI</abbr> today. You don't have to wait for the <abbr title="Large Language Model">LLM</abbr> to be $100\%$ perfect. You deploy it at $80\%$ accuracy and use Human Managers to catch the $20\%$ edge cases safely.
 
 ---
 
@@ -124,7 +124,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **SLA Timeouts (Handling Delays):**
    - Humans are slow. If the human doesn't review the claim within 48 hours (the SLA), the workflow engine must automatically "wake up" the Agent, trigger an SLA timeout node, and escalate the claim to a Senior Director's email.
 3. **Auditing & Compliance:**
-   - Regulators require proof. Every single step the Agent took (the LLM prompt, the API responses, and the human's final 'Approve' click) must be cryptographically hashed and logged to an immutable Audit Table.
+   - Regulators require proof. Every single step the Agent took (the <abbr title="Large Language Model">LLM</abbr> prompt, the <abbr title="Application Programming Interface">API</abbr> responses, and the human's final 'Approve' click) must be cryptographically hashed and logged to an immutable Audit Table.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

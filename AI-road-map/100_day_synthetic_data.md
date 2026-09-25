@@ -5,7 +5,7 @@ Welcome to Day 100!
 Yesterday, we learned that SFT requires 1,000 highly diverse, perfectly formatted examples. 
 But paying a team of Python experts to write 1,000 perfect coding questions and answers costs \$50,000 and takes months.
 
-What if we just use an API script to ask GPT-4 to write the training data for us? Today, we learn the dark magic of **Synthetic Data**.
+What if we just use an <abbr title="Application Programming Interface">API</abbr> script to ask GPT-4 to write the training data for us? Today, we learn the dark magic of **Synthetic Data**.
 
 ---
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Automation:** In production, you don't run this once. You run an asynchronous Python script that hits the OpenAI API 10,000 times simultaneously, spending \$500 in API credits to generate a dataset that would have cost \$50,000 in human labor!
+1. **The Automation:** In production, you don't run this once. You run an asynchronous Python script that hits the OpenAI <abbr title="Application Programming Interface">API</abbr> 10,000 times simultaneously, spending \$500 in <abbr title="Application Programming Interface">API</abbr> credits to generate a dataset that would have cost \$50,000 in human labor!
 2. **The "Reward Model" Filter:** GPT-4 occasionally hallucinates bad code. In production, you must add a Step 5: Ask GPT-4 to act as a strict Judge. Ask it to compile the code and score it from 1 to 10. Drop any synthetic data that scores below an 8!
 
 ---
@@ -128,7 +128,7 @@ Evol-Instruct relies on a seed prompt. But where do the seed prompts come from?
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your enterprise wants to build a domain-specific LLM for lawyers but has exactly zero labeled data. Design a complete Data Flywheel pipeline: from synthetic generation to deployment to continuous user feedback."*
+*"Your enterprise wants to build a domain-specific <abbr title="Large Language Model">LLM</abbr> for lawyers but has exactly zero labeled data. Design a complete Data Flywheel pipeline: from synthetic generation to deployment to continuous user feedback."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -136,7 +136,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **Cold Start (Synthetic Generation):** 
    - Extract raw text from public legal documents. Feed them into GPT-4 and ask it to brainstorm 10,000 realistic questions a lawyer might ask about those documents, along with the answers.
 2. **Filtering & SFT Training:**
-   - Use GPT-4 as an automated judge to score the 10,000 examples. Keep the Top 2,000. Use LoRA to Supervised Fine-Tune an open-source 8B model on these examples.
+   - Use GPT-4 as an automated judge to score the 10,000 examples. Keep the Top 2,000. Use <abbr title="Low-Rank Adaptation">LoRA</abbr> to Supervised Fine-Tune an open-source 8B model on these examples.
 3. **Deployment & Human-in-the-Loop (The Flywheel):**
    - Deploy the 8B model internally to 50 real lawyers. Build a UI with a "Thumbs Up" and "Thumbs Down" button (Implicit Feedback).
    - When a lawyer clicks "Thumbs Down", have the UI force them to rewrite the answer perfectly (Explicit Feedback).
@@ -148,4 +148,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 Congratulations! You now understand Supervised Fine-Tuning. The model is now a chatbot.
 But it is still not "Aligned". If you ask it to build a bomb, it will gladly tell you how. 
 
-Tomorrow, in **Day 101**, we enter the hardest math in the entire curriculum: **Reinforcement Learning (RL)**. We will learn the foundation of **RLHF** (Reinforcement Learning from Human Feedback)!
+Tomorrow, in **Day 101**, we enter the hardest math in the entire curriculum: **Reinforcement Learning (RL)**. We will learn the foundation of **<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>** (Reinforcement Learning from Human Feedback)!

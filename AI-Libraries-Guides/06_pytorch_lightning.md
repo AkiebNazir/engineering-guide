@@ -188,11 +188,11 @@ trainer = pl.Trainer(callbacks=[early_stop_callback, checkpoint_callback])
 ## 6. MAANG Interview Scenarios
 
 ### Scenario 1: Distributed Data Parallel (DDP) vs DataParallel (DP)
-*Interviewer:* "We just bought a server with 8 GPUs. Should we use PyTorch's `DataParallel` or Lightning's `DistributedDataParallel` strategy to train our massive LLM?"
+*Interviewer:* "We just bought a server with 8 GPUs. Should we use PyTorch's `DataParallel` or Lightning's `DistributedDataParallel` strategy to train our massive <abbr title="Large Language Model">LLM</abbr>?"
 
 *Answer:* "We absolutely must use `DistributedDataParallel` (DDP). Standard `DataParallel` uses a single Python process and uses multi-threading to pass data to the 8 GPUs. Because of Python's Global Interpreter Lock (GIL), this creates a massive bottleneck on the CPU, and the GPUs end up sitting idle waiting for data. Lightning uses DDP by default when you specify `devices=8`. DDP spawns 8 completely separate, independent Python processes (one for each GPU) that communicate via network protocols, entirely bypassing the GIL bottleneck and achieving near-perfect linear scaling."
 
-### Scenario 2: Reproducibility in AI
+### Scenario 2: Reproducibility in <abbr title="Artificial Intelligence">AI</abbr>
 *Interviewer:* "A researcher trained a model on Tuesday that hit 98% accuracy. On Wednesday, they ran the exact same script on the exact same data, but it only hit 92% accuracy. Why did this happen, and how do we prevent it?"
 
 *Answer:* "Neural networks initialize their starting weights randomly, and data is shuffled randomly every epoch. Because they didn't seed the random number generators, the mathematical starting point changed completely between Tuesday and Wednesday. To prevent this in PyTorch Lightning, we add one line of code at the very top of our script: `pl.seed_everything(42)`. This instantly locks the random seeds for Python, NumPy, standard PyTorch, and CUDA simultaneously, guaranteeing bit-for-bit reproducibility across runs."

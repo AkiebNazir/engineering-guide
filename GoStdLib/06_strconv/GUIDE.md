@@ -34,7 +34,7 @@ aware alternative to routing every conversion through `fmt.Sprintf`/
 ## What the 10 levels cover
 
 Level 1 is `Atoi`/`Itoa`, the single most common conversion. Level 2 is the
-core API surface: `ParseInt`/`ParseFloat`/`ParseBool` and their `Format*`
+core <abbr title="Application Programming Interface">API</abbr> surface: `ParseInt`/`ParseFloat`/`ParseBool` and their `Format*`
 counterparts. Level 3 combines `FormatInt`/`ParseInt` with different bases
 into a small prefixed-number idiom (`0x`, `0o`, `0b`). Level 4 triggers a real
 `*strconv.NumError` and inspects its fields. Level 5 round-trips a string with

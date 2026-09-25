@@ -28,7 +28,7 @@ Run any Go level:      `go run ./GraphQL/Foundation/golang/00_single_field_and_h
 | 09 | Authentication | "Who is this?" - bearer tokens resolved into the context, `extensions.code = UNAUTHENTICATED` (the 401) |
 | 10 | Authorization | "What may they do?" - a role check on one mutation, `FORBIDDEN` (the 403), kept distinct from 401 |
 | 11 | Complete, protected endpoint | Everything above behind a real `POST /graphql`: public query, authenticated mutation, admin-only mutation |
-| 12 | Being a client | Calling a GraphQL API by hand: `{query, variables}` + Bearer header, retry a 503, never retry a 200 |
+| 12 | Being a client | Calling a GraphQL <abbr title="Application Programming Interface">API</abbr> by hand: `{query, variables}` + Bearer header, retry a 503, never retry a 200 |
 | 13 | Bonus: raw HTTP over TCP | Optional deep dive - a GraphQL request typed byte by byte over a socket (read any time after level 11) |
 
 **Where to go next:** level 11 is the same shape as

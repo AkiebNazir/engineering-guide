@@ -1,4 +1,4 @@
-# REST API: The Complete Masterclass
+# REST <abbr title="Application Programming Interface">API</abbr>: The Complete Masterclass
 
 To truly master REST (Representational State Transfer), you must move beyond basic `GET` and `POST` commands and embrace HTTP semantics, Idempotency, and Resource-Oriented Design.
 
@@ -39,9 +39,9 @@ Understanding how HTTP methods behave in a distributed system is critical for pr
 
 ---
 
-## Part 3: Building a Real-World Project (Task API)
+## Part 3: Building a Real-World Project (Task <abbr title="Application Programming Interface">API</abbr>)
 
-Let's look at how a Senior Engineer structures a REST API in Go.
+Let's look at how a Senior Engineer structures a REST <abbr title="Application Programming Interface">API</abbr> in Go.
 
 ### Go Implementation (Standard Library)
 ```go
@@ -136,7 +136,7 @@ Never return `GET /users` with 10,000 records.
 - **Cursor Pagination**: `?limit=10&after=cursor_xyz`. **Master approach**. The cursor is usually an encoded timestamp or ID. `WHERE id > cursor LIMIT 10`. O(1) performance and stable.
 
 ### 3. Caching (ETag & Cache-Control)
-A true REST API leverages the web's caching infrastructure.
+A true REST <abbr title="Application Programming Interface">API</abbr> leverages the web's caching infrastructure.
 - The server sends a `GET` response with an `ETag: "v1.0"` (a hash of the data).
 - The client stores it. On the next request, the client sends `If-None-Match: "v1.0"`.
 - The server checks the DB. If the data hasn't changed, the server returns **304 Not Modified** with an *empty body*. This saves massive bandwidth and JSON parsing time!

@@ -134,7 +134,7 @@ In the MLP code above, I used a `sigmoid()` function inside the Hidden Layer ins
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"The Universal Approximation Theorem guarantees that a Neural Network with a single hidden layer can perfectly map any dataset. However, in practice, we never use massive 1-layer networks. Furthermore, even if the theorem guarantees a perfect solution exists, why doesn't that guarantee that our AI will actually find it during training?"*
+*"The Universal Approximation Theorem guarantees that a Neural Network with a single hidden layer can perfectly map any dataset. However, in practice, we never use massive 1-layer networks. Furthermore, even if the theorem guarantees a perfect solution exists, why doesn't that guarantee that our <abbr title="Artificial Intelligence">AI</abbr> will actually find it during training?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the difference between **Representation** and **Optimization**:
@@ -145,7 +145,7 @@ A "Strong Hire" candidate must articulate the difference between **Representatio
 2. **Optimization (The Flaw):**
    - Explain that just because the perfect mathematical weights *exist*, doesn't mean Gradient Descent can *find* them!
    - The "Loss Landscape" of a massive 1-layer network is incredibly non-convex (it looks like a mountain range with thousands of deep valleys).
-   - Conclude that Gradient Descent is highly likely to get stuck in a "Local Minimum" (a bad valley) forever. Optimization is the true bottleneck of AI, not Representation.
+   - Conclude that Gradient Descent is highly likely to get stuck in a "Local Minimum" (a bad valley) forever. Optimization is the true bottleneck of <abbr title="Artificial Intelligence">AI</abbr>, not Representation.
 
 ---
 **Task for the end of the day:** Commit your code to Git. You have built a digital brain. 

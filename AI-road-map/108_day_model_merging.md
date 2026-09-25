@@ -4,7 +4,7 @@ Welcome to Day 108.
 
 Imagine you take `LLaMA-3-8B-Base` and fine-tune it on Medical Text. You spend \$5,000 on GPU compute.
 Your colleague takes the exact same base model and fine-tunes it on Python Coding. They spend \$5,000.
-Your startup now wants an AI that knows *both* Medicine and Coding. Do you have to mix the datasets together and spend \$10,000 to retrain a new model from scratch?
+Your startup now wants an <abbr title="Artificial Intelligence">AI</abbr> that knows *both* Medicine and Coding. Do you have to mix the datasets together and spend \$10,000 to retrain a new model from scratch?
 
 No. Today, we learn the dark magic of **Model Merging**. We will literally mathematically merge the weights of the two neural networks together, combining their intelligence for $0.00!
 
@@ -152,4 +152,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 Model merging is amazing, but it has limits. If you need the model to learn 100,000 pages of highly specialized medical literature, you cannot just SFT or Merge it. 
 
-Tomorrow, in **Day 109**, we learn **Continued Pre-Training (CPT) and Domain Adaptation**. We will inject raw, massive knowledge directly into the brain of the LLM!
+Tomorrow, in **Day 109**, we learn **Continued Pre-Training (CPT) and Domain Adaptation**. We will inject raw, massive knowledge directly into the brain of the <abbr title="Large Language Model">LLM</abbr>!

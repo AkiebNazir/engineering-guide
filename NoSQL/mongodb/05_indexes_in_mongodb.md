@@ -143,7 +143,7 @@ count, _ := events.CountDocuments(ctx, bson.M{"tags": "c"})
 count tags=c (multikey): 59632
 ```
 
-The Go driver has no special API for creating a multikey index — it's the exact same `CreateOne` call as any other single-field index; MongoDB decides server-side, purely from the fact that `tags` holds arrays, to build it as multikey. The count differs from the Python section's 67,255 only because both were generated from independent random datasets, not because either language builds or queries the index differently.
+The Go driver has no special <abbr title="Application Programming Interface">API</abbr> for creating a multikey index — it's the exact same `CreateOne` call as any other single-field index; MongoDB decides server-side, purely from the fact that `tags` holds arrays, to build it as multikey. The count differs from the Python section's 67,255 only because both were generated from independent random datasets, not because either language builds or queries the index differently.
 
 ## Covered queries
 

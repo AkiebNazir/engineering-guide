@@ -3,7 +3,7 @@
 Welcome to Day 174.
 
 When you type a comment like `# Connect to the database` in VS Code, GitHub Copilot instantly suggests 20 lines of perfect Python code.
-If you think Copilot just sends your one-line comment to OpenAI, you are wrong. A one-line comment isn't enough information to write database code. The AI needs to know what database library you are using, what the environment variables are named, and what the `User` schema looks like.
+If you think Copilot just sends your one-line comment to OpenAI, you are wrong. A one-line comment isn't enough information to write database code. The <abbr title="Artificial Intelligence">AI</abbr> needs to know what database library you are using, what the environment variables are named, and what the `User` schema looks like.
 
 Today, we learn how to design a **Coding Assistant**. We will learn about Context Gathering, Jaccard Similarity, and Streaming Architectures.
 
@@ -12,7 +12,7 @@ Today, we learn how to design a **Coding Assistant**. We will learn about Contex
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Context Window Problem
-If you have a massive enterprise codebase with 10,000 files, you cannot send the entire codebase to the LLM on every keystroke. It would cost $5.00 per keystroke and take 30 seconds to process.
+If you have a massive enterprise codebase with 10,000 files, you cannot send the entire codebase to the <abbr title="Large Language Model">LLM</abbr> on every keystroke. It would cost $5.00 per keystroke and take 30 seconds to process.
 The secret to Copilot is **Context Gathering (Retrieval)**. 
 When you type a comment, the IDE extension quietly scans your local workspace to build a highly relevant, condensed prompt.
 
@@ -37,11 +37,11 @@ def get_user():
     [CURSOR_IS_HERE]
 </current_file>
 ```
-This entire text block is sent to the LLM. The LLM generates the text that replaces `[CURSOR_IS_HERE]`.
+This entire text block is sent to the <abbr title="Large Language Model">LLM</abbr>. The <abbr title="Large Language Model">LLM</abbr> generates the text that replaces `[CURSOR_IS_HERE]`.
 
 ### 4. Streaming & Ghost Text
 Developers type fast. If Copilot takes 2 seconds to generate 20 lines of code, the developer will have already typed past the suggestion point.
-Copilot relies on **Server-Sent Events (SSE)** (Day 153). As the LLM generates tokens on the GPU, they are streamed down to the IDE in milliseconds and rendered as gray "Ghost Text". If the developer hits `Tab`, the Ghost Text becomes real code.
+Copilot relies on **Server-Sent Events (SSE)** (Day 153). As the <abbr title="Large Language Model">LLM</abbr> generates tokens on the GPU, they are streamed down to the IDE in milliseconds and rendered as gray "Ghost Text". If the developer hits `Tab`, the Ghost Text becomes real code.
 
 ---
 
@@ -134,8 +134,8 @@ def fetch_data():
 ```
 
 ### 🔍 Understanding the Enterprise Value
-Notice how the LLM perfectly suggested `db = connect_db()`. If we hadn't gathered context, the LLM wouldn't know that the `database.py` file contained a function specifically named `connect_db`. 
-The magic of Copilot is not the LLM. The magic is the highly aggressive, lightning-fast context gathering happening inside VS Code before the LLM is even called.
+Notice how the <abbr title="Large Language Model">LLM</abbr> perfectly suggested `db = connect_db()`. If we hadn't gathered context, the <abbr title="Large Language Model">LLM</abbr> wouldn't know that the `database.py` file contained a function specifically named `connect_db`. 
+The magic of Copilot is not the <abbr title="Large Language Model">LLM</abbr>. The magic is the highly aggressive, lightning-fast context gathering happening inside VS Code before the <abbr title="Large Language Model">LLM</abbr> is even called.
 
 ---
 
@@ -144,7 +144,7 @@ The magic of Copilot is not the LLM. The magic is the highly aggressive, lightni
 ### 🛠️ The Challenge
 Currently, our pipeline only looks at the text *before* the cursor. 
 If a developer goes into the middle of an existing function and hits Enter, there is code *after* the cursor! 
-**Your Task:** Research **FIM (Fill-in-the-Middle)**. It is a specific training objective for code models. Understand how you format a prompt using `<PRE>`, `<SUF>` (Suffix), and `<MID>` tokens to force the LLM to write code that perfectly bridges the gap between the prefix and suffix!
+**Your Task:** Research **FIM (Fill-in-the-Middle)**. It is a specific training objective for code models. Understand how you format a prompt using `<PRE>`, `<SUF>` (Suffix), and `<MID>` tokens to force the <abbr title="Large Language Model">LLM</abbr> to write code that perfectly bridges the gap between the prefix and suffix!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -154,11 +154,11 @@ If a developer goes into the middle of an existing function and hits Enter, ther
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Privacy & Security:** Acknowledge the constraint immediately. The model must be hosted internally (e.g., vLLM cluster running `StarCoder` or `CodeLlama`) inside the bank's VPC. Code cannot leave the network.
-2. **Enterprise RAG (Retrieval):** Jaccard similarity isn't enough for a 50-million-line monorepo. Propose a nightly Airflow job that indexes the entire monorepo into a Vector Database. When the IDE extension needs context, it performs a Semantic Search (Day 172) against the Vector DB to find relevant proprietary functions before calling the internal LLM.
+2. **Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval):** Jaccard similarity isn't enough for a 50-million-line monorepo. Propose a nightly Airflow job that indexes the entire monorepo into a Vector Database. When the IDE extension needs context, it performs a Semantic Search (Day 172) against the Vector DB to find relevant proprietary functions before calling the internal <abbr title="Large Language Model">LLM</abbr>.
 3. **Latency:** Ensure the model is served using Continuous Batching and Tensor Parallelism (Day 154) to meet the strict <300ms Time-To-First-Token constraint for IDE rendering.
-4. **Telemetry (Evaluation):** How do we know if the model is good? We cannot use LLM-as-a-Judge. We must log **Acceptance Rate** (Did the developer hit Tab?) and **Retention Rate** (Did the developer delete the generated code 5 minutes later?).
+4. **Telemetry (Evaluation):** How do we know if the model is good? We cannot use <abbr title="Large Language Model">LLM</abbr>-as-a-Judge. We must log **Acceptance Rate** (Did the developer hit Tab?) and **Retention Rate** (Did the developer delete the generated code 5 minutes later?).
 
 ---
 **Task for the end of the day:** Install an open-source Copilot alternative (like `Continue.dev` or `Codeium`) in VS Code. Look at its settings to see how it allows you to connect to local models!
 
-Tomorrow, in **Day 175**, we tackle the nightmare of **Multi-Tenant LLM Platforms**. How do you serve 100 different fine-tuned models to 100 different teams without buying 100 different GPUs?
+Tomorrow, in **Day 175**, we tackle the nightmare of **Multi-Tenant <abbr title="Large Language Model">LLM</abbr> Platforms**. How do you serve 100 different fine-tuned models to 100 different teams without buying 100 different GPUs?

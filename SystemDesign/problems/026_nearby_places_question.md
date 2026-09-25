@@ -23,7 +23,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope estimates: index size, read QPS per region, and write rate.
-3. API contract for search and place details.
+3. <abbr title="Application Programming Interface">API</abbr> contract for search and place details.
 4. Baseline architecture and read/write flows.
 5. Geospatial indexing: geohash vs quadtree vs S2 cells, boundaries, and dense-area handling.
 6. Ranking, caching, sharding by geography, and map tile/pin serving.

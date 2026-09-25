@@ -5,15 +5,15 @@ Welcome to **Phase 3: Sequence Modeling**.
 For the last 42 days, we have studied static, frozen data. An image does not change. A house price is a single row in a spreadsheet. 
 But human reality exists in the 4th dimension: **Time**. 
 
-A spoken sentence unfolds across time. The stock market changes every second. If you feed a sequence into a standard CNN, it fails completely because CNNs expect a fixed input size (e.g., exactly $224 \times 224$). Sentences have varying lengths! To process Time, we must build an AI that possesses a **Memory**.
+A spoken sentence unfolds across time. The stock market changes every second. If you feed a sequence into a standard <abbr title="Convolutional Neural Network">CNN</abbr>, it fails completely because CNNs expect a fixed input size (e.g., exactly $224 \times 224$). Sentences have varying lengths! To process Time, we must build an <abbr title="Artificial Intelligence">AI</abbr> that possesses a **Memory**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Recurrent Neural Network (RNN)
+### 1. The Recurrent Neural Network (<abbr title="Recurrent Neural Network">RNN</abbr>)
 A standard Neural Network feeds data straight through: $Input \rightarrow Hidden \rightarrow Output$.
-A Recurrent Neural Network (RNN) has a **Loop**. 
+A Recurrent Neural Network (<abbr title="Recurrent Neural Network">RNN</abbr>) has a **Loop**. 
 When it processes the 1st word in a sentence, it calculates a Hidden State (a memory vector). When it looks at the 2nd word, it looks at the word *AND* it loops its own memory vector from the previous step back into the equation!
 **The Math:** $h_t = \tanh(W_{hh} \cdot h_{t-1} + W_{xh} \cdot x_t)$
 - $h_t$: The current memory (What I know at Time=t).
@@ -23,8 +23,8 @@ When it processes the 1st word in a sentence, it calculates a Hidden State (a me
 
 ### 2. Unrolling Through Time
 How do you run Backpropagation (Calculus) on a mathematical loop? You can't. 
-To train an RNN, PyTorch physically **Unrolls** the loop across time. 
-If you feed a 10-word sentence into a 1-layer RNN, PyTorch mathematically unrolls it into a **10-layer deep network**, where each "layer" is a single word in the sequence. 
+To train an <abbr title="Recurrent Neural Network">RNN</abbr>, PyTorch physically **Unrolls** the loop across time. 
+If you feed a 10-word sentence into a 1-layer <abbr title="Recurrent Neural Network">RNN</abbr>, PyTorch mathematically unrolls it into a **10-layer deep network**, where each "layer" is a single word in the sequence. 
 
 ### 3. Backpropagation Through Time (BPTT)
 Once the loop is unrolled, we calculate the error at the end of the sentence, and pass the error backward through all 10 words. This is called **Backpropagation Through Time (BPTT)**. It is just the standard Calculus Chain Rule applied across time.
@@ -43,7 +43,7 @@ We solve this using **Gradient Clipping**. Before PyTorch updates the weights, w
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Vanilla RNN entirely from scratch. We will write the `for` loop that passes the Hidden State through time, so you can see exactly how the AI remembers the past.
+Let's build a Vanilla <abbr title="Recurrent Neural Network">RNN</abbr> entirely from scratch. We will write the `for` loop that passes the Hidden State through time, so you can see exactly how the <abbr title="Artificial Intelligence">AI</abbr> remembers the past.
 
 Create a file named `vanilla_rnn.py`:
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: Gradient Clipping
-Because of the loop, RNN gradients explode easily. You must clip them.
+Because of the loop, <abbr title="Recurrent Neural Network">RNN</abbr> gradients explode easily. You must clip them.
 **Your Task:**
 1. Write a dummy training loop using the PyTorch built-in `nn.RNN()`.
 2. Do the Forward Pass and calculate Loss.
@@ -156,10 +156,10 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Eigenvalue Decay:**
    - Explain that if the maximum eigenvalue of the weight matrix $W_{hh}$ is less than 1 (which it usually is to prevent explosion), raising a fraction to the power of 50 (for a 50-word sentence) causes the value to decay exponentially to $0.0$.
 3. **The Conclusion:**
-   - Conclude that because the error gradient decays to zero before reaching the start of the sequence, the weights responsible for remembering the beginning of the sentence *never receive an update*. The RNN physically cannot learn the dependency. 
+   - Conclude that because the error gradient decays to zero before reaching the start of the sequence, the weights responsible for remembering the beginning of the sentence *never receive an update*. The <abbr title="Recurrent Neural Network">RNN</abbr> physically cannot learn the dependency. 
    - *(Note: Tomorrow, we learn how to fix this using LSTMs!)*
 
 ---
 **Task for the end of the day:** Commit your code to Git. You have successfully conquered Time.
 
-Tomorrow, in **Day 44**, we fix the RNN's amnesia problem by inventing mathematical Memory Gates. Welcome to **LSTMs and GRUs!**
+Tomorrow, in **Day 44**, we fix the <abbr title="Recurrent Neural Network">RNN</abbr>'s amnesia problem by inventing mathematical Memory Gates. Welcome to **LSTMs and GRUs!**

@@ -34,7 +34,7 @@ Start from the [45-minute timeline](00_google_l5_playbook.md) and compress. Thes
 | Phase | Google (45) | Meta (35) | Netflix (50, fluid) | Amazon (37) |
 |---|---|---|---|---|
 | Requirements and scope | 5 | 4 | 4 | 5, customer first |
-| Estimates + API | 5 | 4 | 3 | 4 |
+| Estimates + <abbr title="Application Programming Interface">API</abbr> | 5 | 4 | 3 | 4 |
 | Data model | 5 | 4 | 3 | 4 |
 | Baseline, one write, one read | 10 | 6 | 8 | 7 |
 | Deep dives (two) | 13 | 13 | 20 | 12 |
@@ -52,7 +52,7 @@ Give extra time to deep dives and operations, not to more boxes. If time is shor
 | | L5 | Owns the system end to end and drives; two unprompted deep dives; failure raised early. |
 | | L6 | Reframes the problem, phases the design (launch, 10×, multi-region), quantifies cost. See [Going from L5 to L6](00_google_l5_playbook.md). |
 | Meta | E4 | Solid design with some guidance. Some E4 loops are coding-heavy with a lighter design round. |
-| | E5 | Independent end to end: product judgment, scale, caching, ranking, a clean API. |
+| | E5 | Independent end to end: product judgment, scale, caching, ranking, a clean <abbr title="Application Programming Interface">API</abbr>. |
 | | E6 | Cross-team scope, ambiguity handled, org-level trade-offs. |
 | Netflix | Senior | Independent judgment, real operating experience, resilience by default. |
 | | Staff | Sets direction across teams, argues what *not* to build. |
@@ -80,7 +80,7 @@ Confirm the level first: a design that is excellent for L4 or SDE II is too narr
 
 ## Meta
 
-**Commonly reported.** Loops often distinguish a *product-flavored* design ("design a news feed", "design Messenger") from an *infrastructure-flavored* one. The window is short and the pace brisk, so an early, crisp API and data model help.
+**Commonly reported.** Loops often distinguish a *product-flavored* design ("design a news feed", "design Messenger") from an *infrastructure-flavored* one. The window is short and the pace brisk, so an early, crisp <abbr title="Application Programming Interface">API</abbr> and data model help.
 
 **Problem families → this module.** Feed and graph: 007, 032, 039. Messaging and media: 006, 005, 033, 004. Discovery: 009, 026, 028. Caching and experimentation: 018, 037. Ads counting: 027.
 

@@ -31,7 +31,7 @@ Everything beyond the question's five constraints is an assumption, labelled as 
 - **Auth-path request rate.** Assume 5 plays per viewer per day = 1B starts/day = 11.6k/s average, ~30k/s at a 2.5× release-time peak. Each start makes one playback-session call and one license call. So the entitlement path sees ~30k req/s, about 140× fewer than the edge's 4.2M/s. That is why entitlement lives at session start and license issue.
 - **Playback events.** A 30-second heartbeat from 8.3M average streams is 278k events/s (~556k/s at peak), plus start, stall, and quality-switch events: **~0.5–1M events/s at peak**, ~4.8 TB/day for heartbeats at ~200 B each. So the player batches events and beacons them to a partitioned log, and never calls a synchronous service per event.
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 # Creator
@@ -53,7 +53,7 @@ POST {license_url}                                                     # DRM cha
 POST /v1/playback-events   [ {session_id, t, type, rung, ...}, ... ]   → 204   # batched, sendBeacon
 ```
 
-- **Errors and status.** A video in any state other than `ready` never returns a manifest: the API returns 409 `processing` (or 404 for `failed`), so a viewer can never fetch a half-encoded ladder.
+- **Errors and status.** A video in any state other than `ready` never returns a manifest: the <abbr title="Application Programming Interface">API</abbr> returns 409 `processing` (or 404 for `failed`), so a viewer can never fetch a half-encoded ladder.
 - **Token.** `edge_token` is a short-lived signed value (5–10 minutes) scoped to a path prefix (`/v/{video_id}/`), refreshed by the player about a minute before expiry.
 - **Idempotency.** Upload creation is idempotent on `client_upload_id`; completion is idempotent on the video; playback events carry a `(session_id, seq)` so the stream job dedupes retries.
 
@@ -128,7 +128,7 @@ sequenceDiagram
 
 **One playback, end to end.** `POST /v1/videos/{id}/playback-session` checks visibility, geo, and entitlement, then returns the manifest URL, an edge token, and the license URL. The player fetches the manifest from the CDN, which validates the token at the edge and serves from cache (or fetches once through the shield). It starts on a conservative rung, requests the license in parallel with the first segment, and adapts upward. Playback events are batched to the log without touching the playback path.
 
-The hard decision is making encode state explicit and asynchronous rather than trying to serve the raw upload while transcoding "catches up." A video is not playable until its ladder reaches a ready state; the API must expose that state rather than let a viewer hit a half-encoded asset. This trades immediate availability (creator uploads, viewer waits minutes before it's watchable) for the ability to serve at global CDN scale afterward. The second hard decision is *where access is enforced*. Segment objects are immutable and cacheable at any edge, and a cache hit never reaches the origin, so you cannot re-check entitlement per segment against a service. Authorization therefore happens once, at session start and at license issue, where the request rate is ~140× lower, and it is *carried* to the edge as a path-scoped token that is validated locally and kept out of the cache key. For content that must stay protected even if a URL leaks, the real gate is DRM, discussed below.
+The hard decision is making encode state explicit and asynchronous rather than trying to serve the raw upload while transcoding "catches up." A video is not playable until its ladder reaches a ready state; the <abbr title="Application Programming Interface">API</abbr> must expose that state rather than let a viewer hit a half-encoded asset. This trades immediate availability (creator uploads, viewer waits minutes before it's watchable) for the ability to serve at global CDN scale afterward. The second hard decision is *where access is enforced*. Segment objects are immutable and cacheable at any edge, and a cache hit never reaches the origin, so you cannot re-check entitlement per segment against a service. Authorization therefore happens once, at session start and at license issue, where the request rate is ~140× lower, and it is *carried* to the edge as a path-scoped token that is validated locally and kept out of the cache key. For content that must stay protected even if a URL leaks, the real gate is DRM, discussed below.
 
 ## Chunk-parallel transcoding
 
@@ -194,7 +194,7 @@ pkg -> qc -> pub
 
 | Step | Budget |
 |---|---|
-| Playback API: entitlement and manifest URL | 150 ms |
+| Playback <abbr title="Application Programming Interface">API</abbr>: entitlement and manifest URL | 150 ms |
 | DNS plus TLS/QUIC connection to the edge | 300 ms |
 | Manifest fetch (edge hit) | 100 ms |
 | First segment (~350 KB on a low rung) in parallel with the DRM license request (~300 ms) | 600 ms |
@@ -207,8 +207,8 @@ That leaves ~650 ms for the p99 tail: an edge miss that goes to the shield, a sl
 
 The earlier question is where entitlement is checked, given that a cache hit never reaches your servers. The answer is three layers, each doing a different job:
 
-1. **Authorization at session start.** The playback API checks visibility (public, unlisted, private, subscriber-only), geo policy, and account entitlement. This is the only place business rules run, at ~30k req/s.
-2. **Edge access control by token.** The API returns a signed token scoped to the video's path prefix (a signed URL, or a signed cookie so relative segment URLs in the manifest need no rewriting) with a 5–10 minute lifetime. The CDN validates the signature and expiry locally and — critically — **the token is excluded from the cache key**, so every viewer shares one cached copy of each segment. CDNs such as CloudFront document signed cookies and signed URLs for exactly this (including path-wildcard policies for HLS/DASH segment sets); check that your CDN does not vary the cache by the signature. If the token were part of the key, every viewer would miss and the origin would face the full 25 Tbps.
+1. **Authorization at session start.** The playback <abbr title="Application Programming Interface">API</abbr> checks visibility (public, unlisted, private, subscriber-only), geo policy, and account entitlement. This is the only place business rules run, at ~30k req/s.
+2. **Edge access control by token.** The <abbr title="Application Programming Interface">API</abbr> returns a signed token scoped to the video's path prefix (a signed URL, or a signed cookie so relative segment URLs in the manifest need no rewriting) with a 5–10 minute lifetime. The CDN validates the signature and expiry locally and — critically — **the token is excluded from the cache key**, so every viewer shares one cached copy of each segment. CDNs such as CloudFront document signed cookies and signed URLs for exactly this (including path-wildcard policies for HLS/DASH segment sets); check that your CDN does not vary the cache by the signature. If the token were part of the key, every viewer would miss and the origin would face the full 25 Tbps.
 3. **DRM for premium content.** Segments are encrypted once at packaging with Common Encryption (CENC, ISO/IEC 23001-7); with CMAF and the `cbcs` scheme, one encrypted copy can serve Widevine, FairPlay, and PlayReady on current devices, with a different license per system. A **license server** releases the content key only after checking entitlement and device (for example, allowing HD and UHD only on hardware-backed security such as Widevine L1), and returns a time-limited license. Now the *segments can stay publicly cacheable*: a leaked or shared URL yields ciphertext.
 
 | Content class | Gate | Edge control | Segment protection |
@@ -305,7 +305,7 @@ Trade-off to state: "I treat upload and playback as two systems joined by an asy
 
 ## Follow-ups the interviewer will ask
 
-1. **"How does this work across regions?"** Derivatives are written to the region nearest the creator and replicated to at least one more; the CDN pulls from the nearest healthy origin through a shield. The playback API and license server run active-active in every region, and the video row is replicated with the creator's home region as writer. Cross-region replication lag delays the "ready" flip in remote regions, not local playback.
+1. **"How does this work across regions?"** Derivatives are written to the region nearest the creator and replicated to at least one more; the CDN pulls from the nearest healthy origin through a shield. The playback <abbr title="Application Programming Interface">API</abbr> and license server run active-active in every region, and the video row is replicated with the creator's home region as writer. Cross-region replication lag delays the "ready" flip in remote regions, not local playback.
 2. **"What changes at 10× and 100× scale?"** At 10×, egress is 250 Tbps average, more than commercial CDN capacity can carry economically, so you push caches into ISP networks (the Open Connect model) and negotiate multi-CDN. Encode compute grows to ~1M cores, which is where hardware encoders and per-title-only-on-the-head economics become mandatory, and storage of ~10 EB a year forces aggressive tail deletion and lazy re-encode.
 3. **"What if revocation must be immediate, for a takedown or a refund?"** Immutable, cached segments cannot be recalled, so the gate has to sit somewhere that can change: shorten token lifetime (bounds exposure to minutes), purge manifests at the CDN, deny at the next license renewal, and for premium content rely on DRM so revoked users hold only ciphertext. State the exposure window explicitly rather than promising instant.
 4. **"What dominates cost, and what are the knobs?"** Egress (270 PB/day) first, then storage (~1 EB/year), then compute (~100k cores). Knobs: CDN offload (each point is 250 Gbps), per-title encoding and newer codecs on the head only, dropping cold rungs, cheaper segment-packed storage, and ISP-embedded caches.
@@ -329,7 +329,7 @@ Trade-off to state: "I treat upload and playback as two systems joined by an asy
 
 - **Migration path.** Version everything (`ladder_version`, immutable paths) so a new ladder or codec is a background re-encode of the head first, then a pointer flip per video, with the old version kept until traffic moves. Roll the encoder itself out behind a canary that compares QC and VMAF.
 - **Cost model.** Three cost centres in order: egress (270 PB/day), storage (~1 EB/year), compute (~100k cores). Express each lever (offload point, per-title threshold, tail deletion, codec change) in dollars per view-hour and stop where the marginal saving falls below the marginal complexity.
-- **Ownership and blast radius.** Split ingest and transcode, playback control (API, tokens, license), and delivery (CDN, origin) into separately owned services with their own SLOs and capacity. Playback control must keep running when transcode is backlogged, and the transcode SLO lane must keep running when the low lanes are preempted.
+- **Ownership and blast radius.** Split ingest and transcode, playback control (<abbr title="Application Programming Interface">API</abbr>, tokens, license), and delivery (CDN, origin) into separately owned services with their own SLOs and capacity. Playback control must keep running when transcode is backlogged, and the transcode SLO lane must keep running when the low lanes are preempted.
 - **Build versus buy.** Buy commercial CDN and multi-DRM early; use managed transcoding or open-source encoders until the bill justifies specialised hardware and your own caches (the Open Connect route). Build the packaging pipeline, the entitlement model, and the QoE analytics, which are what differentiate the product.
 - **Phased evolution.** Single fixed ladder, one CDN, and AES-128 tokens first; then per-title re-encode for the head; then DRM for premium content; then multi-CDN steering; then ISP-embedded caches once a region's traffic justifies them.
 - **What to measure first.** The views-per-video distribution (how much of the 270 PB/day the top 1% drives) and per-rung read rate. Without the popularity curve, every cost lever above is a guess.

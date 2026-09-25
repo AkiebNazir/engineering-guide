@@ -278,7 +278,7 @@ opposite orderings.
 
 | | Python | Go |
 |---|---|---|
-| API shape | Free functions on a plain `list` | Interface you implement (`heap.Interface`) |
+| <abbr title="Application Programming Interface">API</abbr> shape | Free functions on a plain `list` | Interface you implement (`heap.Interface`) |
 | Default order | Min-heap | Min-heap (flip `Less` for max) |
 | Max-heap idiom | Negate values | Flip `Less`, or negate |
 | Generic support | N/A (duck-typed) | **Not genericized** — `any`-based, boxes values |

@@ -8,7 +8,7 @@ Build a ReAct (Reasoning and Acting) agent using Python. The agent should be abl
 Design an Agent class with a `run()` loop.
 
 1. **Prompt Design**
-   - The LLM needs a system prompt that explains the ReAct format.
+   - The <abbr title="Large Language Model">LLM</abbr> needs a system prompt that explains the ReAct format.
    - Format:
      ```
      Question: <the user's question>
@@ -26,15 +26,15 @@ Design an Agent class with a `run()` loop.
      - `search(query: str) -> str`: Returns mock information for specific queries (e.g., "capital of France" -> "Paris").
 
 3. **Execution Loop**
-   - Send the prompt (including the history of thoughts/actions/observations) to the LLM.
-   - Parse the LLM's response. If it outputs an `Action`, extract the tool name and argument, execute the tool, append the `Observation`, and call the LLM again.
+   - Send the prompt (including the history of thoughts/actions/observations) to the <abbr title="Large Language Model">LLM</abbr>.
+   - Parse the <abbr title="Large Language Model">LLM</abbr>'s response. If it outputs an `Action`, extract the tool name and argument, execute the tool, append the `Observation`, and call the <abbr title="Large Language Model">LLM</abbr> again.
    - If it outputs `Final Answer`, return it to the user.
 
 4. **Model Support**
-   - Like project 1, it should support a local model (Ollama) and a cloud API (Gemini/OpenAI) via configuration.
+   - Like project 1, it should support a local model (Ollama) and a cloud <abbr title="Application Programming Interface">API</abbr> (Gemini/OpenAI) via configuration.
 
 ## Challenge
 - Can you write the regex or string splitting logic to reliably parse `Thought:`, `Action:`, and `Final Answer:`?
-- What happens if the LLM hallucinates a tool that doesn't exist? (Hint: your code should return an Observation like `Error: Tool not found`).
+- What happens if the <abbr title="Large Language Model">LLM</abbr> hallucinates a tool that doesn't exist? (Hint: your code should return an Observation like `Error: Tool not found`).
 
 Once done, check out `02_react_agent_project_solution.py`.

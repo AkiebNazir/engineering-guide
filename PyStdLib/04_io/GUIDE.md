@@ -39,7 +39,7 @@ behavior (e.g. `csv.writer`, `json.dump`, `shutil.copyfileobj`).
 ## What the 10 levels cover
 
 Level 1 opens a file with each mode character and shows what problem it solves.
-Level 2 covers the core read/write/readline API shared by real files and
+Level 2 covers the core read/write/readline <abbr title="Application Programming Interface">API</abbr> shared by real files and
 `StringIO`/`BytesIO`. Level 3 combines `seek()`/`tell()` and `whence` into a
 realistic "read the last N bytes" idiom. Level 4 triggers a real
 `UnicodeDecodeError` from a bad `encoding=`/`errors=` combination and shows the

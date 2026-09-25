@@ -6,7 +6,7 @@ A **partitioned, replicated, append-only log** (for example Kafka, per the 2011 
 
 - `publish` returns only after the message is in at least 2 zones' replicas (`acks=all`, replication factor 3, `min.insync.replicas=2`). One zone can be lost with no lost acknowledged message and publishing stays available.
 - **Ordering per key**, not global: a key maps to one partition, and a partition is read in write order.
-- **At-least-once** by default. Exactly-once *effect* is opt-in per consumer and needs an idempotent sink. Nothing here makes a payment API run once by itself.
+- **At-least-once** by default. Exactly-once *effect* is opt-in per consumer and needs an idempotent sink. Nothing here makes a payment <abbr title="Application Programming Interface">API</abbr> run once by itself.
 - Replay by offset or timestamp for 7 days.
 - Not promised: order across partitions, delay precision finer than the smallest tier, or publishing with two zones gone.
 
@@ -29,7 +29,7 @@ Constraints from the question; (assumed) marks our numbers. Block [26](../buildi
 | Tiered (6 h local) | 0.4 GB/s × 21,600 s × 3 = 26 TB local; cold 233 TB single copy in object storage | Brokers then set by replicas per broker | 46,470 / 18 = 2,580 replicas, 1.4 TB local each: **18 brokers** (6 per zone) instead of 48. |
 | Offset commits | 3 groups × 15,490 = 46,470 (group, partition) pairs / 5 s | 9,300 commits/s, about 0.9 MB/s | At a 1 s interval it is 46,470/s, 4.6% of message rate. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /topics/{t}/messages   [{key, value, headers, id?, deliver_at?}]  → [{partition, offset}] | per-item error

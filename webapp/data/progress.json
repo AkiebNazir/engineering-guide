@@ -23,6 +23,11 @@
       "last": 1790094711939,
       "pos": 0
     },
+    "api:Fundamentals/03_cross_cutting_concerns": {
+      "last": 1790315193739,
+      "pct": 85,
+      "pos": 0.8118
+    },
     "api:Fundamentals/04_choosing_the_right_api": {
       "last": 1790006173477
     },
@@ -57,7 +62,9 @@
       "pos": 0.8635
     },
     "api:REST/Theory": {
-      "last": 1790006170088
+      "last": 1790314812213,
+      "pct": 100,
+      "pos": 0.9606
     },
     "api:SOAP/Theory": {
       "last": 1790006189314
@@ -304,8 +311,20 @@
       "pct": 89,
       "pos": 0.7531
     },
+    "nosql:README": {
+      "last": 1790315288362,
+      "pct": 65,
+      "pos": 0
+    },
+    "nosql:concepts/01_choosing_a_database_and_cap_theorem": {
+      "last": 1790315318745,
+      "pct": 90,
+      "pos": 0
+    },
     "nosql:concepts/02_interview_playbook": {
-      "last": 1790174609621
+      "last": 1790315307313,
+      "pct": 100,
+      "pos": 0.8305
     },
     "nosql:mongodb/09_transactions_in_mongodb": {
       "last": 1790179701824
@@ -562,9 +581,9 @@
       "last": 1790174608009
     },
     "sql:README": {
-      "last": 1790177939619,
+      "last": 1790315886860,
       "pct": 96,
-      "pos": 0.7918
+      "pos": 0
     },
     "swd:01_philosophy_of_software_design": {
       "last": 1789899822835,
@@ -1148,9 +1167,10 @@
     "api/REST/Foundation/00_single_endpoint_and_how_it_works": {
       "attempts": 1,
       "drafts": {
-        "go": "package main\n\nimport (\n\t\"flag\"\n\t\"fmt\"\n\t\"io\"\n\t\"log\"\n\t\"net\"\n\t\"net/http\"\n)\n\n// pingHandler runs exactly once per incoming request that reaches it. By the\n// time this function starts, net/http has already read the request off the\n// network socket and parsed it into method / path / headers for you - that\n// parsing step is what the bonus level (13) shows happening by hand, with\n// nothing but raw bytes, once this feels easy.\nfunc pingHandler(w http.ResponseWriter, r *http.Request) {\n\t// r.URL.Path is the exact URL path the client asked for, e.g. \"/ping\".\n\t// This handler is only ever registered for \"/ping\" (see main below), so\n\t// by the time we're here that check has already been made for us.\n\tw.Header().Set(\"Content-Type\", \"text/plain\") // step 1: headers, before the status line is sent\n\tfmt.Fprint(w, \"pong\\n\")                      // step 2: the body (net/http sends \"200 OK\" automatically\n\t//         the first time you write, unless you called WriteHeader yourself)\n}\n\nfunc main() {\n\tserve := flag.Bool(\"serve\", false, \"keep serving on :8080 instead of running the demo\")\n\tflag.Parse()\n\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"GET /ping\", pingHandler) // this server agrees to answer exactly ONE path\n\n\tif *serve {\n\t\tlog.Println(\"listening on http://localhost:8080  (try: curl -i localhost:8080/ping)\")\n\t\tlog.Fatal(http.ListenAndServe(\"127.0.0.1:8080\", mux))\n\t}\n\n\t// port 0 = \"operating system, hand me any free port\" - so this demo never\n\t// collides with something else already listening on 8080 on your machine.\n\tln, err := net.Listen(\"tcp\", \"127.0.0.1:0\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tgo http.Serve(ln, mux)\n\tbase := \"http://\" + ln.Addr().String()\n\n\t// This IS \"the client\". curl, a browser's address bar, and this code all\n\t// do the exact same three things: open a connection, send a request, read\n\t// back a response. There is nothing special about any of them - they all\n\t// speak the same plain-text protocol.\n\tres, err := http.Get(base + \"/ping\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tbody, _ := io.ReadAll(res.Body)\n\tres.Body.Close()\n\n\tfmt.Printf(\"request  : GET %s/ping\\n\", base)\n\tfmt.Printf(\"response : %d %q\\n\", res.StatusCode, string(body))\n\t// 200 means \"the server understood the request AND was able to fulfil it\".\n\tif res.StatusCode != 200 || string(body) != \"pong\\n\" {\n\t\tpanic(\"FAILED\")\n\t}\n\n\t// Now ask for a path this server never agreed to answer.\n\tres2, err := http.Get(base + \"/does-not-exist\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tres2.Body.Close()\n\tfmt.Printf(\"request  : GET %s/does-not-exist\\n\", base)\n\tfmt.Printf(\"response : %d   (an endpoint this server never agreed to answer - not a crash)\\n\", res2.StatusCode)\n\tif res2.StatusCode != 404 {\n\t\tpanic(\"FAILED\")\n\t}\n\tfmt.Println(\"OK\")\n}\n"
+        "go": "package main\n\nimport (\n\t\"flag\"\n\t\"fmt\"\n\t\"io\"\n\t\"log\"\n\t\"net\"\n\t\"net/http\"\n)\n\n// pingHandler runs exactly once per incoming request that reaches it. By the\n// time this function starts, net/http has already read the request off the\n// network socket and parsed it into method / path / headers for you - that\n// parsing step is what the bonus level (13) shows happening by hand, with\n// nothing but raw bytes, once this feels easy.\nfunc pingHandler(w http.ResponseWriter, r *http.Request) {\n\t// r.URL.Path is the exact URL path the client asked for, e.g. \"/ping\".\n\t// This handler is only ever registered for \"/ping\" (see main below), so\n\t// by the time we're here that check has already been made for us.\n\tw.Header().Set(\"Content-Type\", \"text/plain\") // step 1: headers, before the status line is sent\n\tfmt.Fprint(w, \"pong\\n\")                      // step 2: the body (net/http sends \"200 OK\" automatically\n\t//         the first time you write, unless you called WriteHeader yourself)\n}\n\nfunc main() {\n\tserve := flag.Bool(\"serve\", false, \"keep serving on :8080 instead of running the demo\")\n\tflag.Parse()\n\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"GET /ping\", pingHandler) // this server agrees to answer exactly ONE path\n\n\tif *serve {\n\t\tlog.Println(\"listening on http://localhost:8080  (try: curl -i localhost:8080/ping)\")\n\t\tlog.Fatal(http.ListenAndServe(\"127.0.0.1:8080\", mux))\n\t}\n\n\t// port 0 = \"operating system, hand me any free port\" - so this demo never\n\t// collides with something else already listening on 8080 on your machine.\n\tln, err := net.Listen(\"tcp\", \"127.0.0.1:0\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tgo http.Serve(ln, mux)\n\tbase := \"http://\" + ln.Addr().String()\n\n\t// This IS \"the client\". curl, a browser's address bar, and this code all\n\t// do the exact same three things: open a connection, send a request, read\n\t// back a response. There is nothing special about any of them - they all\n\t// speak the same plain-text protocol.\n\tres, err := http.Get(base + \"/ping\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tbody, _ := io.ReadAll(res.Body)\n\tres.Body.Close()\n\n\tfmt.Printf(\"request  : GET %s/ping\\n\", base)\n\tfmt.Printf(\"response : %d %q\\n\", res.StatusCode, string(body))\n\t// 200 means \"the server understood the request AND was able to fulfil it\".\n\tif res.StatusCode != 200 || string(body) != \"pong\\n\" {\n\t\tpanic(\"FAILED\")\n\t}\n\n\t// Now ask for a path this server never agreed to answer.\n\tres2, err := http.Get(base + \"/does-not-exist\")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tres2.Body.Close()\n\tfmt.Printf(\"request  : GET %s/does-not-exist\\n\", base)\n\tfmt.Printf(\"response : %d   (an endpoint this server never agreed to answer - not a crash)\\n\", res2.StatusCode)\n\tif res2.StatusCode != 404 {\n\t\tpanic(\"FAILED\")\n\t}\n\tfmt.Println(\"OK\")\n}\n",
+        "py": "import sys\nimport threading\nimport urllib.error\nimport urllib.request\nfrom http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\n\n\nclass Handler(BaseHTTPRequestHandler):\n    # do_GET runs exactly once per incoming GET request. By the time this\n    # method starts, the library has already read the request off the\n    # network socket and parsed it into method / path / headers for you -\n    # that parsing step is what the bonus level (13) shows happening by hand,\n    # with nothing but raw bytes, once this feels easy.\n    def do_GET(self):\n        # self.path is the exact URL path the client asked for, e.g. \"/ping\".\n        # This server has agreed to answer exactly ONE path - everything else\n        # is \"not found\", which is a normal, expected outcome, not an error\n        # in our code.\n        if self.path != \"/ping\":\n            self.send_response(404)  # \"I understood you, but I have nothing at that address\"\n            self.end_headers()\n            return\n\n        body = b\"pong\\n\"\n        self.send_response(200)                             # step 1: the status line (\"it worked\")\n        self.send_header(\"Content-Type\", \"text/plain\")       # step 2: headers, one call per line...\n        self.send_header(\"Content-Length\", str(len(body)))   #         ...telling the client how to read the body\n        self.end_headers()                                   # step 3: the blank line that ends the headers\n        self.wfile.write(body)                                # step 4: the body itself\n\n    def log_message(self, *args):\n        pass  # silence the default per-request console line, to keep the demo output clean\n\n\ndef demo(base: str) -> None:\n    # This function IS \"the client\". curl, a browser's address bar, and this\n    # code all do the exact same three things: open a connection, send a\n    # request, read back a response. There is nothing special about any of\n    # them - they all speak the same plain-text protocol.\n    with urllib.request.urlopen(f\"{base}/ping\") as response:\n        status, body = response.status, response.read()\n\n    print(f\"request  : GET {base}/ping\")\n    print(f\"response : {status} {body!r}\")\n    # 200 means \"the server understood the request AND was able to fulfil it\".\n    assert status == 200\n    assert body == b\"pong\\n\"\n\n    # Now ask for a path this server never agreed to answer. urllib treats any\n    # non-2xx status as an exception - that is a urllib quirk, not an HTTP rule.\n    try:\n        urllib.request.urlopen(f\"{base}/does-not-exist\")\n        raise AssertionError(\"expected a 404, got a success instead\")\n    except urllib.error.HTTPError as e:\n        print(f\"request  : GET {base}/does-not-exist\")\n        print(f\"response : {e.code}   (an endpoint this server never agreed to answer - not a crash)\")\n        assert e.code == 404\n\n    print(\"OK\")\n\n\nif __name__ == \"__main__\":\n    if \"--serve\" in sys.argv:\n        print(\"listening on http://localhost:8080  (try: curl -i localhost:8080/ping)\")\n        ThreadingHTTPServer((\"127.0.0.1\", 8080), Handler).serve_forever()\n\n    # port 0 = \"operating system, hand me any free port\" - so this demo never\n    # collides with something else already listening on 8080 on your machine.\n    server = ThreadingHTTPServer((\"127.0.0.1\", 0), Handler)\n    threading.Thread(target=server.serve_forever, daemon=True).start()\n    demo(f\"http://127.0.0.1:{server.server_port}\")\n    server.shutdown()\n"
       },
-      "lastOpened": 1790186619734,
+      "lastOpened": 1790314319066,
       "status": "attempting",
       "timeSpent": 0
     },

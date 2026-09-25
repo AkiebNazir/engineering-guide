@@ -23,7 +23,7 @@ The invariant is not "exactly once sent"—a provider can accept a message while
 
 The numbers that shape the design: the **100k/s peak** (partitioned queues, horizontally scaled workers), **provider rate limits** (usually lower than our peak, so we need per-provider throttling and backlog), and **SMS cost** (preference and dedupe correctness saves real money).
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```http
 POST /v1/notifications
@@ -108,7 +108,7 @@ Do not send inline from product requests: a slow provider turns signup/checkout 
 
 Three layers, each cheap:
 
-1. **Intake dedupe.** Unique constraint on `idempotency_key` (or `(event_id, user_id, category)`). A retried API call or a replayed outbox event hits the constraint and returns the existing intent.
+1. **Intake dedupe.** Unique constraint on `idempotency_key` (or `(event_id, user_id, category)`). A retried <abbr title="Application Programming Interface">API</abbr> call or a replayed outbox event hits the constraint and returns the existing intent.
 2. **Worker claim.** An attempt row moves `PENDING → SENDING` with a conditional update (`WHERE status = 'PENDING'`), plus a lease timeout. Two workers that both received the same queue message can't both claim it.
 3. **Provider idempotency.** Pass our attempt id as the provider's idempotency/reference key when supported (many email/SMS APIs support it). If the provider times out *after* accepting, the retry is deduplicated on their side; if not supported, we accept a small duplicate risk and prefer it over silently dropping a password reset.
 

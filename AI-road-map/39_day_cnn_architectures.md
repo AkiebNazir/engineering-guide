@@ -1,4 +1,4 @@
-# Day 39: CNN Architectures (LeNet, VGG, ResNet)
+# Day 39: <abbr title="Convolutional Neural Network">CNN</abbr> Architectures (LeNet, VGG, ResNet)
 
 Welcome to Day 39. Yesterday, we learned how a single Convolution slides over an image to detect edges. Today, we learn how to stack them.
 
@@ -11,7 +11,7 @@ Today, we trace the history of the architectures that solved this, culminating i
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Big Bang: AlexNet (2012)
-Before 2012, AI was largely ignored. In 2012, AlexNet completely destroyed the ImageNet competition, proving that Deep Learning worked.
+Before 2012, <abbr title="Artificial Intelligence">AI</abbr> was largely ignored. In 2012, AlexNet completely destroyed the ImageNet competition, proving that Deep Learning worked.
 How did it win?
 1. **ReLU:** They replaced the standard `Sigmoid` activation function with `ReLU` ($max(0, x)$). This severely reduced the Vanishing Gradient problem, allowing them to stack 8 layers!
 2. **GPUs:** They were the first to program the math to run directly on two Nvidia GTX 580 gaming GPUs.
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Shortcut:** Look at `identity = self.shortcut(x)` and `out += identity`. That tiny `+=` is the single reason modern AI exists. It is the Gradient Highway. 
+1. **The Shortcut:** Look at `identity = self.shortcut(x)` and `out += identity`. That tiny `+=` is the single reason modern <abbr title="Artificial Intelligence">AI</abbr> exists. It is the Gradient Highway. 
 2. **The 1x1 Convolution:** In `self.shortcut`, if we change the stride to 2, the image size halves. You mathematically cannot add a $64 \times 64$ `identity` image to a $32 \times 32$ `out` image. A $1 \times 1$ convolution is used purely to instantly scale the `identity` dimensions down so the math matches!
 3. **BatchNorm Placement:** Notice that we apply BatchNorm *before* adding the Skip Connection. This is crucial for mathematical stability.
 

@@ -1,10 +1,10 @@
 # Day 5: Norms, Distances & Metric Spaces
 
-Welcome to Day 5. After conquering vectors, matrices, eigenvectors, and SVD, you might think you know everything about how data is mapped. But there is a massive difference between *plotting* a point in space and *measuring the distance* between two points.
+Welcome to Day 5. After conquering vectors, matrices, eigenvectors, and <abbr title="Singular Value Decomposition">SVD</abbr>, you might think you know everything about how data is mapped. But there is a massive difference between *plotting* a point in space and *measuring the distance* between two points.
 
-Today, we cover **Norms and Distances**. In Machine Learning, everything is an optimization problem: we define an "Error" or "Loss", and we try to minimize it. The mathematical tool we use to measure that error is a Norm. If you choose the wrong norm, your AI will learn the wrong thing. 
+Today, we cover **Norms and Distances**. In Machine Learning, everything is an optimization problem: we define an "Error" or "Loss", and we try to minimize it. The mathematical tool we use to measure that error is a Norm. If you choose the wrong norm, your <abbr title="Artificial Intelligence">AI</abbr> will learn the wrong thing. 
 
-Let's understand how an AI physically measures space.
+Let's understand how an <abbr title="Artificial Intelligence">AI</abbr> physically measures space.
 
 ---
 
@@ -30,8 +30,8 @@ $$ \|\mathbf{x}\|_1 = \sum_{i=1}^{n} |x_i| $$
 > Step 2: Sum them up: $3 + 4 + 2 = 9$.
 > Result: The $L_1$ norm is 9.
 > 
-> **AI Context (Sparsity & Lasso Regression):** 
-> If you use the $L_1$ norm to penalize your model's weights during training (called $L_1$ Regularization or Lasso), the math naturally forces many of the weights to become *exactly zero*. This creates a **Sparse** *(mostly zeros)* model. This is incredibly useful for Feature Selection—the AI automatically deletes useless features by setting their weight to 0!
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Sparsity & Lasso Regression):** 
+> If you use the $L_1$ norm to penalize your model's weights during training (called $L_1$ Regularization or Lasso), the math naturally forces many of the weights to become *exactly zero*. This creates a **Sparse** *(mostly zeros)* model. This is incredibly useful for Feature Selection—the <abbr title="Artificial Intelligence">AI</abbr> automatically deletes useless features by setting their weight to 0!
 
 ### 3. The $L_2$ Norm (Euclidean Distance)
 This is the standard "straight-line" distance you learned in high school geometry (the Pythagorean theorem generalized to $n$-dimensions).
@@ -46,8 +46,8 @@ $$ \|\mathbf{x}\|_2 = \sqrt{\sum_{i=1}^{n} x_i^2} $$
 > Step 3: Take the square root: $\sqrt{25} = 5$.
 > Result: The $L_2$ norm is 5. *(Notice how this is smaller than the $L_1$ norm of 7 for the same 2D vector, because a straight line is shorter than driving along the grid!)*
 > 
-> **AI Context (Ridge Regression & Weight Decay):** 
-> If you use the $L_2$ norm to penalize your weights (called $L_2$ Regularization or Ridge Regression), the math punishes *large* weights very heavily (because $10^2$ is much worse than $1^2$). However, it rarely pushes weights to exactly zero. It just forces them to all be very small and smoothly distributed, which prevents the AI from over-relying on a single dominant feature.
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Ridge Regression & Weight Decay):** 
+> If you use the $L_2$ norm to penalize your weights (called $L_2$ Regularization or Ridge Regression), the math punishes *large* weights very heavily (because $10^2$ is much worse than $1^2$). However, it rarely pushes weights to exactly zero. It just forces them to all be very small and smoothly distributed, which prevents the <abbr title="Artificial Intelligence">AI</abbr> from over-relying on a single dominant feature.
 
 ### 4. The Generalized $L_p$ Norm
 Both $L_1$ and $L_2$ are just specific versions of the overarching $L_p$ norm formula.
@@ -59,7 +59,7 @@ $$ \|\mathbf{x}\|_p = \left( \sum_{i=1}^{n} |x_i|^p \right)^{1/p} $$
 > Let's look at the $L_\infty$ (L-Infinity) norm, also called the **Chebyshev distance**. As $p \rightarrow \infty$, the math dictates that the single largest element in the vector completely dominates the sum.
 > If $\mathbf{x} = [3, -8, 2]$, the $L_\infty$ norm is simply the maximum absolute value: $8$. 
 > 
-> **AI Context (Adversarial Robustness):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Adversarial Robustness):** 
 > When researchers test if a neural network can be hacked by adding invisible "noise" to an image (Adversarial Attacks), they often use the $L_\infty$ norm to restrict the attack. Constraining the $L_\infty$ norm to $0.01$ means the hacker cannot alter *any single pixel* by more than 1%, ensuring the hack remains completely invisible to the human eye.
 
 ### 5. Mahalanobis Distance (Accounting for Covariance)
@@ -69,7 +69,7 @@ Euclidean ($L_2$) distance assumes space is perfectly spherical. But what if you
 > Imagine plotting human Height vs. Weight. The data forms an upward-sloping oval (taller people weigh more). If you have an outlier point that is [Short, Heavy], it might be the same *Euclidean* distance from the center as a [Tall, Heavy] point. But [Tall, Heavy] is completely normal, while [Short, Heavy] is highly unusual!
 > The **Mahalanobis Distance** divides the distance by the **Covariance Matrix** *(a matrix tracking how features stretch together)*. 
 > 
-> **AI Context (Anomaly Detection):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Anomaly Detection):** 
 > In production cybersecurity systems, when detecting credit card fraud, you *must* use Mahalanobis distance. It stretches the ruler based on the shape of the data, allowing the system to realize that a \$500 purchase at a grocery store is an anomaly, even if a \$500 purchase at an electronics store is considered a normal distance from the mean.
 
 ---
@@ -203,4 +203,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 4. **The Engineering Fix:** In production, the covariance matrix and its inverse are computed *offline* asynchronously in a batch job (e.g., once an hour). The real-time inference engine just caches the pre-inverted matrix and performs a fast $O(n^2)$ matrix-vector multiplication when a transaction arrives.
 
 ---
-**Task for the end of the day:** Commit your code to Git. Look at the unit ball image until it burns into your memory. Tomorrow, we dive into the engine of modern AI: **Matrix Calculus and Backpropagation!**
+**Task for the end of the day:** Commit your code to Git. Look at the unit ball image until it burns into your memory. Tomorrow, we dive into the engine of modern <abbr title="Artificial Intelligence">AI</abbr>: **Matrix Calculus and Backpropagation!**

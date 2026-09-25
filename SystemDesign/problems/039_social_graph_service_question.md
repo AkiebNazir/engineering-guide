@@ -25,7 +25,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope QPS, edge and storage counts, cache RAM, and fleet sizes.
-3. API contracts and core data model (objects, associations, counts, shard mapping).
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model (objects, associations, counts, shard mapping).
 4. Baseline architecture and read/write flows, including the inverse edge.
 5. Sharding and hot nodes, the cache tiers and invalidation flow, read-your-writes and cross-region consistency, counters, and two-hop queries.
 6. Cache, scale, abuse, failure, and observability plan.

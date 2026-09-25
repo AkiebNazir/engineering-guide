@@ -155,7 +155,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Log-Loss Derivative:** Look closely at the `error = predictions - y` line in the training loop. The complex calculus of the Log-Loss function, when multiplied by the complex calculus of the Sigmoid function, miraculously cancels out, leaving us with the simplest possible gradient: *(What you guessed) minus (The True Answer)*. This mathematical elegance is why Logistic Regression became the foundation of modern AI.
+1. **The Log-Loss Derivative:** Look closely at the `error = predictions - y` line in the training loop. The complex calculus of the Log-Loss function, when multiplied by the complex calculus of the Sigmoid function, miraculously cancels out, leaving us with the simplest possible gradient: *(What you guessed) minus (The True Answer)*. This mathematical elegance is why Logistic Regression became the foundation of modern <abbr title="Artificial Intelligence">AI</abbr>.
 2. **Epsilon Clipping:** In `binary_cross_entropy`, notice `np.clip(y_pred, epsilon, 1-epsilon)`. If the model guesses `1.0` (100% certainty) but the true answer is `0`, the log-loss equation tries to calculate `log(0)`, which is negative infinity! Adding Epsilon ($1e^{-15}$) is a mandatory software engineering safeguard.
 
 ---

@@ -3,7 +3,7 @@
 Welcome to Day 168.
 
 You build a Fraud Detection model. You train it, test it, and deploy it. The accuracy is 99%. 
-Six months later, the CTO calls you into their office. Fraud is up 400%. The model's accuracy has silently plummeted to 60%, but the API hasn't thrown a single error.
+Six months later, the CTO calls you into their office. Fraud is up 400%. The model's accuracy has silently plummeted to 60%, but the <abbr title="Application Programming Interface">API</abbr> hasn't thrown a single error.
 
 What happened? The world changed. The fraudsters invented a new technique that didn't exist in your training data. 
 In software engineering, code doesn't rot. `2 + 2` will always equal `4`. But in Machine Learning, models rot the moment you deploy them.
@@ -30,14 +30,14 @@ How do we prove that today's data is fundamentally different from the training d
 
 ### 3. Drift Detection for LLMs
 Drift is easy to measure on numerical data (like age or salary). How do you measure drift on text?
-If your LLM app usually receives prompts like "Write a python script", but suddenly a viral TikTok causes users to ask "Explain this meme", your LLM will hallucinate.
+If your <abbr title="Large Language Model">LLM</abbr> app usually receives prompts like "Write a python script", but suddenly a viral TikTok causes users to ask "Explain this meme", your <abbr title="Large Language Model">LLM</abbr> will hallucinate.
 **Embedding Drift:** We convert the training prompts into Vector Embeddings. We calculate the centroid (the mathematical center) of those vectors. In production, we constantly embed incoming user prompts. If the distance from the incoming prompts to the training centroid exceeds a threshold, we trigger a "Semantic Drift" alert!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a drift detection script using the **Population Stability Index (PSI)**. We will simulate an ML engineer comparing last year's training data against today's production data to prove the model is rotting!
+Let's build a drift detection script using the **Population Stability Index (PSI)**. We will simulate an <abbr title="Machine Learning">ML</abbr> engineer comparing last year's training data against today's production data to prove the model is rotting!
 
 ```python
 import numpy as np
@@ -98,7 +98,7 @@ def run_drift_analysis():
 ```
 
 ### 🔍 Understanding the Enterprise Value
-In a real MLOps pipeline, this script runs every night at midnight. It compares the last 24 hours of API traffic against the golden training dataset stored in S3. 
+In a real MLOps pipeline, this script runs every night at midnight. It compares the last 24 hours of <abbr title="Application Programming Interface">API</abbr> traffic against the golden training dataset stored in S3. 
 If the `psi_value` for any critical feature spikes above `0.2`, it automatically fires a webhook to the Airflow orchestrator (Day 161) to trigger a brand-new GPU training cycle on the fresh data! This is the holy grail of MLOps: **Continuous Training (CT) driven by Drift!**
 
 ---
@@ -107,7 +107,7 @@ If the `psi_value` for any critical feature spikes above `0.2`, it automatically
 
 ### 🛠️ The Challenge
 Currently, we detected drift on a 1D numerical feature (Age).
-**Your Task:** Research how to detect drift on Unstructured Text (LLM Prompts). Look up libraries like `Evidently AI` or `NannyML`. Read their documentation on how they use Vector Embeddings to calculate "Data Drift" on text data.
+**Your Task:** Research how to detect drift on Unstructured Text (<abbr title="Large Language Model">LLM</abbr> Prompts). Look up libraries like `Evidently AI` or `NannyML`. Read their documentation on how they use Vector Embeddings to calculate "Data Drift" on text data.
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -122,6 +122,6 @@ A "Strong Hire" candidate must articulate:
 4. **Automated Retraining Architecture:** Design an Airflow DAG that monitors PSI daily. If PSI > 0.2, the DAG automatically pulls the last 30 days of data, retrains the model, evaluates it against the current production model (Shadow Mode), and deploys it if the accuracy is higher.
 
 ---
-**Task for the end of the day:** Read up on the open-source library **Evidently AI**. It is the industry standard for generating beautiful HTML reports that visualize Data Drift.
+**Task for the end of the day:** Read up on the open-source library **Evidently <abbr title="Artificial Intelligence">AI</abbr>**. It is the industry standard for generating beautiful HTML reports that visualize Data Drift.
 
-Tomorrow, in **Day 169**, we cover the scariest part of engineering: **Incident Response**. What exactly do you do when the PagerDuty alarm goes off at 3:00 AM because the AI started cursing at customers?
+Tomorrow, in **Day 169**, we cover the scariest part of engineering: **Incident Response**. What exactly do you do when the PagerDuty alarm goes off at 3:00 AM because the <abbr title="Artificial Intelligence">AI</abbr> started cursing at customers?

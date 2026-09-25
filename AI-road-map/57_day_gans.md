@@ -9,9 +9,9 @@ Today, we meet the VAE's arch-nemesis. An architecture so mathematically violent
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Minimax Game (Game Theory)
-A GAN consists of two entirely separate neural networks:
+A <abbr title="Generative Adversarial Network">GAN</abbr> consists of two entirely separate neural networks:
 1. **The Generator (The Counterfeiter):** Its input is pure random noise. Its output is a forged image (e.g., a fake $100 bill).
-2. **The Discriminator (The Detective):** A standard CNN binary classifier. Its input is an image. Its output is $1.0$ (Real) or $0.0$ (Fake).
+2. **The Discriminator (The Detective):** A standard <abbr title="Convolutional Neural Network">CNN</abbr> binary classifier. Its input is an image. Its output is $1.0$ (Real) or $0.0$ (Fake).
 
 **The War:**
 - The Detective is trained to maximize its accuracy. It wants to output $1.0$ for real data, and $0.0$ for the Counterfeiter's fakes.
@@ -31,7 +31,7 @@ Imagine the Generator randomly draws a beautiful "Number 7". The Discriminator i
 The Generator realizes: *"Wow, drawing a 7 is an automatic win!"*
 Because the Generator is lazy, it completely stops trying to draw 2s, 3s, or 8s. It collapses into a single "Mode", generating nothing but 7s forever! 
 
-### 4. The Fix: Wasserstein GAN (WGAN)
+### 4. The Fix: Wasserstein <abbr title="Generative Adversarial Network">GAN</abbr> (WGAN)
 To fix Mode Collapse and vanishing gradients, mathematicians realized that standard Binary Cross Entropy loss was the wrong tool for the job.
 They replaced it with the **Wasserstein Distance** (also known as the Earth Mover's Distance). Instead of classifying $1.0$ or $0.0$, the Discriminator is turned into a "Critic" that outputs a continuous, unbounded score (e.g., $+500$ for real, $-200$ for fake). 
 WGAN mathematically guarantees that the Generator will always receive a usable gradient, drastically improving stability and fixing mode collapse!
@@ -40,7 +40,7 @@ WGAN mathematically guarantees that the Generator will always receive a usable g
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Deep Convolutional GAN (DCGAN) from scratch in PyTorch. We will write the delicate alternating training loop to watch them fight!
+Let's build a Deep Convolutional <abbr title="Generative Adversarial Network">GAN</abbr> (DCGAN) from scratch in PyTorch. We will write the delicate alternating training loop to watch them fight!
 
 Create a file named `dcgan_training.py`:
 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: The Conditional GAN (cGAN)
+### 🛠️ The Challenge: The Conditional <abbr title="Generative Adversarial Network">GAN</abbr> (cGAN)
 You want to force the Generator to draw a specific class (e.g., "Draw a dog").
 **Your Task:**
 1. Conceptually modify the `Generator`. Add an `nn.Embedding(num_classes, embedding_dim)`.

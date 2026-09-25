@@ -15,7 +15,7 @@ Use this alongside the questions and solutions. Each blueprint captures the miss
 **Truth:** notification intent and delivery-attempt state. **Contract:** product emits intent, not “send exactly once.” **Flow:** preference decision → priority queue → channel worker → provider callback. **Hard part:** idempotent provider outcome and distinct urgent/bulk capacity. **Scale trigger:** campaign fanout → batch/partition recipient expansion. **Never:** let a marketing campaign share a queue/pool with password reset.
 
 ## 05 Photo Pipeline
-**Truth:** media metadata/state; object store holds bytes. **Contract:** upload session is resumable/idempotent; readiness is explicit state. **Flow:** direct upload → scan → transform event → variants. **Hard part:** delete denies serving first then asynchronously removes every derivative. **Scale trigger:** transform queue backlog → autoscaled workers by format/size class. **Never:** trust filename/MIME or proxy all bytes through API.
+**Truth:** media metadata/state; object store holds bytes. **Contract:** upload session is resumable/idempotent; readiness is explicit state. **Flow:** direct upload → scan → transform event → variants. **Hard part:** delete denies serving first then asynchronously removes every derivative. **Scale trigger:** transform queue backlog → autoscaled workers by format/size class. **Never:** trust filename/MIME or proxy all bytes through <abbr title="Application Programming Interface">API</abbr>.
 
 ## 06 Chat
 **Truth:** durably appended per-conversation messages. **Contract:** client message ID is idempotency key; sequence cursor syncs history. **Flow:** gateway authorizes → append → online fanout/notification. **Hard part:** order only per room and make read receipts monotonic. **Scale trigger:** hot group → partition delivery/read fanout, not message truth. **Never:** treat live sockets/presence as durable delivery proof.
@@ -62,7 +62,7 @@ Use this alongside the questions and solutions. Each blueprint captures the miss
 ## 20 Ride Dispatch
 **Truth:** transactional trip/assignment; location index is ephemeral. **Contract:** offer lease plus conditional first acceptance. **Flow:** driver location stream → geo cells; rider request → candidates → atomic assignment → realtime updates. **Hard part:** late accept/disconnect and dense-cell hotspot. **Scale trigger:** cell subdivision/region dispatch partitions. **Never:** choose a driver from stale location without assignment guard.
 
-## 21 Multi-Tenant API Gateway
+## 21 Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway
 **Truth:** identity/policy/config control plane; services remain truth for resource permissions. **Contract:** gateway verifies token, quota, deadline, route/version; backend re-authorizes. **Flow:** edge → policy/cache → gateway → isolated service/data path. **Hard part:** identity/config outage and tenant noisy-neighbor limits. **Scale trigger:** route/tenant traffic → distributed quota and partitioned policy/config distribution. **Never:** centralize all domain logic or trust caller-supplied tenant ID.
 
 ## How to use each blueprint

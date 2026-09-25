@@ -2,7 +2,7 @@
 
 Welcome to Day 9. Yesterday, we learned how to calculate the probability of a single event. But what if we want to understand the shape of *all possible events* at once? 
 
-We use a **Probability Distribution**. A distribution is simply a mathematical blueprint that dictates how randomness is allowed to behave. If you do not understand distributions, you cannot understand how AI models are initialized, how A/B tests are calculated, or how Generative AI creates images out of pure noise.
+We use a **Probability Distribution**. A distribution is simply a mathematical blueprint that dictates how randomness is allowed to behave. If you do not understand distributions, you cannot understand how <abbr title="Artificial Intelligence">AI</abbr> models are initialized, how A/B tests are calculated, or how Generative <abbr title="Artificial Intelligence">AI</abbr> creates images out of pure noise.
 
 Let's dissect the blueprints of the universe.
 
@@ -34,8 +34,8 @@ $$ P(k) = \binom{n}{k} p^k (1-p)^{n-k} $$
 > Step 3: $(1-p)^{n-k} = 0.40^1 = 0.40$. (The probability of the remaining 1 tail).
 > Final Math: $3 \times 0.36 \times 0.40 = 0.432$. You have a **43.2%** chance!
 > 
-> **AI Context (Multi-Label Classification):** 
-> If you build an AI to tag an image with multiple tags (e.g., [Cat=Yes, Dog=No, Outdoor=Yes]), the neural network uses a Sigmoid activation function at the very end. The math of Sigmoid explicitly forces the network to model each tag as an independent Bernoulli distribution!
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Multi-Label Classification):** 
+> If you build an <abbr title="Artificial Intelligence">AI</abbr> to tag an image with multiple tags (e.g., [Cat=Yes, Dog=No, Outdoor=Yes]), the neural network uses a Sigmoid activation function at the very end. The math of Sigmoid explicitly forces the network to model each tag as an independent Bernoulli distribution!
 
 ### 3. The Gaussian / Normal Distribution (Continuous)
 The absolute king of probability. The famous "Bell Curve". Nature loves the Gaussian distribution. Most human heights, test scores, and measurement errors naturally cluster around an average, trailing off symmetrically in both directions.
@@ -51,14 +51,14 @@ $$ p(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\r
 > Step 3: $\frac{1}{\sqrt{2\pi(100)}} \times 1 \approx \frac{1}{25.06} \approx 0.039$.
 > *If we evaluate a very tall height $x = 200$ (3 standard deviations away), the $e^{-x}$ term rapidly crushes the output down to $0.0004$. The Bell Curve heavily penalizes outliers!*
 > 
-> **AI Context (Weight Initialization):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Weight Initialization):** 
 > When you first create a Neural Network, its weights cannot be zero, or it won't learn. We initialize the weights by sampling random numbers from a Gaussian distribution with $\mu = 0$ and a very tiny $\sigma$. This guarantees the weights start small and symmetrically balanced!
 
 ### 4. The Central Limit Theorem (CLT)
 Why is the Gaussian distribution everywhere? The **Central Limit Theorem** is a mathematical law stating: 
 *If you take any random, completely non-Gaussian event (like rolling a flat 6-sided die), and you add up enough of them, their sum will magically transform into a perfect Gaussian Bell Curve.*
 
-> **AI Context (Why Deep Learning Works):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Why Deep Learning Works):** 
 > When we train a neural network using a batch of 256 images, the gradient (the error signal) for each individual image is wild and chaotic. But because we average the 256 gradients together, the **Central Limit Theorem** kicks in! The averaged gradient behaves like a smooth, predictable Gaussian, allowing the model to optimize smoothly without violently crashing.
 
 ---

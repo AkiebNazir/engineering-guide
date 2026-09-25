@@ -1,4 +1,4 @@
-# REST Foundation - ground zero to a complete, secured CRUD API
+# REST Foundation - ground zero to a complete, secured CRUD <abbr title="Application Programming Interface">API</abbr>
 
 This is the on-ramp *before* `../Theory.md` and `../labs/`. Each level is a
 tiny, self-contained, runnable file in **both** `python/` and `golang/` -
@@ -10,7 +10,7 @@ Run any Go level:      `go run ./REST/Foundation/golang/00_single_endpoint_and_h
 
 | # | Level | The one new idea |
 |---|---|---|
-| 00 | Single endpoint, explained end to end | What "a basic REST API endpoint" actually is: one route, one canned response, the full request/response loop |
+| 00 | Single endpoint, explained end to end | What "a basic REST <abbr title="Application Programming Interface">API</abbr> endpoint" actually is: one route, one canned response, the full request/response loop |
 | 01 | Routing: paths and methods | Decide what to do based on path + verb; 404 / 405 |
 | 02 | JSON in and out | Encode/decode structured data instead of plain text |
 | 03 | Path parameters | `/books/{id}` - a variable segment inside the URL |
@@ -22,7 +22,7 @@ Run any Go level:      `go run ./REST/Foundation/golang/00_single_endpoint_and_h
 | 09 | Authentication | "Who is this?" - bearer tokens, 401 Unauthorized, attaching the identity to the request |
 | 10 | Authorization | "What are they allowed to do?" - role checks on top of authentication, 403 Forbidden |
 | 11 | Complete, protected CRUD | Everything above, combined: public reads, authenticated writes, admin-only delete |
-| 12 | Being a client | Calling an API instead of serving one: timeouts, retries, exponential backoff |
+| 12 | Being a client | Calling an <abbr title="Application Programming Interface">API</abbr> instead of serving one: timeouts, retries, exponential backoff |
 | 13 | Bonus: raw HTTP over TCP | Optional deep dive - what a framework is actually doing for you underneath (read any time after level 00) |
 
 **Where to go next:** level 11 is the same shape as `../labs/python/01_crud_stdlib.py`

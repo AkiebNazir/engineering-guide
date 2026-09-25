@@ -1,6 +1,6 @@
 # Day 77: Model Pruning (Unstructured vs Structured)
 
-Welcome to Day 77. We have entered **Phase 6: Enterprise AI Engineering**.
+Welcome to Day 77. We have entered **Phase 6: Enterprise <abbr title="Artificial Intelligence">AI</abbr> Engineering**.
 In Day 76, we learned Knowledge Distillation, which required training an entirely new "Student" model. 
 
 But what if you don't have the compute to train a new model? What if you just take the massive 70-Billion parameter model, open up its brain, and physically delete $50\%$ of its neurons? 

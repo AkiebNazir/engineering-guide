@@ -1,15 +1,15 @@
 ---
-title: "1. The Ultimate API Engineering Guide"
+title: "1. The Ultimate <abbr title="Application Programming Interface">API</abbr> Engineering Guide"
 description: "Everything you need to know about Application Programming Interfaces, their types, architectures, and real-world uses."
 ---
 
-# The Ultimate API Engineering Guide
+# The Ultimate <abbr title="Application Programming Interface">API</abbr> Engineering Guide
 
-## What is an API?
-An **Application Programming Interface (API)** is a set of rules and protocols that allows one software application to communicate with another. It acts as an intermediary layer that processes data transfers between systems, abstracting away the internal workings of each system.
+## What is an <abbr title="Application Programming Interface">API</abbr>?
+An **Application Programming Interface (<abbr title="Application Programming Interface">API</abbr>)** is a set of rules and protocols that allows one software application to communicate with another. It acts as an intermediary layer that processes data transfers between systems, abstracting away the internal workings of each system.
 
 > [!NOTE] Analogy
-> Think of a restaurant. You are the **Client** (the frontend app). The kitchen is the **Server** (the database/backend). The waiter is the **API**. You don't go to the kitchen to cook the food yourself; you give your order to the waiter, who takes it to the kitchen and brings the food back to you.
+> Think of a restaurant. You are the **Client** (the frontend app). The kitchen is the **Server** (the database/backend). The waiter is the **<abbr title="Application Programming Interface">API</abbr>**. You don't go to the kitchen to cook the food yourself; you give your order to the waiter, who takes it to the kitchen and brings the food back to you.
 
 ## Why APIs?
 1.  **Abstraction:** Hides backend complexity. The client doesn't need to know *how* the data is fetched or calculated.
@@ -19,7 +19,7 @@ An **Application Programming Interface (API)** is a set of rules and protocols t
 
 ## Types of APIs (The Architectural Styles)
 
-Below is a quick overview of the most prominent API paradigms used in modern software engineering. We will dive deep into each one with code examples in the subsequent guides.
+Below is a quick overview of the most prominent <abbr title="Application Programming Interface">API</abbr> paradigms used in modern software engineering. We will dive deep into each one with code examples in the subsequent guides.
 
 ```arch
 %% caption: API styles split into synchronous request/response and asynchronous, event-driven families.
@@ -69,7 +69,7 @@ A legacy protocol heavily used in enterprise systems. It relies entirely on XML 
 
 ## How Data Moves: The Four Communication Patterns
 
-Every API style is a different answer to the same question: *who starts the conversation, and how many messages flow?*
+Every <abbr title="Application Programming Interface">API</abbr> style is a different answer to the same question: *who starts the conversation, and how many messages flow?*
 
 | Pattern | Who talks | Messages | Used by |
 | :--- | :--- | :--- | :--- |
@@ -78,9 +78,9 @@ Every API style is a different answer to the same question: *who starts the conv
 | **Client streaming** | Client sends many, server answers once | many → 1 | gRPC client streaming (uploads, metrics) |
 | **Full duplex** | Both sides send whenever they want | many ↔ many | WebSockets, gRPC bidirectional streaming |
 
-> **Key idea:** Choosing an API style is mostly choosing one of these four patterns, then choosing a *contract format* (JSON, XML, Protobuf) to go with it.
+> **Key idea:** Choosing an <abbr title="Application Programming Interface">API</abbr> style is mostly choosing one of these four patterns, then choosing a *contract format* (JSON, XML, Protobuf) to go with it.
 
-## What Every API Has (Regardless of Style)
+## What Every <abbr title="Application Programming Interface">API</abbr> Has (Regardless of Style)
 
 1.  **A contract** - what can I call, what do I send, what do I get back? (OpenAPI, GraphQL SDL, `.proto`, WSDL.)
 2.  **A transport** - HTTP/1.1, HTTP/2, or a raw upgraded TCP connection.
@@ -93,7 +93,7 @@ The styles differ mainly in rows 1-3. Rows 4-6 are the same problems everywhere,
 
 ## Learning Path Through This Module
 
-Work through the folders in this order. Each API type has one **`Theory.md`** (concepts, wire-level examples, diagrams, security, pitfalls, self-check questions) and a **`labs/`** folder with **5 runnable Python labs and 5 different Go labs**: the first two are basics, the last three are advanced, production-style topics (rate limiting, authentication, retries, mTLS, SSRF, ...). Every lab starts its own server, exercises it and asserts the result. See `API/README.md` for how to run them.
+Work through the folders in this order. Each <abbr title="Application Programming Interface">API</abbr> type has one **`Theory.md`** (concepts, wire-level examples, diagrams, security, pitfalls, self-check questions) and a **`labs/`** folder with **5 runnable Python labs and 5 different Go labs**: the first two are basics, the last three are advanced, production-style topics (rate limiting, authentication, retries, mTLS, SSRF, ...). Every lab starts its own server, exercises it and asserts the result. See `API/README.md` for how to run them.
 
 | Step | Read | Why in this order |
 | :---: | :--- | :--- |
@@ -119,4 +119,4 @@ Work through the folders in this order. Each API type has one **`Theory.md`** (c
 | **HTTP caching** | Excellent | Hard | None | None | n/a | None |
 
 ---
-**Next Steps:** Continue to `02_http_and_web_foundations.md`, then follow the learning path above. Every API type has runnable labs in **Python** (standard library, FastAPI, Strawberry, `websockets`, `grpcio`, `zeep`) and **Go** (latest `net/http`, `coder/websocket`, gRPC-Go, graphql-go, `encoding/xml`).
+**Next Steps:** Continue to `02_http_and_web_foundations.md`, then follow the learning path above. Every <abbr title="Application Programming Interface">API</abbr> type has runnable labs in **Python** (standard library, FastAPI, Strawberry, `websockets`, `grpcio`, `zeep`) and **Go** (latest `net/http`, `coder/websocket`, gRPC-Go, graphql-go, `encoding/xml`).

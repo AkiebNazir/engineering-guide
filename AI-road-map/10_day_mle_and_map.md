@@ -1,8 +1,8 @@
 # Day 10: Maximum Likelihood Estimation (MLE) & MAP
 
-Welcome to Day 10. Yesterday, we learned that Probability Distributions are the mathematical blueprints of the universe. Today, we answer the biggest question in Machine Learning: *How does an AI actually figure out which blueprint fits the data?*
+Welcome to Day 10. Yesterday, we learned that Probability Distributions are the mathematical blueprints of the universe. Today, we answer the biggest question in Machine Learning: *How does an <abbr title="Artificial Intelligence">AI</abbr> actually figure out which blueprint fits the data?*
 
-When you hand an AI a million data points, it uses an optimization algorithm to "turn the dials" of a mathematical distribution until the distribution perfectly hugs the data. The two most important dial-turning algorithms in statistics are **Maximum Likelihood Estimation (MLE)** and **Maximum a Posteriori (MAP)**. 
+When you hand an <abbr title="Artificial Intelligence">AI</abbr> a million data points, it uses an optimization algorithm to "turn the dials" of a mathematical distribution until the distribution perfectly hugs the data. The two most important dial-turning algorithms in statistics are **Maximum Likelihood Estimation (MLE)** and **Maximum a Posteriori (MAP)**. 
 
 Let's dive into the core of statistical learning.
 
@@ -31,13 +31,13 @@ $$ \mathcal{L}(\theta | X) = \prod_{i=1}^{n} p(x_i | \theta) $$
 Because multiplying thousands of tiny probabilities together causes computers to crash (Underflow), we wrap the entire function in a Logarithm. Logarithms magically turn multiplication into addition!
 $$ \log \mathcal{L}(\theta | X) = \sum_{i=1}^{n} \log p(x_i | \theta) $$
 
-> **AI Context (Training Neural Networks):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Training Neural Networks):** 
 > If you have ever trained a neural network using the standard "Cross-Entropy Loss", you were actually just running **Maximum Likelihood Estimation**. The math of Cross-Entropy is mathematically identical to taking the negative Log-Likelihood of a Bernoulli or Categorical distribution. Minimizing the Loss is exactly the same as Maximizing the Likelihood!
 
 ### 3. Maximum a Posteriori (MAP)
 MLE has a fatal flaw: it is incredibly gullible. If you flip a coin 3 times and get 3 Heads, MLE will calculate that the coin has a $100\%$ chance of landing on Heads forever. It doesn't know any better.
 
-**MAP (Maximum a Posteriori)** fixes this by injecting Bayes' Theorem into the optimization. It forces the AI to consider a **Prior** *(a preconceived belief about how the world works)*.
+**MAP (Maximum a Posteriori)** fixes this by injecting Bayes' Theorem into the optimization. It forces the <abbr title="Artificial Intelligence">AI</abbr> to consider a **Prior** *(a preconceived belief about how the world works)*.
 
 **Algebraic Definition:**
 $$ \hat{\theta}_{MAP} = \arg\max_\theta \left( p(X|\theta) \times p(\theta) \right) $$
@@ -48,8 +48,8 @@ $$ \hat{\theta}_{MAP} = \arg\max_\theta \left( p(X|\theta) \times p(\theta) \rig
 > But you are a rational human, so you apply a **Gaussian Prior** *(a Bell Curve belief centered around $p=0.5$)*. 
 > The MAP algorithm multiplies the Likelihood of the 3 Heads by the Gaussian Prior. The math "pulls" the final answer away from the extreme $1.0$ and settles on a much safer prediction, like $p=0.65$.
 > 
-> **AI Context ($L_2$ Regularization / Weight Decay):** 
-> When you train an AI and apply $L_2$ Regularization (Ridge Regression) to keep the weights small, you are mathematically performing **MAP Estimation with a Gaussian Prior centered at zero**. You are explicitly telling the AI: "Before you look at the data, I strongly believe all your weights should be close to zero." The AI must find overwhelming data evidence to justify increasing a weight!
+> **<abbr title="Artificial Intelligence">AI</abbr> Context ($L_2$ Regularization / Weight Decay):** 
+> When you train an <abbr title="Artificial Intelligence">AI</abbr> and apply $L_2$ Regularization (Ridge Regression) to keep the weights small, you are mathematically performing **MAP Estimation with a Gaussian Prior centered at zero**. You are explicitly telling the <abbr title="Artificial Intelligence">AI</abbr>: "Before you look at the data, I strongly believe all your weights should be close to zero." The <abbr title="Artificial Intelligence">AI</abbr> must find overwhelming data evidence to justify increasing a weight!
 
 ### 4. The EM (Expectation-Maximization) Algorithm
 What if you are trying to find the MLE parameters, but half of your dataset is missing or hidden? You use the **EM (Expectation-Maximization) Algorithm**.
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Overfitting Problem:** Look at the red dashed line in the `mle_vs_map.png` image. It peaks exactly at 1.0. This is **Overfitting**. When an AI only has a tiny bit of data, MLE will memorize that data perfectly and fail to generalize.
+1. **The Overfitting Problem:** Look at the red dashed line in the `mle_vs_map.png` image. It peaks exactly at 1.0. This is **Overfitting**. When an <abbr title="Artificial Intelligence">AI</abbr> only has a tiny bit of data, MLE will memorize that data perfectly and fail to generalize.
 2. **The Regularization Solution:** Look at the thick green line. By multiplying the Likelihood by the Prior, the MAP algorithm mathematically pulled the peak away from 1.0 back toward a reasonable 0.56. **This is literally what Regularization does in Deep Learning!**
 
 ---

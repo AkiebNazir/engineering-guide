@@ -52,7 +52,7 @@ Three moments, as an L5 sentence and an L6 sentence. The numbers are illustrativ
 
 **Scoping**
 - L5: "I'll assume 300M daily users, read-heavy, with ranking and ads out of scope. Is that the right scope?"
-- L6: "Before sizing anything: what is the feed for? If the goal is retention, a blank page hurts more than a slightly stale one, so I'll optimize for never being empty. I'd ship phase one as reverse-chronological with hybrid fan-out and add ranking behind the same API in phase two. Does that ordering match the goal?"
+- L6: "Before sizing anything: what is the feed for? If the goal is retention, a blank page hurts more than a slightly stale one, so I'll optimize for never being empty. I'd ship phase one as reverse-chronological with hybrid fan-out and add ranking behind the same <abbr title="Application Programming Interface">API</abbr> in phase two. Does that ordering match the goal?"
 
 **Estimation**
 - L5: "300M users × 10 opens a day ÷ 86,400 is about 35K reads per second, about 100K at a 3× peak, so one database cannot serve this and we need a cache."
@@ -71,13 +71,13 @@ Three moments, as an L5 sentence and an L6 sentence. The numbers are illustrativ
 | Minutes | Phase | What you produce | The trap |
 |---|---|---|---|
 | 0–5 | Requirements | Core features, out-of-scope list, scale, latency, availability vs consistency. | Spending 12 minutes here, or skipping non-functional requirements entirely. |
-| 5–10 | Estimates & API | Peak QPS, storage, bandwidth; main endpoints. | Numbers with no consequence ("so 12K QPS… anyway"). |
+| 5–10 | Estimates & <abbr title="Application Programming Interface">API</abbr> | Peak QPS, storage, bandwidth; main endpoints. | Numbers with no consequence ("so 12K QPS… anyway"). |
 | 10–15 | Data model | Entities, access patterns, database choice with the rejected alternative, first shard key. | Picking a database by brand name. |
 | 15–25 | High-level design | Baseline diagram; one write and one read walked end to end. | Drawing 15 boxes before any of them are justified. |
 | 25–38 | Deep dives | Two hard problems, alternatives compared, decisions made. | Going wide instead of deep; waiting for the interviewer to pick. |
 | 38–45 | Failure & evolution | What breaks, how you notice, what changes at 10×. | Running out of time before ever mentioning failure. |
 
-> 💡 Say the plan out loud in the first 30 seconds: *"I'll spend a few minutes on requirements and scale, sketch the API and data model, draw a baseline, then go deep on the two hardest parts and finish with failure modes."* It signals that you drive the round, and it gives the interviewer a map to interrupt against.
+> 💡 Say the plan out loud in the first 30 seconds: *"I'll spend a few minutes on requirements and scale, sketch the <abbr title="Application Programming Interface">API</abbr> and data model, draw a baseline, then go deep on the two hardest parts and finish with failure modes."* It signals that you drive the round, and it gives the interviewer a map to interrupt against.
 
 ---
 
@@ -154,7 +154,7 @@ When you reach the deep-dive phase, pick the parts where the problem is actually
 | Problem family | The hard parts to volunteer | Building block |
 |---|---|---|
 | URL shortener, pastebin | ID generation and collisions; read-heavy caching; redirects and analytics without slowing the hot path. | [10](building_blocks/10_distributed_systems_theory.md), [07](building_blocks/07_caching.md) |
-| Rate limiter, API gateway | Algorithm choice; atomic counters in a shared store; multi-region limits; fail-open vs fail-closed. | [04](building_blocks/04_api_design_low_level.md) |
+| Rate limiter, <abbr title="Application Programming Interface">API</abbr> gateway | Algorithm choice; atomic counters in a shared store; multi-region limits; fail-open vs fail-closed. | [04](building_blocks/04_api_design_low_level.md) |
 | Key-value store, distributed cache | Partitioning with consistent hashing; quorum replication; conflict resolution; hot keys; rebalancing. | [19](building_blocks/19_consensus_and_coordination.md), [25](building_blocks/25_partitioning_and_hot_keys.md) |
 | News feed, notifications | Fan-out on write vs read; celebrity accounts; ranking; delivery guarantees and deduplication. | [09](building_blocks/09_messaging_and_streaming.md) |
 | Chat, Google Docs | Connection servers and presence; per-conversation ordering; offline sync; OT vs CRDT. | [22](building_blocks/22_realtime_and_collaboration.md) |
@@ -163,7 +163,7 @@ When you reach the deep-dive phase, pick the parts where the problem is actually
 | Maps, nearby, ride sharing | Geospatial indexing (geohash, quadtree, S2); location update volume; matching without double assignment. | [20](building_blocks/20_specialized_data_structures.md) |
 | Ad clicks, metrics, top-K | Windowed stream aggregation; late data and watermarks; exactly-once counting; batch reconciliation. | [21](building_blocks/21_batch_and_stream_processing.md) |
 | Payments, booking | Idempotency; double-entry ledger; sagas and reconciliation; holds with expiry; contention. | [11](building_blocks/11_transactions_and_concurrency.md) |
-| LLM or ML feature | Serving cost and batching; token streaming; caching; quotas; evaluation and safety. | [23](building_blocks/23_ml_and_llm_systems.md) |
+| <abbr title="Large Language Model">LLM</abbr> or <abbr title="Machine Learning">ML</abbr> feature | Serving cost and batching; token streaming; caching; quotas; evaluation and safety. | [23](building_blocks/23_ml_and_llm_systems.md) |
 | Message queue, distributed log | Partitioned replicated log; acks and in-sync replicas versus latency; consumer groups and rebalancing; delivery semantics; retention and compaction. | [26](building_blocks/26_distributed_log_internals.md) · [031](problems/031_distributed_message_queue_question.md) |
 | Ranked feed, recommendations | Retrieval, then a ranking cascade under a per-stage latency budget; feature serving; session-stable pagination; exploration; fallback when the ranker is down. | [31](building_blocks/31_ranking_recommendation_and_experimentation.md), [23](building_blocks/23_ml_and_llm_systems.md) · [032](problems/032_ranked_home_feed_question.md) |
 | Live streaming and comments | Ingest, real-time transcode, low-latency packaging; fan-out of one mega-stream through the CDN; comment fan-out and sampling; the glass-to-glass latency budget. | [29](building_blocks/29_cdn_and_streaming_media.md), [22](building_blocks/22_realtime_and_collaboration.md) · [033](problems/033_live_streaming_and_comments_question.md) |

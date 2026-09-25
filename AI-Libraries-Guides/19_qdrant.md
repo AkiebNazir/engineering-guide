@@ -2,13 +2,13 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* FAISS is purely in-memory math. ChromaDB is fantastic for local Python development. But what happens when you have a massive enterprise application with terabytes of vector data, millions of users hitting your API per second, and you need Kubernetes auto-scaling? You use **Qdrant**.
+*Why is this tool relevant?* FAISS is purely in-memory math. ChromaDB is fantastic for local Python development. But what happens when you have a massive enterprise application with terabytes of vector data, millions of users hitting your <abbr title="Application Programming Interface">API</abbr> per second, and you need Kubernetes auto-scaling? You use **Qdrant**.
 
 **What is it?**
-Qdrant is a high-performance, open-source vector similarity search engine written entirely in Rust. It offers a massive API, highly advanced filtering, and production-grade reliability.
+Qdrant is a high-performance, open-source vector similarity search engine written entirely in Rust. It offers a massive <abbr title="Application Programming Interface">API</abbr>, highly advanced filtering, and production-grade reliability.
 
 **Why does it exist?**
-It exists to bridge the gap between AI and traditional database architectures. Qdrant handles massive scale effortlessly via Rust's memory safety and performance. Crucially, it supports "Payload Filtering." If you search for vectors, Qdrant can simultaneously filter by complex JSON data (Payloads) stored alongside the vectors. It uses a custom HNSW (Hierarchical Navigable Small World) algorithm that natively understands these filters during the actual math phase, keeping searches blazingly fast.
+It exists to bridge the gap between <abbr title="Artificial Intelligence">AI</abbr> and traditional database architectures. Qdrant handles massive scale effortlessly via Rust's memory safety and performance. Crucially, it supports "Payload Filtering." If you search for vectors, Qdrant can simultaneously filter by complex JSON data (Payloads) stored alongside the vectors. It uses a custom HNSW (Hierarchical Navigable Small World) algorithm that natively understands these filters during the actual math phase, keeping searches blazingly fast.
 
 ---
 
@@ -147,6 +147,6 @@ client.create_collection(
 Qdrant solves this by using **Pre-Filtering within the HNSW Graph**. Qdrant's Rust engine natively reads the metadata filter *before* traversing the graph. It literally blocks off mathematical pathways in the graph that don't match the payload. It guarantees perfect accuracy because the search algorithm itself is forced to only traverse valid points."
 
 ### Scenario 2: High Availability (Raft Consensus)
-*Interviewer:* "We are deploying our AI agent to millions of users. If the Qdrant database server crashes, our app dies. How do we ensure zero downtime?"
+*Interviewer:* "We are deploying our <abbr title="Artificial Intelligence">AI</abbr> agent to millions of users. If the Qdrant database server crashes, our app dies. How do we ensure zero downtime?"
 
 *Answer:* "We do not run Qdrant as a single Docker container. We deploy it as a **Distributed Cluster** using Kubernetes. Qdrant uses the Raft consensus algorithm. We deploy 3 or 5 Qdrant nodes. We configure the Collection to have a `replication_factor=2`. This guarantees that every single vector is physically copied to at least 2 different servers. If Node A catches fire and dies, the Raft protocol automatically elects Node B as the leader within milliseconds. The Python client will seamlessly route queries to Node B, resulting in 100% uptime and zero data loss."

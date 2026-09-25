@@ -2,10 +2,10 @@
 
 Welcome to Day 155.
 
-For the last few days, we've focused on massive cloud infrastructure. But cloud AI has three fatal flaws:
+For the last few days, we've focused on massive cloud infrastructure. But cloud <abbr title="Artificial Intelligence">AI</abbr> has three fatal flaws:
 1. **Latency:** Sending a prompt from a mobile phone to a server in Virginia and waiting for the response takes hundreds of milliseconds.
 2. **Privacy:** You cannot send highly sensitive medical records or private text messages to a cloud server.
-3. **Connectivity:** If the user is on an airplane or in a remote field, the AI breaks.
+3. **Connectivity:** If the user is on an airplane or in a remote field, the <abbr title="Artificial Intelligence">AI</abbr> breaks.
 
 Today, we look at the opposite extreme: **Edge Deployment**. We will learn how to shrink massive models into tiny files and run them entirely offline on the CPU of a Macbook, a Windows laptop, or an iPhone.
 
@@ -13,8 +13,8 @@ Today, we look at the opposite extreme: **Edge Deployment**. We will learn how t
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Challenge of Edge AI
-Running an AI on a laptop CPU is completely different from running it on an NVIDIA A100 GPU.
+### 1. The Challenge of Edge <abbr title="Artificial Intelligence">AI</abbr>
+Running an <abbr title="Artificial Intelligence">AI</abbr> on a laptop CPU is completely different from running it on an NVIDIA A100 GPU.
 - GPUs have massive memory bandwidth (2,000 GB/s) designed for parallel matrix math.
 - CPUs have tiny memory bandwidth (50 GB/s) designed for sequential logic.
 If you try to run standard PyTorch code on a CPU, the CPU spends 99% of its time waiting for the RAM to deliver the model weights. The text generation crawls at 0.5 tokens per second.
@@ -22,7 +22,7 @@ If you try to run standard PyTorch code on a CPU, the CPU spends 99% of its time
 ### 2. llama.cpp (The Great Equalizer)
 In 2023, a developer named Georgi Gerganov wrote `llama.cpp`. It is a pure C/C++ implementation of the Llama architecture with zero Python dependencies.
 It uses custom memory-mapping techniques and extreme INT4 quantization to read model weights directly from the hard drive into the CPU cache at lightning speed. 
-It turned standard Macbooks and Windows laptops into viable AI machines, achieving 20+ tokens per second on CPU alone.
+It turned standard Macbooks and Windows laptops into viable <abbr title="Artificial Intelligence">AI</abbr> machines, achieving 20+ tokens per second on CPU alone.
 
 ### 3. The GGUF Format
 To use `llama.cpp`, you cannot use standard Hugging Face `.safetensors` files. You must use the **GGUF** format. 
@@ -31,7 +31,7 @@ A GGUF file is a single, monolithic file that contains the entire model, the tok
 ### 4. Apple MLX (The Unified Memory Advantage)
 Apple Silicon (M1/M2/M3/M4 chips) are unique. On a standard PC, the CPU has its own RAM, and the GPU has its own VRAM. Copying data between them is a massive bottleneck.
 Apple uses **Unified Memory**. The CPU and the Apple GPU share the exact same physical RAM pool. A Mac Studio with 192GB of Unified Memory can run a 70B parameter model natively without needing $40,000 worth of NVIDIA cards!
-Apple released the **MLX framework** specifically to maximize AI performance on Apple Silicon, bridging the gap between PyTorch and Apple's Metal backend.
+Apple released the **MLX framework** specifically to maximize <abbr title="Artificial Intelligence">AI</abbr> performance on Apple Silicon, bridging the gap between PyTorch and Apple's Metal backend.
 
 ### 5. ONNX (Open Neural Network Exchange)
 If you are deploying a traditional machine learning model (like Random Forest) or a small vision model to a mobile phone (Android/iOS), you use **ONNX**. It optimizes the computational graph of the model so it can run efficiently across different hardware accelerators (like the Apple Neural Engine or Snapdragon NPUs).
@@ -40,7 +40,7 @@ If you are deploying a traditional machine learning model (like Random Forest) o
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's look at how simple it is to run a massive LLM entirely offline on a standard laptop using the Python binding for `llama.cpp`.
+Let's look at how simple it is to run a massive <abbr title="Large Language Model">LLM</abbr> entirely offline on a standard laptop using the Python binding for `llama.cpp`.
 
 *(Note: To run this, you would need `pip install llama-cpp-python` and you must download a `.gguf` model file from Hugging Face, e.g., from the user `TheBloke` or `QuantFactory`)*
 
@@ -119,17 +119,17 @@ Watch how it automatically downloads the GGUF file and provides a ChatGPT-like i
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Design an offline-capable AI assistant for field workers in remote agricultural areas with zero internet connectivity. The app runs on Android tablets with 8GB of RAM. Cover: model selection, optimization, on-device storage, and sync-when-connected updates."*
+*"Design an offline-capable <abbr title="Artificial Intelligence">AI</abbr> assistant for field workers in remote agricultural areas with zero internet connectivity. The app runs on Android tablets with 8GB of RAM. Cover: model selection, optimization, on-device storage, and sync-when-connected updates."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Model Selection:** The tablet has 8GB RAM. The OS uses 2GB. We have 6GB left. We must use a small language model (SLM) like Llama-3-8B or Phi-3-Mini (3.8B).
 2. **Optimization Format:** We must quantize the model to 4-bit integer precision (INT4) using the **GGUF format**. A 4-bit Phi-3-Mini requires only ~2.2GB of RAM, fitting comfortably in the tablet's memory.
 3. **Inference Engine:** We embed `llama.cpp` (compiled via Android NDK) directly into the Android application to run the inference locally on the ARM CPU.
-4. **Offline RAG:** We cannot use Pinecone. We must store the agricultural manuals locally in an SQLite database using an extension like `sqlite-vss` for vector search, powered by a tiny local embedding model like `all-MiniLM-L6-v2` (which only takes ~100MB).
+4. **Offline <abbr title="Retrieval-Augmented Generation">RAG</abbr>:** We cannot use Pinecone. We must store the agricultural manuals locally in an SQLite database using an extension like `sqlite-vss` for vector search, powered by a tiny local embedding model like `all-MiniLM-L6-v2` (which only takes ~100MB).
 5. **Sync Strategy:** When the tablet reconnects to Wi-Fi at base camp, the app pulls down differential updates (new manuals) and uploads telemetry logs to the cloud.
 
 ---
-**Task for the end of the day:** Read up on Apple's **MLX** framework and why it is revolutionizing AI development on Macs.
+**Task for the end of the day:** Read up on Apple's **MLX** framework and why it is revolutionizing <abbr title="Artificial Intelligence">AI</abbr> development on Macs.
 
-Tomorrow, in **Day 156**, we return to cloud APIs to tackle our biggest cloud expense: redundant queries. We will build a **Semantic Cache** that can cut LLM API bills in half!
+Tomorrow, in **Day 156**, we return to cloud APIs to tackle our biggest cloud expense: redundant queries. We will build a **Semantic Cache** that can cut <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> bills in half!

@@ -3,7 +3,7 @@
 Welcome to Day 37. Over the last week, we studied the pure mathematics of Deep Learning: Perceptrons, Backpropagation, Initialization, and Loss Functions.
 
 Today, we study the **Engineering**. 
-Training a massive neural network (like ChatGPT or ResNet) is essentially a massive logistics operation. How do you move 1,000,000 images from a slow hard drive into the blazing-fast RAM of an Nvidia GPU without the GPU ever sitting idle? How do you save the "Brain" of the AI? 
+Training a massive neural network (like ChatGPT or ResNet) is essentially a massive logistics operation. How do you move 1,000,000 images from a slow hard drive into the blazing-fast RAM of an Nvidia GPU without the GPU ever sitting idle? How do you save the "Brain" of the <abbr title="Artificial Intelligence">AI</abbr>? 
 
 Today, we dive deep into the plumbing of PyTorch.
 
@@ -22,7 +22,7 @@ Imagine you are the Manager of an Amazon Fulfillment Center. Your goal is to pac
 Every single piece of PyTorch (every layer, every activation, every model) inherits from the `nn.Module` class. It manages the math for you.
 - `__init__()`: This is where you declare your layers (e.g., `self.layer1 = nn.Linear(10, 5)`). PyTorch automatically registers these layers and tracks their weights.
 - `forward()`: This is the exact mathematical path the data takes when it enters the network.
-- `state_dict()`: This is the physical "Brain" of the AI. It is a dictionary that contains every single Weight and Bias in the network. When you save an AI model to a `.pt` file, you are just saving the `state_dict()`.
+- `state_dict()`: This is the physical "Brain" of the <abbr title="Artificial Intelligence">AI</abbr>. It is a dictionary that contains every single Weight and Bias in the network. When you save an <abbr title="Artificial Intelligence">AI</abbr> model to a `.pt` file, you are just saving the `state_dict()`.
 
 ### 3. Eager Mode vs. torch.compile (Graph Mode)
 By default, Python is an interpreted language. It executes code line-by-line. In PyTorch, this is called **Eager Mode**. It is great for debugging, but incredibly slow.
@@ -175,4 +175,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. You have successfully mastered the engineering of PyTorch.
 
-Tomorrow, in **Day 38**, we begin **Week 6: Computer Vision**. We will dive into the most famous algorithm in Image Processing: **The Convolutional Neural Network (CNN)**.
+Tomorrow, in **Day 38**, we begin **Week 6: Computer Vision**. We will dive into the most famous algorithm in Image Processing: **The Convolutional Neural Network (<abbr title="Convolutional Neural Network">CNN</abbr>)**.

@@ -23,7 +23,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope estimates: memory for scores, update and read load.
-3. API contract for updates and reads.
+3. <abbr title="Application Programming Interface">API</abbr> contract for updates and reads.
 4. Baseline design for a single leaderboard and why it works.
 5. Scaling to 100 million players: sharding, global rank, and approximate vs exact rank.
 6. Ties, seasons, friend leaderboards, durability, and cheating.

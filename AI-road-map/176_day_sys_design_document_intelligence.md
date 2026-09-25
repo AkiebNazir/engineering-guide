@@ -4,7 +4,7 @@ Welcome to Day 176.
 
 For our final System Design deep dive, we tackle a problem that plagues every law firm, hospital, and insurance company on Earth: **Unstructured Documents**.
 A hospital receives 10,000 scanned faxes a day. Some are upside down. Some have handwritten doctor's notes. Some contain tables of blood test results. 
-If humans process these, it takes weeks. If you just pass them to an LLM, the LLM hallucinates the numbers and someone gets the wrong medication.
+If humans process these, it takes weeks. If you just pass them to an <abbr title="Large Language Model">LLM</abbr>, the <abbr title="Large Language Model">LLM</abbr> hallucinates the numbers and someone gets the wrong medication.
 
 Today, we learn how to design a **Document Intelligence Pipeline**. We will learn about OCR, Layout Analysis, and how to use LLMs as deterministic Information Extraction engines.
 
@@ -17,8 +17,8 @@ You cannot just feed a PDF to GPT-4. You must build a deterministic pipeline:
 1. **Ingestion & Routing:** A webhook receives the PDF. A fast computer vision model classifies it (e.g., "This is a W-2 Tax Form" vs "This is an MRI report").
 2. **OCR (Optical Character Recognition):** If it's a scanned image, tools like Tesseract or AWS Textract convert the pixels into raw text.
 3. **Layout Analysis:** Raw text is useless if you lose the structure. A model (like LayoutLM) draws bounding boxes around Headers, Paragraphs, and Tables to understand the document's visual hierarchy.
-4. **Information Extraction (LLM):** We pass the structured text into an LLM using tools like Instructor/Pydantic (Day 133). We force the LLM to output a strict JSON object (e.g., `{"patient_name": "John", "diagnosis": "Flu"}`).
-5. **Human-in-the-Loop (HITL):** If the LLM's confidence score is < 80%, the document is routed to a human clerk for manual review.
+4. **Information Extraction (<abbr title="Large Language Model">LLM</abbr>):** We pass the structured text into an <abbr title="Large Language Model">LLM</abbr> using tools like Instructor/Pydantic (Day 133). We force the <abbr title="Large Language Model">LLM</abbr> to output a strict JSON object (e.g., `{"patient_name": "John", "diagnosis": "Flu"}`).
+5. **Human-in-the-Loop (HITL):** If the <abbr title="Large Language Model">LLM</abbr>'s confidence score is < 80%, the document is routed to a human clerk for manual review.
 
 ### 2. Layout Analysis vs. OCR
 OCR just reads text from left to right.
@@ -119,7 +119,7 @@ def run_pipeline():
 ```
 
 ### 🔍 Understanding the Enterprise Value
-This architecture saves millions of dollars. If a hospital receives 10,000 documents a day, and this pipeline automates 70% of them (confidence > 85%), the human staff only has to review 3,000 documents. The humans act as a safety net for the AI, while the AI does the heavy lifting.
+This architecture saves millions of dollars. If a hospital receives 10,000 documents a day, and this pipeline automates 70% of them (confidence > 85%), the human staff only has to review 3,000 documents. The humans act as a safety net for the <abbr title="Artificial Intelligence">AI</abbr>, while the <abbr title="Artificial Intelligence">AI</abbr> does the heavy lifting.
 
 ---
 
@@ -137,9 +137,9 @@ Currently, our pipeline processes one document at a time synchronously.
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Asynchronous Architecture:** Draw the S3 bucket triggering an EventBridge event, which drops a message into an SQS queue. A fleet of Kubernetes pods reads the queue to process the PDFs asynchronously (avoiding timeout errors).
-2. **Chunking Large Documents:** A 500-page PDF will exceed the LLM's context window. Propose an architecture where the OCR text is chunked by paragraph, embedded into a Vector Database, and then the system uses **RAG** to search the document for "termination clause" *before* passing that specific chunk to the LLM for JSON extraction.
-3. **The HITL Feedback Loop:** Explain that when a human corrects a low-confidence extraction in the UI, that correction is not just saved to the database. It is logged as "Golden Data" and sent to the ML platform to fine-tune the LLM, ensuring the system gets smarter over time.
-4. **Security & PII:** Legal documents are highly confidential. State that the OCR and LLM models must be hosted within the firm's Virtual Private Cloud (VPC), not sent to public OpenAI APIs.
+2. **Chunking Large Documents:** A 500-page PDF will exceed the <abbr title="Large Language Model">LLM</abbr>'s context window. Propose an architecture where the OCR text is chunked by paragraph, embedded into a Vector Database, and then the system uses **<abbr title="Retrieval-Augmented Generation">RAG</abbr>** to search the document for "termination clause" *before* passing that specific chunk to the <abbr title="Large Language Model">LLM</abbr> for JSON extraction.
+3. **The HITL Feedback Loop:** Explain that when a human corrects a low-confidence extraction in the UI, that correction is not just saved to the database. It is logged as "Golden Data" and sent to the <abbr title="Machine Learning">ML</abbr> platform to fine-tune the <abbr title="Large Language Model">LLM</abbr>, ensuring the system gets smarter over time.
+4. **Security & PII:** Legal documents are highly confidential. State that the OCR and <abbr title="Large Language Model">LLM</abbr> models must be hosted within the firm's Virtual Private Cloud (VPC), not sent to public OpenAI APIs.
 
 ---
 **Task for the end of the day:** Review the concept of a **Message Queue** (like RabbitMQ or AWS SQS). It is the backbone of all asynchronous data pipelines.

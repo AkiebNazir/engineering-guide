@@ -24,7 +24,7 @@ The question says "tens of millions of uploads/day at peak", so this solution us
 
 What shapes the design: bytes must go **directly to object storage** (70 Gbps at peak through app servers is a waste), **transforms are a large async compute fleet** (2.9k decode jobs/s emitting ~14k resize-and-encode operations/s at peak, with AVIF encodes several times slower than WebP, so generate WebP/JPEG first and AVIF in the background to hold the 10 s target), and **storage cost dominates** (tiering, dedupe, and lifecycle policies matter more than query performance; the 5% CDN miss rate means object storage sees up to 7k reads/s at peak).
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```http
 POST /v1/uploads                       {"filename":"a.jpg","size":3145728,"sha256":"..","content_type":"image/jpeg"}
@@ -103,7 +103,7 @@ Deletion is a state transition first: origin denies immediately, signed URL issu
 - **Multipart:** split into 8 MB parts; each part is uploaded and retried independently; the client persists `upload_id` and completed part ETags locally so an app restart resumes rather than restarts.
 - **Integrity:** the client sends the whole-file SHA-256 at session creation and per-part checksums; completion verifies both. Silent corruption is caught before the file becomes a `Media`.
 - **Abandoned uploads:** sessions expire (e.g., 24 h); an object-store lifecycle rule aborts incomplete multipart uploads so unfinished parts don't accumulate cost.
-- **Small files:** under ~5 MB a single signed PUT is simpler; the API decides based on `size`.
+- **Small files:** under ~5 MB a single signed PUT is simpler; the <abbr title="Application Programming Interface">API</abbr> decides based on `size`.
 
 ## Deep dive 2: The transform pipeline
 
@@ -138,7 +138,7 @@ sequenceDiagram
 
 - Variants are **immutable**, so CDN responses use `Cache-Control: public, max-age=31536000, immutable` (for public media) — a new transform version is a new URL, never an invalidation for a version change.
 - **Deleting public media is the one case that does need a purge.** With a one-year TTL a lost purge would leave a deleted photo visible far beyond the question's one-hour bound. At ~3 deletes/s (about 15 variant URLs/s) a purge is cheap: purge by media tag or key prefix where the CDN supports it, retry until acknowledged, alert when a purge is older than 15 minutes, and re-purge everything deleted in the last 24 hours from a reconciliation job. Origin returns `404` for a deleted `media_id` at once, so the exposure is limited to edge copies not yet purged.
-- **Private media:** the API issues short-lived **signed URLs** (or signed cookies) scoped to the object; the CDN verifies the signature at the edge, so authorization doesn't hit origin on every view. Deletion or privacy change stops issuing new signatures; existing ones expire within minutes.
+- **Private media:** the <abbr title="Application Programming Interface">API</abbr> issues short-lived **signed URLs** (or signed cookies) scoped to the object; the CDN verifies the signature at the edge, so authorization doesn't hit origin on every view. Deletion or privacy change stops issuing new signatures; existing ones expire within minutes.
 - **Origin shield:** a regional mid-tier cache coalesces concurrent misses so a viral photo doesn't stampede object storage.
 - **Responsive delivery:** clients request the smallest variant that fits the display; `Accept` header chooses AVIF/WebP/JPEG.
 
@@ -156,7 +156,7 @@ Object event duplicate/out-of-order: use guarded state/version. Worker crash: re
 
 ## Interview close
 
-"Bytes never touch the API tier: clients upload resumable multipart parts straight to object storage with checksums, and metadata only becomes READY after scan and transform. Variants use immutable versioned keys, so the CDN caches forever and a new pipeline version is a new URL. Private content uses short-lived signed URLs verified at the edge, and deletion is a state change that revokes access first and cleans up bytes second."
+"Bytes never touch the <abbr title="Application Programming Interface">API</abbr> tier: clients upload resumable multipart parts straight to object storage with checksums, and metadata only becomes READY after scan and transform. Variants use immutable versioned keys, so the CDN caches forever and a new pipeline version is a new URL. Private content uses short-lived signed URLs verified at the edge, and deletion is a state change that revokes access first and cleans up bytes second."
 
 ## Follow-ups the interviewer will ask
 
@@ -171,7 +171,7 @@ Object event duplicate/out-of-order: use guarded state/version. Worker crash: re
 
 ## Common mistakes
 
-1. **Streaming 50 MB uploads through the API tier.** At 70 Gbps peak that is a fleet of proxies for no benefit. Issue signed URLs and let the client write to object storage.
+1. **Streaming 50 MB uploads through the <abbr title="Application Programming Interface">API</abbr> tier.** At 70 Gbps peak that is a fleet of proxies for no benefit. Issue signed URLs and let the client write to object storage.
 2. **One request per upload with no resume.** On mobile networks a 50 MB single PUT fails often and restarts from zero. Use multipart with persisted part ETags and per-part retry.
 3. **Publishing before the scan, or trusting the extension and MIME type.** Unsafe or mislabelled content gets served. Inspect bytes, keep `PENDING_SCAN` invisible, and derive the content type from your own inspection.
 4. **Running image decoders in-process without limits.** Decoders are a classic attack surface. Sandbox them, cap pixel dimensions and CPU/memory, and strip EXIF location data by default.

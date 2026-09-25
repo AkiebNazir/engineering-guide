@@ -70,7 +70,7 @@ found: {'_id': ObjectId('6ab3afb50f508c39008ab2d6'), 'name': 'Ada Lovelace', 'ro
 is ObjectId: True
 ```
 
-Naming note: mongosh uses `camelCase` (`insertOne`, `findOne`); pymongo uses `snake_case` (`insert_one`, `find_one`) to match Python convention, but the operations and the wire protocol underneath are identical. If you can do it in one, you can name the pymongo equivalent by snake-casing it — this holds for nearly the entire CRUD and aggregation API across both.
+Naming note: mongosh uses `camelCase` (`insertOne`, `findOne`); pymongo uses `snake_case` (`insert_one`, `find_one`) to match Python convention, but the operations and the wire protocol underneath are identical. If you can do it in one, you can name the pymongo equivalent by snake-casing it — this holds for nearly the entire CRUD and aggregation <abbr title="Application Programming Interface">API</abbr> across both.
 
 ## Connecting with Go (`mongo-driver/v2`)
 
@@ -154,6 +154,6 @@ db.users.insert_one({"_id": "ada_lovelace", "role": "engineer"})
 
 - **Assuming `find_one`/`findOne` with no filter returns "the first inserted document."** It returns *a* document matching the (empty) filter with no guaranteed order unless you sort. Don't rely on insertion order without an explicit `sort()`.
 - **Forgetting a write only fully lands once acknowledged.** `insert_one` under default settings waits for acknowledgment before returning, but that default is a write-concern choice, not a law of nature — level 10 covers what changes when you loosen or tighten it.
-- **Treating `ObjectId` as a random UUID.** It's structured and leaks a creation timestamp (`ObjectId.generation_time` in pymongo, or decode the first 4 bytes yourself) — don't expose raw `_id` values somewhere that timestamp leak matters (e.g. as a public API's opaque identifier if you want to hide creation order/volume from competitors).
+- **Treating `ObjectId` as a random UUID.** It's structured and leaks a creation timestamp (`ObjectId.generation_time` in pymongo, or decode the first 4 bytes yourself) — don't expose raw `_id` values somewhere that timestamp leak matters (e.g. as a public <abbr title="Application Programming Interface">API</abbr>'s opaque identifier if you want to hide creation order/volume from competitors).
 
 The next level builds outward from `insertOne`/`findOne` into the rest of CRUD.

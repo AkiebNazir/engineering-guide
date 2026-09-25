@@ -87,7 +87,7 @@ Assumptions: 500M DAU, each uploads 0.2 photos and views 30 photos a day, 2 MB p
 
 | Quantity | Arithmetic | Result | So… |
 |---|---|---|---|
-| Upload QPS | 500M × 0.2 ÷ 10⁵ | ~1,000/s, peak ~3,000/s | Uploads go directly to object storage with presigned URLs; the API only writes metadata. |
+| Upload QPS | 500M × 0.2 ÷ 10⁵ | ~1,000/s, peak ~3,000/s | Uploads go directly to object storage with presigned URLs; the <abbr title="Application Programming Interface">API</abbr> only writes metadata. |
 | View QPS | 500M × 30 ÷ 10⁵ | ~150,000/s, peak ~450,000/s | Read-heavy at 150:1 — a CDN serves image bytes; the metadata path needs caching. |
 | New storage/day | 100M photos × 2 MB | 200 TB/day | Object storage with lifecycle tiers; not a database. |
 | 10-year storage | 200 TB × 3,650 × 3 | ~2 EB | At this size, erasure coding instead of 3× replication saves roughly half. |
@@ -106,7 +106,7 @@ Assumptions: 1B DAU, 40 messages sent per user per day, 1 KB per message with me
 
 ## Capacity: servers, cache, and headroom
 
-- **Servers** = peak QPS ÷ per-server QPS. Measure or assume: a stateless API server doing a few database calls handles hundreds to low thousands of requests per second; a cache node handles 100K+ simple gets per second.
+- **Servers** = peak QPS ÷ per-server QPS. Measure or assume: a stateless <abbr title="Application Programming Interface">API</abbr> server doing a few database calls handles hundreds to low thousands of requests per second; a cache node handles 100K+ simple gets per second.
 - **Headroom**: with three zones, losing one leaves two carrying the load, so utilisation `u` becomes `u × 3/2` on the survivors. At 60% that is 90%, at 70% it is 105% (overload), so plan for roughly 50–60% average utilisation before you also allow for a deploy in flight.
 - **Cache size**: if 20% of items receive 80% of reads, caching the daily read set's hot 20% (item size × count) captures most of the benefit. If that is more memory than is sensible, cache small things (IDs, metadata, rendered fragments) instead of whole objects.
 - **Queues**: a queue does not create capacity, it only buys time. If producers run faster than consumers for an hour, the backlog must fit, and the drain time must be acceptable.

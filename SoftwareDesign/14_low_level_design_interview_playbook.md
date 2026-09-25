@@ -121,7 +121,7 @@ list becomes your acceptance criteria.
 | **Concurrency** | Multiple entry gates / threads / users acting simultaneously? |
 | **Persistence** | In memory only, or should the design allow a database later? |
 | **Failure cases** | Full lot, invalid ticket, payment failure, double booking |
-| **Interface** | Library API, CLI, REST? (Usually: plain classes + a driver) |
+| **Interface** | Library <abbr title="Application Programming Interface">API</abbr>, CLI, REST? (Usually: plain classes + a driver) |
 
 ### Example: parking lot
 
@@ -166,7 +166,7 @@ This is enough. Resist drawing `Gate`, `Attendant`, `DisplayBoard`, `PaymentProc
 
 ---
 
-## 6 · Step 3 — Public API and key flows (5 min)
+## 6 · Step 3 — Public <abbr title="Application Programming Interface">API</abbr> and key flows (5 min)
 
 Write the **public method signatures** of the main service/facade and trace the one or
 two most important flows. This is where the design gets checked before code exists.
@@ -583,7 +583,7 @@ Score each 0–2 after a practice run. 16+ is interview-ready.
 | 2 | Entities | God class / missing record entities | Mostly right | Right entities, value objects, discovered records |
 | 3 | Invariants | Not identified | Some, owners unclear | Each named with its single owner |
 | 4 | Abstractions | None or everywhere | Some justified | Exactly at variation points, justified aloud |
-| 5 | API | Unclear | Signatures present | Minimal, typed, errors specified |
+| 5 | <abbr title="Application Programming Interface">API</abbr> | Unclear | Signatures present | Minimal, typed, errors specified |
 | 6 | Working code | Doesn't run | Happy path runs | Core flow + a failure path demonstrated |
 | 7 | Code quality | Hard to read | OK | Clean names, enums, small methods, no magic numbers |
 | 8 | Concurrency | Not mentioned | Mentioned vaguely | Race identified, critical section and granularity chosen |

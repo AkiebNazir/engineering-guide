@@ -1,14 +1,14 @@
-# Ragas Mastery: Evaluating RAG Applications
+# Ragas Mastery: Evaluating <abbr title="Retrieval-Augmented Generation">RAG</abbr> Applications
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In Guide 11 (LangChain) and Guide 12 (LlamaIndex), we built RAG (Retrieval-Augmented Generation) applications. But how do you know if your RAG app is actually good? Traditionally, a developer would type 10 questions, read the 10 answers, and say, "Looks fine to me." This doesn't scale to production. If you change your `chunk_size` from 500 to 1000, did the app get better or worse? You need numbers. **Ragas** provides those numbers.
+*Why is this tool relevant?* In Guide 11 (LangChain) and Guide 12 (LlamaIndex), we built <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval-Augmented Generation) applications. But how do you know if your <abbr title="Retrieval-Augmented Generation">RAG</abbr> app is actually good? Traditionally, a developer would type 10 questions, read the 10 answers, and say, "Looks fine to me." This doesn't scale to production. If you change your `chunk_size` from 500 to 1000, did the app get better or worse? You need numbers. **Ragas** provides those numbers.
 
 **What is it?**
-Ragas (Retrieval Augmented Generation Assessment) is a framework that mathematically evaluates your RAG pipelines.
+Ragas (Retrieval Augmented Generation Assessment) is a framework that mathematically evaluates your <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipelines.
 
 **Why does it exist?**
-It exists to implement the **"LLM-as-a-Judge"** architecture. Instead of humans reading the outputs, Ragas uses a highly intelligent LLM (like GPT-4) to read the user's question, the retrieved documents, and the generated answer, and grade them from `0.0` to `1.0` based on strict logical metrics.
+It exists to implement the **"<abbr title="Large Language Model">LLM</abbr>-as-a-Judge"** architecture. Instead of humans reading the outputs, Ragas uses a highly intelligent <abbr title="Large Language Model">LLM</abbr> (like GPT-4) to read the user's question, the retrieved documents, and the generated answer, and grade them from `0.0` to `1.0` based on strict logical metrics.
 
 ---
 
@@ -26,11 +26,11 @@ print(f"Ragas version: {ragas.__version__}")
 
 ---
 
-## 3. The "Hello World": Evaluating a RAG Pipeline
+## 3. The "Hello World": Evaluating a <abbr title="Retrieval-Augmented Generation">RAG</abbr> Pipeline
 
-To evaluate a RAG pipeline, you must provide a Dataset containing 4 specific columns of data:
+To evaluate a <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline, you must provide a Dataset containing 4 specific columns of data:
 1. `question`: The prompt the user asked.
-2. `answer`: The text your RAG system generated.
+2. `answer`: The text your <abbr title="Retrieval-Augmented Generation">RAG</abbr> system generated.
 3. `contexts`: A list of the raw text chunks your Vector DB retrieved.
 4. `ground_truth`: The scientifically correct answer (written by a human beforehand).
 
@@ -68,30 +68,30 @@ print(results)
 
 ## 4. Deep Dive: The 4 Core Metrics
 
-Ragas is built upon 4 highly specific metrics. You must memorize these, as they isolate exactly *which* part of your RAG pipeline is failing.
+Ragas is built upon 4 highly specific metrics. You must memorize these, as they isolate exactly *which* part of your <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline is failing.
 
-### A. Metrics that evaluate the GENERATOR (The LLM)
+### A. Metrics that evaluate the GENERATOR (The <abbr title="Large Language Model">LLM</abbr>)
 
 1. **Faithfulness (`faithfulness`)**
-   - *What it measures:* Did the LLM hallucinate? It checks if every claim made in the `answer` can be explicitly verified by the `contexts`.
-   - *If this scores 0.2:* Your Vector DB successfully found the correct document, but your LLM ignored the document and made up a fake answer anyway.
-   - *How to fix:* Lower the `temperature` (Guide 08) or strictly prompt the LLM: "Do not use prior knowledge."
+   - *What it measures:* Did the <abbr title="Large Language Model">LLM</abbr> hallucinate? It checks if every claim made in the `answer` can be explicitly verified by the `contexts`.
+   - *If this scores 0.2:* Your Vector DB successfully found the correct document, but your <abbr title="Large Language Model">LLM</abbr> ignored the document and made up a fake answer anyway.
+   - *How to fix:* Lower the `temperature` (Guide 08) or strictly prompt the <abbr title="Large Language Model">LLM</abbr>: "Do not use prior knowledge."
 
 2. **Answer Relevancy (`answer_relevancy`)**
-   - *What it measures:* Did the LLM actually answer the user's question? 
-   - *If this scores 0.2:* The user asked "How do I reset my password?", and your LLM answered, "We take security very seriously at our company. Here is a history of our security policies." It didn't hallucinate, but it was useless.
+   - *What it measures:* Did the <abbr title="Large Language Model">LLM</abbr> actually answer the user's question? 
+   - *If this scores 0.2:* The user asked "How do I reset my password?", and your <abbr title="Large Language Model">LLM</abbr> answered, "We take security very seriously at our company. Here is a history of our security policies." It didn't hallucinate, but it was useless.
    - *How to fix:* Improve your Prompt Template (Guide 11) to force direct answers.
 
 ### B. Metrics that evaluate the RETRIEVER (The Vector Database)
 
 3. **Context Precision (`context_precision`)**
    - *What it measures:* Did the Vector DB put the most relevant chunk at the very top of the list?
-   - *If this scores 0.2:* Your DB retrieved 10 chunks. The correct answer was buried at chunk #9, where the LLM likely ignored it due to the "Lost in the Middle" effect.
-   - *How to fix:* Implement a Re-Ranker (like Cohere) to mathematically re-sort the retrieved chunks before they hit the LLM.
+   - *If this scores 0.2:* Your DB retrieved 10 chunks. The correct answer was buried at chunk #9, where the <abbr title="Large Language Model">LLM</abbr> likely ignored it due to the "Lost in the Middle" effect.
+   - *How to fix:* Implement a Re-Ranker (like Cohere) to mathematically re-sort the retrieved chunks before they hit the <abbr title="Large Language Model">LLM</abbr>.
 
 4. **Context Recall (`context_recall`)**
    - *What it measures:* Did the retrieved chunks contain all the information necessary to answer the `ground_truth`?
-   - *If this scores 0.2:* The Vector DB retrieved the wrong documents entirely. The LLM had no chance of answering correctly.
+   - *If this scores 0.2:* The Vector DB retrieved the wrong documents entirely. The <abbr title="Large Language Model">LLM</abbr> had no chance of answering correctly.
    - *How to fix:* Your embeddings are bad, or your `chunk_size` is too small (Guide 12). Switch to a better embedding model or increase the chunk size.
 
 ---
@@ -140,13 +140,13 @@ print(testset.to_pandas().head())
 
 ## 6. MAANG Interview Scenarios
 
-### Scenario 1: CI/CD Integration for RAG
+### Scenario 1: <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> Integration for <abbr title="Retrieval-Augmented Generation">RAG</abbr>
 *Interviewer:* "A developer on your team submitted a Pull Request that changes our LlamaIndex `chunk_size` from 512 to 2048. They claim it 'feels better.' How do we prevent this from being merged to production without mathematical proof?"
 
-*Answer:* "We must integrate Ragas into our CI/CD pipeline (e.g., GitHub Actions). We maintain a golden dataset of 500 `question` and `ground_truth` pairs. When the developer opens the Pull Request, the CI runner automatically spins up the new LlamaIndex code with `chunk_size=2048`. It runs all 500 questions through the pipeline, collects the answers and contexts, and calls `ragas.evaluate()`. The CI pipeline asserts that `context_recall` and `faithfulness` must be greater than our baseline production scores (e.g., `> 0.85`). If the scores drop to `0.70`, the pipeline automatically blocks the PR and fails the build."
+*Answer:* "We must integrate Ragas into our <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline (e.g., GitHub Actions). We maintain a golden dataset of 500 `question` and `ground_truth` pairs. When the developer opens the Pull Request, the CI runner automatically spins up the new LlamaIndex code with `chunk_size=2048`. It runs all 500 questions through the pipeline, collects the answers and contexts, and calls `ragas.evaluate()`. The CI pipeline asserts that `context_recall` and `faithfulness` must be greater than our baseline production scores (e.g., `> 0.85`). If the scores drop to `0.70`, the pipeline automatically blocks the PR and fails the build."
 
-### Scenario 2: The LLM-as-a-Judge Bias
-*Interviewer:* "Ragas relies on GPT-4 to act as the judge. What are the known biases of using an LLM as a judge, and how do we mitigate them?"
+### Scenario 2: The <abbr title="Large Language Model">LLM</abbr>-as-a-Judge Bias
+*Interviewer:* "Ragas relies on GPT-4 to act as the judge. What are the known biases of using an <abbr title="Large Language Model">LLM</abbr> as a judge, and how do we mitigate them?"
 
 *Answer:* "LLMs exhibit three major biases when acting as judges:
 1. **Position Bias:** If you ask it to compare Answer A and Answer B, it statistically favors Answer A simply because it appeared first. Ragas mitigates this by randomly swapping the order of answers internally.

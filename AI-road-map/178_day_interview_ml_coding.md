@@ -1,21 +1,21 @@
-# Day 178: MAANG Mock Interview: ML Coding & Mathematical Rigor
+# Day 178: MAANG Mock Interview: <abbr title="Machine Learning">ML</abbr> Coding & Mathematical Rigor
 
 Welcome to Day 178.
 
-You survived the System Design round. Now comes the **ML Coding** round.
-Unlike a standard Software Engineering interview (where you invert a Binary Tree), an ML Coding interview tests two things simultaneously:
+You survived the System Design round. Now comes the **<abbr title="Machine Learning">ML</abbr> Coding** round.
+Unlike a standard Software Engineering interview (where you invert a Binary Tree), an <abbr title="Machine Learning">ML</abbr> Coding interview tests two things simultaneously:
 1. Can you write clean, vectorized Python code?
 2. Do you actually understand the math beneath the PyTorch abstractions?
 
 If you rely on `model.fit()` and have no idea how Backpropagation or Attention actually works, you will fail this round.
 
-Today, we practice the ultimate ML Coding question: **"Implement Self-Attention from scratch."**
+Today, we practice the ultimate <abbr title="Machine Learning">ML</abbr> Coding question: **"Implement Self-Attention from scratch."**
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Anatomy of an ML Coding Interview
+### 1. The Anatomy of an <abbr title="Machine Learning">ML</abbr> Coding Interview
 You will typically be asked to do one of three things:
 - **Implement from Scratch:** e.g., "Write K-Means clustering using only NumPy."
 - **Debug a Training Loop:** The interviewer gives you a PyTorch script. The loss isn't converging. You must find the subtle bug (e.g., they forgot `optimizer.zero_grad()` or applied Softmax before CrossEntropyLoss).

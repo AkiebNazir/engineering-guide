@@ -9,7 +9,7 @@ manual byte-index loops (error-prone with UTF-8).
 
 - Building a string piece by piece in a loop → `strings.Builder` (level 6),
   not repeated `+=` concatenation, which reallocates and copies every time.
-- Reading a string through an `io.Reader`-shaped API (e.g. to hand to
+- Reading a string through an `io.Reader`-shaped <abbr title="Application Programming Interface">API</abbr> (e.g. to hand to
   `bufio.NewReader`, see `../04_bufio`) → `strings.NewReader` (level 4), not
   converting to `[]byte` and writing a custom reader.
 - Many different substring replacements in one pass → `strings.NewReplacer`
@@ -32,7 +32,7 @@ manual byte-index loops (error-prone with UTF-8).
 
 ## What the 10 levels cover
 
-Levels 1-2 build the everyday API: substring checks (`Contains`/`HasPrefix`/
+Levels 1-2 build the everyday <abbr title="Application Programming Interface">API</abbr>: substring checks (`Contains`/`HasPrefix`/
 `HasSuffix`), then `Split`/`SplitN`/`Fields`, `Replace`/`ReplaceAll`, and the
 `Trim*` family. Level 3 combines them into a small record-cleaning idiom.
 Level 4 uses `strings.Reader` as a real `io.Reader` and handles `io.EOF` for

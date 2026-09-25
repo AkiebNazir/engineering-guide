@@ -1,10 +1,10 @@
-# Day 16: Stochastic Gradient Descent (SGD) & Variance Reduction
+# Day 16: Stochastic Gradient Descent (<abbr title="Stochastic Gradient Descent">SGD</abbr>) & Variance Reduction
 
 Welcome to Day 16. Yesterday, we built the standard Gradient Descent algorithm. To find the exact slope of the mountain, we had to calculate the error for every single row in our dataset. 
 
-But what if your dataset is Wikipedia (3 billion words) or ImageNet (14 million images)? If you have to process 14 million images just to take *one* step downhill, your AI will take decades to train. 
+But what if your dataset is Wikipedia (3 billion words) or ImageNet (14 million images)? If you have to process 14 million images just to take *one* step downhill, your <abbr title="Artificial Intelligence">AI</abbr> will take decades to train. 
 
-Today, we learn how to cheat the math using probability. We introduce **Stochastic Gradient Descent (SGD)**, the algorithm that makes Deep Learning physically possible.
+Today, we learn how to cheat the math using probability. We introduce **Stochastic Gradient Descent (<abbr title="Stochastic Gradient Descent">SGD</abbr>)**, the algorithm that makes Deep Learning physically possible.
 
 ---
 
@@ -13,16 +13,16 @@ Today, we learn how to cheat the math using probability. We introduce **Stochast
 ### 1. The Power of "Stochastic" (Randomness)
 Instead of calculating the exact gradient over 14 million images, what if we pick just **one** random image, calculate the gradient, and immediately take a step?
 
-This is called **Stochastic Gradient Descent (SGD)**. 
+This is called **Stochastic Gradient Descent (<abbr title="Stochastic Gradient Descent">SGD</abbr>)**. 
 - *The downside:* The gradient of a single image is incredibly noisy. If it's a picture of a cat, the gradient says "Change all weights to perfectly recognize cats!" It might point you exactly sideways, or even slightly uphill!
 - *The upside:* Mathematically, the **Expectation** (average) of these chaotic, random gradients is exactly equal to the true gradient of the whole dataset: $\mathbb{E}[\nabla_\theta \mathcal{L}_i] = \nabla_\theta \mathcal{L}$.
 - Over 14 million incredibly fast, jagged, chaotic steps, you will still reach the bottom of the valley in a fraction of the time it takes standard GD.
 
-### 2. Mini-Batch SGD: The Gold Standard
-Pure SGD (batch size = 1) is too chaotic, and it cannot utilize the massive parallel processing power of modern GPUs.
+### 2. Mini-Batch <abbr title="Stochastic Gradient Descent">SGD</abbr>: The Gold Standard
+Pure <abbr title="Stochastic Gradient Descent">SGD</abbr> (batch size = 1) is too chaotic, and it cannot utilize the massive parallel processing power of modern GPUs.
 Standard GD (batch size = 14 million) is too slow, and it crashes GPU memory.
 
-The solution is **Mini-Batch SGD**. We pick a random chunk of data (usually between 32 and 256 items). 
+The solution is **Mini-Batch <abbr title="Stochastic Gradient Descent">SGD</abbr>**. We pick a random chunk of data (usually between 32 and 256 items). 
 **Variance Reduction Formula:** $\text{Var} \propto \frac{1}{B}$
 *(The mathematical variance/chaos of the gradient drops proportionally to the size of the Batch $B$)*. 
 
@@ -32,16 +32,16 @@ By using a batch of 128, the gradient points *mostly* downhill, and your GPU mat
 Why don't we just buy a giant $1,000,000 supercomputer with enough RAM to process the whole dataset at once?
 Because we *want* the noise!
 
-> **AI Context (The Generalization Gap):** 
-> If you train with a massive batch size, the gradient is perfectly smooth. The AI will slide perfectly into the very first valley it finds. But what if that valley is a "Local Minimum" (a false bottom) that only applies to the training data?
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (The Generalization Gap):** 
+> If you train with a massive batch size, the gradient is perfectly smooth. The <abbr title="Artificial Intelligence">AI</abbr> will slide perfectly into the very first valley it finds. But what if that valley is a "Local Minimum" (a false bottom) that only applies to the training data?
 > 
-> The chaotic noise of Mini-Batch SGD acts as an earthquake. If the AI falls into a shallow, bad valley, the random gradient noise will literally "bounce" the AI back out of it! It forces the AI to keep wandering until it finds a massive, deep, wide valley (the Global Minimum). Models trained with Mini-Batch SGD generalize much better to unseen data!
+> The chaotic noise of Mini-Batch <abbr title="Stochastic Gradient Descent">SGD</abbr> acts as an earthquake. If the <abbr title="Artificial Intelligence">AI</abbr> falls into a shallow, bad valley, the random gradient noise will literally "bounce" the <abbr title="Artificial Intelligence">AI</abbr> back out of it! It forces the <abbr title="Artificial Intelligence">AI</abbr> to keep wandering until it finds a massive, deep, wide valley (the Global Minimum). Models trained with Mini-Batch <abbr title="Stochastic Gradient Descent">SGD</abbr> generalize much better to unseen data!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG
 
-Let's write a script that proves how much faster SGD is than standard Gradient Descent. We will also implement **Gradient Accumulation**, a crucial software engineering trick used by researchers who don't have infinite GPU memory.
+Let's write a script that proves how much faster <abbr title="Stochastic Gradient Descent">SGD</abbr> is than standard Gradient Descent. We will also implement **Gradient Accumulation**, a crucial software engineering trick used by researchers who don't have infinite GPU memory.
 
 Create a file named `sgd_and_accumulation.py`:
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Step Count Inequality:** In 5 epochs, Standard GD took exactly 5 steps downhill. Pure SGD took 50,000 chaotic steps. Mini-batch took 390 perfectly sized steps. This is why standard GD is completely dead in modern AI.
+1. **The Step Count Inequality:** In 5 epochs, Standard GD took exactly 5 steps downhill. Pure <abbr title="Stochastic Gradient Descent">SGD</abbr> took 50,000 chaotic steps. Mini-batch took 390 perfectly sized steps. This is why standard GD is completely dead in modern <abbr title="Artificial Intelligence">AI</abbr>.
 2. **Gradient Accumulation Magic:** If you divide the loss by your `accumulation_steps`, mathematically, taking 8 small steps and adding them together is *exactly identical* to taking 1 massive step with a 256 batch size. You trade Time for Memory!
 
 ---
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 **Your Task:**
 1. Grab a famous dataset like **MNIST** (70,000 images of handwritten digits) using `scikit-learn` or `PyTorch`.
 2. Implement a simple Logistic Regression classifier.
-3. Train it once using a Batch Size of `1` (Pure SGD). Plot the loss curve. It will look like a terrifying earthquake.
+3. Train it once using a Batch Size of `1` (Pure <abbr title="Stochastic Gradient Descent">SGD</abbr>). Plot the loss curve. It will look like a terrifying earthquake.
 4. Train it again using a Batch Size of `10,000`. Plot the curve. It will be perfectly smooth, but it might take 10 minutes to train.
 5. Train it with a Batch Size of `128`. Observe the perfect combination of slight noise and massive speed!
 
@@ -176,7 +176,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Warmup Schedule:**
    - Explain that a **Warmup Schedule** solves this by starting the Learning Rate near exactly $0.0$. Over the first few thousand steps (while the model figures out the basic layout of the loss landscape), the Learning Rate linearly increases until it hits the massive target rate.
 3. **The LARS/LAMB Optimizers:**
-   - Mention that standard SGD breaks at 32k batch sizes because some layers of the neural network have huge gradients, and some have tiny gradients. Applying one massive Learning Rate to all layers destroys the delicate layers.
+   - Mention that standard <abbr title="Stochastic Gradient Descent">SGD</abbr> breaks at 32k batch sizes because some layers of the neural network have huge gradients, and some have tiny gradients. Applying one massive Learning Rate to all layers destroys the delicate layers.
    - **LARS (Layer-wise Adaptive Rate Scaling)** mathematically checks the size of the weights and gradients for *each individual layer*, and custom-scales the learning rate layer-by-layer to ensure no single layer explodes!
 
 ---

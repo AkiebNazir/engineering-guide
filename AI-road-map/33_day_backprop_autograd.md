@@ -3,19 +3,19 @@
 Welcome to Day 33. This is it. This is the hardest math in all of Artificial Intelligence. 
 Today, we answer the ultimate question: **How does a Neural Network actually learn?**
 
-The answer is **Backpropagation**. It is the mathematical engine of every AI on earth, from a simple Perceptron to ChatGPT.
+The answer is **Backpropagation**. It is the mathematical engine of every <abbr title="Artificial Intelligence">AI</abbr> on earth, from a simple Perceptron to ChatGPT.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Forward Pass
-Imagine water flowing through pipes. The input data (e.g., an image of a dog) enters the network. It flows forward through the Weights, through the Activation Functions, layer by layer, until it reaches the end. The AI shouts: *"It's a Cat!"*
+Imagine water flowing through pipes. The input data (e.g., an image of a dog) enters the network. It flows forward through the Weights, through the Activation Functions, layer by layer, until it reaches the end. The <abbr title="Artificial Intelligence">AI</abbr> shouts: *"It's a Cat!"*
 This is the **Forward Pass**. It is just simple multiplication.
 
 ### 2. The Loss
-The AI guessed Cat (0), but the true answer was Dog (1). 
-We use a Loss Function to calculate exactly how wrong the AI was. (e.g., Error = 100).
+The <abbr title="Artificial Intelligence">AI</abbr> guessed Cat (0), but the true answer was Dog (1). 
+We use a Loss Function to calculate exactly how wrong the <abbr title="Artificial Intelligence">AI</abbr> was. (e.g., Error = 100).
 
 ### 3. Backpropagation (The Chain Rule)
 Now the magic happens. We must send that Error of 100 *backward* through the pipes, so every single Weight can adjust itself.
@@ -155,6 +155,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - In short: Reverse-mode is for mapping Many-to-One. Forward-mode is for mapping One-to-Many.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have successfully implemented the engine of AI.
+**Task for the end of the day:** Commit your code to Git. You have successfully implemented the engine of <abbr title="Artificial Intelligence">AI</abbr>.
 
 Tomorrow, in **Day 34**, we learn the first step of actually building a network: **Weight Initialization (Xavier & Kaiming).** If you start your network with the wrong numbers, the math will instantly explode!

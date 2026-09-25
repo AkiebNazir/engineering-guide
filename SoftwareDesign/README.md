@@ -86,7 +86,7 @@ implicitly step 0.)
 
 ### LLD practice (in the editor)
 
-Each problem opens in the workspace: the **brief** on the left, a stub with a **fixed API**
+Each problem opens in the workspace: the **brief** on the left, a stub with a **fixed <abbr title="Application Programming Interface">API</abbr>**
 in the editor, and **Run** executes the real tests. Aim for 45 minutes, then compare with the
 solution and write the one design point you missed in **Notes**.
 

@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The Scale Factor:** Quantization is not just rounding. You must calculate a `scale` so the GPU knows how to un-crush the numbers later! The scale factor is kept in high-precision float.
-2. **The Outlier Destruction:** Notice how the `0.15` became `0`. Because the scale was so massive (to accommodate the `150.0`), the tiny weights lost all their data. If an LLM loses its tiny weights, it starts generating gibberish.
+2. **The Outlier Destruction:** Notice how the `0.15` became `0`. Because the scale was so massive (to accommodate the `150.0`), the tiny weights lost all their data. If an <abbr title="Large Language Model">LLM</abbr> loses its tiny weights, it starts generating gibberish.
 
 ---
 
@@ -132,10 +132,10 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Note that you will use Tensor Parallelism to split the INT4 model across the two GPUs to maximize memory bandwidth.
 3. **The Validation Strategy:**
    - Explain that perplexity scores are not enough.
-   - Propose an **LLM-as-a-Judge** pipeline: Take 1,000 real enterprise queries. Run them through the original FP16 model and the new INT4 model. Have GPT-4 (or a human evaluation team) blindly grade the two outputs on accuracy and hallucination rates to ensure the business logic didn't degrade during compression.
+   - Propose an **<abbr title="Large Language Model">LLM</abbr>-as-a-Judge** pipeline: Take 1,000 real enterprise queries. Run them through the original FP16 model and the new INT4 model. Have GPT-4 (or a human evaluation team) blindly grade the two outputs on accuracy and hallucination rates to ensure the business logic didn't degrade during compression.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
 You have mastered Model Compression. We are now ready to look at Advanced Architectures.
-Tomorrow, in **Day 79**, we learn the secret behind GPT-4 and Mixtral: **The Mixture of Experts (MoE)** architecture!
+Tomorrow, in **Day 79**, we learn the secret behind GPT-4 and Mixtral: **The Mixture of Experts (<abbr title="Mixture of Experts">MoE</abbr>)** architecture!

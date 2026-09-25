@@ -79,7 +79,7 @@ This is why "durable" and "the data page is written" are different moments — d
 
 **Multi-version concurrency control (MVCC)** lets readers see a consistent snapshot of the database while writers keep working, by keeping multiple versions of a row instead of locking it for reads. A reader that started its transaction before a write commits keeps seeing the old version; it never blocks on a writer, and a writer never blocks on a reader.
 
-The cost: old row versions can't be garbage-collected until no open transaction still needs them. A long-running transaction (a forgotten open transaction, a slow analytical query in the same database) pins old versions in place — this is "table bloat" in PostgreSQL terms, or in general, a rising number of unreclaimed dead tuples that slow down every subsequent scan and inflate storage until a vacuum/compaction process catches up. Interview-relevant takeaway: keep transactions short, and never hold one open while waiting on a remote call (payment API, email service).
+The cost: old row versions can't be garbage-collected until no open transaction still needs them. A long-running transaction (a forgotten open transaction, a slow analytical query in the same database) pins old versions in place — this is "table bloat" in PostgreSQL terms, or in general, a rising number of unreclaimed dead tuples that slow down every subsequent scan and inflate storage until a vacuum/compaction process catches up. Interview-relevant takeaway: keep transactions short, and never hold one open while waiting on a remote call (payment <abbr title="Application Programming Interface">API</abbr>, email service).
 
 ## Partitioning strategies
 

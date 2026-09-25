@@ -53,7 +53,7 @@ sequenceDiagram
 - **Browser-Based Multiplayer Games**: Sending fast, frequent coordinate updates.
 
 **Anti-Patterns:**
-- **Static Content Delivery**: Fetching images, CSS, or standard JSON API payloads.
+- **Static Content Delivery**: Fetching images, CSS, or standard JSON <abbr title="Application Programming Interface">API</abbr> payloads.
 - **One-off Actions**: Form submissions or occasional state updates (use REST).
 - **Service-to-Service (Backend)**: If both ends are backend servers, gRPC or raw TCP is often more efficient than WebSocket framing.
 

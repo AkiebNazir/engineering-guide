@@ -189,7 +189,7 @@ which is the modern form.
 
 Go 1.24 replaced the map implementation. Since then (this repo builds on Go 1.24.5) the built-in `map`
 is a **Swiss table** — an *open-addressing* design from Google's Abseil library, adapted in
-`internal/runtime/maps`. The API and the language guarantees are unchanged; the insides are not. Older
+`internal/runtime/maps`. The <abbr title="Application Programming Interface">API</abbr> and the language guarantees are unchanged; the insides are not. Older
 material (and some interviewers) describe the previous design — bucketed chaining, section 2.3 — so
 know both, and say which toolchain you mean.
 

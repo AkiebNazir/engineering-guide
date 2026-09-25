@@ -61,9 +61,9 @@ Debt is a legitimate trade-off when it's taken on **consciously**: "we're shippi
 
 ## Semantic versioning basics
 
-`MAJOR.MINOR.PATCH` for any public API/library:
+`MAJOR.MINOR.PATCH` for any public <abbr title="Application Programming Interface">API</abbr>/library:
 
-- **MAJOR** — incompatible/breaking API change.
+- **MAJOR** — incompatible/breaking <abbr title="Application Programming Interface">API</abbr> change.
 - **MINOR** — backward-compatible new functionality.
 - **PATCH** — backward-compatible bug fix.
 

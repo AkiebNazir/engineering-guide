@@ -24,7 +24,7 @@ Solve questions before opening their solution. Work in numeric order — each la
 | 018 | Distributed Cache | Consistent hashing, hot keys, invalidation | [Question](problems/018_distributed_cache_question.md) · [Solution](solutions/018_distributed_cache_solution.md) |
 | 019 | Feature Flags | Local evaluation, kill switch, staleness | [Question](problems/019_feature_flags_question.md) · [Solution](solutions/019_feature_flags_solution.md) |
 | 020 | Ride Dispatch | Geo indexing, offer leases, exactly-once assignment | [Question](problems/020_ride_dispatch_question.md) · [Solution](solutions/020_ride_dispatch_solution.md) |
-| 021 | Multi-Tenant API Gateway | Routing, quota isolation, tracing propagation | [Question](problems/021_multi_tenant_api_gateway_question.md) · [Solution](solutions/021_multi_tenant_api_gateway_solution.md) |
+| 021 | Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway | Routing, quota isolation, tracing propagation | [Question](problems/021_multi_tenant_api_gateway_question.md) · [Solution](solutions/021_multi_tenant_api_gateway_solution.md) |
 
 ### Google L5 set
 
@@ -40,7 +40,7 @@ The problems most often asked in Google design rounds that the first 21 do not c
 | 027 | Ad Click Aggregation | Event-time windows, watermarks, exactly-once, batch reconciliation | [Question](problems/027_ad_click_aggregation_question.md) · [Solution](solutions/027_ad_click_aggregation_solution.md) |
 | 028 | Top-K Trending | Count-min sketch + heaps, sliding windows, merging across servers | [Question](problems/028_top_k_trending_question.md) · [Solution](solutions/028_top_k_trending_solution.md) |
 | 029 | Real-Time Leaderboard | Sorted sets, tie-breaking, sharding, approximate global rank | [Question](problems/029_realtime_leaderboard_question.md) · [Solution](solutions/029_realtime_leaderboard_solution.md) |
-| 030 | LLM Assistant Feature | Token streaming, batching and prefix caching, model routing, quotas, prompt injection | [Question](problems/030_llm_assistant_feature_question.md) · [Solution](solutions/030_llm_assistant_feature_solution.md) |
+| 030 | <abbr title="Large Language Model">LLM</abbr> Assistant Feature | Token streaming, batching and prefix caching, model routing, quotas, prompt injection | [Question](problems/030_llm_assistant_feature_question.md) · [Solution](solutions/030_llm_assistant_feature_solution.md) |
 
 ### Breadth set: infrastructure and product systems from Meta, Netflix and Google interviews
 

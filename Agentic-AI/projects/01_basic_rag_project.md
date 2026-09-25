@@ -1,7 +1,7 @@
-# Project 1: Basic Retrieval-Augmented Generation (RAG) Pipeline
+# Project 1: Basic Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>) Pipeline
 
 ## Objective
-Build a complete Retrieval-Augmented Generation (RAG) pipeline from scratch using Python. The system should be able to ingest a small set of documents, chunk them, embed them, store them in a simple in-memory vector store, retrieve the most relevant chunks given a user query, and synthesize an answer.
+Build a complete Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>) pipeline from scratch using Python. The system should be able to ingest a small set of documents, chunk them, embed them, store them in a simple in-memory vector store, retrieve the most relevant chunks given a user query, and synthesize an answer.
 
 ## Design Problem
 
@@ -19,9 +19,9 @@ You need to design a system with the following components:
    - Implement a simple in-memory vector database (e.g., a Python list or a NumPy array).
    - Implement a similarity search function (e.g., Cosine Similarity) to find the top-K most relevant chunks for a given query vector.
 
-4. **Generator / LLM**
-   - Pass the retrieved context and the user's query to an LLM to generate a final answer.
-   - **Requirement**: Your code should support a local model (e.g., using Ollama or a local HuggingFace pipeline) but also allow switching to an API-based model (like Google Gemini or OpenAI) via an environment variable or configuration.
+4. **Generator / <abbr title="Large Language Model">LLM</abbr>**
+   - Pass the retrieved context and the user's query to an <abbr title="Large Language Model">LLM</abbr> to generate a final answer.
+   - **Requirement**: Your code should support a local model (e.g., using Ollama or a local HuggingFace pipeline) but also allow switching to an <abbr title="Application Programming Interface">API</abbr>-based model (like Google Gemini or OpenAI) via an environment variable or configuration.
 
 ## Challenge
 Try building this yourself without looking at the solution! 

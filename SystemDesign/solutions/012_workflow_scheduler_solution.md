@@ -28,7 +28,7 @@ The question's numbers are the contract: **1M runs/day × 8 steps, 5,000 workflo
 | "Claim next task" without lease/fencing | Worker marks a task claimed; no expiry or token. | Never — the source of duplicate-execution bugs. | The claim never expires (stuck forever) or, if naively expired, a second worker starts while the first still runs. |
 | Lease with expiry + fencing token | Time-bound claim; only the current token can commit completion; expiry lets another worker reclaim. | The standard for safe distributed task claiming. | Completion must check the token; TTL trades recovery speed against premature reclaim. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 Tenant comes from the credential.
 
@@ -71,7 +71,7 @@ workflow_defs, signals (run_id, signal_id, payload), approvals (approvers[], nee
 
 ## Architecture and flow
 
-Stateless API servers, ~100 workers and N interchangeable sweepers talk to one Postgres primary (sync replica; a read replica serves status). One write: `POST /runs` inserts the run and its steps in one transaction (dependency-free steps `READY` with `available_at = start_at`); a claim flips one READY row to RUNNING and returns `fence`; the worker runs the activity; `complete` checks the fence, marks DONE, decrements successors' `deps_remaining`, flips those at 0 to READY, appends events and closes the run when all steps are terminal — **one transaction**, so a crash leaves the old state or the new, never half an advance. One read: `GET /runs/{id}` hits a replica (terminal runs are immutable and cacheable; the create response covers read-your-writes).
+Stateless <abbr title="Application Programming Interface">API</abbr> servers, ~100 workers and N interchangeable sweepers talk to one Postgres primary (sync replica; a read replica serves status). One write: `POST /runs` inserts the run and its steps in one transaction (dependency-free steps `READY` with `available_at = start_at`); a claim flips one READY row to RUNNING and returns `fence`; the worker runs the activity; `complete` checks the fence, marks DONE, decrements successors' `deps_remaining`, flips those at 0 to READY, appends events and closes the run when all steps are terminal — **one transaction**, so a crash leaves the old state or the new, never half an advance. One read: `GET /runs/{id}` hits a replica (terminal runs are immutable and cacheable; the create response covers read-your-writes).
 
 ```mermaid
 %% caption: The completion write must match the exact fencing token issued at claim time — a merely-slow worker's late write is rejected deterministically, not by timing.
@@ -142,7 +142,7 @@ RETURNING run_id, step_key, attempt, fence, lease_expires_at;   -- one short txn
 
 - **DB clock**: lease time is `now()` inside the claim, never a worker clock. The worker tracks its deadline on a monotonic clock and stops side effects at `ttl − margin` (30 − 5 s), *before* the reaper reassigns the step.
 - **TTL 30 s, heartbeat every 10 s** (two misses tolerated): a crashed worker's step re-dispatches in ≤ 30 s plus a sweeper tick (the recovery latency to quote). Shorter steals from GC-paused workers.
-- **Fence**: incremented per claim; `complete/heartbeat/fail` carry `WHERE fence = $f AND state = 'RUNNING'`, rowcount 0 means stale. This is the fencing-token pattern (Kleppmann, "How to do distributed locking", 2016), with his caveat: a token protects only a resource that *checks* it. Ours do; an external payment API does not, so the activity sends the constant `idempotency_key` (and the fence where the provider supports conditional writes).
+- **Fence**: incremented per claim; `complete/heartbeat/fail` carry `WHERE fence = $f AND state = 'RUNNING'`, rowcount 0 means stale. This is the fencing-token pattern (Kleppmann, "How to do distributed locking", 2016), with his caveat: a token protects only a resource that *checks* it. Ours do; an external payment <abbr title="Application Programming Interface">API</abbr> does not, so the activity sends the constant `idempotency_key` (and the fence where the provider supports conditional writes).
 - **Poison steps**: `attempt` increments at *claim*, so a step that kills every worker (OOM on a bad payload) still burns attempts and reaches `FAILED` after `max_attempts`.
 - **Reaper**: the same shape as claim, over `state='RUNNING' AND lease_expires_at < now()`, setting READY with a backoff `available_at`; any number of sweeper copies may run it.
 
@@ -168,7 +168,7 @@ Options: strict priority (bulk starves without aging); a per-tenant running cap 
 
 **Database failover is the real SPOF.** Primary plus a **synchronous** replica (RPO 0 for acknowledged commits) with automated promotion (Patroni-style; tens of seconds, measure yours). Meanwhile claims fail, workers retry `complete` with the same fence, and leases are wall-clock, so nothing is double-assigned. The 2 s SLO is steady-state; failover is a ~30 s availability event.
 
-**How to shard** when a trigger fires: 256 fixed *logical* shards `= hash(run_id) mod 256`, mapped to physical clusters by a routing table (start with one cluster; split by moving logical shards). Temporal fixes its shard count at cluster creation (per its docs), so pick the logical count generously. The API routes by a shard id embedded in `run_id`; cross-run queries ("failed runs for tenant X") use a CDC-fed index ([09](../building_blocks/09_messaging_and_streaming.md)).
+**How to shard** when a trigger fires: 256 fixed *logical* shards `= hash(run_id) mod 256`, mapped to physical clusters by a routing table (start with one cluster; split by moving logical shards). Temporal fixes its shard count at cluster creation (per its docs), so pick the logical count generously. The <abbr title="Application Programming Interface">API</abbr> routes by a shard id embedded in `run_id`; cross-run queries ("failed runs for tenant X") use a CDC-fed index ([09](../building_blocks/09_messaging_and_streaming.md)).
 
 ## Human approval and signal waits
 
@@ -200,7 +200,7 @@ Decision here (8 mostly linear steps, human gates, audit as SQL): the **explicit
 | Tier | Contents | Store | Access |
 |---|---|---|---|
 | Hot (0–30 d + every open run) | `runs`, `steps`, `run_events` | Postgres monthly partitions, ~1.1 TB | ms |
-| Archive (30 d to 400 d) | One object per run (events + step summaries), Parquet/zstd, `tenant/day/`; ~2.6 TB/yr | Object storage, object lock (WORM) | seconds, via `archived_runs(run_id → key)`; the API falls through to it |
+| Archive (30 d to 400 d) | One object per run (events + step summaries), Parquet/zstd, `tenant/day/`; ~2.6 TB/yr | Object storage, object lock (WORM) | seconds, via `archived_runs(run_id → key)`; the <abbr title="Application Programming Interface">API</abbr> falls through to it |
 
 - Expire at 400 d (1 year + margin) unless a legal hold is set. The archiver **exports, verifies row counts and checksums, writes the catalog, and only then `DETACH`es** the partition — a failed export loses nothing.
 - **Tamper evidence**: `hash = H(prev_hash ‖ event)` chains each run's events and the head hash sits in the archive manifest: WORM stops deletion, the chain stops silent edits.

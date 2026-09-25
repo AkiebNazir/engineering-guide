@@ -2,7 +2,7 @@
 
 Welcome to Day 142. 
 
-We have built specialized agents: Code Agents that live in the terminal, Browser Agents that navigate websites, and RAG Agents that read text. 
+We have built specialized agents: Code Agents that live in the terminal, Browser Agents that navigate websites, and <abbr title="Retrieval-Augmented Generation">RAG</abbr> Agents that read text. 
 But the human brain does not separate these tasks. When you do your job, you look at a visual chart (Vision), you write an Excel formula (Code), and you email the result (Web).
 
 Today, we build the **Omnimodal Agent**. We fuse Vision Encoders, Code Execution, and Web APIs into a single, unified architecture.
@@ -19,7 +19,7 @@ This "Brain" sits at the center of a LangGraph orchestrator and is equipped with
 - `search_web(query)`
 
 ### 2. The Grounding Problem
-The hardest challenge in Multi-Modal AI is **Grounding**—connecting a visual concept to a physical action.
+The hardest challenge in Multi-Modal <abbr title="Artificial Intelligence">AI</abbr> is **Grounding**—connecting a visual concept to a physical action.
 If the Agent looks at a screenshot of a medical dashboard, it might say: *"I see the patient's heart rate is 120."* That is visual understanding.
 But if you ask the Agent to *"Click the button next to the heart rate"*, the Agent must ground the visual concept of "Heart Rate" to a specific $(X, Y)$ pixel coordinate on the screen. (This is why we used Set-of-Marks prompting in Day 136!).
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **Modality Bridging:** Notice how the Agent took unstructured visual pixels (a `.png` file) and seamlessly bridged it into strict, executable Python code. This is the holy grail of automation.
-2. **The `result` Variable Protocol:** When building Code Tools, you must strictly prompt the LLM to assign its final answer to a specific variable (like `result`). Otherwise, the `exec()` environment won't know what data to return to the LangGraph state!
+2. **The `result` Variable Protocol:** When building Code Tools, you must strictly prompt the <abbr title="Large Language Model">LLM</abbr> to assign its final answer to a specific variable (like `result`). Otherwise, the `exec()` environment won't know what data to return to the LangGraph state!
 
 ---
 

@@ -25,7 +25,7 @@ To fix this, we use **Re-Planning**. If the Executor encounters an error on Step
 A linear step-by-step plan is slow. 
 What if the user asks: *"What is the stock price of Apple, Microsoft, and Google?"*
 A linear agent searches Apple, waits 2 seconds. Searches Microsoft, waits 2 seconds. Searches Google, waits 2 seconds.
-**LLMCompiler** is a revolutionary framework where the Planner generates a **Directed Acyclic Graph (DAG)** of tasks. It realizes that searching Apple, Microsoft, and Google are *independent* tasks, and the Executor runs all three API calls **in parallel** concurrently! This cuts latency by 66%!
+**LLMCompiler** is a revolutionary framework where the Planner generates a **Directed Acyclic Graph (DAG)** of tasks. It realizes that searching Apple, Microsoft, and Google are *independent* tasks, and the Executor runs all three <abbr title="Application Programming Interface">API</abbr> calls **in parallel** concurrently! This cuts latency by 66%!
 
 ---
 
@@ -160,4 +160,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 We can now plan 20 steps ahead. But what if the Agent executes a step, and the output is just... bad? 
 Humans review their own work before submitting it. Agents should too.
 
-Tomorrow, in **Day 132**, we learn **Reflexion and Self-Critique Agents**. We will teach the LLM to yell at itself until it gets the right answer!
+Tomorrow, in **Day 132**, we learn **Reflexion and Self-Critique Agents**. We will teach the <abbr title="Large Language Model">LLM</abbr> to yell at itself until it gets the right answer!

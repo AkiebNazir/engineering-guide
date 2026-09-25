@@ -25,9 +25,9 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope QPS, storage, and bandwidth estimates.
-3. API contracts and core data model.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
-5. Why plain Dijkstra fails at continental scale and the hierarchical or partitioned remedy, live-traffic weights and time-dependent ETA with an ML correction layer, map matching, rerouting triggers and alternative routes, and the map-data update pipeline.
+5. Why plain Dijkstra fails at continental scale and the hierarchical or partitioned remedy, live-traffic weights and time-dependent ETA with an <abbr title="Machine Learning">ML</abbr> correction layer, map matching, rerouting triggers and alternative routes, and the map-data update pipeline.
 6. Cache, scale, abuse, failure, and observability plan.
 7. One explicit trade-off you would revisit at 100× traffic or multi-region.
 

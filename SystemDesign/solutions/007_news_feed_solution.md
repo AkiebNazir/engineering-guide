@@ -25,7 +25,7 @@ The feed is *ranked*, so the 30-second bound is a promise about **eligibility** 
 - **Naive push volume**: 3.5k posts/s × 300 average followers ≈ **1.0M feed-ref writes/s average, 3.1M/s at peak, 90B refs/day**. (The earlier draft of this document claimed 10–50k/s; even its own smaller input, 100M posts/day × 300 = 350k/s, was 7–35× above that claim.)
 - **The celebrity burst**: one post from a 50M-follower account is 50M refs. Inside the 30 s freshness bound that is 1.7M writes/s *for a single post* — more than the whole fleet's peak. So the head cannot be pushed, whatever the average says.
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 GET /v1/feed?limit=25&cursor=…

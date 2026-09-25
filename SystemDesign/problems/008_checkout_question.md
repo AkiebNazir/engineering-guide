@@ -25,7 +25,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope QPS, storage, and bandwidth estimates.
-3. API contracts and core data model.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
 5. Idempotency and distributed-transaction strategy across inventory, payment, and order.
 6. Cache, scale, abuse, failure, and observability plan.

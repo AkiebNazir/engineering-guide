@@ -43,7 +43,7 @@ Stage p99 budgets sum to 275 ms of 400, leaving 125 ms for about eight network h
 
 **Feature-fetch bandwidth.** Naively each load pulls 300 × (600 B static + 64 B counters) = 199 KB, so 145k × 199 KB = 29 GB/s (231 Gbps). With item features cached in the ranker (assumed 95% hit for static, 80% for counters with a 10 s TTL) plus 4 KB of user features it is about 17 KB per load: 2.4 GB/s (19 Gbps). So caches in the ranker are required, not optional.
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 GET  /v1/feed?session_id&cursor&limit=10&client_ctx → {items[], next_cursor, request_id, snapshot_id, degraded_rung}

@@ -13,7 +13,7 @@ type coercion, subcommands, and mutually exclusive options are all built in.
 |---|---|
 | A script with a handful of flags, run by a human from a terminal | `argparse` |
 | Config that comes from environment variables or a TOML file | plain `os.environ` / `tomllib` (see `PyEngineering/08_config_loader`), not `argparse` |
-| A REST-style HTTP API's request parameters | `urllib.parse` / the web framework's own parsing (see `API/`), not `argparse` |
+| A REST-style HTTP <abbr title="Application Programming Interface">API</abbr>'s request parameters | `urllib.parse` / the web framework's own parsing (see `API/`), not `argparse` |
 | A git-style tool with subcommands (`tool add`, `tool remove`) | `argparse` with `add_subparsers()` |
 | Extremely simple one-flag scripts where importing argparse feels heavy | manual `sys.argv` slicing is acceptable, but you lose `--help`, type errors, and usage text for free |
 

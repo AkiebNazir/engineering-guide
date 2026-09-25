@@ -23,11 +23,11 @@ Examples are in **Python** with **Go** in §8. Every example was run; outputs ar
 
 | Topic | Where |
 |---|---|
-| Code-level API evolution (expand → migrate → contract, semver) | `03_modularity_coupling_and_api_design.md` §10 |
+| Code-level <abbr title="Application Programming Interface">API</abbr> evolution (expand → migrate → contract, semver) | `03_modularity_coupling_and_api_design.md` §10 |
 | DTO vs. domain model vs. persistence model | `08_application_architecture_in_code.md` §6 |
 | Migration runner implementation (versions table, transactions) | `PyEngineering/11_migrations_schema_management`, `GoEngineering/11_*` |
 | JSON/protobuf encoding hands-on | `PyEngineering/23_custom_json_protobuf_encoding`, `GoEngineering/23_*` |
-| Serialisation formats compared; REST/gRPC API versioning | `SystemDesign/building_blocks/04_api_design_low_level.md`, `SystemDesign/building_blocks/03_api_design_high_level.md` |
+| Serialisation formats compared; REST/gRPC <abbr title="Application Programming Interface">API</abbr> versioning | `SystemDesign/building_blocks/04_api_design_low_level.md`, `SystemDesign/building_blocks/03_api_design_high_level.md` |
 | Normalisation, indexes, isolation levels, database internals | `CSFundamentals/03_databases_deep_dive.md`, `SystemDesign/building_blocks/05–06` |
 | Event sourcing, outbox, CQRS | `CSFundamentals/04_software_engineering_deep_dive.md` §2 |
 
@@ -59,7 +59,7 @@ Examples are in **Python** with **Go** in §8. Every example was run; outputs ar
 | Lifetime | Months to years | Years to decades (plus backups) |
 | Changing it | Deploy a new version; old version is gone | Old records remain; must be migrated or read forever |
 | Rollback | Redeploy the previous version | New-format data written in the meantime may be unreadable by the old version |
-| Who reads it | This service | This service's old and new versions, other services, analytics jobs, ML pipelines, support tooling, auditors |
+| Who reads it | This service | This service's old and new versions, other services, analytics jobs, <abbr title="Machine Learning">ML</abbr> pipelines, support tooling, auditors |
 | Mistakes | Fixed by the next deploy | Corrupted or lost data is often permanent |
 
 Three consequences shape everything else in this file:
@@ -71,7 +71,7 @@ Three consequences shape everything else in this file:
    can't read — at least until the new version is proven.
 3. **Data has consumers you don't know about.** A column rename breaks the finance team's
    nightly SQL report, which nobody told you exists. Treat stored and published data as a
-   public API.
+   public <abbr title="Application Programming Interface">API</abbr>.
 
 ---
 
@@ -89,7 +89,7 @@ Name the direction precisely — people use "backward compatible" to mean both.
 | Compatibility | Needed when | Example |
 |---|---|---|
 | **Backward** | New code must read existing data: database rows, stored files, queued messages from before the deploy | A v3 service reading orders written in 2019 |
-| **Forward** | Old code must read data written by new code: during a rolling deploy, after a rollback, old mobile clients reading new API responses, old consumers of a topic | v2 instances still running while v3 instances publish events |
+| **Forward** | Old code must read data written by new code: during a rolling deploy, after a rollback, old mobile clients reading new <abbr title="Application Programming Interface">API</abbr> responses, old consumers of a topic | v2 instances still running while v3 instances publish events |
 | **Full** | Both, which is the practical requirement for most shared data | Kafka topics with independent producer/consumer deploys |
 
 In ten lines, before the field-by-field rules in §3 and the full worked example in §4:

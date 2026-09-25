@@ -34,7 +34,7 @@ The question's numbers are the contract: **billions of URLs in the frontier, ~1 
 | Fixed recrawl interval | Every page every N days. | Small, low-churn corpora. | Wastes budget on static pages, under-serves high-churn ones. |
 | Adaptive recrawl (change rate + importance + error backoff) | Next crawl from observed change frequency, importance and recent errors. | Large mixed-churn corpora — the realistic case. | More per-URL state; needs decay and backoff logic. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 Internal system; discovery is a pipeline, not a request/response service.
 

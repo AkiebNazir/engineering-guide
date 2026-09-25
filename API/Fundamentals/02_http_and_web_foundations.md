@@ -1,13 +1,13 @@
 ---
 title: "2. HTTP & Web Foundations"
-description: "The HTTP knowledge every API style is built on: messages, methods, status codes, headers, TLS, HTTP/2, CORS, and how a request travels."
+description: "The HTTP knowledge every <abbr title="Application Programming Interface">API</abbr> style is built on: messages, methods, status codes, headers, TLS, HTTP/2, CORS, and how a request travels."
 ---
 
 # HTTP & Web Foundations
 
-REST, GraphQL, SOAP, Webhooks and gRPC all ride on HTTP, and WebSockets begin as an HTTP request. If you understand HTTP well, every API style becomes a small variation. If you do not, every style feels like magic.
+REST, GraphQL, SOAP, Webhooks and gRPC all ride on HTTP, and WebSockets begin as an HTTP request. If you understand HTTP well, every <abbr title="Application Programming Interface">API</abbr> style becomes a small variation. If you do not, every style feels like magic.
 
-## 1. What Happens When a Client Calls an API
+## 1. What Happens When a Client Calls an <abbr title="Application Programming Interface">API</abbr>
 
 ```mermaid
 sequenceDiagram
@@ -176,7 +176,7 @@ Why you care: **gRPC requires HTTP/2** for its streaming and multiplexing. **RES
 
 ## 9. CORS: The Browser Rule That Confuses Everyone
 
-The browser's **same-origin policy** blocks JavaScript on `https://app.com` from reading responses from `https://api.com`, unless the API opts in with CORS headers.
+The browser's **same-origin policy** blocks JavaScript on `https://app.com` from reading responses from `https://api.com`, unless the <abbr title="Application Programming Interface">API</abbr> opts in with CORS headers.
 
 ```mermaid
 sequenceDiagram
@@ -189,7 +189,7 @@ sequenceDiagram
 ```
 
 *   CORS is enforced **by browsers only**. `curl`, mobile apps, and server-to-server calls (Webhooks, gRPC) ignore it.
-*   Do not answer `Access-Control-Allow-Origin: *` on an API that uses cookies. List exact origins.
+*   Do not answer `Access-Control-Allow-Origin: *` on an <abbr title="Application Programming Interface">API</abbr> that uses cookies. List exact origins.
 *   A "CORS error" almost always means the *server* is missing headers, not that the client code is wrong.
 
 <div class="lab" data-viz="flow-cors"></div>
@@ -273,7 +273,7 @@ func main() {
 
 > ❓ **Question 1:** A client sends `PUT /users/7` twice with the same body. The first returns `200`, the second `200`. A client sends `POST /users` twice. What differs, and why does it matter for retries?
 >
-> ❓ **Question 2:** Your API returns `403` when the token has expired. What should it return instead, and how does that change client behaviour?
+> ❓ **Question 2:** Your <abbr title="Application Programming Interface">API</abbr> returns `403` when the token has expired. What should it return instead, and how does that change client behaviour?
 >
 > ❓ **Question 3:** Why does a browser send an `OPTIONS` request before your `POST`, and why do `curl` and a Go client never do that?
 >

@@ -12,7 +12,7 @@ here is loaded by the webapp or referenced by the active curriculum.
   was closed, and `GOOGLE_INTERVIEW_PREP.md` is the up-to-date, file-mapped
   successor. Archived rather than deleted because `GOOGLE_INTERVIEW_PREP.md`
   still names it as its source.
-- **`docs/RAG.md`** — standalone RAG notes, superseded by the structured
+- **`docs/RAG.md`** — standalone <abbr title="Retrieval-Augmented Generation">RAG</abbr> notes, superseded by the structured
   `Agentic-AI/` module and not referenced from anywhere else in the repo.
 
 Not archived, despite looking similar at a glance:

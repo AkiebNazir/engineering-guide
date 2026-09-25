@@ -2,7 +2,7 @@
 
 Welcome to Day 7. You have survived the first week of the 180-day curriculum. 
 
-The goal of a Principal AI Engineer is not to memorize disconnected formulas. The goal is to see the **Matrix** *(the interconnected system of mathematical rules that govern how data behaves)*. Today, there are no new abstract concepts. We are going to wire all 6 previous days together into a single, cohesive mental model, and then we are going to build a production-grade Python package.
+The goal of a Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer is not to memorize disconnected formulas. The goal is to see the **Matrix** *(the interconnected system of mathematical rules that govern how data behaves)*. Today, there are no new abstract concepts. We are going to wire all 6 previous days together into a single, cohesive mental model, and then we are going to build a production-grade Python package.
 
 Let's synthesize the bedrock.
 
@@ -10,14 +10,14 @@ Let's synthesize the bedrock.
 
 ## 🕒 HOUR 1: DEEP THEORY & THE DEPENDENCY GRAPH
 
-### 1. The Grand AI Workflow
+### 1. The Grand <abbr title="Artificial Intelligence">AI</abbr> Workflow
 Every machine learning algorithm, from a simple Linear Regression to a trillion-parameter GPT, follows this exact sequence of linear algebra and calculus:
 
 1. **The Representation (Day 1):** We take real-world concepts (words, images, user behaviors) and turn them into **Vectors** $\mathbf{x}$. 
 2. **The Transformation (Day 2):** We pass the data through a model. The model is just a series of **Matrices** $W$. We multiply them together: $y = W\mathbf{x}$.
 3. **The Measurement (Day 5):** We check how wrong the model was using a **Loss Function**. We measure the distance between the prediction and the truth using a **Norm** $\| \hat{y} - y \|$.
 4. **The Correction (Day 6):** We use **Matrix Calculus** to compute the **Gradient** $\nabla L$. We use the **Matrix Chain Rule** *(Backpropagation)* to pass that error backward through the **Jacobian matrices** of the network, adjusting the weights.
-5. **The Optimization (Days 3 & 4):** To make this process efficient, we use **Eigendecomposition** and **SVD** to compress the data, remove noise, and ensure our optimization algorithms don't get stuck on saddle points *(flat areas in the math landscape where the gradient is zero but it's not the actual bottom)*.
+5. **The Optimization (Days 3 & 4):** To make this process efficient, we use **Eigendecomposition** and **<abbr title="Singular Value Decomposition">SVD</abbr>** to compress the data, remove noise, and ensure our optimization algorithms don't get stuck on saddle points *(flat areas in the math landscape where the gradient is zero but it's not the actual bottom)*.
 
 ### 2. Synthesizing the Math
 
@@ -41,7 +41,7 @@ Let's break down exactly what Week 1 taught us about this formula:
 > Step 4: $X^T \mathbf{y} = [2, 3] \begin{bmatrix} 4 \\ 6 \end{bmatrix} = 8 + 18 = 26$.
 > Final Math: $\mathbf{w} = \frac{1}{14} \times 26 \approx 1.85$.
 > 
-> **AI Context (The Perfect Fit):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (The Perfect Fit):** 
 > Without $\lambda$, the answer would be $\frac{26}{13} = 2.0$. The math perfectly deduced that $y$ is exactly $2$ times $x$. But because we added $\lambda=1$ (L2 Regularization), the math "shrank" the weight slightly to $1.85$ to prevent the model from being too overconfident!
 
 ---
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **Modularity:** Real ML systems (like PyTorch or Scikit-Learn) are built exactly like this. Core math routines are isolated into modules, and unit tests guarantee that a change in `svd_compress` doesn't silently break downstream recommendation systems.
+1. **Modularity:** Real <abbr title="Machine Learning">ML</abbr> systems (like PyTorch or Scikit-Learn) are built exactly like this. Core math routines are isolated into modules, and unit tests guarantee that a change in `svd_compress` doesn't silently break downstream recommendation systems.
 2. **`assert` Statements:** Using assertions is how you write Unit Tests. If the math fails, the script forcefully crashes before bad data can corrupt your training loop.
 
 ---
@@ -154,7 +154,7 @@ You are going to build Principal Component Analysis (PCA) from scratch using **o
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design a Linear Algebra computation service for an internal AI team. It needs to handle 10,000 concurrent requests for matrix operations on massive matrices (up to $10,000 \times 10,000$). Discuss the memory, compute, and latency trade-offs."*
+*"Design a Linear Algebra computation service for an internal <abbr title="Artificial Intelligence">AI</abbr> team. It needs to handle 10,000 concurrent requests for matrix operations on massive matrices (up to $10,000 \times 10,000$). Discuss the memory, compute, and latency trade-offs."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -166,9 +166,9 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Multiplying two $10,000 \times 10,000$ matrices requires 1 Trillion operations (FLOPs). CPUs will be too slow. You must route these requests to GPU instances running highly optimized cuBLAS kernels.
 3. **The Trade-offs & Solutions:** 
    - **Latency vs. Throughput:** Do you process requests instantly (low latency), or do you queue them up to batch them together for the GPU (high throughput)? A strong engineer explicitly states they would implement a queueing system (like Kafka or RabbitMQ) and use **Dynamic Batching** to group smaller matrix multiplications together before sending them to the GPU.
-   - **Precision vs. Speed:** Suggest offering an API flag for quantization. If the user accepts `FP16` or `INT8` precision, memory requirements drop by 50% to 75%, and Tensor Cores on the GPU will calculate the result infinitely faster.
+   - **Precision vs. Speed:** Suggest offering an <abbr title="Application Programming Interface">API</abbr> flag for quantization. If the user accepts `FP16` or `INT8` precision, memory requirements drop by 50% to 75%, and Tensor Cores on the GPU will calculate the result infinitely faster.
 
 ---
 **Task for the end of the day:** Commit your toolkit to Git. You have mastered Phase 1. 
 
-Get ready. In Phase 2 (Starting on Day 8), we move out of pure math and enter the realm of **Probability, Statistics & Information Theory**. We are going to build the mathematical foundation of how an AI models uncertainty and "thinks" about the world!
+Get ready. In Phase 2 (Starting on Day 8), we move out of pure math and enter the realm of **Probability, Statistics & Information Theory**. We are going to build the mathematical foundation of how an <abbr title="Artificial Intelligence">AI</abbr> models uncertainty and "thinks" about the world!

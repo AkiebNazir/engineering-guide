@@ -183,7 +183,7 @@ subscription { postCreated { id title } }
 
 The client opens a WebSocket (the `graphql-transport-ws` protocol), and the server sends a message each time a post is created. See `WebSockets/`.
 
-### Introspection: the API describes itself
+### Introspection: the <abbr title="Application Programming Interface">API</abbr> describes itself
 
 ```graphql
 { __schema { types { name kind } } }
@@ -356,7 +356,7 @@ GraphQL responses always have a `data` and/or an `errors` key. Errors are **fiel
 
 ## Pagination: Connections
 
-The Relay convention, used by GitHub's API and many others:
+The Relay convention, used by GitHub's <abbr title="Application Programming Interface">API</abbr> and many others:
 
 ```graphql
 {
@@ -435,8 +435,8 @@ sequenceDiagram
 
 | Use it when | Avoid it when |
 | :--- | :--- |
-| Many clients (web, iOS, Android, TV) need different slices of the same data | A simple CRUD API with one client |
-| Screens need nested data from several services | Public API where HTTP caching and simple `curl` access matter |
+| Many clients (web, iOS, Android, TV) need different slices of the same data | A simple CRUD <abbr title="Application Programming Interface">API</abbr> with one client |
+| Screens need nested data from several services | Public <abbr title="Application Programming Interface">API</abbr> where HTTP caching and simple `curl` access matter |
 | Frontend teams iterate faster than backend teams can ship endpoints | File uploads and streaming binary data are central |
 | You want a typed, self-documenting contract | Service-to-service calls between backends (prefer gRPC) |
 

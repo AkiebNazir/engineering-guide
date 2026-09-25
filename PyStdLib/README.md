@@ -30,7 +30,7 @@ standing quality bar — see `../CONTEXT.md` §5) and ends with `print("OK")`.
 | Level | What it teaches |
 |---|---|
 | 1 | The single most common use — one function/class, minimal example |
-| 2 | The core API surface — what covers 90% of real usage |
+| 2 | The core <abbr title="Application Programming Interface">API</abbr> surface — what covers 90% of real usage |
 | 3 | Combining basics into a small realistic idiom |
 | 4 | Error handling — the real exception types, triggered for real |
 | 5 | An intermediate pattern specific to the library |

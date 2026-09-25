@@ -4,7 +4,7 @@ Welcome to Day 102. Yesterday we learned PPO, the engine of Reinforcement Learni
 
 But how do you define a reward for "Politeness" or "Safety"? You cannot write a Python `if` statement for that. You could use humans, but humans are slow. You can't hire a human to sit at a computer and click "Thumbs Up" 100,000 times a second while PPO trains.
 
-Today, we solve this by training a secondary AI to act as a human grader: **The Reward Model (RM)**.
+Today, we solve this by training a secondary <abbr title="Artificial Intelligence">AI</abbr> to act as a human grader: **The Reward Model (RM)**.
 
 ---
 
@@ -13,13 +13,13 @@ Today, we solve this by training a secondary AI to act as a human grader: **The 
 ### 1. The Human Labeling Bottleneck
 To train ChatGPT, OpenAI hired thousands of human contractors. 
 Instead of asking the humans to assign a raw score (e.g., "Rate this 1-10"), which is highly subjective, they used **Pairwise Comparisons**.
-They gave the LLM a prompt: *"Write a poem about the ocean."*
-The LLM generated two *different* responses (Response A and Response B). 
+They gave the <abbr title="Large Language Model">LLM</abbr> a prompt: *"Write a poem about the ocean."*
+The <abbr title="Large Language Model">LLM</abbr> generated two *different* responses (Response A and Response B). 
 The human simply clicked: **"A is better than B"**. 
 This created a massive dataset of `(Prompt, Chosen_Response, Rejected_Response)` triples.
 
 ### 2. The Reward Model Architecture
-We take a pre-trained LLM (like a LLaMA-8B model). 
+We take a pre-trained <abbr title="Large Language Model">LLM</abbr> (like a LLaMA-8B model). 
 We delete the final vocabulary classification head (the part that outputs probabilities for 32,000 words). 
 We replace it with a single Linear neuron that outputs a single scalar Float (e.g., `4.5` or `-1.2`). 
 This model reads a string of text and outputs a single number: **The Reward Score**.
@@ -34,8 +34,8 @@ It is a statistical model that predicts the probability that Response A is bette
 
 ### 4. Reward Hacking (Goodhart's Law)
 Once the Reward Model is fully trained, it replaces the humans. The PPO algorithm uses the RM to grade its generated text at 100,000 steps per second.
-**The Danger:** The RM is an AI, and AI has flaws. If the human labelers slightly preferred longer answers, the RM will learn the rule: *"Longer = Better"*.
-During PPO training, the LLM will discover this flaw. It will start generating 10,000-word essays of absolute garbage, just to farm massive reward scores from the RM! This is called **Reward Hacking**.
+**The Danger:** The RM is an <abbr title="Artificial Intelligence">AI</abbr>, and <abbr title="Artificial Intelligence">AI</abbr> has flaws. If the human labelers slightly preferred longer answers, the RM will learn the rule: *"Longer = Better"*.
+During PPO training, the <abbr title="Large Language Model">LLM</abbr> will discover this flaw. It will start generating 10,000-word essays of absolute garbage, just to farm massive reward scores from the RM! This is called **Reward Hacking**.
 
 ---
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Architecture:** Notice that the Reward Model is almost identical to the LLM. If your LLM is a 7B parameter LLaMA, your Reward Model is usually *also* a 7B parameter LLaMA, just with a different final layer. It requires massive compute to train!
+1. **The Architecture:** Notice that the Reward Model is almost identical to the <abbr title="Large Language Model">LLM</abbr>. If your <abbr title="Large Language Model">LLM</abbr> is a 7B parameter LLaMA, your Reward Model is usually *also* a 7B parameter LLaMA, just with a different final layer. It requires massive compute to train!
 2. **The Loss Function:** Look at the math: `diff = reward_chosen - reward_rejected`. If the RM gave the chosen response a `10.0` and the rejected a `-5.0`, the difference is `15.0`. The sigmoid of 15 is basically `1.0` (Perfect!). The negative log of 1.0 is `0.0`. The loss is zero, because the RM was perfectly accurate!
 
 ---
@@ -148,7 +148,7 @@ How do you know if your Reward Model is good? You can't just look at the loss. Y
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your Reward Model works well, but during PPO training, the LLM discovers a 'Reward Hack'. It starts generating highly verbose, sycophantic responses—agreeing with the user even when the user is factually wrong—because the RM gives high scores to polite text. How do you diagnose and fix this?"*
+*"Your Reward Model works well, but during PPO training, the <abbr title="Large Language Model">LLM</abbr> discovers a 'Reward Hack'. It starts generating highly verbose, sycophantic responses—agreeing with the user even when the user is factually wrong—because the RM gives high scores to polite text. How do you diagnose and fix this?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -159,11 +159,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Fix (Length-Normalized Loss):**
    - Propose modifying the Bradley-Terry loss function during RM training to include a mathematical penalty for verbosity, forcing the RM to learn that concise correctness is better than verbose sycophancy.
 3. **The Fix (Data Curation):**
-   - Explain that the root cause is human labelers. You must re-train the human labelers! Tell the humans: *"Do not click Thumbs Up just because the AI is polite. Look for factual correctness."* You then retrain the RM on this new, harder dataset.
+   - Explain that the root cause is human labelers. You must re-train the human labelers! Tell the humans: *"Do not click Thumbs Up just because the <abbr title="Artificial Intelligence">AI</abbr> is polite. Look for factual correctness."* You then retrain the RM on this new, harder dataset.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
 We now have all the pieces. We have an **SFT Model**, a **Reward Model**, and a **PPO Algorithm**. 
 
-Tomorrow, in **Day 103**, we assemble the holy grail of modern AI: **The Full RLHF Pipeline**. We will learn how to combine all three models simultaneously to align a foundational LLM!
+Tomorrow, in **Day 103**, we assemble the holy grail of modern <abbr title="Artificial Intelligence">AI</abbr>: **The Full <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> Pipeline**. We will learn how to combine all three models simultaneously to align a foundational <abbr title="Large Language Model">LLM</abbr>!

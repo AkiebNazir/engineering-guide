@@ -15,7 +15,7 @@ You feed it a 10-word sentence. It outputs 10 mathematical vectors. Those 10 vec
 
 ### 2. Bidirectional Context
 Why is BERT so smart? Because it is allowed to cheat.
-When an RNN reads the sentence: *"I went to the bank to deposit my check"*, when it reaches the word "bank", it doesn't know what "check" means yet, because "check" is in the future.
+When an <abbr title="Recurrent Neural Network">RNN</abbr> reads the sentence: *"I went to the bank to deposit my check"*, when it reaches the word "bank", it doesn't know what "check" means yet, because "check" is in the future.
 The Transformer Encoder processes the entire sentence simultaneously. The word "bank" mathematically looks *forwards* to the word "check" and *backwards* to the word "went" at the exact same time. It has **Bidirectional Context**.
 
 ### 3. Stacking Layers

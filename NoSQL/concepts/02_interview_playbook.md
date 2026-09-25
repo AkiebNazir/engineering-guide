@@ -56,7 +56,7 @@ rank, _ := r.ZRevRank(ctx, "leaderboard", "alice").Result()
 ZREVRANK alice (her leaderboard position) -> 3
 ```
 
-**"Rate-limit an API to 100 requests/minute per user, across multiple app servers."**
+**"Rate-limit an <abbr title="Application Programming Interface">API</abbr> to 100 requests/minute per user, across multiple app servers."**
 Shared Redis, not an in-process counter (`redis/09`) — the counter has to live
 somewhere every app server instance can see it, or a user hitting different servers
 bypasses the limit entirely. Name the sliding-window approach specifically over a fixed

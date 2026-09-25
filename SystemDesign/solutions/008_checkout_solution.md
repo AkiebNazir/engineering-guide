@@ -37,7 +37,7 @@ The contract has two halves. **Safety** (never violated): no double charge, no u
 | Direct in-transaction payment call | Call the payment provider while holding DB locks for the order/inventory row. | Never at scale. | Provider latency or outage holds locks open, blocking unrelated checkouts — a remote failure becomes a local outage. |
 | Two-phase commit across order, inventory, and provider | One coordinator, all participants prepare then commit. | Only between databases you own. | The provider is not an XA participant, and a coordinator crash leaves locks held across a remote call. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/checkouts

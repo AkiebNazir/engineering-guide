@@ -1,19 +1,19 @@
 # Day 17: Momentum, RMSProp, and Adam Optimizers
 
-Welcome to Day 17. Mini-Batch SGD is an incredible algorithm, but it has a fatal geometric flaw. 
+Welcome to Day 17. Mini-Batch <abbr title="Stochastic Gradient Descent">SGD</abbr> is an incredible algorithm, but it has a fatal geometric flaw. 
 
 Imagine a Loss Landscape shaped like a long, narrow ravine (a half-pipe). The slope pointing down the sides of the half-pipe is extremely steep, but the slope pointing forward toward the actual Global Minimum is extremely flat. 
 
-Standard SGD will violently bounce side-to-side up the walls of the half-pipe, making almost zero forward progress. To fix this, we have to inject the laws of physics—specifically **Momentum**—into our calculus.
+Standard <abbr title="Stochastic Gradient Descent">SGD</abbr> will violently bounce side-to-side up the walls of the half-pipe, making almost zero forward progress. To fix this, we have to inject the laws of physics—specifically **Momentum**—into our calculus.
 
-Today, we build **Adam**, the optimizer that powers almost every modern AI model on Earth.
+Today, we build **Adam**, the optimizer that powers almost every modern <abbr title="Artificial Intelligence">AI</abbr> model on Earth.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & MATHEMATICS
 
-### 1. SGD with Momentum (The Heavy Ball)
-Standard SGD has no memory. It only cares about the slope at the exact pixel it is standing on. 
+### 1. <abbr title="Stochastic Gradient Descent">SGD</abbr> with Momentum (The Heavy Ball)
+Standard <abbr title="Stochastic Gradient Descent">SGD</abbr> has no memory. It only cares about the slope at the exact pixel it is standing on. 
 **Momentum** changes the algorithm from a hiker into a heavy iron ball. As the ball rolls, it builds up velocity. 
 
 **Algebraic Definition:**
@@ -44,14 +44,14 @@ In 2014, researchers realized they could just combine the two algorithms.
 **The Bias Correction Hack:**
 Because Adam initializes its memory tracking variables at exactly $0.0$, the first few steps of the algorithm are artificially tiny (the math is biased toward zero). Adam includes a mathematical hack called **Bias Correction**: $\hat{m}_t = \frac{m_t}{1-\beta_1^t}$. As $t$ (time) increases, this correction factor fades away to nothing!
 
-> **AI Context (AdamW):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (AdamW):** 
 > Years later, researchers realized that combining standard $L_2$ Regularization (Weight Decay) with Adam caused a mathematical bug. Adam's RMSProp component was accidentally shrinking the regularization penalty! **AdamW** was invented to "decouple" the weight decay from the gradient math, fixing the bug. AdamW is now the standard for training LLMs.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG
 
-Let's build an Object-Oriented `Optimizer` class from scratch in pure Python. We will implement standard SGD, Momentum, RMSProp, and the legendary Adam optimizer.
+Let's build an Object-Oriented `Optimizer` class from scratch in pure Python. We will implement standard <abbr title="Stochastic Gradient Descent">SGD</abbr>, Momentum, RMSProp, and the legendary Adam optimizer.
 
 Create a file named `advanced_optimizers.py`:
 
@@ -188,7 +188,7 @@ if __name__ == "__main__":
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Adam is the absolute default optimizer for Natural Language Processing and LLMs. However, if you look at the State-of-the-Art (SOTA) papers for Computer Vision (like ResNet or Vision Transformers), many researchers intentionally throw Adam in the trash and use basic SGD with Momentum instead. Why would they do this? Discuss the Generalization Gap."*
+*"Adam is the absolute default optimizer for Natural Language Processing and LLMs. However, if you look at the State-of-the-Art (SOTA) papers for Computer Vision (like ResNet or Vision Transformers), many researchers intentionally throw Adam in the trash and use basic <abbr title="Stochastic Gradient Descent">SGD</abbr> with Momentum instead. Why would they do this? Discuss the Generalization Gap."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -196,13 +196,13 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **Adam's Flaw (The Sharp Minima):** 
    - State that Adam is incredibly fast at finding a minimum. However, because of its adaptive learning rates, it aggressively dives into the *very first* minimum it finds. 
    - These minima are often "sharp" (narrow valleys). A sharp minimum means that if the real-world test data is even slightly different from the training data, the error will spike massively. Adam overfits.
-2. **SGD's Strength (The Flat Minima):**
-   - Explain that SGD with Momentum is much slower and mathematically "dumber". But because it uses the exact same learning rate for all weights, it acts like a heavy, blunt object. It literally rolls right out of sharp, narrow valleys.
+2. **<abbr title="Stochastic Gradient Descent">SGD</abbr>'s Strength (The Flat Minima):**
+   - Explain that <abbr title="Stochastic Gradient Descent">SGD</abbr> with Momentum is much slower and mathematically "dumber". But because it uses the exact same learning rate for all weights, it acts like a heavy, blunt object. It literally rolls right out of sharp, narrow valleys.
    - It is forced to keep wandering until it finds a massive, wide, "flat" minimum. 
 3. **The Generalization Gap Conclusion:**
-   - Conclude that models trained in wide, flat valleys generalize significantly better to unseen real-world data. Therefore, CV researchers are willing to spend 3x more time training with SGD+Momentum just to gain that extra 2% of real-world accuracy!
+   - Conclude that models trained in wide, flat valleys generalize significantly better to unseen real-world data. Therefore, CV researchers are willing to spend 3x more time training with <abbr title="Stochastic Gradient Descent">SGD</abbr>+Momentum just to gain that extra 2% of real-world accuracy!
 
 ---
-**Task for the end of the day:** Commit your code to Git. You now have a deep, instinctual understanding of exactly how AI navigates the mathematical universe.
+**Task for the end of the day:** Commit your code to Git. You now have a deep, instinctual understanding of exactly how <abbr title="Artificial Intelligence">AI</abbr> navigates the mathematical universe.
 
 Tomorrow, in **Day 18**, we realize that humans are terrible at picking Learning Rates. We will write code that automatically finds the perfect Learning Rate for us: **Learning Rate Schedulers & Warmups!**

@@ -327,7 +327,7 @@ The lower bound is `⌈log₂(n!)⌉`, which for `n = 100,000` is **1,516,704** 
 on a million ints took **101 ms** when shuffled, **2.9 ms** when already sorted, **3.0 ms** when reversed and **31 ms** with
 four distinct values. Auxiliary space is at most `n/2` extra slots (a merge only buffers the *shorter* run), plus `n` slots for the cached keys when you pass `key=`.
 
-### 6.2 The API you should be fluent in
+### 6.2 The <abbr title="Application Programming Interface">API</abbr> you should be fluent in
 
 ```python
 sorted(iterable, key=None, reverse=False)   # returns a NEW list, accepts any iterable

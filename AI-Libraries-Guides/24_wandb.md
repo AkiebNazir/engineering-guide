@@ -2,7 +2,7 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In Guide 23, we learned MLflow is great for saving models and deploying them. But if you are training a massive LLM on 8 GPUs for 3 weeks, MLflow's UI is too basic. You need to watch the Loss curve update live, monitor GPU temperatures so the server doesn't melt, and compare 50 different training runs overlaid on the same graph. **Weights & Biases (WandB)** is the industry standard for this.
+*Why is this tool relevant?* In Guide 23, we learned MLflow is great for saving models and deploying them. But if you are training a massive <abbr title="Large Language Model">LLM</abbr> on 8 GPUs for 3 weeks, MLflow's UI is too basic. You need to watch the Loss curve update live, monitor GPU temperatures so the server doesn't melt, and compare 50 different training runs overlaid on the same graph. **Weights & Biases (WandB)** is the industry standard for this.
 
 **What is it?**
 WandB is a developer-first MLOps platform heavily focused on the **Experiment Tracking** phase of Deep Learning. It acts as a cloud-based dashboard for your training loops.
@@ -14,7 +14,7 @@ Before WandB, researchers used TensorBoard, which was clunky and ran locally, ma
 
 ## 2. Setup & Installation
 
-You will need a free account at wandb.ai to get an API key.
+You will need a free account at wandb.ai to get an <abbr title="Application Programming Interface">API</abbr> key.
 
 ```bash
 pip install wandb

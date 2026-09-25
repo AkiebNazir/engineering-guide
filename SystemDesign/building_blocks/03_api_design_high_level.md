@@ -1,12 +1,12 @@
-# API Design — High Level
+# <abbr title="Application Programming Interface">API</abbr> Design — High Level
 
-The API is the contract your service makes with every caller — browser, mobile app, another team's service, or a third party. Get the contract wrong and you can't fix it without breaking someone; this file is about the contract itself. Wire-level mechanics (status codes, headers, serialization formats, auth tokens) live in `04_api_design_low_level.md`.
+The <abbr title="Application Programming Interface">API</abbr> is the contract your service makes with every caller — browser, mobile app, another team's service, or a third party. Get the contract wrong and you can't fix it without breaking someone; this file is about the contract itself. Wire-level mechanics (status codes, headers, serialization formats, auth tokens) live in `04_api_design_low_level.md`.
 
 ## The client is not trusted
 
 The client handles presentation, UX-level input validation, local caching, and retry behavior. It is not a trusted authority for permissions, prices, quantities, or any invariant — a user can modify requests, replay them, or write a custom client that skips your UI entirely. Every rule enforced client-side must also be enforced server-side, or it isn't actually enforced.
 
-## Choosing an API style
+## Choosing an <abbr title="Application Programming Interface">API</abbr> style
 
 | Style | Choose it when | Strength | Caution |
 |---|---|---|---|
@@ -17,7 +17,7 @@ The client handles presentation, UX-level input validation, local caching, and r
 | Webhook | Notify another system asynchronously, caller doesn't poll | Loose coupling between systems | Must verify signatures, handle retries/duplicates, and the receiver may be down — needs its own retry/DLQ story |
 | Queue/event | Caller doesn't need the result synchronously | Buffering, retry, fan-out | Eventual consistency; caller needs a way to check status later |
 
-**GraphQL specifically**: it earns its place when you have multiple client shapes pulling from the same underlying data graph and REST would otherwise force either chatty multi-endpoint calls or bespoke per-client endpoints. It does *not* earn its place for a single client type or a simple resource CRUD API — you inherit resolver N+1 risk (a naive resolver for `author` on each of 50 posts issues 50 queries unless batched via a dataloader pattern) and lose the free HTTP-level caching and per-route rate limiting that REST gets from distinct URLs and GET semantics.
+**GraphQL specifically**: it earns its place when you have multiple client shapes pulling from the same underlying data graph and REST would otherwise force either chatty multi-endpoint calls or bespoke per-client endpoints. It does *not* earn its place for a single client type or a simple resource CRUD <abbr title="Application Programming Interface">API</abbr> — you inherit resolver N+1 risk (a naive resolver for `author` on each of 50 posts issues 50 queries unless batched via a dataloader pattern) and lose the free HTTP-level caching and per-route rate limiting that REST gets from distinct URLs and GET semantics.
 
 ## Resource modeling (REST-ish)
 
@@ -74,7 +74,7 @@ Every error response should give a caller enough to act on programmatically, not
 
 ## Idempotency key pattern
 
-Give every unsafe mutation (anything that isn't naturally idempotent, like `POST /orders`) a client-supplied idempotency key, because a network failure between response and client leaves the client unable to tell whether the mutation actually happened (see `02_networking.md` on TCP connection breakage after server-side completion — this is the API-level answer to that transport-level fact).
+Give every unsafe mutation (anything that isn't naturally idempotent, like `POST /orders`) a client-supplied idempotency key, because a network failure between response and client leaves the client unable to tell whether the mutation actually happened (see `02_networking.md` on TCP connection breakage after server-side completion — this is the <abbr title="Application Programming Interface">API</abbr>-level answer to that transport-level fact).
 
 ```http
 POST /v1/orders
@@ -87,11 +87,11 @@ The server stores the logical outcome keyed by that idempotency key (commonly in
 
 ## Synchronous vs asynchronous contracts
 
-A synchronous contract (`POST /orders` returns the created order in the response) is simpler for the caller but couples the caller's request lifetime to your full processing time — including anything slow downstream. An asynchronous contract (`POST /orders` returns `202 Accepted` + a status URL, or the caller subscribes to a webhook/event) decouples that, at the cost of the caller needing a polling or callback mechanism and your API surface needing a status/result resource. Choose based on whether the *caller* can usefully wait — a checkout confirmation UI usually needs synchronous-feeling UX even if the backend defers work internally (accept fast, confirm fast, finish the slow parts async and notify).
+A synchronous contract (`POST /orders` returns the created order in the response) is simpler for the caller but couples the caller's request lifetime to your full processing time — including anything slow downstream. An asynchronous contract (`POST /orders` returns `202 Accepted` + a status URL, or the caller subscribes to a webhook/event) decouples that, at the cost of the caller needing a polling or callback mechanism and your <abbr title="Application Programming Interface">API</abbr> surface needing a status/result resource. Choose based on whether the *caller* can usefully wait — a checkout confirmation UI usually needs synchronous-feeling UX even if the backend defers work internally (accept fast, confirm fast, finish the slow parts async and notify).
 
-## API gateway's role
+## <abbr title="Application Programming Interface">API</abbr> gateway's role
 
-An API gateway centralizes coarse authentication, request routing, quota/rate-limit enforcement, and a consistent edge contract across multiple backend APIs — it is not where business logic lives. See `16_platform_and_infra.md` for gateway/ingress placement in the platform stack and `02_networking.md` for where it sits in the request path relative to the load balancer and TLS termination.
+An <abbr title="Application Programming Interface">API</abbr> gateway centralizes coarse authentication, request routing, quota/rate-limit enforcement, and a consistent edge contract across multiple backend APIs — it is not where business logic lives. See `16_platform_and_infra.md` for gateway/ingress placement in the platform stack and `02_networking.md` for where it sits in the request path relative to the load balancer and TLS termination.
 
 ## Related building blocks
 

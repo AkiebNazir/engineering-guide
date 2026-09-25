@@ -13,7 +13,7 @@ Serve an approximate but stable top-K list per (window, region, category), refre
 
 The numbers make the core decision: **sketches plus small heaps, not exact maps**.
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 GET /v1/trending?window=1h&region=US&category=music&k=50
@@ -96,13 +96,13 @@ A daily batch job over the raw events computes exact counts for the published to
 | Failure | Behaviour |
 |---|---|
 | Counter worker dies | Partitions reassigned; the worker replays from the log since its last committed bucket. Buckets are idempotent per (partition, minute). |
-| Merger lagging | API serves the last published lists with `generated_at`; freshness SLO alert. |
+| Merger lagging | <abbr title="Application Programming Interface">API</abbr> serves the last published lists with `generated_at`; freshness SLO alert. |
 | Hot item floods one partition | The sketch handles volume cheaply; the partition's CPU is the limit — scale consumers, or pre-aggregate at the edge per second. |
 | Late events | Counted into the bucket of their event minute if it is still within the window; otherwise dropped from real time and counted by the batch job. |
 
 ## Observability and interview close
 
-Measure: ingest lag, events filtered as abuse, sketch saturation (fraction of non-zero counters), streaming vs exact top-K overlap, list churn per refresh (too much churn feels random), publish latency, API p99, and cache hit rate.
+Measure: ingest lag, events filtered as abuse, sketch saturation (fraction of non-zero counters), streaming vs exact top-K overlap, list churn per refresh (too much churn feels random), publish latency, <abbr title="Application Programming Interface">API</abbr> p99, and cache hit rate.
 
 Trade-off to state: "I use count-min sketches with candidate heaps, so memory stays constant and sketches merge across servers, at the cost of small overcounts near the cut-off. If exact counts were required — say, for creator payouts — I'd keep exact per-item counters for those items in a stream processor with keyed state and an idempotent sink, and pay the memory and state-management cost only where money depends on it."
 

@@ -269,7 +269,7 @@ Mastery check: Implement a Fenwick tree from memory.
 
 Design-style coding problems
 ›
-Implement a class with several methods and clear complexity guarantees for each. These are common at Google and reward clean API design, well-chosen invariants, and edge-case handling.
+Implement a class with several methods and clear complexity guarantees for each. These are common at Google and reward clean <abbr title="Application Programming Interface">API</abbr> design, well-chosen invariants, and edge-case handling.
 
 Practice: LRU Cache, LFU Cache, Design Hit Counter, Logger Rate Limiter, Snapshot Array, Time Based Key-Value Store, Design Browser History, Flatten Nested List Iterator, Stock Price Fluctuation, Design Twitter
 
@@ -338,12 +338,12 @@ Mastery check: Estimate QPS, storage, and servers for a photo-sharing app in und
 
 Networking and APIs
 ›
-DNS, TCP vs UDP, HTTP/1.1 vs HTTP/2 vs HTTP/3 (QUIC), TLS basics, REST vs gRPC vs GraphQL, WebSockets vs server-sent events vs long polling, CDNs, and API design: cursor vs offset pagination, idempotency keys, versioning, and error semantics.
+DNS, TCP vs UDP, HTTP/1.1 vs HTTP/2 vs HTTP/3 (QUIC), TLS basics, REST vs gRPC vs GraphQL, WebSockets vs server-sent events vs long polling, CDNs, and <abbr title="Application Programming Interface">API</abbr> design: cursor vs offset pagination, idempotency keys, versioning, and error semantics.
 
 
 Load balancing and service architecture
 ›
-Layer 4 vs layer 7 load balancers, balancing algorithms (round robin, least connections, consistent hashing), stateless services, autoscaling, service discovery, API gateways, and monolith vs microservices trade-offs.
+Layer 4 vs layer 7 load balancers, balancing algorithms (round robin, least connections, consistent hashing), stateless services, autoscaling, service discovery, <abbr title="Application Programming Interface">API</abbr> gateways, and monolith vs microservices trade-offs.
 
 Data
 
@@ -420,9 +420,9 @@ Security and privacy
 Authentication vs authorization, OAuth 2.0 and OpenID Connect, JWT trade-offs, encryption in transit and at rest, key management, least privilege, abuse and spam prevention, and handling personal data, including deletion requirements.
 
 
-ML and AI systems
+<abbr title="Machine Learning">ML</abbr> and <abbr title="Artificial Intelligence">AI</abbr> systems
 ›
-Offline training vs online serving, feature stores, model serving (batching, GPU utilization, latency budgets), embeddings and approximate nearest-neighbor search (HNSW, Google's ScaNN), recommendation pipelines (candidate generation, then ranking, then re-ranking), LLM serving concerns (token streaming, caching, rate limiting, cost), A/B testing, and monitoring model drift.
+Offline training vs online serving, feature stores, model serving (batching, GPU utilization, latency budgets), embeddings and approximate nearest-neighbor search (HNSW, Google's ScaNN), recommendation pipelines (candidate generation, then ranking, then re-ranking), <abbr title="Large Language Model">LLM</abbr> serving concerns (token streaming, caching, rate limiting, cost), A/B testing, and monitoring model drift.
 
 Google papers worth reading
 
@@ -568,7 +568,7 @@ Real-time leaderboard
 Sorted sets, sharding scores, tie-breaking, and real-time vs periodic ranking.
 
 
-LLM-powered assistant feature
+<abbr title="Large Language Model">LLM</abbr>-powered assistant feature
 ›
 Request routing, token streaming, caching responses, rate limiting and quotas, cost control, safety filtering, and observability.
 
@@ -577,8 +577,8 @@ At L5 you should drive the whole conversation. The interviewer should mostly be 
 
 Minutes 0–5: requirements
 List the core functional features and agree on what's out of scope. Then list non-functional requirements: scale, latency, availability vs consistency, durability, and read/write ratio.
-Minutes 5–10: estimates and API
-Estimate QPS, storage, and bandwidth, and say which numbers will shape the design. Define the main API endpoints.
+Minutes 5–10: estimates and <abbr title="Application Programming Interface">API</abbr>
+Estimate QPS, storage, and bandwidth, and say which numbers will shape the design. Define the main <abbr title="Application Programming Interface">API</abbr> endpoints.
 Minutes 10–15: data model
 Define entities, access patterns, database choice, and a first view of partitioning.
 Minutes 15–25: high-level design

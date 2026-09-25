@@ -2,7 +2,7 @@
 
 Welcome to Day 86. Up until now, we have assumed that our Embedding Model (like `sentence-transformers/all-MiniLM-L6-v2`) works perfectly. 
 
-But pre-trained models are trained on Wikipedia and Reddit. If your company builds quantum computers, the embedding model has no idea what your technical jargon means. It will map your quantum physics documents to random places in the vector space, and your entire RAG pipeline will collapse.
+But pre-trained models are trained on Wikipedia and Reddit. If your company builds quantum computers, the embedding model has no idea what your technical jargon means. It will map your quantum physics documents to random places in the vector space, and your entire <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline will collapse.
 
 Today, we learn how to train our own mathematical Embedding Models from scratch using **Contrastive Learning**.
 
@@ -150,7 +150,7 @@ Creating massive datasets of Hard Negatives is expensive.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your production RAG system's retrieval accuracy dropped 15% after your company pivoted from analyzing Wikipedia articles to analyzing proprietary chemical engineering patents. Diagnose the issue and propose a concrete data pipeline to train a custom embedding model."*
+*"Your production <abbr title="Retrieval-Augmented Generation">RAG</abbr> system's retrieval accuracy dropped 15% after your company pivoted from analyzing Wikipedia articles to analyzing proprietary chemical engineering patents. Diagnose the issue and propose a concrete data pipeline to train a custom embedding model."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -158,7 +158,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **The Diagnosis (Domain Shift):** 
    - State that the pre-trained embedding model suffers from Out-Of-Vocabulary (OOV) and Domain Shift issues. The complex chemical jargon was never seen during the model's pre-training, so it arbitrarily clusters the technical words.
 2. **The Data Pipeline (Synthetic Generation):**
-   - Propose using a massive Teacher LLM (like GPT-4) to synthetically generate training data.
+   - Propose using a massive Teacher <abbr title="Large Language Model">LLM</abbr> (like GPT-4) to synthetically generate training data.
    - Feed a chemical patent paragraph to GPT-4. Prompt it: *"Generate 3 questions that this paragraph perfectly answers."* 
    - You now have thousands of (Anchor Question, Positive Paragraph) pairs generated for pennies!
 3. **Training & Evaluation (MTEB):**
@@ -168,6 +168,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-Congratulations. You have completed the next 10 days! You have mastered Enterprise AI, Model Compression, and the most advanced RAG architectures on the planet.
+Congratulations. You have completed the next 10 days! You have mastered Enterprise <abbr title="Artificial Intelligence">AI</abbr>, Model Compression, and the most advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> architectures on the planet.
 
-In the next block (Days 87-96), we will cover **Vector Databases, Prompt Engineering, Agentic Tool Use (Function Calling), and Reinforcement Learning from Human Feedback (RLHF)!**
+In the next block (Days 87-96), we will cover **Vector Databases, Prompt Engineering, Agentic Tool Use (Function Calling), and Reinforcement Learning from Human Feedback (<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>)!**

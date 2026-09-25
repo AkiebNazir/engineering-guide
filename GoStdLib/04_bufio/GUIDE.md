@@ -32,7 +32,7 @@ underlying `io.Reader`/`io.Writer` never buffers on its own.
 
 ## What the 10 levels cover
 
-Levels 1-2 build the everyday API: `Scanner` reading lines (the single most
+Levels 1-2 build the everyday <abbr title="Application Programming Interface">API</abbr>: `Scanner` reading lines (the single most
 common use), then `Reader`'s `ReadString`/`ReadBytes`/`Peek`. Level 3 combines
 `Scanner` and `Writer` into a small realistic line-filtering idiom. Level 4
 triggers a real `bufio.ErrTooLong` and fixes it with `Scanner.Buffer`. Level 5

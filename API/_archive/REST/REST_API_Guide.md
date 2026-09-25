@@ -1,4 +1,4 @@
-# REST API: Core Architecture & System Design
+# REST <abbr title="Application Programming Interface">API</abbr>: Core Architecture & System Design
 
 ## Architectural Diagram & Visualization
 
@@ -32,7 +32,7 @@ sequenceDiagram
 - **Request/Response Lifecycle**:
   1. **Client Request**: Initiates an HTTP request to a specific URI (e.g., `GET /users/123`).
   2. **Headers & Payload**: Includes Accept headers (usually `application/json`) and Auth tokens.
-  3. **Server Routing**: An API Gateway or Load Balancer routes the HTTP request to a specific handler.
+  3. **Server Routing**: An <abbr title="Application Programming Interface">API</abbr> Gateway or Load Balancer routes the HTTP request to a specific handler.
   4. **Processing**: The backend fetches data, serializes it to JSON, and assigns an appropriate HTTP Status Code (200, 404, 500).
   5. **Response**: The client receives the JSON payload and closes the connection (or keeps it alive for reuse).
 
@@ -50,7 +50,7 @@ sequenceDiagram
 
 ### System Design Fit
 **Optimal Scenarios:**
-- **Public-Facing Web APIs**: Providing an API to external developers (e.g., Stripe, Twilio, GitHub).
+- **Public-Facing Web APIs**: Providing an <abbr title="Application Programming Interface">API</abbr> to external developers (e.g., Stripe, Twilio, GitHub).
 - **Standard CRUD Applications**: Admin dashboards, content management systems, blogs.
 - **Stateless Microservices**: Services that require heavy caching via CDNs.
 
@@ -126,7 +126,7 @@ Save the block below as an HTML file (e.g. `rest-anim.html`) or paste it into a 
 ## 3. Five Real-World Use Cases & Implementations
 
 ### Use Case 1: Standard CRUD Entity (Users)
-**System Design Fit:** Exposing a public API to create and retrieve user data.
+**System Design Fit:** Exposing a public <abbr title="Application Programming Interface">API</abbr> to create and retrieve user data.
 
 #### Golang (Server - `net/http`)
 ```go
@@ -260,8 +260,8 @@ async def fetch_feed():
 
 ---
 
-### Use Case 4: File Upload API (Multipart Form)
-**System Design Fit:** A user uploading a profile picture to AWS S3 via your backend REST API.
+### Use Case 4: File Upload <abbr title="Application Programming Interface">API</abbr> (Multipart Form)
+**System Design Fit:** A user uploading a profile picture to AWS S3 via your backend REST <abbr title="Application Programming Interface">API</abbr>.
 
 #### Golang (Server)
 ```go

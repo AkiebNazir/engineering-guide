@@ -1,4 +1,4 @@
-# Data Structure Internals — What Actually Happens Under the API
+# Data Structure Internals — What Actually Happens Under the <abbr title="Application Programming Interface">API</abbr>
 
 Every data structure you reach for by habit — a list, a dict, a heap — is a small
 piece of engineering with real trade-offs baked in, not a black box that's simply

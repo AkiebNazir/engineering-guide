@@ -658,7 +658,7 @@ until normalised (`unicodedata.normalize('NFC', …)`). `len('🇮🇳')` is 2 (
 wrong letter. For case-insensitive comparison use `casefold()`, not `lower()`. Interview problems almost always promise lowercase ASCII;
 say that assumption aloud, and note what changes if it does not hold (grapheme clusters need a library, not slicing).
 
-### 8.4 Small API traps
+### 8.4 Small <abbr title="Application Programming Interface">API</abbr> traps
 
 - `str.count` counts **non-overlapping** matches: `'aaaa'.count('aa')` is `2`, not `3`.
 - `lstrip`/`rstrip`/`strip` take a **set of characters**, not a prefix: `'oops'.lstrip('op')` is `'s'`; use

@@ -1,24 +1,24 @@
-# Day 169: Incident Response & Chaos Engineering for AI
+# Day 169: Incident Response & Chaos Engineering for <abbr title="Artificial Intelligence">AI</abbr>
 
 Welcome to Day 169.
 
-It is 3:00 AM on a Saturday. Your phone screams with a PagerDuty alert. The CEO is awake and angry. The company's customer service AI agent is actively hallucinating, offering users 99% discount codes for expensive electronics, and the users are posting screenshots on Twitter.
+It is 3:00 AM on a Saturday. Your phone screams with a PagerDuty alert. The CEO is awake and angry. The company's customer service <abbr title="Artificial Intelligence">AI</abbr> agent is actively hallucinating, offering users 99% discount codes for expensive electronics, and the users are posting screenshots on Twitter.
 
 What do you do? If your answer is "Log into the server and try to fix the prompt," you will be fired.
 In a massive enterprise, you never fix things live during a critical incident. You **Mitigate**, then you **Investigate**.
 
-Today, we learn the dark art of **Site Reliability Engineering (SRE)**. We will learn how to handle AI production incidents, write Runbooks, and intentionally break our own systems using Chaos Engineering.
+Today, we learn the dark art of **Site Reliability Engineering (SRE)**. We will learn how to handle <abbr title="Artificial Intelligence">AI</abbr> production incidents, write Runbooks, and intentionally break our own systems using Chaos Engineering.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Incident Response Lifecycle
-When an AI goes rogue, you follow a strict protocol:
+When an <abbr title="Artificial Intelligence">AI</abbr> goes rogue, you follow a strict protocol:
 1. **Triage:** Acknowledge the alert. Gather the team in a Slack channel (e.g., `#incident-ai-discount-bug`).
-2. **Mitigation (The Bleeding):** Stop the damage instantly. You DO NOT debug the code. You click a giant red button that degrades the service gracefully (e.g., routing all AI chats to human agents, or rolling back the model version to yesterday's snapshot).
+2. **Mitigation (The Bleeding):** Stop the damage instantly. You DO NOT debug the code. You click a giant red button that degrades the service gracefully (e.g., routing all <abbr title="Artificial Intelligence">AI</abbr> chats to human agents, or rolling back the model version to yesterday's snapshot).
 3. **Investigation:** Now that the bleeding has stopped, look at the OpenTelemetry traces (Day 167). Find the root cause.
-4. **Resolution:** Write a patch, run it through CI/CD (Day 164), and deploy the fix.
+4. **Resolution:** Write a patch, run it through <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> (Day 164), and deploy the fix.
 5. **Postmortem:** A blameless meeting where the team discusses *why* the system allowed the failure, and what safeguards will be built to prevent it.
 
 ### 2. Runbooks (The SRE Bible)
@@ -28,22 +28,22 @@ A **Runbook** is a step-by-step markdown document that tells a sleep-deprived en
 `Step 1: Go to AWS API Gateway. Step 2: Change routing rule X to point to Fallback Model Y.`
 
 ### 3. Graceful Degradation
-If the primary LLM (GPT-4o) goes down, the system should not crash. It should "Degrade Gracefully."
+If the primary <abbr title="Large Language Model">LLM</abbr> (GPT-4o) goes down, the system should not crash. It should "Degrade Gracefully."
 - **Tier 1 (Normal):** GPT-4o powers the agent.
 - **Tier 2 (Degraded):** If GPT-4o times out, the system automatically routes to an internally hosted Llama-3-8B. The answers are slightly worse, but the system stays online.
-- **Tier 3 (Severely Degraded):** If the GPU cluster dies completely, the system returns a hardcoded string: *"Our AI is currently sleeping. Please email support@company.com."*
+- **Tier 3 (Severely Degraded):** If the GPU cluster dies completely, the system returns a hardcoded string: *"Our <abbr title="Artificial Intelligence">AI</abbr> is currently sleeping. Please email support@company.com."*
 
 ### 4. Chaos Engineering
 *Analogy:* You don't wait for a fire to test the fire alarms. You set a controlled fire.
 **Chaos Engineering** (invented by Netflix) is the practice of intentionally breaking your production systems during business hours to prove that your graceful degradation actually works. 
-In AI, this means intentionally injecting corrupted prompts, shutting down the Vector DB, or simulating a 10,000 req/min traffic spike to ensure the Load Balancer (Day 157) holds up.
+In <abbr title="Artificial Intelligence">AI</abbr>, this means intentionally injecting corrupted prompts, shutting down the Vector DB, or simulating a 10,000 req/min traffic spike to ensure the Load Balancer (Day 157) holds up.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a highly resilient AI API using the **Circuit Breaker** pattern. 
-We will simulate a Chaos Engineering experiment where the primary LLM API suddenly crashes, and watch our code gracefully degrade to a fallback!
+Let's build a highly resilient <abbr title="Artificial Intelligence">AI</abbr> <abbr title="Application Programming Interface">API</abbr> using the **Circuit Breaker** pattern. 
+We will simulate a Chaos Engineering experiment where the primary <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> suddenly crashes, and watch our code gracefully degrade to a fallback!
 
 *(Note: To run this exactly, you need `pip install pybreaker`)*
 
@@ -124,23 +124,23 @@ Because it failed 3 times, the Circuit Breaker trips! On Request 7, the system *
 
 ### 🛠️ The Challenge
 Currently, our Circuit Breaker only tracks network failures. 
-In AI, we also have **Quality Failures**. 
-Modify the `call_primary_llm` function. If the LLM generates a response containing the word "discount", manually `raise ValueError("Hallucination Detected")`. Ensure the Circuit Breaker counts this as a failure and trips if the model hallucinates 3 times in a row!
+In <abbr title="Artificial Intelligence">AI</abbr>, we also have **Quality Failures**. 
+Modify the `call_primary_llm` function. If the <abbr title="Large Language Model">LLM</abbr> generates a response containing the word "discount", manually `raise ValueError("Hallucination Detected")`. Ensure the Circuit Breaker counts this as a failure and trips if the model hallucinates 3 times in a row!
 
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your company deployed a massive RAG system. At 2:00 PM on a Tuesday, users report the AI is responding to all questions in German. You are the Incident Commander. Walk me through your next 60 minutes."*
+*"Your company deployed a massive <abbr title="Retrieval-Augmented Generation">RAG</abbr> system. At 2:00 PM on a Tuesday, users report the <abbr title="Artificial Intelligence">AI</abbr> is responding to all questions in German. You are the Incident Commander. Walk me through your next 60 minutes."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **0:00 - Triage:** Acknowledge the alert, spin up a Zoom bridge, and assign roles (Incident Commander, Lead Investigator, Communications Lead).
-2. **0:05 - Mitigation:** We do NOT investigate the prompt or the database yet. We instantly execute `Runbook_A1`. We push a button to rollback the API Gateway routing to yesterday's Git commit of the system prompt, or we degrade gracefully to the backup model.
+2. **0:05 - Mitigation:** We do NOT investigate the prompt or the database yet. We instantly execute `Runbook_A1`. We push a button to rollback the <abbr title="Application Programming Interface">API</abbr> Gateway routing to yesterday's Git commit of the system prompt, or we degrade gracefully to the backup model.
 3. **0:15 - Verification:** Confirm via Datadog/Grafana that the bleeding has stopped and users are seeing English again. Update the status page for customers.
-4. **0:20 - Investigation:** Now we look at the traces. Did an engineer push a prompt update at 1:55 PM? Did the Vector Database ingest a massive batch of German documents that poisoned the RAG context? Did the upstream foundational model (e.g., Anthropic) push a silent update to their weights?
-5. **0:60 - The Postmortem:** Write a blameless document. *Action Item 1:* Implement a CI/CD test (Day 164) that explicitly fails if the model outputs >10% non-English tokens during staging.
+4. **0:20 - Investigation:** Now we look at the traces. Did an engineer push a prompt update at 1:55 PM? Did the Vector Database ingest a massive batch of German documents that poisoned the <abbr title="Retrieval-Augmented Generation">RAG</abbr> context? Did the upstream foundational model (e.g., Anthropic) push a silent update to their weights?
+5. **0:60 - The Postmortem:** Write a blameless document. *Action Item 1:* Implement a <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> test (Day 164) that explicitly fails if the model outputs >10% non-English tokens during staging.
 
 ---
 **Task for the end of the day:** Look up the concept of a **Blameless Postmortem** (popularized by Google). It is the foundation of healthy engineering cultures.
 
-Tomorrow, in **Day 170**, we finish the MLOps curriculum by tackling the most serious topic in modern AI: **Compliance, Governance, and Ethics**. How do you ensure your AI doesn't break international law?
+Tomorrow, in **Day 170**, we finish the MLOps curriculum by tackling the most serious topic in modern <abbr title="Artificial Intelligence">AI</abbr>: **Compliance, Governance, and Ethics**. How do you ensure your <abbr title="Artificial Intelligence">AI</abbr> doesn't break international law?

@@ -219,7 +219,7 @@ Design moves that make the safe version the default:
 
 - **Repository methods take typed values, never SQL fragments** (`08` §4). There is no
   `where: str` parameter to concatenate into.
-- **Ban the dangerous API with a linter**: Bandit (`B602` shell=True, `B608` SQL string
+- **Ban the dangerous <abbr title="Application Programming Interface">API</abbr> with a linter**: Bandit (`B602` shell=True, `B608` SQL string
   building), Semgrep rules, `gosec` in Go. A pattern that fails CI is not a pattern that
   appears in code.
 - **Prefer generated identifiers** over user-supplied names for anything that becomes a
@@ -227,7 +227,7 @@ Design moves that make the safe version the default:
 
 The `resolve()` + `is_relative_to` check above also follows symlinks, but it has a
 time-of-check-to-time-of-use gap: a symlink swapped in between the check and the `open`
-defeats it. Where attackers can write into the directory, use an API that resolves and opens
+defeats it. Where attackers can write into the directory, use an <abbr title="Application Programming Interface">API</abbr> that resolves and opens
 atomically relative to a directory handle (`openat`-style; Go's `os.Root`).
 
 ---
@@ -236,7 +236,7 @@ atomically relative to a directory handle (`openat`-style; Go's `os.Root`).
 
 Broken access control is the #1 category in the OWASP Top 10 (2021). The typical bug is
 not a wrong rule; it is **a missing check** on one of hundreds of code paths — an endpoint
-added later, an export job, a GraphQL resolver, a bulk API.
+added later, an export job, a GraphQL resolver, a bulk <abbr title="Application Programming Interface">API</abbr>.
 
 So design authorization so that forgetting it is structurally difficult:
 
@@ -407,7 +407,7 @@ The design choices:
 | Choice | Why it matters |
 |---|---|
 | **`Principal` is built only from a verified token** | Handlers can't accidentally authorise based on `body["user_id"]` |
-| **Tenant scoping lives in the repository's construction** (`store.for_tenant(t).get(id)`) | There is no `get(id)` that ignores tenancy. A cross-tenant leak requires deliberately bypassing the API, which is visible in review |
+| **Tenant scoping lives in the repository's construction** (`store.for_tenant(t).get(id)`) | There is no `get(id)` that ignores tenancy. A cross-tenant leak requires deliberately bypassing the <abbr title="Application Programming Interface">API</abbr>, which is visible in review |
 | **Policy in one table, deny by default** | Unlisted role or action → denied. Adding a role grants nothing until someone writes the grant |
 | **Tenant check before role check in `can`** | An admin of Globex is not an admin of Acme — the most common multi-tenant bug |
 | **`NotFound` for resources the caller may not even see** | Returning `403` for another tenant's document confirms it exists (enumeration). `403` only when the caller can see it but not do this action |
@@ -538,7 +538,7 @@ reproducible, and Python's Mersenne Twister state can be reconstructed from 624 
 
 | Need | Use | Never |
 |---|---|---|
-| Session IDs, reset tokens, API keys, nonces | `secrets.token_urlsafe(32)`, Go `crypto/rand` | `random`, `math/rand`, UUIDv1, timestamps, incrementing IDs |
+| Session IDs, reset tokens, <abbr title="Application Programming Interface">API</abbr> keys, nonces | `secrets.token_urlsafe(32)`, Go `crypto/rand` | `random`, `math/rand`, UUIDv1, timestamps, incrementing IDs |
 | Store passwords | `argon2id` (via `argon2-cffi`), `scrypt`, or `bcrypt`, with per-password salt and stored parameters | MD5/SHA-1/SHA-256 (fast hashes, even salted), reversible encryption |
 | Compare secrets, MACs, tokens | `hmac.compare_digest`, Go `subtle.ConstantTimeCompare` | `==`, which can return early at the first differing byte and leak timing |
 | Integrity of data you issue (tokens, signed URLs, cookies) | HMAC-SHA-256 with a server-held key, or a vetted library (`itsdangerous`, a JWT library with algorithm allowlisting) | Plain hashes (`sha256(key + data)` is vulnerable to length extension), unsigned base64 |
@@ -1066,11 +1066,11 @@ What happened:
 - **One template value, three encodings:** HTML-escaped in the body, replaced with the
   safe placeholder `#ZgotmplZ` in `href` because `javascript:` is an unsafe URL scheme, and
   JavaScript-string-encoded inside `<script>`. `text/template` would have emitted all three
-  raw — same API, very different safety; `gosec` and code review should flag
+  raw — same <abbr title="Application Programming Interface">API</abbr>, very different safety; `gosec` and code review should flag
   `text/template` producing HTML.
 - **`os.Root`** blocks both `../` traversal and a **symlink** pointing outside the
   directory, with no separate check-then-open gap.
-- **`subtle.ConstantTimeCompare`** for API keys; `crypto/rand` for key material. (`math/rand`
+- **`subtle.ConstantTimeCompare`** for <abbr title="Application Programming Interface">API</abbr> keys; `crypto/rand` for key material. (`math/rand`
   is for simulations only.)
 - Go's `database/sql` placeholders (`db.QueryContext(ctx, "… WHERE id = $1", id)`) and
   `exec.Command(name, args...)` (no shell) follow the same rules as §2.
@@ -1198,7 +1198,7 @@ Bandit or Semgrep in CI. Database accounts with least privilege limit the damage
 slips through.
 
 **Q: What's an IDOR and how do you design against it?**
-Insecure direct object reference: the API returns or modifies an object by ID without checking
+Insecure direct object reference: the <abbr title="Application Programming Interface">API</abbr> returns or modifies an object by ID without checking
 that the caller may access that specific object. Design against it by deriving the principal
 from verified credentials, loading resources through repositories scoped to the caller's tenant,
 authorising each action on the loaded object with a deny-by-default policy, returning 404 for

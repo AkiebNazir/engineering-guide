@@ -134,7 +134,7 @@ withdrawals landed. This is Postgres enforcing correctness through row locking,
 independent of which isolation level the transaction is running at.
 
 **The same two demos, in Go, with real concurrent goroutines** (native `pgxpool` —
-its explicit `Begin`/`Exec`/`Commit` API maps directly onto manual transaction
+its explicit `Begin`/`Exec`/`Commit` <abbr title="Application Programming Interface">API</abbr> maps directly onto manual transaction
 control, which is exactly what this demo needs). Go has no direct equivalent of
 Python's `threading.Barrier`, so the same "force both goroutines to have READ before
 either WRITES" effect is built from a `sync.WaitGroup`: seed it with `Add(2)`, have

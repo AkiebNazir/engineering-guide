@@ -79,7 +79,7 @@ State explicitly which failure domain your redundancy actually covers. "We have 
 - A **trace** is a tree of **spans** (one per operation: RPC, DB query, queue publish). Each span has a trace ID, span ID, parent span ID, timing, and attributes.
 - **Context propagation** carries the trace ID across process boundaries in headers (W3C `traceparent`) and across async hops by putting it in message metadata. A queue consumer that doesn't propagate context breaks the trace.
 - **Sampling:** head-based sampling (decide at the start, e.g. 1%) is cheap but misses rare slow requests; tail-based sampling (decide after completion, keep all errors and slow traces) costs buffering but keeps the traces you actually need.
-- **Use:** find which hop owns the latency, detect fan-out explosions (one request causing 400 downstream calls), and link from a metric spike to exemplar traces. OpenTelemetry is the standard instrumentation API; Google's Dapper paper is the origin of the model.
+- **Use:** find which hop owns the latency, detect fan-out explosions (one request causing 400 downstream calls), and link from a metric spike to exemplar traces. OpenTelemetry is the standard instrumentation <abbr title="Application Programming Interface">API</abbr>; Google's Dapper paper is the origin of the model.
 
 ## Safe deployment: canary, blue-green, feature flags, rollback
 

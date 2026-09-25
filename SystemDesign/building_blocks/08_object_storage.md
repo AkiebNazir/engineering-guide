@@ -34,7 +34,7 @@ sequenceDiagram
     Worker->>DB: status PENDING → READY (or REJECTED)
 ```
 
-The API server never sees the file bytes — it only issues authorization. This is the same shape as the CDN/edge principle: keep large-byte traffic off the tier that runs your business logic.
+The <abbr title="Application Programming Interface">API</abbr> server never sees the file bytes — it only issues authorization. This is the same shape as the CDN/edge principle: keep large-byte traffic off the tier that runs your business logic.
 
 ## Content validation after upload
 

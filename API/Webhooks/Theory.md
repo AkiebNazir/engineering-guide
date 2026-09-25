@@ -8,13 +8,13 @@ description: "Master event-driven reverse APIs: polling vs webhooks, event desig
 <div data-viz="api-webhooks"></div>
 
 ## What is a Webhook?
-A Webhook is often called a "Reverse API." Instead of a client continuously asking a server if new data is available (Polling), the client gives the server a URL. When an event happens on the server, the server makes an HTTP `POST` request to the client's URL with the event data.
+A Webhook is often called a "Reverse <abbr title="Application Programming Interface">API</abbr>." Instead of a client continuously asking a server if new data is available (Polling), the client gives the server a URL. When an event happens on the server, the server makes an HTTP `POST` request to the client's URL with the event data.
 
 The terms are easy to mix up, so fix them once:
 
 | | Who owns the URL | Who makes the request |
 | :--- | :--- | :--- |
-| Ordinary API | The provider | The client |
+| Ordinary <abbr title="Application Programming Interface">API</abbr> | The provider | The client |
 | **Webhook** | **The consumer** (you) | **The provider** |
 
 Webhooks are plain HTTP, so there is no new protocol. The engineering is entirely in **trust** (is this really from the provider?), **reliability** (what if my server is down?) and **safety** (what if a customer registers a hostile URL?).
@@ -22,7 +22,7 @@ Webhooks are plain HTTP, so there is no new protocol. The engineering is entirel
 > **Analogy:** Polling is walking to the post office every hour to ask "any mail?". A webhook is leaving your address with the post office so the postman rings your bell when a parcel arrives. If you are out, a good postman tries again later; if the bell rings for a fake "parcel", you must check who is at the door.
 
 ### Polling vs Webhooks
-*   **Polling:** "Are we there yet?" ... "No." ... "Are we there yet?" ... "No." (Wastes bandwidth, CPU, and API rate limits).
+*   **Polling:** "Are we there yet?" ... "No." ... "Are we there yet?" ... "No." (Wastes bandwidth, CPU, and <abbr title="Application Programming Interface">API</abbr> rate limits).
 *   **Webhooks:** "Wake me up when we get there." (Efficient, instant, event-driven).
 
 | | Polling | Webhooks |
@@ -33,7 +33,7 @@ Webhooks are plain HTTP, so there is no new protocol. The engineering is entirel
 | **Firewall / NAT** | Outbound only: works anywhere | You need a **public HTTPS endpoint** |
 | **Complexity** | Simple | Signatures, dedupe, retries, security |
 
-The professional pattern is **both**: webhooks for speed, plus a periodic **reconciliation poll** (or a `GET /events?after=...` API) that catches anything a webhook missed.
+The professional pattern is **both**: webhooks for speed, plus a periodic **reconciliation poll** (or a `GET /events?after=...` <abbr title="Application Programming Interface">API</abbr>) that catches anything a webhook missed.
 
 ## The Lifecycle of an Event
 
@@ -110,10 +110,10 @@ A well-designed **event envelope** carries:
 
 | | Fat (full object inside) | Thin (ids only) |
 | :--- | :--- | :--- |
-| Receiver work | None: everything is in the event | Must `GET` the resource from your API |
+| Receiver work | None: everything is in the event | Must `GET` the resource from your <abbr title="Application Programming Interface">API</abbr> |
 | Freshness | Snapshot may be **stale** by processing time | Always current |
 | Size and privacy | Larger, leaks more data over the wire | Small, minimal data exposure |
-| Failure mode | Out-of-order events overwrite newer state | Extra API call can itself fail or be rate limited |
+| Failure mode | Out-of-order events overwrite newer state | Extra <abbr title="Application Programming Interface">API</abbr> call can itself fail or be rate limited |
 
 Many platforms send a fat payload but tell receivers to **treat it as a hint and fetch the current state** for anything that matters.
 
@@ -225,7 +225,7 @@ w -> d
 3.  **Tolerate out-of-order events.** Apply an update only if it is newer (`WHERE excluded.version > orders.version`), or re-fetch current state. Lab 4 receives `v2` before `v1` and keeps `v2`.
 4.  **Survive crashes.** Store first, process later; a worker that crashes leaves the row pending and it is retried. Nothing is lost.
 5.  **Apply back-pressure honestly.** If your queue is full, return `503` + `Retry-After` rather than accept events you will lose. (Go lab 1: a burst of 12 events, 4 accepted, 8 told to retry.)
-6.  **Reconcile.** Periodically compare with the provider's API to catch events that never arrived.
+6.  **Reconcile.** Periodically compare with the provider's <abbr title="Application Programming Interface">API</abbr> to catch events that never arrived.
 7.  **Return the right code.** `2xx` = "got it, stop retrying". Do **not** return `2xx` for an event you failed to store. Return `2xx` even for events you **do not care about** (ignore them), or the sender will retry forever.
 
 ### Python (stdlib) and Go receivers
@@ -276,7 +276,7 @@ If **you** offer webhooks to your customers, you own a distributed delivery syst
 
 ### SSRF: your servers call attacker-chosen URLs
 
-A malicious customer registers `http://169.254.169.254/latest/meta-data/iam/security-credentials/` (cloud credentials), `http://localhost:6379/` (Redis), or an internal admin API. Your delivery workers, inside your network, obediently fetch it.
+A malicious customer registers `http://169.254.169.254/latest/meta-data/iam/security-credentials/` (cloud credentials), `http://localhost:6379/` (Redis), or an internal admin <abbr title="Application Programming Interface">API</abbr>. Your delivery workers, inside your network, obediently fetch it.
 
 *   **Validating the URL is not enough.** DNS rebinding (a name resolves to a public IP at check time and to `127.0.0.1` at connect time), numeric tricks (`2130706433`, `0x7f000001`, `127.1`, `::ffff:127.0.0.1`), and **redirects** all bypass a pre-check.
 *   **The fix: check the IP at connect time**, in `net.Dialer.Control`, which sees the address the socket is really about to use. Block loopback, private, link-local (metadata), CGNAT, multicast, unspecified.
@@ -357,7 +357,7 @@ Setup from the `API/` folder: `pip install -r requirements.txt` (the Python labs
 | 2 | `02_provider_signature_schemes` | Stripe, GitHub and Slack verification, GitHub's official vector, 18 table-driven attack cases |
 | 3 | `03_delivery_worker_pool` | Worker pool, per-endpoint concurrency cap without head-of-line blocking, timeouts, no redirects, graceful `Stop` |
 | 4 | `04_ssrf_safe_sender` | Connect-time IP guard in `Dialer.Control`, numeric-IP tricks, redirect attack, DNS rebinding |
-| 5 | `05_subscriptions_breaker_and_replay` | Subscription globs, per-endpoint secrets, circuit breaker states, delivery log API, replay, test event |
+| 5 | `05_subscriptions_breaker_and_replay` | Subscription globs, per-endpoint secrets, circuit breaker states, delivery log <abbr title="Application Programming Interface">API</abbr>, replay, test event |
 
 ```bash
 python Webhooks/labs/python/04_idempotent_async_receiver.py

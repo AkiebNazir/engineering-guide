@@ -3,7 +3,7 @@
 Welcome to Day 123. 
 
 Yesterday, we mastered LangChain (LCEL). But LCEL has a fatal flaw: it is a Directed Acyclic Graph (DAG). It flows from left to right and stops. 
-Real AI agents require **Cyclic** logic. If an agent writes code, tests it, and fails, it must loop *backwards* to rewrite the code.
+Real <abbr title="Artificial Intelligence">AI</abbr> agents require **Cyclic** logic. If an agent writes code, tests it, and fails, it must loop *backwards* to rewrite the code.
 
 **LangGraph** is the solution. It is a framework for building highly controllable, stateful, cyclic graphs. This guide is an exhaustive reference for LangGraph's core primitives.
 
@@ -85,7 +85,7 @@ builder = StateGraph(StrictState)
 ```
 
 ### C. Message Trimming (Context Overflow Protection)
-If a graph loops 500 times, the `messages` array will exceed the LLM's 128k token limit. 
+If a graph loops 500 times, the `messages` array will exceed the <abbr title="Large Language Model">LLM</abbr>'s 128k token limit. 
 LangChain provides `trim_messages` to automatically slice the array while preserving system prompts.
 
 ```python

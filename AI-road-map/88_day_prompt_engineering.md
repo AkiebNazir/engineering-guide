@@ -1,7 +1,7 @@
 # Day 88: Advanced Prompt Engineering (CoT, ToT)
 
 Welcome to Day 88. 
-Prompting is not just "typing English". A prompt is the source code for an LLM. 
+Prompting is not just "typing English". A prompt is the source code for an <abbr title="Large Language Model">LLM</abbr>. 
 A naive prompt turns a 70-Billion parameter model into a toddler. A highly-structured, algorithmic prompt turns that same model into a PhD-level reasoning engine.
 
 Today, we master the algorithms of Prompt Engineering: **Chain of Thought (CoT), Self-Consistency, and Tree of Thought (ToT)**.
@@ -12,14 +12,14 @@ Today, we master the algorithms of Prompt Engineering: **Chain of Thought (CoT),
 
 ### 1. The Compute Constraint
 To understand prompting, you must understand how a Transformer computes.
-Every time an LLM predicts exactly 1 token (word), it executes exactly 1 forward pass of its neural network. 
+Every time an <abbr title="Large Language Model">LLM</abbr> predicts exactly 1 token (word), it executes exactly 1 forward pass of its neural network. 
 - If you ask: *"What is 245 * 31? Answer immediately."*
-- The LLM must output the token `"7595"`. That means it used exactly **1 forward pass** of compute to do the math. The model will almost certainly fail.
+- The <abbr title="Large Language Model">LLM</abbr> must output the token `"7595"`. That means it used exactly **1 forward pass** of compute to do the math. The model will almost certainly fail.
 
 ### 2. Chain of Thought (CoT)
 In 2022, researchers discovered a hack. By simply adding the magic phrase *"Let's think step by step"*, the model's accuracy on math problems jumped from $17\%$ to $78\%$. Why?
 Because it forces the model to output words like *"First, I will multiply 200 by 30..."*.
-Every extra word it generates is an extra forward pass! **Chain of Thought gives the LLM more compute time.** It allows the model to temporarily store intermediate math inside the context window before predicting the final answer!
+Every extra word it generates is an extra forward pass! **Chain of Thought gives the <abbr title="Large Language Model">LLM</abbr> more compute time.** It allows the model to temporarily store intermediate math inside the context window before predicting the final answer!
 
 ### 3. Self-Consistency (Majority Vote)
 CoT has a flaw: LLMs hallucinate. What if it hallucinates an error on Step 2? The final answer will be completely wrong.
@@ -31,17 +31,17 @@ CoT has a flaw: LLMs hallucinate. What if it hallucinates an error on Step 2? Th
 
 ### 4. Tree of Thought (ToT)
 For extremely complex tasks (like writing an entire software application), even Self-Consistency fails because the sequence of steps is too long.
-**Tree of Thought** allows the LLM to explore multiple branches of logic simultaneously using Breadth-First Search (BFS) or Depth-First Search (DFS).
-- The LLM generates 3 possible "Step 1" plans.
+**Tree of Thought** allows the <abbr title="Large Language Model">LLM</abbr> to explore multiple branches of logic simultaneously using Breadth-First Search (BFS) or Depth-First Search (DFS).
+- The <abbr title="Large Language Model">LLM</abbr> generates 3 possible "Step 1" plans.
 - A secondary "Evaluator Prompt" grades the 3 plans. It deletes the bad plans, and keeps the best plan.
-- The LLM generates 3 possible "Step 2" plans based on the winning Step 1.
-If the LLM realizes it has hit a dead end, it *backtracks* up the tree and tries a different branch!
+- The <abbr title="Large Language Model">LLM</abbr> generates 3 possible "Step 2" plans based on the winning Step 1.
+If the <abbr title="Large Language Model">LLM</abbr> realizes it has hit a dead end, it *backtracks* up the tree and tries a different branch!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Python pipeline that implements **Self-Consistency**. We will simulate calling an LLM API 5 times with a high temperature, parse the final answers, and implement the Majority Vote logic.
+Let's build a Python pipeline that implements **Self-Consistency**. We will simulate calling an <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> 5 times with a high temperature, parse the final answers, and implement the Majority Vote logic.
 
 Create a file named `self_consistency.py`:
 
@@ -124,15 +124,15 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Temperature Trade-off:** Normally, for math, you set Temperature to `0.0`. But if you use `0.0` for Self-Consistency, all 5 runs will output the exact same string, defeating the purpose! You must increase the temperature to force the LLM to explore different logical paths.
-2. **Formatting Enforcement:** The hardest part of advanced prompting is parsing the output. Notice the prompt: *"End with 'Final Answer: [number]'"*. If the LLM disobeys this formatting, our Python regex/parser will crash.
+1. **The Temperature Trade-off:** Normally, for math, you set Temperature to `0.0`. But if you use `0.0` for Self-Consistency, all 5 runs will output the exact same string, defeating the purpose! You must increase the temperature to force the <abbr title="Large Language Model">LLM</abbr> to explore different logical paths.
+2. **Formatting Enforcement:** The hardest part of advanced prompting is parsing the output. Notice the prompt: *"End with 'Final Answer: [number]'"*. If the <abbr title="Large Language Model">LLM</abbr> disobeys this formatting, our Python regex/parser will crash.
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: Prompt Chaining
-Instead of asking an LLM to do 3 things in one massive prompt, it is always better to build a **Chain**.
+Instead of asking an <abbr title="Large Language Model">LLM</abbr> to do 3 things in one massive prompt, it is always better to build a **Chain**.
 **Your Task:**
 1. Conceptually design a 3-Step Prompt Chain.
 2. **Node 1 (Extraction):** Feed an article to Prompt 1: *"Extract all names mentioned in this text."*
@@ -155,12 +155,12 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Golden Dataset (Evals):**
    - Explain that the only way to detect a broken prompt is with **Regression Testing**. 
    - You must curate a "Golden Dataset" of 100 historical inputs and their perfect expected outputs. 
-3. **Automated CI/CD Pipeline:**
-   - Propose an automated testing pipeline. When OpenAI releases a new model, the CI/CD pipeline automatically runs the 50 Prompts against the 100 Golden Dataset examples using the new model.
-   - It uses an LLM-as-a-Judge to score the new outputs against the expected outputs. If the accuracy drops below $95\%$, the pipeline alerts the engineering team that the prompt must be re-engineered for the new model.
+3. **Automated <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> Pipeline:**
+   - Propose an automated testing pipeline. When OpenAI releases a new model, the <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline automatically runs the 50 Prompts against the 100 Golden Dataset examples using the new model.
+   - It uses an <abbr title="Large Language Model">LLM</abbr>-as-a-Judge to score the new outputs against the expected outputs. If the accuracy drops below $95\%$, the pipeline alerts the engineering team that the prompt must be re-engineered for the new model.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
 You have mastered the logic of Prompt Engineering. But parsing text like `split("Final Answer:")` is brittle and dangerous. 
-Tomorrow, in **Day 89**, we learn the holy grail of modern AI: **Structured Output and Function Calling**. We will force the LLM to output perfect JSON every single time!
+Tomorrow, in **Day 89**, we learn the holy grail of modern <abbr title="Artificial Intelligence">AI</abbr>: **Structured Output and Function Calling**. We will force the <abbr title="Large Language Model">LLM</abbr> to output perfect JSON every single time!

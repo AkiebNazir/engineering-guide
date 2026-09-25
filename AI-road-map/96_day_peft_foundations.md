@@ -1,23 +1,23 @@
-# Day 96: Parameter-Efficient Fine-Tuning (PEFT)
+# Day 96: Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>)
 
 Welcome to Day 96. Over the last three days, we learned how to pre-train a 70 Billion parameter model across 256 GPUs. 
 
 But what if you are a developer who just wants to fine-tune LLaMA to write code for your specific company? You don't have 256 GPUs. You have a single RTX 4090 GPU with 24GB of VRAM.
 If you try to run **Full Fine-Tuning**, the Adam optimizer will instantly crash your GPU.
 
-Today, we learn the mathematics of **PEFT (Parameter-Efficient Fine-Tuning)**, which allows you to fine-tune a massive AI using almost zero VRAM!
+Today, we learn the mathematics of **<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr> (Parameter-Efficient Fine-Tuning)**, which allows you to fine-tune a massive <abbr title="Artificial Intelligence">AI</abbr> using almost zero VRAM!
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. Full Fine-Tuning vs PEFT
+### 1. Full Fine-Tuning vs <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>
 - **Full Fine-Tuning:** You unfreeze all 70 Billion weights. During backpropagation, you calculate gradients for all 70B weights. The Adam optimizer stores momentum vectors for all 70B weights. You run out of memory instantly. Furthermore, you suffer from **Catastrophic Forgetting** (by editing all the weights, the model forgets basic grammar while trying to learn Python!).
-- **PEFT:** You **FREEZE** all 70 Billion original weights. You inject a tiny amount of *new* weights (e.g., 5 Million parameters) into the model. During backpropagation, you only calculate gradients for the 5 Million new weights! 
+- **<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>:** You **FREEZE** all 70 Billion original weights. You inject a tiny amount of *new* weights (e.g., 5 Million parameters) into the model. During backpropagation, you only calculate gradients for the 5 Million new weights! 
 
-### 2. The PEFT Taxonomy
+### 2. The <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr> Taxonomy
 There are many ways to inject new weights into a frozen model:
-- **Prompt Tuning:** You add 10 "Virtual Tokens" to the user's prompt. You freeze the model, and *only train the embeddings of those 10 tokens!* The tokens mathematically warp the prompt to force the LLM to behave differently.
+- **Prompt Tuning:** You add 10 "Virtual Tokens" to the user's prompt. You freeze the model, and *only train the embeddings of those 10 tokens!* The tokens mathematically warp the prompt to force the <abbr title="Large Language Model">LLM</abbr> to behave differently.
 - **Prefix Tuning:** Instead of virtual tokens at the input, you inject learnable tensors directly into the Key and Value matrices of every Attention layer.
 - **Adapters (Houlsby et al.):** You insert a tiny "Bottleneck" MLP layer in between the massive frozen Transformer layers.
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: HuggingFace PEFT
+### 🛠️ The Challenge: HuggingFace <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>
 Writing adapters from scratch is fun, but production engineering relies on libraries.
 **Your Task:**
 1. Read the documentation for the HuggingFace `peft` library.
@@ -164,6 +164,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-You have mastered the foundation of PEFT. But the "Bottleneck Adapter" we built today is considered old technology. It adds latency during inference because it adds extra layers to the neural network.
+You have mastered the foundation of <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>. But the "Bottleneck Adapter" we built today is considered old technology. It adds latency during inference because it adds extra layers to the neural network.
 
-Tomorrow, in **Day 97**, we learn the greatest breakthrough in AI fine-tuning history: **LoRA (Low-Rank Adaptation)**! We will use SVD matrix math to fine-tune without adding any inference latency!
+Tomorrow, in **Day 97**, we learn the greatest breakthrough in <abbr title="Artificial Intelligence">AI</abbr> fine-tuning history: **<abbr title="Low-Rank Adaptation">LoRA</abbr> (Low-Rank Adaptation)**! We will use <abbr title="Singular Value Decomposition">SVD</abbr> matrix math to fine-tune without adding any inference latency!

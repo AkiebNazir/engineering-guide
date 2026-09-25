@@ -1,14 +1,14 @@
-# vLLM Mastery: High-Throughput LLM Serving
+# vLLM Mastery: High-Throughput <abbr title="Large Language Model">LLM</abbr> Serving
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In Guide 08, we learned how to use Hugging Face's `model.generate()`. If you try to build a startup using Hugging Face's default generation, your server will crash if 3 users talk to it at the same time. It is horribly inefficient at managing memory. **vLLM** is the state-of-the-art inference engine used by almost every AI company to serve LLMs in production.
+*Why is this tool relevant?* In Guide 08, we learned how to use Hugging Face's `model.generate()`. If you try to build a startup using Hugging Face's default generation, your server will crash if 3 users talk to it at the same time. It is horribly inefficient at managing memory. **vLLM** is the state-of-the-art inference engine used by almost every <abbr title="Artificial Intelligence">AI</abbr> company to serve LLMs in production.
 
 **What is it?**
-vLLM is a high-throughput, memory-efficient LLM serving engine. It completely replaces the Hugging Face generation code. 
+vLLM is a high-throughput, memory-efficient <abbr title="Large Language Model">LLM</abbr> serving engine. It completely replaces the Hugging Face generation code. 
 
 **Why does it exist?**
-When an LLM generates text, it must store the history of the conversation in the GPU's memory (this is called the **KV Cache**). Standard Hugging Face creates a massive, static block of memory for every user. If the user only asks a short question, 90% of that memory is wasted (fragmented). 
+When an <abbr title="Large Language Model">LLM</abbr> generates text, it must store the history of the conversation in the GPU's memory (this is called the **KV Cache**). Standard Hugging Face creates a massive, static block of memory for every user. If the user only asks a short question, 90% of that memory is wasted (fragmented). 
 vLLM invented a technique called **PagedAttention**. It manages GPU memory exactly like a modern computer OS manages RAM—by chopping the memory into tiny "pages" and assigning them dynamically. This allows vLLM to serve **10x to 20x more users simultaneously** on the exact same hardware without crashing.
 
 ---
@@ -31,7 +31,7 @@ print(f"vLLM version: {vllm.__version__}")
 
 ## 3. The "Hello World": Offline Inference
 
-Let's say you have a massive dataset of 10,000 product reviews, and you want to use Llama-3 to summarize all of them as fast as possible. You use vLLM's Offline API.
+Let's say you have a massive dataset of 10,000 product reviews, and you want to use Llama-3 to summarize all of them as fast as possible. You use vLLM's Offline <abbr title="Application Programming Interface">API</abbr>.
 
 ```python
 from vllm import LLM, SamplingParams
@@ -88,11 +88,11 @@ llm = LLM(
 
 ---
 
-## 5. Pro Level: The OpenAI Compatible API Server
+## 5. Pro Level: The OpenAI Compatible <abbr title="Application Programming Interface">API</abbr> Server
 
 You almost never run `llm.generate()` in production. You want a web server that runs 24/7, and your frontend (React/Node.js) sends HTTP requests to it.
 
-vLLM has a built-in server that perfectly mimics the OpenAI API. If your code is currently written to talk to ChatGPT, you can change the URL to your local vLLM server, and it works instantly without rewriting your frontend!
+vLLM has a built-in server that perfectly mimics the OpenAI <abbr title="Application Programming Interface">API</abbr>. If your code is currently written to talk to ChatGPT, you can change the URL to your local vLLM server, and it works instantly without rewriting your frontend!
 
 **Run this in your terminal:**
 ```bash

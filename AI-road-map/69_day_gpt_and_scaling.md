@@ -44,7 +44,7 @@ def apply_temperature(logits, temperature=1.0):
     """
     Divides the logits by the temperature.
     T < 1.0 makes the AI confident/robotic.
-    T > 1.0 makes the AI creative/chaotic.
+    T > 1.0 makes the <abbr title="Artificial Intelligence">AI</abbr> creative/chaotic.
     """
     return logits / temperature
 
@@ -128,7 +128,7 @@ Even with Top-P, GPT sometimes gets stuck in a loop repeating the same word.
 2. `generated_sequence` is a list of token IDs the AI has already written.
 3. Loop through the `generated_sequence`. For every ID in that sequence, find its corresponding logit in the `logits` tensor.
 4. If the logit is $> 0$, divide it by the penalty ($1.2$). If it is $< 0$, multiply it by the penalty.
-5. This mathematically shrinks the probability of any word the AI has *already* used, forcing it to expand its vocabulary!
+5. This mathematically shrinks the probability of any word the <abbr title="Artificial Intelligence">AI</abbr> has *already* used, forcing it to expand its vocabulary!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -151,6 +151,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Solving for $N$ gives roughly a 30 Billion parameter model trained on 600 Billion tokens. (Any larger model trained with this budget would be mathematically under-trained!).
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have mastered the math of AI text generation.
+**Task for the end of the day:** Commit your code to Git. You have mastered the math of <abbr title="Artificial Intelligence">AI</abbr> text generation.
 
-Tomorrow, in **Day 70**, we learn how to turn this raw text-generation engine into a helpful AI assistant like ChatGPT. We will learn about **T5, Span Corruption, and Instruction Tuning!**
+Tomorrow, in **Day 70**, we learn how to turn this raw text-generation engine into a helpful <abbr title="Artificial Intelligence">AI</abbr> assistant like ChatGPT. We will learn about **T5, Span Corruption, and Instruction Tuning!**

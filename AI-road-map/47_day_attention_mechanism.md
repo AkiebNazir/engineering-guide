@@ -28,13 +28,13 @@ He proved you could just use a **Dot Product** (Matrix Multiplication).
 Because GPUs are specifically designed for massive Matrix Multiplications, Luong Attention is blazingly fast and became the industry standard.
 
 ### 4. The Computational Cost
-Attention is a miracle, but it is $O(N \times M)$. If the English sentence has 100 words, and the French sentence has 100 words, the AI must calculate exactly $10,000$ attention scores! If you input a 100,000-word book, the memory required explodes quadratically.
+Attention is a miracle, but it is $O(N \times M)$. If the English sentence has 100 words, and the French sentence has 100 words, the <abbr title="Artificial Intelligence">AI</abbr> must calculate exactly $10,000$ attention scores! If you input a 100,000-word book, the memory required explodes quadratically.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build Luong Attention entirely from scratch in PyTorch. You will see exactly how the `Softmax` forces the AI to "focus" its mathematical gaze on a specific word!
+Let's build Luong Attention entirely from scratch in PyTorch. You will see exactly how the `Softmax` forces the <abbr title="Artificial Intelligence">AI</abbr> to "focus" its mathematical gaze on a specific word!
 
 Create a file named `attention_math.py`:
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **Batch Matrix Multiplication (`torch.bmm`):** Look at `torch.bmm(decoder_hidden, aligned_encoder)`. This is the single line of code that changed the world. Instead of using a slow `for` loop to check each English word, `bmm` checks all 5 words against the Decoder simultaneously on the GPU!
-2. **The Output (`attention_weights`):** Because we use `Softmax`, the percentages will always add up to exactly 100%. The AI is forced to prioritize. It cannot pay 100% attention to everything.
+2. **The Output (`attention_weights`):** Because we use `Softmax`, the percentages will always add up to exactly 100%. The <abbr title="Artificial Intelligence">AI</abbr> is forced to prioritize. It cannot pay 100% attention to everything.
 
 ---
 

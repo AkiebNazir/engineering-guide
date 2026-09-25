@@ -1,11 +1,11 @@
-# LlamaIndex Mastery: The Enterprise RAG Standard
+# LlamaIndex Mastery: The Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr> Standard
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In 2023, naive RAG (Retrieval-Augmented Generation) meant chunking a PDF, putting it in a database, and doing a simple similarity search. Today, naive RAG fails in production. If a user asks, "Compare the Q3 revenue of Apple and Microsoft," naive RAG retrieves random paragraphs with the word "revenue." **LlamaIndex** is the modern, state-of-the-art framework that solves this. It replaces older, simplistic vector scripts with advanced routing, sub-queries, and knowledge graphs.
+*Why is this tool relevant?* In 2023, naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval-Augmented Generation) meant chunking a PDF, putting it in a database, and doing a simple similarity search. Today, naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> fails in production. If a user asks, "Compare the Q3 revenue of Apple and Microsoft," naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> retrieves random paragraphs with the word "revenue." **LlamaIndex** is the modern, state-of-the-art framework that solves this. It replaces older, simplistic vector scripts with advanced routing, sub-queries, and knowledge graphs.
 
 **What is it?**
-LlamaIndex is a data framework specifically designed to connect custom data sources (PDFs, SQL, Notion, Slack) to LLMs. While LangChain is great for general logic and memory, LlamaIndex is the undisputed king of Data Ingestion and RAG.
+LlamaIndex is a data framework specifically designed to connect custom data sources (PDFs, SQL, Notion, Slack) to LLMs. While LangChain is great for general logic and memory, LlamaIndex is the undisputed king of Data Ingestion and <abbr title="Retrieval-Augmented Generation">RAG</abbr>.
 
 ---
 
@@ -23,9 +23,9 @@ print(f"LlamaIndex version: {llama_index.core.__version__}")
 
 ---
 
-## 3. The "Hello World": 5-Line RAG
+## 3. The "Hello World": 5-Line <abbr title="Retrieval-Augmented Generation">RAG</abbr>
 
-If you want to build a baseline RAG system over a folder of PDFs, LlamaIndex makes it incredibly simple.
+If you want to build a baseline <abbr title="Retrieval-Augmented Generation">RAG</abbr> system over a folder of PDFs, LlamaIndex makes it incredibly simple.
 
 ```python
 import os
@@ -51,12 +51,12 @@ print(response)
 
 ## 4. Deep Dive: The Node Parser and Retrievers
 
-Under the hood, a "Document" is too large for an LLM. It must be parsed into "Nodes" (chunks of text). 
+Under the hood, a "Document" is too large for an <abbr title="Large Language Model">LLM</abbr>. It must be parsed into "Nodes" (chunks of text). 
 
 ### Parameter Breakdown: `SentenceSplitter`
 - `chunk_size` (int): Usually set to `1024` or `512`.
-  - *Effect of increasing (e.g., 4096):* The LLM receives massive blocks of text. It gets great context but might suffer from the "Lost in the Middle" syndrome. Vector searches become less precise.
-  - *Effect of decreasing (e.g., 128):* Vector searches become highly accurate (keyword matching is easy in small text), but the LLM receives fractured, broken sentences and cannot synthesize a good answer.
+  - *Effect of increasing (e.g., 4096):* The <abbr title="Large Language Model">LLM</abbr> receives massive blocks of text. It gets great context but might suffer from the "Lost in the Middle" syndrome. Vector searches become less precise.
+  - *Effect of decreasing (e.g., 128):* Vector searches become highly accurate (keyword matching is easy in small text), but the <abbr title="Large Language Model">LLM</abbr> receives fractured, broken sentences and cannot synthesize a good answer.
 - `chunk_overlap` (int): Usually `20` to `50`.
   - *Effect:* Prevents a critical sentence from being mathematically split in half by forcing the end of Node A to repeat at the beginning of Node B.
 
@@ -70,7 +70,7 @@ nodes = parser.get_nodes_from_documents(documents)
 
 ### Parameter Breakdown: `index.as_query_engine(...)`
 - `similarity_top_k` (int): Default is usually `2`.
-  - *Effect:* This dictates exactly how many chunks of text are pulled from the database and injected into the LLM prompt. If you set it to `10`, the LLM has much more data to read, but your API costs will skyrocket, and the prompt might exceed the context limit. `3` to `5` is the enterprise sweet spot.
+  - *Effect:* This dictates exactly how many chunks of text are pulled from the database and injected into the <abbr title="Large Language Model">LLM</abbr> prompt. If you set it to `10`, the <abbr title="Large Language Model">LLM</abbr> has much more data to read, but your <abbr title="Application Programming Interface">API</abbr> costs will skyrocket, and the prompt might exceed the context limit. `3` to `5` is the enterprise sweet spot.
 
 ```python
 query_engine = index.as_query_engine(similarity_top_k=5)
@@ -78,13 +78,13 @@ query_engine = index.as_query_engine(similarity_top_k=5)
 
 ---
 
-## 5. Pro Level: Advanced RAG (SubQuestionQueryEngine)
+## 5. Pro Level: Advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> (SubQuestionQueryEngine)
 
 This is why LlamaIndex is the enterprise standard. 
 If a user asks: *"Compare the weather in New York and Tokyo."*
 A standard vector database will search for "weather New York Tokyo" and likely fail to find a single paragraph containing all three terms.
 
-LlamaIndex's `SubQuestionQueryEngine` uses an LLM to actively rewrite the user's question into multiple sub-questions, executes them independently, and synthesizes the final answer!
+LlamaIndex's `SubQuestionQueryEngine` uses an <abbr title="Large Language Model">LLM</abbr> to actively rewrite the user's question into multiple sub-questions, executes them independently, and synthesizes the final answer!
 
 ```python
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
@@ -118,12 +118,12 @@ response = query_engine.query("Compare the weather in New York and Tokyo.")
 ## 6. MAANG Interview Scenarios
 
 ### Scenario 1: The "Small-to-Big" Retrieval Strategy
-*Interviewer:* "When `chunk_size` is small (128), retrieval accuracy is high, but LLM generation is poor due to lack of context. When `chunk_size` is large (1024), generation is great, but retrieval accuracy drops. How do you solve this paradox in production?"
+*Interviewer:* "When `chunk_size` is small (128), retrieval accuracy is high, but <abbr title="Large Language Model">LLM</abbr> generation is poor due to lack of context. When `chunk_size` is large (1024), generation is great, but retrieval accuracy drops. How do you solve this paradox in production?"
 
 *Answer:* "I would use LlamaIndex's **Auto-Merging Retriever (Parent-Child Index)**. During ingestion, I chunk the document into massive 'Parent' nodes (1024 tokens). Then, I split each Parent into smaller 'Child' nodes (128 tokens). 
-I embed and search *only* against the small Child nodes, guaranteeing highly precise retrieval accuracy. However, before sending the data to the LLM, LlamaIndex intercepts the request, looks up the Child's original Parent node, and sends the massive Parent node to the LLM. We get the mathematical precision of small chunks and the narrative context of massive chunks."
+I embed and search *only* against the small Child nodes, guaranteeing highly precise retrieval accuracy. However, before sending the data to the <abbr title="Large Language Model">LLM</abbr>, LlamaIndex intercepts the request, looks up the Child's original Parent node, and sends the massive Parent node to the <abbr title="Large Language Model">LLM</abbr>. We get the mathematical precision of small chunks and the narrative context of massive chunks."
 
 ### Scenario 2: Hallucinations on missing data
-*Interviewer:* "If the answer to the user's question does not exist in our database, the LLM hallucinates an answer anyway. How do we stop this?"
+*Interviewer:* "If the answer to the user's question does not exist in our database, the <abbr title="Large Language Model">LLM</abbr> hallucinates an answer anyway. How do we stop this?"
 
-*Answer:* "We must alter the `PromptTemplate` inside the LlamaIndex Query Engine. By default, the LLM is told to answer the question using the context. We must explicitly append a strict instruction: *'If the context does not contain the answer, you must output exactly: [I do not have enough information to answer this]. Do not attempt to guess.'* Furthermore, we can use a post-processing evaluator to measure the semantic similarity between the LLM's final output and the retrieved context chunks to mathematically detect if it hallucinated."
+*Answer:* "We must alter the `PromptTemplate` inside the LlamaIndex Query Engine. By default, the <abbr title="Large Language Model">LLM</abbr> is told to answer the question using the context. We must explicitly append a strict instruction: *'If the context does not contain the answer, you must output exactly: [I do not have enough information to answer this]. Do not attempt to guess.'* Furthermore, we can use a post-processing evaluator to measure the semantic similarity between the <abbr title="Large Language Model">LLM</abbr>'s final output and the retrieved context chunks to mathematically detect if it hallucinated."

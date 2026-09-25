@@ -12,7 +12,7 @@ Today, we master GPU Networking and Asynchronous Checkpointing.
 
 ### 1. Network Topology (NVLink vs InfiniBand)
 When shattering models across 256 GPUs, the network is the bottleneck.
-- **Intra-Node (Inside the box):** A standard AI server has 8 GPUs. They are physically wired together using **NVLink** (or NVSwitch). This connection is incredibly fast (~600 GB/s).
+- **Intra-Node (Inside the box):** A standard <abbr title="Artificial Intelligence">AI</abbr> server has 8 GPUs. They are physically wired together using **NVLink** (or NVSwitch). This connection is incredibly fast (~600 GB/s).
 - **Inter-Node (Between boxes):** To connect Server 1 to Server 2, you use networking cables (InfiniBand or Ethernet RoCE). This is much slower (~50 GB/s).
 *Rule of thumb: You must design your parallelism so that the heaviest network traffic (like Tensor Parallelism) stays strictly inside the NVLink boundary!*
 
@@ -168,4 +168,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 We now know how to pre-train a massive foundation model from scratch. 
 But what if you are just a developer who wants to fine-tune LLaMA to act like a specific persona? You don't have 256 GPUs. You have one RTX 4090.
 
-Tomorrow, in **Day 96**, we master **Parameter-Efficient Fine-Tuning (PEFT) and Adapter Layers**!
+Tomorrow, in **Day 96**, we master **Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>) and Adapter Layers**!

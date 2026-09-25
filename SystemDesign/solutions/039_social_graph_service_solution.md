@@ -33,7 +33,7 @@ Assumptions (ours): 3×10^9 users, 10^9 daily active, 200 average edges, 500 gra
 
 **Fan-out tail.** A page issues about 60 parallel reads (assumption); the chance one exceeds its own p99 is 1 − 0.99^60 = 45%, so batch per destination and hedge (*The Tail at Scale*, Dean and Barroso, 2013; [13_scaling_and_load_balancing.md](../building_blocks/13_scaling_and_load_balancing.md)).
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 obj_get(id)                                    → {id, otype, version, fields}
@@ -141,7 +141,7 @@ Decision: micro-batch, because follows tolerate 100 ms and the cost stays in one
 | Option | Gives | Costs |
 |---|---|---|
 | Look-aside memcache, logic in clients | Familiar | A change to one edge reloads the whole list, uncoordinated clients stampede, read-after-write is hard (the paper's reasons for replacing it) |
-| Cache service that knows the API (TAO) | Range, count, membership from cached prefixes; one coordinator per shard | A leader hop on every miss and write; a service to run |
+| Cache service that knows the <abbr title="Application Programming Interface">API</abbr> (TAO) | Range, count, membership from cached prefixes; one coordinator per shard | A leader hop on every miss and write; a service to run |
 | Replicas only | No invalidation | 2,900 hosts, still lagging |
 
 Decision: the TAO shape. **Follower tiers** serve clients from demand-filled LRU prefixes; **one leader per shard per region** owns fills, invalidations and write order and caps pending queries, so many missing followers cause one query. The extra hop is acceptable at 4% misses.

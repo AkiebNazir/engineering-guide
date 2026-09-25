@@ -2,7 +2,7 @@
 
 > This topic is about algorithms whose *guarantee* matters more than their container: a shuffle that produces every permutation equally often, a random pick that hits its exact target
 > probability, an order statistic found without sorting, a recursion that re-derives the same sub-expression only once. In Go two things change the picture: the standard library's
-> randomness API has a few sharp edges (an *exclusive* `Intn`, a `Seed` that is now a no-op, a modulo-bias trap on small ranges), and compiled code means the "asymptotically better" algorithm
+> randomness <abbr title="Application Programming Interface">API</abbr> has a few sharp edges (an *exclusive* `Intn`, a `Seed` that is now a no-op, a modulo-bias trap on small ranges), and compiled code means the "asymptotically better" algorithm
 > — quickselect — actually beats sorting, which it does not in CPython. Every number below was measured on Go 1.24 (darwin/arm64), and every algorithm was compiled with `go vet` and checked against a brute-force reference or a chi-square test.
 
 ---

@@ -45,7 +45,7 @@ custom error type with structured fields, extracted through the chain with
 `errors.As`. Level 5 covers `errors.Join` for independent errors and proves
 `Is`/`As` still see through it. Level 6 is a measured comparison of
 `errors.Is` cost on a shallow vs. a deep wrap chain. Level 7 is a design
-concern: opaque (`%v`) vs. transparent (`%w`) wrapping at an API boundary, and
+concern: opaque (`%v`) vs. transparent (`%w`) wrapping at an <abbr title="Application Programming Interface">API</abbr> boundary, and
 why you'd deliberately choose either. Level 8 is `errors` + `fmt` interop:
 `fmt.Errorf` with *multiple* `%w` verbs (Go 1.20+), producing a multi-child
 tree that `Is`/`As` both traverse. Level 9 is a correctness trap: comparing

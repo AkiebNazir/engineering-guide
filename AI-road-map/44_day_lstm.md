@@ -1,25 +1,25 @@
-# Day 44: LSTM (Long Short-Term Memory) & Gating Mechanisms
+# Day 44: <abbr title="Long Short-Term Memory">LSTM</abbr> (Long Short-Term Memory) & Gating Mechanisms
 
 Welcome to Day 44. Yesterday, we mathematically proved that Vanilla RNNs suffer from catastrophic amnesia. By the time they reach the 10th word of a sentence, the Calculus gradient has vanished to $0.0$, and the network forgets the beginning of the sentence.
 
-In 1997, Sepp Hochreiter and Jürgen Schmidhuber invented a mathematical miracle to fix this. It is called the **LSTM**, and it powered Siri, Google Translate, and every AI on earth until the invention of the Transformer in 2017.
+In 1997, Sepp Hochreiter and Jürgen Schmidhuber invented a mathematical miracle to fix this. It is called the **<abbr title="Long Short-Term Memory">LSTM</abbr>**, and it powered Siri, Google Translate, and every <abbr title="Artificial Intelligence">AI</abbr> on earth until the invention of the Transformer in 2017.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Dual Stream (The Gradient Highway)
-A Vanilla RNN has one memory stream: the Hidden State ($h_t$). 
-The LSTM has **two** memory streams:
+A Vanilla <abbr title="Recurrent Neural Network">RNN</abbr> has one memory stream: the Hidden State ($h_t$). 
+The <abbr title="Long Short-Term Memory">LSTM</abbr> has **two** memory streams:
 1. **The Hidden State ($h_t$):** The short-term memory. (What word am I looking at right now?)
 2. **The Cell State ($C_t$):** The long-term memory. This is the **Gradient Highway**. 
 
-The Cell State runs straight down the middle of the network. The LSTM is carefully designed to apply *almost zero math* to the Cell State. It just adds data to it or subtracts data from it. Because it uses Addition instead of Multiplication (just like ResNet Skip Connections!), the Calculus gradient can flow backward across 1,000 words without ever vanishing!
+The Cell State runs straight down the middle of the network. The <abbr title="Long Short-Term Memory">LSTM</abbr> is carefully designed to apply *almost zero math* to the Cell State. It just adds data to it or subtracts data from it. Because it uses Addition instead of Multiplication (just like ResNet Skip Connections!), the Calculus gradient can flow backward across 1,000 words without ever vanishing!
 
 ### 2. The 3 Gates
-How does the LSTM control the flow of information onto the Cell State highway? It uses mathematical **Gates**. A gate is just a `Sigmoid` function. It squashes a number between $0$ (Completely closed/Delete) and $1$ (Completely open/Keep).
+How does the <abbr title="Long Short-Term Memory">LSTM</abbr> control the flow of information onto the Cell State highway? It uses mathematical **Gates**. A gate is just a `Sigmoid` function. It squashes a number between $0$ (Completely closed/Delete) and $1$ (Completely open/Keep).
 
-- **The Forget Gate ($f_t$):** Looks at the current word and the past memory. Should we delete the long-term memory? *(Example: If the AI reads a period ".", the Forget Gate outputs $0.0$, instantly wiping the Cell State clean so a new sentence can begin).*
+- **The Forget Gate ($f_t$):** Looks at the current word and the past memory. Should we delete the long-term memory? *(Example: If the <abbr title="Artificial Intelligence">AI</abbr> reads a period ".", the Forget Gate outputs $0.0$, instantly wiping the Cell State clean so a new sentence can begin).*
 - **The Input Gate ($i_t$):** Looks at the current word. Should we add this new word to the long-term memory?
 - **The Output Gate ($o_t$):** Looks at the long-term memory. What specific piece of the long-term memory should we extract right now to predict the next word?
 
@@ -27,7 +27,7 @@ How does the LSTM control the flow of information onto the Cell State highway? I
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build the complex math of an LSTM Cell entirely from scratch so you can see exactly how the Gates control the Cell State Highway!
+Let's build the complex math of an <abbr title="Long Short-Term Memory">LSTM</abbr> Cell entirely from scratch so you can see exactly how the Gates control the Cell State Highway!
 
 Create a file named `lstm_math.py`:
 
@@ -114,32 +114,32 @@ if __name__ == "__main__":
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The Forget Gate Bias
-In 2015, researchers found a massive bug in how LSTMs were trained. If you initialize all weights and biases to 0, the Sigmoid function outputs $0.5$. This means the LSTM forgets 50% of its memory at every single word!
+In 2015, researchers found a massive bug in how LSTMs were trained. If you initialize all weights and biases to 0, the Sigmoid function outputs $0.5$. This means the <abbr title="Long Short-Term Memory">LSTM</abbr> forgets 50% of its memory at every single word!
 **Your Task:**
 1. Import the official `nn.LSTM` in PyTorch.
 2. The PyTorch engineers explicitly hard-coded a fix for this. Write a script to loop through the `model.parameters()` of an `nn.LSTM`.
 3. Check the documentation. Find the `bias` parameters.
-4. Verify that PyTorch automatically initializes the bias of the **Forget Gate** to exactly `1.0`. By forcing the bias to `1.0`, Sigmoid outputs `~0.99`, meaning the LSTM starts training by remembering everything, rather than forgetting everything!
+4. Verify that PyTorch automatically initializes the bias of the **Forget Gate** to exactly `1.0`. By forcing the bias to `1.0`, Sigmoid outputs `~0.99`, meaning the <abbr title="Long Short-Term Memory">LSTM</abbr> starts training by remembering everything, rather than forgetting everything!
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Walk me through the backward gradient flow in an LSTM. Specifically, explain mathematically why the Cell State ($C_t$) solves the Vanishing Gradient problem that plagues Vanilla RNNs, and explain the one scenario where an LSTM will still suffer from Vanishing Gradients."*
+*"Walk me through the backward gradient flow in an <abbr title="Long Short-Term Memory">LSTM</abbr>. Specifically, explain mathematically why the Cell State ($C_t$) solves the Vanishing Gradient problem that plagues Vanilla RNNs, and explain the one scenario where an <abbr title="Long Short-Term Memory">LSTM</abbr> will still suffer from Vanishing Gradients."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
-1. **The Vanilla RNN Flaw:** 
+1. **The Vanilla <abbr title="Recurrent Neural Network">RNN</abbr> Flaw:** 
    - State that Vanilla RNNs multiply the hidden state by a weight matrix ($W_{hh}$) at every timestep. Multiplying a number $<1$ by itself 50 times causes it to vanish to zero.
 2. **The Cell State Addition Highway:**
-   - Explain that the LSTM's Cell State updates via addition: `C_t = f_t*C_{t-1} + i_t*C_tilde`.
+   - Explain that the <abbr title="Long Short-Term Memory">LSTM</abbr>'s Cell State updates via addition: `C_t = f_t*C_{t-1} + i_t*C_tilde`.
    - In Calculus, the derivative of addition is 1. When Backpropagation passes through the `+` sign, the gradient is routed backwards without being multiplied by a weight matrix! It acts as a super-highway.
 3. **The Edge Case (When it fails):**
    - Conclude that the gradient is still multiplied by the Forget Gate (`f_t`). If the Forget Gate decides to output `0.0` (closing the gate), the gradient highway is physically cut off. The gradient drops to zero, and the network will not be able to learn dependencies that cross that specific timestep.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have given your AI the gift of Long-Term Memory.
+**Task for the end of the day:** Commit your code to Git. You have given your <abbr title="Artificial Intelligence">AI</abbr> the gift of Long-Term Memory.
 
-Tomorrow, in **Day 45**, we streamline the LSTM to save RAM, and we teach the AI how to read sentences backward! Welcome to **GRUs and Bidirectional RNNs.**
+Tomorrow, in **Day 45**, we streamline the <abbr title="Long Short-Term Memory">LSTM</abbr> to save RAM, and we teach the <abbr title="Artificial Intelligence">AI</abbr> how to read sentences backward! Welcome to **GRUs and Bidirectional RNNs.**

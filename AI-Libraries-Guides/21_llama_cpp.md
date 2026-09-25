@@ -1,8 +1,8 @@
-# Llama.cpp Mastery: Running AI on Everyday Hardware
+# Llama.cpp Mastery: Running <abbr title="Artificial Intelligence">AI</abbr> on Everyday Hardware
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* Hugging Face Transformers and vLLM are designed for heavy servers packed with expensive NVIDIA GPUs. But what if you want to run Llama-3 offline on a MacBook, a Raspberry Pi, or a standard Windows laptop with zero GPU? Those other libraries will fail or run incredibly slowly. **Llama.cpp** is the state-of-the-art solution that democratized AI for everyday hardware.
+*Why is this tool relevant?* Hugging Face Transformers and vLLM are designed for heavy servers packed with expensive NVIDIA GPUs. But what if you want to run Llama-3 offline on a MacBook, a Raspberry Pi, or a standard Windows laptop with zero GPU? Those other libraries will fail or run incredibly slowly. **Llama.cpp** is the state-of-the-art solution that democratized <abbr title="Artificial Intelligence">AI</abbr> for everyday hardware.
 
 **What is it?**
 Llama.cpp is a bare-bones, highly optimized C/C++ engine specifically written to run Large Language Models on CPUs and Apple Silicon (M1/M2/M3 chips). We interact with it using the Python bindings: `llama-cpp-python`.
@@ -103,7 +103,7 @@ llm = Llama(
 
 ## 6. Pro Level: The OpenAI Compatible Server
 
-Just like vLLM, `llama-cpp-python` comes with a built-in web server. You can host this on a spare laptop in your closet, and configure your main development machine to talk to the closet laptop via Wi-Fi exactly as if it were the OpenAI API!
+Just like vLLM, `llama-cpp-python` comes with a built-in web server. You can host this on a spare laptop in your closet, and configure your main development machine to talk to the closet laptop via Wi-Fi exactly as if it were the OpenAI <abbr title="Application Programming Interface">API</abbr>!
 
 **Run this in the terminal:**
 ```bash
@@ -126,7 +126,7 @@ python -m llama_cpp.server \
 GGUF files solve this because they are specifically pre-quantized (e.g., to 4-bit integers). The C++ engine in `llama.cpp` uses aggressively optimized, hardware-specific CPU instructions (like AVX2 on Intel, or NEON on ARM). This drastically reduces the memory bandwidth bottleneck, jumping the generation speed from 1 word/sec to 15+ words/sec on standard CPUs."
 
 ### Scenario 2: Apple Unified Memory Architecture (UMA)
-*Interviewer:* "Why does a standard $2,000 Apple MacBook Pro M3 Max outperform a $5,000 Windows PC with an NVIDIA RTX 4090 when trying to run a massive 70-Billion parameter LLM locally?"
+*Interviewer:* "Why does a standard $2,000 Apple MacBook Pro M3 Max outperform a $5,000 Windows PC with an NVIDIA RTX 4090 when trying to run a massive 70-Billion parameter <abbr title="Large Language Model">LLM</abbr> locally?"
 
 *Answer:* "It comes down to VRAM boundaries. A desktop RTX 4090 has an absolute physical limit of 24GB of VRAM. A 70B model requires ~40GB of memory (even in 4-bit quantization). The 4090 literally cannot load the model; it crashes. 
 Apple Silicon uses **Unified Memory Architecture (UMA)**. The CPU and the GPU share the exact same pool of RAM. If you buy a MacBook with 64GB or 128GB of Unified Memory, the Apple Metal GPU can directly access all 128GB of it instantly. Using `llama.cpp` with `n_gpu_layers=-1`, the MacBook can load the massive 40GB model entirely onto the GPU, achieving high-speed inference that the desktop PC is hardware-locked from ever doing."

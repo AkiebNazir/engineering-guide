@@ -9,7 +9,7 @@ deleting, all as free functions over `[]T`.
 
 - Sorting a slice of a built-in ordered type → `slices.Sort`, not
   `sort.Ints`/`sort.Strings`/`sort.Slice` (those still work, but `slices` is
-  the one generic API for every element type).
+  the one generic <abbr title="Application Programming Interface">API</abbr> for every element type).
 - Sorting by a custom comparison → `slices.SortFunc` with a `func(a, b T)
   int`, not `sort.Slice`'s `func(i, j int) bool` plus manual indexing.
   `slices.SortFunc` is the direct upgrade path from `sort.Slice` - see

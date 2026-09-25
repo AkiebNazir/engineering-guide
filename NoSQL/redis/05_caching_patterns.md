@@ -2,7 +2,7 @@
 
 Everything up to here was Redis's data types. This level is about the *pattern* most
 people actually reach for Redis to build: a cache sitting in front of a slower system of
-record (a database, an external API). The data type barely matters (usually a plain
+record (a database, an external <abbr title="Application Programming Interface">API</abbr>). The data type barely matters (usually a plain
 string holding serialized JSON); what matters is **who writes to the cache, and when**.
 
 ## Three patterns

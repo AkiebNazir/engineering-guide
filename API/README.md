@@ -1,6 +1,6 @@
-# API Module
+# <abbr title="Application Programming Interface">API</abbr> Module
 
-Learn the six API styles (REST, GraphQL, gRPC + Protobuf, WebSockets, Webhooks, SOAP) from theory to
+Learn the six <abbr title="Application Programming Interface">API</abbr> styles (REST, GraphQL, gRPC + Protobuf, WebSockets, Webhooks, SOAP) from theory to
 runnable, self-checking code, in both **Python** and **Go**.
 
 ## Layout
@@ -55,7 +55,7 @@ go run -race ./WebSockets/labs/golang/03_hub_pattern_chat
 
 | Type | Python | Go |
 | :--- | :--- | :--- |
-| **REST** | stdlib CRUD · FastAPI validation + OpenAPI · JWT + scopes + BOLA · ETag / `If-Match` · idempotency keys + cursor pagination | `ServeMux` 1.22 patterns · strict JSON CRUD · middleware chain + graceful shutdown · token-bucket rate limiter · API-key auth + ownership |
+| **REST** | stdlib CRUD · FastAPI validation + OpenAPI · JWT + scopes + BOLA · ETag / `If-Match` · idempotency keys + cursor pagination | `ServeMux` 1.22 patterns · strict JSON CRUD · middleware chain + graceful shutdown · token-bucket rate limiter · <abbr title="Application Programming Interface">API</abbr>-key auth + ownership |
 | **GraphQL** | schema + variables · mutations + union errors · DataLoader N+1 · auth + permissions + masking · subscriptions over WebSocket | graphql-go schema · HTTP handler + `operationName` · DataLoader from scratch · Relay pagination · depth/cost limits + persisted queries |
 | **Protobuf** | wire format by hand · types, presence, oneof · schema evolution · size/speed vs JSON · framing + well-known types | marshal basics · oneof/maps/enums · protojson + Any + FieldMask · reflection + dynamicpb · delimited streams + benchmark |
 | **gRPC** | unary + status + metadata · four streaming kinds · interceptors (auth, log, rate limit) · deadlines + retries · asyncio + client load balancing | rich errors + metadata · flow control + cancellation · interceptor chain + access policy · mTLS from scratch · health + reflection + graceful shutdown |

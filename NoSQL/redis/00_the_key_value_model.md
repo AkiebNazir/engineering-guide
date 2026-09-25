@@ -71,7 +71,7 @@ usually not your system of record — it's the fast layer in front of, or beside
 Because it's a fast, atomic, shared in-memory dictionary reachable over the network, the
 same primitive shows up in very different roles:
 
-- **Cache** — store the expensive result of a DB query or API call, keyed by its inputs
+- **Cache** — store the expensive result of a DB query or <abbr title="Application Programming Interface">API</abbr> call, keyed by its inputs
   (level 05).
 - **Session store** — a web app's load balancer can route a user to any of N app servers;
   none of them can hold session state in local memory, so it goes in Redis instead

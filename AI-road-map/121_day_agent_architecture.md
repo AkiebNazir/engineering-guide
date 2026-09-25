@@ -1,8 +1,8 @@
 # Day 121: Agent Architecture (Perception-Reasoning-Action)
 
-Welcome to Phase 5: **Agentic AI**. 
+Welcome to Phase 5: **Agentic <abbr title="Artificial Intelligence">AI</abbr>**. 
 
-For the last 120 days, we have built *Passive Chatbots*. A chatbot is a pipeline: The user types a question, the LLM generates an answer, and the script terminates.
+For the last 120 days, we have built *Passive Chatbots*. A chatbot is a pipeline: The user types a question, the <abbr title="Large Language Model">LLM</abbr> generates an answer, and the script terminates.
 
 Today, we build an **Autonomous Agent**. An agent is not a pipeline; it is a *State Machine*. An agent runs inside an infinite `while True` loop. It can independently perceive its environment, reason about its goals, use tools, verify its own work, and decide for itself when to stop!
 
@@ -11,21 +11,21 @@ Today, we build an **Autonomous Agent**. An agent is not a pipeline; it is a *St
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Cognitive Architecture (OODA Loop)
-Agents are built on a variation of the military OODA Loop (Observe, Orient, Decide, Act). In AI, we call this the **Perception-Reasoning-Action Loop**.
+Agents are built on a variation of the military OODA Loop (Observe, Orient, Decide, Act). In <abbr title="Artificial Intelligence">AI</abbr>, we call this the **Perception-Reasoning-Action Loop**.
 1. **Observe:** Read the environment (e.g., Read a webpage, or read an error message).
 2. **Think:** Mathematically deduce the next logical step based on the observation.
 3. **Act:** Execute a Python Tool (e.g., Run a SQL query).
 4. **Reflect:** Look at the result of the SQL query. Did it work? If not, loop back to Step 2!
 
 ### 2. The ReAct Framework Formalization
-In Day 115, we touched on ReAct. Today we formalize it. To trap an LLM in a cognitive loop, you must enforce a strict parsing grammar. 
-If the LLM outputs `Thought: ...`, it is allowed to continue generating.
-If the LLM outputs `Action: ...`, your Python script must forcefully STOP the LLM from generating any more text! Your script executes the Action, appends the `Observation: ...`, and then restarts the LLM.
+In Day 115, we touched on ReAct. Today we formalize it. To trap an <abbr title="Large Language Model">LLM</abbr> in a cognitive loop, you must enforce a strict parsing grammar. 
+If the <abbr title="Large Language Model">LLM</abbr> outputs `Thought: ...`, it is allowed to continue generating.
+If the <abbr title="Large Language Model">LLM</abbr> outputs `Action: ...`, your Python script must forcefully STOP the <abbr title="Large Language Model">LLM</abbr> from generating any more text! Your script executes the Action, appends the `Observation: ...`, and then restarts the <abbr title="Large Language Model">LLM</abbr>.
 
 ### 3. Agent Design Patterns
 When tasks become complex, one Agent is not enough. You must build an "Agency" using specific design patterns:
-- **The Router:** A fast, cheap LLM that reads the user's prompt and routes it to the correct specialist.
-- **The Planner:** An LLM that takes a massive goal (*"Build a website"*) and breaks it down into 10 smaller JSON tasks.
+- **The Router:** A fast, cheap <abbr title="Large Language Model">LLM</abbr> that reads the user's prompt and routes it to the correct specialist.
+- **The Planner:** An <abbr title="Large Language Model">LLM</abbr> that takes a massive goal (*"Build a website"*) and breaks it down into 10 smaller JSON tasks.
 - **The Executor:** The "blue-collar" Agent that actually runs the tools.
 - **The Critic:** The "manager" Agent that reviews the Executor's work before showing it to the user.
 
@@ -130,8 +130,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The `PAUSE` Token:** This is the most important concept in raw agent building. If you do not explicitly instruct the LLM to `PAUSE`, it will hallucinate the `Observation` itself instead of waiting for your Python script to run the real tool!
-2. **Self-Correction:** Notice the `except` block. If the LLM outputs broken JSON, we don't crash the program. We literally inject an `Observation` telling the LLM it made a syntax error, and the LLM will fix its own mistake on the next loop!
+1. **The `PAUSE` Token:** This is the most important concept in raw agent building. If you do not explicitly instruct the <abbr title="Large Language Model">LLM</abbr> to `PAUSE`, it will hallucinate the `Observation` itself instead of waiting for your Python script to run the real tool!
+2. **Self-Correction:** Notice the `except` block. If the <abbr title="Large Language Model">LLM</abbr> outputs broken JSON, we don't crash the program. We literally inject an `Observation` telling the <abbr title="Large Language Model">LLM</abbr> it made a syntax error, and the <abbr title="Large Language Model">LLM</abbr> will fix its own mistake on the next loop!
 
 ---
 
@@ -140,16 +140,16 @@ if __name__ == "__main__":
 ### 🛠️ The Challenge: Error Recovery
 If a tool throws a Python Exception, the agent must not crash.
 **Your Task:**
-1. Conceptually modify the `execute_calculator` tool to throw a `ZeroDivisionError` if the LLM tries to divide by zero.
+1. Conceptually modify the `execute_calculator` tool to throw a `ZeroDivisionError` if the <abbr title="Large Language Model">LLM</abbr> tries to divide by zero.
 2. Ensure the exception traceback is captured and returned as a string.
-3. Because the traceback is injected as the `Observation`, the LLM will read the traceback, realize it divided by zero, and output a new Thought: *"I cannot divide by zero. I must inform the user."*
+3. Because the traceback is injected as the `Observation`, the <abbr title="Large Language Model">LLM</abbr> will read the traceback, realize it divided by zero, and output a new Thought: *"I cannot divide by zero. I must inform the user."*
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You are designing an autonomous agent system for Enterprise Customer Support. The agents have access to databases to process refunds. Discuss the cognitive architecture, error recovery, and how you prevent the agent from looping infinitely and bankrupting our API budget."*
+*"You are designing an autonomous agent system for Enterprise Customer Support. The agents have access to databases to process refunds. Discuss the cognitive architecture, error recovery, and how you prevent the agent from looping infinitely and bankrupting our <abbr title="Application Programming Interface">API</abbr> budget."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:

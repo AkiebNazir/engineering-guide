@@ -2,7 +2,7 @@
 
 Welcome to Day 72. You have built LLMs and Vision Transformers. But if you try to scale the context window from 2,000 words to 100,000 words, standard PyTorch will instantly crash with an `Out Of Memory (OOM)` error.
 
-The Self-Attention mechanism scales quadratically $O(N^2)$. But the bottleneck isn't the math. The bottleneck is the physical hardware of the GPU. Today, we learn about **Flash Attention**, the algorithm that revolutionized AI scaling.
+The Self-Attention mechanism scales quadratically $O(N^2)$. But the bottleneck isn't the math. The bottleneck is the physical hardware of the GPU. Today, we learn about **Flash Attention**, the algorithm that revolutionized <abbr title="Artificial Intelligence">AI</abbr> scaling.
 
 ---
 

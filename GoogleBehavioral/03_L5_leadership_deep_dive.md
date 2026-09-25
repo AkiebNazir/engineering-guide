@@ -38,7 +38,7 @@ Google evaluates if you make the people around you better.
 *   **The Trap:** "I told a junior engineer how to fix a bug."
 *   **The L5 Action:**
     1.  **Systemic Improvement:** "I noticed our team spent 30% of our PR review time arguing about code formatting and missed edge cases."
-    2.  **Driving Change:** "Instead of complaining, I researched and integrated an automated linting and static analysis pipeline (e.g., `golangci-lint` or `mypy`) into our CI/CD."
+    2.  **Driving Change:** "Instead of complaining, I researched and integrated an automated linting and static analysis pipeline (e.g., `golangci-lint` or `mypy`) into our <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>."
     3.  **Empowering Others:** "I didn't just merge the PR. I held a 30-minute Lunch & Learn for the junior engineers to explain *why* the linter was enforcing certain memory-safety rules, turning a tool into a teaching moment."
 *   **The Result:** "PR review times dropped by 15 hours a week, and the junior engineers started proactively catching memory leaks before pushing code."
 

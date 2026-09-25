@@ -2,7 +2,7 @@
 
 Welcome to Day 61. Today we officially enter **Phase 3**.
 
-In 2017, a team of Google researchers published a paper titled *"Attention Is All You Need"*. They were tired of how slow RNNs were to train. They took the Cross-Attention mechanism we learned in Day 47, realized they didn't actually need the RNN loop at all, and threw it in the garbage.
+In 2017, a team of Google researchers published a paper titled *"Attention Is All You Need"*. They were tired of how slow RNNs were to train. They took the Cross-Attention mechanism we learned in Day 47, realized they didn't actually need the <abbr title="Recurrent Neural Network">RNN</abbr> loop at all, and threw it in the garbage.
 
 They invented the **Transformer**. Today, we learn the single mathematical equation that powers ChatGPT, Claude, and LLaMA: **Scaled Dot-Product Self-Attention**.
 
@@ -10,8 +10,8 @@ They invented the **Transformer**. Today, we learn the single mathematical equat
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Death of the RNN
-An RNN must read Word 1, then Word 2, then Word 3. It is sequential. It is slow.
+### 1. The Death of the <abbr title="Recurrent Neural Network">RNN</abbr>
+An <abbr title="Recurrent Neural Network">RNN</abbr> must read Word 1, then Word 2, then Word 3. It is sequential. It is slow.
 The Transformer looks at Word 1, Word 2, and Word 3 *at the exact same time*. It is parallel. It is blazing fast.
 
 But if it looks at all the words simultaneously, how does it know which words are related?
@@ -40,7 +40,7 @@ $$ \text{Attention}(Q,K,V) = \text{softmax}\left(\frac{Q \cdot K^T}{\sqrt{d_k}}\
 
 ### 4. Why divide by $\sqrt{d_k}$? (The Scaling Factor)
 If your vectors are 512 dimensions large, the Dot Product adds up 512 separate multiplications. The resulting score will be massive (e.g., $1000$). 
-If you feed $1000$ into a Softmax function, the Softmax gets pushed into the extreme flat corners of the curve. The gradients vanish to exactly $0.0$, and the AI instantly stops learning!
+If you feed $1000$ into a Softmax function, the Softmax gets pushed into the extreme flat corners of the curve. The gradients vanish to exactly $0.0$, and the <abbr title="Artificial Intelligence">AI</abbr> instantly stops learning!
 By dividing the score by $\sqrt{d_k}$ (e.g., $\sqrt{512} \approx 22.6$), we shrink the scores back down, keeping the variance at exactly $1.0$, allowing Calculus to flow perfectly!
 
 ---
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **No Loops!** Notice there is absolutely no `for` loop in this code. We process all 4 words at the exact same time using `torch.bmm` (Batch Matrix Multiplication). Because GPUs have thousands of cores, this runs almost instantly, whereas an RNN would have to wait 4 sequential steps.
+1. **No Loops!** Notice there is absolutely no `for` loop in this code. We process all 4 words at the exact same time using `torch.bmm` (Batch Matrix Multiplication). Because GPUs have thousands of cores, this runs almost instantly, whereas an <abbr title="Recurrent Neural Network">RNN</abbr> would have to wait 4 sequential steps.
 2. **The 4x4 Attention Grid:** The `scores` tensor has a shape of `[Batch, 4, 4]`. This is literally a 2D map showing the mathematical relationship between every possible combination of words in the sentence.
 
 ---
@@ -144,12 +144,12 @@ if __name__ == "__main__":
 
 ### 🛠️ The Challenge: Padded Sequence Masking
 In reality, sentences have different lengths. We pad them with `<PAD>` tokens to make the batch rectangular (e.g., "I like cats `<PAD>` `<PAD>`"). 
-You do not want the AI to pay attention to `<PAD>` tokens!
+You do not want the <abbr title="Artificial Intelligence">AI</abbr> to pay attention to `<PAD>` tokens!
 **Your Task:**
 1. Conceptually modify the `forward` function to accept an `attention_mask` tensor (a matrix of 1s for real words, and 0s for `<PAD>` words).
 2. Right before you apply the `Softmax`, you must use `masked_fill_`.
 3. Fill all the `<PAD>` locations in the `scaled_scores` tensor with a massive negative number: `-1e9`.
-4. Now, when the `Softmax` runs, $e^{-1,000,000,000}$ evaluates to exactly $0.0$. The AI will mathematically pay $0\%$ attention to the padding!
+4. Now, when the `Softmax` runs, $e^{-1,000,000,000}$ evaluates to exactly $0.0$. The <abbr title="Artificial Intelligence">AI</abbr> will mathematically pay $0\%$ attention to the padding!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -170,6 +170,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Conclude that the derivative of a saturated Softmax (where the output is near 1 or 0) is essentially zero. Without the $\sqrt{1024}$ division, the gradients vanish, and the Transformer is mathematically incapable of learning.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have built the core engine of modern NLP.
+**Task for the end of the day:** Commit your code to Git. You have built the core engine of modern <abbr title="Natural Language Processing">NLP</abbr>.
 
 Tomorrow, in **Day 62**, we realize that words have multiple different relationships simultaneously. We will split our attention into multiple parallel dimensions using **Multi-Head Attention!**

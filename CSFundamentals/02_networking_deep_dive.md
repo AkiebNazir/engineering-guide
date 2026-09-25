@@ -1,6 +1,6 @@
 # Networking & Distributed Communication
 
-Every API call, database connection, and "it works on my machine but not in prod" bug
+Every <abbr title="Application Programming Interface">API</abbr> call, database connection, and "it works on my machine but not in prod" bug
 eventually comes down to bytes moving between two machines. This file starts with
 what those bytes actually are and how two computers agree to exchange them, then goes
 as deep as an L5 interview loop expects: you are expected to know what happens on the
@@ -43,7 +43,7 @@ order; the protocols below exist largely to hide that from you.
 **HTTP, in one exchange.** HTTP is a text-shaped (in HTTP/1.1) *request/response*
 protocol that normally runs on top of TCP: the client sends a request (a method like
 `GET`/`POST`, a path, headers, maybe a body); the server sends back a response (a
-status code like `200`/`404`/`500`, headers, a body). Nearly every web API you've
+status code like `200`/`404`/`500`, headers, a body). Nearly every web <abbr title="Application Programming Interface">API</abbr> you've
 used is "HTTP request/response, with JSON as the body." §3 covers how this evolved
 across three major versions.
 

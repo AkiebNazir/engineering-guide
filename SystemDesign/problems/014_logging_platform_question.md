@@ -25,7 +25,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope QPS, storage, and bandwidth estimates.
-3. API contracts and core data model.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
 5. Buffering/backpressure strategy so ingestion survives backend slowdown without loss or blocking.
 6. Cache, scale, abuse, failure, and observability plan.

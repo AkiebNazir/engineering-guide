@@ -38,7 +38,7 @@ bar
 
 ## `SET` and `GET`
 
-Redis's whole API is a big menu of commands over the shape `COMMAND key [args...]`. The
+Redis's whole <abbr title="Application Programming Interface">API</abbr> is a big menu of commands over the shape `COMMAND key [args...]`. The
 two you'll use most:
 
 ```bash

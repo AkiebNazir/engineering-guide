@@ -19,7 +19,7 @@ Designing them as one pipeline with one accuracy target would either make dashbo
 - **Aggregates**: at most 10M ads × 1,440 minutes = 14.4B rows/day, but only non-zero `(ad, minute)` rows are stored, and 1B clicks cap that at 1B. Assume ~5 clicks per non-zero row: 200M rows/day (2.3K upserts/s) × ~50 B = 10 GB/day, 0.9 TB for 90 days. So the OLAP store sees thousands of upserts a second, not 60K events a second. Hourly rollups by `(ad, country, device)` are smaller still.
 - **Budget pacing**: needs per-campaign spend within seconds, a much smaller keyspace. A campaign holding 5% of peak traffic receives 3,000 clicks/s, so a 5-second pacing interval can overshoot by 15,000 clicks (about $7.5K at an assumed $0.50 per click): that bound is why the interval is a business decision.
 
-## Event schema and API
+## Event schema and <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 ClickEvent {

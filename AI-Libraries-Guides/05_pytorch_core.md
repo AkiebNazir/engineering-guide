@@ -8,7 +8,7 @@ PyTorch is a framework for building Deep Neural Networks. It provides two main s
 2. **Autograd (Automatic Differentiation):** If you write a complex mathematical equation, PyTorch automatically calculates the calculus derivatives (gradients) for you. You do not need to know calculus to train a neural network.
 
 **Why does it exist?**
-Before PyTorch, frameworks like TensorFlow 1.0 required you to build a static "Graph" before running any code, which made debugging a nightmare. PyTorch introduced **Dynamic Computation Graphs**. You write PyTorch exactly like you write normal Python. If you want to put a `print()` statement in the middle of your neural network, you can. It became the undisputed standard for AI research and is now the engine behind almost every modern LLM.
+Before PyTorch, frameworks like TensorFlow 1.0 required you to build a static "Graph" before running any code, which made debugging a nightmare. PyTorch introduced **Dynamic Computation Graphs**. You write PyTorch exactly like you write normal Python. If you want to put a `print()` statement in the middle of your neural network, you can. It became the undisputed standard for <abbr title="Artificial Intelligence">AI</abbr> research and is now the engine behind almost every modern <abbr title="Large Language Model">LLM</abbr>.
 
 ---
 
@@ -96,7 +96,7 @@ Every neural network in PyTorch must inherit from `torch.nn.Module`. You must de
 2. `forward`: Define how the data flows through those layers.
 
 ### Deep Dive on `nn.Linear(in_features, out_features, bias)`
-This is the foundational building block of AI (also called a Dense or Fully Connected layer). It applies a linear transformation: $y = xA^T + b$.
+This is the foundational building block of <abbr title="Artificial Intelligence">AI</abbr> (also called a Dense or Fully Connected layer). It applies a linear transformation: $y = xA^T + b$.
 - `in_features` (int): The number of inputs coming in. 
   - *Effect:* If your image has 784 pixels, this MUST be 784. If it's 783, it will crash.
 - `out_features` (int): The number of outputs (neurons).
@@ -143,7 +143,7 @@ The Optimizer is the algorithm that actually updates the weights using the gradi
 
 ### Method Breakdown: `torch.optim.Adam(params, lr, weight_decay)`
 - `params`: What variables is this optimizer allowed to change? (Usually `model.parameters()`).
-- `lr` (Learning Rate - float): The most important parameter in AI. It dictates how large of a "step" the optimizer takes down the loss landscape.
+- `lr` (Learning Rate - float): The most important parameter in <abbr title="Artificial Intelligence">AI</abbr>. It dictates how large of a "step" the optimizer takes down the loss landscape.
   - *Effect of increasing too high (e.g., 0.1):* The model takes massive steps. It will likely overshoot the valley (the minimum loss) and bounce around the walls of the canyon forever. The loss will explode to `NaN`.
   - *Effect of decreasing too low (e.g., 0.0000001):* The model takes microscopic steps. It will take 5 weeks to train, or it might get permanently stuck in a shallow "local minimum" ditch. The sweet spot is usually `1e-3` to `3e-4`.
 - `weight_decay` (L2 Regularization - float): Default is `0`.
@@ -176,7 +176,7 @@ loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
 
 ## 8. The Holy Grail: The Standard PyTorch Training Loop
 
-Every single AI model on Earth, from a 2-layer toy model to the massive 70-Billion parameter Llama-3, uses this exact same 5-step loop. Memorize this.
+Every single <abbr title="Artificial Intelligence">AI</abbr> model on Earth, from a 2-layer toy model to the massive 70-Billion parameter Llama-3, uses this exact same 5-step loop. Memorize this.
 
 ```python
 # 1. Create dummy data (Batch of 32 samples, each with 10 features)

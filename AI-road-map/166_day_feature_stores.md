@@ -1,4 +1,4 @@
-# Day 166: Feature Stores & Feature Engineering for LLM Apps
+# Day 166: Feature Stores & Feature Engineering for <abbr title="Large Language Model">LLM</abbr> Apps
 
 Welcome to Day 166.
 
@@ -13,7 +13,7 @@ Today, we learn about **Feature Stores**. We will learn how to pre-calculate com
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. What is a Feature?
-In ML, a "Feature" is a specific piece of data used to train a model or make a prediction.
+In <abbr title="Machine Learning">ML</abbr>, a "Feature" is a specific piece of data used to train a model or make a prediction.
 - Raw Data: `{"timestamp": "2026-05-01 12:00", "amount": 50}`
 - Feature: `num_transactions_last_24h = 12`
 
@@ -23,17 +23,17 @@ Backend Engineers write Java code to calculate those exact same features in prod
 Inevitably, the Java code calculates `num_transactions_last_24h` slightly differently than the Python code. The model receives bad data in production and its accuracy plummets. This is **Training-Serving Skew**.
 
 ### 3. The Feature Store Solution
-*Analogy:* A Feature Store is a highly organized buffet. The chefs (Data Pipelines) prep the food (Features) in the back, ensuring perfect consistency. They place the food in warmers. When a customer (ML Model) needs food, they instantly grab it from the warmer without waiting for it to be cooked.
+*Analogy:* A Feature Store is a highly organized buffet. The chefs (Data Pipelines) prep the food (Features) in the back, ensuring perfect consistency. They place the food in warmers. When a customer (<abbr title="Machine Learning">ML</abbr> Model) needs food, they instantly grab it from the warmer without waiting for it to be cooked.
 
 A Feature Store (like **Feast** or **Tecton**) provides:
 1. **A Single Source of Truth:** Features are defined in one place.
 2. **Offline Store (Batch):** Stores massive historical data in cheap data warehouses (Snowflake, BigQuery) for training models.
 3. **Online Store (Real-Time):** Syncs the latest feature values to an ultra-fast database (Redis, DynamoDB) for sub-10ms retrieval during production inference.
 
-### 4. Feature Stores for LLMs (Personalized RAG)
-Feature stores aren't just for tabular ML! 
-Imagine a "Support Agent LLM". A user logs in and asks, "Why was I charged?"
-Instead of the LLM blindly searching a vector database, it instantly hits the Feature Store requesting the `user_profile` features. The Feature Store returns `subscription_tier: premium, last_payment_status: failed`. The LLM injects these real-time features into its prompt and gives a perfectly personalized answer instantly.
+### 4. Feature Stores for LLMs (Personalized <abbr title="Retrieval-Augmented Generation">RAG</abbr>)
+Feature stores aren't just for tabular <abbr title="Machine Learning">ML</abbr>! 
+Imagine a "Support Agent <abbr title="Large Language Model">LLM</abbr>". A user logs in and asks, "Why was I charged?"
+Instead of the <abbr title="Large Language Model">LLM</abbr> blindly searching a vector database, it instantly hits the Feature Store requesting the `user_profile` features. The Feature Store returns `subscription_tier: premium, last_payment_status: failed`. The <abbr title="Large Language Model">LLM</abbr> injects these real-time features into its prompt and gives a perfectly personalized answer instantly.
 
 ---
 
@@ -85,7 +85,7 @@ driver_hourly_stats_view = FeatureView(
 )
 ```
 
-### Step 3: Fetching Features (The ML Engineer Workflow)
+### Step 3: Fetching Features (The <abbr title="Machine Learning">ML</abbr> Engineer Workflow)
 
 **A. Fetching Historical Data for Training (Offline)**
 When training a model, the Data Scientist uses Feast to generate a massive, point-in-time correct dataset.
@@ -136,7 +136,7 @@ print(feature_vector)
 ```
 
 ### 🔍 Understanding the Enterprise Value
-Because both the Training Script and the Production API call the exact same `FeatureStore` object, **Training-Serving Skew is eliminated**. The features are guaranteed to be computed identically.
+Because both the Training Script and the Production <abbr title="Application Programming Interface">API</abbr> call the exact same `FeatureStore` object, **Training-Serving Skew is eliminated**. The features are guaranteed to be computed identically.
 
 ---
 
@@ -148,7 +148,7 @@ Read the official [Feast Quickstart Guide](https://docs.feast.dev/getting-starte
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Design a feature platform for an LLM-powered personalized recommendation system serving 50 Million users. Features include: user embeddings (updated daily), session features (updated real-time), and content features. Discuss consistency, freshness, and the architecture."*
+*"Design a feature platform for an <abbr title="Large Language Model">LLM</abbr>-powered personalized recommendation system serving 50 Million users. Features include: user embeddings (updated daily), session features (updated real-time), and content features. Discuss consistency, freshness, and the architecture."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
@@ -156,10 +156,10 @@ A "Strong Hire" candidate must articulate:
 2. **Freshness Tiers:** 
    - **Batch Features (Daily):** User embeddings are calculated nightly via Apache Spark, and `feast materialize` syncs them to Redis by 3:00 AM.
    - **Streaming Features (Real-Time):** Session features (e.g., "User clicked 3 action movies in the last minute") must be processed via Apache Flink or Kafka Streams and written directly to the Online Store (Redis) instantly.
-3. **LLM Integration:** During inference, the API Gateway hits the Feature Store to retrieve the user's batch embeddings and real-time session stats. It passes both into the LLM prompt as context, ensuring the LLM's recommendation is perfectly personalized up to the millisecond.
-4. **Point-in-Time Correctness:** Emphasize that when extracting offline data for fine-tuning the LLM, the Feature Store must prevent "data leakage" (accidentally training the model on future feature values).
+3. **<abbr title="Large Language Model">LLM</abbr> Integration:** During inference, the <abbr title="Application Programming Interface">API</abbr> Gateway hits the Feature Store to retrieve the user's batch embeddings and real-time session stats. It passes both into the <abbr title="Large Language Model">LLM</abbr> prompt as context, ensuring the <abbr title="Large Language Model">LLM</abbr>'s recommendation is perfectly personalized up to the millisecond.
+4. **Point-in-Time Correctness:** Emphasize that when extracting offline data for fine-tuning the <abbr title="Large Language Model">LLM</abbr>, the Feature Store must prevent "data leakage" (accidentally training the model on future feature values).
 
 ---
 **Task for the end of the day:** Review what "Point-in-Time Correctness" means in the context of Machine Learning.
 
-Tomorrow, in **Day 167**, we learn **Monitoring & Observability** for ML. How do you monitor a model using Grafana when its predictions start slowly drifting out of alignment with reality?
+Tomorrow, in **Day 167**, we learn **Monitoring & Observability** for <abbr title="Machine Learning">ML</abbr>. How do you monitor a model using Grafana when its predictions start slowly drifting out of alignment with reality?

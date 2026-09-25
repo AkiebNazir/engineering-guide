@@ -1,6 +1,6 @@
 # Bonus: How Postgres Executes a Query
 
-> **This level is optional.** It doesn't teach any new SQL or any new API — it
+> **This level is optional.** It doesn't teach any new SQL or any new <abbr title="Application Programming Interface">API</abbr> — it
 > connects the fifteen levels before it into one mental picture of what actually
 > happens, end to end, inside Postgres, between you sending a query string and
 > getting rows back. Read levels 00-14 first; this is the "so that's how all of that

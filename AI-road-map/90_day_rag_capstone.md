@@ -1,9 +1,9 @@
-# Day 90: Phase 3 Capstone (Production RAG)
+# Day 90: Phase 3 Capstone (Production <abbr title="Retrieval-Augmented Generation">RAG</abbr>)
 
 Welcome to Day 90. This is the culmination of everything we have learned since Day 67.
 We have learned Transformers, Flash Attention, Vector Databases, Hybrid Search, and Prompt Engineering. 
 
-Today, we assemble all these pieces into a single, massive **Enterprise RAG System**. This is the exact architecture deployed by Fortune 500 companies to interact with their private knowledge bases.
+Today, we assemble all these pieces into a single, massive **Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr> System**. This is the exact architecture deployed by Fortune 500 companies to interact with their private knowledge bases.
 
 ---
 
@@ -17,14 +17,14 @@ Let's trace the lifecycle of a single query through the system:
 4. **Hybrid Search:** The DB runs a Dense Semantic Search (for "warranty") AND a Sparse BM25 Search (for "AX-990").
 5. **RRF Merge:** The two lists are mathematically merged using Reciprocal Rank Fusion to extract the Top 50 documents.
 6. **Cross-Encoder Reranker:** A massive BERT model reads the query and the Top 50 documents simultaneously using full Self-Attention. It precisely extracts the Top 3 absolute best chunks.
-7. **LLM Generation:** The Top 3 chunks are pasted into a strict System Prompt. The LLM acts purely as a reading comprehension engine and outputs the final answer.
+7. **<abbr title="Large Language Model">LLM</abbr> Generation:** The Top 3 chunks are pasted into a strict System Prompt. The <abbr title="Large Language Model">LLM</abbr> acts purely as a reading comprehension engine and outputs the final answer.
 
-### 2. Evaluating RAG (The RAGAS Framework)
-If you update your embedding model, how do you know if your RAG system got better or worse? You cannot use unit tests. You must use **LLM-as-a-Judge**.
-The industry standard framework is **RAGAS** (RAG Assessment). It evaluates three things:
+### 2. Evaluating <abbr title="Retrieval-Augmented Generation">RAG</abbr> (The RAGAS Framework)
+If you update your embedding model, how do you know if your <abbr title="Retrieval-Augmented Generation">RAG</abbr> system got better or worse? You cannot use unit tests. You must use **<abbr title="Large Language Model">LLM</abbr>-as-a-Judge**.
+The industry standard framework is **RAGAS** (<abbr title="Retrieval-Augmented Generation">RAG</abbr> Assessment). It evaluates three things:
 - **Context Precision:** Look at the Top 3 retrieved chunks. Did the Vector DB actually find the correct information? If the chunks contain garbage, the DB failed.
-- **Faithfulness (Grounding):** Look at the final LLM answer. Are the facts in the answer *actually* supported by the retrieved chunks? Or did the LLM hallucinate based on its pre-trained weights?
-- **Answer Relevance:** Did the LLM actually answer the user's specific question, or did it just ramble about the topic?
+- **Faithfulness (Grounding):** Look at the final <abbr title="Large Language Model">LLM</abbr> answer. Are the facts in the answer *actually* supported by the retrieved chunks? Or did the <abbr title="Large Language Model">LLM</abbr> hallucinate based on its pre-trained weights?
+- **Answer Relevance:** Did the <abbr title="Large Language Model">LLM</abbr> actually answer the user's specific question, or did it just ramble about the topic?
 
 ---
 
@@ -147,15 +147,15 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Modularity:** Notice how completely separate the DB Retrieval, Reranking, and Generation steps are. In a production codebase, these are isolated microservices. If OpenAI goes down, your Hybrid Search API still works perfectly.
-2. **The LLM Judge:** We didn't ask the user if the answer was good. We built an automated pipeline that can grade 10,000 RAG queries overnight and output a dashboard showing that $98\%$ of answers passed the Faithfulness check!
+1. **The Modularity:** Notice how completely separate the DB Retrieval, Reranking, and Generation steps are. In a production codebase, these are isolated microservices. If OpenAI goes down, your Hybrid Search <abbr title="Application Programming Interface">API</abbr> still works perfectly.
+2. **The <abbr title="Large Language Model">LLM</abbr> Judge:** We didn't ask the user if the answer was good. We built an automated pipeline that can grade 10,000 <abbr title="Retrieval-Augmented Generation">RAG</abbr> queries overnight and output a dashboard showing that $98\%$ of answers passed the Faithfulness check!
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: Fast API Deployment
-Your Python script works. Now make it an Enterprise API.
+### 🛠️ The Challenge: Fast <abbr title="Application Programming Interface">API</abbr> Deployment
+Your Python script works. Now make it an Enterprise <abbr title="Application Programming Interface">API</abbr>.
 **Your Task:**
 1. Install `fastapi` and `uvicorn`.
 2. Wrap your `EnterpriseRAG` class inside a FastAPI app.
@@ -169,7 +169,7 @@ Your Python script works. Now make it an Enterprise API.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design a RAG-powered Enterprise Knowledge Base for a company with 500,000 internal documents. Cover Document Processing, Access Control, Hybrid Retrieval, Real-time Updates, and Evaluation."*
+*"Design a <abbr title="Retrieval-Augmented Generation">RAG</abbr>-powered Enterprise Knowledge Base for a company with 500,000 internal documents. Cover Document Processing, Access Control, Hybrid Retrieval, Real-time Updates, and Evaluation."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -181,14 +181,14 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Explain that the Vector DB (e.g., Qdrant) must use strict Pre-Filtering. A user's JWT token is parsed to find their `department_id`. The vector search mathematically restricts the search space to only chunks containing that `department_id` in their metadata.
 3. **Retrieval & Evaluation:**
    - Define the Hybrid (Dense + Sparse) -> RRF -> Cross-Encoder pipeline to maximize context precision.
-   - Explain that you will build a CI/CD pipeline running the RAGAS framework. Every time the Embedding model or LLM is updated, you run 500 historical queries and measure Faithfulness and Answer Relevance before deploying to production.
+   - Explain that you will build a <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline running the RAGAS framework. Every time the Embedding model or <abbr title="Large Language Model">LLM</abbr> is updated, you run 500 historical queries and measure Faithfulness and Answer Relevance before deploying to production.
 
 ---
 
 ### 🎉 CONGRATULATIONS!
 You have completed **Phase 3** of the Master Plan. 
 
-You have learned how to use LLMs to build production applications. But we have treated the LLM as a "Black Box" API. 
+You have learned how to use LLMs to build production applications. But we have treated the <abbr title="Large Language Model">LLM</abbr> as a "Black Box" <abbr title="Application Programming Interface">API</abbr>. 
 
 **Tomorrow, we cross the threshold.** 
 In **Phase 4 (Days 91-120)**, we pry open the Black Box. We will learn how to build, train, fine-tune, and align massive Language Models across clusters of GPUs! We begin tomorrow with Day 91: The Architecture of LLaMA, Mistral, and Gemma.

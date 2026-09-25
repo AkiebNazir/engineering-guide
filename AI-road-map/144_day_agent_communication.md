@@ -3,7 +3,7 @@
 Welcome to Day 144. 
 
 We have built Multi-Agent systems using LangGraph and CrewAI. But in those frameworks, all the Agents live inside the *exact same Python script*. 
-What happens when companies start deploying Agents independently? If your personal AWS AI Assistant needs to schedule a meeting with your boss's Azure AI Assistant, how do they talk to each other over the internet?
+What happens when companies start deploying Agents independently? If your personal AWS <abbr title="Artificial Intelligence">AI</abbr> Assistant needs to schedule a meeting with your boss's Azure <abbr title="Artificial Intelligence">AI</abbr> Assistant, how do they talk to each other over the internet?
 
 Today, we learn **Inter-Agent Protocols**, Message Queues, and the future **Agent-to-Agent (A2A)** standard.
 
@@ -22,7 +22,7 @@ Major tech companies are developing strict A2A Protocol Standards. An A2A messag
 
 ### 2. Communication Patterns
 How do the messages physically travel?
-- **Direct Messaging (REST API):** Agent A knows Agent B's exact URL endpoint and sends a direct HTTP POST request. (Rigid, breaks if Agent B goes offline).
+- **Direct Messaging (REST <abbr title="Application Programming Interface">API</abbr>):** Agent A knows Agent B's exact URL endpoint and sends a direct HTTP POST request. (Rigid, breaks if Agent B goes offline).
 - **Publish-Subscribe (Pub/Sub):** Agent A publishes a message *"Database Updated"* to a Kafka topic. It doesn't know who is listening. Agents B, C, and D are subscribed to that topic, and they all react simultaneously!
 - **The Blackboard (Shared State):** All agents are connected to a central Redis database. Agent A writes a partial solution to Redis. Agent B reads it, improves it, and overwrites it. 
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The JSON Envelope:** By enforcing a strict JSON schema (`sender`, `type`, `payload`), the Agents don't have to use expensive LLM tokens to guess *who* sent the message. The Python backend routes the message instantly based on the header. The LLM only parses the `payload`!
+1. **The JSON Envelope:** By enforcing a strict JSON schema (`sender`, `type`, `payload`), the Agents don't have to use expensive <abbr title="Large Language Model">LLM</abbr> tokens to guess *who* sent the message. The Python backend routes the message instantly based on the header. The <abbr title="Large Language Model">LLM</abbr> only parses the `payload`!
 2. **Scatter-Gather Efficiency:** Notice how the Coordinator delegated the work. Instead of the Coordinator trying to figure out the weather and the traffic itself, it outsourced it to specialized micro-agents. In a real system, those two requests would run in parallel, cutting latency in half!
 
 ---
@@ -139,8 +139,8 @@ Spend 15 minutes drafting a verbal answer to this question.
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
-1. **The API Gateway & Protocol:** 
-   - State that third-party agents cannot speak directly to internal agents. All messages must pass through a public API Gateway. 
+1. **The <abbr title="Application Programming Interface">API</abbr> Gateway & Protocol:** 
+   - State that third-party agents cannot speak directly to internal agents. All messages must pass through a public <abbr title="Application Programming Interface">API</abbr> Gateway. 
    - The Gateway enforces the strict A2A JSON Schema and blocks raw unstructured text to prevent injection attacks.
 2. **The Trust Model (Zero Trust):**
    - You must treat third-party Agents as hostile threat actors. 
@@ -154,4 +154,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 We now have agents communicating seamlessly. 
 But how do we orchestrate an entire ecosystem of internal tools and servers? 
 
-Tomorrow, in **Day 145**, we return to the **Model Context Protocol (MCP)** to learn how to build enterprise **MCP Ecosystems and Server Registries**!
+Tomorrow, in **Day 145**, we return to the **Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>)** to learn how to build enterprise **<abbr title="Model Context Protocol">MCP</abbr> Ecosystems and Server Registries**!

@@ -1,9 +1,9 @@
-# Day 177: MAANG Mock Interview: ML System Design Deep Dive
+# Day 177: MAANG Mock Interview: <abbr title="Machine Learning">ML</abbr> System Design Deep Dive
 
 Welcome to Day 177.
 
 You have learned the theory. Now you must perform.
-At companies like Meta, Google, and Amazon, the ML System Design interview is the ultimate gatekeeper for Senior and Staff positions. You are given a dry-erase marker, a whiteboard, and a wildly ambiguous prompt: *"Design a content moderation system for Instagram."*
+At companies like Meta, Google, and Amazon, the <abbr title="Machine Learning">ML</abbr> System Design interview is the ultimate gatekeeper for Senior and Staff positions. You are given a dry-erase marker, a whiteboard, and a wildly ambiguous prompt: *"Design a content moderation system for Instagram."*
 
 You have 45 minutes. If you immediately start talking about Neural Network architectures, you fail.
 Today, we learn the **6-Step Interview Framework** that guarantees a structured, Senior-level performance.
@@ -29,14 +29,14 @@ How do we know if the system is good?
 
 ### 3. High-Level Architecture (Minutes 10 - 20)
 Draw the boxes. Do not write code.
-- Draw the User $\rightarrow$ API Gateway $\rightarrow$ Message Queue (Kafka) $\rightarrow$ ML Workers $\rightarrow$ Databases (Redis / Cassandra).
+- Draw the User $\rightarrow$ <abbr title="Application Programming Interface">API</abbr> Gateway $\rightarrow$ Message Queue (Kafka) $\rightarrow$ <abbr title="Machine Learning">ML</abbr> Workers $\rightarrow$ Databases (Redis / Cassandra).
 - Explain the flow of data out loud as you draw.
 
-### 4. Deep Dive on ML Components (Minutes 20 - 35)
-Now you zoom in on the specific AI models.
+### 4. Deep Dive on <abbr title="Machine Learning">ML</abbr> Components (Minutes 20 - 35)
+Now you zoom in on the specific <abbr title="Artificial Intelligence">AI</abbr> models.
 - *Data Collection:* How do we get labels? (Human moderators, active learning).
 - *Feature Engineering:* What features matter? (User history, image embeddings, text sentiment).
-- *Model Selection:* Why use a Two-Tower model here instead of an LLM? (Explain the latency/cost trade-offs).
+- *Model Selection:* Why use a Two-Tower model here instead of an <abbr title="Large Language Model">LLM</abbr>? (Explain the latency/cost trade-offs).
 
 ### 5. Scale & Operational Concerns (Minutes 35 - 40)
 How does it survive the real world?
@@ -110,7 +110,7 @@ def explain_tradeoffs_to_interviewer():
 ```
 
 ### 🔍 Understanding the Enterprise Value
-The pseudo-code above proves you are a Senior Engineer. A Junior Engineer will jump straight to "Let's use a massive multimodal LLM." A Senior Engineer thinks about the **cost, latency, and fallback mechanisms** first.
+The pseudo-code above proves you are a Senior Engineer. A Junior Engineer will jump straight to "Let's use a massive multimodal <abbr title="Large Language Model">LLM</abbr>." A Senior Engineer thinks about the **cost, latency, and fallback mechanisms** first.
 
 ---
 
@@ -119,7 +119,7 @@ The pseudo-code above proves you are a Senior Engineer. A Junior Engineer will j
 ### 🛠️ The Challenge
 Cold Practice. Set a timer for 45 minutes. Find a whiteboard or a blank piece of paper.
 **Prompt:** *"Design a real-time language translation system for video calls (like Skype/Zoom)."*
-Force yourself to spend exactly 5 minutes on Requirements, 5 on Metrics, 10 on Architecture, 15 on ML Deep Dive, and 5 on Scale. If you get stuck, practice "thinking out loud" so the interviewer can guide you.
+Force yourself to spend exactly 5 minutes on Requirements, 5 on Metrics, 10 on Architecture, 15 on <abbr title="Machine Learning">ML</abbr> Deep Dive, and 5 on Scale. If you get stuck, practice "thinking out loud" so the interviewer can guide you.
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -138,6 +138,6 @@ A "Strong Hire" candidate must articulate:
 5. **Operational:** Explain how to handle the "Justin Bieber Problem" (when a massive influencer posts, it blows up the caching layer). Propose a Push/Pull hybrid caching architecture for celebrity feeds.
 
 ---
-**Task for the end of the day:** Watch a mock ML System Design interview on YouTube (channels like *Exponent* or *Grokking*). Notice the pacing and how the candidate continuously checks in with the interviewer.
+**Task for the end of the day:** Watch a mock <abbr title="Machine Learning">ML</abbr> System Design interview on YouTube (channels like *Exponent* or *Grokking*). Notice the pacing and how the candidate continuously checks in with the interviewer.
 
-Tomorrow, in **Day 178**, we tackle the other half of the technical loop: **ML Coding & Theory**. Prepare to implement algorithms from scratch!
+Tomorrow, in **Day 178**, we tackle the other half of the technical loop: **<abbr title="Machine Learning">ML</abbr> Coding & Theory**. Prepare to implement algorithms from scratch!

@@ -2,7 +2,7 @@
 
 ## Goal and contract
 
-A route is the minimum-time path on a directed road graph whose edge weights blend **live probe speeds, a learned time-of-day profile and free-flow speed**. Continent-scale shard groups hold the graph in RAM. An ML layer corrects the ETA but never edits the path.
+A route is the minimum-time path on a directed road graph whose edge weights blend **live probe speeds, a learned time-of-day profile and free-flow speed**. Continent-scale shard groups hold the graph in RAM. An <abbr title="Machine Learning">ML</abbr> layer corrects the ETA but never edits the path.
 
 - **One snapshot per answer.** Every route names the `build_id` (map version) and `metric_version` (weights) that produced it, so a retry or a replay sees the same numbers.
 - **Not promised:** the provably fastest route (search runs on a snapshot metric, candidates are re-priced along their own path, regret is measured), an exact ETA, or a fresh weight on a road nobody drove. No data falls back to the historical profile, never to free flow.
@@ -25,7 +25,7 @@ A route is the minimum-time path on a directed road graph whose edge weights ble
 | Latency at 3,000 km | gateway 10 + snap 5 + search 20 + alternatives 20 + unpack and geometry 30 + re-price 2 + ETA 10 + network 30 | 127 ms vs 300 ms | 2.4× tail slack. Payload 72 + 2 × 24 KB = 120 KB. |
 | Offline pack | CH: (10M edges + 10M shortcuts) × 8 B + 4M nodes × 8 B + turns 8 MB = 200 MB | + ~200 MB tiles and search | No slack under 400 MB: cap regions at 10M edges. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/routes:compute {origin, destination, waypoints[], depart_at | arrive_by, alternatives:3, avoid[], request_id}
@@ -197,13 +197,13 @@ Trade-off to state: "I chose a CRP-style customizable overlay served from RAM by
 4. **Hash-sharding the graph.** Every relaxation becomes a hop. Shard geographically with a halo.
 5. **Re-routing on every ETA wobble.** Add a minimum saving, fork lead time and hysteresis, or drivers flip and herd.
 6. **Nearest-road snapping as map matching.** Use an HMM with a route prior.
-7. **ML replacing the router.** A pathless trip-time model is unexplainable. Learn the residual.
+7. **<abbr title="Machine Learning">ML</abbr> replacing the router.** A pathless trip-time model is unexplainable. Learn the residual.
 8. **Edge ids that change between builds.** Live sessions break at the swap. Use stable `segment_id`s.
 
 ## Going from L5 to L6
 
 - **Build vs buy.** Start with OSRM (MLD), Valhalla or GraphHopper on licensed or open map data. Build the traffic pipeline, ETA model and gateway, the differentiators. Check licence terms.
-- **Phases.** Static profiles, then live probes and customization, then ML ETA, each gated on regret and ETA error.
+- **Phases.** Static profiles, then live probes and customization, then <abbr title="Machine Learning">ML</abbr> ETA, each gated on regret and ETA error.
 - **Blast radius.** Map data, traffic, routing and ETA are separate teams behind `build_id` and `metric_version`, so a poisoned feed cannot corrupt a build.
 - **Measure first.** Trip-length distribution (the 90/9/1 assumption drives p99), coverage by road class, regret, ETA error, reroute acceptance. Cost is RAM per vehicle profile: trucks and bikes each add one.
 

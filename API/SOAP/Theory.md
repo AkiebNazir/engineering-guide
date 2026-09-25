@@ -283,7 +283,7 @@ Practical rules for any language:
 
 ## Wrapping a Legacy SOAP Service (the Anti-Corruption Layer)
 
-Most teams do not want SOAP spreading through their architecture. The standard answer is a **gateway** that owns the XML and exposes a clean API:
+Most teams do not want SOAP spreading through their architecture. The standard answer is a **gateway** that owns the XML and exposes a clean <abbr title="Application Programming Interface">API</abbr>:
 
 ```arch
 %% caption: The gateway owns the XML, so SOAP never spreads past it.
@@ -311,7 +311,7 @@ The gateway translates **requests** (JSON to XML), **responses** (XML to JSON, d
 
 Go lab 5 builds this **generically from the WSDL** at startup: it discovers the endpoint, the operations and every field with its XSD type, then translates any operation with no per-operation code, marks reads as retryable and writes as not, and exposes `GET /api/operations` describing itself.
 
-**Migration path:** run the gateway in front of the legacy service; move clients to the JSON API; build the replacement service behind the same JSON contract; switch the gateway's back end; retire SOAP.
+**Migration path:** run the gateway in front of the legacy service; move clients to the JSON <abbr title="Application Programming Interface">API</abbr>; build the replacement service behind the same JSON contract; switch the gateway's back end; retire SOAP.
 
 ## Testing and Debugging
 
@@ -380,7 +380,7 @@ Setup from the `API/` folder: `pip install -r requirements.txt` (`zeep` is neede
 | 2 | `02_soap_server_net_http` | A generic typed-operation registry, token-based dispatch, faults with detail, `?wsdl`, 40-goroutine correctness test |
 | 3 | `03_client_timeouts_faults_retries` | Timeouts at three levels, four-way error classification, idempotency-aware retries, HTML-instead-of-XML detection, log redaction |
 | 4 | `04_ws_security_username_token` | Digest + Timestamp + nonce cache verification, a cross-language known-answer test, and a demonstration that the body is not protected |
-| 5 | `05_wsdl_driven_json_gateway` | Reading a WSDL at runtime and exposing any SOAP operation as JSON, fault-to-HTTP mapping, decimals as strings, self-describing API |
+| 5 | `05_wsdl_driven_json_gateway` | Reading a WSDL at runtime and exposing any SOAP operation as JSON, fault-to-HTTP mapping, decimals as strings, self-describing <abbr title="Application Programming Interface">API</abbr> |
 
 ```bash
 python SOAP/labs/python/04_ws_security_username_token.py
@@ -398,6 +398,6 @@ go run ./SOAP/labs/golang/05_wsdl_driven_json_gateway
 
 ## Where To Go Next
 
-*   **`REST/`**: contrast the two models; the gateway in Go lab 5 is a mini REST API.
+*   **`REST/`**: contrast the two models; the gateway in Go lab 5 is a mini REST <abbr title="Application Programming Interface">API</abbr>.
 *   **`gRPC/`**: the modern typed-contract, binary alternative for internal services.
 *   **`Fundamentals/03_cross_cutting_concerns.md`**: idempotency, retries and security checklists apply to SOAP unchanged.

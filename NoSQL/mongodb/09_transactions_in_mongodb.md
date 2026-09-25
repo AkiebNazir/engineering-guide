@@ -36,7 +36,7 @@ with client.start_session() as session:
 
 `with_transaction` is pymongo's recommended entry point over the lower-level `start_transaction()`/`commit_transaction()`/`abort_transaction()` calls — it retries the whole callback automatically on the specific transient errors MongoDB tells drivers are safe to retry (`TransientTransactionError`, `UnknownTransactionCommitResult`), which real transactions need because a replica set can have transient issues (a stepdown, a network blip) that a naive single-attempt transaction would surface as a hard failure for no good reason. Every operation inside the callback must pass `session=session` — that's what actually associates a write with the transaction; forgetting it silently runs that one operation *outside* the transaction instead of raising an error.
 
-**The same transfer, in Go**, using the Go driver's session/transaction API — `Session.WithTransaction` is the direct equivalent of pymongo's `with_transaction`, and every operation inside the callback takes the callback's own `context.Context` (`sc`, derived from the session) instead of a Python `session=` keyword argument — that context IS what associates the write with the transaction:
+**The same transfer, in Go**, using the Go driver's session/transaction <abbr title="Application Programming Interface">API</abbr> — `Session.WithTransaction` is the direct equivalent of pymongo's `with_transaction`, and every operation inside the callback takes the callback's own `context.Context` (`sc`, derived from the session) instead of a Python `session=` keyword argument — that context IS what associates the write with the transaction:
 
 ```go
 session, _ := client.StartSession()

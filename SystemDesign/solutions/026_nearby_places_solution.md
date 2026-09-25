@@ -11,7 +11,7 @@ A read-dominated service (50K searches/s vs ~12 writes/s) where place data can b
 - **Reads**: 50K QPS peak. If one index server handles ~5K QPS, ~10 servers plus replicas per region; regional deployment keeps latency low.
 - **Writes**: 1M updates/day ≈ 12/s — trivial; an asynchronous pipeline is fine.
 
-## API and data model
+## <abbr title="Application Programming Interface">API</abbr> and data model
 
 ```text
 GET /v1/places/search?lat=37.78&lng=-122.41&radius_m=2000&category=coffee&open_now=true&page_token=…

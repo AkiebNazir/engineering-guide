@@ -801,7 +801,7 @@ zip_code = order.shipping_zip()
 ```
 
 **Don't apply it mechanically.** It is about coupling to *structure that might change*,
-not about counting dots. `df.groupby("x").sum().reset_index()` is a fluent API over one
+not about counting dots. `df.groupby("x").sum().reset_index()` is a fluent <abbr title="Application Programming Interface">API</abbr> over one
 abstraction and is fine. `Path("a").parent.name` navigates value objects that will never
 restructure — also fine. Adding `order.shipping_zip()`, `order.shipping_city()`,
 `order.shipping_country()`... to avoid dots creates a shallow, bloated `Order`. Ask:

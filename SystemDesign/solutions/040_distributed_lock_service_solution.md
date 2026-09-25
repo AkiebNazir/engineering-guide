@@ -25,7 +25,7 @@ Question constraints are the contract; (assumed) marks our numbers, to be load-t
 | Hot-node fan-out | 30,000 events / 30,000 sends/s | 1.0 s at the master | The whole 1 s budget: fan out via 300 proxies × 100 clients: 300 sends = 10 ms, then 100 each = 3 ms. |
 | Failover budget | Election 1 to 2 s + wait out old leases 12 s | ~14 s | Survivable window 12 s + 45 s grace = 57 s: 4× margin. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 Every write carries `(session_id, seq)`; the master keeps the last `seq` and response per session and replays it on a retry (client sessions, Ongaro's Raft dissertation, 2014), so retries across a master change are idempotent.
 

@@ -31,7 +31,7 @@ If a neuron's weights accidentally update poorly and fall below zero, ReLU outpu
 ### 4. The SOTA: GELU (BERT) & SiLU (LLaMA)
 To fix the Dying ReLU problem, Google and Microsoft created hyper-advanced, smooth activation functions.
 - **GELU (Gaussian Error Linear Unit):** Used in BERT and GPT. Instead of a hard chop at 0, it uses the Gaussian probability curve. It acts almost exactly like ReLU, but it is beautifully smooth at 0, allowing a tiny trickle of negative numbers to slip through so the neuron never dies.
-- **SiLU (Swish):** Used in Meta's LLaMA. $f(x) = x \cdot \text{Sigmoid}(x)$. It was actually discovered by an AI searching for math formulas. It has a property called **Self-Gating**: the input value mathematically decides its own probability of passing through the gate. This smoothness makes billion-parameter models converge massively faster.
+- **SiLU (Swish):** Used in Meta's LLaMA. $f(x) = x \cdot \text{Sigmoid}(x)$. It was actually discovered by an <abbr title="Artificial Intelligence">AI</abbr> searching for math formulas. It has a property called **Self-Gating**: the input value mathematically decides its own probability of passing through the gate. This smoothness makes billion-parameter models converge massively faster.
 
 ---
 

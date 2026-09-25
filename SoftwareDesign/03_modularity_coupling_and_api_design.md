@@ -1,4 +1,4 @@
-# Modularity, Coupling, and Code-Level API Design
+# Modularity, Coupling, and Code-Level <abbr title="Application Programming Interface">API</abbr> Design
 
 > "The first rule of distributed objects: don't distribute your objects."
 > — Martin Fowler. The first rule of modules: know what each one is hiding.
@@ -19,8 +19,8 @@ in every LLD round.
 |---|---|
 | Deep modules, information hiding, pass-through layers | `01_philosophy_of_software_design.md` §3–§6 |
 | Layered, hexagonal, clean architecture diagrams | `SystemDesign/best_practices/05_architectural_patterns.md` |
-| HTTP/REST/gRPC wire-level API design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `SystemDesign/building_blocks/04_api_design_low_level.md` |
-| Service-level API evolution, sagas | `CSFundamentals/04_software_engineering_deep_dive.md` §3–§4 |
+| HTTP/REST/gRPC wire-level <abbr title="Application Programming Interface">API</abbr> design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `SystemDesign/building_blocks/04_api_design_low_level.md` |
+| Service-level <abbr title="Application Programming Interface">API</abbr> evolution, sagas | `CSFundamentals/04_software_engineering_deep_dive.md` §3–§4 |
 | Error taxonomy code | `PyEngineering/17_error_taxonomy`, `GoEngineering/17_error_taxonomy` |
 | Monorepos and packaging | `PyEngineering/30_packaging_distribution_monorepos` |
 
@@ -354,7 +354,7 @@ There's no line count. Use these tests instead:
 
 ## 7 · Designing function and method signatures
 
-A signature is the smallest API you design, and you design hundreds a week.
+A signature is the smallest <abbr title="Application Programming Interface">API</abbr> you design, and you design hundreds a week.
 
 ### Parameters
 
@@ -456,7 +456,7 @@ def record_seen(user_id: str, db) -> None:
 
 ## 8 · Error contracts
 
-An error is part of the API. Design it as carefully as the success path.
+An error is part of the <abbr title="Application Programming Interface">API</abbr>. Design it as carefully as the success path.
 
 ### Decide what callers can do about it
 
@@ -497,7 +497,7 @@ func (e *ConflictError) Error() string { return fmt.Sprintf("conflict: current v
    `psycopg.errors.UniqueViolation` couples every caller to Postgres. Translate to
    `Conflict` at the adapter. (But keep the cause: `raise Conflict(...) from e`.)
 2. **Wrap with context, don't replace.** `%w` in Go, `raise ... from e` in Python.
-3. **`%w` makes an error part of your API.** In Go, wrapping with `%w` lets callers
+3. **`%w` makes an error part of your <abbr title="Application Programming Interface">API</abbr>.** In Go, wrapping with `%w` lets callers
    `errors.Is` against the inner error — so you can never change that inner error
    without breaking them. Use `%v` when the cause is an implementation detail.
 4. **Don't use exceptions for expected control flow** in hot paths, and don't use
@@ -571,12 +571,12 @@ means callers either over-lock or race.
 
 ---
 
-## 10 · Evolving an API without breaking callers
+## 10 · Evolving an <abbr title="Application Programming Interface">API</abbr> without breaking callers
 
 Once code is published — to other teams, other services, or the public — its
 **observable behaviour** is the contract, not just its signature.
 
-> **Hyrum's Law:** "With a sufficient number of users of an API, it does not matter what
+> **Hyrum's Law:** "With a sufficient number of users of an <abbr title="Application Programming Interface">API</abbr>, it does not matter what
 > you promise in the contract: all observable behaviors of your system will be depended
 > on by somebody."
 
@@ -632,7 +632,7 @@ environment, which is why breaking a popular Python library is so painful.
 
 ## 11 · Configuration and extension points
 
-Every configuration option and extension point is an API with a maintenance cost.
+Every configuration option and extension point is an <abbr title="Application Programming Interface">API</abbr> with a maintenance cost.
 
 ### Configuration
 
@@ -782,7 +782,7 @@ narrowing accepted inputs, and the subtle ones: adding a method to an interface 
 implementers), adding an enum value (breaks exhaustive matches), and — by Hyrum's Law —
 any observable behaviour change with enough users.
 
-**Q: How do you design errors for an API?**
+**Q: How do you design errors for an <abbr title="Application Programming Interface">API</abbr>?**
 By what the caller can do: invalid input (don't retry), not found, conflict (re-read),
 transient (retry with backoff), and bugs (crash). Translate implementation errors at the
 boundary so callers don't depend on your database driver; wrap to keep context and

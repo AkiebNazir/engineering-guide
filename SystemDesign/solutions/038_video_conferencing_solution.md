@@ -25,7 +25,7 @@ The hard decision is the topology. Mesh is quadratic on the client and an MCU co
 | Recording | 100K recorded meetings. Raw top-layer tracks: 100K × (0.7 × 6.03 × 1.5 + 0.17) = **650 Gbps** = 81 GB/s = **3.5 PB/day** at 50% occupancy, 6.4% of SFU egress. Composite 720p: 150 Gbps = 0.81 PB/day, **24 PB** per 30 days. A live-compositing bot: 100K × (4.2 × 0.1 + 1.0) = **142K cores** | Tap raw tracks, composite offline, delete raw after 24 h |
 | Bandwidth cost | 1.68 Mbps × 3,600 s = **0.75 GB** per participant-hour × 6.03M = **4.5 PB/hour**, about $91K/hour at an assumed $0.02/GB | Own backbone and peering, not metered egress |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/meetings {title, start, settings:{e2ee, waiting_room, webinar:{panelists:50, attendees:50000}}} → 201 {meeting_id, join_url}

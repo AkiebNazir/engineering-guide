@@ -7,7 +7,7 @@ file is a way to keep that split from turning into chaos. This file starts with 
 systems get split up at all, then goes as deep as an L5 interview loop expects: you
 are expected to design systems that span multiple teams and evolve safely over
 years. Design patterns (Factory, Singleton) are table stakes; this file covers
-macro-architecture: boundaries, events, distributed transactions, and API evolution.
+macro-architecture: boundaries, events, distributed transactions, and <abbr title="Application Programming Interface">API</abbr> evolution.
 
 For the micro level (complexity, deep modules, naming, errors), read `SoftwareDesign/01_philosophy_of_software_design.md`. For SOLID and patterns, read `SystemDesign/best_practices/`.
 
@@ -31,10 +31,10 @@ whenever it's ready, that's an **asynchronous event** — more resilient to one
 service being slow, harder to trace end to end. §2 is entirely about this second
 style and its trade-offs.
 
-**What an API contract is.** An **API** is the agreed-upon shape of a request and
+**What an <abbr title="Application Programming Interface">API</abbr> contract is.** An **<abbr title="Application Programming Interface">API</abbr>** is the agreed-upon shape of a request and
 response between two services (or a service and its clients): which fields exist,
 what they mean, what's required. Once other teams (or other companies' apps) depend
-on that shape, changing it can break them — §4 is about changing an API without
+on that shape, changing it can break them — §4 is about changing an <abbr title="Application Programming Interface">API</abbr> without
 breaking the programs that already depend on it.
 
 **Why "it works with one service" gets hard with several.** A single database gives
@@ -51,8 +51,8 @@ that covers both — §3 is entirely about how to still make that operation safe
 | Distributed monolith | Services split along the wrong lines: all the network cost, none of the independence |
 | Synchronous call | Caller waits for the response before continuing |
 | Event | A published fact ("this happened"); publisher doesn't know or wait for consumers |
-| API contract | The agreed shape of a request/response between two systems |
-| Breaking change | An API change that an existing client can no longer handle correctly |
+| <abbr title="Application Programming Interface">API</abbr> contract | The agreed shape of a request/response between two systems |
+| Breaking change | An <abbr title="Application Programming Interface">API</abbr> change that an existing client can no longer handle correctly |
 
 With that vocabulary, the rest of this file is the precise, L5-depth version of how
 to draw those service boundaries, coordinate them safely, and evolve them over time.
@@ -157,13 +157,13 @@ sequenceDiagram
 *   **Orchestration (centralized):** An orchestrator (a workflow engine such as Temporal, Cadence, Google Cloud Workflows, AWS Step Functions) calls each step and runs compensations on failure. *Pros:* the flow is explicit and observable. *Cons:* the orchestrator is a critical dependency and can become a "god service".
 *   **Design rules:** order steps so the hardest-to-compensate step runs **last** (charge the card after reserving inventory, not before); make every step and compensation **idempotent** (retries happen); compensations can fail too, so they need retries and alerts; sagas give no isolation — other requests can see intermediate states, so use semantic locks (a `PENDING` status) where it matters.
 
-## 4. API Evolution (Backward Compatibility)
+## 4. <abbr title="Application Programming Interface">API</abbr> Evolution (Backward Compatibility)
 
 L5 engineers don't break their clients, and they remember that mobile apps may run a years-old version.
 *   **Additive changes are safe:** new optional fields, new endpoints, new enum values *if* clients tolerate unknown values.
 *   **Breaking changes:** removing or renaming a field, changing a type or meaning, making an optional field required, tightening validation.
 *   **Tolerant Reader:** clients ignore fields they don't recognize and don't depend on field order.
-*   **Protocol Buffers rules:** never reuse or renumber a field tag; mark removed fields `reserved`; renaming is wire-safe but breaks JSON mappings and generated code; changing `int32` to `string` is breaking. Google publishes these practices as the **API Improvement Proposals (aip.dev)**.
+*   **Protocol Buffers rules:** never reuse or renumber a field tag; mark removed fields `reserved`; renaming is wire-safe but breaks JSON mappings and generated code; changing `int32` to `string` is breaking. Google publishes these practices as the **<abbr title="Application Programming Interface">API</abbr> Improvement Proposals (aip.dev)**.
 *   **Deprecation cycle:** when a break is unavoidable, add `v2` alongside `v1`, measure who still calls `v1`, migrate them, announce a sunset date, and delete `v1` only when traffic is zero (or contractually allowed).
 *   **Expand-and-contract for schema changes:** add the new column/field → dual-write → backfill → switch reads → stop writing the old one → drop it. Every step is independently deployable and reversible.
 
@@ -185,6 +185,6 @@ L5 engineers don't break their clients, and they remember that mobile apps may r
 - [ ] I can explain the outbox pattern and why consumers must be idempotent.
 - [ ] I can say when event sourcing and CQRS are worth their cost.
 - [ ] I can compare 2PC and sagas precisely, including how Spanner makes 2PC safe.
-- [ ] I can list breaking vs non-breaking API changes and the expand-and-contract migration.
+- [ ] I can list breaking vs non-breaking <abbr title="Application Programming Interface">API</abbr> changes and the expand-and-contract migration.
 
 Related: `SystemDesign/best_practices/05_architectural_patterns.md`, `SystemDesign/building_blocks/09_messaging_and_streaming.md`, `11_transactions_and_concurrency.md`; GoEngineering/PyEngineering topics 16-18.

@@ -29,13 +29,13 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 
 **Key decisions.**
 
-- **A two-type API**: objects `(id) → (otype, data)` and time-ordered associations `(id1, atype, id2) → (time, data)`. "Newest 50 comments" is a range read of one association list.
-- **A write-through cache that knows the API.** Followers serve reads; a leader per shard handles writes and misses against sharded MySQL and asynchronously sends invalidations to other followers. The writing follower is updated synchronously, so clients sharing it see their own writes.
+- **A two-type <abbr title="Application Programming Interface">API</abbr>**: objects `(id) → (otype, data)` and time-ordered associations `(id1, atype, id2) → (time, data)`. "Newest 50 comments" is a range read of one association list.
+- **A write-through cache that knows the <abbr title="Application Programming Interface">API</abbr>.** Followers serve reads; a leader per shard handles writes and misses against sharded MySQL and asynchronously sends invalidations to other followers. The writing follower is updated synchronously, so clients sharing it see their own writes.
 - **Shard by source**: an association is stored on the shard of `id1`, so one query touches one server. The paper reports a 96.4% read hit rate.
 
 **Trade-offs.** Eventual consistency, no compare-and-set, no multi-object transactions in this paper, and a bidirectional edge is two associations, so two writes.
 
-**Where it shows up in an interview.** Friends, followers, likes: model objects and typed edges, shard edges by source id, cache at the API level, and name the consistency you give.
+**Where it shows up in an interview.** Friends, followers, likes: model objects and typed edges, shard edges by source id, cache at the <abbr title="Application Programming Interface">API</abbr> level, and name the consistency you give.
 
 ## Haystack (OSDI 2010) and f4 (OSDI 2014)
 
@@ -161,7 +161,7 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 
 **Where it shows up in an interview.** ID generators ([022](../solutions/022_unique_id_generator_solution.md)) and chat: Discord's post says every ID it used was a Snowflake.
 
-## Stripe idempotency keys (API documentation)
+## Stripe idempotency keys (<abbr title="Application Programming Interface">API</abbr> documentation)
 
 **Problem.** A timeout on "charge this card" leaves the client unsure whether it happened, and a blind retry can charge twice.
 

@@ -1,4 +1,4 @@
-# Module 3 — Retrieval-Augmented Generation: RAG Internals
+# Module 3 — Retrieval-Augmented Generation: <abbr title="Retrieval-Augmented Generation">RAG</abbr> Internals
 
 > Scope: the actual token/character-level chunking math, the inverted-index and
 > vector-similarity algorithms underneath "search," score-fusion arithmetic, and the
@@ -8,7 +8,7 @@
 
 ## 0. The Picture First — read this before the formulas
 
-> 💡 RAG is an **open-book exam**. Instead of hoping the model memorized the answer, you first
+> 💡 <abbr title="Retrieval-Augmented Generation">RAG</abbr> is an **open-book exam**. Instead of hoping the model memorized the answer, you first
 > *look up* the right pages, then hand those pages to the model along with the question. The
 > model reads, then answers.
 
@@ -20,10 +20,10 @@ A company chatbot over an employee handbook.
 >
 > **Handbook, page 14:** "Employees in their first year receive 15 days of paid vacation."
 
-| | Prompt sent to the LLM | Likely answer |
+| | Prompt sent to the <abbr title="Large Language Model">LLM</abbr> | Likely answer |
 |---|---|---|
-| **Without RAG** | the question only | a generic guess ("most companies give 10–20 days…") — it has never seen *your* handbook |
-| **With RAG** | page 14's text **+** the question | "15 days in the first year." — read straight off the page |
+| **Without <abbr title="Retrieval-Augmented Generation">RAG</abbr>** | the question only | a generic guess ("most companies give 10–20 days…") — it has never seen *your* handbook |
+| **With <abbr title="Retrieval-Augmented Generation">RAG</abbr>** | page 14's text **+** the question | "15 days in the first year." — read straight off the page |
 
 ### 0.2 Two phases: prepare the library, then look things up
 
@@ -48,7 +48,7 @@ idx:B ..> r:T
 
 <div class="lab" data-viz="flow-rag"></div>
 
-### 0.3 Where RAG can go wrong — one per section
+### 0.3 Where <abbr title="Retrieval-Augmented Generation">RAG</abbr> can go wrong — one per section
 
 | Stage | What can go wrong (in the example) | Section |
 |---|---|---|
@@ -61,8 +61,8 @@ idx:B ..> r:T
 
 ## 1. Core Intuition & Mechanical Problem Statement
 
-RAG exists to solve one mechanical constraint: an LLM's context window is small and
-its parametric knowledge is frozen at training time. RAG is a **retrieval system
+<abbr title="Retrieval-Augmented Generation">RAG</abbr> exists to solve one mechanical constraint: an <abbr title="Large Language Model">LLM</abbr>'s context window is small and
+its parametric knowledge is frozen at training time. <abbr title="Retrieval-Augmented Generation">RAG</abbr> is a **retrieval system
 wired into a generation prompt** — nothing more mystical than: index a corpus, find
 the $k$ most relevant fragments for a query, and concatenate them into the prompt
 before generation. The entire engineering difficulty is in getting "most relevant"
@@ -416,7 +416,7 @@ grid 160x110
 node all "1,000,000 chunks" at 0,0 icon=layers
 node c100 "100 candidates" at 0,1 icon=filter
 node c5 "top 5" at 0,2 icon=sort
-node llm "LLM" at 0,3 icon=llm
+node llm "<abbr title="Large Language Model">LLM</abbr>" at 0,3 icon=llm
 all -> c100 : "BM25 + vector search · milliseconds"
 c100 -> c5 : "cross-encoder · 100 transformer passes"
 c5 -> llm : "packed into prompt"
@@ -498,7 +498,7 @@ Less text → less middle to get lost in.
 ## 3. Low-Level Execution Flow & Data Structures
 
 ```arch
-%% caption: Indexing runs once per corpus, offline; every query then runs sparse and dense retrieval, fuses, re-ranks, packs and calls the LLM.
+%% caption: Indexing runs once per corpus, offline; every query then runs sparse and dense retrieval, fuses, re-ranks, packs and calls the <abbr title="Large Language Model">LLM</abbr>.
 group ix "INDEXING (offline, one-time per corpus)" color=slate icon=archive
 node corp "for doc in corpus" at 1,0 in ix shape=pill color=slate
 node ch "chunks = chunk(doc)" at 1,1 in ix color=slate sub="§2.1"
@@ -513,7 +513,7 @@ node ca "candidates = fused[:100]" at 0,5 in qt color=teal
 node rr "reranked" at 1,5 in qt color=teal sub="cross_encoder_score(query, candidates) · top-k"
 node cx "context" at 2,5 in qt color=teal sub="pack_with_reordering(reranked[:k]) · §2.4"
 node pr "prompt" at 2,6 in qt icon=prompt sub="system_prompt + context + query"
-node an "answer = LLM(prompt)" at 1,6 in qt icon=llm
+node an "answer = <abbr title="Large Language Model">LLM</abbr>(prompt)" at 1,6 in qt icon=llm
 corp -> ch
 ch:L -> inv:T
 ch:R -> vec:T
@@ -579,7 +579,7 @@ dictionary lookups, not a corpus scan.
 
 ```python
 """
-End-to-end toy RAG pipeline, dependency-free (standard library only):
+End-to-end toy <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline, dependency-free (standard library only):
   1. BM25 sparse retrieval, built on a manual inverted index
   2. A toy dense embedding (hashing trick) + cosine similarity
   3. Reciprocal Rank Fusion (RRF) to combine both rankings
@@ -729,7 +729,7 @@ Self-test complete: BM25, cosine similarity, and RRF fusion all verified.
 ```mermaid
 %% caption: The whole module on one page.
 mindmap
-  root((RAG))
+  root((<abbr title="Retrieval-Augmented Generation">RAG</abbr>))
     Chunking
       fixed size + overlap
       recursive separators

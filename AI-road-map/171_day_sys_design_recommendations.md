@@ -4,7 +4,7 @@ Welcome to Day 171.
 
 We are beginning the **MAANG System Design** phase. For the next 10 days, we are taking everything you learned over the last 170 days and applying it to high-level architectural whiteboarding.
 
-If you interview for a Senior/Lead ML role at Netflix, TikTok, or YouTube, you will be asked to design a **Recommendation Engine**.
+If you interview for a Senior/Lead <abbr title="Machine Learning">ML</abbr> role at Netflix, TikTok, or YouTube, you will be asked to design a **Recommendation Engine**.
 You have 45 minutes to design a system that takes 1 Billion videos, scores them against 100 Million users, and returns the top 10 videos in under 200 milliseconds.
 
 Today, we learn the **Two-Tower Architecture** and the **Candidate Generation $\rightarrow$ Ranking** cascade.
@@ -14,7 +14,7 @@ Today, we learn the **Two-Tower Architecture** and the **Candidate Generation $\
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The 200ms Math Problem
-Imagine YouTube has 1 Billion videos. If a user opens the app, you cannot pass all 1 Billion videos through a massive LLM or Deep Neural Network to score them. It would take 3 years to render the homepage.
+Imagine YouTube has 1 Billion videos. If a user opens the app, you cannot pass all 1 Billion videos through a massive <abbr title="Large Language Model">LLM</abbr> or Deep Neural Network to score them. It would take 3 years to render the homepage.
 Because of the strict 200ms latency budget, Recommendation Engines are built as a **Funnel**.
 
 ### 2. The Funnel Architecture

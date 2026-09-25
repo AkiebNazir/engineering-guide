@@ -12,7 +12,7 @@ on what, where the business rules live, where I/O happens, and how the pieces ge
 together at startup.
 
 Get this right and a codebase stays changeable for years: the database can be swapped
-in a test for a dictionary, a new API (gRPC next to REST) is a new adapter rather than
+in a test for a dictionary, a new <abbr title="Application Programming Interface">API</abbr> (gRPC next to REST) is a new adapter rather than
 a rewrite, and business rules can be read without wading through SQL. Get it wrong and
 every change touches controllers, models, and SQL at once.
 
@@ -445,7 +445,7 @@ class PlaceOrder:
                       charges again with the SAME key; the provider dedupes it.
 ```
 
-Rule: **you cannot put a database and a remote payment API in one atomic
+Rule: **you cannot put a database and a remote payment <abbr title="Application Programming Interface">API</abbr> in one atomic
 transaction.** So record intent first, make the external call idempotent, record the
 outcome second, and make sure something (a retry or a sweeper for old `PENDING`
 orders) finishes interrupted work. Publishing the event after commit has the same shape
@@ -787,19 +787,19 @@ no reason to exist on the DTO at all, which is the point of keeping the shapes s
 
 **Why keep them separate?** Each changes for different reasons:
 
-- Renaming a DB column must not change the public API (breaking clients).
-- Adding an internal field (`fraud_score`) must not leak it to API responses.
-- A public API must keep `total` as a string for five years; the domain can change freely.
+- Renaming a DB column must not change the public <abbr title="Application Programming Interface">API</abbr> (breaking clients).
+- Adding an internal field (`fraud_score`) must not leak it to <abbr title="Application Programming Interface">API</abbr> responses.
+- A public <abbr title="Application Programming Interface">API</abbr> must keep `total` as a string for five years; the domain can change freely.
 
 A real incident shape: an endpoint returns `jsonify(user.__dict__)` from the ORM model.
-Someone adds `password_hash` to the model. It is now in the API response.
+Someone adds `password_hash` to the model. It is now in the <abbr title="Application Programming Interface">API</abbr> response.
 
 **The cost — the mapping tax.** Three shapes means two mappings per boundary to write,
 test, and keep in sync. For a CRUD endpoint with no rules, that is pure boilerplate.
 
 | Situation | Recommendation |
 |---|---|
-| Public/external API | **Always** a separate DTO. Your API is a contract (`03` §10). |
+| Public/external <abbr title="Application Programming Interface">API</abbr> | **Always** a separate DTO. Your <abbr title="Application Programming Interface">API</abbr> is a contract (`03` §10). |
 | Rich domain with real invariants | Separate domain model from persistence model |
 | Internal CRUD admin screen | One shape (e.g., an ORM model) is fine |
 | Read-only listing/report | Query straight into a DTO; skip the domain model (§10) |
@@ -1053,7 +1053,7 @@ modified?" check gets copied into eight scripts, each slightly different.
 | CRUD over forms; rules are "field required" | Transaction script, Active Record, framework defaults |
 | Few rules, one entry point, small team | Layered with a service layer; don't add ports yet |
 | Rules that span several fields/objects, state machines, money | Domain model with value objects |
-| Multiple entry points (API + queue + cron) run the same logic | Use cases as the shared driving port |
+| Multiple entry points (<abbr title="Application Programming Interface">API</abbr> + queue + cron) run the same logic | Use cases as the shared driving port |
 | Slow tests because everything needs a DB | Ports for driven dependencies |
 | Integration with volatile or external systems | Adapter + anti-corruption layer at that boundary |
 
@@ -1393,7 +1393,7 @@ machine, not by a reviewer's memory.
 | **Network call inside a DB transaction** | Lock wait timeouts correlate with a slow dependency | Commit, call, commit (§4.3) |
 | **Shared `common`/`core` package** | Every feature imports it; it imports half of them back | Move code to the feature that owns it; share only stable primitives |
 | **Domain importing framework** | `from django.db import models` in rule code; Pydantic validators holding business rules | Keep framework types in adapters (fine to relax for simple CRUD, §11) |
-| **One model for everything** | ORM class used as API response and domain object | Separate DTOs at public boundaries at minimum (§6) |
+| **One model for everything** | ORM class used as <abbr title="Application Programming Interface">API</abbr> response and domain object | Separate DTOs at public boundaries at minimum (§6) |
 | **Architecture astronautics** | Hexagonal + CQRS + event sourcing for a to-do app | Match weight to domain complexity (§11) |
 
 ---
@@ -1404,7 +1404,7 @@ machine, not by a reviewer's memory.
 The core (domain + use cases) defines interfaces — ports — for what it needs from the
 outside, and technology-specific adapters implement them; source dependencies point
 inward. The main practical benefits are that business logic is testable in milliseconds
-without infrastructure, and that new entry points (API, queue consumer, CLI) reuse the
+without infrastructure, and that new entry points (<abbr title="Application Programming Interface">API</abbr>, queue consumer, CLI) reuse the
 same use cases. I'd use it when there are real business rules; for CRUD I'd keep a
 simple layered or framework-default design.
 
@@ -1474,7 +1474,7 @@ and its tests went from needing a DB to running in 200 ms."
 - [ ] Time, IDs, and randomness are injected.
 
 **Shapes**
-- [ ] Public API responses use DTOs, never ORM or domain objects directly.
+- [ ] Public <abbr title="Application Programming Interface">API</abbr> responses use DTOs, never ORM or domain objects directly.
 - [ ] Reads that don't enforce rules bypass the domain model.
 
 **Proportion**

@@ -1,9 +1,9 @@
 # Twenty System Design Practice Prompts
 
-For each prompt, state requirements/non-goals, estimates, API/data, baseline flow, bottleneck, failure plan, SLOs, security, and evolution. Solve before opening `04_twenty_practice_solutions.md`.
+For each prompt, state requirements/non-goals, estimates, <abbr title="Application Programming Interface">API</abbr>/data, baseline flow, bottleneck, failure plan, SLOs, security, and evolution. Solve before opening `04_twenty_practice_solutions.md`.
 
 ## 02 Rate Limiter
-Design API quotas: 100 requests/minute/API key, controlled bursts, millions of keys, route and tenant policies, and a safe degraded mode for checkout.
+Design <abbr title="Application Programming Interface">API</abbr> quotas: 100 requests/minute/<abbr title="Application Programming Interface">API</abbr> key, controlled bursts, millions of keys, route and tenant policies, and a safe degraded mode for checkout.
 
 ## 03 Pastebin
 Create/read/expire public, unlisted, and private text snippets. Reads are 1,000× writes, snippets reach 10 MB, and reads must be globally fast.
@@ -59,5 +59,5 @@ Create low-latency flag evaluation surviving control-plane outage, targeted roll
 ## 20 Ride Dispatch
 Accept driver location updates, find nearby eligible drivers, assign exactly once, and provide real-time trip state under high city-scale load.
 
-## 21 Multi-Tenant API Gateway
+## 21 Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway
 Route/version hundreds of APIs; authenticate, enforce quotas and tenant isolation, propagate tracing, and protect backends during tenant abuse.

@@ -1,4 +1,4 @@
-# API Design — Low Level
+# <abbr title="Application Programming Interface">API</abbr> Design — Low Level
 
 This is the wire-protocol companion to `03_api_design_high_level.md`: once you've chosen a style and modeled the contract, these are the mechanics that make it correct — semantics, caching, connection behavior, serialization, auth, and rate limiting at the protocol level.
 
@@ -57,7 +57,7 @@ If-None-Match: "a1b2c3"
 
 ## Content negotiation
 
-`Accept: application/json` (what the client wants back) and `Content-Type: application/json` (what the client is sending) let one endpoint serve multiple representations. `Accept-Language`, `Accept-Encoding` (gzip/br compression) work the same way. A server that ignores `Accept` and always returns one format is fine for an internal API; a public API serving multiple client generations often needs this to evolve formats without a version bump.
+`Accept: application/json` (what the client wants back) and `Content-Type: application/json` (what the client is sending) let one endpoint serve multiple representations. `Accept-Language`, `Accept-Encoding` (gzip/br compression) work the same way. A server that ignores `Accept` and always returns one format is fine for an internal <abbr title="Application Programming Interface">API</abbr>; a public <abbr title="Application Programming Interface">API</abbr> serving multiple client generations often needs this to evolve formats without a version bump.
 
 ## Serialization formats compared
 
@@ -83,15 +83,15 @@ client-streaming client ──N req──▶ server ──1 resp──▶ client
 bidi-streaming   client ──N req──▶ server ──N resp──▶ client   (e.g. live chat, both sides push)
 ```
 
-Streaming modes matter for API design because they change the failure model: a unary call is one deadline, one retry decision; a long-lived bidi stream needs its own heartbeat/reconnect/backpressure story, closer to the WebSocket concerns in `03_api_design_high_level.md`.
+Streaming modes matter for <abbr title="Application Programming Interface">API</abbr> design because they change the failure model: a unary call is one deadline, one retry decision; a long-lived bidi stream needs its own heartbeat/reconnect/backpressure story, closer to the WebSocket concerns in `03_api_design_high_level.md`.
 
 ## Authentication and authorization at the wire level
 
 | Mechanism | How it works | Good for | Watch out for |
 |---|---|---|---|
-| API key | Static secret sent as header/query param | Server-to-server, simple integrations | No expiry by default, easy to leak in logs/URLs, coarse-grained |
+| <abbr title="Application Programming Interface">API</abbr> key | Static secret sent as header/query param | Server-to-server, simple integrations | No expiry by default, easy to leak in logs/URLs, coarse-grained |
 | OAuth2 (authorization code flow) | User authorizes a client app; app exchanges a code for an access token (+ refresh token) via the auth server | Third-party apps acting on a user's behalf | Multiple round trips; token storage/refresh logic is easy to get wrong client-side |
-| OAuth2 (client credentials flow) | Service authenticates directly with client ID/secret, no user involved | Service-to-service | Same secret-management concerns as API keys |
+| OAuth2 (client credentials flow) | Service authenticates directly with client ID/secret, no user involved | Service-to-service | Same secret-management concerns as <abbr title="Application Programming Interface">API</abbr> keys |
 | JWT (JSON Web Token) | Self-contained signed token: header.payload.signature, base64url-encoded | Stateless auth — server verifies signature, no DB lookup needed per request | See pitfalls below |
 | mTLS | Both client and server present certificates during TLS handshake | Service-to-service inside a trusted network/mesh | Certificate rotation/distribution is operational overhead |
 

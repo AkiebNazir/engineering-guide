@@ -70,7 +70,7 @@ designed code — which removes the pressure that would have improved it.
 **Test-driven development** is a loop — write a failing test (red), make it pass with the
 simplest code (green), clean up with the tests as a safety net (refactor) — repeated in
 minutes-long cycles. What it buys is *not* "tests exist"; you can retrofit those. Writing
-the test first makes you the **first caller of an API that doesn't exist yet**, so you
+the test first makes you the **first caller of an <abbr title="Application Programming Interface">API</abbr> that doesn't exist yet**, so you
 design it from the outside in:
 
 ```python
@@ -262,7 +262,7 @@ why mocks belong where the call itself is the behaviour under test (below).
 - **Fakes are reusable** across hundreds of tests; mock setup is re-written in each.
 
 Use mocks when **the interaction is the behaviour** — "the payment gateway is called
-exactly once with this idempotency key", "we never call the external API when the cache
+exactly once with this idempotency key", "we never call the external <abbr title="Application Programming Interface">API</abbr> when the cache
 is warm."
 
 ### Contract tests keep fakes honest
@@ -605,7 +605,7 @@ Replace **incrementally**, keeping the system releasable at every step.
  └─────────┘               └───────┘ └─────┘                  └─────┘
 ```
 
-Put a routing facade in front (a proxy, API gateway, or an in-code interface), move one
+Put a routing facade in front (a proxy, <abbr title="Application Programming Interface">API</abbr> gateway, or an in-code interface), move one
 capability at a time to the new implementation, and retire the legacy piece when it
 receives no traffic.
 

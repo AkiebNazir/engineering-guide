@@ -1,8 +1,8 @@
-# Day 118: Small Language Models & On-Device AI
+# Day 118: Small Language Models & On-Device <abbr title="Artificial Intelligence">AI</abbr>
 
 Welcome to Day 118. Frontier models (like GPT-4 and Llama 3 70B) are incredible, but they require massive datacenters. 
 
-What if you are building an AI assistant for a hospital, and strict privacy laws mean patient data *cannot leave the building*? What if you are building an AI that must run on an iPhone without internet access?
+What if you are building an <abbr title="Artificial Intelligence">AI</abbr> assistant for a hospital, and strict privacy laws mean patient data *cannot leave the building*? What if you are building an <abbr title="Artificial Intelligence">AI</abbr> that must run on an iPhone without internet access?
 
 You cannot fit a 70B parameter model in an iPhone's 8GB of RAM. 
 Today, we learn the art of **Small Language Models (SLMs)** and **On-Device Deployment**.
@@ -23,13 +23,13 @@ You pass an image or text into a massive 70B "Teacher" model. The Teacher output
 You pass the same input into your tiny 2B "Student" model. You mathematically force the Student's probability distribution to perfectly match the Teacher's distribution! The Student literally clones the exact reasoning pathways of the Teacher!
 
 ### 3. On-Device Constraints
-To run AI on a smartphone, you face two massive bottlenecks:
+To run <abbr title="Artificial Intelligence">AI</abbr> on a smartphone, you face two massive bottlenecks:
 1. **Memory (RAM):** A 2B parameter model stored in 16-bit precision requires ~4GB of RAM. An iPhone has ~8GB of RAM. If your app takes 4GB, the iOS operating system will kill your app.
 2. **Battery & Heat:** Doing 2 Billion matrix multiplications per word drains mobile batteries instantly and overheats the phone.
 
 ### 4. Extreme Quantization (INT4 & CoreML)
 To solve the memory issue, we use **Extreme Quantization** (converting weights from 16-bit floats to 4-bit integers). This shrinks the 2B model from 4GB down to just **1.2GB**! 
-To solve the battery issue, we don't run the math on the phone's CPU. We compile the model into formats like **GGUF** (for llama.cpp) or **Core ML** (Apple), which hardware-accelerates the matrix math directly on the phone's Neural Processing Unit (NPU)!
+To solve the battery issue, we don't run the math on the phone's CPU. We compile the model into formats like **GGUF** (for llama.cpp) or **Core <abbr title="Machine Learning">ML</abbr>** (Apple), which hardware-accelerates the matrix math directly on the phone's Neural Processing Unit (NPU)!
 
 ---
 
@@ -115,7 +115,7 @@ The open-source community relies entirely on one library to run models locally: 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your company wants to run a customer-service LLM natively on user smartphones to save millions in API costs. What is the maximum model size you can deploy, and how do you achieve acceptable latency and battery life? Discuss the full optimization stack."*
+*"Your company wants to run a customer-service <abbr title="Large Language Model">LLM</abbr> natively on user smartphones to save millions in <abbr title="Application Programming Interface">API</abbr> costs. What is the maximum model size you can deploy, and how do you achieve acceptable latency and battery life? Discuss the full optimization stack."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -125,12 +125,12 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Optimization Stack:**
    - **Step 1:** Start with a high-quality Small Language Model (like Phi-3 or Gemma-2B).
    - **Step 2:** Apply **Post-Training Quantization (PTQ)** to convert the weights to INT4. Mention AWQ or GPTQ to preserve accuracy during quantization.
-   - **Step 3:** Compile the model using Core ML (for iOS) or ExecuTorch (for Android) to ensure the matrix multiplications run on the hardware Neural Engine (NPU) rather than the CPU, which saves massive amounts of battery life!
+   - **Step 3:** Compile the model using Core <abbr title="Machine Learning">ML</abbr> (for iOS) or ExecuTorch (for Android) to ensure the matrix multiplications run on the hardware Neural Engine (NPU) rather than the CPU, which saves massive amounts of battery life!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
 We have optimized inference, merged models, and deployed them to phones.
-But we have one final, massive hurdle before our LLM Training Phase is complete. **Enterprise Security**.
+But we have one final, massive hurdle before our <abbr title="Large Language Model">LLM</abbr> Training Phase is complete. **Enterprise Security**.
 
 Tomorrow, in **Day 119**, we dive deep into **Prompt Injections, Data Extraction Attacks, and the Instruction Hierarchy**!

@@ -39,7 +39,7 @@ Redirects are overwhelmingly read-heavy, and each number ends in a decision:
 
 The first scale investments are therefore edge/redirect cache, connection efficiency, and a compact indexed mapping lookup, not a sharded write database on day one.
 
-## 3. API contract
+## 3. <abbr title="Application Programming Interface">API</abbr> contract
 
 ```http
 POST /v1/links
@@ -321,7 +321,7 @@ Example SLOs: 99.9% of valid redirect requests succeed in 28 days; p99 redirect 
 
 ## 12. Build exercise
 
-Build a local version with an HTTP API, PostgreSQL/SQLite, and cache abstraction.
+Build a local version with an HTTP <abbr title="Application Programming Interface">API</abbr>, PostgreSQL/SQLite, and cache abstraction.
 
 1. Add link creation with random base62 codes and a database unique constraint.
 2. Add idempotency key storage; kill the request after commit to simulate lost response.

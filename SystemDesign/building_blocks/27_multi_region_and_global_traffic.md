@@ -149,7 +149,7 @@ CP:R ..> CN:B : "then"
 - **Global replication of a bad input.** Google's 12 June 2025 incident report: a policy change with blank fields "was replicated globally within seconds", crash-looped Service Control in every region for about 3 hours, and the code "was not feature flag protected". Remediations named: audit consumers of globally replicated data and propagate it incrementally with time to detect issues.
 - **A dependency under recovery tooling.** AWS's post-event summary for the 19 to 20 October 2025 us-east-1 DynamoDB DNS failure lists EC2 instance launches and console sign-in among the affected operations. Lesson from AWS's multi-region guidance: initiate failover from the healthy region and rely on data-plane operations, not on making changes in the impaired one (static stability, Builders' Library).
 
-**Rules:** stage every global push with soak time; cache last-known-good config; keep runbooks, dashboards and paging outside the region they diagnose; inventory every global dependency (DNS, identity, CDN, secrets, flags, CI/CD).
+**Rules:** stage every global push with soak time; cache last-known-good config; keep runbooks, dashboards and paging outside the region they diagnose; inventory every global dependency (DNS, identity, CDN, secrets, flags, <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>).
 
 ## Testing: game days and failback
 

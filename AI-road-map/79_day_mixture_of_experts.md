@@ -1,8 +1,8 @@
-# Day 79: Mixture of Experts (MoE) & Sparse Gating
+# Day 79: Mixture of Experts (<abbr title="Mixture of Experts">MoE</abbr>) & Sparse Gating
 
 Welcome to Day 79. GPT-4 is estimated to have 1.8 Trillion parameters. If GPT-4 was a standard "Dense" Transformer, it would take seconds to generate a single word. How does it type so fast?
 
-It uses a **Mixture of Experts (MoE)** architecture. MoE is the ultimate architectural trick. It allows you to build a massive, hyper-intelligent model that runs at the speed of a tiny model.
+It uses a **Mixture of Experts (<abbr title="Mixture of Experts">MoE</abbr>)** architecture. <abbr title="Mixture of Experts">MoE</abbr> is the ultimate architectural trick. It allows you to build a massive, hyper-intelligent model that runs at the speed of a tiny model.
 
 ---
 
@@ -10,11 +10,11 @@ It uses a **Mixture of Experts (MoE)** architecture. MoE is the ultimate archite
 
 ### 1. Dense vs Sparse
 In a standard **Dense** model (like LLaMA 2), every single parameter processes every single word. When the word "The" enters the network, all 70 Billion parameters perform a matrix multiplication on it. This is highly inefficient.
-In a **Sparse** MoE model (like Mixtral 8x7B), only a fraction of the parameters activate for a given word. 
+In a **Sparse** <abbr title="Mixture of Experts">MoE</abbr> model (like Mixtral 8x7B), only a fraction of the parameters activate for a given word. 
 
-### 2. The MoE Architecture
+### 2. The <abbr title="Mixture of Experts">MoE</abbr> Architecture
 In a standard Transformer Block, the output of the Self-Attention layer goes into a single Feed-Forward Network (FFN). 
-**The MoE Trick:** We delete that single FFN, and replace it with 8 separate FFNs (called the "Experts").
+**The <abbr title="Mixture of Experts">MoE</abbr> Trick:** We delete that single FFN, and replace it with 8 separate FFNs (called the "Experts").
 - **Expert 1** might implicitly learn to specialize in Math.
 - **Expert 2** might specialize in French.
 - **Expert 3** might specialize in Python code.
@@ -36,7 +36,7 @@ To prevent this, we must add an **Auxiliary Load Balancing Loss** to the trainin
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build the MoE Layer from scratch! We will build 4 Experts, a Router, and the Top-K masking logic.
+Let's build the <abbr title="Mixture of Experts">MoE</abbr> Layer from scratch! We will build 4 Experts, a Router, and the Top-K masking logic.
 
 Create a file named `mixture_of_experts.py`:
 
@@ -148,7 +148,7 @@ Without a penalty, the Router will collapse.
 **Your Task:**
 1. In the `forward` pass, calculate the **Fraction of words** routed to each expert in the batch (e.g., `f = [0.9, 0.1, 0.0, 0.0]`).
 2. Calculate the **Average Probability** assigned to each expert by the router (e.g., `p = [0.8, 0.1, 0.05, 0.05]`).
-3. The standard MoE Load Balancing Loss is the dot product of those two vectors, multiplied by the number of experts: `Loss = N * sum(f * p)`.
+3. The standard <abbr title="Mixture of Experts">MoE</abbr> Load Balancing Loss is the dot product of those two vectors, multiplied by the number of experts: `Loss = N * sum(f * p)`.
 4. If the router sends everything to Expert 1, $f \times p$ is massive. If it distributes evenly, the loss is minimized!
 
 ### 🎤 MAANG Technical Interview Prep
@@ -156,7 +156,7 @@ Without a penalty, the Router will collapse.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Mixtral 8x7B has 47B parameters but only activates 13B per token. Explain the serving challenges regarding memory footprint, routing overhead, and Expert Parallelism. How does MoE affect batching?"*
+*"Mixtral 8x7B has 47B parameters but only activates 13B per token. Explain the serving challenges regarding memory footprint, routing overhead, and Expert Parallelism. How does <abbr title="Mixture of Experts">MoE</abbr> affect batching?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -165,7 +165,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - State clearly that while Mixtral runs at the *speed* of a 13B model, it still requires the *VRAM footprint* of a 47B model. You must load all 8 experts into memory simultaneously because you never know which expert the router will pick next. It saves compute (FLOPs), not memory.
 2. **Batching Fragmentation (The Overhead):**
    - Explain that in a dense model, a batch of 1,000 words is multiplied in one massive, perfectly optimized matrix operation. 
-   - In an MoE, those 1,000 words are shattered. 200 go to Expert 1, 50 go to Expert 2, etc. This fragmentation severely degrades GPU utilization because you are running many small matrix multiplications instead of one big one.
+   - In an <abbr title="Mixture of Experts">MoE</abbr>, those 1,000 words are shattered. 200 go to Expert 1, 50 go to Expert 2, etc. This fragmentation severely degrades GPU utilization because you are running many small matrix multiplications instead of one big one.
 3. **Expert Parallelism:**
    - Propose that at massive scale, you use **Expert Parallelism**. You put Expert 1 on GPU 1, and Expert 2 on GPU 2. 
    - Note the network bottleneck: The Router on GPU 0 must literally transmit the token data across the server (via NVLink) to GPU 2, wait for the expert to compute, and receive the data back. All-to-All communication overhead is the primary bottleneck of massive MoEs.
@@ -173,4 +173,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-You have mastered the MoE! Tomorrow, in **Day 80**, we look at an architecture that wants to kill the Transformer entirely. We will build **Mamba (State Space Models)**!
+You have mastered the <abbr title="Mixture of Experts">MoE</abbr>! Tomorrow, in **Day 80**, we look at an architecture that wants to kill the Transformer entirely. We will build **Mamba (State Space Models)**!

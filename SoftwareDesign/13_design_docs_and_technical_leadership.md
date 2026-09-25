@@ -95,7 +95,7 @@ the doc with the prototype's results.
 | One significant decision with lasting consequences | **ADR** (§7) | Half a page | Team |
 | "Is this problem worth solving?" | **One-pager** | 1–2 pages | Manager, TL, stakeholders |
 | A feature or system spanning weeks/teams | **Design doc** (§3–§4) | 3–10 pages | Owners of affected systems, security/privacy, SRE |
-| A shared API or cross-org contract | **RFC / API proposal** | Varies | API review board, consumers |
+| A shared <abbr title="Application Programming Interface">API</abbr> or cross-org contract | **RFC / <abbr title="Application Programming Interface">API</abbr> proposal** | Varies | <abbr title="Application Programming Interface">API</abbr> review board, consumers |
 | A multi-quarter program | **Strategy / vision doc** + several design docs | 5–15 pages | Leadership |
 
 A 30-page design doc usually means the scope should be split into several docs.
@@ -579,7 +579,7 @@ Jeff Bezos's framing, widely used: **two-way doors** can be walked back through 
 
 | Two-way doors — decide fast, learn from production | One-way doors — design docs, prototypes, reviews |
 |---|---|
-| Internal function and module structure | Public API shapes and URLs |
+| Internal function and module structure | Public <abbr title="Application Programming Interface">API</abbr> shapes and URLs |
 | Choice of library behind an adapter | Data models and storage formats with years of data |
 | Feature-flagged behaviour changes | Storage engine / primary database choice |
 | Cache TTLs, pool sizes, timeouts | Security and trust boundaries |
@@ -591,7 +591,7 @@ Two useful moves:
 - **Turn one-way doors into two-way doors.** An adapter around a vendor (`08` §3), a feature
   flag, dual-writing during a migration (`09` §5), or versioned APIs make a hard-to-reverse
   decision reversible for a while.
-- **Beware slow one-way doors.** A "temporary" internal API that 40 services start calling
+- **Beware slow one-way doors.** A "temporary" internal <abbr title="Application Programming Interface">API</abbr> that 40 services start calling
   becomes a one-way door by accretion. Notice when a two-way door is closing.
 
 The cost of *not* deciding is real too: a team debating a two-way door for three weeks has
@@ -604,7 +604,7 @@ spent more than a wrong choice would have cost.
 | Artifact | Purpose | Size |
 |---|---|---|
 | **One-pager / proposal** | Agreement that a problem is worth solving before designing | 1–2 pages |
-| **RFC / API proposal** | Changes to shared APIs or cross-team contracts (Google's public API guidance: aip.dev) | Varies |
+| **RFC / <abbr title="Application Programming Interface">API</abbr> proposal** | Changes to shared APIs or cross-team contracts (Google's public <abbr title="Application Programming Interface">API</abbr> guidance: aip.dev) | Varies |
 | **ADR** | One decision, its context, alternatives, consequences (§7) | Half a page |
 | **Production readiness review / launch checklist** | Monitoring, alerts, runbooks, capacity, rollback, security review — done before launch | Checklist |
 | **Runbook** | What on-call does when an alert fires: diagnosis steps, mitigations, escalation | 1–3 pages per alert family |
@@ -758,7 +758,7 @@ Structure the answer like a design doc, out loud:
 |---|---|---|
 | Context, goals, non-goals | Requirements | "Functional requirements are…; I'll treat X as out of scope unless you'd like it." |
 | Capacity (§4.4) | Estimation | "At 20k QPS writes and 1 KB per record, that's ~1.7 TB/day…" |
-| Detailed design (API, data model) | API and schema | "The core API is… The key access pattern is… so the primary key is…" |
+| Detailed design (<abbr title="Application Programming Interface">API</abbr>, data model) | <abbr title="Application Programming Interface">API</abbr> and schema | "The core <abbr title="Application Programming Interface">API</abbr> is… The key access pattern is… so the primary key is…" |
 | Overview diagram | High-level design | Draw the main path end to end before any deep dive |
 | Hard parts | Deep dives | "The hardest part is the crash window between the charge and the key write…" |
 | Alternatives | Trade-offs | "One alternative I considered was Redis for keys; I rejected it because…" |

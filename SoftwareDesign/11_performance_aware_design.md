@@ -979,7 +979,7 @@ Every optimisation costs something. Name the cost before paying it.
 - The interface shape determines round trips (§3).
 - Data volume will grow by orders of magnitude (streaming, pagination, indexes).
 - The code is a shared library or hot core path used by many teams.
-- The decision is expensive to reverse (data model, storage engine, sync vs. async API).
+- The decision is expensive to reverse (data model, storage engine, sync vs. async <abbr title="Application Programming Interface">API</abbr>).
 
 Readable code that is fast enough beats clever code that is slightly faster. When an
 optimisation does make code harder to read, **leave a comment with the measurement** that

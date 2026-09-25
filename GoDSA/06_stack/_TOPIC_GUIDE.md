@@ -26,7 +26,7 @@ top := s[len(s)-1]
 s = s[:len(s)-1]
 ```
 
-That's the entire API. No wrapper type, no `.Push()` method — idiomatic Go stack
+That's the entire <abbr title="Application Programming Interface">API</abbr>. No wrapper type, no `.Push()` method — idiomatic Go stack
 code just re-slices. If you want named operations (common when a stack holds a
 struct and call sites get noisy), wrap it in a tiny type:
 

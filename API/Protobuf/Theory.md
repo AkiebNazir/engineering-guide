@@ -248,7 +248,7 @@ Lab 3 (Python) proves each rule:
 *   A **v1 proxy** in the middle **keeps unknown fields**, so a v2 message survives a v1 hop intact. (A JSON proxy typically drops them.)
 *   **Reusing tag 3** for `nickname`: the old phone number `+47 555 0100` is silently read back as a nickname. No error. This is the failure the rules exist for.
 
-> 🎯 **Interview angle:** "How do you evolve a Protobuf API?" is a standard question. Answer with: add only new numbers, `reserved` removed ones, never change types or numbers, treat defaults as "unknown", use `buf breaking` in CI, and version the package (`v1`, `v2`) for truly breaking redesigns.
+> 🎯 **Interview angle:** "How do you evolve a Protobuf <abbr title="Application Programming Interface">API</abbr>?" is a standard question. Answer with: add only new numbers, `reserved` removed ones, never change types or numbers, treat defaults as "unknown", use `buf breaking` in CI, and version the package (`v1`, `v2`) for truly breaking redesigns.
 
 ## Presence: "Was It Set?"
 

@@ -1,6 +1,6 @@
 ---
 title: "3. Cross-Cutting Concerns"
-description: "Authentication, authorization, versioning, errors, idempotency, rate limiting, retries, pagination, caching and observability: the problems every API style must solve."
+description: "Authentication, authorization, versioning, errors, idempotency, rate limiting, retries, pagination, caching and observability: the problems every <abbr title="Application Programming Interface">API</abbr> style must solve."
 ---
 
 # Cross-Cutting Concerns
@@ -11,7 +11,7 @@ Whether you build REST, GraphQL, gRPC or Webhooks, you will hit the same product
 
 | Method | How it works | Use when | Watch out |
 | :--- | :--- | :--- | :--- |
-| **API key** | Static secret in a header (`X-API-Key`) | Server-to-server, simple public APIs | Identifies an *app*, not a user. Rotate, never put in URLs or front-end code. |
+| **<abbr title="Application Programming Interface">API</abbr> key** | Static secret in a header (`X-API-Key`) | Server-to-server, simple public APIs | Identifies an *app*, not a user. Rotate, never put in URLs or front-end code. |
 | **HTTP Basic** | `Authorization: Basic base64(user:pass)` | Internal tools, legacy | Base64 is **not** encryption. HTTPS mandatory. |
 | **Bearer token (JWT)** | Signed token, verified locally | Stateless microservices, mobile apps | Cannot be revoked before expiry unless you keep a denylist. Keep it short-lived. |
 | **Opaque token** | Random string, looked up server-side | Need instant revocation | Every request costs a lookup (cache it). |
@@ -59,7 +59,7 @@ The **`code_challenge` / `code_verifier`** pair (PKCE) stops a stolen authorizat
 *   **RBAC** (role-based): user has role `admin`, role has permissions.
 *   **ABAC / ownership**: "may this user edit *this* order?" needs the resource loaded. **Check ownership on every object access.**
 
-> ⚠️ **The most common API vulnerability is BOLA** (Broken Object Level Authorization, OWASP API #1): `GET /orders/1001` works for *any* logged-in user because the code checked "is logged in" but not "does order 1001 belong to me?". Sequential IDs make it trivial to exploit; authorise every lookup.
+> ⚠️ **The most common <abbr title="Application Programming Interface">API</abbr> vulnerability is BOLA** (Broken Object Level Authorization, OWASP <abbr title="Application Programming Interface">API</abbr> #1): `GET /orders/1001` works for *any* logged-in user because the code checked "is logged in" but not "does order 1001 belong to me?". Sequential IDs make it trivial to exploit; authorise every lookup.
 
 Rule for status codes: unauthenticated -> `401`; authenticated but not allowed -> `403` (or `404` to avoid revealing the resource exists).
 
@@ -202,7 +202,7 @@ RateLimit-Remaining: 0
 RateLimit-Reset: 12
 ```
 
-Count per **API key / user / IP**, not globally. In a multi-server deployment keep counters in a shared store (Redis, with atomic `INCR` or a Lua script), or enforce the limit at the API gateway. Runnable versions: `REST/labs/golang/04_rate_limit_middleware` (per-client token bucket as `net/http` middleware with an injectable clock, `429` + `Retry-After`, and a measured comparison with a fixed window) and `gRPC/labs/python/03_interceptors_auth_logging_ratelimit.py` (a per-client bucket as a gRPC interceptor).
+Count per **<abbr title="Application Programming Interface">API</abbr> key / user / IP**, not globally. In a multi-server deployment keep counters in a shared store (Redis, with atomic `INCR` or a Lua script), or enforce the limit at the <abbr title="Application Programming Interface">API</abbr> gateway. Runnable versions: `REST/labs/golang/04_rate_limit_middleware` (per-client token bucket as `net/http` middleware with an injectable clock, `429` + `Retry-After`, and a measured comparison with a fixed window) and `gRPC/labs/python/03_interceptors_auth_logging_ratelimit.py` (a per-client bucket as a gRPC interceptor).
 
 For GraphQL, count **query cost**, not requests. For gRPC and WebSockets, limit **messages per second per connection**.
 
@@ -318,7 +318,7 @@ A contract-first workflow (write the contract, generate code, test against it) c
 | Concern | Labs |
 | :--- | :--- |
 | JWT, scopes, BOLA | `REST/labs/python/03_jwt_auth_and_scopes.py` |
-| API keys: hashing, constant-time compare, ownership | `REST/labs/golang/05_api_key_auth_and_ownership` |
+| <abbr title="Application Programming Interface">API</abbr> keys: hashing, constant-time compare, ownership | `REST/labs/golang/05_api_key_auth_and_ownership` |
 | Auth in GraphQL (context, field- and object-level) | `GraphQL/labs/python/04_auth_permissions_and_masking.py` |
 | mTLS service identity | `gRPC/labs/golang/04_mtls_service_identity` |
 | WebSocket auth: Origin, first message, one-time tickets | `WebSockets/labs/python/03_auth_origin_and_limits.py`, `WebSockets/labs/golang/05_scaling_pubsub_and_tickets` |

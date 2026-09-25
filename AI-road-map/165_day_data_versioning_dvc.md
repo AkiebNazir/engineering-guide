@@ -1,4 +1,4 @@
-# Day 165: Data Versioning, Lineage & Governance (DVC)
+# Day 165: Data Versioning, Lineage & Governance (<abbr title="Data Version Control">DVC</abbr>)
 
 Welcome to Day 165.
 
@@ -6,41 +6,41 @@ You know how to use Git. Git tracks changes in `.py` and `.md` files.
 But Machine Learning relies on **Data**. A model trained on `data_v1.csv` is completely different from a model trained on `data_v2.csv`.
 If you try to commit a 50GB `.csv` file or a folder of 100,000 images to Git, GitHub will crash and your repository will break.
 
-Today, we learn how to version control massive datasets using **DVC (Data Version Control)**. We will learn Data Lineage, LakeFS, and how to prove to a regulatory auditor exactly what data was used to train a model.
+Today, we learn how to version control massive datasets using **<abbr title="Data Version Control">DVC</abbr> (Data Version Control)**. We will learn Data Lineage, LakeFS, and how to prove to a regulatory auditor exactly what data was used to train a model.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The DVC Architecture
-*Analogy:* Imagine you have a massive safe (AWS S3) full of gold bars (100GB datasets). You don't mail the gold bars back and forth to your team. Instead, you keep a tiny piece of paper (a DVC `.dvc` file) in your pocket. The paper just says "Gold Bar #123 is stored on Shelf A." You can mail that tiny piece of paper instantly.
+### 1. The <abbr title="Data Version Control">DVC</abbr> Architecture
+*Analogy:* Imagine you have a massive safe (AWS S3) full of gold bars (100GB datasets). You don't mail the gold bars back and forth to your team. Instead, you keep a tiny piece of paper (a <abbr title="Data Version Control">DVC</abbr> `.dvc` file) in your pocket. The paper just says "Gold Bar #123 is stored on Shelf A." You can mail that tiny piece of paper instantly.
 
-**DVC (Data Version Control)** sits on top of Git.
+**<abbr title="Data Version Control">DVC</abbr> (Data Version Control)** sits on top of Git.
 1. You run `dvc add huge_dataset.csv`.
-2. DVC calculates a tiny MD5 hash of the massive file (e.g., `a1b2c3d4`).
-3. DVC moves the massive file into a hidden cache folder and creates a tiny text file: `huge_dataset.csv.dvc`.
+2. <abbr title="Data Version Control">DVC</abbr> calculates a tiny MD5 hash of the massive file (e.g., `a1b2c3d4`).
+3. <abbr title="Data Version Control">DVC</abbr> moves the massive file into a hidden cache folder and creates a tiny text file: `huge_dataset.csv.dvc`.
 4. You commit the tiny `.dvc` file to Git! 
-5. You run `dvc push`. DVC uploads the massive 100GB file to a remote storage bucket (AWS S3, Google Cloud Storage, or an internal server).
-When another engineer clones your Git repo, they just type `dvc pull`, and DVC reads the `.dvc` file and downloads the exact 100GB dataset from S3!
+5. You run `dvc push`. <abbr title="Data Version Control">DVC</abbr> uploads the massive 100GB file to a remote storage bucket (AWS S3, Google Cloud Storage, or an internal server).
+When another engineer clones your Git repo, they just type `dvc pull`, and <abbr title="Data Version Control">DVC</abbr> reads the `.dvc` file and downloads the exact 100GB dataset from S3!
 
 ### 2. Data Lineage
 Data is never static. It goes through transformations:
 `Raw Logs` $\rightarrow$ `Cleaned Data` $\rightarrow$ `Tokenized Features` $\rightarrow$ `Trained Model`.
-If a bug is found in the `Trained Model`, **Data Lineage** allows you to trace the error backward. DVC can track the exact script that turned the raw logs into the cleaned data. If you change the raw logs, DVC knows that the downstream model is now "out of date" and must be retrained.
+If a bug is found in the `Trained Model`, **Data Lineage** allows you to trace the error backward. <abbr title="Data Version Control">DVC</abbr> can track the exact script that turned the raw logs into the cleaned data. If you change the raw logs, <abbr title="Data Version Control">DVC</abbr> knows that the downstream model is now "out of date" and must be retrained.
 
 ### 3. LakeFS (Git for Data Lakes)
-If your company is massive, you don't use DVC. You use **LakeFS** or **Delta Lake**.
+If your company is massive, you don't use <abbr title="Data Version Control">DVC</abbr>. You use **LakeFS** or **Delta Lake**.
 LakeFS provides Git-like branching for massive Data Lakes. You can literally run `lakefs branch create my_experiment`. You can modify petabytes of data on your branch, test a model, and if it works, run a "Data Merge" back into the `main` production branch, complete with ACID transactions!
 
 ### 4. Data Governance & Compliance
 If you build a model for a bank, and a customer asks "Why was I denied a loan?", GDPR and CCPA laws dictate you must be able to explain the decision. You must prove the model was not trained on discriminatory features (like Race or Religion). 
-Without strict data versioning, proving this to an auditor is impossible. With DVC, you hand the auditor the Git commit hash, the exact MD5 hash of the training data, and the Python script that processed it.
+Without strict data versioning, proving this to an auditor is impossible. With <abbr title="Data Version Control">DVC</abbr>, you hand the auditor the Git commit hash, the exact MD5 hash of the training data, and the Python script that processed it.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's walk through the exact terminal commands an ML Engineer uses to version control a massive dataset using Git and DVC.
+Let's walk through the exact terminal commands an <abbr title="Machine Learning">ML</abbr> Engineer uses to version control a massive dataset using Git and <abbr title="Data Version Control">DVC</abbr>.
 
 *(Note: To run this exactly, you need `pip install dvc` and a dummy large file).*
 
@@ -112,9 +112,9 @@ dvc pull
 ## 🕒 HOUR 3: CHALLENGE & INTERVIEW PREP
 
 ### 🛠️ The Challenge
-DVC isn't just for tracking files; it tracks **Pipelines**. 
+<abbr title="Data Version Control">DVC</abbr> isn't just for tracking files; it tracks **Pipelines**. 
 Research the `dvc stage add` (or `dvc.yaml`) command. Learn how you can define a pipeline step like: `dvc stage add -n clean_data -d raw.csv -o clean.csv python clean.py`. 
-If you run this, DVC tracks that `clean.csv` depends on `raw.csv`. If `raw.csv` changes, DVC knows `clean.csv` must be recomputed!
+If you run this, <abbr title="Data Version Control">DVC</abbr> tracks that `clean.csv` depends on `raw.csv`. If `raw.csv` changes, <abbr title="Data Version Control">DVC</abbr> knows `clean.csv` must be recomputed!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -124,11 +124,11 @@ If you run this, DVC tracks that `clean.csv` depends on `raw.csv`. If `raw.csv` 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Immutable Storage:** Explain that data is never overwritten. Updates to the database are appended, and snapshots are taken regularly.
-2. **Data Version Control (DVC):** Explain how DVC creates MD5 hashes of dataset snapshots. The `.dvc` pointer files are committed to Git alongside the Python training code.
+2. **Data Version Control (<abbr title="Data Version Control">DVC</abbr>):** Explain how <abbr title="Data Version Control">DVC</abbr> creates MD5 hashes of dataset snapshots. The `.dvc` pointer files are committed to Git alongside the Python training code.
 3. **Model Registry Lineage:** Explain that the MLflow Model Registry logs the exact Git commit hash when the model is registered. 
 4. **The Audit Workflow:** To answer the auditor, the engineer fetches the Git commit hash from the Model Registry, runs `git checkout <hash>`, and runs `dvc pull`. This flawlessly reconstitutes the exact Python code and the exact massive CSV file from 8 months ago.
 
 ---
-**Task for the end of the day:** Skim the DVC documentation. Understand the difference between `git pull` and `dvc pull`.
+**Task for the end of the day:** Skim the <abbr title="Data Version Control">DVC</abbr> documentation. Understand the difference between `git pull` and `dvc pull`.
 
 Tomorrow, in **Day 166**, we cover the final piece of the MLOps puzzle: **Feature Stores**. We will learn how to compute features once, store them centrally, and serve them to LLMs in milliseconds!

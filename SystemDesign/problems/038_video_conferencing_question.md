@@ -24,7 +24,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope QPS, storage, and bandwidth estimates.
-3. API contracts and core data model.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
 5. Mesh versus MCU versus SFU with the bandwidth and CPU cost of each, signaling and NAT traversal (ICE, STUN, TURN) with the relay share, simulcast or SVC with per-receiver layer selection, bandwidth estimation, loss recovery and jitter buffering against a latency budget, active-speaker detection, meeting-to-SFU placement with cross-region cascading, scaling one huge meeting or webinar, the recording and transcription pipeline, and the end-to-end-encryption trade-off.
 6. Cache, scale, abuse, failure, and observability plan.

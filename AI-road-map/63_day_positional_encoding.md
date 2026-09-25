@@ -18,7 +18,7 @@ They used Sine and Cosine waves of varying frequencies.
 They literally take this array of Sine/Cosine waves and mathematically **ADD** it to the original Word Embedding before it enters the Transformer!
 
 **Why Sines and Cosines?**
-Because of trigonometry. The math of Sine waves allows the AI to calculate *relative distances* easily. Even if the AI has never seen a 1,000-word sentence before, the Sine waves allow it to deduce: *"Word 500 is exactly 10 spaces away from Word 490"*. 
+Because of trigonometry. The math of Sine waves allows the <abbr title="Artificial Intelligence">AI</abbr> to calculate *relative distances* easily. Even if the <abbr title="Artificial Intelligence">AI</abbr> has never seen a 1,000-word sentence before, the Sine waves allow it to deduce: *"Word 500 is exactly 10 spaces away from Word 490"*. 
 
 ### 2. The Modern Upgrade: Rotary Position Embeddings (RoPE)
 Sinusoidal Positional Encoding (Adding waves) is considered outdated today.
@@ -140,7 +140,7 @@ Let's build a mental model of RoPE (Rotary Position Embeddings).
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your LLM was trained with a 4K context window, but product requirements demand a 32K context window. Compare positional encoding approaches for length extrapolation: ALiBi, RoPE with NTK-aware scaling, and YaRN."*
+*"Your <abbr title="Large Language Model">LLM</abbr> was trained with a 4K context window, but product requirements demand a 32K context window. Compare positional encoding approaches for length extrapolation: ALiBi, RoPE with NTK-aware scaling, and YaRN."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:

@@ -147,7 +147,7 @@ qapi -> qcache
 sequenceDiagram
     actor Admin
     actor User
-    participant Catalog as Catalog admin/API
+    participant Catalog as Catalog admin/<abbr title="Application Programming Interface">API</abbr>
     participant Relay as Outbox relay / CDC
     participant Stream as ProductChanged stream
     participant Indexer

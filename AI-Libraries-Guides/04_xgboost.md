@@ -46,12 +46,12 @@ Before writing code, you must understand the math. Both algorithms use multiple 
 
 ---
 
-## 4. The Native API vs. The Scikit-Learn Wrapper
+## 4. The Native <abbr title="Application Programming Interface">API</abbr> vs. The Scikit-Learn Wrapper
 
 XGBoost actually has two different ways to write code in Python.
 
 ### A. The Scikit-Learn Wrapper (For Beginners)
-XGBoost provides a class that perfectly mimics the Scikit-Learn `.fit()` and `.predict()` API we learned in Guide 03. This is great for putting XGBoost inside a Scikit-Learn `Pipeline`.
+XGBoost provides a class that perfectly mimics the Scikit-Learn `.fit()` and `.predict()` <abbr title="Application Programming Interface">API</abbr> we learned in Guide 03. This is great for putting XGBoost inside a Scikit-Learn `Pipeline`.
 
 ```python
 from xgboost import XGBClassifier
@@ -72,8 +72,8 @@ model.fit(X_train, y_train)
 preds = model.predict(X_test)
 ```
 
-### B. The Native API (For Pros)
-If you want maximum performance, early stopping, and advanced memory management, you use the Native API. It requires converting Pandas dataframes into a heavily optimized C++ object called a **DMatrix**.
+### B. The Native <abbr title="Application Programming Interface">API</abbr> (For Pros)
+If you want maximum performance, early stopping, and advanced memory management, you use the Native <abbr title="Application Programming Interface">API</abbr>. It requires converting Pandas dataframes into a heavily optimized C++ object called a **DMatrix**.
 
 ```python
 import xgboost as xgb

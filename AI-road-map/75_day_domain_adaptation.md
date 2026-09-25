@@ -1,21 +1,21 @@
 # Day 75: Transfer Learning & Domain Adaptation
 
-Welcome to Day 75. You have pre-trained your LLM on a massive internet dataset. You are ready to deploy it to a Hospital to summarize Medical Records.
+Welcome to Day 75. You have pre-trained your <abbr title="Large Language Model">LLM</abbr> on a massive internet dataset. You are ready to deploy it to a Hospital to summarize Medical Records.
 But you run into a fatal problem: Medical text does not look like Wikipedia text. The vocabulary is different, the grammar is different, and the sentence structure is different.
 
-This is called a **Distribution Shift**. Today, we learn how to mathematically force an AI to adapt to a new domain without destroying its previous knowledge.
+This is called a **Distribution Shift**. Today, we learn how to mathematically force an <abbr title="Artificial Intelligence">AI</abbr> to adapt to a new domain without destroying its previous knowledge.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. Types of Distribution Shifts
-When the data you trained on (Source Domain) does not match the data in the real world (Target Domain), the AI degrades.
+When the data you trained on (Source Domain) does not match the data in the real world (Target Domain), the <abbr title="Artificial Intelligence">AI</abbr> degrades.
 - **Covariate Shift:** The input features change, but the labels mean the same thing. (e.g., Training a self-driving car in sunny California, but deploying it in snowy Canada).
 - **Concept Drift:** The fundamental truth changes over time. (e.g., In 1990, the word *"Amazon"* meant a river. In 2024, it means a technology company). 
 
 ### 2. Unsupervised Domain Adaptation (DANN)
-Let's say you have 10,000 labeled Wikipedia documents, and 10,000 *unlabeled* Medical documents. How do you train the AI for the hospital if you don't have medical labels?
+Let's say you have 10,000 labeled Wikipedia documents, and 10,000 *unlabeled* Medical documents. How do you train the <abbr title="Artificial Intelligence">AI</abbr> for the hospital if you don't have medical labels?
 You use a **Domain-Adversarial Neural Network (DANN)**. 
 This is one of the most brilliant tricks in Deep Learning. It borrows the logic from GANs (Day 57)!
 
@@ -145,7 +145,7 @@ Before you can adapt to a domain, you need to know a shift has occurred in produ
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your production NLP model was trained on 2023 data, but language has shifted (new slang, recent events). Design a continuous adaptation system that doesn't require full retraining from scratch."*
+*"Your production <abbr title="Natural Language Processing">NLP</abbr> model was trained on 2023 data, but language has shifted (new slang, recent events). Design a continuous adaptation system that doesn't require full retraining from scratch."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -155,10 +155,10 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **Replay Buffers:**
    - Propose a Continuous Learning pipeline using a Replay Buffer. Store a small, randomized subset of the high-quality 2023 training data. 
    - When training on 2024 data, mix in 10-20% of the old data to anchor the model's weights and prevent catastrophic forgetting.
-3. **LoRA (Low-Rank Adaptation):**
-   - Suggest that instead of updating the massive 70B parameter model directly, you freeze the base model and inject tiny LoRA adapters (Day 83 topic!) into the attention layers. Train the adapter exclusively on the 2024 data. This allows rapid, cheap adaptation while physically preserving the original 2023 knowledge in the base weights.
+3. **<abbr title="Low-Rank Adaptation">LoRA</abbr> (Low-Rank Adaptation):**
+   - Suggest that instead of updating the massive 70B parameter model directly, you freeze the base model and inject tiny <abbr title="Low-Rank Adaptation">LoRA</abbr> adapters (Day 83 topic!) into the attention layers. Train the adapter exclusively on the 2024 data. This allows rapid, cheap adaptation while physically preserving the original 2023 knowledge in the base weights.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-Tomorrow, in **Day 76**, we tackle the final engineering problem: You trained a massive LLM, but you need to deploy it to a smartwatch. We will learn the ultimate compression algorithm: **Knowledge Distillation**!
+Tomorrow, in **Day 76**, we tackle the final engineering problem: You trained a massive <abbr title="Large Language Model">LLM</abbr>, but you need to deploy it to a smartwatch. We will learn the ultimate compression algorithm: **Knowledge Distillation**!

@@ -2,7 +2,7 @@
 
 Welcome to Day 154.
 
-Yesterday, we built a beautiful API Gateway to handle incoming traffic. But if a user requests a generation from a massive 70B or 405B parameter model, your Gateway must forward that request to a massive GPU Cluster.
+Yesterday, we built a beautiful <abbr title="Application Programming Interface">API</abbr> Gateway to handle incoming traffic. But if a user requests a generation from a massive 70B or 405B parameter model, your Gateway must forward that request to a massive GPU Cluster.
 A 70B model in 16-bit precision requires 140GB of VRAM just to store the weights. The largest single GPU on Earth (the NVIDIA H100) only has 80GB of VRAM.
 
 **It is physically impossible to load a 70B model onto a single GPU.**
@@ -43,7 +43,7 @@ When running TP, the CPU must send thousands of tiny instructions ("Kernels") to
 
 We cannot physically rent 8 A100 GPUs for a quick code-along. However, vLLM makes deploying a model across a multi-GPU cluster incredibly simple via the command line.
 
-We will simulate how an ML Engineer deploys a 70B model using Tensor Parallelism across 4 GPUs, and how to verify the GPU topology.
+We will simulate how an <abbr title="Machine Learning">ML</abbr> Engineer deploys a 70B model using Tensor Parallelism across 4 GPUs, and how to verify the GPU topology.
 
 *(Note: To run this exactly, you need a multi-GPU machine. Otherwise, study the conceptual workflow.)*
 
@@ -73,7 +73,7 @@ python -m vllm.entrypoints.openai.api_server \
 Under the hood, vLLM automatically invokes **Ray** (a distributed computing framework) or **PyTorch NCCL** to spawn 4 processes, shard the model weights, place a quarter of the model on each GPU VRAM, and orchestrate the matrix multiplications.
 
 ### Step 3: Integrating with the Python Client
-Once the massive cluster is running on port 8000, your code doesn't change at all! The API Gateway we built on Day 153 just forwards standard HTTP requests to it.
+Once the massive cluster is running on port 8000, your code doesn't change at all! The <abbr title="Application Programming Interface">API</abbr> Gateway we built on Day 153 just forwards standard HTTP requests to it.
 
 ```python
 import openai

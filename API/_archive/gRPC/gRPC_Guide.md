@@ -42,7 +42,7 @@ sequenceDiagram
 **Cons:**
 - **Browser Incompatibility**: Browsers don't fully support HTTP/2 trailing headers natively, requiring a proxy like `gRPC-Web` or Envoy to bridge the gap.
 - **Debugging Difficulty**: Binary payloads are not human-readable (unlike JSON). Requires specialized tools (e.g., `grpcurl`, Wireshark with Protobuf dissectors) for debugging.
-- **Steep Learning Curve**: Requires understanding Protobuf, HTTP/2 mechanics, and integrating code generation pipelines into CI/CD.
+- **Steep Learning Curve**: Requires understanding Protobuf, HTTP/2 mechanics, and integrating code generation pipelines into <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>.
 
 ### System Design Fit
 **Optimal Scenarios:**
@@ -180,7 +180,7 @@ service MicroserviceSystem {
 ---
 
 ### Use Case 1: Internal Service Authentication (Unary RPC)
-**System Design Fit:** An API Gateway (Python) validates a user JWT via an internal Auth Service (Go) before routing a request. Unary RPC is perfect for quick, 1-to-1 request-response lookups.
+**System Design Fit:** An <abbr title="Application Programming Interface">API</abbr> Gateway (Python) validates a user JWT via an internal Auth Service (Go) before routing a request. Unary RPC is perfect for quick, 1-to-1 request-response lookups.
 
 #### Golang (Server)
 ```go

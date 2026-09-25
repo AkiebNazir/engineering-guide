@@ -25,7 +25,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope QPS, storage, and bandwidth estimates, including broker and partition counts.
-3. API contracts and core data model.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
 5. Partitioning and ordering, the replication durability versus latency trade-off, consumer group and offset management, delivery semantics with retry, dead-letter and delay, and how the log model compares with a broker-per-message queue.
 6. Cache, scale, abuse, failure, and observability plan, including quotas and the metadata plane.

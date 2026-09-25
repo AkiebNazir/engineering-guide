@@ -1,20 +1,20 @@
-# Day 97: LoRA (Low-Rank Adaptation)
+# Day 97: <abbr title="Low-Rank Adaptation">LoRA</abbr> (Low-Rank Adaptation)
 
-Welcome to Day 97. We previously built a "Bottleneck Adapter" for Parameter-Efficient Fine-Tuning (PEFT). 
+Welcome to Day 97. We previously built a "Bottleneck Adapter" for Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>). 
 It works, but it has a fatal flaw: it physically adds a new layer to the Neural Network. When you deploy the model, every single word has to pass through that extra layer, which causes **Inference Latency**.
 
-Today, we learn the mathematical breakthrough that changed Open-Source AI forever: **LoRA**. It allows us to fine-tune massive models with almost zero VRAM, and perfectly merge the weights back together so there is **zero inference latency**.
+Today, we learn the mathematical breakthrough that changed Open-Source <abbr title="Artificial Intelligence">AI</abbr> forever: **<abbr title="Low-Rank Adaptation">LoRA</abbr>**. It allows us to fine-tune massive models with almost zero VRAM, and perfectly merge the weights back together so there is **zero inference latency**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Low-Intrinsic Rank Hypothesis
-If you want to teach a 70-Billion parameter LLM to speak French, do you *really* need to change all 70 Billion parameters?
+If you want to teach a 70-Billion parameter <abbr title="Large Language Model">LLM</abbr> to speak French, do you *really* need to change all 70 Billion parameters?
 Researchers at Microsoft proved the **Low Intrinsic Rank Hypothesis**: When a massive model learns a new task, the mathematical *update* to the weights ($\Delta W$) has a very low intrinsic rank. 
 This means out of a massive matrix of changes, most of the information is highly redundant and can be compressed.
 
-### 2. The LoRA Equation ($W' = W + BA$)
+### 2. The <abbr title="Low-Rank Adaptation">LoRA</abbr> Equation ($W' = W + BA$)
 Instead of training the massive update matrix $\Delta W$, we approximate it using two tiny matrices, $A$ and $B$.
 Let's look at the math for a single layer with dimension `4096 x 4096`:
 - The frozen Base Weight matrix ($W$) has $16.7 \text{ Million}$ parameters.
@@ -40,7 +40,7 @@ We overwrite the original weights and delete the adapter. The Neural Network has
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's implement the LoRA mathematical operation from scratch in pure PyTorch.
+Let's implement the <abbr title="Low-Rank Adaptation">LoRA</abbr> mathematical operation from scratch in pure PyTorch.
 
 Create a file named `lora_math.py`:
 
@@ -143,18 +143,18 @@ if __name__ == "__main__":
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The Optimizer Savings
-LoRA saves parameters, but the real secret is the Optimizer.
+<abbr title="Low-Rank Adaptation">LoRA</abbr> saves parameters, but the real secret is the Optimizer.
 **Your Task:**
 1. Calculate the VRAM used by the Adam optimizer for Full Fine-Tuning of a 7B model. (Adam tracks 2 variables per parameter: Momentum and Variance. That is $7\text{B} \times 2 \times 4\text{ bytes}$).
-2. Calculate the Adam VRAM for a Rank-8 LoRA Fine-Tuning of that same 7B model.
-3. You will realize that LoRA doesn't just save model weight memory, it practically eliminates Optimizer memory!
+2. Calculate the Adam VRAM for a Rank-8 <abbr title="Low-Rank Adaptation">LoRA</abbr> Fine-Tuning of that same 7B model.
+3. You will realize that <abbr title="Low-Rank Adaptation">LoRA</abbr> doesn't just save model weight memory, it practically eliminates Optimizer memory!
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Explain the mathematical justification for why LoRA works. A team claims rank-4 LoRA is 'good enough' for all tasks. Under what conditions would you need a higher rank, like rank-64 or rank-128?"*
+*"Explain the mathematical justification for why <abbr title="Low-Rank Adaptation">LoRA</abbr> works. A team claims rank-4 <abbr title="Low-Rank Adaptation">LoRA</abbr> is 'good enough' for all tasks. Under what conditions would you need a higher rank, like rank-64 or rank-128?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -171,4 +171,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 We have eliminated the Optimizer VRAM problem. But we STILL have to load the 7B Base Model into VRAM to do the forward pass! A 7B model in FP16 still requires 14GB of VRAM. A 70B model requires 140GB. 
 
-Tomorrow, in **Day 98**, we achieve the impossible: **QLoRA**. We will freeze the model in 4-bit precision to fit a 70B model on a consumer GPU!
+Tomorrow, in **Day 98**, we achieve the impossible: **<abbr title="Quantized Low-Rank Adaptation">QLoRA</abbr>**. We will freeze the model in 4-bit precision to fit a 70B model on a consumer GPU!

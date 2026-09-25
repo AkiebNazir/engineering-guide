@@ -1,4 +1,4 @@
-# Hugging Face Transformers Mastery: The Universal API for Modern AI
+# Hugging Face Transformers Mastery: The Universal <abbr title="Application Programming Interface">API</abbr> for Modern <abbr title="Artificial Intelligence">AI</abbr>
 
 ## 1. The Core Concept (What and Why)
 
@@ -8,10 +8,10 @@
 `transformers` is an open-source library built by the company Hugging Face. It provides thousands of pre-trained models (LLMs, Vision Models, Audio Models) that you can download and run with just three lines of Python code. 
 
 **Why does it exist?**
-Before Hugging Face, if you wanted to use an AI model developed by Meta (like Llama) or Google (like BERT), you had to clone their massive GitHub repository, figure out their highly specific PyTorch code, and spend days getting the weights to load. 
-Hugging Face standardized the entire AI industry. They created a uniform API. Whether you are loading a text model, an image model, or an audio model, the code is always exactly the same: `AutoModel` and `AutoTokenizer`.
+Before Hugging Face, if you wanted to use an <abbr title="Artificial Intelligence">AI</abbr> model developed by Meta (like Llama) or Google (like BERT), you had to clone their massive GitHub repository, figure out their highly specific PyTorch code, and spend days getting the weights to load. 
+Hugging Face standardized the entire <abbr title="Artificial Intelligence">AI</abbr> industry. They created a uniform <abbr title="Application Programming Interface">API</abbr>. Whether you are loading a text model, an image model, or an audio model, the code is always exactly the same: `AutoModel` and `AutoTokenizer`.
 
-It is the single most important library in modern Generative AI.
+It is the single most important library in modern Generative <abbr title="Artificial Intelligence">AI</abbr>.
 
 ---
 
@@ -31,7 +31,7 @@ print(f"Transformers version: {transformers.__version__}")
 
 ---
 
-## 3. The "Hello World": The `pipeline` API (For Beginners)
+## 3. The "Hello World": The `pipeline` <abbr title="Application Programming Interface">API</abbr> (For Beginners)
 
 If you just want to use a model quickly without worrying about tensors, math, or tokenization, you use the `pipeline` abstraction.
 
@@ -56,7 +56,7 @@ The pipeline handles downloading the weights, tokenizing the English text into n
 
 ## 4. Deep Dive: Tokenizers and Models (For Pros)
 
-If you are building a real AI application, you almost never use the `pipeline`. You need granular control over the memory, the batching, and the generation parameters. You must split the pipeline into its two true components: The **Tokenizer** and the **Model**.
+If you are building a real <abbr title="Artificial Intelligence">AI</abbr> application, you almost never use the `pipeline`. You need granular control over the memory, the batching, and the generation parameters. You must split the pipeline into its two true components: The **Tokenizer** and the **Model**.
 
 ### A. The Tokenizer (Translating English to Math)
 Neural networks cannot read the letter "A". They only understand numbers. The Tokenizer splits your sentence into "Tokens" (which are usually chunks of words, not full words) and maps them to an ID number in a massive dictionary.
@@ -115,13 +115,13 @@ print(f"Final Generation: {final_text}")
 
 ## 5. Generating Text: The Parameter Masterclass
 
-When you call `model.generate()`, you are controlling exactly how the LLM "thinks". Let's break down the most critical parameters.
+When you call `model.generate()`, you are controlling exactly how the <abbr title="Large Language Model">LLM</abbr> "thinks". Let's break down the most critical parameters.
 
 ### Parameter Breakdown: `model.generate(...)`
 - `max_new_tokens` (int): The absolute hard limit on how many words it can generate.
-  - *Effect:* If you set this to 5, it will stop mid-sentence. If you set it to 2000, it might hallucinate forever, racking up API/GPU costs.
+  - *Effect:* If you set this to 5, it will stop mid-sentence. If you set it to 2000, it might hallucinate forever, racking up <abbr title="Application Programming Interface">API</abbr>/GPU costs.
 - `temperature` (float): Controls the randomness of the predictions. Default is usually `1.0`.
-  - *Effect of decreasing (e.g., 0.1):* The model becomes strict and deterministic. It will always pick the most mathematically probable next word. Use `0.1` for coding, math, or factual retrieval (RAG).
+  - *Effect of decreasing (e.g., 0.1):* The model becomes strict and deterministic. It will always pick the most mathematically probable next word. Use `0.1` for coding, math, or factual retrieval (<abbr title="Retrieval-Augmented Generation">RAG</abbr>).
   - *Effect of increasing (e.g., 1.5):* The model becomes wildly creative. It will pick low-probability words. If you set it to 2.0, it will output absolute gibberish. Use `0.8` to `1.2` for writing poetry or brainstorming.
 - `do_sample` (bool): 
   - *Effect:* If `False` (Greedy Decoding), the model *always* picks the #1 most likely word. Temperature is completely ignored. If `True`, it rolls a weighted dice (using the temperature) to pick the next word.

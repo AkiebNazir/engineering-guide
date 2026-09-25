@@ -1,6 +1,6 @@
-# ML and LLM Systems
+# <abbr title="Machine Learning">ML</abbr> and <abbr title="Large Language Model">LLM</abbr> Systems
 
-Google designs increasingly include a model somewhere: a recommendation feed, search ranking, spam detection, or an LLM-powered feature. You are not expected to design the model. You are expected to design the **system around it** — how features get to the model, how predictions are served within a latency budget, how the model is kept fresh, how it is evaluated, and what it costs.
+Google designs increasingly include a model somewhere: a recommendation feed, search ranking, spam detection, or an <abbr title="Large Language Model">LLM</abbr>-powered feature. You are not expected to design the model. You are expected to design the **system around it** — how features get to the model, how predictions are served within a latency budget, how the model is kept fresh, how it is evaluated, and what it costs.
 
 > 💡 Treat a model as a dependency with unusual properties: expensive per call, sometimes slow, probabilistic, silently degradable, and dependent on data pipelines that can break without any error.
 
@@ -74,9 +74,9 @@ Operational points: shard the index (by item partition) and fan out queries; reb
 - **Fallbacks**: if the model is slow or down, serve a cheaper model, a cached result, or a heuristic (most popular). A recommender that times out should still show a page.
 - **Rollout**: shadow traffic, then canary, then an A/B test on online metrics — offline metrics alone do not decide a launch.
 
-## LLM serving
+## <abbr title="Large Language Model">LLM</abbr> serving
 
-LLM inference has two phases with different bottlenecks:
+<abbr title="Large Language Model">LLM</abbr> inference has two phases with different bottlenecks:
 
 1. **Prefill** processes the whole prompt in parallel and produces the first token. Cost grows with prompt length; this sets time-to-first-token.
 2. **Decode** generates one token at a time, each step reading the growing **KV cache** (attention keys and values for all previous tokens). This is memory-bound and sets tokens per second.
@@ -95,7 +95,7 @@ Key techniques to name:
 
 ### Cost and quotas
 
-LLM cost scales with tokens, so product decisions are cost decisions. Put per-user and per-tenant **token quotas** and rate limits at the gateway, choose the smallest model that meets quality per task (route easy requests to cheap models), cap `max_tokens`, cache aggressively, and track cost per feature as a first-class metric.
+<abbr title="Large Language Model">LLM</abbr> cost scales with tokens, so product decisions are cost decisions. Put per-user and per-tenant **token quotas** and rate limits at the gateway, choose the smallest model that meets quality per task (route easy requests to cheap models), cap `max_tokens`, cache aggressively, and track cost per feature as a first-class metric.
 
 ### Safety and quality
 
@@ -103,7 +103,7 @@ LLM cost scales with tokens, so product decisions are cost decisions. Put per-us
 - Grounding: retrieval-augmented generation with citations for factual features.
 - Evaluation: an offline eval set with automated graders for every model or prompt change, plus online feedback signals and human review samples.
 
-## Monitoring ML systems
+## Monitoring <abbr title="Machine Learning">ML</abbr> systems
 
 Everything in [15_observability_and_reliability.md](15_observability_and_reliability.md) still applies, plus signals that normal monitoring misses:
 
@@ -115,7 +115,7 @@ Everything in [15_observability_and_reliability.md](15_observability_and_reliabi
 ## Interview angles
 
 - "Design YouTube recommendations" → funnel (candidates → ranking → re-ranking), embeddings + ANN for retrieval, feature store, logging for training, freshness of new videos (cold start), A/B testing.
-- "Add an AI assistant to Gmail" → gateway with quotas, streaming, context assembly from the user's data with permission checks, prefix caching of the system prompt, safety filters, cost controls, graceful fallback when the model is unavailable.
+- "Add an <abbr title="Artificial Intelligence">AI</abbr> assistant to Gmail" → gateway with quotas, streaming, context assembly from the user's data with permission checks, prefix caching of the system prompt, safety filters, cost controls, graceful fallback when the model is unavailable.
 - "How do you know the model got worse?" → drift and data-quality monitors, delayed-label quality metrics, canary comparisons against the previous model.
 
 ## Going deeper

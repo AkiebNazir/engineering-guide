@@ -150,4 +150,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 Congratulations. You have completed the next 10 days. You have scaled from basic architecture to massive Pre-training pipelines, and finally down to Edge Deployment compression! 
 
-In the next chunk, we will dive into **Parameter-Efficient Fine-Tuning (PEFT), LoRA, RLHF, and AI Agents!**
+In the next chunk, we will dive into **Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>), <abbr title="Low-Rank Adaptation">LoRA</abbr>, <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>, and <abbr title="Artificial Intelligence">AI</abbr> Agents!**

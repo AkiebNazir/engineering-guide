@@ -45,7 +45,7 @@ into one view (`ChainMap`).
 ## What the 10 levels cover
 
 Level 1 starts with `Counter` for the single most common job: counting things.
-Level 2 covers `deque`'s core API (`append`/`appendleft`/`pop`/`popleft`/`rotate`/
+Level 2 covers `deque`'s core <abbr title="Application Programming Interface">API</abbr> (`append`/`appendleft`/`pop`/`popleft`/`rotate`/
 `maxlen`). Level 3 builds the `defaultdict(list)` grouping idiom next to the
 manual `dict.setdefault` it replaces. Level 4 triggers real exceptions —
 `namedtuple` immutability and `deque` popping from empty. Level 5 goes deeper on

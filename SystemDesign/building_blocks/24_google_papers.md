@@ -58,7 +58,7 @@ You do not need to recite these papers in an interview. You do need the design *
 
 - Data is sharded into **splits**, each replicated across zones/regions by a **Paxos group** with a leader.
 - Cross-shard transactions use **two-phase commit** where every participant is a Paxos group, so participants are themselves fault tolerant.
-- **TrueTime**: an API returning an uncertainty interval `[earliest, latest]` backed by GPS and atomic clocks (typically a few milliseconds wide). A read-write transaction picks a commit timestamp and **waits out the uncertainty** before acknowledging, which guarantees that timestamp order equals real-time commit order — **external consistency**.
+- **TrueTime**: an <abbr title="Application Programming Interface">API</abbr> returning an uncertainty interval `[earliest, latest]` backed by GPS and atomic clocks (typically a few milliseconds wide). A read-write transaction picks a commit timestamp and **waits out the uncertainty** before acknowledging, which guarantees that timestamp order equals real-time commit order — **external consistency**.
 - Consequently, **lock-free snapshot reads** at any timestamp, from any sufficiently up-to-date replica.
 
 **Trade-offs.** Write latency includes the commit wait and cross-region Paxos round trips; the approach needs specialised time infrastructure (CockroachDB approximates it with hybrid logical clocks and a max-offset assumption). Cloud Spanner productised it.

@@ -24,7 +24,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope estimates: event rate, storage, and aggregate cardinality.
-3. Event schema and query API.
+3. Event schema and query <abbr title="Application Programming Interface">API</abbr>.
 4. Baseline architecture for ingestion, stream aggregation, and storage.
 5. Windowing, watermarks, late events, and exactly-once counting.
 6. Deduplication, fraud filtering, batch reconciliation for billing, and failure handling.

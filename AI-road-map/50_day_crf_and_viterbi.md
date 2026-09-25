@@ -1,23 +1,23 @@
 # Day 50: Sequence Labeling (CRF & Viterbi Decoding)
 
-Welcome to Day 50. Today we tackle one of the most commercially valuable tasks in NLP: **Named Entity Recognition (NER)**.
+Welcome to Day 50. Today we tackle one of the most commercially valuable tasks in <abbr title="Natural Language Processing">NLP</abbr>: **Named Entity Recognition (NER)**.
 
-If you feed a legal contract into an AI, you want the AI to read the document and highlight every single Person, Company, Date, and Dollar Amount. 
-To do this, the AI must label *every single word* in the sequence. But standard RNNs fail at this because they make incredibly stupid grammatical mistakes. Today, we fix the RNN using statistical math.
+If you feed a legal contract into an <abbr title="Artificial Intelligence">AI</abbr>, you want the <abbr title="Artificial Intelligence">AI</abbr> to read the document and highlight every single Person, Company, Date, and Dollar Amount. 
+To do this, the <abbr title="Artificial Intelligence">AI</abbr> must label *every single word* in the sequence. But standard RNNs fail at this because they make incredibly stupid grammatical mistakes. Today, we fix the <abbr title="Recurrent Neural Network">RNN</abbr> using statistical math.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The BIO Tagging Scheme
-How do you label the phrase: *"New York City"*? If you label all three words as `LOCATION`, how does the AI know it's not 3 separate cities?
+How do you label the phrase: *"New York City"*? If you label all three words as `LOCATION`, how does the <abbr title="Artificial Intelligence">AI</abbr> know it's not 3 separate cities?
 We use the **BIO Scheme**:
 - **B** (Beginning): `B-LOC` (The start of New York City)
 - **I** (Inside): `I-LOC` (The middle/end of New York City)
 - **O** (Outside): `O` (Normal words like "The", "and")
 So *"I flew to New York City"* is labeled: `[O, O, O, B-LOC, I-LOC, I-LOC]`.
 
-### 2. The RNN Flaw
+### 2. The <abbr title="Recurrent Neural Network">RNN</abbr> Flaw
 If you use a standard BiLSTM to predict these tags, it looks at the words, but it *does not look at the tags it just predicted*. 
 Because of this, the BiLSTM might mathematically output: `[O, I-LOC, B-PER, I-LOC]`. 
 This is grammatically impossible! 
@@ -31,7 +31,7 @@ It learns that moving from `B-PER` to `I-LOC` has a $0.0\%$ chance of ever happe
 When the BiLSTM makes its prediction, the CRF intercepts the prediction, checks its Transition Matrix, and mathematically vetoes any sequence of tags that violates the rules of grammar!
 
 ### 4. Viterbi Decoding (Dynamic Programming)
-If a sentence has 10 words, and there are 5 possible tags for each word, the AI must search through $5^{10} = 9,765,625$ possible tag combinations to find the one sequence with the highest total probability score. Calculating 9 million paths takes too long.
+If a sentence has 10 words, and there are 5 possible tags for each word, the <abbr title="Artificial Intelligence">AI</abbr> must search through $5^{10} = 9,765,625$ possible tag combinations to find the one sequence with the highest total probability score. Calculating 9 million paths takes too long.
 **Viterbi Decoding** is a dynamic programming algorithm. As it walks left-to-right across the sentence, it only remembers the *best possible path* to get to each tag, and instantly deletes all inferior paths. This drops the compute time from Exponential $O(T^N)$ down to Linear $O(N \cdot T^2)$!
 
 ---
@@ -145,12 +145,12 @@ if __name__ == "__main__":
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The BiLSTM-CRF Pipeline
-A CRF is never used alone. It is placed on top of an RNN.
+A CRF is never used alone. It is placed on top of an <abbr title="Recurrent Neural Network">RNN</abbr>.
 **Your Task:**
 1. Conceptually map out the architecture of a `BiLSTM_CRF` PyTorch module.
 2. Layer 1: `nn.Embedding` (Turns words into 300D vectors).
 3. Layer 2: `nn.LSTM(bidirectional=True)` (Reads the sentence forward and backward).
-4. Layer 3: `nn.Linear` (Projects the LSTM output down to `NUM_TAGS`). This creates the `emissions` tensor!
+4. Layer 3: `nn.Linear` (Projects the <abbr title="Long Short-Term Memory">LSTM</abbr> output down to `NUM_TAGS`). This creates the `emissions` tensor!
 5. Layer 4: The `viterbi_decode` function you wrote above.
 6. Realize that during inference, you run the BiLSTM to get the `emissions`, and then pass them into the Viterbi decoder to get the final cleaned tags!
 
@@ -167,8 +167,8 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **The Diagnosis (Domain Shift & OOV):** 
    - Explain that formal text uses standard grammar, capitalization, and punctuation (which the BiLSTM heavily relies on). 
    - Twitter text uses slang, emojis, missing punctuation, and deliberate misspellings. This causes massive Out-Of-Vocabulary (OOV) errors and breaks the grammatical context the BiLSTM expects.
-2. **Solution 1: Subword Tokenization (BPE/FastText):**
-   - Replace standard Word2Vec with **FastText** or **BPE**. FastText embeds sub-character n-grams, allowing the model to mathematically guess the meaning of misspelled words (e.g., "awesssome") by looking at the sub-characters.
+2. **Solution 1: Subword Tokenization (<abbr title="Byte Pair Encoding">BPE</abbr>/FastText):**
+   - Replace standard Word2Vec with **FastText** or **<abbr title="Byte Pair Encoding">BPE</abbr>**. FastText embeds sub-character n-grams, allowing the model to mathematically guess the meaning of misspelled words (e.g., "awesssome") by looking at the sub-characters.
 3. **Solution 2: Rule-Based / Dictionary Matching (Weak Supervision):**
    - Use gazetteers (massive lists of known companies/people) combined with Regex to automatically tag obvious entities in the tweets, generating a "weakly labeled" dataset to fine-tune the model.
 4. **Solution 3: Zero-Shot / Few-Shot LLMs:**

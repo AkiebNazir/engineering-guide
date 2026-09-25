@@ -2,7 +2,7 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* Before the explosion of modern "Vector Databases" (like Pinecone or Qdrant), there was **FAISS** (Facebook AI Similarity Search). While it doesn't have fancy cloud APIs or complex metadata filtering, it remains the absolute fastest, most mathematically optimized library on Earth for searching through billions of vectors locally in RAM. 
+*Why is this tool relevant?* Before the explosion of modern "Vector Databases" (like Pinecone or Qdrant), there was **FAISS** (Facebook <abbr title="Artificial Intelligence">AI</abbr> Similarity Search). While it doesn't have fancy cloud APIs or complex metadata filtering, it remains the absolute fastest, most mathematically optimized library on Earth for searching through billions of vectors locally in RAM. 
 
 **What is it?**
 FAISS is a C++ library (with Python bindings) developed by Meta. It allows developers to quickly search for embeddings (vectors) that are similar to each other using distances like L2 (Euclidean) or Inner Product (Cosine Similarity).
@@ -116,7 +116,7 @@ distances, indices = index_ivf.search(query_vector, k=3)
 *Answer:* "I must use **Product Quantization (PQ)**. Instead of storing the exact 32-bit floats, PQ mathematically compresses the vectors. It chops the 1024-dimensional vector into sub-vectors, replaces them with short 8-bit integer IDs from a codebook, and fundamentally shrinks the memory footprint by up to 97%. I would use `faiss.IndexIVFPQ`. The search will be Approximate, and I will lose a slight amount of precision, but the 4TB database will easily fit into my 256GB of RAM."
 
 ### Scenario 2: Cosine Similarity vs L2 Distance
-*Interviewer:* "We are using OpenAI text embeddings for RAG. We put them into a FAISS `IndexFlatL2`. The retrieval results are weird. OpenAI documentation says we must use Cosine Similarity, but FAISS doesn't have an `IndexFlatCosine`. How do we fix this?"
+*Interviewer:* "We are using OpenAI text embeddings for <abbr title="Retrieval-Augmented Generation">RAG</abbr>. We put them into a FAISS `IndexFlatL2`. The retrieval results are weird. OpenAI documentation says we must use Cosine Similarity, but FAISS doesn't have an `IndexFlatCosine`. How do we fix this?"
 
 *Answer:* "Mathematically, if vectors are normalized to a length of 1, Inner Product and Cosine Similarity are exactly the same thing. OpenAI embeddings are already normalized to 1 by default! Therefore, we just need to switch our FAISS index to `IndexFlatIP` (Inner Product). If we ever use an embedding model that is *not* normalized, we must first run `faiss.normalize_L2(database_vectors)` before adding them to the `IndexFlatIP`."
 

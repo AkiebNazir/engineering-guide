@@ -1,4 +1,4 @@
-# Module 2 — Agentic AI: Autonomous Reasoning & Control Flow
+# Module 2 — Agentic <abbr title="Artificial Intelligence">AI</abbr>: Autonomous Reasoning & Control Flow
 
 > Scope: agent loops as literal state machines, tool-calling as a text-serialization
 > and constrained-decoding problem, memory as bounded buffers, and multi-agent
@@ -8,10 +8,10 @@
 
 ## 0. The Picture First — read this before the internals
 
-> 💡 An LLM on its own is a **brilliant expert locked in a room, with no hands and no memory**.
+> 💡 An <abbr title="Large Language Model">LLM</abbr> on its own is a **brilliant expert locked in a room, with no hands and no memory**.
 > It can only read a note slid under the door and write a note back. An **agent** is what you
 > get when an assistant stands outside that door: reads the note, does what it asks (search the
-> web, run code, call an API), slides the result back in — and repeats until the expert writes
+> web, run code, call an <abbr title="Application Programming Interface">API</abbr>), slides the result back in — and repeats until the expert writes
 > "done."
 
 ### 0.1 Chatbot vs. agent
@@ -45,11 +45,11 @@ unreliable at exact arithmetic. So a good agent does this:
 
 | Step | The model writes | The harness does | Result fed back |
 |---|---|---|---|
-| 1 | "I need live weather." → `get_weather({"city": "Paris"})` | calls the weather API | `18°C` *(example value)* |
+| 1 | "I need live weather." → `get_weather({"city": "Paris"})` | calls the weather <abbr title="Application Programming Interface">API</abbr> | `18°C` *(example value)* |
 | 2 | "Convert to °F." → `calculator({"expression": "18 * 9 / 5 + 32"})` | evaluates it | `64.4` |
 | 3 | `Final Answer: It's 18°C (64.4°F) in Paris.` | sees "Final Answer" → stops | — |
 
-Three LLM calls, two tool calls, one answer. Every section below zooms into one part of this table.
+Three <abbr title="Large Language Model">LLM</abbr> calls, two tool calls, one answer. Every section below zooms into one part of this table.
 
 <div class="lab" data-viz="flow-agent-loop"></div>
 
@@ -79,7 +79,7 @@ stop -> done : "yes"
 ## 1. Core Intuition & Mechanical Problem Statement
 
 An "agent" is not a new model capability — it is a **control loop wrapped around a
-stateless text-completion function**. The LLM itself has no memory, no ability to
+stateless text-completion function**. The <abbr title="Large Language Model">LLM</abbr> itself has no memory, no ability to
 execute code, and no concept of "steps." Everything that makes a system agentic is
 externally engineered:
 
@@ -223,7 +223,7 @@ Going from 10 → 20 steps doubles the work you asked for but multiplies the tok
 
 ### 2.2 Plan-and-Solve vs. Reflexion — different graph topologies
 
-**Plan-and-Solve** decouples planning from execution into two distinct LLM calls:
+**Plan-and-Solve** decouples planning from execution into two distinct <abbr title="Large Language Model">LLM</abbr> calls:
 
 ```arch
 %% caption: Plan-and-Solve: one planning call writes the subtask list, then executor calls work through it in order.
@@ -336,7 +336,7 @@ Task: Write is_palindrome(s) ...
 > 💡 No weights changed. Wipe the memory buffer and the "lesson" is gone. Persist it to a
 > database and you've built episodic memory (§2.4).
 
-| Pattern | LLM calls | Strength | Weakness | Reach for it when… |
+| Pattern | <abbr title="Large Language Model">LLM</abbr> calls | Strength | Weakness | Reach for it when… |
 |---|---|---|---|---|
 | **ReAct** | one per step | adapts after every observation | expensive, can wander | the path depends on what tools return |
 | **Plan-and-Solve** | 1 plan + 1 per step | cheap, predictable, easy to show a user | brittle if reality changes the plan | the task decomposes cleanly up front |
@@ -365,7 +365,7 @@ output side. Two enforcement strategies exist:
    have hallucinated argument values).
 
 **Handling structured-output parse failures** (when constrained decoding isn't
-available, e.g. calling a third-party API) requires the harness itself to implement
+available, e.g. calling a third-party <abbr title="Application Programming Interface">API</abbr>) requires the harness itself to implement
 self-correction: attempt to parse → on failure, **do not crash the loop** — feed the
 parser error back into the transcript as an observation (`"PARSE_ERROR: ..."`) and let
 the next model call see its own mistake and retry. This is a special case of the
@@ -462,7 +462,7 @@ scarcest resource:
   budget is exceeded. Cheapest, but can silently discard load-bearing early
   observations (e.g. a fact retrieved in step 2 that's needed in step 20).
 - **Summarization/compaction**: periodically replace a run of scratchpad entries with
-  an LLM-generated summary, trading fidelity for token budget. Requires an extra LLM
+  an <abbr title="Large Language Model">LLM</abbr>-generated summary, trading fidelity for token budget. Requires an extra <abbr title="Large Language Model">LLM</abbr>
   call and risks summarization-induced information loss compounding over many rounds
   of re-summarization.
 - **Hierarchical memory**: keep full detail for the last $k$ steps, summarized detail
@@ -495,14 +495,14 @@ r:R -> db:T : "end of session: distil facts"
 #### 🧮 Worked example — memory across two sessions
 
 **Monday.** User: *"I'm vegetarian and I hate early flights."* At the end of the session, one
-extra LLM call distils the conversation into facts and stores them:
+extra <abbr title="Large Language Model">LLM</abbr> call distils the conversation into facts and stores them:
 
 ```json
 [{"fact": "User is vegetarian", "source": "session-2026-09-07"},
  {"fact": "User prefers flights departing after 10:00", "source": "session-2026-09-07"}]
 ```
 
-**Friday, brand-new session.** User: *"Book me a weekend in Rome."* Before the first LLM call, the
+**Friday, brand-new session.** User: *"Book me a weekend in Rome."* Before the first <abbr title="Large Language Model">LLM</abbr> call, the
 harness searches the store with that message and prepends what it finds:
 
 ```text
@@ -798,7 +798,7 @@ Without the detector, the loop burns every remaining step up to `max_steps` doin
 
 **Retrying something that isn't safe to retry.** `charge_card(amount=40)` succeeds, but the response
 times out before reaching the harness. A naive retry charges the customer **twice**. The fix is an
-idempotency key: `charge_card(amount=40, idempotency_key="order-981")` — the payment API recognises
+idempotency key: `charge_card(amount=40, idempotency_key="order-981")` — the payment <abbr title="Application Programming Interface">API</abbr> recognises
 the second call as a duplicate and returns the first result instead.
 
 ---
@@ -1064,7 +1064,7 @@ mindmap
 **Test yourself** — answer out loud first, then open.
 
 <details>
-<summary>1. Between two LLM calls, where does the agent's memory of step 1 physically live?</summary>
+<summary>1. Between two <abbr title="Large Language Model">LLM</abbr> calls, where does the agent's memory of step 1 physically live?</summary>
 
 In the transcript text your harness re-sends as part of the next prompt (plus any external store you
 explicitly query). The model itself keeps nothing between calls.

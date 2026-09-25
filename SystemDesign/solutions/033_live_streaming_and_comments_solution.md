@@ -26,7 +26,7 @@ The hard decision is the comment fan-out. At 300K posts/s to 10M viewers, naive 
 | Moderation compute | 300K/s × 1 ms = 300 cores, or × 30 ms = **9,000 cores**. Only displayed candidates (20/s) × 30 ms = 0.6 core | Cheap filters on everything, heavy models on what may be shown. |
 | Recording | Mean 0.5 Tbps (half of peak, assumed) = 62.5 GB/s = **5.4 PB/day** source-only. 14 days = 76 PB, 106 PB at 1.4× erasure coding | Retention is the cost lever. Store the source rung, not the ladder. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/streams {channel_id, latency_tier}      → 201 {stream_id, ingest:[{proto:"srt", url, latency_ms:200}, …],
@@ -84,7 +84,7 @@ pl -> papi : "signed manifest"
 pl -> cg : "WebSocket"
 ```
 
-**Watch.** The player asks the playback API, which checks entitlement and picks a CDN by weight and health, then returns a signed manifest URL and chat details. The player fetches the playlist and parts from the CDN. **Go live.** The encoder connects to an ingest server. The ingest server demuxes, publishes the source rung to the packager immediately and hands frames to the transcoder. The packager cuts parts and segments on source-PTS boundaries and writes them to the object store and the shield. The segments are the DVR window and, later, the VOD. Chat is the second diagram.
+**Watch.** The player asks the playback <abbr title="Application Programming Interface">API</abbr>, which checks entitlement and picks a CDN by weight and health, then returns a signed manifest URL and chat details. The player fetches the playlist and parts from the CDN. **Go live.** The encoder connects to an ingest server. The ingest server demuxes, publishes the source rung to the packager immediately and hands frames to the transcoder. The packager cuts parts and segments on source-PTS boundaries and writes them to the object store and the shield. The segments are the DVR window and, later, the VOD. Chat is the second diagram.
 
 ## Deep dive 1: Ingest and redundancy
 
@@ -120,7 +120,7 @@ Mechanics are in [29](../building_blocks/29_cdn_and_streaming_media.md) and the 
 
 - **Herd control.** Each new segment is wanted by every POP in the same instant. Collapsing at the edge, regional tier and shield turns 500 POPs × 6 rungs into 6 origin fetches per shield. The playlist has a 1 s TTL, and LL blocked reloads are held and released together (1M held requests).
 - **Multi-CDN.** Weighted steering at session start, with mid-stream switching by content steering (HLS Content Steering and DASH-IF content steering, both introduced around 2022) or manifest rewrite. Four CDNs with one failure tolerated means each carries 25%, and 33% if one dies, so each needs **1.33 × 10 = 13.3 Tbps** committed. Shift a failed CDN's load in steps of about 10% per minute so its share does not arrive on cold caches.
-- **Brownout ladder** ([28](../building_blocks/28_overload_control_and_graceful_degradation.md)): cap the top rung (−6 Tbps), then drop 60 fps, then disable the LL tier. Each is a switch on the playback API.
+- **Brownout ladder** ([28](../building_blocks/28_overload_control_and_graceful_degradation.md)): cap the top rung (−6 Tbps), then drop 60 fps, then disable the LL tier. Each is a switch on the playback <abbr title="Application Programming Interface">API</abbr>.
 - **Pre-warm.** Before a scheduled event, open connections, warm the shield and ramp steering weights.
 
 ## Deep dive 4: Live comments and reactions at 10M viewers
@@ -168,12 +168,12 @@ rx:B ..> rl:L : "1 aggregate per s"
 | Layer | Work | Cost and placement |
 |---|---|---|
 | Inline, before the log | Per-user slow mode, bans (hash set), per-channel blocked terms (Aho-Corasick), account-age gates | 20 µs × 300K/s = 6 cores, on every message |
-| ML on candidates | Toxicity and spam model | 20/s × 30 ms = 0.6 core, against 9,000 cores for all messages |
+| <abbr title="Machine Learning">ML</abbr> on candidates | Toxicity and spam model | 20/s × 30 ms = 0.6 core, against 9,000 cores for all messages |
 | Async, stored history | The same model on everything not shown, before it appears in VOD chat replay | Batch, off the live path |
 | Moderator actions | `delete`, `timeout`, `ban` as **control events** in the sequenced feed, on a priority lane that is never sampled | 0.6 s nominal, target 2 s p99. A delete also purges a buffered, not-yet-shown message |
 | Video | One sampled frame per 10 s per stream into a classifier | 200K ÷ 10 = 20K frames/s |
 
-**Raids.** When the new-account post rate exceeds a threshold, switch to followers-only and slow mode automatically. **Failure mode** ([28](../building_blocks/28_overload_control_and_graceful_degradation.md)): if the ML model is down, fail closed for low-trust accounts (hold) and open for trusted ones. Moderating what is shown is the cost decision, and it only works because the feed is sampled.
+**Raids.** When the new-account post rate exceeds a threshold, switch to followers-only and slow mode automatically. **Failure mode** ([28](../building_blocks/28_overload_control_and_graceful_degradation.md)): if the <abbr title="Machine Learning">ML</abbr> model is down, fail closed for low-trust accounts (hold) and open for trusted ones. Moderating what is shown is the cost decision, and it only works because the feed is sampled.
 
 ## Recording, DVR and viewer counts
 
@@ -216,7 +216,7 @@ Trade-off to state: "I keep one sampled, sequenced comment feed per room so a 10
 4. **Treating low latency as free.** 6× the requests, a 1 s buffer, and a stall on any hiccup. Gate the tier.
 5. **One CDN for a marquee event, or an instant shift when it fails.** The others need 33% headroom and a ramp.
 6. **Chat ahead of video.** Spoilers. Release by stream timestamp.
-7. **Heavy ML on every message.** 9,000 cores. Filter cheaply, moderate what is shown.
+7. **Heavy <abbr title="Machine Learning">ML</abbr> on every message.** 9,000 cores. Filter cheaply, moderate what is shown.
 
 ## Going from L5 to L6
 
