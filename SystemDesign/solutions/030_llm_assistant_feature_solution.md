@@ -1,4 +1,4 @@
-# 030 — <abbr title="Large Language Model">LLM</abbr>-Powered Assistant Feature: Full System Design Solution
+# 030 — LLM-Powered Assistant Feature: Full System Design Solution
 
 ## Goal and contract
 

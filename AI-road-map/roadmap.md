@@ -1,4 +1,4 @@
-# 🧠 THE 180-DAY <abbr title="Artificial Intelligence">AI</abbr> ENGINEERING MASTERPLAN
+# 🧠 THE 180-DAY AI ENGINEERING MASTERPLAN
 ## From Absolute Zero to Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer — 3 Hours/Day
 
 > **Author's Note:** This is a production-grade, no-nonsense curriculum. Every day follows a strict 3-hour protocol. No hand-waving. No toy examples. You will build, break, and rebuild until the concepts are second nature. Every single day is fully specified — no skeletal placeholders, no gaps, no excuses.
@@ -106,7 +106,7 @@ Every single day follows this exact protocol:
 ---
 
 # ═══════════════════════════════════════════════════════════════
-# PHASE 1: MATHEMATICAL FOUNDATIONS & CLASSICAL <abbr title="Machine Learning">ML</abbr>
+# PHASE 1: MATHEMATICAL FOUNDATIONS & CLASSICAL ML
 # Days 001–030 | "Build the Bedrock"
 # ═══════════════════════════════════════════════════════════════
 

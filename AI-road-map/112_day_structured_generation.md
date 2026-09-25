@@ -1,4 +1,4 @@
-# Day 112: Structured Generation (Outlines & <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>)
+# Day 112: Structured Generation (Outlines & JSON)
 
 Welcome to Day 112. 
 

@@ -1,4 +1,4 @@
-# <abbr title="Application Programming Interface">API</abbr> Design — High Level
+# API Design — High Level
 
 The <abbr title="Application Programming Interface">API</abbr> is the contract your service makes with every caller — browser, mobile app, another team's service, or a third party. Get the contract wrong and you can't fix it without breaking someone; this file is about the contract itself. Wire-level mechanics (status codes, headers, serialization formats, auth tokens) live in `04_api_design_low_level.md`.
 

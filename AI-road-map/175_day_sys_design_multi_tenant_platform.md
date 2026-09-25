@@ -1,4 +1,4 @@
-# Day 175: System Design: Multi-Tenant <abbr title="Large Language Model">LLM</abbr> Platform
+# Day 175: System Design: Multi-Tenant LLM Platform
 
 Welcome to Day 175.
 

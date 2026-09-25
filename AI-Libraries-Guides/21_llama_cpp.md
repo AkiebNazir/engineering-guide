@@ -1,4 +1,4 @@
-# Llama.cpp Mastery: Running <abbr title="Artificial Intelligence">AI</abbr> on Everyday Hardware
+# Llama.cpp Mastery: Running AI on Everyday Hardware
 
 ## 1. The Core Concept (What and Why)
 

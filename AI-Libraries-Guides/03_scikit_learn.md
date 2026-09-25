@@ -1,4 +1,4 @@
-# Scikit-Learn Mastery: The Gold Standard of Classical <abbr title="Machine Learning">ML</abbr>
+# Scikit-Learn Mastery: The Gold Standard of Classical ML
 
 ## 1. The Core Concept (What and Why)
 

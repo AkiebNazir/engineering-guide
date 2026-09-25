@@ -1,4 +1,4 @@
-# <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr>: The Complete Masterclass
+# REST API: The Complete Masterclass
 
 To truly master <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> (Representational State Transfer), you must move beyond basic `GET` and `POST` commands and embrace <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> semantics, Idempotency, and Resource-Oriented Design.
 

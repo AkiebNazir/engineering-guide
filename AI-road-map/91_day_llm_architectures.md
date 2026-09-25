@@ -1,4 +1,4 @@
-# Day 91: <abbr title="Large Language Model">LLM</abbr> Architecture Deep Dive (LLaMA, Mistral, Gemma)
+# Day 91: LLM Architecture Deep Dive (LLaMA, Mistral, Gemma)
 
 Welcome to Day 91, and welcome to **Phase 4: LLMs — Training, Fine-Tuning & Alignment**.
 

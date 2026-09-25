@@ -1,4 +1,4 @@
-# Day 136: Browser Agents (Web Automation with <abbr title="Artificial Intelligence">AI</abbr>)
+# Day 136: Browser Agents (Web Automation with AI)
 
 Welcome to Day 136. 
 

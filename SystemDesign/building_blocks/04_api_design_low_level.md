@@ -1,4 +1,4 @@
-# <abbr title="Application Programming Interface">API</abbr> Design — Low Level
+# API Design — Low Level
 
 This is the wire-protocol companion to `03_api_design_high_level.md`: once you've chosen a style and modeled the contract, these are the mechanics that make it correct — semantics, caching, connection behavior, serialization, auth, and rate limiting at the protocol level.
 

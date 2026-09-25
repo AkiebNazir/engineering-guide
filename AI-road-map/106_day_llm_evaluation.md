@@ -1,4 +1,4 @@
-# Day 106: <abbr title="Large Language Model">LLM</abbr> Evaluation & Contamination
+# Day 106: LLM Evaluation & Contamination
 
 Welcome to Day 106. We have a fully trained, fine-tuned, aligned, and safe model. 
 

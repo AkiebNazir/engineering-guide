@@ -1,4 +1,4 @@
-# Project 1: Basic Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>) Pipeline
+# Project 1: Basic Retrieval-Augmented Generation (RAG) Pipeline
 
 ## Objective
 Build a complete Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>) pipeline from scratch using Python. The system should be able to ingest a small set of documents, chunk them, embed them, store them in a simple in-memory vector store, retrieve the most relevant chunks given a user query, and synthesize an answer.

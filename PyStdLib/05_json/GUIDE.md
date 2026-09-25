@@ -1,4 +1,4 @@
-# json — Encoding and Decoding <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>
+# json — Encoding and Decoding JSON
 
 `json` converts Python values to/from the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> text format: `dict`<->object,
 `list`/`tuple`<->array, `str`<->string, `int`/`float`<->number, `True`/`False`/`None`

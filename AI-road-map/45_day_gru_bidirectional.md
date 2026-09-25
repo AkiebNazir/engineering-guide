@@ -1,4 +1,4 @@
-# Day 45: <abbr title="Gated Recurrent Unit">GRU</abbr> & Bidirectional RNNs
+# Day 45: GRU & Bidirectional RNNs
 
 Welcome to Day 45. The <abbr title="Long Short-Term Memory">LSTM</abbr> is a mathematical masterpiece, but it has a massive problem: **<abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>**.
 Because the <abbr title="Long Short-Term Memory">LSTM</abbr> uses 4 separate weight matrices to calculate its gates, it takes up a massive amount of memory and is very slow to train. 

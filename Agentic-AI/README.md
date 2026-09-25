@@ -1,4 +1,4 @@
-# The Ultimate Guide to Agentic <abbr title="Artificial Intelligence">AI</abbr> and Related Technologies
+# The Ultimate Guide to Agentic AI and Related Technologies
 
 Welcome to the **Ultimate Guide to Agentic <abbr title="Artificial Intelligence">AI</abbr>**. This repository is designed to take you from the foundational concepts of Generative <abbr title="Artificial Intelligence">AI</abbr> all the way to advanced Agentic <abbr title="Artificial Intelligence">AI</abbr> architectures, <abbr title="Retrieval-Augmented Generation">RAG</abbr> systems, and Graph databases.
 

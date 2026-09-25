@@ -1,4 +1,4 @@
-# <abbr title="Machine Learning">ML</abbr> and <abbr title="Large Language Model">LLM</abbr> Systems
+# ML and LLM Systems
 
 Google designs increasingly include a model somewhere: a recommendation feed, search ranking, spam detection, or an <abbr title="Large Language Model">LLM</abbr>-powered feature. You are not expected to design the model. You are expected to design the **system around it** — how features get to the model, how predictions are served within a latency budget, how the model is kept fresh, how it is evaluated, and what it costs.
 

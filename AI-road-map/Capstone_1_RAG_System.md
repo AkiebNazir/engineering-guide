@@ -1,4 +1,4 @@
-# Capstone Project 1: The End-to-End <abbr title="Retrieval-Augmented Generation">RAG</abbr> System
+# Capstone Project 1: The End-to-End RAG System
 
 ## Objective
 Build a system that can accurately answer questions based entirely on a private corpus of documents (e.g., your personal PDFs, codebase, or company handbooks). The <abbr title="Large Language Model">LLM</abbr> must not hallucinate external knowledge.

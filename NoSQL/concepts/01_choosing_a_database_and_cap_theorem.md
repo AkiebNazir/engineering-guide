@@ -1,4 +1,4 @@
-# Choosing a Database, and <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> Theorem Applied
+# Choosing a Database, and CAP Theorem Applied
 
 **Already covered elsewhere:** `SystemDesign/building_blocks/10_distributed_systems_theory.md`
 states <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> precisely — read that first if the term itself is shaky. It also makes the

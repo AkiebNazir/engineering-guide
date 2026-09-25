@@ -1,4 +1,4 @@
-# Day 44: <abbr title="Long Short-Term Memory">LSTM</abbr> (Long Short-Term Memory) & Gating Mechanisms
+# Day 44: LSTM (Long Short-Term Memory) & Gating Mechanisms
 
 Welcome to Day 44. Yesterday, we mathematically proved that Vanilla RNNs suffer from catastrophic amnesia. By the time they reach the 10th word of a sentence, the Calculus gradient has vanished to $0.0$, and the network forgets the beginning of the sentence.
 

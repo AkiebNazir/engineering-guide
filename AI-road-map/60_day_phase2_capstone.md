@@ -1,4 +1,4 @@
-# Day 60: Phase 2 Capstone (Multi-Modal <abbr title="Artificial Intelligence">AI</abbr> & Contrastive Learning)
+# Day 60: Phase 2 Capstone (Multi-Modal AI & Contrastive Learning)
 
 Welcome to Day 60. This is the grand finale of Phase 2. 
 

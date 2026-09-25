@@ -1,4 +1,4 @@
-# <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr>: Core Architecture & System Design
+# REST API: Core Architecture & System Design
 
 ## Architectural Diagram & Visualization
 

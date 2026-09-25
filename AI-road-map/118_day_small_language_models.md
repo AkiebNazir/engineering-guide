@@ -1,4 +1,4 @@
-# Day 118: Small Language Models & On-Device <abbr title="Artificial Intelligence">AI</abbr>
+# Day 118: Small Language Models & On-Device AI
 
 Welcome to Day 118. Frontier models (like GPT-4 and Llama 3 70B) are incredible, but they require massive datacenters. 
 

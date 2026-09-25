@@ -3,7 +3,7 @@ title: "<abbr title="Representational State Transfer - An architectural style fo
 description: "Master Representational State Transfer (<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>): constraints, resource design, methods, status codes, PATCH, HATEOAS, pagination, caching, with wire-level examples and Python + Go code."
 ---
 
-# <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> Theory
+# REST API Theory
 
 <div data-viz="api-rest"></div>
 

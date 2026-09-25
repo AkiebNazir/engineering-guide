@@ -1,4 +1,4 @@
-# <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> Basics
+# <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and API design.">CRUD</abbr> Basics
 
 Level 01 covered one insert and one read. This level fills out the rest of Create/Read/Update/Delete: inserting several documents at once, `find`'s filter+projection shape, and the four update/delete verbs. Every example below ran against the `lab_02_crud` database on the live `mongo:7` lab instance.
 

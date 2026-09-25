@@ -1,4 +1,4 @@
-# Day 169: Incident Response & Chaos Engineering for <abbr title="Artificial Intelligence">AI</abbr>
+# Day 169: Incident Response & Chaos Engineering for AI
 
 Welcome to Day 169.
 

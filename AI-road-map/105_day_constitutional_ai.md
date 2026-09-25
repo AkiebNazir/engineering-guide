@@ -1,4 +1,4 @@
-# Day 105: Constitutional <abbr title="Artificial Intelligence">AI</abbr> & RLAIF
+# Day 105: Constitutional AI & RLAIF
 
 Welcome to Day 105. 
 

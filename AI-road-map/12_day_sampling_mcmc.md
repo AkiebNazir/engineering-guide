@@ -1,4 +1,4 @@
-# Day 12: Sampling Methods (<abbr title="Markov Chain Monte Carlo">MCMC</abbr> & Metropolis-Hastings)
+# Day 12: Sampling Methods (MCMC & Metropolis-Hastings)
 
 Welcome to Day 12. In Day 10, we used pure Calculus (MLE and MAP) to find the absolute "peak" of a probability distribution. But what if the math is too hard? What if the distribution has 10,000 dimensions and the integral is literally impossible for any computer to solve?
 

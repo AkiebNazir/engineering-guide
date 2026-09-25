@@ -1,4 +1,4 @@
-# Day 90: Phase 3 Capstone (Production <abbr title="Retrieval-Augmented Generation">RAG</abbr>)
+# Day 90: Phase 3 Capstone (Production RAG)
 
 Welcome to Day 90. This is the culmination of everything we have learned since Day 67.
 We have learned Transformers, Flash Attention, Vector Databases, Hybrid Search, and Prompt Engineering. 

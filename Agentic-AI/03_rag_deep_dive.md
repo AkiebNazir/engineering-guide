@@ -1,4 +1,4 @@
-# Module 3 — Retrieval-Augmented Generation: <abbr title="Retrieval-Augmented Generation">RAG</abbr> Internals
+# Module 3 — Retrieval-Augmented Generation: RAG Internals
 
 > Scope: the actual token/character-level chunking math, the inverted-index and
 > vector-similarity algorithms underneath "search," score-fusion arithmetic, and the

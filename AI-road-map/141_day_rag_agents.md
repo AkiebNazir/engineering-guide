@@ -1,4 +1,4 @@
-# Day 141: <abbr title="Retrieval-Augmented Generation">RAG</abbr> Agents (Corrective <abbr title="Retrieval-Augmented Generation">RAG</abbr> & Routing)
+# Day 141: RAG Agents (Corrective RAG & Routing)
 
 Welcome to Day 141. 
 

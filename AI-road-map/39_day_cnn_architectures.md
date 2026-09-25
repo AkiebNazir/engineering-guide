@@ -1,4 +1,4 @@
-# Day 39: <abbr title="Convolutional Neural Network">CNN</abbr> Architectures (LeNet, VGG, ResNet)
+# Day 39: CNN Architectures (LeNet, VGG, ResNet)
 
 Welcome to Day 39. Yesterday, we learned how a single Convolution slides over an image to detect edges. Today, we learn how to stack them.
 

@@ -1,4 +1,4 @@
-# Day 97: <abbr title="Low-Rank Adaptation">LoRA</abbr> (Low-Rank Adaptation)
+# Day 97: LoRA (Low-Rank Adaptation)
 
 Welcome to Day 97. We previously built a "Bottleneck Adapter" for Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>). 
 It works, but it has a fatal flaw: it physically adds a new layer to the Neural Network. When you deploy the model, every single word has to pass through that extra layer, which causes **Inference Latency**.

@@ -1,4 +1,4 @@
-# Day 165: Data Versioning, Lineage & Governance (<abbr title="Data Version Control">DVC</abbr>)
+# Day 165: Data Versioning, Lineage & Governance (DVC)
 
 Welcome to Day 165.
 

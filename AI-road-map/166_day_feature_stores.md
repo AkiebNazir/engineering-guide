@@ -1,4 +1,4 @@
-# Day 166: Feature Stores & Feature Engineering for <abbr title="Large Language Model">LLM</abbr> Apps
+# Day 166: Feature Stores & Feature Engineering for LLM Apps
 
 Welcome to Day 166.
 

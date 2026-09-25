@@ -1,4 +1,4 @@
-# Day 0: The <abbr title="Artificial Intelligence">AI</abbr> Engineer's Lexicon & Mathematical Primer
+# Day 0: The AI Engineer's Lexicon & Mathematical Primer
 
 Welcome to Day 0. Before you begin the 180-day journey to becoming a Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer, you need the master key. 
 

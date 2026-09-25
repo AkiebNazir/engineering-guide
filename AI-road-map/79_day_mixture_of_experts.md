@@ -1,4 +1,4 @@
-# Day 79: Mixture of Experts (<abbr title="Mixture of Experts">MoE</abbr>) & Sparse Gating
+# Day 79: Mixture of Experts (MoE) & Sparse Gating
 
 Welcome to Day 79. GPT-4 is estimated to have 1.8 Trillion parameters. If GPT-4 was a standard "Dense" Transformer, it would take seconds to generate a single word. How does it type so fast?
 

@@ -1,4 +1,4 @@
-# 021 — Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway: Full System Design Solution
+# 021 — Multi-Tenant API Gateway: Full System Design Solution
 
 ## Goal and contract
 

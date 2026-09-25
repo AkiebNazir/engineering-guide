@@ -1,4 +1,4 @@
-# Day 96: Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>)
+# Day 96: Parameter-Efficient Fine-Tuning (PEFT)
 
 Welcome to Day 96. Over the last three days, we learned how to pre-train a 70 Billion parameter model across 256 GPUs. 
 

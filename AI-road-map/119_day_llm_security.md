@@ -1,4 +1,4 @@
-# Day 119: <abbr title="Large Language Model">LLM</abbr> Security & Adversarial Attacks
+# Day 119: LLM Security & Adversarial Attacks
 
 Welcome to Day 119. In Day 107, we learned about Guardrails and Output Filtering. 
 

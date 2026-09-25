@@ -1,4 +1,4 @@
-# Connection Pooling, and <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> vs Raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
+# Connection Pooling, and ORM vs Raw SQL
 
 ## The mental model
 

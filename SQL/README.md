@@ -1,4 +1,4 @@
-# <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> — PostgreSQL from First Query to Production Client
+# SQL — PostgreSQL from First Query to Production Client
 
 This module teaches relational databases hands-on, using **PostgreSQL 16** as the
 concrete system throughout. Every level runs real <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> against a real local database —

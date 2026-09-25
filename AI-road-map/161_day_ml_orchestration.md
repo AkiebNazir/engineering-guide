@@ -1,4 +1,4 @@
-# Day 161: <abbr title="Machine Learning">ML</abbr> Pipeline Orchestration (Airflow, Dagster & Prefect)
+# Day 161: ML Pipeline Orchestration (Airflow, Dagster & Prefect)
 
 Welcome to Day 161.
 

@@ -1,4 +1,4 @@
-# Day 153: <abbr title="Application Programming Interface">API</abbr> Design for <abbr title="Large Language Model">LLM</abbr> Services
+# Day 153: API Design for LLM Services
 
 Welcome to Day 153.
 

@@ -1,4 +1,4 @@
-# <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr> & BitsAndBytes Mastery: Fine-Tuning Massive LLMs Locally
+# PEFT & BitsAndBytes Mastery: Fine-Tuning Massive LLMs Locally
 
 ## 1. The Core Concept (What and Why)
 

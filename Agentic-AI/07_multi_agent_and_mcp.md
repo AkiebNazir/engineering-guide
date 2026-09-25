@@ -1,4 +1,4 @@
-# Module 7 — Multi-Agent Orchestration & Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>)
+# Module 7 — Multi-Agent Orchestration & Model Context Protocol (MCP)
 
 If Module 2 taught us how a single Agent works (Reasoning, Tool Use, Memory), this module explores what happens when we scale up. How do multiple agents collaborate? How do we standardize the tools they use across an entire enterprise?
 

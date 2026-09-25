@@ -1,4 +1,4 @@
-# LangGraph Mastery: Stateful, Multi-Actor <abbr title="Large Language Model">LLM</abbr> Agents
+# LangGraph Mastery: Stateful, Multi-Actor LLM Agents
 
 ## 1. The Core Concept (What and Why)
 

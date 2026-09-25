@@ -1,4 +1,4 @@
-# <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> Injection and Parameterized Queries
+# SQL Injection and Parameterized Queries
 
 This is a security-critical lesson. The exploit below is run for real, against the
 live lab database, so the failure is something you see happen — not something you

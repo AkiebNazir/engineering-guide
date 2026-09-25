@@ -1,4 +1,4 @@
-# <abbr title="Application Programming Interface">API</abbr> Module
+# API Module
 
 Learn the six <abbr title="Application Programming Interface">API</abbr> styles (<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> + Protobuf, WebSockets, Webhooks, <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>) from theory to
 runnable, self-checking code, in both **Python** and **Go**.

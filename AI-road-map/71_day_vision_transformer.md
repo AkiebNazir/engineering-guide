@@ -1,4 +1,4 @@
-# Day 71: The Vision Transformer (ViT) & Multi-Modal <abbr title="Artificial Intelligence">AI</abbr>
+# Day 71: The Vision Transformer (ViT) & Multi-Modal AI
 
 Welcome to Day 71. For an entire decade, Convolutional Neural Networks (CNNs like ResNet) were the undisputed kings of Computer Vision. 
 

@@ -1,4 +1,4 @@
-# Hugging Face Transformers Mastery: The Universal <abbr title="Application Programming Interface">API</abbr> for Modern <abbr title="Artificial Intelligence">AI</abbr>
+# Hugging Face Transformers Mastery: The Universal API for Modern AI
 
 ## 1. The Core Concept (What and Why)
 

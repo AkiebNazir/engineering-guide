@@ -1,4 +1,4 @@
-# Interview Playbook: <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr>
+# Interview Playbook: NoSQL
 
 Same purpose as `SQL/19_interview_playbook.md` — not new material, the ladder's
 content re-organized as the concrete questions an interviewer asks, with a precise

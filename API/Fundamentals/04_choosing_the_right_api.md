@@ -3,7 +3,7 @@ title: "4. Choosing the Right <abbr title="Application Programming Interface">AP
 description: "Side-by-side comparison of <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, WebSockets, Webhooks and <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>, a decision tree, a full e-commerce architecture using all of them, interview questions and a capstone."
 ---
 
-# Choosing the Right <abbr title="Application Programming Interface">API</abbr> Style
+# Choosing the Right API Style
 
 There is no best <abbr title="Application Programming Interface">API</abbr> style, only a best fit. This guide gives you the comparison, a decision procedure, a realistic system that uses several styles at once, and practice questions.
 

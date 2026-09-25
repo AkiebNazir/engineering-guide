@@ -1,4 +1,4 @@
-# Day 177: MAANG Mock Interview: <abbr title="Machine Learning">ML</abbr> System Design Deep Dive
+# Day 177: MAANG Mock Interview: ML System Design Deep Dive
 
 Welcome to Day 177.
 

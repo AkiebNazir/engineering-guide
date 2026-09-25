@@ -1,4 +1,4 @@
-# Day 120: Phase 4 Capstone (End-to-End <abbr title="Large Language Model">LLM</abbr> Deployment)
+# Day 120: Phase 4 Capstone (End-to-End LLM Deployment)
 
 Welcome to Day 120. You have made it to the end of Phase 4. 
 

@@ -1,4 +1,4 @@
-# Day 115: <abbr title="Large Language Model">LLM</abbr> Reasoning (CoT, ToT & ReAct)
+# Day 115: LLM Reasoning (CoT, ToT & ReAct)
 
 Welcome to Day 115. We have given our <abbr title="Large Language Model">LLM</abbr> memory and tools. 
 But standard LLMs still fail at logic. If you ask an <abbr title="Large Language Model">LLM</abbr> a complex math puzzle, it will instantly blurt out the wrong answer. 

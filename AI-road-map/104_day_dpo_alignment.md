@@ -1,4 +1,4 @@
-# Day 104: Direct Preference Optimization (<abbr title="Direct Preference Optimization">DPO</abbr>)
+# Day 104: Direct Preference Optimization (DPO)
 
 Welcome to Day 104. Yesterday, we learned that <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> is a massive engineering nightmare. You have to load four 70-Billion parameter models into VRAM simultaneously. 
 The PPO algorithm is incredibly unstable, highly sensitive to hyperparameters, and requires complex KL-Divergence hacking to prevent the model from destroying its own grammar.

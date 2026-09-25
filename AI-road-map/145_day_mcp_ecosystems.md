@@ -1,4 +1,4 @@
-# Day 145: Building <abbr title="Model Context Protocol">MCP</abbr> Ecosystems (Server Registry & Composition)
+# Day 145: Building MCP Ecosystems (Server Registry & Composition)
 
 Welcome to Day 145. 
 

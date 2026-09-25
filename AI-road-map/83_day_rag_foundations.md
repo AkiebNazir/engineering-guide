@@ -1,4 +1,4 @@
-# Day 83: Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>) v1
+# Day 83: Retrieval-Augmented Generation (RAG) v1
 
 Welcome to Day 83. We begin the **<abbr title="Retrieval-Augmented Generation">RAG</abbr> Masterclass**.
 If you ask ChatGPT about a private document on your laptop, it will either say *"I don't know"* or it will hallucinate a lie. 

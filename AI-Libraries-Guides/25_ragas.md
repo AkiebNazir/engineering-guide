@@ -1,4 +1,4 @@
-# Ragas Mastery: Evaluating <abbr title="Retrieval-Augmented Generation">RAG</abbr> Applications
+# Ragas Mastery: Evaluating RAG Applications
 
 ## 1. The Core Concept (What and Why)
 

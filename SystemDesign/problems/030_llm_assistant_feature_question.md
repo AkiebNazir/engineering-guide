@@ -1,4 +1,4 @@
-# 030 — Design an <abbr title="Large Language Model">LLM</abbr>-Powered Assistant Feature
+# 030 — Design an LLM-Powered Assistant Feature
 
 Design an <abbr title="Artificial Intelligence">AI</abbr> writing assistant inside an email product: users ask it to summarise long threads, draft replies, and answer questions about their own mail.
 

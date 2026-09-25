@@ -3,7 +3,7 @@ title: "<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-pe
 description: "Master <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>: <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> vs <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 framing, the four call types, status codes, metadata, deadlines, retries, interceptors, mTLS, load balancing, health, reflection and graceful shutdown, with Python and Go labs."
 ---
 
-# <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Theory
+# <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance RPC framework that can run in any environment.">gRPC</abbr> Theory
 
 <div data-viz="api-grpc"></div>
 

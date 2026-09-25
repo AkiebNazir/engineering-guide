@@ -1,4 +1,4 @@
-# <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> and Streaming Media
+# CDN and Streaming Media
 
 [02_networking.md](02_networking.md) gives the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> primer (cache key, TTL, invalidation) and [08_object_storage.md](08_object_storage.md) gives the origin store. This block goes one level down: how a <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> is built (hierarchy, request collapsing, steering), how video becomes cacheable files (ingest, encode, package), how the player picks a quality, and what breaks at tens of Tbps. Video is the hardest bulk-delivery problem in interviews because bandwidth, cost, latency and content protection all bind at once.
 

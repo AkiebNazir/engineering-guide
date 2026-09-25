@@ -1,4 +1,4 @@
-# Design Problem: Enterprise <abbr title="Artificial Intelligence">AI</abbr> Infrastructure
+# Design Problem: Enterprise AI Infrastructure
 
 ## Scenario
 Your enterprise requires an autonomous agent that can query internal employee databases. However, due to data privacy laws, you cannot send employee data or the prompts to external providers like OpenAI or Google. 

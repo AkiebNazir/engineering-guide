@@ -1,4 +1,4 @@
-# Enterprise <abbr title="Artificial Intelligence">AI</abbr> Infrastructure: <abbr title="Model Context Protocol">MCP</abbr> & Local Inference
+# Enterprise AI Infrastructure: MCP & Local Inference
 
 ## Overview
 This capstone project focuses on architecting a secure, air-gapped local inference layer and bridging it to standard Agentic systems using the Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>).

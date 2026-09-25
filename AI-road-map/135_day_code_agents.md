@@ -1,4 +1,4 @@
-# Day 135: Code Agents (<abbr title="Artificial Intelligence">AI</abbr>-Powered Software Development)
+# Day 135: Code Agents (AI-Powered Software Development)
 
 Welcome to Day 135. 
 

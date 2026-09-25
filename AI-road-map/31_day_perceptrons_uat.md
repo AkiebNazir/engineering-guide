@@ -100,7 +100,7 @@ class TwoLayerMLP:
 
 print("--- TWO-LAYER MLP (<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> TEST) ---")
 # Note: I am skipping the training loop (Backpropagation) until Day 33.
-# Let's manually set the weights to the mathematical perfect solution for <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>!
+# Let's manually set the weights to the mathematical perfect solution for XOR!
 model_2 = TwoLayerMLP()
 model_2.W1 = np.array([[20, -20], [20, -20]])
 model_2.b1 = np.array([[-10, 30]])

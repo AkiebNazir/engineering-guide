@@ -1,4 +1,4 @@
-# Day 98: <abbr title="Quantized Low-Rank Adaptation">QLoRA</abbr> & Memory-Efficient Fine-Tuning
+# Day 98: QLoRA & Memory-Efficient Fine-Tuning
 
 Welcome to Day 98. Yesterday, we learned that <abbr title="Low-Rank Adaptation">LoRA</abbr> eliminates the Optimizer VRAM problem by only training tiny $A$ and $B$ matrices.
 But we STILL have to load the massive frozen Base Model into VRAM to run the forward pass! 

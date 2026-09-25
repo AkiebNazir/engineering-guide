@@ -1,4 +1,4 @@
-# path/filepath — <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>-aware filesystem paths
+# path/filepath — OS-aware filesystem paths
 
 `filepath` manipulates filesystem paths using the current <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>'s conventions:
 `/` on Unix/macOS, `\` on Windows, and the matching list-separator (`:` vs

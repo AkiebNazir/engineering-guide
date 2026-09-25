@@ -1,4 +1,4 @@
-# Retrieval-Augmented Generation (<abbr title="Retrieval-Augmented Generation">RAG</abbr>) — Deep Dive
+# Retrieval-Augmented Generation (RAG) — Deep Dive
 
 ## 1. The problem <abbr title="Retrieval-Augmented Generation">RAG</abbr> solves
 

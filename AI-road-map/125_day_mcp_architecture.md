@@ -1,4 +1,4 @@
-# Day 125: Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>) Architecture
+# Day 125: Model Context Protocol (MCP) Architecture
 
 Welcome to Day 125. 
 

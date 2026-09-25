@@ -1,4 +1,4 @@
-# Day 103: The Full <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr> Pipeline
+# Day 103: The Full RLHF Pipeline
 
 Welcome to Day 103. We have Supervised Fine-Tuning (SFT). We have a Reward Model (RM). We have the Proximal Policy Optimization (PPO) algorithm.
 

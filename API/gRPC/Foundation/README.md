@@ -1,4 +1,4 @@
-# <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Foundation - ground zero to a complete, secured <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> service
+# <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance RPC framework that can run in any environment.">gRPC</abbr> Foundation - ground zero to a complete, secured RPC service
 
 This is the on-ramp *before* `../Theory.md` and `../labs/`. Each level is a
 tiny, self-contained, runnable file in **both** `python/` and `golang/` -

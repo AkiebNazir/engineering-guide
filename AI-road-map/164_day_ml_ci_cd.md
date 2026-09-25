@@ -1,4 +1,4 @@
-# Day 164: <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> for <abbr title="Machine Learning">ML</abbr> (Automated Testing & Deployment)
+# Day 164: CI/CD for ML (Automated Testing & Deployment)
 
 Welcome to Day 164.
 

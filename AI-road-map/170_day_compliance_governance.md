@@ -1,4 +1,4 @@
-# Day 170: Compliance, Governance & <abbr title="Artificial Intelligence">AI</abbr> Ethics
+# Day 170: Compliance, Governance & AI Ethics
 
 Welcome to Day 170.
 

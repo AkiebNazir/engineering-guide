@@ -1,4 +1,4 @@
-# 021 — Design a Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway
+# 021 — Design a Multi-Tenant API Gateway
 
 Design an <abbr title="Application Programming Interface">API</abbr> gateway that routes and versions hundreds of internal APIs for many tenants while protecting backends from abuse.
 

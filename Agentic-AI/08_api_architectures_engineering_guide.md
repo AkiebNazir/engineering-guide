@@ -1,4 +1,4 @@
-# Module 8 — <abbr title="Application Programming Interface">API</abbr> Architectures: <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, and WebSockets
+# Module 8 — API Architectures: REST, GraphQL, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance RPC framework that can run in any environment.">gRPC</abbr>, and WebSockets
 
 This is the ultimate engineering guide to the four dominant communication protocols in modern backend systems. 
 

@@ -1,4 +1,4 @@
-# <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> — Document and Key-Value Stores, Hands-On
+# NoSQL — Document and Key-Value Stores, Hands-On
 
 This module teaches <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> databases the same way `SQL/` teaches PostgreSQL: hands-on,
 against real local databases, with every claim that can be measured (a timing number, a

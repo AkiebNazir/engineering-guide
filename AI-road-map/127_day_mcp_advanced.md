@@ -1,4 +1,4 @@
-# Day 127: <abbr title="Model Context Protocol">MCP</abbr> Advanced (Transports, Security, & Composition)
+# Day 127: MCP Advanced (Transports, Security, & Composition)
 
 Welcome to Day 127. In the previous block, we introduced the Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>) and built a basic FastMCP server over `stdio`.
 

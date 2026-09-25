@@ -1,4 +1,4 @@
-# Day 84: <abbr title="Retrieval-Augmented Generation">RAG</abbr> v2 (Hybrid Search & Reranking)
+# Day 84: RAG v2 (Hybrid Search & Reranking)
 
 Welcome to Day 84. In Day 83, we built a **Dense Retriever** (Semantic Search). It matches documents based on underlying meaning. 
 

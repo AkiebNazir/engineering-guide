@@ -1,4 +1,4 @@
-# Day 49: Subword Tokenization & Byte Pair Encoding (<abbr title="Byte Pair Encoding">BPE</abbr>)
+# Day 49: Subword Tokenization & Byte Pair Encoding (BPE)
 
 Welcome to Day 49. Before you can pass human text into a Neural Network (like an <abbr title="Long Short-Term Memory">LSTM</abbr> or a Transformer), you must convert it into numbers. This process is called **Tokenization**.
 

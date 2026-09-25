@@ -1,4 +1,4 @@
-# vLLM Mastery: High-Throughput <abbr title="Large Language Model">LLM</abbr> Serving
+# vLLM Mastery: High-Throughput LLM Serving
 
 ## 1. The Core Concept (What and Why)
 

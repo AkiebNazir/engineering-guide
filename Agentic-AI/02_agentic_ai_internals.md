@@ -1,4 +1,4 @@
-# Module 2 — Agentic <abbr title="Artificial Intelligence">AI</abbr>: Autonomous Reasoning & Control Flow
+# Module 2 — Agentic AI: Autonomous Reasoning & Control Flow
 
 > Scope: agent loops as literal state machines, tool-calling as a text-serialization
 > and constrained-decoding problem, memory as bounded buffers, and multi-agent

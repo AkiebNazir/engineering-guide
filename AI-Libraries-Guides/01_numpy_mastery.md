@@ -1,4 +1,4 @@
-# NumPy Mastery: The Bedrock of <abbr title="Artificial Intelligence">AI</abbr> Mathematics (Ultimate Master Guide)
+# NumPy Mastery: The Bedrock of AI Mathematics (Ultimate Master Guide)
 
 ## 1. The Core Concept (What and Why)
 

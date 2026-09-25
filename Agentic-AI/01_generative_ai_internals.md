@@ -1,4 +1,4 @@
-# Module 1 — Generative <abbr title="Artificial Intelligence">AI</abbr>: <abbr title="Large Language Model">LLM</abbr> Architecture & Runtime Internals
+# Module 1 — Generative AI: LLM Architecture & Runtime Internals
 
 > Scope: the actual tensor mechanics, memory arithmetic, and runtime bottlenecks of
 > transformer-based autoregressive LLMs. No product-level abstractions.

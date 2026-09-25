@@ -1,4 +1,4 @@
-# Day 16: Stochastic Gradient Descent (<abbr title="Stochastic Gradient Descent">SGD</abbr>) & Variance Reduction
+# Day 16: Stochastic Gradient Descent (SGD) & Variance Reduction
 
 Welcome to Day 16. Yesterday, we built the standard Gradient Descent algorithm. To find the exact slope of the mountain, we had to calculate the error for every single row in our dataset. 
 

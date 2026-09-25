@@ -1,4 +1,4 @@
-# Interview Playbook: <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
+# Interview Playbook: SQL
 
 This level is not new material — it's the ladder's content re-organized as the
 concrete questions an interviewer actually asks, with a precise answer for each, and a

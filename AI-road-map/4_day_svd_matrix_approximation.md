@@ -1,4 +1,4 @@
-# Day 4: Singular Value Decomposition (<abbr title="Singular Value Decomposition">SVD</abbr>) & Matrix Approximation
+# Day 4: Singular Value Decomposition (SVD) & Matrix Approximation
 
 Welcome to Day 4. Today we reach the absolute pinnacle of linear algebra for Machine Learning: **Singular Value Decomposition (<abbr title="Singular Value Decomposition">SVD</abbr>)**. 
 

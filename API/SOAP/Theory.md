@@ -3,7 +3,7 @@ title: "<abbr title="Simple Object Access Protocol - A messaging protocol specif
 description: "Understanding <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> and enterprise APIs: envelopes, WSDL, document/literal, faults, 1.1 vs 1.2, WS-Security, mustUnderstand, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> pitfalls, and how to wrap a legacy <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> service, with Python and Go labs."
 ---
 
-# <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Theory
+# SOAP Theory
 
 <div data-viz="api-soap"></div>
 

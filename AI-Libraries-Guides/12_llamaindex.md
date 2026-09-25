@@ -1,4 +1,4 @@
-# LlamaIndex Mastery: The Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr> Standard
+# LlamaIndex Mastery: The Enterprise RAG Standard
 
 ## 1. The Core Concept (What and Why)
 

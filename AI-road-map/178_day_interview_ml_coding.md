@@ -1,4 +1,4 @@
-# Day 178: MAANG Mock Interview: <abbr title="Machine Learning">ML</abbr> Coding & Mathematical Rigor
+# Day 178: MAANG Mock Interview: ML Coding & Mathematical Rigor
 
 Welcome to Day 178.
 

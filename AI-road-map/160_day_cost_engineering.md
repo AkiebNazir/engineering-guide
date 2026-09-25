@@ -1,4 +1,4 @@
-# Day 160: Cost Engineering & FinOps for <abbr title="Large Language Model">LLM</abbr> Systems
+# Day 160: Cost Engineering & FinOps for LLM Systems
 
 Welcome to Day 160.
 

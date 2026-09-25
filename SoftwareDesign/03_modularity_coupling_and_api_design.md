@@ -1,4 +1,4 @@
-# Modularity, Coupling, and Code-Level <abbr title="Application Programming Interface">API</abbr> Design
+# Modularity, Coupling, and Code-Level API Design
 
 > "The first rule of distributed objects: don't distribute your objects."
 > — Martin Fowler. The first rule of modules: know what each one is hiding.

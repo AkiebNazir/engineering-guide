@@ -1,4 +1,4 @@
-# JAX & Flax Mastery: Google's Functional <abbr title="Artificial Intelligence">AI</abbr> Engine
+# JAX & Flax Mastery: Google's Functional AI Engine
 
 ## 1. The Core Concept (What and Why)
 

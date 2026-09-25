@@ -1,4 +1,4 @@
-# <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> Foundation - ground zero to a complete, secured <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> <abbr title="Application Programming Interface">API</abbr>
+# REST Foundation - ground zero to a complete, secured <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and API design.">CRUD</abbr> API
 
 This is the on-ramp *before* `../Theory.md` and `../labs/`. Each level is a
 tiny, self-contained, runnable file in **both** `python/` and `golang/` -

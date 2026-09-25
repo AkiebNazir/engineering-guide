@@ -1,4 +1,4 @@
-# Day 134: Agent Tool Creation (<abbr title="Large Language Model">LLM</abbr>-As-Tool-Maker)
+# Day 134: Agent Tool Creation (LLM-As-Tool-Maker)
 
 Welcome to Day 134. 
 

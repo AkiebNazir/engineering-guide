@@ -1,4 +1,4 @@
-# Secure <abbr title="Artificial Intelligence">AI</abbr> Gateway & Semantic Cache
+# Secure AI Gateway & Semantic Cache
 
 ## Overview
 This project demonstrates an enterprise <abbr title="Artificial Intelligence">AI</abbr> Gateway designed in Golang to handle high-throughput <abbr title="Large Language Model">LLM</abbr> traffic. To reduce <abbr title="Application Programming Interface">API</abbr> costs and latency, it utilizes a Semantic Cache microservice written in Python.

@@ -1,4 +1,4 @@
-# Distributed Systems Theory: <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>, Consistency, Time, and Ordering
+# Distributed Systems Theory: CAP, Consistency, Time, and Ordering
 
 A network call is not a function call. It can be delayed, duplicated, reordered, or appear to fail after the remote side actually completed the work. Everything in this file is about designing correctly around that fact, not about memorizing slogans for an interview whiteboard.
 

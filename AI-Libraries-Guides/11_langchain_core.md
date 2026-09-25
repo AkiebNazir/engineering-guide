@@ -1,4 +1,4 @@
-# LangChain Core Mastery: Orchestrating <abbr title="Large Language Model">LLM</abbr> Applications
+# LangChain Core Mastery: Orchestrating LLM Applications
 
 ## 1. The Core Concept (What and Why)
 

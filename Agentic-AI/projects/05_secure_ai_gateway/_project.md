@@ -1,4 +1,4 @@
-# Design Problem: Secure <abbr title="Artificial Intelligence">AI</abbr> Gateway & Semantic Cache
+# Design Problem: Secure AI Gateway & Semantic Cache
 
 ## Scenario
 <abbr title="Large Language Model">LLM</abbr> APIs are expensive. If 100 users ask "How do I reset my password?", you shouldn't pay the <abbr title="Large Language Model">LLM</abbr> 100 times. However, users might phrase it differently ("I forgot my password", "Password reset help"). Exact string matching (e.g., standard Redis caching) will miss these.

@@ -1,4 +1,4 @@
-# Day 85: Advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> Patterns (HyDE, RAPTOR, GraphRAG)
+# Day 85: Advanced RAG Patterns (HyDE, RAPTOR, GraphRAG)
 
 Welcome to Day 85. In Day 84, we built Hybrid Search. It is perfect for exact keyword matches and clear semantic queries. 
 

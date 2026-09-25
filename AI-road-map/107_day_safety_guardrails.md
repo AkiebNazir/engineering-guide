@@ -1,4 +1,4 @@
-# Day 107: Safety, Toxicity & Responsible <abbr title="Artificial Intelligence">AI</abbr>
+# Day 107: Safety, Toxicity & Responsible AI
 
 Welcome to Day 107. We have spent weeks aligning the model using SFT, <abbr title="Direct Preference Optimization">DPO</abbr>, and Constitutional <abbr title="Artificial Intelligence">AI</abbr>. 
 

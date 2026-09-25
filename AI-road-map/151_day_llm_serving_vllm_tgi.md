@@ -1,4 +1,4 @@
-# Day 151: <abbr title="Large Language Model">LLM</abbr> Serving Fundamentals (vLLM, TGI, TensorRT-<abbr title="Large Language Model">LLM</abbr>)
+# Day 151: LLM Serving Fundamentals (vLLM, TGI, TensorRT-LLM)
 
 Welcome to Day 151! 
 
