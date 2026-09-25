@@ -59,23 +59,31 @@ Each partition is a separate log with its own leader. A key hashes to a partitio
 
 Each partition has a leader and `RF - 1` followers that **pull** from it like consumers. The leader tracks the **in-sync replica set (ISR)**: followers with a live session that caught up within `replica.lag.time.max.ms` (30 s). A record is **committed** when every ISR member has it, only committed records reach consumers, and the **high watermark** marks the last one. This is not a majority quorum ([19](19_consensus_and_coordination.md)): it survives `f` failures with `f + 1` replicas, at the cost that commit latency follows the slowest ISR member, not the median.
 
-```mermaid
+```arch
 %% caption: An acks=all write is acknowledged and made visible only after every in-sync replica has it, so one slow ISR member delays the partition until it is dropped.
-sequenceDiagram
-    participant P as Producer
-    participant L as Leader B1
-    participant F as Followers B2 B3
-    participant C as Consumer
-    P->>L: produce batch (acks=all)
-    Note over L: append at offset 100, ISR is B1 B2 B3, min ISR is 2
-    F->>L: fetch from 100
-    L-->>F: record 100
-    F->>L: fetch from 101 (confirms 100)
-    Note over L: every ISR member holds 100, high watermark moves to 101
-    L-->>P: ack offset 100
-    C->>L: fetch from 100
-    L-->>C: records up to the high watermark
-    Note over L,F: if B3 stalls, acks wait until it leaves the ISR after 30 s
+node p "Producer" at 0,0 icon=client color=slate
+node l "Leader B1" at 1,0 icon=server color=purple
+node f "Followers B2 B3" at 2,0 icon=server color=slate
+node c "Consumer" at 3,0 icon=client color=slate
+
+p -> l : "produce batch (acks=all)"
+node note1 "append at offset 100, ISR is B1 B2 B3" at 1,1 shape=card color=amber
+l -> note1 -> l
+
+f -> l : "fetch from 100"
+l -> f : "record 100"
+f -> l : "fetch from 101 (confirms 100)"
+
+node hw "high watermark moves to 101" at 1,2 shape=card color=green sub="every ISR member holds 100"
+l -> hw -> l
+
+l -> p : "ack offset 100"
+
+c -> l : "fetch from 100"
+l -> c : "records up to high watermark"
+
+node alert "if B3 stalls, acks wait until it leaves ISR after 30s" at 1.5,3 shape=card color=red
+l ..> alert ..> f
 ```
 
 **Leader epochs:** each leadership term gets an increasing epoch, checkpointed per partition. After failover a follower asks the new leader where the previous epoch ended and truncates there instead of trusting the high watermark. KIP-101 introduced this because high-watermark truncation could lose committed data or diverge logs after a fast leader change.

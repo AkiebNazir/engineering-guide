@@ -94,28 +94,29 @@ HLS (RFC 8216) and MPEG-DASH describe the same idea, a manifest listing renditio
 
 Segments are encrypted once with Common Encryption (ISO/IEC 23001-7, CENC) so one CMAF file set can work with Widevine, FairPlay and PlayReady (the `cbcs` scheme, on current devices), and the decryption keys travel in a **license** that the player's content-decryption module requests from a license server. That server checks subscription, region, device security level and concurrent streams. The segments are identical for every viewer and stay cacheable. Entitlement is enforced where the rate is low (session start and license issue), not per segment.
 
-```mermaid
+```arch
 %% caption: Entitlement is enforced at the playback API and the license server, so segments stay identical for every viewer and stay cacheable.
-sequenceDiagram
-    participant P as Player
-    participant A as Playback API
-    participant C as CDN edge
-    participant L as License server
-    P->>A: play title X on this device
-    A->>A: check subscription, region, concurrency
-    A-->>P: manifest URL with signed token, license URL
-    P->>C: GET manifest
-    C-->>P: manifest from cache
-    par
-        P->>L: license request with device challenge
-        L-->>P: license with keys
-    and
-        P->>C: GET first segment at a low rung
-        C-->>P: encrypted segment, same for all viewers
-    end
-    loop each segment
-        P->>C: GET next segment at the ABR-chosen rung
-    end
+node p "Player" at 1,0 icon=client color=slate
+node api "Playback API" at 0,1 icon=server color=purple
+node cdn "CDN Edge" at 1,1 icon=cdn color=teal
+node lic "License Server" at 2,1 icon=lock color=amber
+
+p -> api : "play title X"
+node check "check sub, region, concurrency" at 0,2 shape=text
+api -> check -> api
+api -> p : "manifest URL & token, license URL"
+
+p -> cdn : "GET manifest"
+cdn -> p : "manifest from cache"
+
+p -> lic : "license req (device challenge)"
+lic -> p : "license with keys"
+
+p -> cdn : "GET first segment (low rung)"
+cdn -> p : "encrypted segment (same for all)"
+
+node abr "GET next segment at ABR-chosen rung" at 1,2 shape=card
+p -> abr -> cdn
 ```
 
 The cost is that the license server sits on the start-up critical path, so it needs its own regional capacity and availability target, and DRM support varies by device. **Decision rule:** signed short-lived URLs for access to bytes, DRM for content protection, and never per-segment auth calls.

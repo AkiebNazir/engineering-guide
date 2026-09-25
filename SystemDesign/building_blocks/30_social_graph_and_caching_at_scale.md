@@ -119,25 +119,28 @@ MDB -> RDB : "replication stream with embedded invalidate and refill"
 
 **How a write flows.** The leader writes MySQL synchronously, then sends cache-maintenance messages to followers asynchronously: an **invalidate** for objects, and a **refill** for associations (invalidating would truncate a list, so followers that cached the list re-query the leader). The follower that issued the write is updated synchronously from the response, and a version number in each message lets a late one be ignored.
 
-```mermaid
+```arch
 %% caption: The writer sees its own change through the synchronous changeset while other follower tiers converge later through asynchronous refills.
-sequenceDiagram
-    participant C as Client
-    participant F1 as Follower A
-    participant SL as Slave-region leader
-    participant ML as Master-region leader
-    participant DB as Master MySQL
-    participant F2 as Follower B
-    C->>F1: assoc_add id1 friend id2
-    F1->>SL: forward write
-    SL->>ML: forward to master region
-    ML->>DB: write edge, inverse via id2 shard
-    DB-->>ML: committed, new version
-    ML-->>SL: changeset
-    SL-->>F1: changeset applied to cache
-    F1-->>C: ok
-    Note over DB,SL: replication stream reaches replica, then invalidate and refill are delivered
-    SL-)F2: refill, version checked
+node c "Client" at 0,0 icon=client color=slate
+node f1 "Follower A" at 1,0 icon=server color=blue
+node sl "Slave Leader" at 2,0 icon=server color=blue
+node ml "Master Leader" at 3,0 icon=server color=purple
+node db "Master MySQL" at 4,0 icon=db color=purple
+node f2 "Follower B" at 2,1 icon=server color=blue
+
+c -> f1 : "assoc_add id1 friend id2"
+f1 -> sl : "forward write"
+sl -> ml : "forward to master region"
+ml -> db : "write edge & inverse"
+db -> ml : "committed, new version"
+ml -> sl : "changeset"
+sl -> f1 : "changeset applied to cache"
+f1 -> c : "ok"
+
+node rep "replication stream reaches replica, then invalidate and refill" at 3,1 shape=card color=amber
+db ..> rep ..> sl
+
+sl ..> f2 : "refill, version checked"
 ```
 
 **Cross-region.** One region holds the master database for each shard, chosen per shard and switched automatically on database failure. Writes go slave leader → master leader; reads and misses always use the local region's database, so read latency is independent of inter-region latency. The paper gives the reason: follower read misses were 25 times as frequent as writes, so it pays to send only the writes across. Consistency messages ride the replication stream and are delivered only after the change has reached the local replica. Sending them earlier would let a refill read stale data.
@@ -150,23 +153,28 @@ sequenceDiagram
 
 The 2013 paper describes memcache as a demand-filled look-aside cache: on a miss the web server reads the database and sets the key. On a write it updates the database and **deletes** the key rather than setting it, since deletes are idempotent. Its stated stance is that the probability of reading stale data is a parameter to tune, and it accepts slightly stale data in exchange for insulating the backend from load.
 
-```mermaid
+```arch
 %% caption: A lease token is voided by a delete, so the slow reader's stale set is rejected and the next reader refills from the new value.
-sequenceDiagram
-    participant A as Web server A
-    participant M as Memcached
-    participant DB as Database
-    participant B as Web server B
-    A->>M: get k
-    M-->>A: miss plus lease token
-    A->>DB: read k, returns old value
-    B->>DB: update k
-    B->>M: delete k
-    Note over M: delete invalidates the token
-    A->>M: set k old value with token
-    M-->>A: rejected
-    A->>M: get k
-    M-->>A: miss plus new token
+node a "Web Server A" at 0,0 icon=server color=blue
+node m "Memcached" at 1,0 icon=cache color=teal
+node db "Database" at 2,0 icon=db color=purple
+node b "Web Server B" at 3,0 icon=server color=slate
+
+a -> m : "get k"
+m -> a : "miss + lease token"
+a -> db : "read k (old value)"
+
+b -> db : "update k"
+b -> m : "delete k"
+
+node inv "delete invalidates token" at 1,1 shape=card color=amber
+m -> inv -> m
+
+a -> m : "set k (old value) + token"
+m -> a : "rejected"
+
+a -> m : "get k"
+m -> a : "miss + new token"
 ```
 
 | Problem | Mechanism in the paper | What it costs |

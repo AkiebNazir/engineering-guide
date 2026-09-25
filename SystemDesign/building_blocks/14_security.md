@@ -13,22 +13,24 @@ These are separate checks, and both must run on every request that crosses a tru
 
 ## Re-check at every service boundary
 
-```mermaid
+```arch
 %% caption: Each hop re-authorizes independently — a verified claim propagates downstream, never a plain header a compromised upstream could tamper with.
-sequenceDiagram
-    actor Client
-    participant GW as Gateway
-    participant A as Service A
-    participant B as Service B
+node c "Client" at 0,0 icon=user
+node gw "Gateway" at 1,0 icon=gateway color=slate
+node a "Service A" at 2,0 icon=server color=blue
+node b "Service B" at 3,0 icon=server color=teal
 
-    Client->>GW: request + token
-    GW->>GW: authenticate token, coarse rate limit
-    GW->>A: forward verified identity claims (not a caller-supplied header)
-    A->>A: authorize: does this user own order_id?
-    A->>B: call with own identity + propagated user context
-    B->>B: authorize AGAIN: does this user/service have this scope?
-    B-->>A: response
-    A-->>Client: response
+c -> gw : "request + token"
+node step1 "Authenticate" at 1,1 shape=card sub="authenticate token, coarse rate limit"
+gw -> step1 -> a : "forward verified identity claims"
+
+node step2 "Authorize" at 2,1 shape=card sub="does this user own order_id?"
+a -> step2 -> b : "call with own identity + propagated context"
+
+node step3 "Authorize AGAIN" at 3,1 shape=card sub="does this user/service have this scope?"
+b -> step3 -> b
+b -> a : "response"
+a -> c : "response"
 ```
 
 Never trust a caller-supplied `tenant_id`, `user_id`, or role header as authorization input. If the client can set it, the client can forge it. Derive identity from a verified token/session at the boundary that terminates it, and propagate it downstream as a signed or otherwise trusted claim (e.g., a service-to-service <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>, mTLS identity) — not as a plain header a compromised upstream could tamper with. This is the direct mechanism behind IDOR (insecure direct object reference): `GET /orders/12345` returning order 12345 because the ID was well-formed, without checking that the caller's identity owns it.

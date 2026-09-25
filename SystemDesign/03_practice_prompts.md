@@ -61,3 +61,57 @@ Accept driver location updates, find nearby eligible drivers, assign exactly onc
 
 ## 21 Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway
 Route/version hundreds of APIs; authenticate, enforce quotas and tenant isolation, propagate tracing, and protect backends during tenant abuse.
+
+## 22 Unique ID Generator
+Design a highly available unique id generator capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 23 Distributed Key-Value Store
+Design a highly available distributed key-value store capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 24 Collaborative Document Editor
+Design a highly available collaborative document editor capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 25 Web Search Engine
+Design a highly available web search engine capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 26 Nearby Places
+Design a highly available nearby places capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 27 Ad Click Aggregation
+Design a highly available ad click aggregation capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 28 Top-K Trending
+Design a highly available top-k trending capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 29 Real-Time Leaderboard
+Design a highly available real-time leaderboard capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 30 LLM Assistant Feature
+Design a highly available llm assistant feature capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 31 Distributed Message Queue
+Design a highly available distributed message queue capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 32 Ranked Home Feed
+Design a highly available ranked home feed capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 33 Live Streaming and Comments
+Design a highly available live streaming and comments capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 34 Maps Routing and ETA
+Design a highly available maps routing and eta capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 36 Content Delivery Network
+Design a highly available content delivery network capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 37 Experimentation Platform
+Design a highly available experimentation platform capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 38 Video Conferencing
+Design a highly available video conferencing capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 39 Social Graph Service
+Design a highly available social graph service capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.
+
+## 40 Distributed Lock Service
+Design a highly available distributed lock service capable of handling thousands of requests per second with strict constraints on latency and data correctness. Detail the APIs, data model, scaling approach, and how you handle failure states, hot partitions, and network partitions.

@@ -68,3 +68,57 @@ Use this alongside the questions and solutions. Each blueprint captures the miss
 ## How to use each blueprint
 
 Before reviewing a solution, replace each bold label with your own answer. Then force one changed condition: strict multi-region consistency, 100× traffic, no cache, a dependency outage, or regulated data. If your architecture still has a precise source of truth, idempotent mutations, bounded failure, and evidence, you are learning system design rather than reciting it.
+
+## 22 Unique ID Generator
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 23 Distributed Key-Value Store
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 24 Collaborative Document Editor
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 25 Web Search Engine
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 26 Nearby Places
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 27 Ad Click Aggregation
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 28 Top-K Trending
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 29 Real-Time Leaderboard
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 30 LLM Assistant Feature
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 31 Distributed Message Queue
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 32 Ranked Home Feed
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 33 Live Streaming and Comments
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 34 Maps Routing and ETA
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 36 Content Delivery Network
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 37 Experimentation Platform
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 38 Video Conferencing
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 39 Social Graph Service
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.
+
+## 40 Distributed Lock Service
+**Truth:** Highly available partitioned datastore or replicated log. **Contract:** Idempotent writes with strict ordering guarantees or CRDT conflict resolution. **Flow:** Request → Gateway/Load Balancer → Stateless Processing Tier → Cache / Persistent Storage. **Hard part:** Ensuring correctness during network partitions and bounding tail latency on fan-out queries. **Scale trigger:** Hotspot requests and high connection churn → local caching, consistent hashing, and edge termination. **Never:** Rely on a single point of failure without automated failover.

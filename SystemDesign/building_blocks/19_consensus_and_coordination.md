@@ -53,24 +53,24 @@ Raft is the consensus algorithm most systems implement today (etcd, Consul, Cock
 - *Leader completeness*: a committed entry is present in the log of every future leader (the voting rule guarantees it).
 - A leader cut off in a minority partition cannot commit anything — the minority side is unavailable for writes. That is Raft choosing consistency under partition.
 
-```mermaid
+```arch
 %% caption: A write is acknowledged only after a majority has durably stored it.
-sequenceDiagram
-    participant C as Client
-    participant L as Leader
-    participant F1 as Follower 1
-    participant F2 as Follower 2
-    C->>L: set x = 5
-    L->>L: append to log (uncommitted)
-    par replicate
-        L->>F1: AppendEntries(term, entry)
-        L->>F2: AppendEntries(term, entry)
-    end
-    F1-->>L: ok
-    Note over L: 2 of 3 stored → committed
-    L->>L: apply to state machine
-    L-->>C: ok
-    F2-->>L: ok (late, still fine)
+node c "Client" at 1,0 icon=user
+node l "Leader" at 1,1 icon=server color=purple
+node f1 "Follower 1" at 0,2 icon=server color=slate
+node f2 "Follower 2" at 2,2 icon=server color=slate
+
+c -> l : "set x = 5"
+node log "append to log" at 1,2 shape=card sub="uncommitted"
+l -> log
+log -> f1 : "AppendEntries"
+log -> f2 : "AppendEntries"
+
+f1 -> l : "ok"
+node commit "2 of 3 stored → committed" at 1,3 shape=card color=green sub="apply to state machine"
+l -> commit
+l -> c : "ok"
+f2 -> l : "ok (late, fine)"
 ```
 
 **Reads.** Reading from the leader's local state can be stale if that leader has been deposed without knowing it. Options: route reads through the log (slow, always correct), use a *ReadIndex* check (confirm leadership with a heartbeat round before serving), or use leader *leases* that rely on bounded clock drift.
@@ -85,23 +85,30 @@ A **lease** is a lock with an expiry: the holder must renew it before it runs ou
 
 The classic bug: a leaseholder pauses (<abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> migration), its lease expires, a new holder is granted the lease, and then the old holder wakes up and writes anyway. The fix is a **fencing token** — a number that increases every time the lease is granted. The protected resource remembers the highest token it has seen and rejects writes carrying an older one.
 
-```mermaid
+```arch
 %% caption: The storage rejects the paused client because its fencing token is older than one it has already seen.
-sequenceDiagram
-    participant A as Client A
-    participant Lock as Lock service
-    participant B as Client B
-    participant S as Storage
-    A->>Lock: acquire lease
-    Lock-->>A: granted, token 33
-    Note over A: long GC pause…
-    Note over Lock: lease expires
-    B->>Lock: acquire lease
-    Lock-->>B: granted, token 34
-    B->>S: write (token 34)
-    S-->>B: ok, highest = 34
-    A->>S: write (token 33)
-    S-->>A: rejected, 33 < 34
+node a "Client A" at 0,0 icon=client color=slate
+node lock "Lock service" at 1,0 icon=server color=blue
+node b "Client B" at 2,0 icon=client color=slate
+node s "Storage" at 3,0 icon=db color=teal
+
+a -> lock : "acquire lease"
+lock -> a : "granted, token 33"
+
+node pause "long GC pause…" at 0,1 shape=card color=amber
+a -> pause -> a
+
+node exp "lease expires" at 1,1 shape=card
+lock -> exp -> lock
+
+b -> lock : "acquire lease"
+lock -> b : "granted, token 34"
+
+b -> s : "write (token 34)"
+s -> b : "ok, highest = 34"
+
+a -> s : "write (token 33)"
+s -> a : "rejected, 33 < 34"
 ```
 
 > ⚠️ A distributed lock without fencing is only a performance optimisation (it reduces duplicate work). It is not a correctness guarantee.

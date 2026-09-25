@@ -91,7 +91,7 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 - [x] ~~Reconcile the "41 problems" claim throughout README/catalog with the
       actual 39 on disk (either write the 2 missing problems above and keep
       41, or renumber the claim to 39 everywhere it appears).
-- [ ] Extend the condensed review layer (`03_practice_prompts.md`,
+- [x] ~~Extend the condensed review layer (`03_practice_prompts.md`,
       `04_practice_answers.md`, `05_architecture_blueprints.md`) from problem
       21 through problem 40 — currently stops at 21 despite being advertised
       as "a condensed pass across all 41 problems in one sitting." Missing:

@@ -170,23 +170,29 @@ Assumptions (ours): 3 regions at 60% steady utilisation; Route 53 fast checks ev
 
 So stateless reads recover in about 90 s plus a tail, writes recover in minutes because of the human gate, and the RPO is the lag at the moment of failure: hence the lag alert, the cache-warming plan and the reconcile job.
 
-```mermaid
+```arch
 %% caption: DNS moves reads in about 90 s but writes wait on database promotion, which is gated on a human and a fence.
-sequenceDiagram
-    participant Cl as Client
-    participant HC as Health checks
-    participant D as DNS
-    participant A as Region A
-    participant B as Region B
-    participant Op as On-call
-    Note over A: t=0 region fails
-    HC->>A: probe every 10 s fails 3 times
-    HC->>D: t=30 s mark A unhealthy
-    Cl->>D: lookup after cached answer expires
-    D-->>Cl: address of B (t up to 90 s)
-    Cl->>B: reads served from cold cache
-    Op->>B: approve promote and fence old primary
-    B-->>Cl: writes accepted again (t about 5 to 10 min)
+node cl "Client" at 0,0 icon=client color=slate
+node d "DNS" at 1,0 icon=network color=teal
+node a "Region A" at 2,0 icon=region color=blue
+
+node op "On-call" at 0,1 icon=user color=orange
+node b "Region B" at 1,1 icon=region color=blue
+node hc "Health checks" at 2,1 icon=monitor color=pink
+
+node fail "t=0 region fails" at 3,0 shape=card color=red
+a -> fail -> a
+
+hc -> a : "probe fails 3x"
+hc -> d : "t=30s mark A unhealthy"
+
+cl -> d : "lookup after cache expires"
+d -> cl : "address of B"
+
+cl -> b : "reads served from cold cache"
+
+op -> b : "approve promote"
+b -> cl : "writes accepted again (5-10 min)"
 ```
 
 ## Cost model
