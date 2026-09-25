@@ -27,22 +27,22 @@ client ==> obj : "3. Direct PUT bytes"
 ```
 Routing large file bytes through your application servers wastes their capacity on pass-through I/O and pushes bandwidth cost onto infrastructure that should be doing business logic. Let the client upload directly to object storage instead, authorized by a short-lived signed URL.
 
-```mermaid
+```arch
 %% caption: The API server never sees the file bytes — it only issues authorization, the same shape as the CDN/edge principle.
-sequenceDiagram
-    actor Client
-    participant API
-    participant Obj as Object storage
-    participant Worker as Async worker
-    participant DB
-
-    Client->>API: "I want to upload a file"
-    API->>API: authorize, generate short-lived signed upload URL
-    API-->>Client: signed URL + object key
-    Client->>Obj: PUT bytes directly
-    Obj-->>Worker: object created event
-    Worker->>Worker: validate → scan → transform
-    Worker->>DB: status PENDING → READY (or REJECTED)
+node c "Client" at 0,0 icon=user color=slate
+node api "API" at 1,0 icon=server color=purple
+node obj "Object storage" at 0,1 icon=folder color=blue
+node w "Async worker" at 1,1 icon=process color=teal
+node db "DB" at 2,1 icon=db color=orange
+c -> api : "I want to upload a file"
+node auth "authorize, gen signed URL" at 2,0 shape=text
+api -> auth -> api
+api -> c : "signed URL + key"
+c -> obj : "PUT bytes directly"
+obj -> w : "object created event"
+node proc "validate → scan → transform" at 1,2 shape=text
+w -> proc -> w
+w -> db : "status PENDING → READY"
 ```
 
 The <abbr title="Application Programming Interface">API</abbr> server never sees the file bytes — it only issues authorization. This is the same shape as the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>/edge principle: keep large-byte traffic off the tier that runs your business logic.
@@ -62,26 +62,23 @@ The object's DB row should stay in a `PENDING`/`UNVERIFIED` state — not linkab
 
 Object storage upload events are the natural trigger for everything that has to happen to the object before it's usable: thumbnailing an image, transcoding a video into multiple resolutions, extracting text from a document, running a malware scanner. This keeps heavy transformation work off the request path entirely — the upload succeeds immediately, and derivative generation happens asynchronously.
 
-```mermaid
+```arch
 %% caption: Heavy transformation work stays off the request path entirely — the upload already succeeded before any of this runs.
-sequenceDiagram
-    participant Obj as Object storage
-    participant Queue
-    participant Thumb as Thumbnail generator
-    participant Scanner as Malware scanner
-    participant Trans as Transcoder
-
-    Obj->>Queue: object created event
-    par
-        Queue->>Thumb: dequeue
-        Thumb->>Thumb: writes derivative object + DB row
-    and
-        Queue->>Scanner: dequeue
-        Scanner->>Scanner: flips status or quarantines
-    and
-        Queue->>Trans: dequeue
-        Trans->>Trans: writes multiple resolution variants
-    end
+node obj "Object storage" at 1,0 icon=folder color=blue
+node q "Queue" at 1,1 icon=doc color=slate
+obj -> q : "object created event"
+node thumb "Thumbnail generator" at 0,2 icon=process color=teal
+q -> thumb : "dequeue"
+node thumb_t "writes derivative obj + DB row" at 0,3 shape=text
+thumb -> thumb_t -> thumb
+node scan "Malware scanner" at 1,2 icon=process color=red
+q -> scan : "dequeue"
+node scan_t "flips status or quarantines" at 1,3 shape=text
+scan -> scan_t -> scan
+node trans "Transcoder" at 2,2 icon=process color=purple
+q -> trans : "dequeue"
+node trans_t "writes resolution variants" at 2,3 shape=text
+trans -> trans_t -> trans
 ```
 
 See `09_messaging_and_streaming.md` for the queue/worker mechanics (visibility timeout, retries, DLQ) that make this reliable — an object storage event is just another producer into that same async-work machinery.

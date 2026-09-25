@@ -106,28 +106,22 @@ lf -> at
 
 ## Deep dive 2: Signaling, ICE, TURN and session setup
 
-```mermaid
+```arch
 %% caption: A join costs one control-plane allocation and about eight round trips, and because the SFU is a public ICE-lite endpoint the client alone drives connectivity checks and falls back to TURN over TLS only when UDP is blocked.
-sequenceDiagram
-    participant C as Client
-    participant G as Signaling
-    participant P as Placement
-    participant S as SFU
-    participant T as TURN
-    C->>G: join with join_id
-    G->>P: allocate meeting and region
-    P-->>G: sfu address and epoch
-    G-->>C: token, ws url, ice servers
-    C->>G: WSS offer with simulcast rids
-    G-->>C: answer with SFU candidates
-    C->>S: STUN checks over UDP
-    alt UDP blocked
-        C->>T: TURN allocate over TLS 443
-        T->>S: relay to SFU
-    end
-    C->>S: DTLS handshake then SRTP keys
-    C->>S: RTP 3 layers plus audio
-    S-->>C: RTP selected layers and speaker events
+node C "Client" at 0,1 icon=video
+node G "Signaling" at 1,0 icon=websocket
+node P "Placement" at 2,0 icon=scheduler
+node S "SFU" at 1,2 icon=server
+node T "TURN" at 2,2 icon=proxy
+
+C:T -> G:L : "join / WSS offer"
+G:R -> P:L : "allocate"
+P:B -> G:B : "sfu / epoch"
+G:L -> C:T : "token / answer"
+C:R -> S:L : "STUN / DTLS / RTP"
+S:B -> C:B : "RTP & events"
+C:B -> T:L : "TURN allocate"
+T:B -> S:B : "relay to SFU"
 ```
 
 Signaling is not part of WebRTC: it is our WebSocket protocol carrying SDP offers and answers (JSEP, RFC 8829) and trickled candidates (RFC 8838). Media keys come from DTLS-SRTP (RFC 5764).

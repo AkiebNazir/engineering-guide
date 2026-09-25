@@ -81,25 +81,20 @@ cfg -> ctl
 ctl ..> snap : "xDS deltas, ACK/NACK"
 ```
 
-```mermaid
+```arch
 %% caption: The gateway forwards the verified claim extracted from the token — never a raw header the caller could set themselves.
-sequenceDiagram
-    actor Client
-    participant GW as Edge / gateway
-    participant Policy as Route policy (cached)
-    participant Quota as Quota buckets
-    participant Backend as Upstream backend service
+node client "Client" at 0,1
+node gw "Edge / gateway\nvalidate auth token\nset deadline" at 1,1
+node policy "Route policy\n(cached)\nresolve route + version" at 2,0
+node quota "Quota buckets\ncheck safety buckets" at 2,2
+node backend "Upstream backend service\nre-authorize\ntenant-scoped data access" at 3,1
 
-    Client->>GW: request (TLS)
-    GW->>GW: validate auth token → verified principal + tenant claim
-    GW->>Policy: resolve route + version
-    GW->>Quota: check tenant · route · global safety buckets
-    GW->>GW: set deadline, attach trace context
-    GW->>Backend: forward + verified claim (never a raw header)
-    Backend->>Backend: re-authorize: can THIS principal act on THIS resource
-    Backend->>Backend: tenant-scoped data access (filtered by verified claim)
-    Backend-->>GW: response
-    GW-->>Client: response
+client -> gw
+gw -> policy
+gw -> quota
+gw -> backend
+backend -> gw
+gw -> client
 ```
 
 **One request.** Strip inbound `x-gw-*`, verify the <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>, resolve route and version, check entitlement and scopes, take a local quota token and a concurrency slot, set the deadline, forward on a pooled mTLS connection, all from node memory. **One config change.** The control plane validates and compiles snapshot 813 and canaries it on one node, a zone, then the fleet; each node swaps one pointer, so in-flight requests finish on 812 and new ones see 813.

@@ -726,26 +726,19 @@ Self-test complete: BM25, cosine similarity, and RRF fusion all verified.
 
 ## 6. Recap & Self-Check
 
-```mermaid
+```arch
 %% caption: The whole module on one page.
-mindmap
-  root((<abbr title="Retrieval-Augmented Generation">RAG</abbr>))
-    Chunking
-      fixed size + overlap
-      recursive separators
-      semantic boundaries
-    Retrieval
-      BM25 exact words
-      dense meaning
-      RRF fuses ranks
-    Re-ranking
-      bi-encoder fast
-      cross-encoder precise
-      retrieve then rerank
-    Context
-      lost in the middle
-      sandwich order
-      compression
+node root "RAG" at 0.5,0 shape=pill color=teal
+
+node chunk "Chunking" at 0,1 shape=card color=blue sub="Fixed size + overlap, recursive separators, semantic boundaries"
+node ret "Retrieval" at 1,1 shape=card color=green sub="BM25 (exact), dense (meaning), RRF (fuses ranks)"
+node rerank "Re-ranking" at 0,2 shape=card color=orange sub="Bi-encoder (fast), cross-encoder (precise), retrieve-then-rerank"
+node ctx "Context" at 1,2 shape=card color=pink sub="Lost in middle, sandwich order, compression"
+
+root -> chunk
+root -> ret
+root -> rerank
+root -> ctx
 ```
 
 **One-line summary per idea**

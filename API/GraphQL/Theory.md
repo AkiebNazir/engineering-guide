@@ -297,18 +297,23 @@ Total: 1 + N = 101 queries
 
 **DataLoader** collects every `.load(key)` made during one tick of the event loop, then calls one batch function.
 
-```mermaid
-sequenceDiagram
-    participant R as Resolvers (x100)
-    participant L as DataLoader
-    participant DB as Database
-    R->>L: load(1)
-    R->>L: load(2)
-    R->>L: load(1)
-    note over L: same tick: dedupe keys + batch
-    L->>DB: SELECT * FROM users WHERE id IN (1, 2)
-    DB-->>L: 2 rows
-    L-->>R: results in the SAME ORDER as the keys
+```arch
+node r "Resolvers (x100)" at 0,0 icon=server color=blue
+node l "DataLoader" at 1,0 icon=process color=teal
+node db "Database" at 2,0 icon=db color=purple
+
+r -> l : "load(1)"
+r -> l : "load(2)"
+r -> l : "load(1)"
+
+node dedup "dedupe keys + batch" at 1,1 shape=card color=amber
+l -> dedup -> l
+
+l -> db : "SELECT WHERE id IN (1,2)"
+db -> l : "2 rows"
+
+node order "results in SAME ORDER as keys" at 0.5,1 shape=text
+l -> order -> r
 ```
 
 ```python
@@ -419,16 +424,15 @@ Each team owns a **subgraph** that contributes types and fields; the router plan
 
 **Scenario:** A Blogging platform where a mobile app wants to fetch a post title and the author's name in one request.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant GQL as GraphQL Server
-    participant DB as Databases
+```arch
+node c "Client" at 0,0 icon=client color=slate
+node gql "GraphQL Server" at 1,0 icon=server color=blue
+node db "Databases" at 2,0 icon=db color=purple
 
-    Client->>GQL: POST /graphql { post(id: 1) { title, author { name } } }
-    GQL->>DB: Fetch Post 1
-    GQL->>DB: Fetch User (Author)
-    GQL-->>Client: { "data": { "post": { "title": "...", "author": { ... } } } }
+c -> gql : "POST /graphql"
+gql -> db : "Fetch Post 1"
+gql -> db : "Fetch User (Author)"
+gql -> c : "{ 'data': ... }"
 ```
 
 ## When to Use GraphQL (and When Not To)

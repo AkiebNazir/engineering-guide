@@ -111,13 +111,15 @@ When a producer generates work faster than a consumer can process it, something 
 
 **The blow-up itself comes from queueing at high utilization.** Let `ρ = λ/μ` be utilization (arrival rate over service capacity). In the textbook M/M/1 queue (one server, random arrivals, exponentially distributed service times, first come first served), the mean time in the system is `W = (1/μ) / (1 − ρ)` and the mean time spent waiting before service is `(ρ / (1 − ρ)) × (1/μ)`. The intuition: the server's spare capacity, `μ − λ = μ(1 − ρ)`, is the only rate at which it can drain a backlog. A random burst of `B` extra requests takes `B / (μ(1 − ρ))` to clear, which is `2B/μ` at 50% utilization but `20B/μ` at 95%. Substituting into Little's Law then gives the queue length, `L = ρ / (1 − ρ)`: 1 request at 50%, 4 at 80%, 9 at 90%, 19 at 95%, 99 at 99%. Beyond `ρ = 1` there is no steady state at all and the queue grows until something is rejected or times out.
 
-```mermaid
-xychart-beta
-    title "M/M/1 latency vs. utilization, relative to 50% (illustrative model)"
-    x-axis ["50%", "80%", "90%", "95%", "99%"]
-    y-axis "Response time (mean or any percentile) relative to 50%" 0 --> 50
-    bar [1, 2.5, 5, 10, 50]
-```
+**M/M/1 latency vs. utilization, relative to 50% (illustrative model)**
+
+| Utilization | Response time (relative to 50%) |
+| :--- | :--- |
+| **50%** | 1x |
+| **80%** | 2.5x |
+| **90%** | 5x |
+| **95%** | 10x |
+| **99%** | 50x |
 
 The bars are `0.5 / (1 − ρ)`, that is the `1 / (1 − ρ)` queueing term normalised to the 50% case. In M/M/1 the whole response-time distribution is exponential with rate `μ(1 − ρ)`, so the mean and every percentile scale by the same factor (the p99 is about `4.6 / (μ(1 − ρ))`, since `ln 100 ≈ 4.6`). The exact numbers are model-dependent: a pool with `c` servers keeps latency flat until higher utilization and then bends just as sharply, while a service-time distribution with a heavy tail (a few slow queries) makes waits longer than M/M/1 at the same `ρ`, because in M/G/1 the wait is proportional to `(1 + Cs²)/2 × ρ/(1 − ρ)`. What carries over to real systems is the shape, not the values.
 

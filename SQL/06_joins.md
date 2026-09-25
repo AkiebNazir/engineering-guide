@@ -41,6 +41,25 @@ inserted twice.
 
 Returns only rows where the join condition matches on **both** sides.
 
+```arch
+%% caption: An INNER JOIN only returns rows that exist in both tables; a LEFT JOIN returns all rows from the left table, padding with NULLs if there is no match on the right.
+group inner "INNER JOIN" color=slate style=dashed
+node left_in "Left Table\n(Match)" at 0,1 in inner icon=table color=green
+node right_in "Right Table\n(Match)" at 2,1 in inner icon=table color=green
+node result_in "Result Row" at 1,0 in inner icon=db color=blue
+
+left_in -> result_in : "Valid"
+right_in -> result_in : "Valid"
+
+group left "LEFT JOIN" color=slate style=dashed
+node left_l "Left Table\n(Match/No Match)" at 4,1 in left icon=table color=green
+node right_l "Right Table\n(Missing)" at 6,1 in left icon=table color=red
+node result_l "Result Row\n(With NULLs)" at 5,0 in left icon=db color=blue
+
+left_l -> result_l : "Valid"
+right_l ..> result_l : "NULL"
+```
+
 ```sql
 SELECT s.name, c.title, e.grade
 FROM students s

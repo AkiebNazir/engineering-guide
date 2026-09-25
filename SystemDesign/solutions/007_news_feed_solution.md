@@ -101,33 +101,28 @@ feedsvc:L -> refs:T
 feedsvc:L -> recent:R
 ```
 
-```mermaid
+```arch
 %% caption: Push and pull tiers write differently but the read path always merges both and ranks the union, so a threshold change never breaks reads.
-sequenceDiagram
-    actor Author
-    actor Reader
-    participant Outbox
-    participant Fanout as Fanout worker
-    participant Shard as Follower feed store
-    participant Read as Read path
-    participant Rank as Ranker
-    participant Post as Post store
+node author "Author" at 0,1
+node reader "Reader" at 0,3
+node outbox "Outbox" at 1,0
+node fanout "Fanout worker" at 2,0
+node shard "Follower feed store" at 2,1
+node read_path "Read path" at 1,3
+node ranker "Ranker" at 2,3
+node post_store "Post store" at 2,2
 
-    Author->>Outbox: post write (post_id, author_id, ts)
-    Outbox->>Fanout: consume
-    alt author below threshold
-        Fanout->>Shard: insert feed ref per active follower
-    else author at or above threshold
-        Fanout->>Fanout: skip fan-out, author is in the pull tier
-    end
-
-    Reader->>Read: GET /feed
-    Read->>Shard: fetch push-tier refs
-    Read->>Post: fetch recent posts of pull-tier authors
-    Read->>Rank: candidates from both tiers, deduped
-    Rank-->>Read: ordered ids, snapshot saved
-    Read->>Post: hydrate body, visibility, delete flag
-    Read-->>Reader: page plus cursor
+author -> outbox : "post write (post_id, author_id, ts)"
+outbox -> fanout : "consume"
+fanout -> shard : "insert feed ref per active follower"
+fanout -> fanout : "skip fan-out, author is in the pull tier"
+reader -> read_path : "GET /feed"
+read_path -> shard : "fetch push-tier refs"
+read_path -> post_store : "fetch recent posts of pull-tier authors"
+read_path -> ranker : "candidates from both tiers, deduped"
+ranker -> read_path : "ordered ids, snapshot saved"
+read_path -> post_store : "hydrate body, visibility, delete flag"
+read_path -> reader : "page plus cursor"
 ```
 
 **One write, end to end.** `POST /v1/posts` writes the post row and an outbox row in one transaction (idempotent on `client_post_id`). A relay publishes the outbox row to a queue partitioned by `author_id`. The fan-out worker reads the post's stamped `fanout_mode`. For PUSH it reads the author's follower list in chunks of ~5k, drops followers who are not recently active, and inserts `(post_id, author_id, affinity_hint)` into each remaining follower's feed list, trimming the list to the newest 800. An insert keyed by `post_id` is a set-add, so a retried chunk changes nothing. For PULL it does nothing except append the `post_id` to `author_recent`.

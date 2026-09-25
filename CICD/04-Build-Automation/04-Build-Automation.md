@@ -180,16 +180,16 @@ GOOS=windows GOARCH=amd64 go build -o bin/app-windows-amd64.exe main.go
 
 ### Mermaid Diagram: Cross Compilation Flow
 
-```mermaid
-flowchart TD
-    Source["Go Source Code (main.go)"]
-    Compiler["Go Compiler"]
-    
-    Source --> Compiler
-    
-    Compiler -->|GOOS=linux GOARCH=amd64| LinuxBin["app-linux-amd64"]
-    Compiler -->|GOOS=darwin GOARCH=arm64| MacBin["app-darwin-arm64"]
-    Compiler -->|GOOS=windows GOARCH=amd64| WinBin["app-windows.exe"]
+```arch
+node src "Go Source Code" at 1,0 icon=doc color=blue
+node comp "Go Compiler" at 1,1 icon=process color=teal
+node l "app-linux-amd64" at 0,2 icon=server color=purple
+node m "app-darwin-arm64" at 1,2 icon=client color=slate
+node w "app-windows.exe" at 2,2 icon=client color=slate
+src -> comp
+comp -> l : "GOOS=linux"
+comp -> m : "GOOS=darwin"
+comp -> w : "GOOS=windows"
 ```
 
 ## ⚙️ Environment Variables and Build-Time Configuration

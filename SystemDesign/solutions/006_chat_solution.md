@@ -80,28 +80,24 @@ notif -> apns
 log ..> search
 ```
 
-```mermaid
-%% caption: The gateway owns the live connection, not the truth — a message is durable before it fans out anywhere.
-sequenceDiagram
-    actor Client
-    participant GW as WebSocket gateway
-    participant Svc as Message service
-    participant Log as Durable store/log
-    participant Fanout as Online fanout gateways
-    participant Notif as Notification workers
-    participant Search as Search/moderation projection
+```arch
+node Client "Client" at 1,2
+node GW "WebSocket gateway" at 2,2
+node Svc "Message service" at 3,2
+node Log "Durable store/log" at 4,2
+node Fanout "Online fanout gateways" at 3,1
+node Notif "Notification workers" at 4,3
+node Search "Search/moderation projection" at 3,3
 
-    Client->>GW: SEND
-    GW->>Svc: authorize + forward
-    Svc->>Log: append (conversation_id, seq)
-    Log-->>Svc: persisted
-    Svc-->>GW: SENT (seq)
-    GW-->>Client: SENT
-    par fan out
-        Svc->>Fanout: publish to other online members
-        Svc->>Notif: push if offline
-        Svc->>Search: index projection
-    end
+Client -> GW
+GW -> Svc
+Svc -> Log
+Log -> Svc
+Svc -> GW
+GW -> Client
+Svc -> Fanout
+Svc -> Notif
+Svc -> Search
 ```
 
 `Message(conversation_id, sequence, message_id UNIQUE, sender, body_ref, created_at)` is ordered by `(conversation_id, sequence)`. The client creates `message_id`; retrying the same send returns the original persisted sequence. `ConversationMember` handles permissions; `MemberCursor(conversation_id, member_id, delivered_seq, read_seq)` stores monotonic acknowledgement.

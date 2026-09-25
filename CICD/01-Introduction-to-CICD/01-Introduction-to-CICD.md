@@ -64,18 +64,22 @@ jobs:
 
 # 5. Visual Explanation
 
-```mermaid
-flowchart TD
-    A[Developer Pushes Code] --> B{CI Server triggered}
-    B --> C[Linting]
-    C --> D[Unit Tests]
-    D --> E[Integration Tests]
-    E --> F[Build Artifact (e.g. Docker Image)]
-    F --> G{CD Server triggered}
-    G --> H[Deploy to Staging]
-    H --> I[End-to-End Tests]
-    I --> J{Manual Approval / Auto}
-    J --> K[Deploy to Production]
+```arch
+node a "Dev Pushes Code" at 0,0 icon=user color=slate
+node b "CI Server" at 1,0 icon=server color=blue
+node c "Linting" at 2,0 shape=card color=amber
+node d "Unit Tests" at 3,0 shape=card color=amber
+node e "Integration Tests" at 3,1 shape=card color=amber
+node f "Build Artifact" at 2,1 icon=doc color=purple
+node g "CD Server" at 1,1 icon=server color=blue
+node h "Deploy to Staging" at 0,1 icon=gateway color=teal
+node i "End-to-End Tests" at 0,2 shape=card color=amber
+node j "Deploy / Approval" at 1,2 shape=card color=red
+a -> b -> c -> d
+d -> e
+e -> f -> g -> h
+h -> i
+i -> j
 ```
 
 *Explanation*: 

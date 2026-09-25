@@ -69,21 +69,18 @@ You don't need to implement either for an interview. You need to say "this workl
 
 A **write-ahead log (<abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>)** records the intent of a change durably *before* the corresponding data pages are updated. On crash, the database replays the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> from the last checkpoint to reconstruct any changes that were committed but not yet flushed to the main data pages.
 
-```mermaid
+```arch
 %% caption: Durability is guaranteed the instant the WAL record is fsynced — not when the eventual data-page write happens.
-sequenceDiagram
-    participant Txn as Transaction
-    participant WAL
-    participant Client
-    participant Pages as Data pages / SSTable
-
-    Txn->>WAL: commit, fsync record to disk
-    WAL-->>Client: ack
-    WAL--)Pages: update in place / write new SSTable (async, can happen later)
-
-    Note over Pages: crash before flush?
-    Pages->>WAL: replay since last checkpoint
-    WAL-->>Pages: durable state recovered
+node txn "Transaction" at 0,0 icon=process color=slate
+node wal "WAL" at 1,0 icon=doc color=blue
+node c "Client" at 2,0 icon=user color=teal
+node pages "Data pages / SSTable" at 1,1 icon=db color=purple
+txn -> wal : "commit, fsync record"
+wal -> c : "ack"
+wal ..> pages : "async update/write new SSTable"
+node crash "crash before flush?" at 2,1 shape=card color=amber
+crash -> wal : "replay since last checkpoint"
+wal -> pages : "durable state recovered"
 ```
 
 This is why "durable" and "the data page is written" are different moments — durability is guaranteed the instant the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> record is fsynced, not when the eventual page write happens.

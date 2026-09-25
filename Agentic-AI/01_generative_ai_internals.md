@@ -408,21 +408,26 @@ their K and V computed:
 Without the cache the work grows like 1 + 2 + 3 + … (quadratic). With it, each new token costs one
 token's worth of K/V work.
 
-```mermaid
+```arch
 %% caption: Prefill fills the cache with the whole prompt at once; each decode step adds exactly one entry.
-sequenceDiagram
-    participant M as Model
-    participant KV as KV cache
-    Note over M: PREFILL · compute-bound
-    M->>KV: store K,V for "The" "cat" "sat" "on"
-    M-->>M: predict "the"
-    Note over M: DECODE · memory-bound, one token per step
-    KV-->>M: read 4 cached entries
-    M->>KV: append K,V for "the"
-    M-->>M: predict "mat"
-    KV-->>M: read 5 cached entries
-    M->>KV: append K,V for "mat"
-    M-->>M: predict "." and so on
+group pre "PREFILL · compute-bound" color=slate
+node p_m "Model" at 0,0 in pre icon=llm
+node p_kv "KV cache" at 1,0 in pre icon=db
+p_m -> p_kv : "store K,V"
+node p_pred "predict 'the'" at 0,1 in pre shape=pill
+p_m -> p_pred
+
+group dec "DECODE · memory-bound, one token per step" color=slate
+node d_m "Model" at 0,2 in dec icon=llm
+node d_kv "KV cache" at 1,2 in dec icon=db
+d_kv ..> d_m : "read 4 entries"
+d_m -> d_kv : "append K,V for 'the'"
+node d_pred "predict 'mat'" at 0,3 in dec shape=pill
+d_m -> d_pred
+d_kv ..> d_m : "read 5 entries"
+d_m -> d_kv : "append K,V for 'mat'"
+node d_pred2 "predict '.'" at 0,4 in dec shape=pill
+d_m -> d_pred2
 ```
 
 **The bill.** For a 7B-class model (32 layers, 32 heads, d_head 128, fp16):
@@ -625,17 +630,20 @@ l -> t -> k -> s -> d -> out
 
 #### 🖼️ Speculative decoding — an intern drafts, the expert checks
 
-```mermaid
+```arch
 %% caption: One expensive pass of the big model checks four cheap guesses at once (illustrative tokens).
-sequenceDiagram
-    participant S as Small draft model
-    participant B as Big target model
-    Note over S: fast, 4 tokens one by one
-    S->>B: draft: "sat" "on" "the" "mat"
-    Note over B: ONE forward pass over all 4
-    B-->>B: "sat" ✔ "on" ✔ "the" ✔ "mat" ✘ (prefers "sofa")
-    B->>S: keep "sat on the" + corrected token "sofa"
-    Note over S,B: 4 tokens produced for 1 big-model pass instead of 4
+node s "Small draft model" at 0,0 icon=llm sub="fast, 4 tokens one by one" color=slate
+node b "Big target model" at 2,0 icon=llm sub="ONE forward pass over all 4" color=purple
+s -> b : "draft: 'sat' 'on' 'the' 'mat'"
+
+node check "Check tokens" at 2,1 shape=card sub="'sat' ✔ 'on' ✔ 'the' ✔ 'mat' ✘ (sofa)"
+b -> check
+
+node ret "Return to draft" at 1,1 shape=pill color=teal
+check -> ret -> s : "keep 3 + 'sofa'"
+
+node out "Result" at 0,2 shape=card icon=check sub="4 tokens produced for 1 big-model pass"
+s -> out
 ```
 
 The output distribution is mathematically the same as if the big model had generated alone —
@@ -855,28 +863,19 @@ Self-test complete: causal attention, KV footprint math, and sampling pipeline a
 
 ## 6. Recap & Self-Check
 
-```mermaid
+```arch
 %% caption: The whole module on one page.
-mindmap
-  root((LLM runtime))
-    Attention
-      Q K V lookup
-      divide by root d
-      causal mask
-      quadratic cost
-    Position
-      APE adds
-      RoPE rotates
-      ALiBi penalises distance
-    KV cache
-      prefill once
-      decode appends one
-      memory bound
-      PagedAttention blocks
-    Sampling
-      temperature
-      top-k and top-p
-      speculative decoding
+node root "LLM runtime" at 0.5,0 shape=pill color=teal
+
+node att "Attention" at 0,1 shape=card color=blue sub="QKV, scale by root d, causal mask, quadratic cost"
+node pos "Position" at 1,1 shape=card color=green sub="APE adds, RoPE rotates, ALiBi penalises"
+node kv "KV cache" at 0,2 shape=card color=orange sub="Prefill once, decode appends, memory bound, PagedAttention"
+node sam "Sampling" at 1,2 shape=card color=pink sub="Temperature, top-k/top-p, speculative decoding"
+
+root -> att
+root -> pos
+root -> kv
+root -> sam
 ```
 
 | Idea | Remember it as |

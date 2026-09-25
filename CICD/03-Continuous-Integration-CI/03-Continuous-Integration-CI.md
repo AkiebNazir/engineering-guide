@@ -55,67 +55,34 @@ If a test fails, the line **stops immediately**. The problem is found and fixed 
 
 ### Architecture Overview
 
-```mermaid
-flowchart TD
-    subgraph "Source Control"
-        GH["GitHub / GitLab / Bitbucket"]
-    end
-    
-    subgraph "CI Server"
-        CTRL["Controller / Coordinator\n(Receives webhooks,\nschedules jobs)"]
-    end
-    
-    subgraph "Runner Pool"
-        R1["Runner 1\n(Ubuntu)"]
-        R2["Runner 2\n(macOS)"]
-        R3["Runner 3\n(Windows)"]
-        R4["Runner 4\n(Docker)"]
-    end
-    
-    subgraph "Outputs"
-        ART["Artifacts\n(binaries, images)"]
-        REP["Reports\n(test results, coverage)"]
-        NOT["Notifications\n(Slack, email)"]
-    end
-    
-    GH -->|"Webhook:\ngit push"| CTRL
-    CTRL -->|"Assign job"| R1
-    CTRL -->|"Assign job"| R2
-    CTRL -->|"Assign job"| R3
-    CTRL -->|"Assign job"| R4
-    R1 --> ART
-    R1 --> REP
-    CTRL --> NOT
+```arch
+node gh "Source Control (GitHub/GitLab)" at 0,0 icon=doc color=blue
+node ctrl "CI Server (Controller)" at 1,0 icon=server color=purple
+node r1 "Worker Node 1" at 2,0 icon=process color=teal
+node r2 "Worker Node 2" at 2,1 icon=process color=teal
+gh -> ctrl : "Webhook on Push"
+ctrl -> r1 : "Assigns Job"
+ctrl -> r2
 ```
 
 ### The CI Pipeline Lifecycle
 
-```mermaid
-sequenceDiagram
-    participant Dev as Developer
-    participant Git as Git Repository
-    participant CI as CI Server
-    participant Runner as Runner
-    participant Team as Team
-
-    Dev->>Git: git push (code changes)
-    Git->>CI: Webhook notification
-    CI->>CI: Parse pipeline config (.yml)
-    CI->>CI: Queue the build
-    CI->>Runner: Assign job to available runner
-    Runner->>Runner: 1. Checkout code
-    Runner->>Runner: 2. Install dependencies
-    Runner->>Runner: 3. Build the project
-    Runner->>Runner: 4. Run tests
-    Runner->>Runner: 5. Generate reports
-    Runner->>CI: Report results ✅ or ❌
-    CI->>Git: Update commit status
-    CI->>Team: Send notifications
-    
-    alt Build Failed
-        Team->>Dev: "Build broken! Please fix."
-        Dev->>Git: Push fix
-    end
+```arch
+node dev "Developer" at 0,0 icon=user color=slate
+node git "Git Repository" at 1,0 icon=doc color=blue
+node ci "CI Server" at 2,0 icon=server color=purple
+node r "Runner" at 3,0 icon=process color=teal
+node t "Team" at 4,0 icon=users color=slate
+dev -> git : "git push"
+git -> ci : "Webhook"
+node parse "Parse config (.yml)" at 2,1 shape=text
+ci -> parse -> ci
+ci -> r : "Assign job"
+r -> git : "git clone"
+node run "Run steps" at 3,1 shape=text
+r -> run -> r
+r -> ci : "Report result"
+ci -> t : "Notify Slack"
 ```
 
 ### Hosted vs Self-Hosted Runners
@@ -399,27 +366,29 @@ pipeline {
 
 ### 1. Keep the Build Fast
 
-```mermaid
-flowchart LR
-    subgraph "🐌 Slow Pipeline (30+ min)"
-        S1["Install\n5 min"] --> S2["Lint\n3 min"]
-        S2 --> S3["Build\n5 min"]
-        S3 --> S4["Unit Tests\n8 min"]
-        S4 --> S5["Integration\n10 min"]
-        S5 --> S6["E2E Tests\n12 min"]
-    end
+```arch
+node s1 "Install (5m)" at 0,0 shape=card color=slate
+node s2 "Lint (3m)" at 1,0 shape=card color=slate
+node s3 "Build (5m)" at 2,0 shape=card color=slate
+node s4 "Unit Tests (8m)" at 2,1 shape=card color=slate
+node s5 "Integration (10m)" at 1,1 shape=card color=slate
+node s6 "E2E Tests (12m)" at 0,1 shape=card color=slate
+s1 -> s2 -> s3
+s3 -> s4 -> s5 -> s6
 ```
 
-```mermaid
-flowchart LR
-    subgraph "🚀 Fast Pipeline (10 min) — with parallelism"
-        A["Install + Cache\n1 min"] --> B["Lint\n1 min"]
-        A --> C["Unit Tests\n3 min"]
-        A --> D["Build\n2 min"]
-        B --> E["Integration\n4 min"]
-        C --> E
-        D --> E
-    end
+```arch
+node a "Install + Cache" at 0,1 shape=card color=blue
+node b "Lint" at 1,0 shape=card color=amber
+node c "Unit Tests" at 1,1 shape=card color=green
+node d "Build" at 1,2 shape=card color=purple
+node e "Integration" at 2,1 shape=card color=teal
+a -> b
+a -> c
+a -> d
+b -> e
+c -> e
+d -> e
 ```
 
 **Techniques to speed up CI:**
@@ -437,20 +406,18 @@ flowchart LR
 
 When a build breaks, the team should follow a clear protocol:
 
-```mermaid
-stateDiagram-v2
-    [*] --> GreenBuild: Pipeline passes
-    GreenBuild --> RedBuild: Someone pushes broken code
-    RedBuild --> Investigating: Developer notified immediately
-    Investigating --> Fixing: Root cause identified
-    Fixing --> GreenBuild: Fix pushed, build passes
-    Fixing --> Reverting: Fix is complex, revert first
-    Reverting --> GreenBuild: Revert merged
-    
-    note right of RedBuild
-        STOP all other merges!
-        Fixing the build is #1 priority.
-    end note
+```arch
+node green "GreenBuild (Pipeline passes)" at 0,0 shape=card color=green
+node red "RedBuild (Broken code)" at 1,0 shape=card color=red
+node inv "Investigating" at 2,0 shape=card color=amber
+node fix "Fixing" at 1,1 shape=card color=purple
+node rev "Reverting" at 0,1 shape=card color=slate
+green -> red
+red -> inv
+inv -> fix
+fix -> green
+fix -> rev
+rev -> green
 ```
 
 **Rules:**
@@ -461,45 +428,34 @@ stateDiagram-v2
 
 ### 3. What Makes a Good CI Pipeline
 
-```mermaid
-flowchart TD
-    A["Good CI Pipeline"] --> B["Fast\n< 10 minutes"]
-    A --> C["Reliable\nNo flaky tests"]
-    A --> D["Informative\nClear error messages"]
-    A --> E["Comprehensive\nCovers all code paths"]
-    A --> F["Automated\nNo manual steps"]
-    A --> G["Reproducible\nSame input = same output"]
+```arch
+node a "Good CI Pipeline" at 1,0 shape=card color=blue
+node b "Fast (<10m)" at 0,1 shape=text
+node c "Reliable" at 0,2 shape=text
+node d "Informative" at 0,3 shape=text
+node e "Comprehensive" at 2,1 shape=text
+node f "Automated" at 2,2 shape=text
+node g "Reproducible" at 2,3 shape=text
+a -> b
+a -> c
+a -> d
+a -> e
+a -> f
+a -> g
 ```
 
 ---
 
 ## 🔄 Build Triggers Explained
 
-```mermaid
-flowchart TD
-    subgraph "Push Triggers"
-        P1["Push to main"] --> PIPE["CI Pipeline"]
-        P2["Push to feature/*"] --> PIPE
-    end
-    
-    subgraph "PR Triggers"
-        PR1["PR opened"] --> PIPE
-        PR2["PR updated"] --> PIPE
-        PR3["PR reopened"] --> PIPE
-    end
-    
-    subgraph "Scheduled Triggers"
-        SC["Cron schedule\n(nightly/weekly)"] --> PIPE
-    end
-    
-    subgraph "Manual Triggers"
-        MAN["Manual dispatch\n(button click)"] --> PIPE
-    end
-    
-    subgraph "External Triggers"
-        WH["Webhook from\nexternal service"] --> PIPE
-        API["API call"] --> PIPE
-    end
+```arch
+node p1 "Push to main / feature" at 0,0 shape=card color=amber
+node pr "PR opened / updated" at 1,0 shape=card color=blue
+node t1 "Cron (Nightly)" at 2,0 shape=card color=purple
+node pipe "CI Pipeline" at 1,1 icon=server color=teal
+p1 -> pipe
+pr -> pipe
+t1 -> pipe
 ```
 
 ### GitHub Actions Trigger Examples
@@ -559,23 +515,14 @@ on:
 
 A build matrix tests your code across multiple configurations simultaneously:
 
-```mermaid
-flowchart TD
-    PUSH["git push"] --> MATRIX["Build Matrix"]
-    
-    MATRIX --> N18U["Node 18 + Ubuntu"]
-    MATRIX --> N18M["Node 18 + macOS"]
-    MATRIX --> N20U["Node 20 + Ubuntu"]
-    MATRIX --> N20M["Node 20 + macOS"]
-    MATRIX --> N22U["Node 22 + Ubuntu"]
-    MATRIX --> N22M["Node 22 + macOS"]
-    
-    N18U --> RESULT["All 6 must pass ✅"]
-    N18M --> RESULT
-    N20U --> RESULT
-    N20M --> RESULT
-    N22U --> RESULT
-    N22M --> RESULT
+```arch
+node p "git push" at 1,0 shape=text
+node m "Build Matrix" at 1,1 shape=card color=purple
+node u1 "Ubuntu (Node 18, 20, 22)" at 0,2 shape=card color=slate
+node m1 "macOS (Node 18, 20, 22)" at 2,2 shape=card color=slate
+p -> m
+m -> u1
+m -> m1
 ```
 
 ```yaml
@@ -620,17 +567,15 @@ strategy:
 
 Caching avoids re-downloading dependencies on every build:
 
-```mermaid
-flowchart LR
-    subgraph "Without Cache"
-        A1["Build 1:\nnpm install 90s"] --> A2["Build 2:\nnpm install 90s"]
-        A2 --> A3["Build 3:\nnpm install 90s"]
-    end
-    
-    subgraph "With Cache"
-        B1["Build 1:\nnpm install 90s\n+ save cache"] --> B2["Build 2:\nrestore cache 5s\nnpm ci 10s"]
-        B2 --> B3["Build 3:\nrestore cache 5s\nnpm ci 10s"]
-    end
+```arch
+node a1 "Build 1 (install 90s)" at 0,0 shape=card color=red
+node a2 "Build 2 (install 90s)" at 1,0 shape=card color=red
+node a3 "Build 3 (install 90s)" at 2,0 shape=card color=red
+a1 -> a2 -> a3
+node b1 "Build 1 (save cache)" at 0,1 shape=card color=green
+node b2 "Build 2 (restore 5s, ci 10s)" at 1,1 shape=card color=green
+node b3 "Build 3 (restore 5s, ci 10s)" at 2,1 shape=card color=green
+b1 -> b2 -> b3
 ```
 
 ### GitHub Actions Caching
@@ -664,20 +609,20 @@ flowchart LR
 
 Flaky tests are tests that randomly pass or fail without code changes. They erode trust in CI.
 
-```mermaid
-flowchart TD
-    A["Test randomly fails"] --> B{"Is it a real bug?"}
-    B -- Yes --> C["Fix the bug"]
-    B -- No --> D["It's a flaky test"]
-    D --> E["Identify the cause"]
-    E --> F["Race condition?"]
-    E --> G["Network dependency?"]
-    E --> H["Time-dependent?"]
-    E --> I["Shared state?"]
-    F --> J["Add proper waits / synchronization"]
-    G --> K["Mock the network calls"]
-    H --> L["Use fixed timestamps in tests"]
-    I --> M["Isolate test data, reset between tests"]
+```arch
+node a "Test randomly fails" at 1,0 shape=card color=red
+node b "Is it a real bug?" at 1,1 shape=card color=amber
+node c "Yes -> Fix the bug" at 0,2 shape=text color=green
+node d "No -> It's a flaky test" at 2,2 shape=text color=purple
+a -> b
+b -> c
+b -> d
+node e "Identify cause" at 2,3 shape=card color=slate
+d -> e
+node f "Race Condition -> Add waits" at 1,4 shape=text
+node g "Network -> Mocks" at 3,4 shape=text
+e -> f
+e -> g
 ```
 
 **Common causes and fixes:**
@@ -696,16 +641,20 @@ flowchart TD
 
 ### Notification Flow
 
-```mermaid
-flowchart LR
-    CI["CI Pipeline\nResult"] --> STAT["GitHub\nCommit Status"]
-    CI --> SLACK["Slack\nNotification"]
-    CI --> EMAIL["Email\nAlert"]
-    CI --> DASH["Dashboard\nMetrics"]
-    
-    STAT --> PR["PR shows\n✅ or ❌"]
-    SLACK --> CHAN["#ci-alerts\nchannel"]
-    DASH --> GRAF["Grafana /\nDatadog"]
+```arch
+node ci "CI Pipeline Result" at 0,1 icon=server color=blue
+node stat "GitHub Commit Status" at 1,0 icon=doc color=slate
+node pr "PR shows ✅ or ❌" at 2,0 shape=text color=green
+stat -> pr
+node slack "Slack Notification" at 1,1 icon=users color=amber
+node chan "#ci-alerts channel" at 2,1 shape=text
+slack -> chan
+node dash "Dashboard Metrics" at 1,2 shape=card color=purple
+node graf "Grafana / Datadog" at 2,2 shape=text
+dash -> graf
+ci -> stat
+ci -> slack
+ci -> dash
 ```
 
 ### Example: Slack Notification
@@ -758,14 +707,16 @@ flowchart LR
 
 ## 🔗 How This Connects
 
-```mermaid
-flowchart TD
-    PREV["Chapter 02\nVersion Control & Git"] --> CURR["Chapter 03\nContinuous Integration\n(YOU ARE HERE)"]
-    CURR --> BUILD["Chapter 04\nBuild Automation"]
-    CURR --> TEST["Chapter 05\nTesting in CI/CD"]
-    CURR --> TOOLS["Chapter 08\nCI/CD Tools Deep Dive"]
-    
-    style CURR fill:#e74c3c,color:#fff
+```arch
+node prev "Ch 02: Version Control & Git" at 1,0 shape=card color=slate
+node curr "Ch 03: Continuous Integration" at 1,1 shape=card color=red
+node bld "Ch 04: Build Automation" at 0,2 shape=card color=blue
+node tst "Ch 05: Testing in CI/CD" at 1,2 shape=card color=green
+node tls "Ch 08: Tools Deep Dive" at 2,2 shape=card color=purple
+prev -> curr
+curr -> bld
+curr -> tst
+curr -> tls
 ```
 
 ---

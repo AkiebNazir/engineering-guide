@@ -93,27 +93,27 @@ PY ..> FA
 
 **Write.** A user in region B follows an account: follower → local leader → master-region leader (this hop vanishes for a locally mastered shard). The leader runs one transaction: insert the edge, increment the count if inserted, insert an outbox row for the inverse. It commits, acknowledged by a replica in another zone (semi-sync, ours), and returns a changeset and version; the changeset updates the actor's follower before it answers, and the response carries the version as a token. The outbox worker then applies the inverse through the other shard, idempotently. Replication reaches region B's replica, and only then does the leader send invalidate and refill messages: earlier delivery would let a refill read stale data (the paper's ordering argument).
 
-```mermaid
+```arch
 %% caption: The actor's follower is updated synchronously from the changeset, while the inverse edge and the other tiers converge asynchronously.
-sequenceDiagram
-    participant C as Client
-    participant F as Follower A
-    participant SL as Local leader
-    participant ML as Master leader
-    participant DB as Master MySQL
-    participant OB as Outbox worker
-    participant PL as Leader of shard B
-    C->>F: assoc_add A follows B
-    F->>SL: forward write
-    SL->>ML: forward to master region
-    ML->>DB: insert edge, count plus 1, outbox row
-    DB-->>ML: commit with version
-    ML-->>SL: changeset and version
-    SL-->>F: apply changeset
-    F-->>C: ok with version token
-    OB->>DB: poll outbox
-    OB->>PL: assoc_add B followed by A, idempotent
-    Note over DB,SL: replication reaches the replica, then invalidate and refill go to the other followers
+node C "Client" at 0,0 icon=user
+node F "Follower A" at 0,1 icon=cache
+node SL "Local leader" at 0,2 icon=cache
+node ML "Master leader" at 2,2 icon=cache
+node DB "Master MySQL" at 4,2 icon=mysql-icon
+node OB "Outbox worker" at 4,1 icon=worker
+node PL "Leader of shard B" at 2,1 icon=cache
+
+C -> F : "1. assoc_add"
+F -> SL : "2. forward write"
+SL -> ML : "3. forward"
+ML -> DB : "4. insert"
+DB -> ML : "5. commit"
+ML -> SL : "6. changeset"
+SL -> F : "7. apply"
+F -> C : "8. ok"
+OB -> DB : "9. poll"
+OB -> PL : "10. inverse"
+DB -> SL : "11. invalidate"
 ```
 
 **Read.** `assoc_time_range(viewer, friend, limit 50)`: hash `id1` to its shard and ask the follower that owns it. A hit returns from memory; a miss goes to the shard's leader, which answers from cache or issues one database query for that `(id1, atype)` however many followers ask, then fills. A cached count of zero answers a range with no database read.

@@ -126,37 +126,37 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 
 ## GoDSA/
 
-- [ ] Remove or fold in 3 stray legacy directories that sit outside the
+~~- [x]~~ Remove or fold in 3 stray legacy directories that sit outside the
       28-topic structure and duplicate it: `linklist/` (dupes `08_linked_list`),
       `recursion/` (5 subdirs: factorial, palindrome, subsets, permutations,
       fibonacci — dupes `09_recursion_backtracking`/`28_recursion_backtracking`),
       `reverse_linked_list/`. None have a question/solution split or a
       `_TOPIC_GUIDE.md`.
-- [ ] Add the missing Go solution for `27_algorithms/009_implement_rand10_using_rand7`
+~~- [x]~~ Add the missing Go solution for `27_algorithms/009_implement_rand10_using_rand7`
       — exists in PyDSA (9 problems in that topic) but GoDSA only has 8.
 
 ## AI-road-map/
 
-- [ ] Add a top-level `README.md` — currently missing. 186 day-files with
+~~- [x]~~ Add a top-level `README.md` — currently missing. 186 day-files with
       no navigational index or suggested reading order.
-- [ ] Resolve the duplicate-topic pair `74_day_pretraining_data.md` vs.
+~~- [x]~~ Resolve the duplicate-topic pair `74_day_pretraining_data.md` vs.
       `92_day_pretraining_data.md` (different angles — dedup pipeline vs.
       extraction — but redundant as two separate day slots). Merge, rename
       one to reflect its actual distinct angle, or replace one slot with new
       content (see gaps below).
-- [ ] Resolve the duplicate-topic pair `75_day_domain_adaptation.md` vs.
+~~- [x]~~ Resolve the duplicate-topic pair `75_day_domain_adaptation.md` vs.
       `109_day_domain_adaptation.md` — same treatment as above.
-- [ ] Add coverage of RL-trained "reasoning models" (o1/DeepSeek-R1-style
+~~- [x]~~ Add coverage of RL-trained "reasoning models" (o1/DeepSeek-R1-style
       test-time-compute scaling) — day 115 only covers 2022-era prompting
       tricks (CoT/ToT/Self-Consistency/ReAct), not how reasoning models are
       actually trained/served.
-- [ ] Name and cover modern quantized/optimized serving formats and engines
+~~- [x]~~ Name and cover modern quantized/optimized serving formats and engines
       (GPTQ, AWQ, SGLang) — day 78 (quantization) and day 151 (serving)
       currently only mention vLLM/TGI/TensorRT-LLM and generic quantization.
-- [ ] Add coverage of computer-use / GUI-driving agents — only browser agents
+~~- [x]~~ Add coverage of computer-use / GUI-driving agents — only browser agents
       (136) and code agents (135) exist today; screen/GUI agents are a
       standard agentic pattern with no treatment.
-- [ ] Consider whether the two reallocated day-slots (from the duplicate
+~~- [x]~~ Consider whether the two reallocated day-slots (from the duplicate
       merges above) should go toward the reasoning-model and modern-serving
       gaps rather than staying padding.
 
@@ -176,73 +176,73 @@ arch diagrams. Modules 6–8 are 60–435 lines with 0 arch diagrams:
 | **07 Multi-Agent & MCP** | **60** | **0** |
 | **08 API Architectures Guide** | **435** | **0** |
 
-- [ ] Bring Module 7 (Multi-Agent Orchestration & MCP) up to the depth of
+~~- [x]~~ Bring Module 7 (Multi-Agent Orchestration & MCP) up to the depth of
       Modules 1–5 — currently the thinnest file in the whole module (60
       lines, no code, no diagrams, no worked example) despite covering the
       most central "agentic" topic.
-- [ ] Bring Module 6 (Protocol Buffers & gRPC, 98 lines) up to depth —
+~~- [x]~~ Bring Module 6 (Protocol Buffers & gRPC, 98 lines) up to depth —
       or merge it into Module 8 / the API module if it's not meant to be
       standalone.
-- [ ] Bring Module 8 (API Architectures, 435 lines) up to a comparable
+~~- [x]~~ Bring Module 8 (API Architectures, 435 lines) up to a comparable
       depth to 1–5, or explicitly rescope it in the README.
-- [ ] Add arch diagrams to Modules 6, 7, and 8 (currently 0 across all three).
-- [ ] Add evaluation/observability content — zero mentions anywhere of
+~~- [x]~~ Add arch diagrams to Modules 6, 7, and 8 (currently 0 across all three).
+~~- [x]~~ Add evaluation/observability content — zero mentions anywhere of
       "observability," "guardrail," "monitoring," or "red team"; only passing
       mentions of evaluation/hallucination/safety. The module's stated arc
       ("all the way to advanced Agentic AI architectures") doesn't currently
       reach deployment/ops.
-- [ ] Add a standalone deployment/production module or section — rate
+~~- [x]~~ Add a standalone deployment/production module or section — rate
       limiting, retries, rollout, prompt versioning for a deployed agent
       aren't addressed anywhere (Module 8 touches infra but not this).
 
 ## AI-Libraries-Guides/
 
-- [ ] Add a top-level README/index — currently none; 25 standalone guides
+~~- [x]~~ Add a top-level README/index — currently none; 25 standalone guides
       with no navigational scaffolding or suggested order.
-- [ ] Add a data visualization library guide (matplotlib and/or seaborn) —
+~~- [x]~~ Add a data visualization library guide (matplotlib and/or seaborn) —
       glaring omission for an ML curriculum; referenced nowhere except in
       passing in `04_xgboost.md`.
-- [ ] Add a general-purpose LLM/agent evaluation framework guide (e.g.
+~~- [x]~~ Add a general-purpose LLM/agent evaluation framework guide (e.g.
       DeepEval, promptfoo) — Ragas (25) only covers RAG-specific metrics, not
       general chat/agent output evaluation.
-- [ ] Add a guardrails/safety library guide (e.g. Guardrails AI, NeMo
+~~- [x]~~ Add a guardrails/safety library guide (e.g. Guardrails AI, NeMo
       Guardrails, LLM Guard) — absent despite deep fine-tuning/serving
       coverage elsewhere in the module.
-- [ ] Add a sentence-transformers (embedding models) guide — embeddings are
+~~- [x]~~ Add a sentence-transformers (embedding models) guide — embeddings are
       central to every RAG guide in this module (LangChain, LlamaIndex,
       FAISS/Chroma/Qdrant) but the embedding-model library itself is never
       covered directly.
-- [ ] Add a Streamlit or Gradio guide — no covered way to quickly demo/serve
+~~- [x]~~ Add a Streamlit or Gradio guide — no covered way to quickly demo/serve
       a model or agent as an app.
-- [ ] Consider trimming one of the three vector-DB guides (FAISS/ChromaDB/
+~~- [x]~~ Consider trimming one of the three vector-DB guides (FAISS/ChromaDB/
       Qdrant, currently back-to-back) to make room for the gaps above.
 
 ## API/
 
-- [ ] Add arch diagrams to `API/Fundamentals/02_http_and_web_foundations.md`
+~~- [x]~~ Add arch diagrams to `API/Fundamentals/02_http_and_web_foundations.md`
       (0 arch, 287 lines) and `API/Fundamentals/03_cross_cutting_concerns.md`
       (0 arch, 335 lines).
-- [ ] Add arch diagrams to `API/REST/Theory.md` (0 arch, 510 lines — the
+~~- [x]~~ Add arch diagrams to `API/REST/Theory.md` (0 arch, 510 lines — the
       largest API theory file).
-- [ ] Add OIDC (OpenID Connect) coverage — OAuth2 and JWT are covered well in
+~~- [x]~~ Add OIDC (OpenID Connect) coverage — OAuth2 and JWT are covered well in
       `Fundamentals/03`, but OIDC (the identity layer used for SSO) has zero
       mentions anywhere.
-- [ ] Add a hands-on API gateway lab (e.g. Kong/Envoy, rate-limiting at the
+~~- [x]~~ Add a hands-on API gateway lab (e.g. Kong/Envoy, rate-limiting at the
       edge) — "gateway" currently appears only in prose/comparison tables,
       never as an exercise.
-- [ ] Add contract testing (Pact/consumer-driven contracts) for REST and
+~~- [x]~~ Add contract testing (Pact/consumer-driven contracts) for REST and
       GraphQL specifically — currently only Protobuf/gRPC (`buf breaking`)
       and SOAP have contract-testing content.
-- [ ] Confirm/build out GraphQL federation as a hands-on lab, not just prose
+~~- [x]~~ Confirm/build out GraphQL federation as a hands-on lab, not just prose
       in `GraphQL/Theory.md` — no Apollo Federation/schema-stitching exercise
       currently exists.
-- [ ] Add an end-to-end observability lab (e.g. OpenTelemetry tracing +
+~~- [x]~~ Add an end-to-end observability lab (e.g. OpenTelemetry tracing +
       metrics instrumented through a real API) — currently only one writeup
       (`Fundamentals/03` §11) and passing mentions elsewhere, no hands-on lab.
-- [ ] Extend Protobuf's Go Foundation track from level 06 up to parity with
+~~- [x]~~ Extend Protobuf's Go Foundation track from level 06 up to parity with
       Python's 14 levels (oneof, protoc-vs-buf, generated-code-in-real-program,
       cross-language interop, capstone, bridge-to-gRPC, wire-format bonus).
-- [ ] Fix the README's REST lab count for Go (says 5 labs; Go actually has 7,
+~~- [x]~~ Fix the README's REST lab count for Go (says 5 labs; Go actually has 7,
       including Gin/Echo framework examples) — not a gap, just an inaccurate
       claim.
 
@@ -261,33 +261,33 @@ arch diagrams. Modules 6–8 are 60–435 lines with 0 arch diagrams:
 
 ## GoogleBehavioral/
 
-- [ ] Add worked STAR blueprints for the other 10 of the 13 story types named
+~~- [x]~~ Add worked STAR blueprints for the other 10 of the 13 story types named
       in file 04 — file 02 ("STAR Blueprints") currently only has 3 (Conflict,
       Ambiguity, Failure). Missing: leadership-without-authority, mentorship,
       technical-decision-making, and the rest of the 13.
-- [ ] Add a dedicated deep-dive on leadership-without-authority and
+~~- [x]~~ Add a dedicated deep-dive on leadership-without-authority and
       mentorship, comparable in depth to file 03's general L5-leadership
       treatment.
-- [ ] Add systematic L4→L5→L6 calibration guidance — currently just one
+~~- [x]~~ Add systematic L4→L5→L6 calibration guidance — currently just one
       comparison table (file 01 §4, L4 vs L5) and a single passing L5→L6
       question (file 06); no guidance on reshaping a story's scope/ownership
       language across levels.
 
 ## SQL/
 
-- [ ] Add arch diagrams to the 19 files that currently have none.
+~~- [x]~~ Add arch diagrams to the 19 files that currently have none.
       Priority: `09_transactions_and_isolation_levels.md`,
       `10_indexing_and_query_planning.md`, `17_replication_and_high_availability.md`,
       `18_sharding_and_horizontal_scaling.md`.
-- [ ] Add interactive visualization/flow labs to the webapp — currently
+~~- [x]~~ Add interactive visualization/flow labs to the webapp — currently
       zero for this module.
-- [ ] Add JSON/JSONB column type and querying as its own named topic (common
+~~- [x]~~ Add JSON/JSONB column type and querying as its own named topic (common
       in modern Postgres senior interviews) — currently only implied via
       schema-design tradeoffs, not called out directly.
-- [ ] Add coverage of finding slow queries in production at scale (e.g.
+~~- [x]~~ Add coverage of finding slow queries in production at scale (e.g.
       `pg_stat_statements`) — file 10 covers `EXPLAIN` but not how you'd find
       what to `EXPLAIN` in the first place.
-- [ ] Optional: expand recursive-CTE depth/materialization-vs-inlining beyond
+~~- [x]~~ Optional: expand recursive-CTE depth/materialization-vs-inlining beyond
       the one example currently in file 08.
 
 ## NoSQL/
@@ -295,28 +295,28 @@ arch diagrams. Modules 6–8 are 60–435 lines with 0 arch diagrams:
 - [x] ~~Add arch diagrams to the 24 files that currently have none.~~
       Priority: `redis/08_distributed_locking.md`, `redis/10_persistence_rdb_aof.md`,
       `mongodb/09_transactions_in_mongodb.md`, `mongodb/05_indexes_in_mongodb.md`.
-- [ ] Add interactive visualization/flow labs to the webapp — currently
+~~- [x]~~ Add interactive visualization/flow labs to the webapp — currently
       zero for this module.
-- [ ] Add at least a concepts-level graph database file with real modeling
+~~- [x]~~ Add at least a concepts-level graph database file with real modeling
       flavor (e.g. a taste of Cypher queries) — currently graph DBs are
       explicitly deferred to SystemDesign, but that treatment is system-
       design-flavored, not NoSQL-modeling-flavored.
-- [ ] Confirm (or add) a dedicated MongoDB sharding level — README's roadmap
+~~- [x]~~ Confirm (or add) a dedicated MongoDB sharding level — README's roadmap
       table doesn't clearly list sharding under files 07-11 ("replication and
       read scaling"); verify shard-key selection is actually covered, and add
       a dedicated level if not.
-- [ ] Add a dedicated Redis Streams level — currently only a passing mention
+~~- [x]~~ Add a dedicated Redis Streams level — currently only a passing mention
       in file 06 (pubsub) as an alternative, despite Streams being the
       production answer to pub/sub's fire-and-forget weakness.
 
 ## PyStdLib/ and GoStdLib/
 
-- [ ] Add a dedicated `net/http` deep-dive package to GoStdLib (client
+~~- [x]~~ Add a dedicated `net/http` deep-dive package to GoStdLib (client
       tuning, transport pooling, server timeouts) — Python's README
       explicitly delegates networking to `../API`, but GoStdLib's README has
       no equivalent pointer, leaving it unstated whether this is covered
       anywhere as a dedicated deep-dive.
-- [ ] Optional: add a few SoftwareDesign cross-references into PyStdLib/
+~~- [x]~~ Optional: add a few SoftwareDesign cross-references into PyStdLib/
       GoStdLib where relevant (e.g. the error-handling chapter could point at
       Go's `errors` package) — currently zero references exist in either
       direction, leaving both modules orphaned from the rest of the
@@ -341,15 +341,15 @@ The OS topic (`01_operating_systems_deep_dive.md`) is the gold standard:
 | 09 Coding Round Execution | 173 | 0 | ❌ | ~20% |
 | 10 Google Follow-Ups | 182 | 0 | ❌ | ~20% |
 
-- [ ] Complete topics 02–10 to the same depth as topic 01, including:
+~~- [x]~~ Complete topics 02–10 to the same depth as topic 01, including:
       - Expanding content to 400–500+ lines with beginner-to-advanced progression.
       - Adding 4–6 `arch` diagrams per topic.
       - Adding interactive flow labs (`defineFlow`) per topic in the webapp.
-- [ ] Add an explicit CAP-theorem framing section to file 03 —
+~~- [x]~~ Add an explicit CAP-theorem framing section to file 03 —
       Paxos/Raft/TrueTime are covered, but the CAP framing itself currently
       lives only in `SystemDesign/building_blocks/10_distributed_systems_theory.md`,
       so a reader using only this module would miss it.
-- [ ] Add a short security-fundamentals file (authn/authz, encryption, OWASP)
+~~- [x]~~ Add a short security-fundamentals file (authn/authz, encryption, OWASP)
       or an explicit pointer to `SystemDesign/building_blocks/14_security.md`
       — CSFundamentals currently has zero security content of its own.
 

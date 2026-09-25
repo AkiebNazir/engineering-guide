@@ -24,27 +24,19 @@ Spark is a distributed compute engine. It does not *store* data (unlike a databa
 
 A Spark application runs as independent sets of processes on a cluster, coordinated by the `SparkContext` object in your main program (called the **Driver** program).
 
-```mermaid
-%% caption: The Spark Driver translates code into a DAG of tasks, which the Cluster Manager schedules across Executor nodes for parallel execution.
-flowchart TD
-    user[User Code\nPySpark] --> driver[Driver Node\nCreates DAG]
-    
-    subgraph Cluster Manager
-        CM[YARN / Mesos / Kubernetes]
-    end
-    
-    driver <--> CM
-    
-    subgraph Worker Nodes
-        W1[Executor 1\nTasks, Cache]
-        W2[Executor 2\nTasks, Cache]
-        W3[Executor 3\nTasks, Cache]
-    end
-    
-    CM --> WorkerNodes
-    driver --> W1
-    driver --> W2
-    driver --> W3
+```arch
+node usr "User Code (PySpark)" at 1,0 icon=doc color=slate
+node drv "Driver Node" at 1,1 icon=server color=blue
+node cm "Cluster Manager" at 0,1 icon=process color=teal
+node w1 "Executor 1" at 0,2 icon=server color=purple
+node w2 "Executor 2" at 1,2 icon=server color=purple
+node w3 "Executor 3" at 2,2 icon=server color=purple
+usr -> drv
+drv <-> cm
+cm -> w1
+cm -> w2
+drv -> w2
+drv -> w3
 ```
 
 ### Components:
@@ -64,16 +56,16 @@ Spark evaluates lazily.
 - **Transformations** (e.g., `filter()`, `map()`, `groupBy()`): These do not execute immediately. They simply build a lineage graph—a **DAG (Directed Acyclic Graph)** of operations.
 - **Actions** (e.g., `count()`, `show()`, `write()`, `collect()`): These trigger the actual execution. When an action is called, the Driver submits the DAG to the cluster.
 
-```mermaid
-flowchart LR
-    A[(S3 Raw Logs)] -->|Read| B(DataFrame)
-    B -->|Filter| C(Clean Logs)
-    C -->|GroupBy| D(Aggregated Data)
-    D -->|Write ACTION| E[(S3 Processed)]
-    
-    style B stroke-dasharray: 5 5
-    style C stroke-dasharray: 5 5
-    style D stroke-dasharray: 5 5
+```arch
+node raw "S3 Raw Logs" at 0,0 icon=cloud color=slate
+node df "DataFrame" at 1,0 shape=card color=blue
+node cl "Clean Logs" at 2,0 shape=card color=teal
+node agg "Aggregated Data" at 3,0 shape=card color=amber
+node proc "S3 Processed" at 4,0 icon=cloud color=purple
+raw -> df : "Read"
+df -> cl : "Filter"
+cl -> agg : "GroupBy"
+agg -> proc : "Write (ACTION)"
 ```
 
 ```python
@@ -98,19 +90,25 @@ Data in Spark is split into **Partitions**. Each partition is processed by a sin
 
 Shuffles are expensive. They write intermediate data to disk and send it over the network. They are the single biggest bottleneck in Spark workloads.
 
-```mermaid
-flowchart TD
-    subgraph Narrow Dependency
-        P1[Partition 1] -->|map| P1A[Mapped P1]
-        P2[Partition 2] -->|map| P2A[Mapped P2]
-    end
-    
-    subgraph Wide Dependency - SHUFFLE
-        P3[Partition A] -->|groupBy| P4[Aggregated Key X]
-        P3 -->|groupBy| P5[Aggregated Key Y]
-        P6[Partition B] -->|groupBy| P4
-        P6 -->|groupBy| P5
-    end
+```arch
+node ng "Narrow Dependency" at 0.5,0 shape=text
+node p1 "Partition 1" at 0,1 shape=card color=teal
+node p1a "Mapped P1" at 0,2 shape=card color=teal
+node p2 "Partition 2" at 1,1 shape=card color=teal
+node p2a "Mapped P2" at 1,2 shape=card color=teal
+ng -> p1
+p1 -> p1a : "map"
+p2 -> p2a : "map"
+node wg "Wide Dependency (SHUFFLE)" at 0.5,3 shape=text
+node pa "Partition A" at 0,4 shape=card color=purple
+node pb "Partition B" at 1,4 shape=card color=purple
+node kx "Aggregated Key X" at 0,5 shape=card color=amber
+node ky "Aggregated Key Y" at 1,5 shape=card color=amber
+wg -> pa
+pa -> kx : "groupBy"
+pa -> ky
+pb -> kx
+pb -> ky
 ```
 
 ## 7. Optimization Techniques

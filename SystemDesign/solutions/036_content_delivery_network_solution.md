@@ -124,23 +124,21 @@ At a 92% hit ratio an origin outage is about an 8% error rate for the zone, not 
 
 The job: tell 1,650 servers that unknown objects are dead, in seconds, without enumerating them. TTL-only and versioned URLs distribute nothing but leave takedowns waiting for the TTL, and revalidating every request turns each hit into a parent round trip. So use a **purge log with lazy enforcement**: one small ordered message per purge whatever the object count, paid for with a per-hit check and a catch-up protocol.
 
-```mermaid
+```arch
 %% caption: A purge is one small ordered message committed to a durable log and fanned down a relay tree, and sequence numbers let a slow or partitioned POP catch up exactly.
-sequenceDiagram
-    participant C as Customer
-    participant A as Purge API and log
-    participant R as Regional relay
-    participant P as POP agent
-    participant S as POP servers
-    C->>A: purge tag product-42
-    A->>A: append seq 918273, quorum commit
-    A-->>C: 202 purge_id and seq
-    A->>R: batch every 50 ms
-    R->>P: batch up to seq 918273
-    P->>S: broadcast, apply on every server
-    S-->>P: applied_seq 918273
-    P-->>R: ack, feeds GET purges
-    Note over P,R: A POP that was offline asks for everything after its applied_seq
+node C "Customer" at 0,0 icon=client
+node A "Purge API & log" at 0,1 icon=api sub="appends seq, quorum commit"
+node R "Regional relay" at 0,2 icon=cache
+node P "POP agent" at 0,3 icon=server sub="recovers by asking for missing seqs"
+node S "POP servers" at 0,4 icon=server
+
+C -> A : "purge tag product-42"
+A -> C : "202 purge_id and seq"
+A -> R : "batch every 50 ms"
+R -> P : "batch up to seq 918273"
+P -> S : "broadcast, apply on every server"
+S -> P : "applied_seq 918273"
+P -> R : "ack, feeds GET purges"
 ```
 
 **Lazy enforcement.** A URL purge deletes the key at the owner and any hot replicas (so broadcast to all servers). Tag, prefix and zone purges never enumerate: each server keeps `purged_before[(zone, tag)] = highest seq` (50M tags × 40 B = 2 GB), and object headers carry tags and `purge_seq_at_fill`. A hit whose fill sequence is below a matching purge is stale, at the cost of one or two hash lookups.

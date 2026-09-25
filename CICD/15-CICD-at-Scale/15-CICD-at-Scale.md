@@ -37,33 +37,16 @@ When you hit 100+ services and 1000+ developers, new problems emerge:
 
 ### The Enterprise CI/CD Architecture
 
-```mermaid
-flowchart TD
-    subgraph id["Developer Experience (DX)"]
-        A["Developer"] -->|Self-Service via IDP| B["Internal Developer Portal (e.g., Backstage)"]
-    end
-    
-    subgraph id["Platform Layer (Golden Paths)"]
-        B --> C["Project Scaffolding"]
-        B --> D["Pipeline Templates"]
-        C --> E["Git Repository"]
-    end
-
-    subgraph id["CI/CD Engine Layer"]
-        E -->|Webhook| F["CI/CD Orchestrator"]
-        F --> G["Autoscaling Runner Pool"]
-    end
-
-    subgraph id["Governance & Services"]
-        F --> H["Policy Engine (OPA)"]
-        F --> I["Artifact Registry"]
-        F --> J["Secrets Management (Vault)"]
-    end
-
-    subgraph id["Observability & Metrics"]
-        F --> K["DORA Metrics Dashboard"]
-        G --> L["Cost & Performance Tracking"]
-    end
+```arch
+node a "Developer" at 0,0 icon=user color=slate
+node b "Internal Developer Portal" at 1,0 icon=server color=blue
+a -> b : "Self-Service via IDP"
+node c "Project Scaffolding" at 0,1 shape=card color=amber
+node d "Pipeline Templates" at 2,1 shape=card color=teal
+b -> c
+b -> d
+node e "Git Repository" at 0,2 icon=doc color=purple
+c -> e
 ```
 
 ## 🛤️ Pipeline Templates and Golden Paths
@@ -152,20 +135,15 @@ Public runners are often too slow or lack secure access to internal resources. E
 - **Time-Based**: Pre-warm instances before peak hours (e.g., 8:00 AM PST) to reduce queue times.
 - **Spot Instances**: Use cloud spot instances for CI jobs to save up to 70% on compute costs.
 
-```mermaid
-sequenceDiagram
-    participant GitHub as CI/CD Server
-    participant Controller as Autoscaling Controller (KEDA)
-    participant Cluster as Kubernetes Cluster
-
-    GitHub->>Controller: Webhook (Job Queued)
-    Controller->>GitHub: Check Queue Length
-    Controller->>Cluster: Scale up Runner Pods
-    Cluster-->>GitHub: Runners Registered
-    GitHub->>Cluster: Assign Job to Runner
-    Cluster->>Cluster: Execute Job
-    Cluster-->>GitHub: Job Complete (Unregister)
-    Controller->>Cluster: Scale down (Idle)
+```arch
+node gh "CI/CD Server" at 0,0 icon=server color=blue
+node c "Autoscaling Controller" at 1,0 icon=process color=teal
+node k8s "Kubernetes Cluster" at 2,0 icon=gateway color=purple
+gh -> c : "Webhook (Job Queued)"
+c -> gh : "Check Queue Length"
+c -> k8s : "Scale up Runner Pods"
+k8s -> gh : "Runners Registered"
+gh -> k8s : "Assign Job to Runner"
 ```
 
 ## 🛡️ CI/CD Governance: Policies and Compliance

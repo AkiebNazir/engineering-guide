@@ -38,26 +38,18 @@ A Data Lake is a centralized repository that allows you to store all your struct
 A Data Lakehouse combines the best elements of both. It provides the ACID compliance and query performance of a data warehouse directly on the cheap, scalable object storage of a data lake.
 - **Technologies**: Databricks (Delta Lake), Apache Hudi, Apache Iceberg.
 
-```mermaid
-flowchart TD
-    subgraph Sources
-        DB[(OLTP Databases)]
-        API(External APIs)
-        Logs(Application Logs)
-    end
-    
-    subgraph Storage architectures
-        DL[(Data Lake - Raw S3/GCS)]
-        DWH[(Data Warehouse - Structured)]
-        LH[(Lakehouse - Delta/Iceberg)]
-    end
-    
-    DB --> DL
-    API --> DL
-    Logs --> DL
-    
-    DL --> DWH
-    DL --> LH
+```arch
+node db "OLTP Databases" at 0,0 icon=db color=slate
+node api "External APIs" at 1,0 icon=gateway color=slate
+node logs "Application Logs" at 2,0 icon=doc color=slate
+node dl "Data Lake (Raw)" at 1,1 icon=cloud color=blue
+node dwh "Data Warehouse (Structured)" at 0.5,2 icon=db color=purple
+node lh "Lakehouse (Iceberg/Delta)" at 1.5,2 icon=cloud color=teal
+db -> dl
+api -> dl
+logs -> dl
+dl -> dwh
+dl -> lh
 ```
 
 ## 3. Cloud Object Storage
@@ -78,21 +70,20 @@ Object storage manages data as objects, as opposed to file systems (which manage
 - **Best for**: OLAP workloads, analytics, aggregations. If you only need to query the `total_sales` column, the engine doesn't have to read the other columns from disk.
 - **Apache Parquet**: Highly compressed columnar format. The gold standard for Data Lakes and Lakehouses.
 
-```mermaid
-flowchart LR
-    subgraph Row_Based
-        R1[ID:1 | Name:Alice | Age:30]
-        R2[ID:2 | Name:Bob   | Age:25]
-    end
-    
-    subgraph Columnar_Based
-        C1[IDs: 1, 2]
-        C2[Names: Alice, Bob]
-        C3[Ages: 30, 25]
-    end
-    
-    Row_Based -.->|Optimized for full record reads| App(Application)
-    Columnar_Based -.->|Optimized for aggregations| BI(Analytics)
+```arch
+node row_g "Row Based" at 0,0 shape=text
+node r1 "ID:1 | Alice | 30" at 0,1 shape=card color=slate
+node r2 "ID:2 | Bob   | 25" at 0,2 shape=card color=slate
+node app "Application" at 0,3 icon=users color=blue
+row_g -> r1
+r2 -> app : "Full record reads"
+node col_g "Columnar Based" at 1,0 shape=text
+node c1 "IDs: 1, 2" at 1,1 shape=card color=teal
+node c2 "Names: Alice, Bob" at 2,1 shape=card color=teal
+node c3 "Ages: 30, 25" at 3,1 shape=card color=teal
+node bi "BI Analytics" at 2,2 icon=gateway color=purple
+col_g -> c1
+c2 -> bi : "Aggregations"
 ```
 # OLTP vs OLAP & Data Warehouses
 
@@ -170,38 +161,32 @@ A Data Lake is a vast pool of raw data, the purpose for which is not yet defined
 A Data Lakehouse combines the flexibility, cost-efficiency, and scale of data lakes with the data management and ACID transactions of data warehouses. They utilize open table formats like Apache Iceberg, Delta Lake, or Apache Hudi on top of cloud object storage.
 - **Examples**: Databricks (Delta), open-source Iceberg on S3.
 
-```mermaid
-flowchart LR
-    A[OLTP Databases] -->|Extract| B(Data Lake / Raw Storage)
-    B -->|Transform| C{Data Warehouse}
-    C -->|Serve| D[BI Dashboards]
-    B -->|Direct Query| E[Machine Learning]
-    
-    style B fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    style C fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+```arch
+node a "OLTP Databases" at 0,0 icon=db color=slate
+node b "Data Lake / Raw Storage" at 1,0 icon=cloud color=blue
+node c "Data Warehouse" at 2,0 icon=db color=amber
+node d "BI Dashboards" at 3,0 icon=gateway color=teal
+node e "Machine Learning" at 2,1 icon=process color=purple
+a -> b : "Extract"
+b -> c : "Transform"
+c -> d : "Serve"
+b -> e : "Direct Query"
 ```
 
 ## 3. The ETL/ELT Pipeline
 
 Data is useless if it's trapped in isolated OLTP databases. Data Engineers build pipelines to move it into analytical systems.
 
-```mermaid
-flowchart TD
-    subgraph Sources
-        PG[(Postgres\nOLTP)]
-        KAFKA[[Kafka\nEvents]]
-    end
-
-    subgraph Data Warehouse / Lakehouse
-        RAW[Raw Layer]
-        CLEAN[Clean Layer]
-        AGG[Aggregations]
-    end
-
-    PG -->|Extract/Load| RAW
-    KAFKA -->|Extract/Load| RAW
-    RAW -->|Transform| CLEAN
-    CLEAN -->|Transform| AGG
+```arch
+node pg "Postgres (OLTP)" at 0,0 icon=db color=slate
+node kafka "Kafka (Events)" at 1,0 icon=process color=slate
+node raw "Raw Layer" at 0.5,1 shape=card color=blue
+node clean "Clean Layer" at 0.5,2 shape=card color=teal
+node agg "Aggregations" at 0.5,3 shape=card color=purple
+pg -> raw : "Extract/Load"
+kafka -> raw : "Extract/Load"
+raw -> clean : "Transform"
+clean -> agg : "Transform"
 ```
 
 ### ETL vs ELT
@@ -230,18 +215,12 @@ How data is saved to disk drastically affects performance.
 - **Apache Parquet**: The industry standard columnar format. Heavily used in Data Lakes, Spark, and Lakehouses.
 - **Apache ORC**: Optimized Row Columnar format, commonly used in Hadoop/Hive ecosystems. Highly optimized for reads.
 
-```mermaid
-flowchart TD
-    subgraph Row Storage
-        direction LR
-        R1[ID:1, Name:Alice, Age:30]
-        R2[ID:2, Name:Bob, Age:25]
-    end
-    
-    subgraph Columnar Storage
-        direction LR
-        C1[ID: 1, 2]
-        C2[Name: Alice, Bob]
-        C3[Age: 30, 25]
-    end
+```arch
+node row "Row Storage" at 0,0 shape=text color=slate
+node r1 "ID:1, Alice, 30" at 0,1 shape=card color=blue
+node r2 "ID:2, Bob, 25" at 0,2 shape=card color=blue
+node col "Columnar Storage" at 1,0 shape=text color=slate
+node c1 "IDs: 1, 2" at 1,1 shape=card color=teal
+node c2 "Names: Alice, Bob" at 2,1 shape=card color=teal
+node c3 "Ages: 30, 25" at 3,1 shape=card color=teal
 ```

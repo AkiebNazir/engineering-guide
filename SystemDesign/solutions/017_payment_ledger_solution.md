@@ -108,25 +108,21 @@ api -> clB : "2. debit\nclearing"
 api -> tblB : "2. credit\ndest"
 ```
 
-```mermaid
+```arch
 %% caption: A cross-shard transfer is two local double-entry transactions joined by inter-shard clearing accounts, so every step balances and a failed credit is undone by a reversing entry.
-sequenceDiagram
-    actor Client
-    participant API as Transfer API
-    participant A as Shard A source
-    participant B as Shard B destination
-    Client->>API: POST transfers with Idempotency-Key
-    API->>A: begin local transaction
-    A->>A: insert transfer row unique on account and key
-    A->>A: lock source balance and check available funds
-    A->>A: post debit source and credit clearing A to B
-    A-->>API: commit, state DEBITED
-    API->>B: apply credit leg keyed by transfer id
-    B->>B: inbox check then debit clearing A to B and credit destination
-    B-->>API: committed
-    API->>A: mark COMPLETED
-    API-->>Client: 201 COMPLETED
-    Note over B: if the destination rejects, A posts a reversing entry and the state becomes REVERSED
+node client "Client" at 0,0 icon=client
+node api "Transfer API" at 2,0 icon=server
+group sA "Shard A source" color=amber style=dashed
+node nodeA "Shard A" at 4,-1 in sA icon=server
+group sB "Shard B destination" color=green style=dashed
+node nodeB "Shard B" at 4,1 in sB icon=server
+
+client -> api : "1. POST transfers"
+api -> nodeA : "2. begin local txn\ninsert, lock, post"
+nodeA -> api : "3. commit (DEBITED)"
+api -> nodeB : "4. apply credit leg\ninbox check, post"
+nodeB -> api : "5. committed"
+api -> client : "6. 201 COMPLETED\n(if fail, reversed)"
 ```
 
 **One write, end to end.** The client sends `POST /v1/transfers` with an idempotency key. The <abbr title="Application Programming Interface">API</abbr> routes to the source account's shard and runs a single local transaction: insert the `transfers` row (a unique-constraint violation means "already done", so read and return the stored result), lock the source balance row, check `available ≥ amount`, insert the debit and the clearing-credit entries, update the balance, and write an outbox row for the credit leg. After commit, the <abbr title="Application Programming Interface">API</abbr> calls the destination shard with `(transfer_id, leg = credit)`; that shard's inbox makes the call idempotent, posts the debit of the clearing account and the credit of the destination, and acknowledges. If the <abbr title="Application Programming Interface">API</abbr> crashes between the legs, the outbox relay finds transfers stuck in `DEBITED` for more than ~1 s and finishes them. The status flips to `COMPLETED`. If both accounts are on the same shard, none of this is needed: one local transaction posts both legs.

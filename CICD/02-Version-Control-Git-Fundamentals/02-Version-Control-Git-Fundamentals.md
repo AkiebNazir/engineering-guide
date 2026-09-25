@@ -43,13 +43,16 @@ git commit -m "Initial commit"
 
 ## 5. Visual Explanation
 
-```mermaid
-flowchart LR
-    A[Working Directory] -->|git add| B[Staging Area]
-    B -->|git commit| C[Local Repository]
-    C -->|git push| D[Remote Repository]
-    D -->|git pull| C
-    C -->|git checkout| A
+```arch
+node a "Working Directory" at 0,0 icon=folder color=slate
+node b "Staging Area" at 1,0 icon=doc color=amber
+node c "Local Repository" at 2,0 icon=db color=blue
+node d "Remote Repository" at 3,0 icon=cloud color=purple
+a -> b : "git add"
+b -> c : "git commit"
+c -> d : "git push"
+d -> c : "git pull"
+c -> a : "git checkout"
 ```
 *Diagram: The Git workflow across its different states.*
 

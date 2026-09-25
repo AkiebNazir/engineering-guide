@@ -77,26 +77,25 @@ Never hold a database lock — or an open transaction at all — across a remote
 
 A distributed "transaction" spanning independent services/databases has no cheap global <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> equivalent (two-phase commit exists but is a coordination and availability liability few systems accept). A **saga** replaces it with a sequence of local, durable steps, each with an explicit compensation for undoing its effect if a later step fails.
 
-```mermaid
+```arch
 %% caption: If shipment creation fails after payment succeeded, compensations run in reverse order back through the completed steps.
-sequenceDiagram
-    participant Saga
-    participant Inv as Inventory
-    participant Pay as Payment
-    participant Ship as Shipment
-
-    Saga->>Inv: reserve inventory
-    Inv-->>Saga: ok
-    Saga->>Pay: authorize payment
-    Pay-->>Saga: ok
-    Saga->>Ship: create shipment
-    alt shipment fails
-        Ship-->>Saga: failure
-        Saga->>Pay: compensate: void / refund authorization
-        Saga->>Inv: compensate: release hold
-    else success
-        Ship-->>Saga: ok
-    end
+node s "Saga" at 1,0 icon=server color=purple
+node inv "Inventory" at 0,1 icon=db color=blue
+node pay "Payment" at 1,1 icon=db color=teal
+node ship "Shipment" at 2,1 icon=db color=slate
+s -> inv : "reserve inventory"
+inv -> s : "ok"
+s -> pay : "authorize payment"
+pay -> s : "ok"
+s -> ship : "create shipment"
+node fail "shipment fails" at 2,2 shape=card color=red
+ship -> fail -> s : "failure"
+node comp1 "compensate: void/refund" at 1,2 shape=text color=orange
+s -> comp1 -> pay
+node comp2 "compensate: release hold" at 0,2 shape=text color=orange
+s -> comp2 -> inv
+node succ "success" at 3,1 shape=card color=green
+ship -> succ -> s : "ok"
 ```
 
 If shipment creation fails after payment succeeded: run the payment step's compensation (refund), then the reservation step's compensation (release hold) — compensations run in reverse order back through the completed steps.

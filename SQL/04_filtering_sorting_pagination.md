@@ -200,6 +200,38 @@ with psycopg.connect("postgresql://dsa:dsa@localhost:5544/dsa") as conn:
         print(f"keyset after id={cursor}: {dt*1000:.2f} ms")
 ```
 
+## Querying JSON/JSONB
+
+When dealing with semi-structured data in a `JSONB` column, Postgres provides specialized operators to filter and extract values. While traditional SQL uses `.` or `->` to traverse relations, Postgres JSONB uses `->` (returns JSON) and `->>` (returns text):
+
+```sql
+-- Assuming a table `products` with a `JSONB` column `attributes`
+
+-- 1. Extracting text (`->>`) for filtering
+SELECT id, attributes 
+FROM products 
+WHERE attributes->>'color' = 'red';
+
+-- 2. Contains operator (`@>`) — much faster if indexed
+-- Checks if the right JSON object is a subset of the left JSON object
+SELECT id, attributes 
+FROM products 
+WHERE attributes @> '{"color": "red"}';
+
+-- 3. Check for top-level key existence (`?`)
+SELECT id, attributes 
+FROM products 
+WHERE attributes ? 'dimensions';
+```
+
+**Indexing JSONB:** If you rely on `->>` to filter (e.g. `WHERE attributes->>'color' = 'red'`), you must create a standard B-Tree index on that exact expression:
+`CREATE INDEX idx_products_color ON products ((attributes->>'color'));`
+
+If you use the contains operator (`@>`) or key existence (`?`), you can create a single GIN (Generalized Inverted Index) on the whole column, which supports arbitrary key queries:
+`CREATE INDEX idx_products_attributes_gin ON products USING gin (attributes);`
+
+This gives you NoSQL-like query flexibility while remaining in a relational ACID-compliant database. However, remember the rule from Level 02: prefer native typed columns for fields you query frequently.
+
 ## Common mistakes
 
 - **`OFFSET`-based "page 50" links in a public <abbr title="Application Programming Interface">API</abbr>** that gets meaningfully slower

@@ -21,35 +21,23 @@ The simplest style of dimensional modeling. A central fact table is connected to
 - **Pros**: Fast queries, easy to understand.
 - **Cons**: Can lead to data redundancy in dimension tables.
 
-```mermaid
-erDiagram
-    FACT_SALES {
-        int order_id
-        int customer_id FK
-        int product_id FK
-        int date_id FK
-        float total_amount
-    }
-    DIM_CUSTOMER {
-        int customer_id PK
-        string name
-        string city
-    }
-    DIM_PRODUCT {
-        int product_id PK
-        string product_name
-        string category
-    }
-    DIM_DATE {
-        int date_id PK
-        date full_date
-        int year
-        int month
-    }
-    
-    FACT_SALES }|--|| DIM_CUSTOMER : "purchased by"
-    FACT_SALES }|--|| DIM_PRODUCT : "includes"
-    FACT_SALES }|--|| DIM_DATE : "occurred on"
+```arch
+node d_cust "DIM_CUSTOMER" at 0,0 shape=card color=blue sub="customer_id (PK)
+name
+city"
+node d_prod "DIM_PRODUCT" at 1,0 shape=card color=amber sub="product_id (PK)
+product_name
+category"
+node d_date "DIM_DATE" at 2,0 shape=card color=teal sub="date_id (PK)
+..."
+node f_sales "FACT_SALES" at 1,1 shape=card color=purple sub="order_id
+customer_id (FK)
+product_id (FK)
+date_id (FK)
+total_amount"
+d_cust -> f_sales
+d_prod -> f_sales
+d_date -> f_sales
 ```
 
 ### Snowflake Schema
@@ -74,18 +62,14 @@ Designed to provide long-term historical storage of data coming from multiple op
 - **Links**: Relationships between Hubs.
 - **Satellites**: Descriptive attributes about Hubs or Links that change over time (similar to SCD Type 2).
 
-```mermaid
-flowchart TD
-    subgraph Data Vault
-        Hub_Customer([Hub_Customer])
-        Hub_Product([Hub_Product])
-        Link_Order{{Link_Order}}
-        Sat_Customer[(Sat_Customer_Details)]
-    end
-    
-    Hub_Customer --- Link_Order
-    Hub_Product --- Link_Order
-    Hub_Customer --- Sat_Customer
+```arch
+node hc "Hub_Customer" at 0,0 shape=card color=blue
+node hp "Hub_Product" at 2,0 shape=card color=amber
+node link "Link_Order" at 1,0 shape=card color=purple
+node sat "Sat_Customer_Details" at 0,1 icon=db color=teal
+hc -> link
+hp -> link
+hc -> sat
 ```
 
 ## 4. Normalization vs Denormalization

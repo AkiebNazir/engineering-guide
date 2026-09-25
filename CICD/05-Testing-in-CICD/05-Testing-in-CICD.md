@@ -31,18 +31,12 @@ A robust CI/CD pipeline ensures that every commit is automatically verified agai
 
 The Testing Pyramid is a framework that guides how many tests of each type you should write.
 
-```mermaid
-flowchart TD
-    E2E["End-to-End Tests (UI) - Slow, Expensive"]
-    Integration["Integration / API Tests - Medium Speed"]
-    Unit["Unit Tests - Fast, Cheap, Isolated"]
-
-    E2E --> Integration
-    Integration --> Unit
-    
-    style E2E fill:#ff9999,stroke:#333,stroke-width:2px
-    style Integration fill:#ffcc99,stroke:#333,stroke-width:2px
-    style Unit fill:#ccffcc,stroke:#333,stroke-width:2px
+```arch
+node e "E2E Tests (UI)" at 1,0 shape=card color=red sub="Slow, Expensive"
+node i "Integration / API Tests" at 1,1 shape=card color=amber sub="Medium Speed"
+node u "Unit Tests" at 1,2 shape=card color=green sub="Fast, Cheap, Isolated"
+e -> i
+i -> u
 ```
 
 * **Unit Tests**: Form the base. They are fast, reliable, and cheap to write and run. You should have thousands of these.

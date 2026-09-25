@@ -20,17 +20,17 @@ With the rise of scalable, cloud-native data warehouses (Snowflake, BigQuery, Re
 - **Pros**: Much faster ingestion. Analysts can see raw data immediately. Leverages SQL, which is universally known.
 - **Cons**: Can be expensive if SQL queries are poorly optimized.
 
-```mermaid
-flowchart LR
-    subgraph ETL
-        E1[Source] --> T1[Processing Server (Spark)]
-        T1 --> L1[(Data Warehouse)]
-    end
-    
-    subgraph ELT
-        E2[Source] --> L2[(Data Warehouse)]
-        L2 --> T2[Transform via SQL in Warehouse]
-    end
+```arch
+node e1 "Source" at 0,0 icon=db color=slate
+node t1 "Processing Server (Spark)" at 1,0 icon=process color=amber
+node l1 "Data Warehouse" at 2,0 icon=db color=purple
+e1 -> t1
+t1 -> l1 : "ETL"
+node e2 "Source" at 0,1 icon=db color=slate
+node l2 "Data Warehouse" at 1,1 icon=db color=purple
+node t2 "Transform via SQL" at 2,1 icon=process color=teal
+e2 -> l2
+l2 -> t2 : "ELT"
 ```
 
 ---
@@ -83,33 +83,18 @@ Transformations should never happen in one massive 2,000-line SQL query. They ar
 2. **Intermediate (`int_`)**: Joining staging tables together, filtering, or performing complex logic.
 3. **Marts / Facts & Dimensions (`fct_`, `dim_`)**: The final, presentation-ready tables used by BI tools (Tableau, Looker).
 
-```mermaid
-flowchart TD
-    subgraph Sources
-        RAW_STRIPE[(Raw Stripe Data)]
-        RAW_SHOPIFY[(Raw Shopify Data)]
-    end
-
-    subgraph Staging
-        STG_PAYMENTS[stg_payments.sql\nCast types, rename]
-        STG_ORDERS[stg_orders.sql\nClean dates, drop nulls]
-    end
-
-    subgraph Intermediate
-        INT_ORDER_PAYMENTS[int_order_payments.sql\nJoin Orders and Payments]
-    end
-
-    subgraph Marts
-        FCT_FINANCE[fct_daily_revenue.sql\nAggregate by day]
-    end
-
-    RAW_STRIPE --> STG_PAYMENTS
-    RAW_SHOPIFY --> STG_ORDERS
-    
-    STG_PAYMENTS --> INT_ORDER_PAYMENTS
-    STG_ORDERS --> INT_ORDER_PAYMENTS
-    
-    INT_ORDER_PAYMENTS --> FCT_FINANCE
+```arch
+node rs "Raw Stripe Data" at 0,0 icon=doc color=slate
+node rsh "Raw Shopify Data" at 0,1 icon=doc color=slate
+node sp "stg_payments.sql" at 1,0 shape=card color=blue sub="Cast types, rename"
+node so "stg_orders.sql" at 1,1 shape=card color=blue sub="Clean dates, drop nulls"
+node int "int_order_payments.sql" at 2,0.5 shape=card color=amber sub="Join Orders & Payments"
+node fct "fct_daily_revenue.sql" at 3,0.5 shape=card color=purple sub="Aggregate by day"
+rs -> sp
+rsh -> so
+sp -> int
+so -> int
+int -> fct
 ```
 
 ---

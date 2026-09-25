@@ -255,6 +255,57 @@ SELECT n FROM nums;
  5
 ```
 
+## Materialization vs. Inlining
+
+By default, Postgres 12+ tries to **inline** non-recursive CTEs into the main query, rewriting it as if you had used subqueries. This allows the query planner to push down filters from the outer query into the CTE, usually resulting in a much better execution plan.
+
+However, sometimes the planner makes a mistake, or you explicitly *want* the CTE to be evaluated exactly once (e.g., if it contains an expensive function call or writes data via `INSERT ... RETURNING`). You can force Postgres to evaluate the CTE separately and store its result in a temporary tuplestore by adding the `MATERIALIZED` keyword:
+
+```sql
+WITH expensive_cte AS MATERIALIZED (
+    SELECT id, pg_sleep(1) -- force expensive computation
+    FROM employees
+)
+SELECT * FROM expensive_cte WHERE id = 1;
+```
+
+Without `MATERIALIZED`, Postgres might push `id = 1` into the CTE and sleep for only 1 second. With `MATERIALIZED`, it runs the whole CTE first (sleeping for every employee row) before filtering. Conversely, `NOT MATERIALIZED` forces inlining if Postgres was inclined to materialize it (which it defaults to if the CTE is referenced multiple times).
+
+## Managing Recursive Depth and Cycles
+
+When working with recursive CTEs on real-world graphs (like bill-of-materials or social networks), data might contain cycles (A manages B, B manages A). A naive recursive CTE will loop infinitely until it hits memory limits or a timeout.
+
+To prevent infinite loops, you can track the visited path in an array and stop if you see a duplicate:
+
+```sql
+WITH RECURSIVE org_safe AS (
+    SELECT id, name, manager_id, 1 AS depth, ARRAY[id] AS path_array
+    FROM employees
+    WHERE manager_id IS NULL
+
+    UNION ALL
+
+    SELECT e.id, e.name, e.manager_id, o.depth + 1, o.path_array || e.id
+    FROM employees e
+    JOIN org_safe o ON e.manager_id = o.id
+    -- Stop if we've already visited this employee ID in the current path
+    WHERE NOT (e.id = ANY(o.path_array))
+)
+SELECT * FROM org_safe;
+```
+
+Postgres 14+ also introduced a standard `CYCLE` clause that handles this automatically, preventing you from having to write the array-tracking logic manually:
+
+```sql
+WITH RECURSIVE org_safe AS (
+    SELECT id, name, manager_id FROM employees WHERE manager_id IS NULL
+    UNION ALL
+    SELECT e.id, e.name, e.manager_id 
+    FROM employees e JOIN org_safe o ON e.manager_id = o.id
+) CYCLE id SET is_cycle USING path
+SELECT * FROM org_safe;
+```
+
 ## Common mistakes
 
 - **`NOT IN` with a subquery that can return `NULL`.** As noted above, one `NULL` in

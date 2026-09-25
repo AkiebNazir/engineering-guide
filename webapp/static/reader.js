@@ -33,6 +33,16 @@ const groupFor = (table, num) => (table.find(([max]) => +num <= max) || table[ta
 
 const MODULES = {
 
+  dataengineering: {
+    hash: 'data-engineering', nav: 'navDataEngineering', name: 'Data Engineering', noun: 'chapters', motif: 'agentic',
+    list: '/api/data-engineering', doc: '/api/data-engineering-doc',
+    tagline: 'End-to-end data engineering concepts, architecture, ingestion, and pipelines.',
+    group: () => 'Chapters',
+    label: it => `Chapter ${+it.num}`,
+    kicker: it => `Chapter ${+it.num}`,
+    clean: t => t.replace(/^\d+_/i, ''),
+  },
+
   cicd: {
     hash: 'cicd', nav: 'navCICD', name: 'CI/CD & DevOps', noun: 'chapters', motif: 'agentic',
     list: '/api/cicd', doc: '/api/cicd-doc',
@@ -1187,10 +1197,10 @@ function wrapTables(root) {
    never see that tree, so every such reference becomes a link to the page the app
    has for it, labelled with the page's title — or plain words when there is none. */
 const REPO_ROOTS = ['SystemDesign', 'SoftwareDesign', 'CSFundamentals', 'GoogleBehavioral', 'AI-Libraries-Guides',
-  'Agentic-AI', 'AI-road-map', 'API', 'SQL', 'NoSQL', 'PyStdLib', 'GoStdLib', 'PyDSA', 'GoDSA', 'PyEngineering', 'GoEngineering'];
+  'Agentic-AI', 'AI-road-map', 'API', 'SQL', 'NoSQL', 'PyStdLib', 'GoStdLib', 'PyDSA', 'GoDSA', 'PyEngineering', 'GoEngineering', 'DataEngineering'];
 const REPO_ROOT_RE = new RegExp(`^(?:${REPO_ROOTS.join('|')})/`);
 const REPO_HOME = { sd: 'SystemDesign', swd: 'SoftwareDesign', csfund: 'CSFundamentals', behavioral: 'GoogleBehavioral',
-  library: 'AI-Libraries-Guides', agentic: 'Agentic-AI', roadmap: 'AI-road-map', api: 'API', sql: 'SQL', nosql: 'NoSQL' };
+  library: 'AI-Libraries-Guides', agentic: 'Agentic-AI', roadmap: 'AI-road-map', api: 'API', sql: 'SQL', nosql: 'NoSQL', dataengineering: 'DataEngineering' };
 
 function docSourcePath(mod, id) {
   if (isDsaGuide(mod)) return `${DSA_GUIDE_ROOT[mod]}/${id}/_TOPIC_GUIDE.md`;
@@ -1227,6 +1237,7 @@ function repoRoute(path) {
   if ((r = path.match(/^GoogleBehavioral\/([\w-]+)\.md$/))) return item('behavioral', r[1]);
   if ((r = path.match(/^AI-Libraries-Guides\/([\w-]+)\.md$/))) return item('library', r[1]);
   if ((r = path.match(/^Agentic-AI\/([\w-]+)\.md$/))) return item('agentic', r[1]);
+  if ((r = path.match(/^DataEngineering\/(?:[\w-]+\/)*([\w-]+)\.md$/))) return item('dataengineering', r[1]);
   if ((r = path.match(/^AI-road-map\/(?:[\w-]+\/)*([\w-]+)\.md$/))) return item('roadmap', r[1]);
   if ((r = path.match(/^API\/(\w+)\/(?:Foundation|labs)\/(?:python|golang)\/([\w-]+)\.(?:py|go)$/)))
     return { href: `#/api-item/${r[1]}/${/\/labs\//.test(path) ? 'labs' : 'Foundation'}/${r[2]}`, title: prettyName(r[2]) };

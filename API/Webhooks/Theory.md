@@ -37,41 +37,48 @@ The professional pattern is **both**: webhooks for speed, plus a periodic **reco
 
 ## The Lifecycle of an Event
 
-```mermaid
-sequenceDiagram
-    participant U as Customer
-    participant P as Provider (Stripe)
-    participant Q as Delivery queue
-    participant R as Your receiver
-    participant W as Your worker
+```arch
+node u "Customer" at 0,0 icon=user color=slate
+node p "Provider (Stripe)" at 1,0 icon=server color=purple
+node q "Delivery queue" at 2,0 icon=doc color=slate
 
-    U->>P: Completes payment
-    P->>P: Event created: payment_intent.succeeded (id evt_123)
-    P->>Q: enqueue for every subscribed endpoint
-    Q->>R: POST /webhooks/stripe  (signed)
-    R->>R: 1. verify signature  2. store event (dedupe by id)
-    R-->>Q: 200 OK (fast!)
-    R->>W: hand off event
-    W->>W: fulfil order (idempotently)
-    note over Q,R: If R returns non-2xx or times out, Q retries with backoff for hours or days
+node w "Your worker" at 1,1 icon=process color=teal
+node r "Your receiver" at 2,1 icon=gateway color=blue
+
+u -> p : "payment"
+node evt "Event created" at 1,-1 shape=text
+p -> evt -> p
+p -> q : "enqueue"
+
+q -> r : "POST (signed)"
+r -> q : "200 OK (fast!)"
+
+node retry "retries if non-2xx" at 2.5,0.5 shape=card color=red
+q ..> retry ..> r
+
+node ver "verify sig, store (dedupe)" at 3,1 shape=card color=amber
+r -> ver -> r
+
+r -> w : "hand off"
+node fulfill "fulfil order (idempotent)" at 0,1 shape=text
+w -> fulfill -> w
 ```
 
 ## Real-World Scenario & Architecture
 
 **Scenario:** Integrating Stripe for payments. When a user pays on Stripe's hosted checkout, Stripe needs to tell your backend so you can fulfill the order.
 
-```mermaid
-sequenceDiagram
-    participant User as Customer
-    participant App as Your App (Webhook Receiver)
-    participant Stripe as Stripe (Webhook Sender)
-
-    User->>Stripe: Completes Payment
-    Stripe->>Stripe: Charge Succeeded Event
-    note over Stripe,App: Stripe calls your API!
-    Stripe->>App: POST https://api.yourapp.com/stripe-webhook
-    App-->>Stripe: 200 OK (Acknowledge Receipt)
-    App->>App: Fulfill Order (Update DB)
+```arch
+node u "Customer" at 0,0 icon=user color=slate
+node stripe "Stripe (Webhook Sender)" at 1,0 icon=server color=purple
+node app "Your App (Receiver)" at 2,0 icon=server color=blue
+u -> stripe : "Completes Payment"
+node evt "Charge Succeeded Event" at 1,1 shape=text
+stripe -> evt -> stripe
+stripe -> app : "POST /stripe-webhook"
+app -> stripe : "200 OK (Acknowledge Receipt)"
+node ful "Fulfill Order (Update DB)" at 2,1 shape=text
+app -> ful -> app
 ```
 
 Why the browser redirect is not enough: the customer may close the tab after paying, so the "success page" never loads. The webhook is the **reliable** signal; the redirect is only a courtesy.
@@ -161,17 +168,17 @@ Go lab 2 implements the first three with a known-answer test from GitHub's docs 
 
 ### Secret rotation without downtime
 
-```mermaid
-sequenceDiagram
-    participant S as Sender
-    participant R as Receiver
-    note over S,R: Phase 1: secret OLD
-    S->>R: signature(OLD)
-    note over S,R: Phase 2: sender signs with BOTH
-    S->>R: v1,sig(OLD) v1,sig(NEW)
-    R->>R: knows [OLD] -> accept  |  knows [NEW] -> accept
-    note over S,R: Phase 3: receivers updated, sender drops OLD
-    S->>R: signature(NEW)
+```arch
+node s "Sender" at 0,0 icon=server color=purple
+node r "Receiver" at 1,0 icon=server color=blue
+node p1 "Phase 1: secret OLD" at 0.5,1 shape=card color=slate
+s -> p1 -> r : "signature(OLD)"
+node p2 "Phase 2: sender signs with BOTH" at 0.5,2 shape=card color=amber
+s -> p2 -> r : "v1,sig(OLD) v1,sig(NEW)"
+node p2_r "knows [OLD] -> accept | knows [NEW] -> accept" at 1,2 shape=text
+r -> p2_r -> r
+node p3 "Phase 3: sender drops OLD" at 0.5,3 shape=card color=green
+s -> p3 -> r : "signature(NEW)"
 ```
 
 The sender emits several `v1` signatures during the overlap; the receiver accepts if **any** matches.

@@ -87,35 +87,28 @@ worker:R -> obj:B : "cleanup"
 worker:B ..> cdn:R : "purge"
 ```
 
-```mermaid
+```arch
 %% caption: Three independent flows share the same metadata/object split — create, read, and background lifecycle cleanup.
-sequenceDiagram
-    actor Creator
-    actor Reader
-    participant API
-    participant CDN
-    participant DB as Metadata DB
-    participant Obj as Object storage
-    participant Worker as Lifecycle worker
+node creator "Creator" at 0,0 icon=user
+node api "API" at 1,1 icon=api
+node db "Metadata DB" at 2,0 icon=db
+node obj "Object storage" at 2,1 icon=blob
 
-    Creator->>API: create (validate/authz)
-    API->>DB: insert metadata + outbox
-    API->>Obj: write body
-    API-->>Creator: 201 id + url
+node reader "Reader" at 0,2 icon=users
+node cdn "CDN" at 1,2 icon=cdn
 
-    Reader->>CDN: GET /{id}
-    alt public, cached
-        CDN-->>Reader: cached body
-    else miss or private
-        CDN->>API: forward
-        API->>DB: check metadata + permission
-        API->>Obj: fetch body
-        API-->>Reader: body
-    end
+node worker "Lifecycle worker" at 2,3 icon=worker
 
-    Worker->>DB: expire/delete/report state transition
-    Worker->>CDN: purge / revoke access
-    Worker->>Obj: cleanup
+creator -> api : "create (validate/authz)\nreturns 201 id + url"
+api -> db : "insert metadata / check authz"
+api -> obj : "write / fetch body"
+
+reader -> cdn : "GET /{id}\ncached body"
+cdn -> api : "forward miss or private"
+
+worker -> db : "expire/delete/report"
+worker -> cdn : "purge / revoke access"
+worker -> obj : "cleanup"
 ```
 
 For small snippets, storing body in relational storage can be acceptable. At 10 MB and read-heavy global delivery, object storage separates blob capacity/egress from metadata transactions and works naturally with <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>/lifecycle policies. Metadata is still truth for expiry, visibility, and deletion.

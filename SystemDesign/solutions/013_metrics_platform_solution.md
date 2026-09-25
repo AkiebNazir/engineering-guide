@@ -88,37 +88,31 @@ The query and rule shapes deliberately follow the Prometheus HTTP API, so existi
 
 ## Architecture and flow
 
-```mermaid
+```arch
 %% caption: The cardinality guard runs at ingest, before a sample is written anywhere — a tenant's mistake never reaches durable storage.
-sequenceDiagram
-    actor Agent
-    participant Dist as Distributor
-    participant Ing as Ingesters (3 zones)
-    participant TS as Object-store blocks
-    participant Compact as Compactor
-    participant Query as Query engine
-    participant Alert as Alert evaluator
+node agent "Agent" at 0,1 icon=app
+node dist "Distributor" at 1,1 icon=gateway sub="auth, validate, limit"
+node ing "Ingesters" at 2,1 icon=db sub="3 zones"
+node ts "Object Store" at 3,2 icon=blob
+node compact "Compactor" at 4,2 icon=worker
+node query "Query Engine" at 3,0 icon=search
+node alert "Alert Evaluator" at 4,0 icon=alert
 
-    Agent->>Dist: samples batch
-    Dist->>Dist: auth tenant, validate schema, rate limit
-    Dist->>Ing: replicate to 3 ingesters in tenant shard
-    Ing->>Ing: check active-series quota, append WAL and head
-    alt over quota or invalid
-        Ing-->>Dist: reject new series
-        Dist-->>Agent: 400 rejected and counted
-    else accepted on 2 of 3
-        Dist-->>Agent: 200
-        Ing->>TS: every 2 h cut and upload block
-        TS->>Compact: merge, dedup replicas, downsample after 7 d
-        Compact->>TS: rollup blocks (older)
-        Query->>Ing: recent data from head
-        Query->>TS: older data by range and resolution
-        loop every 15 s per rule group
-            Alert->>Query: evaluate rule
-            Query-->>Alert: result
-            Alert->>Alert: fire or resolve
-        end
-    end
+agent -> dist : "samples batch"
+dist -> dist : "auth, limit"
+dist -> ing : "replicate to 3"
+ing -> ing : "check quota, append"
+ing -> dist : "reject"
+dist -> agent : "400 rejected"
+dist -> agent : "200 OK"
+ing -> ts : "cut & upload 2h block"
+ts -> compact : "merge & downsample"
+compact -> ts : "rollup blocks"
+query -> ing : "recent data"
+query -> ts : "older data"
+alert -> query : "evaluate rule"
+query -> alert : "result"
+alert -> alert : "fire/resolve"
 ```
 
 ```arch
@@ -280,21 +274,19 @@ Small tenants get 3 nodes (1 per zone — only 2,744 distinct shards, so isolati
 
 The budget for "data arrival → an evaluation that includes it has completed" is **30 s**, spent as: agent batching + delivery + ack ≤ 5 s (p99) + the worst-case wait for the next evaluation tick (= the evaluation interval) + query and queueing ≤ 5 s + slack 5 s. That leaves **≤ 15 s for the evaluation interval**. A rule group on the common 60 s interval can see data 60 s old, which *cannot* meet the contract. So the platform offers the lag guarantee to rule groups with `interval ≤ 15 s` (a "fast" class) and documents that slower groups are best-effort.
 
-```mermaid
+```arch
 %% caption: Alert rules read the ingesters' in-memory head directly so the 30 s budget is spent on the evaluation interval and not on object-store fetches.
-sequenceDiagram
-    participant Ruler as Ruler (2 per group)
-    participant Ing as Ingesters (head)
-    participant AM as Alertmanager cluster
-    actor OnCall
-    loop every 15 s per rule group
-        Ruler->>Ing: instant query over last 5 min
-        Ing-->>Ruler: series and samples
-        Ruler->>Ruler: evaluate expression, update pending or firing state
-    end
-    Ruler->>AM: firing or resolved alerts
-    AM->>AM: dedup across rulers, group, inhibit
-    AM->>OnCall: page
+node ruler "Ruler" at 0,1 icon=scheduler sub="2 per group"
+node ing "Ingesters" at 1,0 icon=db sub="head"
+node am "Alertmanager" at 1,2 icon=alert sub="cluster"
+node oncall "OnCall" at 2,2 icon=user
+
+ruler -> ing : "instant query (last 5m)"
+ing -> ruler : "series and samples"
+ruler -> ruler : "evaluate & update state"
+ruler -> am : "firing/resolved alerts"
+am -> am : "dedup & inhibit"
+am -> oncall : "page"
 ```
 
 - **Load.** Assume 500,000 rules (50 per tenant on average). At 15 s that is 500,000 ÷ 15 ≈ **33K evaluations/s**; each reads ~100 series × 20 samples (5 minutes) = 2,000 samples, so ~67M samples/s in total. Decode is ~1.3 cores, but per-query overhead dominates: ~1 ms each ≈ 33 cores. So the alert path is *many small queries*, not heavy ones, and is sized in request rate, not bytes. Budget ~100 ruler cores with headroom.

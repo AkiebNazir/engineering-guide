@@ -72,26 +72,25 @@ workers:B -> provider:R : "send"
 provider:T ..> intake:L : "signed webhook"
 ```
 
-```mermaid
+```arch
 %% caption: The intent is durable before any provider is called; the provider callback only ever updates delivery-attempt state, never creates a new intent.
-sequenceDiagram
-    participant Product as Product DB + outbox
-    participant Intake as Notification intake
-    participant Intent as Intent store
-    participant Pref as Preference / quiet-hours
-    participant Queue as Priority + channel queues
-    participant Worker as Email/push/SMS workers
-    participant Provider
+node Product "Product DB + outbox" at 0,1
+node Intake "Notification intake" at 1,1
+node Intent "Intent store" at 2,1
+node Pref "Preference store" at 3,1
+node Queue "Priority queues" at 3,2
+node Worker "Workers" at 2,2
+node Provider "Provider" at 1,2
 
-    Product->>Intake: event
-    Intake->>Intent: record intent (dedupe key, priority, template version)
-    Intent->>Pref: evaluate preferences + quiet hours
-    Pref->>Queue: enqueue by priority + channel
-    Queue->>Worker: dequeue
-    Worker->>Provider: send
-    Provider-->>Worker: accepted / rejected
-    Provider-->>Intake: signed webhook (delivered / bounced)
-    Intake->>Intent: update delivery-attempt state
+Product -> Intake : "event"
+Intake -> Intent : "record intent"
+Intent -> Pref : "evaluate prefs"
+Pref -> Queue : "enqueue"
+Queue -> Worker : "dequeue"
+Worker -> Provider : "send"
+Provider -> Worker : "accepted/rejected"
+Provider -> Intake : "signed webhook"
+Intake -> Intent : "update state"
 ```
 
 `NotificationIntent(event_id, user_id, template_version, channel, status)` has a unique key across the logical event/recipient/channel. Store preference snapshot or decision evidence, template version, provider message ID, attempts, and timestamps. Keep transactional and marketing queues/pools separate; otherwise campaign fanout starves recovery/security messages.

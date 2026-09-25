@@ -33,23 +33,20 @@ By integrating security into the CI/CD pipeline, vulnerabilities are caught when
 
 A robust DevSecOps pipeline integrates security at every phase:
 
-```mermaid
-flowchart TD
-    Code[1. Code Phase] --> Build[2. Build Phase]
-    Build --> Test[3. Test Phase]
-    Test --> Deploy[4. Deploy Phase]
-    
-    Code -->|Pre-commit/PR| Sec1["Secrets Scanning (gitleaks)"]
-    Code -->|Linting| Sec2["SAST (gosec, bandit)"]
-    
-    Build -->|Dependency Check| Sec3["SCA (semgrep, dependabot)"]
-    Build -->|Container Build| Sec4["Image Scanning (trivy)"]
-    Build -->|Artifacts| Sec5["SBOM Generation (syft)"]
-    
-    Test -->|Runtime| Sec6["DAST (OWASP ZAP)"]
-    
-    Deploy -->|Infrastructure| Sec7["IaC Scanning (tfsec)"]
-    Deploy -->|Validation| Sec8["Signature Verification"]
+```arch
+node c "1. Code Phase" at 0,0 shape=card color=blue
+node b "2. Build Phase" at 1,0 shape=card color=purple
+node t "3. Test Phase" at 2,0 shape=card color=teal
+node d "4. Deploy Phase" at 3,0 shape=card color=red
+c -> b -> t -> d
+node sec1 "Secrets Scanning (gitleaks)" at 0,1 shape=text
+node sec2 "SAST (gosec, bandit)" at 0,2 shape=text
+c -> sec1
+c -> sec2
+node sec3 "SCA (dependabot)" at 1,1 shape=text
+node sec4 "Image Scanning (trivy)" at 1,2 shape=text
+b -> sec3
+b -> sec4
 ```
 
 ## 🔍 Static Application Security Testing (SAST)

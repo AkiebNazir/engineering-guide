@@ -92,13 +92,14 @@ Popular for monolithic applications or tools where release dates matter more tha
 ### Git SHA Versioning
 The gold standard for continuous delivery of applications and microservices. The artifact version is exactly the Git commit hash (e.g., `a1b2c3d`).
 
-```mermaid
-flowchart TD
-    A["Developer Commits code"] --> B["Git Commit Hash generated (e.g. 7f8a9b)"]
-    B --> C["CI Pipeline runs"]
-    C --> D["Docker Build"]
-    D --> E["Tag image: myapp:7f8a9b"]
-    E --> F["Push to Registry"]
+```arch
+node a "Dev Commits code" at 0,0 icon=user color=slate
+node b "Git Commit Hash (7f8a9b)" at 0,1 shape=card color=amber
+node c "CI Pipeline runs" at 0,2 icon=server color=blue
+node d "Docker Build" at 0,3 icon=doc color=purple
+node e "Tag image: myapp:7f8a9b" at 0,4 shape=text color=teal
+node f "Push to Registry" at 0,5 icon=cloud color=purple
+a -> b -> c -> d -> e -> f
 ```
 
 ### Tagging Docker Images: Best Practices
@@ -116,20 +117,15 @@ Tag your images with multiple identifiers during CI:
 
 Artifact promotion is the process of moving an artifact through different environments. You do not rebuild; you re-tag or move the binary.
 
-```mermaid
-sequenceDiagram
-    participant CI as CI Pipeline
-    participant Reg as Container Registry
-    participant CD_Stage as Staging Deployment
-    participant CD_Prod as Prod Deployment
-    
-    CI->>Reg: Build & Push `myapp:7f8a9b` (Branch: main)
-    CD_Stage->>Reg: Pull `myapp:7f8a9b`
-    CD_Stage-->>CD_Stage: Deploy & Run Integration Tests
-    Note over CD_Stage: Tests Pass!
-    CD_Stage->>Reg: Re-tag `myapp:7f8a9b` as `myapp:staging-approved`
-    CD_Prod->>Reg: Pull `myapp:7f8a9b` (Triggered by approval)
-    CD_Prod-->>CD_Prod: Deploy to Production
+```arch
+node ci "CI Pipeline" at 0,0 icon=server color=blue
+node reg "Container Registry" at 1,0 icon=cloud color=purple
+node cds "Staging Deployment" at 2,0 icon=gateway color=teal
+node cdp "Prod Deployment" at 3,0 icon=server color=red
+ci -> reg : "Build & Push myapp:7f8a9b"
+cds -> reg : "Pull myapp:7f8a9b"
+node test "Deploy & Run Int Tests (Pass!)" at 2,1 shape=card color=green
+cds -> test -> cds
 ```
 
 ### Promotion with Docker

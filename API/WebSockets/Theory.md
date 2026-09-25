@@ -48,21 +48,22 @@ Origin: https://app.example.com
 | `Origin` | Which web page opened the socket. **Servers must check it** (see Security). |
 | `Sec-WebSocket-Extensions` | e.g. `permessage-deflate` compression |
 
-```mermaid
-sequenceDiagram
-    participant C as Client (browser)
-    participant S as Server
-    C->>S: GET /chat  Upgrade: websocket  Sec-WebSocket-Key: ...
-    S-->>C: 101 Switching Protocols  Sec-WebSocket-Accept: ...
-    note over C,S: The TCP connection now carries WebSocket frames, not HTTP
-    C->>S: text frame "hello"
-    S-->>C: text frame "echo: hello"
-    S-->>C: text frame (server pushes, unprompted)
-    C->>S: ping frame
-    S-->>C: pong frame
-    C->>S: close frame (1000)
-    S-->>C: close frame (1000)
-    note over C,S: TCP connection closed
+```arch
+node c "Client" at 0,0 icon=client color=slate
+node s "Server" at 1,0 icon=server color=purple
+c -> s : "GET /chat (Upgrade: websocket)"
+s -> c : "101 Switching Protocols"
+node tcp "TCP now carries WS frames, not HTTP" at 0.5,1 shape=card color=amber
+c ..> tcp ..> s
+c -> s : "text frame 'hello'"
+s -> c : "text frame 'echo: hello'"
+s -> c : "text frame (server pushes)"
+c -> s : "ping frame"
+s -> c : "pong frame"
+c -> s : "close frame (1000)"
+s -> c : "close frame (1000)"
+node end "TCP connection closed" at 0.5,2 shape=card color=slate
+c ..> end ..> s
 ```
 
 `ws://` is plain, `wss://` runs over <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> (like https). **Always use `wss://` on the public internet.**
@@ -164,18 +165,19 @@ A token bucket per connection (messages per second) protects the server. Persist
 
 **Connections will drop**: deploys, load balancers, mobile networks, sleeping laptops. A robust client treats a drop as normal.
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant S as Server
-    S-->>C: event seq=40
-    S-->>C: event seq=41
-    note over C,S: connection drops
-    S->>S: events 42, 43, 44 happen (kept in replay buffer)
-    C->>S: (after backoff + jitter) reconnect
-    C->>S: {"type":"resume","last_seq":41}
-    S-->>C: 42, 43, 44 (replay)
-    S-->>C: 45 ... (live)
+```arch
+node c "Client" at 0,0 icon=client color=slate
+node s "Server" at 1,0 icon=server color=purple
+s -> c : "event seq=40"
+s -> c : "event seq=41"
+node drop "connection drops" at 0.5,1 shape=card color=red
+c ..> drop ..> s
+node replay "events 42,43,44 happen (replay buffer)" at 1.5,1 shape=card color=amber
+s -> replay -> s
+c -> s : "reconnect (after backoff)"
+c -> s : "{'type':'resume', 'last_seq':41}"
+s -> c : "42, 43, 44 (replay)"
+s -> c : "45 ... (live)"
 ```
 
 Ingredients:
@@ -316,22 +318,16 @@ Rules that bite:
 
 **Scenario:** A real-time chat application where a user sends a message, and the server instantly broadcasts it to all other connected clients without them needing to refresh or poll.
 
-```mermaid
-sequenceDiagram
-    participant C1 as Client 1
-    participant C2 as Client 2
-    participant S as Server
-
-    C1->>S: HTTP GET /chat (Upgrade: websocket)
-    S-->>C1: HTTP 101 Switching Protocols
-    note over C1,S: Connection is now open
-
-    C2->>S: HTTP GET /chat (Upgrade: websocket)
-    S-->>C2: HTTP 101 Switching Protocols
-    note over C2,S: Connection is now open
-
-    C1->>S: [WS] "Hello everyone!"
-    S->>C2: [WS] "Client 1 says: Hello everyone!"
+```arch
+node c1 "Client 1" at 0,0 icon=client color=slate
+node s "Server" at 1,0 icon=server color=purple
+node c2 "Client 2" at 2,0 icon=client color=blue
+c1 -> s : "GET /chat (Upgrade)"
+s -> c1 : "101 Switching Protocols"
+c2 -> s : "GET /chat (Upgrade)"
+s -> c2 : "101 Switching Protocols"
+c1 -> s : "[WS] 'Hello everyone!'"
+s -> c2 : "[WS] 'Client 1 says: Hello...'"
 ```
 
 ## Common Pitfalls

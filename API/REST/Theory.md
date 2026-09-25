@@ -387,18 +387,13 @@ A ladder that shows how "RESTful" an <abbr title="Application Programming Interf
 
 Most production "<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>" APIs are **level 2**, and that is fine.
 
-```arch
-%% caption: The Richardson Maturity Model traces the evolution from single-endpoint RPC to fully navigable hypermedia.
-route straight
-node l0 "Level 0\nSingle Endpoint, POST" at 0,0 icon=internet color=slate
-node l1 "Level 1\nResources (URLs)" at 2,0 icon=doc color=blue
-node l2 "Level 2\nHTTP Verbs & Status" at 4,0 icon=check color=green
-node l3 "Level 3\nHATEOAS (Links)" at 6,0 icon=internet color=amber
-
-l0 -> l1
-l1 -> l2
-l2 -> l3
+```mermaid
+flowchart LR
+    l0["Level 0\nSingle Endpoint, POST"] --> l1["Level 1\nResources (URLs)"]
+    l1 --> l2["Level 2\nHTTP Verbs & Status"]
+    l2 --> l3["Level 3\nHATEOAS (Links)"]
 ```
+
 
 ### HATEOAS example (level 3)
 
@@ -423,17 +418,17 @@ After the order ships, the `cancel` link disappears. The client learns what is a
 
 ```mermaid
 sequenceDiagram
-    participant Client as Mobile App
+    participant C as Mobile App
     participant LB as Load Balancer
     participant API as REST API Server
-    participant DB as PostgreSQL Database
-
-    Client->>LB: POST /users {"name": "Alice"}
+    participant DB as PostgreSQL
+    C->>LB: POST /users
     LB->>API: Route Request
-    API->>DB: INSERT INTO users (name) VALUES ('Alice')
+    API->>DB: INSERT INTO users
     DB-->>API: returns user_id = 1
-    API-->>Client: 201 Created {"id": 1, "name": "Alice"}
+    API-->>C: 201 Created
 ```
+
 
 Because the <abbr title="Application Programming Interface">API</abbr> is stateless, the load balancer can send the next request to **any** instance, and you scale by adding instances.
 

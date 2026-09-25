@@ -120,6 +120,21 @@ For a genuinely required column that needs a *per-row computed or backfilled* va
 from `SoftwareDesign/09_data_design_and_schema_evolution.md` §5, with the Postgres
 mechanics spelled out:
 
+```arch
+%% caption: The Expand and Contract pattern breaks a blocking migration into safe phases: metadata-only add, row-level backfill, and metadata-only constraint application.
+group phase1 "1. Expand" color=slate style=dashed
+node add_col "ADD COLUMN\n(Nullable, fast)" at 0,0 in phase1 icon=plus color=green
+
+group phase2 "2. Backfill" color=slate style=dashed
+node backfill "UPDATE rows\n(Batched, row locks)" at 3,0 in phase2 icon=db color=amber
+
+group phase3 "3. Contract" color=slate style=dashed
+node contract "SET NOT NULL\n(Verify, fast)" at 6,0 in phase3 icon=check color=green
+
+add_col -> backfill : "New code writes both"
+backfill -> contract : "All rows populated"
+```
+
 ```sql
 -- 1. EXPAND: add the column as NULLABLE. This is a metadata-only change,
 --    just like the constant-default case above -- fast regardless of table size.

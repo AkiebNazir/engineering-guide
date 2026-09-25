@@ -674,30 +674,21 @@ Self-test complete: k-means clustering, Voronoi-cell IVF search, and distance me
 
 ## 6. Recap & Self-Check
 
-```mermaid
+```arch
 %% caption: The whole module on one page.
-mindmap
-  root((Vector DBs))
-    HNSW
-      layered graph
-      greedy beam search
-      M, efSearch
-    IVF
-      k-means cells
-      nprobe dial
-      boundary misses
-    PQ
-      split into sub-vectors
-      1-byte codes
-      ADC table lookups
-    Metrics
-      L2 vs dot vs cosine
-      normalise once
-      one dot kernel
-    Filters
-      post-filter can return nothing
-      pre-filter can go brute force
-      single-stage traversal
+node root "Vector DBs" at 0.5,0 shape=pill color=teal
+
+node hnsw "HNSW" at 0,1 shape=card color=blue sub="Layered graph, greedy beam search, M, efSearch"
+node ivf "IVF" at 1,1 shape=card color=green sub="k-means cells, nprobe dial, boundary misses"
+node pq "PQ" at 0,2 shape=card color=orange sub="Split sub-vectors, 1-byte codes, ADC lookups"
+node met "Metrics" at 1,2 shape=card color=pink sub="L2/dot/cosine, normalise once, one dot kernel"
+node fil "Filters" at 0.5,3 shape=card color=purple sub="Post (misses), pre (brute), single-stage"
+
+root -> hnsw
+root -> ivf
+root -> pq
+root -> met
+root -> fil
 ```
 
 | Idea | Remember it as |

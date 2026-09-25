@@ -21,6 +21,8 @@ This guide is broken down into 5 core modules, each with deep-dive technical exp
 7. [**Multi-Agent Orchestration & MCP**](07_multi_agent_and_mcp.md)
    Scale up from a single agent to Swarm/LangGraph architectures, and learn how the Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>) standardizes enterprise tool connectivity.
 8. [**API Architectures: REST, GraphQL, and gRPC**](08_api_architectures_engineering_guide.md)
+9. [**Agent Evaluation and Production**](09_agent_eval_and_production.md)
+   A comprehensive guide to evaluating non-deterministic agents, observability, guardrails, red teaming, and deployment strategies like prompt versioning and shadow testing.
    A detailed engineering guide comparing <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, and <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>. Contains 5 distinct implementation examples for each technology in both Python and Golang.
 
 ## Practice Projects

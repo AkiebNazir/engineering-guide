@@ -29,15 +29,19 @@ Where you meet it today: banking core systems, payment and card networks, insura
 
 **Scenario:** A legacy Banking System transferring funds between accounts. It requires strict atomic transactions and heavy security.
 
-```mermaid
-sequenceDiagram
-    participant App as Mobile Banking App
-    participant SOAP as Banking SOAP Service (Enterprise)
+```arch
+node app "Mobile Banking App" at 0,0 icon=client color=slate
+node soap "Banking SOAP Service" at 1,0 icon=server color=purple
 
-    App->>SOAP: HTTP POST /TransferFunds<br/>(Contains strict XML Envelope)
-    SOAP-->>SOAP: Validate against WSDL & WS-Security
-    SOAP-->>SOAP: Execute ACID Database Transaction
-    SOAP-->>App: HTTP 200 OK<br/>(Contains XML Envelope with success/Fault)
+app -> soap : "HTTP POST /TransferFunds (XML)"
+
+node val "Validate WSDL & WS-Security" at 1,1 shape=text
+soap -> val -> soap
+
+node txn "Execute ACID DB Txn" at 1,2 shape=card color=amber
+soap -> txn -> soap
+
+soap -> app : "HTTP 200 OK (XML Envelope)"
 ```
 
 ## Anatomy of a <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Message

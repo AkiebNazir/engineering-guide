@@ -83,28 +83,21 @@ Design habits that pay off later:
 
 ## The Four Call Types
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant S as Server
-    note over C,S: 1. UNARY
-    C->>S: request
-    S-->>C: response
-    note over C,S: 2. SERVER STREAMING
-    C->>S: request
-    S-->>C: response 1
-    S-->>C: response 2
-    S-->>C: response N
-    note over C,S: 3. CLIENT STREAMING
-    C->>S: message 1
-    C->>S: message 2
-    C->>S: message N
-    S-->>C: one response
-    note over C,S: 4. BIDIRECTIONAL
-    C->>S: message A
-    S-->>C: reply X
-    S-->>C: reply Y
-    C->>S: message B
+```arch
+node c "Client" at 0,0 icon=client color=slate
+node s "Server" at 1,0 icon=server color=purple
+node n1 "1. UNARY" at 0.5,1 shape=card color=blue
+c -> n1 -> s : "request"
+s -> c : "response"
+node n2 "2. SERVER STREAMING" at 0.5,2 shape=card color=blue
+c -> n2 -> s : "request"
+s -> c : "response 1, 2... N"
+node n3 "3. CLIENT STREAMING" at 0.5,3 shape=card color=blue
+c -> n3 -> s : "message 1, 2... N"
+s -> c : "one response"
+node n4 "4. BIDIRECTIONAL" at 0.5,4 shape=card color=blue
+c -> n4 -> s : "message A"
+s -> c : "reply X, reply Y"
 ```
 
 | Type | Use it for | Examples |
@@ -142,16 +135,19 @@ summary, err := up.CloseAndRecv() // half-close and wait for the ONE response
 
 A <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> call is one **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 stream** inside a long-lived connection. <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 multiplexes many streams on one connection, which is why one channel can carry thousands of concurrent calls.
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant S as Server
-    C->>S: HEADERS  :method POST  :path /shop.v1.Catalog/GetProduct<br/>content-type application/grpc  grpc-timeout 2S  authorization ...
-    C->>S: DATA  [0][len:4 bytes][protobuf GetProductRequest]
-    note over C: END_STREAM (half-close)
-    S-->>C: HEADERS  :status 200  content-type application/grpc
-    S-->>C: DATA  [0][len:4 bytes][protobuf Product]
-    S-->>C: HEADERS (trailers)  grpc-status 0  grpc-message ""
+```arch
+node c "Client" at 0,0 icon=client color=slate
+node s "Server" at 1,0 icon=server color=purple
+node reqh "HEADERS: POST /shop.v1.Catalog/GetProduct" at 0.5,1 shape=card color=teal
+c -> reqh -> s
+node reqd "DATA: [0][len][protobuf]" at 0.5,2 shape=card color=blue sub="END_STREAM (half-close)"
+c -> reqd -> s
+node resh "HEADERS: status 200, application/grpc" at 0.5,3 shape=card color=teal
+s -> resh -> c
+node resd "DATA: [0][len][protobuf]" at 0.5,4 shape=card color=blue
+s -> resd -> c
+node trail "HEADERS (trailers): grpc-status 0" at 0.5,5 shape=card color=teal
+s -> trail -> c
 ```
 
 Key facts:
@@ -207,18 +203,20 @@ Key-value pairs, like <abbr title="Hypertext Transfer Protocol - The foundation 
 
 A **timeout** is what you set (`timeout=2` in Python, `context.WithTimeout` in Go); the **deadline** is the absolute point in time it implies. It is sent to the server, and both sides enforce it.
 
-```mermaid
-sequenceDiagram
-    participant U as Caller (0.5s budget)
-    participant G as Gateway
-    participant B as Backend (needs 1s)
-    U->>G: GetProduct (deadline +0.5s)
-    G->>B: GetProduct (deadline = remaining ~0.49s)
-    note over B: working...
-    note over U: 0.5s elapsed
-    U--xG: DEADLINE_EXCEEDED
-    G--xB: CANCELLED
-    note over B: notices, stops working
+```arch
+node u "Caller (0.5s budget)" at 0,0 icon=client color=slate
+node g "Gateway" at 1,0 icon=gateway color=teal
+node b "Backend (needs 1s)" at 2,0 icon=server color=purple
+u -> g : "GetProduct (deadline +0.5s)"
+g -> b : "GetProduct (deadline = ~0.49s)"
+node wrk "working..." at 2,1 shape=text
+b -> wrk -> b
+node elap "0.5s elapsed" at 0,1 shape=card color=amber
+u -> elap -> u
+u ..> g : "DEADLINE_EXCEEDED"
+g ..> b : "CANCELLED"
+node stop "notices, stops working" at 2,2 shape=card color=red
+b -> stop -> b
 ```
 
 *   **Propagate the remaining time** downstream (`context.time_remaining()` in Python; in Go, use the incoming `ctx` for outgoing calls and the deadline flows automatically). Otherwise the backend keeps working for a caller that has gone.
@@ -341,18 +339,18 @@ In Kubernetes a plain ClusterIP service has exactly this problem; use a **headle
 
 **Scenario:** A Microservices architecture where an <abbr title="Application Programming Interface">API</abbr> Gateway (acting as a <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> client) calls a User Microservice (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Server) to fetch data extremely fast.
 
-```mermaid
-sequenceDiagram
-    participant WebClient as Web Browser (HTTP)
-    participant Gateway as API Gateway (gRPC Client)
-    participant UserSvc as User Service (gRPC Server)
-
-    WebClient->>Gateway: GET /users/1 (JSON)
-    note over Gateway,UserSvc: Gateway converts JSON to Protobuf
-    Gateway->>UserSvc: GetUser(GetUserRequest { id: "1" }) (HTTP/2 Binary)
-    UserSvc-->>Gateway: GetUserResponse { user: { ... } }
-    note over Gateway,WebClient: Gateway converts Protobuf to JSON
-    Gateway-->>WebClient: 200 OK (JSON)
+```arch
+node web "Web Browser" at 0,0 icon=client color=slate
+node gw "API Gateway" at 1,0 icon=gateway color=teal
+node svc "User Service" at 2,0 icon=server color=purple
+web -> gw : "GET /users/1 (JSON)"
+node conv "JSON to Protobuf" at 1,1 shape=text color=amber
+gw -> conv -> gw
+gw -> svc : "GetUser (HTTP/2)"
+svc -> gw : "GetUserResponse"
+node conv2 "Protobuf to JSON" at 1,2 shape=text color=amber
+gw -> conv2 -> gw
+gw -> web : "200 OK (JSON)"
 ```
 
 ## When to Use <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> (and When Not To)

@@ -132,20 +132,15 @@ How does an <abbr title="Log-Structured Merge-tree. A data structure with perfor
 ### Multi-Version Concurrency Control (<abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr>)
 How does PostgreSQL let readers and writers proceed concurrently without table locks?
 
-```mermaid
-sequenceDiagram
-    participant W as Writer (Txn 100)
-    participant DB as Row Versions
-    participant R as Reader (Txn 99 snapshot)
-    
-    Note over DB: Row v1: {name: Alice, xmin: 50}
-    W->>DB: UPDATE name='Bob' (creates v2)
-    Note over DB: Row v1: {name: Alice, xmin: 50, xmax: 100}
-    Note over DB: Row v2: {name: Bob, xmin: 100}
-    R->>DB: SELECT name (snapshot at Txn 99)
-    DB-->>R: Returns 'Alice' (v1 visible, v2 invisible)
-    Note over R: Reader sees consistent snapshot!
-    Note over W: Writer NOT blocked!
+```arch
+node w "Writer (Txn 100)" at 0,0 icon=user color=slate
+node db "Row Versions" at 1,0 icon=db color=blue
+node r "Reader (Txn 99)" at 2,0 icon=user color=slate
+node v1 "Row v1: Alice, xmin:50" at 1,1 shape=card color=amber
+w -> db : "UPDATE name='Bob'"
+node v2 "Row v2: Bob, xmin:100" at 1,2 shape=card color=purple
+r -> db : "SELECT name"
+db -> r : "Returns 'Alice'"
 ```
 *   An update writes a **new version** of the row stamped with the writing transaction's ID (`xmin`) and marks the old version's `xmax`.
 *   A transaction's **snapshot** records which transactions were committed when it started. A version is visible if its creator committed before the snapshot and its deleter didn't.
@@ -198,9 +193,23 @@ Practical defenses below serializable: atomic conditional updates (`UPDATE ... W
 *   **Leaderless (Dynamo-style):** clients write to W of N replicas and read from R; **R + W > N** makes read and write quorums overlap so a read sees the latest acknowledged write (barring sloppy quorums and concurrent writes). Repair via read repair, hinted handoff, and Merkle-tree anti-entropy. See `SystemDesign/building_blocks/19_consensus_and_coordination.md`.
 *   **Failover dangers:** split brain (two leaders), lost async writes, clients caching the old leader. Leases, fencing tokens, and consensus-based leader election prevent split brain.
 
-## 6. Distributed Consensus & Clocks
+## 6. The CAP Theorem and Distributed Consensus
 
-You know <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> (during a partition, choose consistency or availability). **PACELC** adds: *else*, when there's no partition, choose between latency and consistency.
+Before discussing how systems agree on state, we must define what is mathematically possible.
+
+### The CAP Theorem
+The CAP theorem states that a distributed data store can only simultaneously provide two out of the following three guarantees:
+*   **Consistency (C):** Every read receives the most recent write or an error.
+*   **Availability (A):** Every request receives a (non-error) response, without the guarantee that it contains the most recent write.
+*   **Partition Tolerance (P):** The system continues to operate despite an arbitrary number of messages being dropped (or delayed) by the network between nodes.
+
+**The Reality of CAP:** You don't actually get to "pick two." Network partitions (P) are a fact of life in distributed systems—switches fail, cables are cut, garbage collection pauses mimic network drops. Therefore, **you must choose between Consistency and Availability during a partition.**
+*   **CP Systems:** Choose Consistency. If a node cannot reach the majority to confirm a write, it returns an error or blocks (e.g., Spanner, CockroachDB, HBase, Zookeeper).
+*   **AP Systems:** Choose Availability. The system accepts the write and returns the data it has, even if it might be stale. Conflicts are resolved later (e.g., Cassandra, DynamoDB, Riak).
+
+**PACELC:** CAP only describes behavior *during a partition*. PACELC extends this: **P**artition ? choose **A** or **C** : **E**lse (running normally) choose **L**atency or **C**onsistency. A system like Dynamo is PA/EL (Availability during partition, Latency normally); Spanner is PC/EC (Consistency always).
+
+### Distributed Consensus & Clocks
 
 ### Paxos vs. Raft
 Both let a cluster agree on a replicated log despite node failures, as long as a **majority** is alive (5 nodes tolerate 2 failures).
@@ -211,22 +220,16 @@ Both let a cluster agree on a replicated log despite node failures, as long as a
 ### Spanner and TrueTime
 How does Spanner provide **external consistency** (serializable with commit timestamps that respect real-time order) across continents?
 
-```mermaid
-sequenceDiagram
-    participant NY as Spanner Node (New York)
-    participant TT as TrueTime API
-    participant TK as Spanner Node (Tokyo)
-    
-    NY->>TT: TT.now() = [earliest, latest]
-    Note over TT: Uncertainty ε is typically a few ms
-    NY->>NY: Pick commit timestamp s = latest
-    NY->>NY: COMMIT WAIT until TT.after(s) is true (about 2ε)
-    NY-->>NY: T1 acknowledged
-    
-    TK->>TT: TT.now() = [earliest2, latest2]
-    Note over TK: earliest2 > s is guaranteed after the wait
-    TK->>TK: Transaction T2 gets strictly higher timestamp
-    Note over TK: T2 is guaranteed to be "after" T1 globally
+```arch
+node ny "Spanner Node (New York)" at 0,0 icon=server color=blue
+node tt "TrueTime API" at 1,0 icon=gateway color=teal
+node tk "Spanner Node (Tokyo)" at 2,0 icon=server color=purple
+ny -> tt : "TT.now() = [e1, l1]"
+node wait "COMMIT WAIT until TT.after(s)" at 0,1 shape=card color=amber
+ny -> wait -> ny
+tk -> tt : "TT.now() = [e2, l2]"
+node t2 "T2 gets higher timestamp" at 2,2 shape=card color=amber
+tk -> t2 -> tk
 ```
 *   **The Problem:** Clocks drift. With NTP, uncertainty between servers can be tens to hundreds of milliseconds, so wall-clock timestamps from different machines can't order events safely.
 *   **TrueTime:** Google runs time masters in every datacenter backed by **GPS receivers and atomic clocks**. `TT.now()` returns an interval `[earliest, latest]` guaranteed to contain true time. The paper reports the uncertainty bound ε typically between about 1 and 7 ms.

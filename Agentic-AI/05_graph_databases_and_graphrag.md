@@ -223,27 +223,24 @@ being joined, regardless of how "local" the actual relationship of interest is.
 - **Graph way (IFA):** every person's page in your address book already has their friends'
   pages *stapled to it*. You just flip to the stapled page.
 
-```mermaid
+```arch
 %% caption: The same 3-hop query. Relational engines search an index at every hop; graph engines follow a stored reference.
-sequenceDiagram
-    participant Q as Query
-    participant IDX as edges B-tree index
-    participant N as Node records
-    rect rgba(128,128,128,0.12)
-    Note over Q,IDX: Relational — one index search per hop
-    Q->>IDX: find edges WHERE source = Alice
-    IDX-->>Q: Bob (≈5 page reads)
-    Q->>IDX: find edges WHERE source = Bob
-    IDX-->>Q: Carol (≈5 page reads)
-    Q->>IDX: find edges WHERE source = Carol
-    IDX-->>Q: Dave (≈5 page reads)
-    end
-    rect rgba(128,128,128,0.12)
-    Note over Q,N: Graph (IFA) — follow the stored pointer
-    Q->>N: Alice.adjacency → Bob
-    Q->>N: Bob.adjacency → Carol
-    Q->>N: Carol.adjacency → Dave
-    end
+group rel "Relational — one index search per hop" color=slate
+node q1 "Query" at 0,0 in rel icon=cli
+node idx "B-tree Index" at 1,0 in rel icon=table color=blue
+q1 -> idx : "source = Alice"
+idx -> q1 : "Bob (≈5 reads)"
+q1 -> idx : "source = Bob"
+idx -> q1 : "Carol (≈5 reads)"
+q1 -> idx : "source = Carol"
+idx -> q1 : "Dave (≈5 reads)"
+
+group ifa "Graph (IFA) — follow the stored pointer" color=teal
+node q2 "Query" at 0,1 in ifa icon=cli
+node n "Node Records" at 1,1 in ifa icon=graph color=green
+q2 -> n : "Alice.adjacency → Bob"
+q2 -> n : "Bob.adjacency → Carol"
+q2 -> n : "Carol.adjacency → Dave"
 ```
 
 **The numbers.** An edges table with **1 billion rows** in a B-tree with ~100 keys per page is
@@ -791,23 +788,17 @@ Self-test complete: Index-Free Adjacency traversal, triple extraction, and k-hop
 
 ## 6. Recap & Self-Check
 
-```mermaid
+```arch
 %% caption: The whole module on one page.
-mindmap
-  root((Graphs + GraphRAG))
-    Storage
-      LPG properties on edges
-      RDF triples
-      index-free adjacency
-    Traversal
-      BFS k-hop
-      Dijkstra weighted
-      PageRank importance
-    GraphRAG
-      LLM extraction
-      entity resolution
-      Leiden communities
-      local vs global queries
+node root "Graphs + GraphRAG" at 1,0 shape=pill color=teal
+
+node store "Storage" at 0,1 shape=card color=blue sub="LPG (properties), RDF (triples), index-free adjacency"
+node trav "Traversal" at 1,1 shape=card color=green sub="BFS (k-hop), Dijkstra (weighted), PageRank"
+node rag "GraphRAG" at 2,1 shape=card color=orange sub="LLM extraction, entity resolution, Leiden, local vs global"
+
+root -> store
+root -> trav
+root -> rag
 ```
 
 | Idea | Remember it as |

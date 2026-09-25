@@ -154,22 +154,23 @@ A per-driver lock (SETNX with TTL) fails when a paused holder writes after expir
 4. **Expiry.** A timer runs `UPDATE offer SET state='EXPIRED' WHERE state='OPEN' AND expires_at <= now`, frees the driver and returns the trip to `SEARCHING`. Accept and expiry race on the same `state='OPEN'` predicate, so exactly one wins.
 5. **Retry.** A repeated `accept` on an offer already `ACCEPTED` by that driver returns success; a crash between the trip write and the driver update is repaired by that retry or a reconciler scanning `OFFERED` drivers past their lease.
 
-```mermaid
+```arch
 %% caption: Two drivers accept near-simultaneously and the compare-and-set on the trip row lets exactly one win while the loser gets a clean rejection.
-sequenceDiagram
-    participant D as Dispatcher
-    participant S as Trip store
-    participant A as Driver A
-    participant B as Driver B
-    D->>S: claim drivers A and B (AVAILABLE to OFFERED)
-    D->>S: write offers o1 o2 and trip SEARCHING to OFFERED
-    D->>A: offer o1 (expires in 12 s)
-    D->>B: offer o2 (expires in 12 s)
-    A->>S: accept o1
-    B->>S: accept o2
-    Note over S: trip <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> OFFERED to MATCHED, exactly one succeeds
-    S-->>A: 200 MATCHED
-    S-->>B: 409 OFFER_TAKEN
+grid 120x80
+node d "Dispatcher" at 0,0
+node s "Trip store" at 0,2
+node a "Driver A" at 2,0
+node b "Driver B" at 2,2
+
+d -> s : "claim drivers A and B"
+d -> s : "write offers o1 o2"
+d -> a : "offer o1 (12s)"
+d -> b : "offer o2 (12s)"
+a -> s : "accept o1"
+b -> s : "accept o2"
+s -> s : "trip <abbr title=\"Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.\">CAS</abbr> OFFERED to MATCHED,\nexactly one succeeds"
+s -> a : "200 MATCHED"
+s -> b : "409 OFFER_TAKEN"
 ```
 
 **Sequential or parallel offers.** With an acceptance probability of 0.6 (assumption), sequential offers need 1 ÷ 0.6 = 1.7 rounds of up to 12 s; two parallel offers succeed per round with 1 − 0.4² = 0.84, needing 1.2 rounds, but hold two drivers per trip. **Decision: one offer first, two in parallel on re-offers and in supply-rich zones.** It cuts time to a confirmed driver at the price of some `OFFER_TAKEN` disappointments, acceptable because driver attention is cheaper than rider abandonment. The 3 s SLO covers time to *offer*, not accept. On decline or timeout the driver joins `excluded_drivers`, `attempts++`, and the trip re-enters the next window with an age bonus.

@@ -32,20 +32,17 @@ That is a `fatal error`, not a `panic`: **`recover()` cannot catch it**, and the
 
 ---
 
-```mermaid
-%% caption: Frames are pushed on the way down and popped on the way back. The base case is just the first call that returns without calling again.
-sequenceDiagram
-  participant M as caller
-  participant A as fact(3)
-  participant B as fact(2)
-  participant C as fact(1)
-  M->>A: call
-  A->>B: call
-  B->>C: call
-  Note over C: base case, makes no further call
-  C-->>B: return 1
-  B-->>A: return 2 x 1 = 2
-  A-->>M: return 3 x 2 = 6
+```arch
+node m "caller" at 0,0 icon=user color=slate
+node a "fact(3)" at 1,0 shape=card color=blue
+node b "fact(2)" at 2,0 shape=card color=teal
+node c "fact(1)" at 3,0 shape=card color=purple
+m -> a : "call"
+a -> b : "call"
+b -> c : "call"
+c -> b : "return 1"
+b -> a : "return 2"
+a -> m : "return 6"
 ```
 
 ## Part 2 · Base Cases, Call Shapes, and What They Cost

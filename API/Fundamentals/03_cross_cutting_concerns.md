@@ -15,7 +15,8 @@ Whether you build <abbr title="Representational State Transfer - An architectura
 | **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Basic** | `Authorization: Basic base64(user:pass)` | Internal tools, legacy | Base64 is **not** encryption. <abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr> mandatory. |
 | **Bearer token (<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>)** | Signed token, verified locally | Stateless microservices, mobile apps | Cannot be revoked before expiry unless you keep a denylist. Keep it short-lived. |
 | **Opaque token** | Random string, looked up server-side | Need instant revocation | Every request costs a lookup (cache it). |
-| **OAuth 2.0** | Delegated access: user grants an app limited scopes | "Sign in with Google", third-party apps | Complex. Use a library and the PKCE flow for public clients. |
+| **OAuth 2.0** | Delegated access: user grants an app limited scopes | Third-party apps accessing APIs | Complex. Use a library and the PKCE flow for public clients. |
+| **OIDC (OpenID Connect)** | Identity layer on top of OAuth 2.0 | "Sign in with Google/Apple", authentication | Returns an `id_token` (JWT) with user profile info. |
 | **mTLS** | Both sides present certificates | Service-to-service in a zero-trust network | Certificate rotation is an operational task. |
 | **HMAC signature** | Sender signs the body with a shared secret | Webhooks, AWS-style request signing | Sign the *raw bytes*, include a timestamp. |
 
@@ -40,14 +41,15 @@ sequenceDiagram
     participant A as Your App
     participant AS as Auth Server
     participant API as Resource API
-    A->>AS: Redirect user: /authorize?client_id&scope&code_challenge
+    A->>AS: Redirect: /authorize?client_id&code_challenge
     U->>AS: Logs in, approves scopes
-    AS-->>A: Redirect back with ?code=abc
-    A->>AS: POST /token {code, code_verifier}
-    AS-->>A: access_token (short) + refresh_token
-    A->>API: GET /orders  Authorization: Bearer access_token
+    AS-->>A: Redirect back: ?code=abc
+    A->>AS: POST /token\n{code, code_verifier}
+    AS-->>A: access_token + refresh_token
+    A->>API: GET /orders (Bearer)
     API-->>A: 200 OK
 ```
+
 
 The **`code_challenge` / `code_verifier`** pair (PKCE) stops a stolen authorization code from being redeemed by an attacker.
 
@@ -125,15 +127,16 @@ sequenceDiagram
     participant C as Client
     participant S as Server
     participant DB as Key store
-    C->>S: POST /payments  Idempotency-Key: K1
-    S->>DB: K1 seen?  no -> reserve K1
+    C->>S: POST /payments (Key: K1)
+    S->>DB: K1 seen? no -> reserve
     S->>S: Charge card
     S->>DB: save response for K1
-    S--xC: (response lost in transit)
-    C->>S: POST /payments  Idempotency-Key: K1  (retry)
-    S->>DB: K1 seen?  yes
-    S-->>C: replay saved 201 (no second charge)
+    Note over C,S: (response lost in transit)
+    C->>S: POST /payments (retry K1)
+    S->>DB: K1 seen? yes
+    S-->>C: replay saved 201 (no double charge)
 ```
+
 
 ```python
 import threading
@@ -285,21 +288,16 @@ A contract-first workflow (write the contract, generate code, test against it) c
 *   **Distributed tracing**: propagate the W3C `traceparent` header (`00-<trace-id>-<span-id>-01`) through every hop so you can see one request across ten services.
 *   **Health endpoints**: `/healthz` (process alive) and `/readyz` (dependencies ready) for orchestrators. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> has a standard health-checking protocol.
 
-```arch
-%% caption: Distributed tracing propagates a single trace ID through headers across microservices, allowing observability backends to reconstruct the full request path.
-node c "Client" at 0,1 icon=client color=blue
-node gw "API Gateway\n(Starts Trace ID)" at 2,1 icon=gateway color=green
-node svc1 "Service A\n(Passes Trace ID)" at 4,0 icon=app color=green
-node svc2 "Service B\n(Passes Trace ID)" at 4,2 icon=app color=green
-node obs "Tracing Backend\n(Jaeger / DataDog)" at 6,1 icon=metrics color=slate
-
-c -> gw : "request"
-gw -> svc1 : "header:\ntraceparent"
-gw -> svc2 : "header:\ntraceparent"
-gw ..> obs : "send span"
-svc1 ..> obs : "send span"
-svc2 ..> obs : "send span"
+```mermaid
+flowchart LR
+    c[Client] -->|request| gw[API Gateway\nStarts Trace ID]
+    gw -->|header: traceparent| svc1[Service A\nPasses Trace ID]
+    gw -->|header: traceparent| svc2[Service B\nPasses Trace ID]
+    gw -.->|send span| obs[Tracing Backend\nJaeger / DataDog]
+    svc1 -.->|send span| obs
+    svc2 -.->|send span| obs
 ```
+
 
 ## 12. Security Checklist
 

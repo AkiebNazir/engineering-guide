@@ -86,42 +86,39 @@ The state machine is `uploaded → processing → ready | failed`, and only `rea
 
 ## Architecture and data flow
 
-```mermaid
+```arch
 %% caption: The API gates who may start playback, the edge validates a path-scoped token that is not part of the cache key, and DRM makes premium segments useless without a license.
-sequenceDiagram
-    actor Creator
-    actor Viewer
-    participant Src as Source storage
-    participant Orch as Transcode orchestrator
-    participant Deriv as Derivative storage
-    participant API as Playback API
-    participant Lic as License server
-    participant CDN as CDN edge
-    participant Shield as Origin shield
-    participant Player
-    participant Log as Event log
+node Creator "Creator" at 0,0
+node Viewer "Viewer" at 0,4
 
-    Creator->>Src: resumable upload then complete
-    Src-->>Orch: job trigger
-    Orch->>Orch: probe, split, encode chunks by rung, package, encrypt
-    Orch->>Deriv: segments and manifests, status ready
+node Src "Source storage" at 1,0
+node Orch "Transcode orchestrator" at 2,0
+node Deriv "Derivative storage" at 3,0
 
-    Viewer->>API: start playback for video
-    API-->>Viewer: manifest URL, edge token, license URL
-    Player->>CDN: manifest and segments with token
-    alt edge hit
-        CDN-->>Player: cached segment
-    else edge miss
-        CDN->>Shield: fetch by path only
-        Shield->>Deriv: fetch once
-        Deriv-->>Shield: segment
-        Shield-->>CDN: segment
-        CDN-->>Player: segment, edge now cached
-    end
-    Player->>Lic: license request for encrypted content
-    Lic-->>Player: keys if entitled and device allowed
-    Player->>Player: adapt rung per buffer and bandwidth
-    Player->>Log: batched playback events
+node API "Playback API" at 1,2
+node Lic "License server" at 1,3
+
+node Player "Player" at 1,4
+node CDN "CDN edge" at 2,4
+node Shield "Origin shield" at 3,4
+
+node Log "Event log" at 1,5
+
+Creator -> Src
+Src -> Orch
+Orch -> Deriv
+
+Viewer -> API
+API -> Viewer
+
+Player -> CDN
+CDN -> Shield
+Shield -> Deriv
+
+Player -> Lic
+Lic -> Player
+
+Player -> Log
 ```
 
 **One upload, end to end.** The client opens an upload session (`POST /v1/uploads`) and streams 8 MB chunks straight to regional object storage over a resumable protocol; `complete` verifies the checksum, flips the state to `processing`, and enqueues a job. The orchestrator probes and validates the file in a sandbox, splits it, fans out encode tasks, assembles and encrypts the output, runs a QC pass, writes the manifests, and only then sets `status = ready` and notifies the creator. Every step is idempotent: task outputs have deterministic paths, so a retry rewrites the same object.

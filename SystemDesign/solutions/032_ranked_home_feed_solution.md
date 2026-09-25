@@ -104,25 +104,25 @@ BL -> P
 BL ..> LOG : "items, scores, features"
 ```
 
-```mermaid
+```arch
 %% caption: One absolute deadline is passed down, each stage gets the remaining budget, and a stage that cannot finish is skipped instead of failing the load.
-sequenceDiagram
-    participant C as Client
-    participant FS as Feed service
-    participant R as Retrieval sources
-    participant L as Light ranker shards
-    participant H as Heavy ranker
-    participant SS as Snapshot store
-    C->>FS: GET feed, deadline 400 ms
-    FS->>R: retrieve, deadline 60 ms
-    R-->>FS: 4,000 candidates, slow source dropped
-    FS->>L: score 3,000 in place, 375 per shard
-    L-->>FS: top 300
-    FS->>H: rank 300, remaining budget
-    H-->>FS: top 100 with scores
-    FS->>SS: store snapshot of 50 (async)
-    FS-->>C: page 1 with request id
-    C-)FS: impression events, batched
+grid 70x60
+node C "Client" at 0,2 icon=mobile
+node FS "Feed service" at 2,2 icon=server
+node R "Retrieval sources" at 4,0 icon=search
+node L "Light ranker shards" at 4,1 icon=model
+node H "Heavy ranker" at 4,3 icon=llm
+node SS "Snapshot store" at 4,4 icon=kv
+C -> FS : "1. GET feed (400ms)"
+FS -> R : "2. retrieve (60ms)"
+R -> FS : "3. 4,000 candidates"
+FS -> L : "4. score 3,000 in place"
+L -> FS : "5. top 300"
+FS -> H : "6. rank 300, remaining budget"
+H -> FS : "7. top 100 with scores"
+FS -> SS : "8. store snapshot of 50 (async)"
+FS -> C : "9. page 1 with request id"
+C ..> FS : "10. impression events, batched"
 ```
 
 **Read.** The feed service starts context reads and all five retrievers at once, each with a deadline. It unions candidates by post id (tagging the source), applies hard filters once (seen, blocked or muted via the [social graph](039_social_graph_service_solution.md), integrity, age), scatters ids to the light-ranker shards, fetches real-time features for the top 300, calls the heavy ranker, blends, writes the snapshot and hydrates page 1.

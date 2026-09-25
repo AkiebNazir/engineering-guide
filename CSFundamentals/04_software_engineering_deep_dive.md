@@ -136,19 +136,18 @@ A coordinator asks every participant to **prepare** (durably promise it can comm
 ### The Saga Pattern
 A saga is a sequence of local transactions. Each step commits locally and triggers the next; if a step fails, **compensating transactions** semantically undo earlier steps.
 
-```mermaid
-sequenceDiagram
-    participant O as Order Service
-    participant P as Payment Service
-    participant I as Inventory Service
-    
-    O->>P: Charge card
-    P-->>O: PaymentSucceeded
-    O->>I: Reserve inventory
-    I-->>O: InventoryFailed!
-    Note over O: Saga compensation begins
-    O->>P: Refund card (compensate)
-    P-->>O: RefundComplete
+```arch
+node o "Order Service" at 0,0 icon=server color=blue
+node p "Payment Service" at 1,0 icon=server color=purple
+node i "Inventory Service" at 2,0 icon=server color=teal
+o -> p : "Charge card"
+p -> o : "PaymentSucceeded"
+o -> i : "Reserve inventory"
+i -> o : "InventoryFailed!"
+node saga "Saga compensation begins" at 0,1 shape=card color=amber
+o -> saga -> o
+o -> p : "Refund card"
+p -> o : "RefundComplete"
 ```
 
 <div class="lab" data-viz="saga-pattern"></div>

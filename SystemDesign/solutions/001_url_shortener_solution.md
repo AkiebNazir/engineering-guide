@@ -144,34 +144,31 @@ redirect ..> stream : "click event"
 stream ..> analytics
 ```
 
-```mermaid
+```arch
 %% caption: Redirects and creates are independent paths — only creation touches the transactional outbox, and only the outbox touches analytics.
-sequenceDiagram
-    actor Creator
-    actor Visitor
-    participant Edge as DNS/CDN/WAF
-    participant Redirect as Redirect service
-    participant Cache as Redis cache
-    participant DB as Link database
-    participant Relay as Outbox relay
-    participant Stream as Event stream
+node creator "Creator" at 0,0 icon=user color=slate
+node db "Link database" at 1,0 icon=db color=blue
+node relay "Outbox relay" at 2,0 icon=worker color=amber
+node stream "Event stream" at 3,0 icon=stream color=teal
 
-    Creator->>DB: API service: insert Link + OutboxEvent (one transaction)
-    DB-->>Relay: outbox row committed
-    Relay->>Stream: publish LinkCreated
+creator -> db : "insert Link + OutboxEvent"
+db -> relay : "outbox row committed"
+relay -> stream : "publish LinkCreated"
 
-    Visitor->>Edge: GET /{code}
-    Edge->>Redirect: forward
-    Redirect->>Cache: GET link:{code}
-    alt cache hit
-        Cache-->>Redirect: mapping
-    else cache miss
-        Redirect->>DB: SELECT by code
-        DB-->>Redirect: mapping
-        Redirect->>Cache: SET link:{code}
-    end
-    Redirect-->>Visitor: 302 Location
-    Redirect->>Stream: click event (async, non-blocking)
+node visitor "Visitor" at 0,1 icon=users color=slate
+node edge "DNS/CDN/WAF" at 1,1 icon=cdn color=purple
+node redirect "Redirect service" at 2,1 icon=service color=teal
+node cache "Redis cache" at 3,1 icon=redis color=red
+
+visitor -> edge : "GET /{code}"
+edge -> redirect : "forward"
+redirect -> cache : "GET link"
+cache -> redirect : "hit: mapping"
+redirect -> db : "miss: SELECT"
+db -> redirect : "mapping"
+redirect -> cache : "SET link"
+redirect -> visitor : "302 Location"
+redirect -> stream : "click event"
 ```
 
 ### Create flow

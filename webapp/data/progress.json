@@ -121,6 +121,16 @@
       "last": 1790264250957,
       "pos": 0
     },
+    "dataengineering:04_Batch_Processing": {
+      "last": 1790376580776,
+      "pct": 100,
+      "pos": 0.9031
+    },
+    "dataengineering:05_Stream_Processing": {
+      "last": 1790376600473,
+      "pct": 54,
+      "pos": 0.4606
+    },
     "dsaguide:01_arrays_hashing": {
       "last": 1790240260057,
       "pct": 100,
@@ -326,8 +336,26 @@
       "pct": 100,
       "pos": 0.8305
     },
+    "nosql:mongodb/02_crud_basics": {
+      "last": 1790365113715
+    },
+    "nosql:mongodb/07_updates_deep_dive": {
+      "last": 1790365168654,
+      "pct": 42,
+      "pos": 0.0184
+    },
     "nosql:mongodb/09_transactions_in_mongodb": {
       "last": 1790179701824
+    },
+    "nosql:redis/00_the_key_value_model": {
+      "last": 1790365180138,
+      "pct": 100,
+      "pos": 0.7879
+    },
+    "nosql:redis/01_connecting_and_first_command": {
+      "last": 1790365184996,
+      "pct": 100,
+      "pos": 0.8812
     },
     "nosql:redis/08_distributed_locking": {
       "last": 1790179701118
@@ -502,6 +530,14 @@
       "revealedAt": 1790178648975,
       "reveals": 2
     },
+    "sd:problem/008_checkout": {
+      "last": 1790376472866,
+      "pct": 100,
+      "pos": 0.3955,
+      "revealed": true,
+      "revealedAt": 1790376464622,
+      "reveals": 2
+    },
     "sd:problem/009_search_and_autocomplete": {
       "last": 1789674571742,
       "pct": 93,
@@ -516,6 +552,14 @@
       "pos": 0.2449,
       "revealed": true,
       "revealedAt": 1790178656216,
+      "reveals": 1
+    },
+    "sd:problem/020_ride_dispatch": {
+      "last": 1790376550788,
+      "pct": 100,
+      "pos": 0.466,
+      "revealed": true,
+      "revealedAt": 1790376477365,
       "reveals": 1
     },
     "sd:problem/023_distributed_key_value_store": {

@@ -73,31 +73,26 @@ workflow_defs, signals (run_id, signal_id, payload), approvals (approvers[], nee
 
 Stateless <abbr title="Application Programming Interface">API</abbr> servers, ~100 workers and N interchangeable sweepers talk to one Postgres primary (sync replica; a read replica serves status). One write: `POST /runs` inserts the run and its steps in one transaction (dependency-free steps `READY` with `available_at = start_at`); a claim flips one READY row to RUNNING and returns `fence`; the worker runs the activity; `complete` checks the fence, marks DONE, decrements successors' `deps_remaining`, flips those at 0 to READY, appends events and closes the run when all steps are terminal — **one transaction**, so a crash leaves the old state or the new, never half an advance. One read: `GET /runs/{id}` hits a replica (terminal runs are immutable and cacheable; the create response covers read-your-writes).
 
-```mermaid
+```arch
 %% caption: The completion write must match the exact fencing token issued at claim time — a merely-slow worker's late write is rejected deterministically, not by timing.
-sequenceDiagram
-    participant Timer as Schedule/timer
-    participant Store as Durable task store
-    participant W1 as Worker (original)
-    participant W2 as Worker (reclaimer)
+grid 250x150
+node Timer "Schedule/timer" at 1,1
+node Store "Durable task store" at 1,2
+node W1 "Worker (original)" at 1,3
+node W2 "Worker (reclaimer)" at 1,4
 
-    Timer->>Store: task becomes READY
-    W1->>Store: claim: SET lease_owner, fencing_token=T1, lease_expiry WHERE expired or unowned
-    Store-->>W1: claimed with token T1
-    W1->>W1: execute activity (idempotent, workflow/task id as key)
+Timer -> Store : "task becomes READY"
+W1 -> Store : "claim: SET lease_owner, fencing_token=T1, lease_expiry"
+Store -> W1 : "claimed with token T1"
+W1 -> W1 : "execute activity"
+W2 -> Store : "[lease expires] claim: fencing_token=T2"
+Store -> W2 : "claimed with token T2"
+W1 -> Store : "UPDATE status='DONE' WHERE fencing_token=T1"
+Store -> W1 : "[matches] commit, advance"
+Store -> W1 : "[stale] rejected, W2 result is authoritative"
 
-    opt lease expires before W1 completes
-        W2->>Store: claim: fencing_token=T2
-        Store-->>W2: claimed with token T2
-    end
-
-    W1->>Store: UPDATE status='DONE' WHERE fencing_token=T1
-    alt token still matches
-        Store-->>W1: commit, advance workflow to next step
-    else token stale (reclaimed)
-        Store-->>W1: rejected — W2's result is authoritative
-    end
-    Note over Store: next step may be another task, a durable timer, or a human-approval wait
+node Note "Note: next step may be another task, a durable timer, or a human-approval wait" at 2,2 shape=pill color=amber
+Store -> Note
 ```
 
 The fencing token is the hard mechanism: lease expiry alone is not enough, because a worker can be merely slow (<abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pause, network blip) rather than dead, and a naive "am I still the owner" check races with the reclaimer. Requiring the completion write to match the exact token issued at claim time closes that race deterministically, at the price of a small monotonic counter per claim.

@@ -13,7 +13,7 @@ API/
                          pitfalls, check-yourself questions, and a table of the labs
     labs/
       python/            5 labs:  01-02 basics,  03-05 advanced
-      golang/            5 labs:  01-02 basics,  03-05 advanced   (each in its own folder: NN_name/main.go)
+      golang/            7 labs:  01-02 basics,  03-07 advanced   (each in its own folder: NN_name/main.go)
   go.mod                 one Go module for every Go lab (module dsapractice/api)
   requirements.txt       Python packages for every Python lab
   _archive/              the previous guides and examples, kept for reference (safe to delete)

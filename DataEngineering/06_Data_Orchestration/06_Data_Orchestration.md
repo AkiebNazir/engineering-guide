@@ -19,12 +19,13 @@ The industry standard for data orchestration.
 - **Sensors**: Special operators that wait for a certain condition to be met (e.g., wait for a file to arrive in S3).
 - **XCom (Cross-Communication)**: A mechanism to share small amounts of data between tasks.
 
-```mermaid
-flowchart LR
-    Start([Start]) --> Extract[Extract Data]
-    Extract --> Transform[Transform Data]
-    Transform --> Load[Load Data]
-    Load --> End([End])
+```arch
+node st "Start" at 0,0 shape=text
+node e "Extract Data" at 1,0 shape=card color=blue
+node t "Transform Data" at 2,0 shape=card color=amber
+node l "Load Data" at 3,0 shape=card color=purple
+node en "End" at 4,0 shape=text
+st -> e -> t -> l -> en
 ```
 
 ## 3. Idempotency

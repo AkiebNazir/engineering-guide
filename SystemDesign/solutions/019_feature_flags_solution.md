@@ -82,25 +82,22 @@ relay ..> sdk : "stream/poll\nrules"
 sdk -> eval : "local\ndecision"
 ```
 
-```mermaid
+```arch
 %% caption: A kill switch is one transactional write followed by a fan-out through relays, and every hop is a cache that keeps serving the last good version if the hop before it dies.
-sequenceDiagram
-    participant Op as Operator
-    participant CP as Control plane
-    participant Rel as Regional relay
-    participant SDK as SDK in service
+node Op "Operator" at 0,0 icon=user
+node CP "Control Plane" at 2,0 icon=server
+node Rel "Regional Relay" at 2,2 icon=internet
+node SDK "SDK in Service" at 0,2 icon=code
 
-    Op->>CP: POST flag:kill with reason
-    CP->>CP: commit flag version N+1 and audit event
-    CP-->>Op: 200 version N+1
-    CP->>Rel: publish patch N+1
-    Rel->>SDK: SSE patch key=checkout-v2 version=N+1
-    SDK->>SDK: apply if N+1 > held version
-    Note over SDK: next evaluate() returns off variation
-    opt stream broken
-        SDK->>Rel: poll with If-None-Match every 5 s
-        Rel-->>SDK: 200 new snapshot
-    end
+Op -> CP : "POST flag:kill\nwith reason"
+CP -> CP : "commit flag\n& audit" dir=right
+CP -> Op : "200 OK\nversion N+1"
+CP -> Rel : "publish\npatch N+1"
+Rel -> SDK : "SSE patch\nversion N+1"
+SDK -> SDK : "apply if\nN+1 > held" dir=left
+SDK -> SDK : "next evaluate()\nreturns off" dir=left
+SDK -> Rel : "poll if\nstream broken"
+Rel -> SDK : "200 new\nsnapshot"
 ```
 
 The hard decision is what happens during a control-plane or distribution outage: the SDK keeps serving its last good snapshot rather than failing evaluation, but it must not serve an arbitrarily old snapshot as if current — this trades perfect freshness for availability, made visible by exposing snapshot age. The safe-default behavior must be defined per flag at authoring time, because "fail to off" is right for a risky new code path but "fail to on" is right for a flag whose only job is an emergency kill for something already live — getting this backwards turns a control-plane hiccup into an incident.

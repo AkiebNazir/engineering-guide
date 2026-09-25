@@ -35,19 +35,21 @@ For CI/CD, containers are revolutionary. They guarantee that the exact same envi
 
 Before diving into Docker, it's crucial to understand how containers differ from traditional Virtual Machines.
 
-```mermaid
-flowchart LR
-    subgraph "Virtual Machines"
-        VM_Host["Host OS"] --> VM_Hyper["Hypervisor"]
-        VM_Hyper --> VM1["VM 1\n(Guest OS + App)"]
-        VM_Hyper --> VM2["VM 2\n(Guest OS + App)"]
-    end
-    
-    subgraph "Containers"
-        C_Host["Host OS"] --> C_Docker["Docker Engine"]
-        C_Docker --> C1["Container 1\n(App + Libs)"]
-        C_Docker --> C2["Container 2\n(App + Libs)"]
-    end
+```arch
+node v_host "Host OS (VM)" at 0,0 icon=server color=slate
+node v_hyper "Hypervisor" at 0,1 icon=process color=amber
+node v1 "VM 1 (Guest OS + App)" at -0.5,2 shape=card color=blue
+node v2 "VM 2 (Guest OS + App)" at 0.5,2 shape=card color=blue
+v_host -> v_hyper
+v_hyper -> v1
+v_hyper -> v2
+node c_host "Host OS (Container)" at 1.5,0 icon=server color=slate
+node c_docker "Docker Engine" at 1.5,1 icon=process color=teal
+node c1 "Container 1 (App + Libs)" at 1,2 shape=card color=purple
+node c2 "Container 2 (App + Libs)" at 2,2 shape=card color=purple
+c_host -> c_docker
+c_docker -> c1
+c_docker -> c2
 ```
 
 - **Virtual Machines** include a full "Guest OS" (operating system) along with the application and necessary binaries/libraries. This makes them heavy (Gigabytes in size) and slow to boot.
@@ -59,36 +61,30 @@ flowchart LR
 
 Docker uses a client-server architecture. The Docker client talks to the Docker daemon, which does the heavy lifting of building, running, and distributing your Docker containers.
 
-```mermaid
-sequenceDiagram
-    participant User as Docker Client
-    participant Daemon as Docker Daemon
-    participant Registry as Docker Registry (e.g., Docker Hub)
-
-    User->>Daemon: `docker build`
-    Daemon-->>Daemon: Builds image layers
-    User->>Daemon: `docker run`
-    Daemon-->>Daemon: Starts container from image
-    User->>Daemon: `docker push`
-    Daemon->>Registry: Uploads image layers
-    User->>Daemon: `docker pull`
-    Registry->>Daemon: Downloads image layers
+```arch
+node u "Docker Client" at 0,0 icon=client color=slate
+node d "Docker Daemon" at 1,0 icon=server color=blue
+node r "Docker Registry" at 2,0 icon=cloud color=purple
+u -> d : "docker build"
+node bld "Builds image layers" at 1,1 shape=card color=amber
+d -> bld -> d
+u -> d : "docker run"
+node start "Starts container" at 1,2 shape=card color=green
+d -> start -> d
+u -> d : "docker push"
+d -> r : "Pushes image layers"
 ```
 
 ### Image Layers
 
 Every instruction in a Dockerfile (like `RUN`, `COPY`, `ADD`) creates a new layer. Docker utilizes a union file system to combine these layers into a single image. 
 
-```mermaid
-flowchart TD
-    Layer4["Layer 4: Application Code (Changes often)"]
-    Layer3["Layer 3: Installed Dependencies (Changes sometimes)"]
-    Layer2["Layer 2: Base System Updates (Changes rarely)"]
-    Layer1["Layer 1: Base Image (ubuntu:22.04)"]
-
-    Layer4 --> Layer3
-    Layer3 --> Layer2
-    Layer2 --> Layer1
+```arch
+node l4 "Layer 4: App Code" at 0,0 shape=card color=red
+node l3 "Layer 3: Installed Deps" at 0,1 shape=card color=amber
+node l2 "Layer 2: Base System Updates" at 0,2 shape=card color=teal
+node l1 "Layer 1: Base Image" at 0,3 shape=card color=blue
+l4 -> l3 -> l2 -> l1
 ```
 
 **Crucial CI/CD Concept:** Caching. When Docker builds an image, it checks its cache layer by layer. If a layer hasn't changed (e.g., your dependencies), Docker reuses the cached layer, drastically speeding up the build. This is why we copy `requirements.txt` or `go.mod` *before* the application code.

@@ -55,6 +55,7 @@ API_DIR = ROOT / "API"
 TOOL_KIT_DIR = ROOT / "Tool-Kit"
 SQL_DIR = ROOT / "SQL"
 NOSQL_DIR = ROOT / "NoSQL"
+DATA_ENGINEERING_DIR = ROOT / "DataEngineering"
 STDLIB_ROOTS = {"py": ROOT / "PyStdLib", "go": ROOT / "GoStdLib"}
 
 PORT = int(os.environ.get("DSA_PORT", "8420"))
@@ -651,6 +652,29 @@ def load_cicd() -> list[dict]:
                 })
     return items
 
+
+
+def load_data_engineering() -> list[dict]:
+    if not DATA_ENGINEERING_DIR.exists():
+        return []
+    items: list[dict] = []
+    readme = DATA_ENGINEERING_DIR / "README.md"
+    if readme.exists():
+        items.append({"id": "README", "num": "", "kind": "doc", "group": "Overview",
+                      **doc_meta(readme, "Start here")})
+    for path in sorted(DATA_ENGINEERING_DIR.iterdir()):
+        if path.is_dir() and re.match(r"^\d+_", path.name):
+            md_file = path / f"{path.name}.md"
+            if md_file.exists():
+                num = path.name.split('_')[0]
+                items.append({
+                    "id": path.name,
+                    "num": num,
+                    "kind": "level",
+                    "group": "Levels",
+                    **doc_meta(md_file, path.name.replace("_", " ").title())
+                })
+    return items
 
 
 def load_cs_fundamentals() -> list[dict]:
@@ -1660,6 +1684,18 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"items": load_agentic_ai()})
         elif p == "/api/agentic-ai-doc":
             self._json(read_markdown(safe_md(AGENTIC_AI_DIR, q.get("id", [""])[0])))
+
+        elif p == "/api/data-engineering":
+            self._json({"items": load_data_engineering()})
+        elif p == "/api/data-engineering-doc":
+            doc_id = q.get("id", [""])[0]
+            if not doc_id or "/" in doc_id or "\\" in doc_id:
+                self._json({"exists": False})
+            elif doc_id == "README":
+                self._json(read_markdown(DATA_ENGINEERING_DIR / "README.md"))
+            else:
+                path = DATA_ENGINEERING_DIR / doc_id / f"{doc_id}.md"
+                self._json(read_markdown(path))
 
         elif p == "/api/cicd":
             self._json({"items": load_cicd()})

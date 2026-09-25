@@ -32,21 +32,30 @@ In this chapter, we bridge the gap between "code works on my machine/CI server" 
 
 ### Continuous Delivery Workflow
 
-```mermaid
-flowchart LR
-    Dev["Developer Commit"] --> CI["CI Pipeline\n(Build & Test)"]
-    CI --> Staging["Deploy to Staging"]
-    Staging --> Gate{"Approval Gate"}
-    Gate -- Manual Approval --> Prod["Deploy to Production"]
+```arch
+node Dev "Developer Commit" at 0,0
+node CI "CI Pipeline\n(Build & Test)" at 0,2
+node Staging "Deploy to Staging" at 0,4
+node Gate "Approval Gate" at 0,6
+node Prod "Deploy to Production" at 0,8
+
+Dev -> CI
+CI -> Staging
+Staging -> Gate
+Gate -> Prod : "Manual Approval"
 ```
 
 ### Continuous Deployment Workflow
 
-```mermaid
-flowchart LR
-    Dev["Developer Commit"] --> CI["CI Pipeline\n(Build & Test)"]
-    CI --> Staging["Deploy to Staging & Run E2E"]
-    Staging --> Prod["Auto-Deploy to Production"]
+```arch
+node Dev "Developer Commit" at 0,0
+node CI "CI Pipeline\n(Build & Test)" at 0,2
+node Staging "Deploy to Staging\n& Run E2E" at 0,4
+node Prod "Auto-Deploy to\nProduction" at 0,6
+
+Dev -> CI
+CI -> Staging
+Staging -> Prod
 ```
 
 ## 🏗 Release Pipelines and Environment Promotion
@@ -119,15 +128,14 @@ if __name__ == "__main__":
 
 Migrating a database must be automated. Use schema versioning tools (like Alembic in Python or golang-migrate).
 
-```mermaid
-sequenceDiagram
-    participant Pipeline
-    participant AppServer
-    participant Database
+```arch
+node Pipeline "Pipeline" at 0,0
+node AppServer "App Server" at 0,3
+node Database "Database" at 0,6
 
-    Pipeline->>Database: Run Migration Scripts (V1 -> V2)
-    Pipeline->>AppServer: Deploy New Code (V2)
-    AppServer->>Database: Queries using V2 schema
+Pipeline -> Database : "1. Run Migration\nScripts (V1 -> V2)"
+Pipeline -> AppServer : "2. Deploy New\nCode (V2)"
+AppServer -> Database : "3. Queries using\nV2 schema"
 ```
 
 *Always design database changes to be backward compatible (e.g., add a column, don't drop it yet).*

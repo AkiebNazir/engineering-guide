@@ -6,13 +6,18 @@ Batch processing (e.g., nightly Spark jobs) introduces latency before data is av
 
 An Event-Driven Architecture (EDA) is built on the paradigm that changes in state (events) are produced, detected, consumed, and reacted to in real-time. Instead of a monolithic system periodically polling databases, decoupled services emit events to a central nervous system.
 
-```mermaid
-flowchart LR
-    A[Producer: Mobile App] -->|Emit Event| B(Message Broker)
-    C[Producer: Web Server] -->|Emit Event| B
-    B -->|Subscribe/Consume| D{Stream Processor}
-    D -->|Write Results| E[(Real-time OLAP Database)]
-    D -->|Trigger Action| F[Alerting Service]
+```arch
+node pa "Mobile App" at 0,0 icon=users color=slate
+node pw "Web Server" at 0,1 icon=server color=slate
+node b "Message Broker" at 1,0 icon=process color=teal
+node d "Stream Processor" at 2,0 icon=process color=blue
+node e "Real-time OLAP DB" at 3,0 icon=db color=purple
+node f "Alerting Service" at 3,1 icon=gateway color=red
+pa -> b : "Emit Event"
+pw -> b : "Emit Event"
+b -> d : "Subscribe/Consume"
+d -> e : "Write Results"
+d -> f : "Trigger Action"
 ```
 
 ## Message Brokers (The Nervous System)
@@ -59,17 +64,14 @@ You cannot compute a traditional aggregation (like "sum" or "average") over an i
 3. **Session Windows**: Dynamic windows defined by periods of activity followed by a gap of inactivity.
    *Example: All clicks by a user until they are inactive for 30 minutes.*
 
-```mermaid
-sequenceDiagram
-    participant S as Data Stream
-    participant T as Tumbling Window (5m)
-    participant L as Sliding Window (5m, hop 1m)
-    participant E as Session Window (10m gap)
-
-    Note over S,E: Events arriving over time
-    S->>T: Group by strict [00:00 - 00:05)
-    S->>L: Group in [00:00 - 00:05), [00:01 - 00:06)
-    S->>E: Group user actions until gap > 10m
+```arch
+node s "Data Stream" at 0,1 icon=doc color=slate
+node t "Tumbling Window" at 1,0 shape=card color=blue sub="Group by strict [00:00 - 00:05)"
+node l "Sliding Window" at 1,1 shape=card color=amber sub="Group in [00:00-05), [00:01-06)"
+node e "Session Window" at 1,2 shape=card color=teal sub="Group user actions until gap > 10m"
+s -> t
+s -> l
+s -> e
 ```
 # Stream Processing Fundamentals
 

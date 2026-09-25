@@ -24,19 +24,17 @@ Imagine running a massive logistics hub where millions of packages (code commits
 
 In traditional CI/CD, the CI server is god. It builds, tests, and *pushes* changes directly to production servers. In GitOps, an agent inside the cluster *pulls* changes from a Git repository, ensuring the system state matches the declared state in Git.
 
-```mermaid
-flowchart LR
-    subgraph Traditional["Traditional CI/CD (Push)"]
-        A["Git Repo"] --> B["CI/CD Server (Jenkins/Actions)"]
-        B --> C["Prod Cluster"]
-    end
-
-    subgraph GitOps["GitOps (Pull)"]
-        D["Git Repo"] --> E["CI Server (Build & Push Image)"]
-        E --> F["Config Repo (Update Manifest)"]
-        G["GitOps Agent (ArgoCD/Flux)"] -- Pulls Config --> F
-        G -- Deploys to --> H["Prod Cluster"]
-    end
+```arch
+node a "Git Repo" at 0,0 icon=doc color=slate
+node b "CI/CD Server" at 1,0 icon=server color=blue
+node c "Prod Cluster" at 2,0 icon=gateway color=purple
+a -> b -> c
+node d "Git Repo" at 0,1 icon=doc color=slate
+node e "CI Server (Build/Push)" at 1,1 icon=server color=blue
+node f "Config Repo" at 2,1 icon=doc color=amber
+node g "GitOps Agent (ArgoCD)" at 2,2 icon=process color=teal
+d -> e -> f
+g -> f : "Pulls Config"
 ```
 
 ### GitOps Example: Kubernetes Manifest
@@ -125,16 +123,22 @@ if __name__ == "__main__":
 ```
 
 ### Pipeline Orchestration: Fan-Out / Fan-In
-```mermaid
-flowchart TD
-    A["Code Push"] --> B["Lint"]
-    B --> C["Unit Test (Fan-Out)"]
-    B --> D["Integration Test (Fan-Out)"]
-    B --> E["Security Scan (Fan-Out)"]
-    C --> F["Build Artifact (Fan-In)"]
-    D --> F
-    E --> F
-    F --> G["Deploy to Staging"]
+```arch
+node a "Code Push" at 1,0 icon=user color=slate
+node b "Lint" at 1,1 shape=card color=amber
+a -> b
+node c "Unit Test (Fan-Out)" at 0,2 shape=card color=green
+node d "Integration Test" at 1,2 shape=card color=green
+node e "Security Scan" at 2,2 shape=card color=green
+b -> c
+b -> d
+b -> e
+node f "Build Artifact (Fan-In)" at 1,3 icon=doc color=purple
+c -> f
+d -> f
+e -> f
+node g "Deploy to Staging" at 1,4 icon=gateway color=teal
+f -> g
 ```
 
 ## 🌩️ Ephemeral Environments & ChatOps

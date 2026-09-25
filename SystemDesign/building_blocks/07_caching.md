@@ -6,51 +6,57 @@ A cache stores a derived, disposable copy of data close to where it's read, to c
 
 **Cache-aside (lazy loading)** is the default pattern. The application owns both reads and writes explicitly.
 
-```mermaid
-sequenceDiagram
-    participant App
-    participant Cache
-    participant Source as Source of truth
-    App->>Cache: get(key)
-    alt hit
-        Cache-->>App: value
-    else miss
-        App->>Source: read()
-        Source-->>App: value
-        App->>Cache: set(key, value)
-    end
-    Note over App,Source: write: App writes Source directly,<br/>then invalidates (or updates) the cache entry
+```arch
+node app "App" at 0,0 icon=server color=slate
+node c "Cache" at 1,0 icon=cache color=blue
+node s "Source of truth" at 2,0 icon=db color=purple
+
+app -> c : "get(key)"
+
+node hit "hit" at 1,1 shape=card color=green
+c -> hit -> app : "value"
+
+node miss "miss" at 2,1 shape=card color=amber
+c -> miss -> s : "read()"
+s -> app : "value"
+app -> c : "set(key, value)"
+
+node wr "write: App writes Source directly, then invalidates cache" at 1,2 shape=text
+app -> wr -> s
 ```
 
 Why default to it: the application controls exactly what gets cached and when, and the cache can be wiped or removed entirely without losing data — the source of truth is untouched. Weakness: a miss (cold start, eviction, expiry) means the first reader pays full source latency, and if many callers miss the same key at once, they can stampede the source together.
 
 **Write-through** writes go through the cache, which synchronously writes to the source of truth before acknowledging.
 
-```mermaid
-sequenceDiagram
-    participant App
-    participant Cache
-    participant Source as Source of truth
-    App->>Cache: write(key, value)
-    Cache->>Source: write (sync)
-    Source-->>Cache: ok
-    Cache-->>App: ack
-    Note over App,Cache: later read: always a cache hit
+```arch
+node app "App" at 0,0 icon=server color=slate
+node c "Cache" at 1,0 icon=cache color=blue
+node s "Source of truth" at 2,0 icon=db color=purple
+
+app -> c : "write(key, value)"
+c -> s : "write (sync)"
+s -> c : "ok"
+c -> app : "ack"
+
+node read "later read: always a cache hit" at 0.5,1 shape=card color=green
+app -> read -> c
 ```
 
 Cache and source stay consistent by construction, and reads are simple — no miss-then-populate dance. Cost: every write pays cache-write latency plus source-write latency, and a cold cache still needs a read-side cache-aside fallback for keys it's never seen. Choose write-through over cache-aside when read-after-write consistency through the cache matters more than write latency, and writes are not the dominant load.
 
 **Write-back (write-behind)** writes go to the cache immediately and are acknowledged, then flushed to the source of truth asynchronously (batched or delayed).
 
-```mermaid
-sequenceDiagram
-    participant App
-    participant Cache
-    participant Source as Source of truth
-    App->>Cache: write(key, value)
-    Cache-->>App: ack (immediately)
-    Note over Cache,Source: later, batched/delayed
-    Cache->>Source: flush writes
+```arch
+node app "App" at 0,0 icon=server color=slate
+node c "Cache" at 1,0 icon=cache color=blue
+node s "Source of truth" at 2,0 icon=db color=purple
+
+app -> c : "write(key, value)"
+c -> app : "ack (immediately)"
+
+node flush "later, batched/delayed" at 1.5,1 shape=card color=orange
+c -> flush -> s : "flush writes"
 ```
 
 > ⚠️ If the cache dies between the ack and the flush, the write is gone — the caller was already told it succeeded. That's the trade you're making, not an edge case to patch later.
@@ -151,21 +157,25 @@ Ten times the memory (1% to 10%) halves origin load, and the next doubling cuts 
 
 The classic race with cache-aside is a **set after delete**. The reader misses, reads the old row, and is slow. The writer commits the new row and deletes the key. The reader then finishes and sets its old value, which nothing will remove until the TTL fires.
 
-```mermaid
+```arch
 %% caption: A slow reader can write an old value into the cache after the writer's delete, leaving a stale entry that outlives the write until its TTL expires.
-sequenceDiagram
-    participant R as Reader
-    participant W as Writer
-    participant C as Cache
-    participant DB as Database
-    R->>C: get x
-    C-->>R: miss
-    R->>DB: read x
-    DB-->>R: old value v1
-    W->>DB: write x as v2
-    W->>C: delete x
-    R->>C: set x to v1
-    Note over C,DB: cache holds v1, database holds v2, until TTL
+node c "Cache" at 1,0 icon=cache color=blue
+node w "Writer" at 0,1 icon=user color=slate
+node r "Reader" at 2,1 icon=user color=slate
+node db "Database" at 1,2 icon=db color=purple
+
+r -> c : "get x"
+c -> r : "miss"
+r -> db : "read x"
+db -> r : "old value v1"
+
+w -> db : "write x as v2"
+w -> c : "delete x"
+
+r -> c : "set x to v1"
+
+node note "cache holds v1, db holds v2" at 1,1 shape=card color=red
+c ..> note ..> db
 ```
 
 | Approach | How it closes the race | Cost |

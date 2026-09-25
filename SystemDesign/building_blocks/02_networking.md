@@ -4,28 +4,25 @@ A request from a browser to your service crosses more layers than most designs d
 
 ## The request path
 
-```mermaid
+```arch
 %% caption: Every hop is a place latency, failure, or a trust boundary is introduced — walk it end to end, not just the application box.
-sequenceDiagram
-    actor Client
-    participant DNS
-    participant CDN as CDN / edge
-    participant LB as Load balancer
-    participant GW as API gateway
-    participant App as Application
-
-    Client->>DNS: resolve hostname
-    DNS-->>Client: IP address
-    Client->>CDN: request (TLS)
-    alt cache hit, passes WAF/DDoS screen
-        CDN-->>Client: cached response
-    else miss
-        CDN->>LB: forward
-        LB->>GW: route to healthy instance
-        GW->>App: forward
-        App->>App: cache / DB / downstream services
-        App-->>Client: response
-    end
+node c "Client" at 0,0 icon=user
+node d "DNS" at 1,0 icon=network color=teal
+c -> d : "resolve hostname"
+d -> c : "IP address"
+node cdn "CDN / Edge" at 1,1 icon=cdn color=blue
+c -> cdn : "request (TLS)"
+node hit "cache hit, passes WAF/DDoS" at 0,2 shape=text
+cdn -> hit -> c
+node lb "Load Balancer" at 2,1 icon=network color=slate
+cdn -> lb : "miss (forward)"
+node gw "API Gateway" at 3,1 icon=gateway color=slate
+lb -> gw : "route to healthy"
+node app "Application" at 4,1 icon=server color=purple
+gw -> app : "forward"
+node backend "cache / DB / downstream" at 4,0 shape=text
+app -> backend -> app
+app -> c : "response"
 ```
 
 Every hop is a place latency, failure, or a trust boundary is introduced. Treat this as a checklist when asked "walk me through what happens when a user hits your <abbr title="Application Programming Interface">API</abbr>," not just a diagram to memorize.

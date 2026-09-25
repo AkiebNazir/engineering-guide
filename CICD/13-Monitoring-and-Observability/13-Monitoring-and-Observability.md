@@ -32,21 +32,22 @@ Imagine driving a high-performance sports car (your application) blindfolded. CI
 
 ## 🏗️ The Three Pillars of Observability
 
-```mermaid
-flowchart TD
-    O[Observability] --> M[Metrics]
-    O --> L[Logs]
-    O --> T[Traces]
-    
-    M -->|"Are we broken?"| M1["Counters (e.g., total requests)"]
-    M --> M2["Gauges (e.g., memory usage)"]
-    M --> M3["Histograms (e.g., response time)"]
-    
-    L -->|"What happened?"| L1["Structured Logs (JSON)"]
-    L --> L2["Application Events"]
-    
-    T -->|"Where did it happen?"| T1["Distributed Tracing"]
-    T --> T2["OpenTelemetry"]
+```arch
+node o "Observability" at 1,0 shape=card color=blue
+node m "Metrics" at 0,1 shape=card color=teal
+node l "Logs" at 1,1 shape=card color=purple
+node t "Traces" at 2,1 shape=card color=amber
+o -> m
+o -> l
+o -> t
+node m1 "Counters (total reqs)" at 0,2 shape=text
+node m2 "Gauges (memory)" at 0,3 shape=text
+node m3 "Histograms (response time)" at 0,4 shape=text
+m -> m1 : "Are we broken?"
+m -> m2
+m -> m3
+node l1 "Structured Logs (JSON)" at 1,2 shape=text
+l -> l1 : "What happened?"
 ```
 
 ### 1. Metrics

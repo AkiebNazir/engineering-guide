@@ -404,13 +404,14 @@ pipeline {
 
 Migrating from one CI/CD tool to another is a significant undertaking. 
 
-```mermaid
-flowchart TD
-    idA["Audit Current Pipeline (Plugins, Scripts, Secrets)"] --> idB["Standardize Scripts (Move logic to bash/make)"]
-    idB --> idC["Map Terminology & Features (e.g., Plugins to Actions)"]
-    idC --> idD["Create Proof of Concept (POC)"]
-    idD --> idE["Run Pipelines in Parallel (Dual-Boot)"]
-    idE --> idF["Cutover and Deprecate Old Tool"]
+```arch
+node a "Audit Current Pipeline" at 0,0 shape=text color=slate
+node b "Standardize Scripts" at 0,1 shape=card color=amber
+node c "Map Terminology & Features" at 0,2 shape=card color=blue
+node d "Create Proof of Concept (POC)" at 1,2 shape=card color=teal
+node e "Run Pipelines in Parallel" at 1,1 shape=card color=purple
+node f "Cutover & Deprecate Old Tool" at 1,0 shape=card color=red
+a -> b -> c -> d -> e -> f
 ```
 
 ### Key Migration Strategies:

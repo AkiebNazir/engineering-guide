@@ -21,20 +21,24 @@ This file stays at the level of choosing the primitive and designing the consume
 
 A work queue hands a message to a consumer and starts a **visibility timeout** — the window during which no other consumer can see that message. If the consumer finishes and acknowledges (deletes) the message within that window, it's done. If the consumer crashes, hangs, or simply takes longer than the timeout, the message becomes visible again and another consumer picks it up.
 
-```mermaid
-sequenceDiagram
-    %% caption: Why this is at-least-once, never exactly-once
-    participant Q as Queue
-    participant A as Consumer A
-    participant B as Consumer B
-    Q->>A: dequeue msg (visibility timeout = 30s)
-    Note over A: processing takes 35s — longer than the timeout
-    Note over Q: t=30s — timeout expires, msg becomes visible again
-    Q->>B: dequeue same msg
-    Note over B: starts processing
-    A--)Q: t=35s — A finishes, tries to ack
-    Note over Q: too late — already redelivered to B
-    Note over A,B: result: msg processed twice
+```arch
+%% caption: Why this is at-least-once, never exactly-once
+node q "Queue" at 1,0 icon=doc color=slate
+node a "Consumer A" at 0,1 icon=server color=blue
+node b "Consumer B" at 2,1 icon=server color=teal
+q -> a : "dequeue msg (vis timeout = 30s)"
+node p35 "processing takes 35s" at 0,2 shape=card color=amber
+a -> p35 -> a
+node t30 "t=30s: timeout expires, msg visible again" at 1,1 shape=card color=red
+q -> t30 -> q
+q -> b : "dequeue same msg"
+node p_b "starts processing" at 2,2 shape=card
+b -> p_b -> b
+a ..> q : "t=35s: A finishes, tries to ack"
+node late "too late — already redelivered to B" at 1,2 shape=text
+q -> late -> q
+node err "msg processed twice" at 1,3 shape=card color=red
+a ..> err ..> b
 ```
 
 Set the visibility timeout comfortably above your p99 processing time, or the queue will manufacture duplicate processing even when nothing actually failed. Too long, and a genuinely crashed consumer's message sits invisible-but-undelivered for that whole window before anyone else can retry it.
@@ -93,26 +97,25 @@ The classic gap: your business transaction commits to the database, then the pro
 
 The **transactional outbox** pattern closes this by writing the business change and an outbox row for the event *in the same database transaction*, so they commit or roll back together — atomically consistent by construction, no distributed transaction needed. A separate relay process then reads unpublished outbox rows and publishes them to the queue/stream, marking them published once acknowledged.
 
-```mermaid
-sequenceDiagram
-    participant App
-    participant DB
-    participant Relay
-    participant Stream as Queue/stream
-    participant Consumer
-    rect rgba(127,127,127,0.08)
-    Note over App,DB: one atomic transaction
-    App->>DB: INSERT orders (...)
-    App->>DB: INSERT outbox (OrderPlaced, published=false)
-    DB-->>App: commit — either both rows exist, or neither does
-    end
-    Note over Relay,DB: separate process, polling or CDC/log-tailing
-    Relay->>DB: SELECT * FROM outbox WHERE published=false
-    Relay->>Stream: publish event
-    Stream-->>Relay: ack
-    Relay->>DB: UPDATE outbox SET published=true
-    Stream->>Consumer: OrderPlaced
-    Note over Consumer: applies effect idempotently (dedup by event ID)
+```arch
+%% caption: The transactional outbox pattern guarantees that the event is published if and only if the business state is committed.
+group txn "one atomic transaction" color=slate
+node app "App" at 0,0 in txn icon=server color=blue
+node db "DB" at 1,0 in txn icon=db color=purple
+app -> db : "INSERT orders"
+app -> db : "INSERT outbox (published=false)"
+db -> app : "commit (both or neither)"
+group sep "separate process (polling/CDC)" color=teal
+node relay "Relay" at 1,1 in sep icon=process color=orange
+relay -> db : "SELECT outbox WHERE published=false"
+node stream "Queue/stream" at 2,1 icon=doc color=slate
+relay -> stream : "publish event"
+stream -> relay : "ack"
+relay -> db : "UPDATE outbox SET published=true"
+node cons "Consumer" at 3,1 icon=server color=blue
+stream -> cons : "OrderPlaced"
+node idem "applies idempotently (dedup by ID)" at 3,2 shape=text
+cons -> idem -> cons
 ```
 
 The relay can crash and re-publish an already-published row — that's fine, it's why the consumer still dedups. What the outbox actually guarantees is that an event is never published for a transaction that didn't commit, and never silently lost for one that did.

@@ -112,40 +112,26 @@ agg:L -> cdn:L : "snapshot"
 pushers:R ..> buyer:L : "deltas"
 ```
 
-```mermaid
+```arch
 %% caption: Every seat transition is one conditional statement in one transaction, and the waiting room, the seat map, and the reclaimer are all outside the sale decision.
-sequenceDiagram
-    actor Buyer
-    participant Wait as Waiting room
-    participant GW as Gateway
-    participant Seats as Seats DB
-    participant Pay as Payment saga
-    participant Map as Seat-map pushers
-    participant Rec as Reclaimer
+node Buyer "Buyer" at 0,1 icon=users
+node Wait "Waiting room" at 1,0 icon=timer
+node GW "Gateway" at 1,1 icon=gateway
+node Pay "Payment saga" at 1,2 icon=payment
+node Map "Seat-map pushers" at 2,0 icon=websocket
+node Seats "Seats DB" at 2,1 icon=sql
+node Rec "Reclaimer" at 3,1 icon=timer
 
-    Buyer->>Wait: join (33k per second at peak)
-    Wait-->>Buyer: signed ticket, cohort, poll URL
-    Buyer->>Wait: poll serving.json (CDN cached)
-    Buyer->>Wait: admit with ticket once pointer passes
-    Wait-->>Buyer: signed admission token (budgeted)
-    Buyer->>GW: hold seats A and B with token
-    GW->>Seats: txn - lock in seat_id order, update if available or expired, rowcount must equal N
-    alt rowcount equals N
-        Seats-->>Buyer: hold_id, expires in 5 min
-        Seats-->>Map: outbox change
-        Buyer->>Pay: checkout (hold extended once)
-        alt payment authorized
-            Pay->>Seats: confirm where hold_id and HELD and unexpired
-        else failed or timed out
-            Pay->>Seats: release where hold_id and HELD
-        end
-    else rowcount less than N
-        Seats-->>Buyer: 409 SEAT_TAKEN with fresh state
-    end
-    Map-->>Buyer: coalesced section delta (staleness up to 2 s)
-    loop every 5 s
-        Rec->>Seats: return expired HELD rows to AVAILABLE and emit deltas
-    end
+Buyer -> Wait : "join / poll"
+Wait -> Buyer : "token"
+Buyer -> GW : "hold seats"
+GW -> Seats : "txn - lock & update"
+Seats -> Buyer : "hold_id / 409"
+Seats -> Map : "outbox change"
+Buyer -> Pay : "checkout"
+Pay -> Seats : "confirm / release"
+Map -> Buyer : "delta"
+Rec -> Seats : "expire holds"
 ```
 
 The waiting room exists purely to protect the reservation system from an instantaneous 2M-request spike hitting a 60k-row hot table — it does not make sale decisions, it only paces admission. The hard decision is that every state transition (hold, confirm, release) is a single conditional statement keyed on both seat ID and the current hold ID, never a read followed by a separate write. This trades a slightly more awkward query shape for eliminating the entire class of double-sell races that a check-then-update pattern would introduce under contention. Payment happens *after* the hold is won, never before — the hold, not the payment call, is what protects the seat.

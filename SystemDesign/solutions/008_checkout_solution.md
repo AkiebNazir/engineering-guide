@@ -116,45 +116,23 @@ rec:B -> provider:B : "compare"
 rec:T -> orderdb:L : "heal"
 ```
 
-```mermaid
-%% caption: The provider call sits outside every database transaction and every inventory lock, so a slow provider degrades saga throughput and never the lock table.
-sequenceDiagram
-    actor Client
-    participant Ord as Order service
-    participant Inv as Inventory service
-    participant Saga as Payment saga worker
-    participant Prov as Payment provider
-    participant Rec as Reconciler
+```arch
+node client "Client" at 1,4
+node ord "Order service" at 3,4
+node saga "Payment saga worker" at 5,4
+node inv "Inventory service" at 3,2
+node prov "Payment provider" at 5,2
+node rec "Reconciler" at 5,0
 
-    Client->>Ord: POST checkout with Idempotency-Key
-    Ord->>Ord: txn 1 - key row plus order CREATED plus price snapshot
-    Ord->>Inv: reserve lines keyed by order_id
-    alt any line out of stock
-        Inv-->>Ord: rejected, taken lines released
-        Ord-->>Client: 409 OUT_OF_STOCK
-    else all lines held
-        Inv-->>Ord: HELD until now plus 5 min
-        Ord->>Ord: txn 2 - order PAYMENT_PENDING plus outbox PaymentRequested
-        Ord-->>Saga: outbox event
-        Saga->>Prov: authorize (key = order_id and attempt)
-        alt authorized
-            Prov-->>Saga: authorized
-            Saga->>Inv: commit holds where HELD and not expired
-            Saga->>Ord: order CONFIRMED plus outbox OrderConfirmed
-            Ord-->>Client: 201 CONFIRMED
-        else declined
-            Prov-->>Saga: declined
-            Saga->>Inv: release holds
-            Saga->>Ord: order PAYMENT_FAILED
-            Ord-->>Client: 402
-        else timeout
-            Saga->>Prov: retry same key then look up by reference
-            Ord-->>Client: 202 PAYMENT_PENDING after 2.5 s
-        end
-    end
-    Prov-->>Ord: webhook (event_id dedup) can drive the same guarded transitions
-    Rec->>Prov: compare provider records for stuck and settled payments
-    Rec->>Ord: heal stuck orders and flag mismatches
+client -> ord
+ord -> inv
+ord -> saga
+saga -> prov
+saga -> inv
+saga -> ord
+prov -> ord
+rec -> prov
+rec -> ord
 ```
 
 **One write, end to end.** The gateway authenticates the caller, applies per-user limits, and routes by `user_id` to the order shard.

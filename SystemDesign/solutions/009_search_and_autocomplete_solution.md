@@ -142,32 +142,28 @@ user -> cdn -> qapi -> cluster
 qapi -> qcache
 ```
 
-```mermaid
+```arch
 %% caption: The catalog write path never depends on search — the outbox is what makes a crash-after-commit safe to replay.
-sequenceDiagram
-    actor Admin
-    actor User
-    participant Catalog as Catalog admin/<abbr title="Application Programming Interface">API</abbr>
-    participant Relay as Outbox relay / CDC
-    participant Stream as ProductChanged stream
-    participant Indexer
-    participant Search as Search cluster / suggestion index
-    participant <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>
+node admin "Admin" at 0,0
+node catalog "Catalog API" at 1,0
+node relay "Outbox / CDC" at 2,0
+node stream "Stream" at 3,0
+node indexer "Indexer" at 4,0
+node search "Search cluster" at 4,1
 
-    Admin->>Catalog: edit product
-    Catalog->>Catalog: transaction: product change + outbox row
-    Catalog-->>Relay: outbox row committed
-    Relay->>Stream: publish ProductChanged
-    Stream->>Indexer: consume (idempotent by product_id, version)
-    Indexer->>Search: write via versioned index alias
+admin -> catalog : "edit product"
+catalog -> relay : "outbox row"
+relay -> stream : "publish"
+stream -> indexer : "consume"
+indexer -> search : "write"
 
-    User->><abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>: search / autocomplete request
-    alt safe to cache
-        <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>-->>User: cached response
-    else
-        <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>->>Search: authorize/filter/query
-        Search-->>User: results
-    end
+node user "User" at 0,2
+node cdn "CDN" at 2,2
+
+user -> cdn : "request"
+cdn -> user : "cached response"
+cdn -> search : "miss: query"
+search -> user : "results"
 ```
 
 The outbox is important. A catalog transaction can commit and the application can crash before publishing an event. By saving the product change and an outbox row together, a relay later emits every committed change. The indexer uses `(product_id, version)` so replayed/out-of-order events cannot overwrite a newer document with an older one.
@@ -186,23 +182,20 @@ Why not update search index synchronously inside catalog request? It makes a pro
 
 Schema/analyzer changes often require a full reindex.
 
-```mermaid
+```arch
 %% caption: The snapshot watermark closes the gap where a product changes while the bulk read is still running.
-sequenceDiagram
-    participant Job as Reindex job
-    participant Catalog
-    participant V42 as index_v42 (new)
-    participant Alias as Read alias
-    participant V41 as index_v41 (old)
+node job "Reindex job" at 0,1
+node catalog "Catalog" at 1,0
+node v42 "index_v42 (new)" at 2,0
+node alias "Read alias" at 1,2
+node v41 "index_v41 (old)" at 2,2
 
-    Job->>V42: create empty index
-    Job->>Catalog: bulk-read snapshot (watermark = ts0)
-    Catalog-->>V42: write documents
-    Job->>Catalog: replay changes committed after ts0
-    Catalog-->>V42: apply
-    Job->>Job: validate count / sample / relevance
-    Job->>Alias: atomically move read alias v41 → v42
-    Note over V41: retained for rollback window, deleted later
+job -> catalog : "read / replay"
+catalog -> v42 : "write / apply"
+job -> v42 : "create / validate"
+job -> alias : "move alias"
+alias -> v42 : "points to"
+alias -> v41 : "used to point to"
 ```
 
 The snapshot watermark prevents the classic gap where a product changes while bulk indexing is running. Reindex is an operational workflow, not an ad-hoc script.

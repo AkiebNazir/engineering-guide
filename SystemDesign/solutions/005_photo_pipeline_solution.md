@@ -61,31 +61,29 @@ viewer -> cdn : "GET variant"
 cdn:B -> obj:R : "miss"
 ```
 
-```mermaid
+```arch
 %% caption: Bytes flow client-to-storage directly; the API only ever handles small JSON — never the 50 MB payload.
-sequenceDiagram
-    actor Client
-    actor Viewer
-    participant API
-    participant DB as Metadata DB
-    participant Obj as Object storage
-    participant Pipe as Scan/transform pipeline
-    participant CDN
+node client "Client" at 0,0
+node viewer "Viewer" at 2,0
+node api "API" at 0,1
+node cdn "CDN" at 2,1
+node db "Metadata DB" at 0,2
+node obj "Object storage" at 2,2
+node pipe "Scan/transform pipeline" at 1,3
 
-    Client->>API: POST /v1/uploads
-    API-->>Client: signed multipart upload URL
-    Client->>Obj: PUT parts directly
-    Client->>API: POST /complete
-    API->>DB: metadata transaction + outbox (state=PENDING_SCAN)
-    DB-->>Pipe: object/metadata event
-    Pipe->>Obj: read original, write variants
-    Pipe->>DB: state=READY
+client -> api : "POST /uploads\nPOST /complete"
+api -> client : "signed URL"
+client -> obj : "PUT parts directly"
+api -> db : "txn + outbox"
+db -> pipe : "event"
+pipe -> obj : "read/write variants"
+pipe -> db : "READY"
 
-    Viewer->>API: request media
-    API-->>Viewer: authorization / signed URL
-    Viewer->>CDN: GET variant
-    CDN->>Obj: fetch on miss
-    CDN-->>Viewer: object variant
+viewer -> api : "request media"
+api -> viewer : "auth / signed URL"
+viewer -> cdn : "GET variant"
+cdn -> obj : "fetch on miss"
+cdn -> viewer : "object variant"
 ```
 
 Metadata database owns `Media(id, owner, visibility, original_key, checksum, state, transform_version, deleted_at)`. Object storage owns bytes. State is explicit: `UPLOADING`, `PENDING_SCAN`, `PROCESSING`, `READY`, `FAILED`, `DELETED`.
@@ -107,25 +105,20 @@ Deletion is a state transition first: origin denies immediately, signed URL issu
 
 ## Deep dive 2: The transform pipeline
 
-```mermaid
+```arch
 %% caption: A flagged upload is quarantined before it ever reaches a transform worker or becomes visible.
-sequenceDiagram
-    participant Outbox as Complete → outbox event
-    participant Scan as Scan queue
-    participant Scanner
-    participant Xform as Transform queue (by media_id)
-    participant Worker
+node outbox "Complete → outbox event" at 0,0
+node scan "Scan queue" at 1,0
+node scanner "Scanner" at 2,0
+node xform "Transform queue" at 3,0
+node worker "Worker" at 4,0
 
-    Outbox->>Scan: event
-    Scan->>Scanner: dequeue
-    alt content flagged
-        Scanner->>Scanner: quarantine
-    else clean
-        Scanner->>Xform: enqueue
-        Xform->>Worker: dequeue
-        Worker->>Worker: decode once → resize to N sizes → encode WebP/AVIF/JPEG
-        Worker->>Worker: write immutable keys, mark READY
-    end
+outbox -> scan : "event"
+scan -> scanner : "dequeue"
+scanner -> scanner : "quarantine (flagged)"
+scanner -> xform : "enqueue (clean)"
+xform -> worker : "dequeue"
+worker -> worker : "decode → resize → encode\nwrite keys, mark READY"
 ```
 
 - **Decode once, emit all variants** in one job; decoding dominates cost for large images.

@@ -294,9 +294,10 @@ function passes(p, q = query) {
    page → its cards. Typing in the search box turns the module list into one
    flat result list across the whole library.
    ========================================================================= */
-const SECTIONS = ['dsa', 'sd', 'swd', 'go', 'py', 'roadmap', 'toolkit', 'cicd', 'library', 'agentic', 'csfund', 'behavioral', 'api', 'sql', 'nosql', 'pystdlib', 'gostdlib'];
+const SECTIONS = ['dsa', 'sd', 'swd', 'go', 'py', 'roadmap', 'toolkit', 'dataengineering', 'cicd', 'library', 'agentic', 'csfund', 'behavioral', 'api', 'sql', 'nosql', 'pystdlib', 'gostdlib'];
 
 const SECTION_ICON = {
+  dataengineering: '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
   cicd: '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
 
   dsa: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/>',

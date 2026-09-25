@@ -41,11 +41,15 @@ The simplest approach. Shut down the old version completely, deploy the new vers
 ### 2. Rolling Deployment
 Replaces instances of the old version with the new version one by one (or in small batches) until all instances are updated.
 
-```mermaid
-flowchart LR
-    id["Load Balancer"] --> v1_1["App v1"]
-    id["Load Balancer"] --> v1_2["App v1"]
-    id["Load Balancer"] --> v2_1["App v2 (New)"]
+```arch
+node lb "Load Balancer" at 0,1
+node v1_1 "App v1" at 1,0
+node v1_2 "App v1" at 1,1
+node v2_1 "App v2 (New)" at 1,2
+
+lb -> v1_1
+lb -> v1_2
+lb -> v2_1
 ```
 
 **Pros:** Zero downtime.
@@ -55,22 +59,21 @@ flowchart LR
 ### 3. Blue/Green Deployment
 Maintain two identical production environments. The active one (Blue) serves all traffic. You deploy the new version to the idle one (Green). Once tested, you switch the router to send all traffic to Green.
 
-```mermaid
-flowchart TD
-    Router["Load Balancer / Router"]
-    
-    subgraph Blue Environment (Active)
-        AppV1_1["App v1"]
-        AppV1_2["App v1"]
-    end
-    
-    subgraph Green Environment (Idle/Testing)
-        AppV2_1["App v2"]
-        AppV2_2["App v2"]
-    end
-    
-    Router -->|100% Traffic| Blue Environment
-    Router -.->|0% Traffic| Green Environment
+```arch
+node router "Load Balancer / Router" at 1,0
+
+group blue "Blue Environment (Active)"
+node appv1_1 "App v1" in blue at 0,1
+node appv1_2 "App v1" in blue at 0,2
+
+group green "Green Environment (Idle/Testing)"
+node appv2_1 "App v2" in green at 2,1
+node appv2_2 "App v2" in green at 2,2
+
+router -> appv1_1
+router -> appv1_2
+router -> appv2_1
+router -> appv2_2
 ```
 
 **Pros:** Instant rollback (just flip the switch back), zero downtime, easy to test in production.
@@ -79,20 +82,17 @@ flowchart TD
 ### 4. Canary Deployment
 Roll out the new version to a small subset of users (e.g., 5%) before rolling it out to the entire infrastructure.
 
-```mermaid
-flowchart TD
-    Router["Load Balancer (Traffic Splitter)"]
-    
-    subgraph Stable (95% Traffic)
-        AppV1["App v1 (Stable)"]
-    end
-    
-    subgraph Canary (5% Traffic)
-        AppV2["App v2 (Canary)"]
-    end
-    
-    Router -->|95%| AppV1
-    Router -->|5%| AppV2
+```arch
+node router "Load Balancer (Traffic Splitter)" at 1,0
+
+group stable "Stable (95% Traffic)"
+node appv1 "App v1 (Stable)" in stable at 0,1
+
+group canary "Canary (5% Traffic)"
+node appv2 "App v2 (Canary)" in canary at 2,1
+
+router -> appv1
+router -> appv2
 ```
 
 **Pros:** Smallest blast radius, tests actual production traffic.

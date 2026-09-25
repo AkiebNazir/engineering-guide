@@ -82,38 +82,33 @@ GET  /v1/audit?principal=…                   → who queried what, bytes scann
 
 ## Architecture and flow
 
-```mermaid
+```arch
 %% caption: Redaction happens before the durable write, not at query time — a bulk export can never leak a raw sensitive field.
-sequenceDiagram
-    participant Svc as Service
-    participant Agent as Local agent (redact, spool)
-    participant Ingest as Ingest gateway
-    participant Broker as Replicated log
-    participant Indexer
-    participant Chunks as Durable log chunks
-    participant Query as Query API
-    actor Engineer
-    participant Lifecycle as Retention job
+node svc "Service" at 0,0
+node agent "Local agent\n(redact, spool)" at 1,0
+node ingest "Ingest gateway" at 2,0
+node broker "Replicated log" at 3,0
 
-    Svc->>Agent: write log line (bounded buffer, spooled to disk if full)
-    Agent->>Agent: redact sensitive fields, then spool
-    Agent->>Ingest: ship batch (async, retried, backpressure-aware)
-    Ingest->>Ingest: auth, quota, schema validation
-    Ingest->>Broker: append (acks from 2 of 3 replicas)
-    Broker->>Indexer: consume, second redaction pass
-    Indexer->>Chunks: flush chunk, then commit offset (partitioned by time + tenant/service)
-    Indexer->>Indexer: update label index and trace Bloom filter
+node indexer "Indexer" at 3,1
+node chunks "Durable log chunks" at 3,2
 
-    Engineer->>Query: search (time range, service, trace_id)
-    Query->>Query: tenant ACL check and audit entry
-    Query->>Indexer: recent unflushed data
-    Query->>Chunks: bounded time-range chunk scan
-    Query-->>Engineer: results
+node query "Query API" at 1,1
+node engineer "Engineer" at 0,1
 
-    loop per tenant/service policy
-        Lifecycle->>Chunks: expire chunks past retention
-        Lifecycle->>Indexer: expire index entries
-    end
+node lifecycle "Retention job" at 4,2
+
+svc -> agent
+agent -> ingest
+ingest -> broker
+broker -> indexer
+indexer -> chunks
+
+engineer -> query
+query -> indexer
+query -> chunks
+
+lifecycle -> chunks
+lifecycle -> indexer
 ```
 
 ```arch

@@ -195,23 +195,18 @@ A miss storm is many callers missing on the same key at once: after a TTL expiry
 
 **The set-after-delete race.** With cache-aside (read → miss → read source → set), a slow reader can undo a writer's invalidation:
 
-```mermaid
+```arch
 %% caption: The lease token issued at miss time is voided by the writer's delete, so the slow reader's late set is rejected instead of caching a stale value.
-sequenceDiagram
-    participant A as Reader A
-    participant N as Cache node
-    participant D as Source DB
-    participant B as Writer B
-    A->>N: get_lease k
-    N-->>A: miss and token L1
-    A->>D: read k
-    D-->>A: value v1
-    B->>D: write k as v2
-    B->>N: delete k
-    Note over N: token L1 voided
-    A->>N: set k v1 with L1
-    N-->>A: rejected
-    Note over A: next reader gets a fresh miss and token
+node A "Reader A" at 0,0
+node N "Cache node" at 1,0
+node D "Source DB" at 2,0
+node B "Writer B" at 1,1
+
+A -> N : "1. get_lease k\n2. miss, token L1"
+A -> D : "3. read k\n4. value v1"
+B -> D : "5. write k as v2"
+B -> N : "6. delete k (token L1 voided)"
+A -> N : "7. set k v1 with L1\n(rejected)"
 ```
 
 Without the token, A's `set` of v1 lands after B's `delete` and v1 stays until TTL — possibly minutes, and possibly forever if nobody sets a TTL.

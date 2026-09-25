@@ -13,16 +13,16 @@ description: "The <abbr title="Hypertext Transfer Protocol - The foundation of d
 sequenceDiagram
     participant C as Client
     participant D as DNS
-    participant S as Server (api.shop.com)
-
+    participant S as Server
     C->>D: Where is api.shop.com?
-    D-->>C: 203.0.113.10
-    C->>S: TCP handshake (SYN, SYN-ACK, ACK)
-    C->>S: TLS handshake (certificate, keys)
+    D-->>C: IP addr
+    C->>S: TCP handshake
+    C->>S: TLS handshake
     C->>S: GET /orders/42 HTTP/1.1
-    S-->>C: 200 OK + JSON body
-    note over C,S: Connection kept alive for the next request
+    S-->>C: 200 OK + JSON
+    Note over C,S: Connection kept alive
 ```
+
 
 Latency is the sum of these steps. <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> + <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> + <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> cost **several round trips before the first byte of your request is sent**. That single fact explains:
 
@@ -174,18 +174,15 @@ Why you care: **<abbr title="gRPC Remote Procedure Call - A modern, open-source,
 *   Terminate <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> at the load balancer or gateway, or all the way to the service, depending on your threat model.
 *   Never send credentials over plain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. Webhook receivers and WebSocket endpoints (`wss://`) must use <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> too.
 
-```arch
-%% caption: TLS termination usually happens at the Load Balancer or API Gateway; internal traffic runs in plaintext within the private network.
-node client "Client (Internet)" at 0,1 icon=client color=blue
-node lb "Load Balancer\n(TLS Terminator)" at 2,1 icon=lb color=amber
-group vpc "Private VPC" color=slate style=dashed
-node svc1 "Backend Service A" at 4,0 in vpc icon=app color=green
-node svc2 "Backend Service B" at 4,2 in vpc icon=app color=green
-
-client ==> lb : "HTTPS (TLS encrypted)"
-lb -> svc1 : "HTTP (Plaintext)"
-lb -> svc2 : "HTTP (Plaintext)"
+```mermaid
+flowchart LR
+    client[Client] -- "HTTPS (TLS encrypted)" --> lb[Load Balancer]
+    subgraph vpc [Private VPC]
+        lb -- "HTTP (Plaintext)" --> svc1[Backend Service A]
+        lb -- "HTTP (Plaintext)" --> svc2[Backend Service B]
+    end
 ```
+
 
 ## 9. CORS: The Browser Rule That Confuses Everyone
 
@@ -195,11 +192,12 @@ The browser's **same-origin policy** blocks JavaScript on `https://app.com` from
 sequenceDiagram
     participant B as Browser (app.com)
     participant A as API (api.com)
-    B->>A: OPTIONS /orders (preflight)<br/>Origin: https://app.com<br/>Access-Control-Request-Method: POST
-    A-->>B: 204<br/>Access-Control-Allow-Origin: https://app.com<br/>Access-Control-Allow-Methods: POST<br/>Access-Control-Allow-Headers: Authorization, Content-Type
-    B->>A: POST /orders (the real request)
-    A-->>B: 201 + Access-Control-Allow-Origin
+    B->>A: OPTIONS /orders\nOrigin: app.com, Method: POST
+    A-->>B: 204\nAllow-Origin, Allow-Methods
+    B->>A: POST /orders (real req)
+    A-->>B: 201 Created + Allow-Origin
 ```
+
 
 *   CORS is enforced **by browsers only**. `curl`, mobile apps, and server-to-server calls (Webhooks, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>) ignore it.
 *   Do not answer `Access-Control-Allow-Origin: *` on an <abbr title="Application Programming Interface">API</abbr> that uses cookies. List exact origins.

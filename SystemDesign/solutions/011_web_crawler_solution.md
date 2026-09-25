@@ -69,29 +69,25 @@ topics          links.discovered (key = host hash)    crawl.results (key = url_f
 
 ## Architecture and flow
 
-```mermaid
+```arch
 %% caption: Every URL is normalized and dedup-checked before it ever reaches a per-host frontier, so politeness budgets are a local, not global, coordination problem.
-sequenceDiagram
-    participant Disc as Discovery
-    participant Norm as Normalizer
-    participant Dedup as URL-hash dedupe
-    participant Frontier as Host-partitioned frontier
-    participant Fetcher
-    participant Store as Content store
+grid 3x2
+node Disc "Discovery" at 0,0
+node Norm "Normalizer" at 1,0
+node Dedup "URL-hash dedupe" at 2,0
+node Frontier "Host-partitioned frontier" at 2,1
+node Fetcher "Fetcher" at 1,1
+node Store "Content store" at 0,1
 
-    Disc->>Norm: seeds, extracted links, sitemaps
-    Norm->>Dedup: normalized URL
-    alt seen before
-        Dedup-->>Norm: drop
-    else new
-        Dedup->>Frontier: route by host
-        Frontier->>Frontier: apply robots.txt + per-host token bucket
-        Frontier->>Fetcher: next allowed URL
-        Fetcher->>Store: store content + content-hash
-        Store->>Store: compare hash against known content
-        Store->>Disc: extract links (loop back)
-        Store->>Store: schedule next recrawl: f(change-rate, importance, error backoff)
-    end
+Disc -> Norm : "seeds, links\nsitemaps"
+Norm -> Dedup : "normalized\nURL"
+Dedup -> Norm : "drop if\nseen"
+Dedup -> Frontier : "route by\nhost (new)"
+Frontier:R -> Frontier:B : "apply robots\ntoken bucket"
+Frontier -> Fetcher : "next allowed\nURL"
+Fetcher -> Store : "store content\n+ hash"
+Store:B -> Store:L : "compare hash\nschedule recrawl"
+Store -> Disc : "extract links"
 ```
 
 Routing every discovered URL to the node that owns its host converts "don't overload any one host" from global coordination into an independent local scheduling problem, so the system scales by adding nodes. This trades some cross-host load balance (a node with many small hosts may idle while another serves one huge site) for the correctness property that no host can be crawled faster than its budget however many workers exist.

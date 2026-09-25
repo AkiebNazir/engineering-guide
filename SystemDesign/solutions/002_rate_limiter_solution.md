@@ -102,28 +102,21 @@ gw -> backend : "allowed"
 primary ..> replica : "async"
 ```
 
-```mermaid
+```arch
 %% caption: One script call checks the tenant, key and route buckets atomically on one shard; the fleet-wide bucket is enforced locally from a leased slice, and any denial rejects before the backend is touched.
-sequenceDiagram
-    actor Client
-    participant WAF
-    participant GW as API gateway
-    participant Store as Bucket store
-    participant Backend
+node client "Client" at 0.5,0 icon=client
+node waf "WAF" at 0.5,1 icon=firewall
+node gw "API gateway" at 0.5,2 icon=gateway sub="auth + local fleet check"
+node store "Bucket store" at 2,2 icon=redis sub="tenant, key, route buckets"
+node backend "Backend" at 0.5,3 icon=server
 
-    Client->>WAF: request
-    WAF->>GW: forward (bot/abuse filtered)
-    GW->>GW: authenticate → principal/tenant/route
-    GW->>GW: local check: fleet-wide bucket (leased slice)
-    GW->>Store: one EVALSHA: tenant · API-key · route buckets
-    alt all buckets allow
-        Store-->>GW: allowed, tokens spent
-        GW->>Backend: forward
-        Backend-->>Client: response
-    else any bucket denies
-        Store-->>GW: denied
-        GW-->>Client: 429 Too Many Requests + Retry-After
-    end
+client -> waf : "request"
+waf -> gw : "forward"
+gw -> store : "EVALSHA"
+store -> gw : "allow/deny"
+gw -> backend : "forward"
+backend -> client : "response"
+gw -> client : "429"
 ```
 
 Evaluate cheapest broad limits first, then more specific limits. A request must pass all applicable policies. Identity comes from validated credentials, not a caller-supplied `user_id` header. Use <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> limits as a secondary abuse signal because NAT can combine many legitimate users and attackers can rotate addresses.

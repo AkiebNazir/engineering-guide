@@ -96,38 +96,27 @@ The **chunk index and chunk store are shared infrastructure**; everything user-v
 
 ## Architecture and data flow
 
-```mermaid
+```arch
 %% caption: Chunks land in the store before metadata knows the file exists, and only the metadata commit, a compare-and-set on the base version, decides what the current version is.
-sequenceDiagram
-    actor Dev as Device A
-    participant API as Metadata API
-    participant Idx as Chunk index
-    participant Store as Chunk store
-    participant Meta as Namespace shard
-    participant Relay as Journal relay
-    participant Notif as Notify gateways
-    actor Dev2 as Device B
+grid 5x4
+node dev "Device A" at 0,1
+node store "Chunk Store" at 2,0
+node api "Metadata API" at 1,2
+node idx "Chunk Index" at 2,3
+node meta "Namespace Shard" at 2,2
+node relay "Journal Relay" at 3,2
+node notif "Notify Gateways" at 4,2
+node dev2 "Device B" at 4,1
 
-    Dev->>Dev: chunk file (content-defined), hash each chunk
-    Dev->>API: begin upload with chunk hashes and base_version_id
-    API->>Idx: which hashes are missing in this scope
-    Idx-->>API: missing subset
-    API-->>Dev: session, signed PUT URLs for missing chunks only
-    Dev->>Store: PUT each missing chunk (parallel, resumable per chunk)
-    Store->>Store: recompute SHA-256, reject mismatch
-    Dev->>API: commit (commit_token, base_version_id)
-    API->>Meta: txn - CAS current_version where base matches, add version, next seq, journal row
-    alt base matches
-        Meta-->>API: new version, seq
-    else base is stale
-        Meta-->>API: version saved as conflict copy plus its own seq
-    end
-    API-->>Dev: 201 version_id and seq
-    Relay->>Notif: publish ns_id and seq (coalesced up to 1 s)
-    Notif-->>Dev2: poke over WebSocket
-    Dev2->>API: GET changes since cursor
-    API-->>Dev2: entries plus manifests
-    Dev2->>Store: GET only chunks missing locally
+dev -> store
+dev -> api
+api -> idx
+api -> meta
+meta -> relay
+relay -> notif
+notif -> dev2
+dev2 -> api
+dev2 -> store
 ```
 
 The hard decision is where the upload "commits." Bytes land in object storage before metadata says the file exists — this trades a window where storage holds an orphan chunk for the ability to resume huge uploads without holding open a database transaction for minutes. The metadata transaction, not the chunk PUT, is the source of truth for existence; a chunk referenced by no committed version is garbage, not a file. Direct upload reduces <abbr title="Application Programming Interface">API</abbr>-server bandwidth (bytes never transit the app tier) but concentrates authorization at two points: the metadata commit and the issuance of signed URLs, which must be scoped to exactly the chunks a caller may write or read, and short-lived, so they cannot be replayed to overwrite or fetch unrelated content.

@@ -138,18 +138,18 @@ Choice: **6 continent-scale groups with a ~5% halo, cells inside**, so a trip is
 
 ## Deep dive 5: rerouting, alternatives and map updates
 
-```mermaid
+```arch
 %% caption: A traffic change makes the gateway ask for a candidate, and the phone sees it only after the saving and hysteresis checks pass.
-sequenceDiagram
-    participant P as Phone
-    participant G as Nav gateway
-    participant R as Router
-    P->>G: positions batch seq 812
-    G->>G: ETA under metric v2041 is 190 s worse
-    G->>R: best route from here, metric v2041
-    R-->>G: candidate B, 260 s faster, diverges in 2.1 km
-    Note over G: saving over max 120 s and 10 percent, divergence over 30 s ahead
-    G-->>P: REROUTE_SUGGESTED route B
+node P "Phone" at 0,0
+node G "Nav gateway" at 0,1
+node R "Router" at 0,2
+
+P -> G : "positions batch seq 812"
+G -> G : "ETA under metric v2041 is 190 s worse"
+G -> R : "best route from here, metric v2041"
+R -> G : "candidate B, 260 s faster, diverges in 2.1 km"
+G -> G : "saving over max 120 s and 10 percent, divergence over 30 s ahead"
+G -> P : "REROUTE_SUGGESTED route B"
 ```
 
 **Triggers.** (1) *Off-route:* the device sees more than 50 m from the route for 3 fixes and asks at once (top priority, 56/s). (2) *Traffic:* the gateway re-prices with each metric version and searches only if ETA rose 60 s or 10%, at most every 60 s per session (833/s). (3) *Incident:* the index finds affected sessions, jittered over 30 s. Suggest only if the saving is at least max(120 s, 10%) and the fork is 30 s ahead, then a 5-minute cooldown unless the saving doubles, or users flip. Randomise among near-equal candidates so one is not saturated (design judgment).

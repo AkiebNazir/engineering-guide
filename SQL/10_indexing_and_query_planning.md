@@ -218,6 +218,31 @@ common in a real workload, the fix would be a second index with `status` leading
 (`(status, country)`), or a single index in whichever order matches the more
 selective, more frequently-filtered-alone column.
 
+## Finding slow queries in production at scale
+
+Running `EXPLAIN ANALYZE` manually is great for queries you already know are slow, but how do you find the slow queries in a live production system handling thousands of requests per second?
+
+The industry standard tool for this is **`pg_stat_statements`**, an official Postgres extension that records execution statistics for all SQL statements executed by a server.
+
+To use it, you first enable the extension (usually required in `postgresql.conf` via `shared_preload_libraries` and then `CREATE EXTENSION pg_stat_statements;`). Once running, Postgres continuously aggregates metrics (calls, total time, min/max time, blocks read/hit) grouped by the *normalized* query string (where literal values like `id = 123` are replaced with placeholders like `id = $1`).
+
+You can then run analytical queries against the `pg_stat_statements` view to find your worst offenders:
+
+```sql
+-- Find the top 5 queries consuming the most total database time
+SELECT 
+    query, 
+    calls, 
+    total_exec_time / 1000 AS total_time_sec, 
+    mean_exec_time AS avg_time_ms,
+    100.0 * shared_blks_hit / nullif(shared_blks_hit + shared_blks_read, 0) AS cache_hit_pct
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC
+LIMIT 5;
+```
+
+This takes the guesswork out of optimization. A query that takes 5ms but runs 10,000 times a minute might be a more urgent target for indexing than a 5-second query that runs once an hour. `pg_stat_statements` helps you optimize for **total system impact**.
+
 ## Common mistakes
 
 - **Indexing every column "just in case."** Every index slows every write to that

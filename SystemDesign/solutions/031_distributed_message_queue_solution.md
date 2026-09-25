@@ -108,22 +108,22 @@ Budget: 15,490 partitions / 200 tenants = 77 per tenant on average, enforced as 
 
 ## Deep dive 3: replication, durability and publish latency
 
-```mermaid
+```arch
 %% caption: With acks=all the produce ack waits for every in-sync replica, so one slow follower stalls the partition until it is dropped from the ISR.
-sequenceDiagram
-    participant P as Producer
-    participant L as Leader
-    participant F1 as Follower 1
-    participant F2 as Follower 2 slow
-    P->>L: batch, seq 41
-    L->>L: append, page cache
-    F1->>L: fetch
-    L-->>F1: batch
-    F2->>L: fetch
-    Note over F2: disk stall 25 ms
-    L-->>F2: batch
-    Note over L: high watermark moves after F2 catches up
-    L-->>P: ack, offset 9120
+node P "Producer" at 0,1
+node L "Leader" at 1,1
+node F1 "Follower 1" at 2,0
+node F2 "Follower 2 slow" at 2,2
+
+P -> L : "1. batch, seq 41"
+L -> L : "2. append, page cache"
+F1 -> L : "3. fetch"
+L -> F1 : "4. batch"
+F2 -> L : "5. fetch"
+F2 -> F2 : "disk stall 25 ms"
+L -> F2 : "6. batch"
+L -> L : "high watermark moves"
+L -> P : "7. ack, offset 9120"
 ```
 
 | Option | Copies at ack | Ack latency | Failure |
