@@ -380,16 +380,7 @@ basic-to-advanced progression, code examples, static `arch` diagrams, and
 interactive webapp labs:
 
 - [x] ~~**Backend Tool-Kit Module**: A hands-on module dedicated to mastering essential backend and infrastructure technologies. Needs deep-dive topics covering Docker, Kubernetes, Git, Kafka, RabbitMQ, Observability, CLI, IaC, Web Proxies, Perf Testing, Secrets, and Service Mesh.~~
-- [ ] **CI/CD & Deployment Strategies**: A dedicated topic/module focusing
-      purely on Continuous Integration, Continuous Deployment, automation
-      pipelines (GitHub Actions deep dive, Jenkins, ArgoCD), and deployment
-      strategies (blue/green, canary, rolling, feature flags, rollbacks,
-      GitOps).
-- [ ] **Data Engineering Module**: Missing hands-on coverage of batch/stream
-      processing fundamentals (Apache Spark, Airflow DAGs, dbt models, data
-      warehouse modeling — star schema, slowly changing dimensions).
+- [x] ~~**CI/CD & Deployment Strategies**: Completed module focusing purely on Continuous Integration, Continuous Deployment, automation pipelines (GitHub Actions deep dive, Jenkins, ArgoCD), and deployment strategies (blue/green, canary, rolling, feature flags, rollbacks, GitOps).~~
+- [x] ~~**Data Engineering Module**: Completed hands-on coverage of batch/stream processing fundamentals (Apache Spark, Airflow DAGs, dbt models, data warehouse modeling — star schema, slowly changing dimensions).~~
 - [x] ~~**Machine Learning System Design (MLOps)**: Needs a dedicated module focused on interviewing and architecting ML systems in production (Recommendation Systems, Fraud Detection, Search Ranking, Ad Click Prediction, MLOps pipelines — feature stores, model registry, A/B testing, model monitoring).~~
-- [ ] **Unified Testing & Quality Module**: Missing a dedicated deep dive into
-      testing strategies: Unit testing best practices, Integration testing,
-      E2E testing, TDD, Property-based testing, Mutation testing, Contract
-      testing, Chaos Engineering, Load/Stress testing methodology.
+- [x] ~~**Unified Testing & Quality Module**: Completed dedicated deep dive into testing strategies: Unit testing best practices, Integration testing, E2E testing, TDD, Property-based testing, Mutation testing, Contract testing, Chaos Engineering, Load/Stress testing methodology.~~
