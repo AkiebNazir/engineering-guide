@@ -61,6 +61,23 @@ This progression is *why* event-loop servers scale differently than thread-per-c
 
 ## Syscalls and kernel vs user space
 
+
+```arch
+%% caption: A syscall crosses the boundary from unprivileged user space to the privileged kernel.
+group user "User Space" color=blue
+node app "Application" at 0,0 in user icon=app
+node lib "libc (wrapper)" at 0,1 in user icon=code
+
+group kernel "Kernel Space (Privileged)" color=red
+node sys "Syscall Interface" at 0,2 in kernel icon=function
+node vfs "VFS / Net / Sched" at 0,3 in kernel icon=cpu
+node hw "Hardware" at 0,4 in kernel icon=server
+
+app -> lib : "write()"
+lib ==> sys : "syscall (trap)"
+sys -> vfs
+vfs -> hw
+```
 A **syscall** is a controlled transition from unprivileged user space into the privileged kernel — the only way a process reads a file, opens a socket, allocates memory from the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>, or asks the time. Each syscall costs a context switch into kernel mode and back (hundreds of nanoseconds to low microseconds, more with mitigations like KPTI for speculative-execution vulnerabilities). A syscall-heavy hot path — e.g., calling `write()` once per log line instead of buffering, or doing a `stat()` per file access in a loop — adds up: batching I/O (buffered writes, `readv`/`writev`, `io_uring` batching) amortizes this cost.
 
 ## Concurrency primitives

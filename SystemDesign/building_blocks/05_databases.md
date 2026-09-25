@@ -68,6 +68,17 @@ Normalize the **source of truth** so each fact is stored once: no update anomali
 
 ## Read replicas and staleness
 
+
+```arch
+%% caption: Asynchronous replication means a read immediately following a write might hit a replica that hasn't seen the update yet.
+node client "Client" at 0,1 icon=laptop color=blue
+node primary "Primary DB" at 2,0 icon=db color=green
+node replica "Read Replica" at 2,2 icon=db color=yellow
+
+client -> primary : "1. write(x=1)"
+primary ..> replica : "async replication\n(lag)"
+client -> replica : "2. read(x) -> 0"
+```
 A read replica offloads read traffic and can improve geographic locality, but replication is asynchronous by default, so a replica can lag behind the primary by anywhere from milliseconds to seconds under load.
 
 Never casually route a correctness-sensitive read — "did my write take effect" — to a replica that might not have it yet. Options, cheapest first:

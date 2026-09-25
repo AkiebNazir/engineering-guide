@@ -110,6 +110,19 @@ Streaming modes matter for <abbr title="Application Programming Interface">API</
 
 ## Rate limiting mechanics — token bucket worked example
 
+
+```arch
+%% caption: Token bucket enforces an average rate limit (refill rate) while allowing short bursts (bucket capacity).
+node client "Client" at 0,1 icon=laptop color=blue
+node bucket "Token Bucket\n(Capacity: B)" at 2,1 icon=db color=yellow
+node refill "Refill Process\n(Rate: r/sec)" at 2,0 icon=timer color=grey
+node api "API / Backend" at 4,1 icon=server color=green
+
+refill -> bucket : "adds tokens"
+client -> bucket : "request\n(costs 1 token)"
+bucket -> api : "token available\n(allow)"
+bucket ..> client : "no tokens\n(HTTP 429)"
+```
 (Adapted from the token-bucket model in the original building-blocks file and the rate-limiter solution — see `solutions/002_rate_limiter_solution.md` for the full system design.)
 
 A bucket holds up to `B` tokens, refills at rate `r` tokens/second, and each request spends 1+ tokens (a cheap read might cost 1, an expensive export might cost 10). This allows a burst up to `B` while enforcing an average rate of `r`.

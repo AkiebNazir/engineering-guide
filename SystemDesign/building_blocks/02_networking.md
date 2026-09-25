@@ -32,6 +32,20 @@ Every hop is a place latency, failure, or a trust boundary is introduced. Treat 
 
 ## <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>
 
+
+```arch
+%% caption: DNS resolution walks a hierarchy, but caching at the OS and ISP levels means changes take time to propagate.
+node client "Client / Browser" at 0,0 icon=laptop color=blue
+node isp "ISP Resolver\n(Cache)" at 2,0 icon=server color=grey style=dashed
+node root "Root Server\n(.)" at 4,-1 icon=server color=yellow
+node tld "TLD Server\n(.com)" at 4,0 icon=server color=yellow
+node auth "Authoritative\n(example.com)" at 4,1 icon=server color=green
+
+client -> isp : "query"
+isp -> root : "1. where is .com?"
+isp -> tld : "2. where is example.com?"
+isp -> auth : "3. where is api.example.com?"
+```
 <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> resolves a hostname (`api.example.com`) to an <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> address (or another name, via `CNAME`). Resolution is **cached at multiple layers** — <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> resolver, browser, ISP resolver — each honoring the record's **TTL**. A short TTL (seconds) lets you redirect traffic faster during a failover or migration, but it is not a real-time control: some resolvers and clients ignore TTL or cache longer than advertised, and a change is not instantly visible everywhere.
 
 | Record | Purpose |

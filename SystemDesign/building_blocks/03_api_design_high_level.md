@@ -91,6 +91,19 @@ A synchronous contract (`POST /orders` returns the created order in the response
 
 ## <abbr title="Application Programming Interface">API</abbr> gateway's role
 
+
+```arch
+%% caption: The API Gateway intercepts external traffic, enforces cross-cutting concerns, and routes to internal services.
+node ext "External Client" at 0,0 icon=laptop color=blue
+node gw "API Gateway\n(Auth, Quotas, Routing)" at 2,0 icon=server color=grey
+group svcs "Internal Microservices" color=green style=dashed
+node s1 "Order Service" at 4,-1 in svcs icon=app
+node s2 "User Service" at 4,1 in svcs icon=app
+
+ext -> gw : "HTTPS"
+gw -> s1 : "route /orders"
+gw -> s2 : "route /users"
+```
 An <abbr title="Application Programming Interface">API</abbr> gateway centralizes coarse authentication, request routing, quota/rate-limit enforcement, and a consistent edge contract across multiple backend APIs — it is not where business logic lives. See `16_platform_and_infra.md` for gateway/ingress placement in the platform stack and `02_networking.md` for where it sits in the request path relative to the load balancer and <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> termination.
 
 ## Related building blocks

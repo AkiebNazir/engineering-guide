@@ -109,6 +109,27 @@ Key rules, all non-negotiable:
 
 ### Orchestration vs. choreography
 
+
+```arch
+%% caption: Orchestration uses a central coordinator; choreography relies on services reacting to events.
+group orch "Orchestration (Centralized)" color=blue
+node coord "Coordinator\n(State Machine)" at 0,1 in orch icon=app
+node s1 "Service A" at 2,0 in orch icon=server
+node s2 "Service B" at 2,1 in orch icon=server
+node s3 "Service C" at 2,2 in orch icon=server
+
+coord -> s1 : "1. call"
+coord -> s2 : "2. call"
+coord -> s3 : "3. call"
+
+group chor "Choreography (Event-Driven)" color=green
+node ca "Service A" at 4,1 in chor icon=server
+node cb "Service B" at 6,1 in chor icon=server
+node cc "Service C" at 8,1 in chor icon=server
+
+ca -> cb : "event A done"
+cb -> cc : "event B done"
+```
 | Style | How it works | Choose it when | Cost |
 |---|---|---|---|
 | Orchestration | One coordinator service explicitly calls each step and its compensation, holding the saga's state machine. | You need clear visibility into where every saga instance is, and central control over ordering/retries. | The orchestrator becomes a required dependency and a single place that must be built well — but it's also the single place you look at to debug anything. |

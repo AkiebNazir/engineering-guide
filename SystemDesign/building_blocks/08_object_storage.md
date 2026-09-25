@@ -14,6 +14,17 @@ The rule: your database holds the *fact* that an object exists and its metadata;
 
 ## Direct/presigned upload flow
 
+
+```arch
+%% caption: By generating a presigned URL, the API server authorizes the upload without handling the large payload bytes itself.
+node client "Client" at 0,1 icon=laptop color=blue
+node api "API Server\n(Generates URL)" at 2,0 icon=server color=grey
+node obj "Object Storage\n(S3 / GCS)" at 2,2 icon=db color=green
+
+client -> api : "1. Request upload URL"
+api ..> client : "2. Signed URL"
+client ==> obj : "3. Direct PUT bytes"
+```
 Routing large file bytes through your application servers wastes their capacity on pass-through I/O and pushes bandwidth cost onto infrastructure that should be doing business logic. Let the client upload directly to object storage instead, authorized by a short-lived signed URL.
 
 ```mermaid

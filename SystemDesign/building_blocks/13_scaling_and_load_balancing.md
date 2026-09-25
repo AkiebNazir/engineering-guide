@@ -16,6 +16,25 @@ Everything here balances across instances *inside one region*. Choosing which re
 
 ## Horizontal vs. vertical scaling
 
+
+```arch
+%% caption: Vertical scaling hits a hardware ceiling; horizontal scaling requires a load balancer and stateless instances.
+group vert "Vertical Scaling (Scale Up)" color=blue
+node v1 "Small Server\n(2 Cores)" at 0,0 in vert icon=server
+node v2 "Big Server\n(32 Cores)" at 0,2 in vert icon=cpu
+
+v1 ==> v2 : "replace with\nbigger box"
+
+group horiz "Horizontal Scaling (Scale Out)" color=green
+node lb "Load Balancer" at 3,1 in horiz icon=globe
+node h1 "Instance 1" at 5,0 in horiz icon=server
+node h2 "Instance 2" at 5,1 in horiz icon=server
+node h3 "Instance 3" at 5,2 in horiz icon=server
+
+lb -> h1
+lb -> h2
+lb -> h3
+```
 ```text
 Vertical scaling:              Horizontal scaling:
 ┌────────────────┐             ┌────┐ ┌────┐ ┌────┐ ┌────┐

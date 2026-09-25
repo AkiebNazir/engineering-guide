@@ -117,6 +117,18 @@ These three are constantly conflated in interviews. Keep them apart:
 
 ## Key management and envelope encryption
 
+
+```arch
+%% caption: Envelope encryption secures data locally with a unique Data Key, which is itself encrypted by a Master Key in a secure KMS.
+node kms "KMS\n(Holds Master KEK)" at 0,0 icon=lock color=red
+node app "Application" at 2,0 icon=app color=blue
+node db "Storage\n(DB / S3)" at 4,0 icon=db color=grey
+
+app -> kms : "1. Generate Data Key\n(DEK)"
+kms ..> app : "2. returns Plain DEK\n& Encrypted DEK"
+app -> app : "3. Encrypt data\nwith Plain DEK"
+app ==> db : "4. Store Ciphertext\n+ Encrypted DEK"
+```
 Encrypting everything with one master key that the application holds is not key management. The standard pattern is **envelope encryption**:
 
 ```text

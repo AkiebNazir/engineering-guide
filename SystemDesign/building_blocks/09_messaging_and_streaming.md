@@ -73,6 +73,22 @@ At-least-once delivery is the practical default — a message can be redelivered
 
 ## Transactional outbox
 
+
+```arch
+%% caption: The outbox pattern guarantees a database mutation and its corresponding event are committed atomically before a background relay publishes it.
+node app "Application" at 0,0 icon=app color=blue
+group db "Database Transaction" color=yellow style=dashed
+node tbl "Domain Table" at 2,-1 in db icon=db
+node out "Outbox Table" at 2,1 in db icon=db
+node relay "Relay Process\n(Polling / CDC)" at 4,1 icon=timer color=grey
+node q "Message Broker" at 6,1 icon=queue color=green
+
+app -> tbl : "1. write"
+app -> out : "1. write event"
+out -> relay : "2. read unpublished"
+relay -> q : "3. publish"
+relay -> out : "4. mark published"
+```
 The classic gap: your business transaction commits to the database, then the process crashes before it publishes the corresponding event — the database says it happened, but nothing downstream ever finds out. Or the reverse: the event publishes, then the transaction rolls back, and downstream systems now believe something happened that didn't.
 
 The **transactional outbox** pattern closes this by writing the business change and an outbox row for the event *in the same database transaction*, so they commit or roll back together — atomically consistent by construction, no distributed transaction needed. A separate relay process then reads unpublished outbox rows and publishes them to the queue/stream, marking them published once acknowledged.
