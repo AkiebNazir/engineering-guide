@@ -1,8 +1,8 @@
 # Python Engineering — Advanced Production-Grade Curriculum
 
 This is not a DSA/algorithm curriculum (see `../PyDSA` for that). This module teaches
-**production-grade, idiomatic Python through 25 real-world engineering problems** — the
-Python-idiom counterpart to `../GoEngineering`'s same 25 topics. Same engineering
+**production-grade, idiomatic Python through 35 real-world engineering problems** — the
+Python-idiom counterpart to `../GoEngineering`'s same 35 topics. Same engineering
 problems, same rigor, adapted to how a senior Python engineer actually solves them:
 `asyncio` instead of goroutines/channels, `typing.Protocol` instead of Go interfaces,
 context managers instead of `defer`, exception hierarchies instead of error wrapping.

@@ -110,14 +110,14 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 
 ## PyEngineering/
 
-- [ ] Add the 4 missing topic folders that GoEngineering already has and the
+- [x] ~~Add the 4 missing topic folders that GoEngineering already has and the
       PyEngineering README promises: `03_api_client_with_retries`,
       `04_custom_stream_reader_writer`, `05_large_file_line_processor`,
       `15_rate_limiter`.
-- [ ] Fix `PyEngineering/README.md` — says "25 real-world engineering
+- [x] ~~Fix `PyEngineering/README.md` — says "25 real-world engineering
       problems / same 25 topics as GoEngineering" but its own table lists 35
       rows matching GoEngineering 1:1. Update the stale "25" text to 35.
-- [ ] Fix the 2 SoftwareDesign cross-references broken by the missing
+- [x] ~~Fix the 2 SoftwareDesign cross-references broken by the missing
       folders: `SoftwareDesign/06_error_handling_and_failure_design.md:28`
       (references `PyEngineering/03_api_client_with_retries`) and
       `SoftwareDesign/07_designing_concurrent_code.md:31` (references the
