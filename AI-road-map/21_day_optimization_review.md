@@ -2,9 +2,9 @@
 
 Welcome to Day 21! Today is the final day of **Phase 3 (Optimization)**. 
 
-For the last week, we have been studying the underlying mathematics of how AI learns. We've built Gradient Descent, AdamW, Cosine Schedulers, and Support Vector Machines.
+For the last week, we have been studying the underlying mathematics of how <abbr title="Artificial Intelligence">AI</abbr> learns. We've built Gradient Descent, AdamW, Cosine Schedulers, and Support Vector Machines.
 
-Today, we bring everything together. We will explore the true mathematical shape of a Deep Neural Network's "brain", understand why classical Calculus algorithms fail on modern AI, and write an industry-standard, production-ready Training Loop that utilizes every single trick we've learned.
+Today, we bring everything together. We will explore the true mathematical shape of a Deep Neural Network's "brain", understand why classical Calculus algorithms fail on modern <abbr title="Artificial Intelligence">AI</abbr>, and write an industry-standard, production-ready Training Loop that utilizes every single trick we've learned.
 
 ---
 
@@ -13,7 +13,7 @@ Today, we bring everything together. We will explore the true mathematical shape
 ### 1. The True Shape of the Loss Landscape (Saddle Points)
 In 2D math, Gradient Descent gets stuck in "Local Minima" (false valleys). 
 But modern Neural Networks operate in 10,000-dimensional space. In high dimensions, Local Minima are mathematically incredibly rare. Instead, models get stuck on **Saddle Points**.
-A saddle point is perfectly flat (Gradient = 0), but it curves *up* on one axis and *down* on another (like a horse saddle). It is the Momentum and Gradient Noise from Mini-Batch SGD that physically knock the AI off the flat saddle so it can slide down the side!
+A saddle point is perfectly flat (Gradient = 0), but it curves *up* on one axis and *down* on another (like a horse saddle). It is the Momentum and Gradient Noise from Mini-Batch <abbr title="Stochastic Gradient Descent">SGD</abbr> that physically knock the <abbr title="Artificial Intelligence">AI</abbr> off the flat saddle so it can slide down the side!
 
 ### 2. Sharp vs. Flat Minima (SAM Optimizer)
 As we discussed in Day 17, finding *a* minimum isn't enough. If the valley is "Sharp", the model will perfectly memorize the training data but fail in the real world (Overfitting). We want "Flat" valleys.
@@ -21,18 +21,18 @@ As we discussed in Day 17, finding *a* minimum isn't enough. If the valley is "S
 
 ### 3. Why Not Use Second-Order Calculus?
 In standard Calculus, you can find the exact bottom of a curve instantly using **Newton's Method** (Second-Order Optimization). It calculates the 1st derivative (the slope) AND the 2nd derivative (the curve).
-*Why don't we use this for AI?*
-Because the 2nd derivative of a Neural Network requires calculating the **Hessian Matrix**. If your model has 1 Billion parameters, the Hessian matrix has $1 \text{ Billion} \times 1 \text{ Billion}$ entries. It would require Exabytes of RAM to store. It is physically impossible. Therefore, Deep Learning relies entirely on 1st-Order approximations (Adam, SGD).
+*Why don't we use this for <abbr title="Artificial Intelligence">AI</abbr>?*
+Because the 2nd derivative of a Neural Network requires calculating the **Hessian Matrix**. If your model has 1 Billion parameters, the Hessian matrix has $1 \text{ Billion} \times 1 \text{ Billion}$ entries. It would require Exabytes of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> to store. It is physically impossible. Therefore, Deep Learning relies entirely on 1st-Order approximations (Adam, <abbr title="Stochastic Gradient Descent">SGD</abbr>).
 
 ### 4. Engineering Safety: Clipping & Mixed Precision
 - **Gradient Clipping:** Sometimes, a mathematical anomaly causes a gradient to instantly explode to $1,000,000.0$. This will instantly corrupt all the weights in the model (`NaN`). Gradient Clipping acts as a mathematical speed limit. Before taking a step, it checks the size of the gradient. If it exceeds a threshold (e.g., $1.0$), it shrinks the vector down.
-- **Mixed Precision:** AI models traditionally use `float32` (high-precision decimals) for math. Modern GPUs can use `float16` (half-precision). This instantly cuts your VRAM usage in half and doubles your training speed! The catch? `float16` cannot hold tiny numbers, so gradients often round down to `0.0` (Underflow). We fix this using a **Loss Scaler**, which temporarily multiplies the loss by a huge number before calculating the gradients!
+- **Mixed Precision:** <abbr title="Artificial Intelligence">AI</abbr> models traditionally use `float32` (high-precision decimals) for math. Modern GPUs can use `float16` (half-precision). This instantly cuts your VRAM usage in half and doubles your training speed! The catch? `float16` cannot hold tiny numbers, so gradients often round down to `0.0` (Underflow). We fix this using a **Loss Scaler**, which temporarily multiplies the loss by a huge number before calculating the gradients!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG
 
-Let's build a production-grade Training Loop. This is exactly what the code looks like inside PyTorch or TensorFlow when training a real, enterprise AI model. It includes Gradient Accumulation, Gradient Clipping, and Learning Rate Scheduling!
+Let's build a production-grade Training Loop. This is exactly what the code looks like inside PyTorch or TensorFlow when training a real, enterprise <abbr title="Artificial Intelligence">AI</abbr> model. It includes Gradient Accumulation, Gradient Clipping, and Learning Rate Scheduling!
 
 Create a file named `production_training_loop.py`:
 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Order of Operations:** Notice the exact order inside the `accumulation_steps` block. You MUST clip the gradients *before* the optimizer takes a step. You MUST take the optimizer step *before* you clear the buffer (`zero_grad()`). Messing up this order is the #1 bug written by junior AI engineers!
+1. **The Order of Operations:** Notice the exact order inside the `accumulation_steps` block. You MUST clip the gradients *before* the optimizer takes a step. You MUST take the optimizer step *before* you clear the buffer (`zero_grad()`). Messing up this order is the #1 bug written by junior <abbr title="Artificial Intelligence">AI</abbr> engineers!
 2. **The Output:** Run the script. Watch as the mathematical speed limit instantly detects the random gradient explosions and safely scales them down, preventing your model from destroying itself.
 
 ---
@@ -151,7 +151,7 @@ You need to add a safeguard so you can go to sleep while the model trains.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You are the Tech Lead for a massive AI training infrastructure team. One of your researchers comes to you and reports that their billion-parameter model's training loss has completely plateaued at Epoch 50 out of 100. It's not going down anymore. Walk me through your diagnostic playbook. What are the top 4 things you check, and how do you fix them?"*
+*"You are the Tech Lead for a massive <abbr title="Artificial Intelligence">AI</abbr> training infrastructure team. One of your researchers comes to you and reports that their billion-parameter model's training loss has completely plateaued at Epoch 50 out of 100. It's not going down anymore. Walk me through your diagnostic playbook. What are the top 4 things you check, and how do you fix them?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate a systematic debugging process:
@@ -170,4 +170,4 @@ A "Strong Hire" candidate must articulate a systematic debugging process:
 
 You now understand Linear Algebra, Probability, Calculus, and the exact Optimization engineering required to build artificial intelligence. 
 
-Tomorrow, we start **Phase 4 (Classical ML & Data Engineering)**. Before we build massive Neural Networks, we must build the classical algorithms (Random Forests, Logistic Regression, XGBoost) that still dominate the financial and medical industries today!
+Tomorrow, we start **Phase 4 (Classical <abbr title="Machine Learning">ML</abbr> & Data Engineering)**. Before we build massive Neural Networks, we must build the classical algorithms (Random Forests, Logistic Regression, XGBoost) that still dominate the financial and medical industries today!

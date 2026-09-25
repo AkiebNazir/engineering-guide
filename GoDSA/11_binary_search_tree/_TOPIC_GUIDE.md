@@ -3,7 +3,7 @@
 > Every other language you might come from hands you a balanced ordered
 > container for free — C++ `std::map`, Java `TreeMap`, Python's third-party
 > `sortedcontainers.SortedList`. Go hands you nothing. The standard library has
-> no ordered map, no built-in BST, no balanced tree of any kind. If a problem
+> no ordered map, no built-in <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, no balanced tree of any kind. If a problem
 > wants "sorted order plus O(log n) insert/delete/search," you are building it
 > yourself. This document is that build, plus the traversal and invariant
 > reasoning that makes it correct.
@@ -29,7 +29,7 @@ There is no `sortedcontainers` equivalent in std, either.
 
 > ⚠️ **This is the single most common "wait, what?" moment for engineers
 > moving from Python/C++/Java to Go on tree problems.** If you need
-> predecessor/successor/rank/sorted-range queries, you either hand-roll a BST
+> predecessor/successor/rank/sorted-range queries, you either hand-roll a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>
 > (this document), reach for a third-party B-tree package
 > (`github.com/google/btree`, `github.com/tidwall/btree`), or fall back to sorting a slice
 > from scratch every time you need order — which is O(n log n) per rebuild,
@@ -38,7 +38,7 @@ There is no `sortedcontainers` equivalent in std, either.
 
 ### 1.2 What you get instead
 
-You get pointers and structs — which is actually enough, because a BST is
+You get pointers and structs — which is actually enough, because a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> is
 just a binary tree with an ordering invariant enforced on insert. Go's struct
 + pointer model (topic 8) makes hand-rolling one direct and fast:
 
@@ -50,14 +50,14 @@ type TreeNode struct {
 ```
 
 No generics headache required for `int`-keyed problems (which is most of
-LeetCode); a real production BST would parametrize on `cmp func(a, b K) int`
+LeetCode); a real production <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> would parametrize on `cmp func(a, b K) int`
 the way `slices.SortFunc` does (Go 1.21+ generics), but LeetCode-style
 problems almost always fix the key type, so this guide does too, then notes
 the generic variant at the end.
 
 ---
 
-## Part 2 · The BST Invariant and What It Buys You
+## Part 2 · The <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Invariant and What It Buys You
 
 ### 2.1 The invariant
 
@@ -94,11 +94,11 @@ func inOrder(n *TreeNode, out *[]int) {
 ```
 
 For the tree above: `1 3 4 6 7 8 10 13 14`. This single fact underlies half
-the BST problems on LeetCode: "kth smallest," "validate BST," "BST to sorted
+the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> problems on LeetCode: "kth smallest," "validate <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>," "<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> to sorted
 list," "closest value" — all reduce to walking, or reasoning about, in-order
 sequence.
 
-### 2.3 Validating a BST: the range trap
+### 2.3 Validating a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>: the range trap
 
 The naive, **wrong** approach: check only `node.Left.Val < node.Val <
 node.Right.Val` at each node. This misses violations from grandchildren:
@@ -244,7 +244,7 @@ func deleteNode(n *TreeNode, target int) *TreeNode {
 
 ### 4.1 The degenerate case
 
-Insert `1, 2, 3, 4, 5, 6, 7` in order into an empty BST using the insert
+Insert `1, 2, 3, 4, 5, 6, 7` in order into an empty <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> using the insert
 above. Every value is larger than the last, so every node becomes the
 previous node's right child:
 
@@ -267,7 +267,7 @@ O(log n) regardless of insertion order.
 ### 4.2 Self-balancing, conceptually
 
 A rotation re-parents a small number of nodes to reduce height while
-preserving the BST invariant:
+preserving the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> invariant:
 
 ```
 Right rotation around y:        Left rotation around x:
@@ -278,7 +278,7 @@ Right rotation around y:        Left rotation around x:
 A   B                B   C           B   C              A   B
 ```
 
-AVL trees rotate to keep left/right subtree heights within 1 of each other
+<abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr> trees rotate to keep left/right subtree heights within 1 of each other
 at every node; red-black trees use a color invariant plus rotations to keep
 the longest root-to-leaf path at most 2x the shortest. Both guarantee
 **O(log n)** worst case, not just average.
@@ -286,13 +286,13 @@ the longest root-to-leaf path at most 2x the shortest. Both guarantee
 > ⚠️ Go's `container/` package deliberately ships none of this. If your
 > production code genuinely needs a balanced ordered map, use
 > `github.com/google/btree` (a B-tree, not a binary tree, but same asymptotic
-> guarantees and better cache behavior) rather than hand-rolling AVL
+> guarantees and better cache behavior) rather than hand-rolling <abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr>
 > rotations — reserve rotation logic for interview prep, not production.
 
-For interview purposes: know that a plain BST is only O(log n) **if the
+For interview purposes: know that a plain <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> is only O(log n) **if the
 input happens to arrive in a reasonably balanced order** (or you explicitly
 balance it, e.g. building from a sorted array via repeated midpoint — see
-"Convert Sorted Array to BST," LC 108), and say so when asked about worst
+"Convert Sorted Array to <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>," LC 108), and say so when asked about worst
 case.
 
 ### 4.3 Red-black rebalancing, in full — the mechanism behind those rotations
@@ -457,7 +457,7 @@ sibling black with only a "near" red nephew → rotate into the far case.
 Same bound as insertion in the case count, but **at most 3 rotations**
 (vs. insertion's 2) — still O(1) rotations, O(log n) recolorings.
 
-| | AVL | Red-Black |
+| | <abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr> | Red-Black |
 |---|---|---|
 | Balance invariant | subtree heights differ by ≤1 | longest path ≤ 2× shortest |
 | Lookup | faster (tighter balance) | slightly slower |
@@ -467,9 +467,9 @@ Same bound as insertion in the case count, but **at most 3 rotations**
 
 ---
 
-## Part 5 · BST-Specific Algorithms That Beat the General-Tree Version
+## Part 5 · <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>-Specific Algorithms That Beat the General-Tree Version
 
-The BST invariant lets you do strictly less work than the general-binary-tree
+The <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> invariant lets you do strictly less work than the general-binary-tree
 algorithm for several classic problems:
 
 ### 5.1 Kth smallest — in-order with early exit
@@ -500,10 +500,10 @@ instant you hit the kth element** — O(h + k) instead of O(n) for a full
 traversal followed by indexing, which matters when `k` is small and the
 tree is large.
 
-### 5.2 LCA in a BST — pure comparison, no subtree search
+### 5.2 <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> in a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> — pure comparison, no subtree search
 
-In a general binary tree, LCA requires searching both subtrees (topic 10) —
-O(n). In a BST, the invariant tells you which side to go without searching
+In a general binary tree, <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> requires searching both subtrees (topic 10) —
+O(n). In a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, the invariant tells you which side to go without searching
 either:
 
 ```go
@@ -581,7 +581,7 @@ degenerate — this row-to-row dependency is the whole point of Part 4.
 | Generic key comparison | Duck-typed `<` | Needs an explicit `cmp` function pre-generics; Go 1.21+ generics + `cmp.Ordered` close this gap |
 
 The recursion-limit row matters concretely: a Python solution to a
-deeply-skewed-BST problem can hit `RecursionError` on inputs that Go's
+deeply-skewed-<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> problem can hit `RecursionError` on inputs that Go's
 recursive equivalent handles without complaint, purely because of how each
 runtime manages call stacks (topic 6, Part on stack growth).
 
@@ -591,18 +591,18 @@ runtime manages call stacks (topic 6, Part on stack growth).
 
 | Algorithm | Time | Space | Problem |
 |---|:--:|:--:|---|
-| BST search / insert / delete | O(log n) avg | O(1) iterative / O(h) recursive | Core operations |
-| In-order traversal validity check | O(n) | O(h) | LC 98 Validate BST |
-| In-order with early exit | O(h + k) | O(h) | LC 230 Kth Smallest in a BST |
-| Comparison-based LCA | O(h) | O(1) | LC 235 LCA of a BST |
+| <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> search / insert / delete | O(log n) avg | O(1) iterative / O(h) recursive | Core operations |
+| In-order traversal validity check | O(n) | O(h) | LC 98 Validate <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> |
+| In-order with early exit | O(h + k) | O(h) | LC 230 Kth Smallest in a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> |
+| Comparison-based <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> | O(h) | O(1) | LC 235 <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> of a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> |
 | Floor / ceiling walk | O(h) | O(1) | LC 270-style closest-value problems |
-| Sorted array → balanced BST (midpoint recursion) | O(n) | O(log n) | LC 108 |
-| Two-pointer via in-order + set | O(n) | O(n) | LC 653 Two Sum IV — Input is a BST |
-| Successor-splice delete | O(log n) avg | O(h) | LC 450 Delete Node in a BST |
+| Sorted array → balanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> (midpoint recursion) | O(n) | O(log n) | LC 108 |
+| Two-pointer via in-order + set | O(n) | O(n) | LC 653 Two Sum IV — Input is a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> |
+| Successor-splice delete | O(log n) avg | O(h) | LC 450 Delete Node in a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> |
 
 ---
 
-## Part 9 · Building a BST From Scratch
+## Part 9 · Building a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> From Scratch
 
 ```go
 package main
@@ -703,7 +703,7 @@ part: copy the successor's value up, then delete the successor from the
 right subtree, which is now guaranteed to be a simple case since a
 leftmost node can never have a left child.
 
-**Generic version, for completeness:** a production-grade BST would replace
+**Generic version, for completeness:** a production-grade <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> would replace
 `int` with `K cmp.Ordered` (Go 1.21+) and take a `cmp func(a, b K) int` for
 custom key types — the shape of the algorithm above is identical; only the
 comparisons change from `<`/`>` to `cmp(a, b) < 0`/`> 0`.
@@ -715,19 +715,22 @@ comparisons change from `<`/`>` to `cmp(a, b) < 0`/`> 0`.
 
 All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: The three delete cases. Say all three before writing a line — skipping one is how this problem is failed. A missing left child covers the leaf and the right-only cases in one line.
-flowchart TD
-  D["found the node to delete"] --> A{"n.Left == nil?"}
-  A -->|"yes"| R1["replace n with n.Right<br/>(covers a leaf AND right-only)"]:::ok
-  A -->|"no"| B{"n.Right == nil?"}
-  B -->|"yes"| R2["replace n with n.Left"]:::ok
-  B -->|"no: two children"| C["find the inorder successor:<br/>the leftmost node of n.Right"]:::hot
-  C --> E["copy its value up, then delete the<br/>successor from n.Right (an easy case)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node d "Found the node to delete" at 0,0 shape=pill w=200
+node a "n.Left == nil?" at 0,1 shape=diamond color=amber
+node r1 "Replace n with n.Right" at 1,1 color=green w=220 sub="covers a leaf AND right-only"
+node b "n.Right == nil?" at 0,2 shape=diamond color=amber
+node r2 "Replace n with n.Left" at 1,2 color=green w=220
+node c "Find the inorder successor" at 0,3 color=amber w=220 sub="the leftmost node of n.Right"
+node e "Copy its value up" at 0,4 color=amber w=220 sub="then delete the successor from n.Right (an easy case)"
+d -> a
+a -> r1 : "yes"
+a -> b : "no"
+b -> r2 : "yes"
+b -> c : "no: two children"
+c -> e
 ```
 
 ### Insert and delete through a pointer-to-pointer — something Python cannot do
@@ -770,7 +773,7 @@ func remove(root **TreeNode, val int) {
 Call it as `insert(&root, v)` / `remove(&root, v)`. (Move the *node*, not its value, when other code may hold pointers to
 the successor.) `[5 3 8 1 4 7 9]`: removing 3 → `[1 4 5 7 8 9]`; removing the root 5 → `[1 4 7 8 9]`.
 
-### Sorted array → balanced BST (LC 108): indices, not slices
+### Sorted array → balanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> (LC 108): indices, not slices
 
 A sorted array *is* the target's inorder sequence: the middle becomes the root. Recurse on **index ranges** — slicing
 makes O(n log n) copies in Python but only header copies in Go, so both are fine here; prefer indices anyway and keep one
@@ -787,7 +790,7 @@ build = func(lo, hi int) *TreeNode {
 
 Mixing the closed range with a `lo >= hi` base case drops the last element of every range.
 
-### BST Iterator (LC 173): the explicit stack *is* the state
+### <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Iterator (LC 173): the explicit stack *is* the state
 
 ```go
 type BSTIterator struct{ st []*TreeNode }
@@ -805,7 +808,7 @@ func (it *BSTIterator) HasNext() bool { return len(it.st) > 0 }
 `New` calls `pushLeft(root)`. O(h) memory and amortised O(1) `Next` (each node is pushed and popped once). Pushing only
 `n.Right` returns values out of order. Precomputing the sorted slice is a valid first answer that fails the O(h) follow-up.
 
-### Recover BST (LC 99): the dips in inorder
+### Recover <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> (LC 99): the dips in inorder
 
 Scan inorder tracking `prev`. The **first** dip (`prev.Val > n.Val`) gives `first = prev`; **every** dip sets
 `second = n` — a far-apart swap makes two dips, an adjacent swap makes one:
@@ -849,7 +852,7 @@ The all-pairs O(n²) loop is the trap; the list-then-scan version costs O(n) spa
 
 ### Beyond the eleven
 
-**Preorder → BST in O(n)** (LC 1008): carry an upper bound and consume through a shared cursor; a value above the bound
+**Preorder → <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> in O(n)** (LC 1008): carry an upper bound and consume through a shared cursor; a value above the bound
 belongs to an ancestor, so return `nil` *without* consuming it:
 
 ```go
@@ -865,7 +868,7 @@ go_ = func(bound int) *TreeNode {
 
 **Greater Tree** (LC 538) is *reverse* inorder with a running total: `dfs(n.Right); total += n.Val; n.Val = total;
 dfs(n.Left)`. **Range Sum** (LC 938) and **Trim** (LC 669) prune on the bounds: a node below `lo` discards itself *and its
-left subtree*. **Closest value** (LC 270) is a descent remembering the best seen. **Balance a BST** (LC 1382) is inorder
+left subtree*. **Closest value** (LC 270) is a descent remembering the best seen. **Balance a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>** (LC 1382) is inorder
 + the midpoint rebuild. **Unique BSTs** (LC 96) is the Catalan recurrence `C(n) = Σ C(i)·C(n-1-i)` →
 `1, 2, 5, 14, 42, 132, 429` for `n = 1..7`.
 
@@ -910,7 +913,7 @@ func selectK(n *OSNode, k int) int {                    // k-th smallest, 1-base
 `rank(key)` counts keys `< key` by walking down and adding `size(n.Left) + 1` each time it goes right. Inserting
 `5 3 8 1 4 7 9 2 6` gives `selectK(4) = 4`, `selectK(9) = 9`, `rank(6) = 5`, root size 9. Any subtree aggregate you can
 recompute from the children (size, sum, min, max, height) can ride along like this — the mechanism behind interval trees,
-segment trees (topic 26) and AVL/red-black balance information.
+segment trees (topic 26) and <abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr>/red-black balance information.
 
 ### A generic ordered map with `cmp.Ordered`
 
@@ -940,8 +943,8 @@ Go 1.23's range-over-func iterators let `Each` become a `func(yield func(K, V) b
 
 | Structure | Guarantee | Notes |
 |---|---|---|
-| Plain BST | O(h): O(log n) on random input, **O(n)** on sorted input | Simplest; no rebalancing code. |
-| AVL tree | Height ≤ ~1.44 log₂ n | Strictly balanced → fastest lookups; more rotations on update. |
+| Plain <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> | O(h): O(log n) on random input, **O(n)** on sorted input | Simplest; no rebalancing code. |
+| <abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr> tree | Height ≤ ~1.44 log₂ n | Strictly balanced → fastest lookups; more rotations on update. |
 | Red-black tree | Height ≤ 2 log₂(n + 1) | Looser → fewer rotations; C++ `std::map` / Java `TreeMap`. Part 4.3. |
 | Treap / skip list | O(log n) *expected* | Random priorities / tower heights: far less code than red-black; skip lists are easy to make concurrent. |
 | **B-tree / B+ tree** | O(log_B n), fan-out `B` in the hundreds | Built for **disks and databases**: one node = one page, so a lookup touches ~3–4 pages even for hundreds of millions of keys (`100³ = 10⁶`, `100⁴ = 10⁸`); B+ trees link the leaves for range scans. |
@@ -950,21 +953,26 @@ In Go, when you need this *in production*, reach for a B-tree package (`github.c
 `github.com/tidwall/btree`) rather than hand-rolling. In an interview, name the operations you need — insert, delete, rank,
 range query — and the structure that provides them.
 
-```mermaid
+```arch
 %% caption: Choosing an ordered structure. What you need to do with the keys — and where they live — decides it.
-flowchart TD
-  Q(["Keys that must stay sorted"]) --> A{"Where do they live?"}
-  A -->|"on disk / very large"| B["B-tree or B+ tree<br/>fan-out is the lever"]:::ok
-  A -->|"in memory"| C{"What operations?"}
-  C -->|"only lookup, order does not matter"| H["map[K]V<br/>O(1) average"]:::ok
-  C -->|"insert, delete, predecessor, range"| D{"Adversarial or sorted input?"}
-  D -->|"no: random-ish keys"| P["plain BST<br/>O(log n) expected"]:::ok
-  D -->|"yes"| S["balanced tree, treap or skip list<br/>guaranteed or expected O(log n)"]:::hot
-  C -->|"rank / select / k-th"| O["augment with subtree sizes"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node q "Keys that must stay sorted" at 0,0 shape=pill w=200
+node a "Where do they live?" at 0,1 shape=diamond color=amber
+node b "B-tree or B+ tree" at 1,1 color=green w=230 sub="on disk / very large · fan-out is the lever"
+node c "What operations?" at 0,2 shape=diamond color=amber
+node h "map[K]V, O(1) average" at 1,2 color=green w=230 sub="only lookup, order does not matter"
+node o "Augment with subtree sizes" at 1,3 color=amber w=230 sub="rank / select / k-th"
+node d "Adversarial or sorted input?" at 0,4 shape=diamond color=amber sub="insert, delete, predecessor, range"
+node p "Plain BST" at 1,4 color=green w=230 sub="O(log n) expected"
+node s "Balanced tree, treap or skip list" at 0,5 color=amber w=230 sub="guaranteed or expected O(log n)"
+q -> a
+a -> b : "on disk"
+a -> c : "in memory"
+c:R -> h:L
+c:R -> o:L
+c -> d
+d -> p : "no: random-ish"
+d -> s : "yes"
 ```
 
 ### Duplicates are a policy, not an accident
@@ -982,18 +990,18 @@ consistently to **one side**. Validation must use the *same* rule: LC 98's stric
 | `mid := (lo + hi) / 2` | Overflows only on absurd indices — but write `lo + (hi-lo)/2` by habit. | The safe form. |
 | Comparing `n.Val < lo` after a subtraction | `int` arithmetic on extreme values wraps silently. | Compare directly; don't subtract to compare. |
 | Map keyed by `*TreeNode` after copying nodes | A copied struct is a different pointer key. | Never copy a node by value. |
-| Deep recursion on a sorted-input BST | Depth `n`; fatal `stack overflow` at 1 GB, unrecoverable. | Iterate (Morris / explicit stack), or balance the tree. |
+| Deep recursion on a sorted-input <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> | Depth `n`; fatal `stack overflow` at 1 GB, unrecoverable. | Iterate (Morris / explicit stack), or balance the tree. |
 
 ### Follow-ups the interviewer reaches for
 
 | Follow-up | The answer |
 |---|---|
 | "The tree is modified often; `k` varies." | Subtree sizes: `selectK` in O(h). |
-| "It might be skewed." | AVL / red-black / treap; say a plain BST degrades to a linked list. |
+| "It might be skewed." | <abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr> / red-black / treap; say a plain <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> degrades to a linked list. |
 | "Range queries?" | Prune on the bounds; or a B+ tree's linked leaves. |
 | "On disk?" | A B-tree / B+ tree — fan-out is the lever, not height. |
 | "Concurrent access?" | Hand-over-hand locking, or a lock-free skip list; `sync.RWMutex` around the whole tree is the simple answer. |
-| "Successor in O(1)?" | A threaded BST (Morris made permanent), or a parent pointer plus a linked list of nodes. |
+| "Successor in O(1)?" | A threaded <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> (Morris made permanent), or a parent pointer plus a linked list of nodes. |
 
 ---
 <!-- /block:11_go_2_augment -->
@@ -1022,20 +1030,20 @@ Eleven problems, five moves (compare-and-discard · construction from inorder ·
 
 ## Checklist Before Leaving This Topic
 
-- [ ] State clearly that Go's standard library has no ordered map/BST/set
-- [ ] Explain why in-order traversal of a BST yields sorted output
-- [ ] Validate a BST using the `(low, high)` range technique, not local checks
+- [ ] State clearly that Go's standard library has no ordered map/<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>/set
+- [ ] Explain why in-order traversal of a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> yields sorted output
+- [ ] Validate a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> using the `(low, high)` range technique, not local checks
 - [ ] Write insert, search, and all three delete cases from memory
-- [ ] Explain why an unbalanced BST degrades to O(n), and what rotations fix
-- [ ] Use the BST invariant to answer LCA in O(h), not O(n)
+- [ ] Explain why an unbalanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> degrades to O(n), and what rotations fix
+- [ ] Use the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> invariant to answer <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> in O(h), not O(n)
 - [ ] Implement kth-smallest with an early-exit iterative in-order traversal
-- [ ] Know when to reach for `google/btree` instead of hand-rolling AVL/red-black
+- [ ] Know when to reach for `google/btree` instead of hand-rolling <abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr>/red-black
 - [ ] State red-black's five invariants and derive the O(log n) height bound
       from invariants 4+5 (no two reds in a row, equal black-height)
 - [ ] Walk through insertion's three fixup cases (uncle red / triangle /
       line) and explain why insertion costs at most 2 rotations total
 - [ ] Write insert and delete through a `**TreeNode` and explain what the pointer-to-pointer buys you <!--ca-->
-- [ ] Augment a BST with subtree sizes and write `selectK` / `rank` in O(h) <!--ca-->
-- [ ] Build a BST from preorder in O(n) with an upper bound <!--ca-->
+- [ ] Augment a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> with subtree sizes and write `selectK` / `rank` in O(h) <!--ca-->
+- [ ] Build a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> from preorder in O(n) with an upper bound <!--ca-->
 - [ ] Write a generic ordered map with `cmp.Ordered`, and say what the standard library lacks <!--ca-->
 - [ ] Name the ordered-container options and when a B+ tree is the answer <!--ca-->

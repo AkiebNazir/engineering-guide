@@ -143,7 +143,7 @@ count, _ := events.CountDocuments(ctx, bson.M{"tags": "c"})
 count tags=c (multikey): 59632
 ```
 
-The Go driver has no special API for creating a multikey index — it's the exact same `CreateOne` call as any other single-field index; MongoDB decides server-side, purely from the fact that `tags` holds arrays, to build it as multikey. The count differs from the Python section's 67,255 only because both were generated from independent random datasets, not because either language builds or queries the index differently.
+The Go driver has no special <abbr title="Application Programming Interface">API</abbr> for creating a multikey index — it's the exact same `CreateOne` call as any other single-field index; MongoDB decides server-side, purely from the fact that `tags` holds arrays, to build it as multikey. The count differs from the Python section's 67,255 only because both were generated from independent random datasets, not because either language builds or queries the index differently.
 
 ## Covered queries
 
@@ -186,10 +186,10 @@ Same result: the index alone answered the query, zero documents fetched. One Go-
 
 ## Common mistakes
 
-- **Indexing every field "just in case."** Every index speeds up matching reads but slows down every write to the collection (each insert/update has to update every index too) and costs memory (indexes are ideally kept in RAM). Index for the queries you actually run, not defensively.
+- **Indexing every field "just in case."** Every index speeds up matching reads but slows down every write to the collection (each insert/update has to update every index too) and costs memory (indexes are ideally kept in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>). Index for the queries you actually run, not defensively.
 - **Wrong field order in a compound index.** `{status: 1, country: 1}` and `{country: 1, status: 1}` are different indexes with different prefixes — one serves "just give me `status`" efficiently, the other doesn't. Order by your actual query shapes, most selective/most commonly filtered-alone field first, as a starting heuristic.
 - **Assuming an index is used just because it exists.** MongoDB's query planner picks a plan based on cost estimation; a bad or redundant index can be ignored, or in rare cases a stale cached plan can pick a worse one. Always check with `.explain()` rather than assuming — this repo's whole "measured, not asserted" rule applies here directly.
 - **(Go) Assuming a decoded nested document is always `bson.M`.** As shown above, a sub-document inside a generically-decoded `bson.M`/`interface{}` field comes back as `bson.D`, not `bson.M` — a blind type assertion to `bson.M` panics at runtime. Either assert to `bson.D` and walk it, or decode into a concrete struct once the shape is known.
 - **Not noticing a query needs a compound index for both a filter and a sort.** `find({"country": "PT"}).sort("score")` benefits from an index on `(country, score)` specifically — a single-field index on `country` alone still has to sort 6,700-ish matching documents in memory after the fetch.
 
-Level 06 moves from single queries into MongoDB's aggregation pipeline — multi-stage transformations, and `$lookup`, which is MongoDB's answer to a SQL join.
+Level 06 moves from single queries into MongoDB's aggregation pipeline — multi-stage transformations, and `$lookup`, which is MongoDB's answer to a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> join.

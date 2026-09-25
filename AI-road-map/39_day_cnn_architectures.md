@@ -11,7 +11,7 @@ Today, we trace the history of the architectures that solved this, culminating i
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Big Bang: AlexNet (2012)
-Before 2012, AI was largely ignored. In 2012, AlexNet completely destroyed the ImageNet competition, proving that Deep Learning worked.
+Before 2012, <abbr title="Artificial Intelligence">AI</abbr> was largely ignored. In 2012, AlexNet completely destroyed the ImageNet competition, proving that Deep Learning worked.
 How did it win?
 1. **ReLU:** They replaced the standard `Sigmoid` activation function with `ReLU` ($max(0, x)$). This severely reduced the Vanishing Gradient problem, allowing them to stack 8 layers!
 2. **GPUs:** They were the first to program the math to run directly on two Nvidia GTX 580 gaming GPUs.
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Shortcut:** Look at `identity = self.shortcut(x)` and `out += identity`. That tiny `+=` is the single reason modern AI exists. It is the Gradient Highway. 
+1. **The Shortcut:** Look at `identity = self.shortcut(x)` and `out += identity`. That tiny `+=` is the single reason modern <abbr title="Artificial Intelligence">AI</abbr> exists. It is the Gradient Highway. 
 2. **The 1x1 Convolution:** In `self.shortcut`, if we change the stride to 2, the image size halves. You mathematically cannot add a $64 \times 64$ `identity` image to a $32 \times 32$ `out` image. A $1 \times 1$ convolution is used purely to instantly scale the `identity` dimensions down so the math matches!
 3. **BatchNorm Placement:** Notice that we apply BatchNorm *before* adding the Skip Connection. This is crucial for mathematical stability.
 
@@ -131,14 +131,14 @@ However, for ResNet-50 and ResNet-152, that requires too much compute. They inve
    - A $1 \times 1$ conv (to shrink the channels, e.g., 256 down to 64).
    - A $3 \times 3$ conv (on the 64 channels).
    - A $1 \times 1$ conv (to expand the 64 channels back up to 256).
-3. By shrinking the channels *before* doing the expensive $3 \times 3$ convolution, ResNet-50 uses less RAM than ResNet-34! Implement this math.
+3. By shrinking the channels *before* doing the expensive $3 \times 3$ convolution, ResNet-50 uses less <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> than ResNet-34! Implement this math.
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"We need to deploy a Computer Vision model on a cheap Mobile Device with only 2GB of RAM. We are currently using VGG-16. Walk through your specific architecture selection process to solve this, and explain how you would alter the weights before deployment."*
+*"We need to deploy a Computer Vision model on a cheap Mobile Device with only 2GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. We are currently using VGG-16. Walk through your specific architecture selection process to solve this, and explain how you would alter the weights before deployment."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:

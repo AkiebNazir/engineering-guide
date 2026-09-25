@@ -6,7 +6,7 @@ A **partitioned, replicated, append-only log** (for example Kafka, per the 2011 
 
 - `publish` returns only after the message is in at least 2 zones' replicas (`acks=all`, replication factor 3, `min.insync.replicas=2`). One zone can be lost with no lost acknowledged message and publishing stays available.
 - **Ordering per key**, not global: a key maps to one partition, and a partition is read in write order.
-- **At-least-once** by default. Exactly-once *effect* is opt-in per consumer and needs an idempotent sink. Nothing here makes a payment API run once by itself.
+- **At-least-once** by default. Exactly-once *effect* is opt-in per consumer and needs an idempotent sink. Nothing here makes a payment <abbr title="Application Programming Interface">API</abbr> run once by itself.
 - Replay by offset or timestamp for 7 days.
 - Not promised: order across partitions, delay precision finer than the smallest tier, or publishing with two zones gone.
 
@@ -18,8 +18,8 @@ Constraints from the question; (assumed) marks our numbers. Block [26](../buildi
 
 | Quantity | Arithmetic | Result | So we need... |
 |---|---|---|---|
-| Ingest | 1,000,000 × 1 KB; average 0.4 × peak | 1 GB/s peak, 0.4 GB/s = 34.6 TB/day | Disk from the average, network and CPU from the peak. |
-| Retained | 34.56 TB × 7 days; × RF 3 | 242 TB, 726 TB replicated | Disk binds. Compression (3× on JSON, assumed) is a cost lever, not in the base plan. |
+| Ingest | 1,000,000 × 1 KB; average 0.4 × peak | 1 GB/s peak, 0.4 GB/s = 34.6 TB/day | Disk from the average, network and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> from the peak. |
+| Retained | 34.56 TB × 7 days; × RF 3 | 242 TB, 726 TB replicated | Disk binds. Compression (3× on <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, assumed) is a cost lever, not in the base plan. |
 | Brokers by disk | 726 / (24 TB × 0.65 fill) = 46.5 | **48 brokers**, 16 per zone, 63% full | Also 726 TB / 1 GB segments × 3 files = 2.2 M files, 45,000 open files per broker: raise `ulimit`. |
 | Network | Ingress 1 GB/s; egress = 2 follower fetches + 3 groups = 5 GB/s; brokers see 3 in, 5 out | 63 MB/s in, 104 MB/s out per broker = 8% of 10 GbE | Network is not a constraint. |
 | Cross-zone bytes | Replication 2 GB/s + producers 2/3 × 1 + consumers 2/3 × 3 | 4.7 GB/s peak, 161 TB/day at average | The bill line. Fetch-from-closest-replica (KIP-392) removes the consumer 2 GB/s: 92 TB/day. |
@@ -29,7 +29,7 @@ Constraints from the question; (assumed) marks our numbers. Block [26](../buildi
 | Tiered (6 h local) | 0.4 GB/s × 21,600 s × 3 = 26 TB local; cold 233 TB single copy in object storage | Brokers then set by replicas per broker | 46,470 / 18 = 2,580 replicas, 1.4 TB local each: **18 brokers** (6 per zone) instead of 48. |
 | Offset commits | 3 groups × 15,490 = 46,470 (group, partition) pairs / 5 s | 9,300 commits/s, about 0.9 MB/s | At a 1 s interval it is 46,470/s, 4.6% of message rate. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /topics/{t}/messages   [{key, value, headers, id?, deliver_at?}]  → [{partition, offset}] | per-item error
@@ -54,18 +54,30 @@ The **partition key** is `hash(message key) mod partition count`. A partition is
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Producers and consumers talk only to partition leaders, while the controller quorum and object storage sit off the hot path.
-flowchart LR
-    P["Producers<br/>batch, idempotent"] --> L["Partition leader<br/>zone A"]
-    L -- "follower fetch" --> F1["Follower<br/>zone B"]
-    L -- "follower fetch" --> F2["Follower<br/>zone C"]
-    L --> T[("Object storage<br/>segments older than 6 h")]
-    C1["Consumer group 1"] --> L
-    C2["Consumer group 2"] --> L
-    C1 -.-> GC["Group coordinator<br/>offsets topic"]
-    CTL["Controller quorum 3<br/>metadata, ISR, leaders"] -.-> L
-    CTL -.-> F1
+node P "Producers" at 0,0 icon=app sub="batch, idempotent"
+node C2 "Consumer group 2" at 2,0 icon=users
+node C1 "Consumer group 1" at 3,0 icon=users
+group ctl "Control plane" color=slate icon=scheduler style=dashed
+node CTL "Controller quorum" at 0,1 in ctl icon=scheduler sub="3 nodes: metadata, ISR, leaders"
+group za "Zone A" color=blue icon=region
+node L "Partition leader" at 1,1 in za icon=server
+group zb "Zone B" color=blue icon=region
+node F1 "Follower" at 0,2 in zb icon=replica
+group zc "Zone C" color=blue icon=region
+node F2 "Follower" at 2,2 in zc icon=replica
+node GC "Group coordinator" at 3,2 icon=kv sub="offsets topic"
+node T "Object storage" at 1,3 icon=blob sub="segments older than 6 h"
+P:R -> L:T
+C2 -> L
+C1 -> L
+L -> F1 : "follower fetch"
+L -> F2 : "follower fetch"
+L -> T
+C1 ..> GC
+CTL ..> L
+CTL ..> F1
 ```
 
 **Write walk.** The client batches for `linger` (2 ms, assumed), hashes the key to a partition and sends to the cached leader. The leader appends to page cache, followers fetch, the leader advances the **high watermark** once every in-sync replica has the batch, and acks. On `NOT_LEADER` the client refreshes metadata and retries with the same sequence number.
@@ -79,7 +91,7 @@ flowchart LR
 | Consumer state | One offset per partition | Per-message: in flight, visibility timeout, acked | Per-message ack on a log (Pub/Sub, Pulsar shared subscriptions, Kafka share groups per KIP-932, check status) |
 | Broker cost per message | Sequential append, amortised across a batch | Bookkeeping and an ack per message and subscription | Higher than a log |
 | Replay | Yes, any retained offset | No: deleted on ack | Usually yes |
-| Ordering | Per partition | Best effort, or FIFO groups | Per key when enabled |
+| Ordering | Per partition | Best effort, or <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> groups | Per key when enabled |
 | Poison message | Stalls its partition | Redelivered independently, then DLQ | Independent |
 | Fan-out to 3 groups | One copy, 3 offsets | 3 queues, 3 copies | One copy |
 
@@ -124,7 +136,7 @@ sequenceDiagram
 
 Latency budget: linger 2 ms + network 0.5 + leader append 0.1 + follower fetch 1 + ack 0.5 = about 4 ms p50 (assumed), so 20 ms leaves room for one stall but not a chronically slow disk.
 
-**No fsync per batch.** Durability comes from replication across zones, not flush (as in the Kafka docs). The cost: a simultaneous power loss in two zones can lose what the OS had not written back, about ingest × writeback interval (1 GB/s × 5 s = 5 GB at peak, assumed), which is outside the stated contract. **Unclean leader election stays off**: an empty ISR waits rather than losing committed messages.
+**No fsync per batch.** Durability comes from replication across zones, not flush (as in the Kafka docs). The cost: a simultaneous power loss in two zones can lose what the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> had not written back, about ingest × writeback interval (1 GB/s × 5 s = 5 GB at peak, assumed), which is outside the stated contract. **Unclean leader election stays off**: an empty ISR waits rather than losing committed messages.
 
 ## Deep dive 4: consumer groups, offsets and delivery semantics
 
@@ -139,16 +151,21 @@ Latency budget: linger 2 ms + network 0.5 + leader append 0.1 + follower fetch 1
 
 Cluster-wide de-duplication is not feasible: 16-byte IDs at the 0.4 M msgs/s average is 553 GB for a 24 h window and 3.9 TB for 7 days. It belongs at the sink of the consumers that need it.
 
-```mermaid
+```arch
 %% caption: A failed message hops through delay tiers and lands in the dead-letter topic after three attempts, so the main partition never stalls.
-flowchart LR
-    M["orders topic"] --> C{"process"}
-    C -- "ok" --> OK["commit offset"]
-    C -- "fail, attempt 1" --> R1["retry-5s topic"]
-    R1 --> C
-    C -- "fail, attempt 2" --> R2["retry-1m topic"]
-    R2 --> C
-    C -- "fail, attempt 3" --> D["orders-dlq topic<br/>alert on depth, redrive tool"]
+node M "orders topic" at 1,0 icon=topic
+node OK "commit offset" at 0,2 shape=pill color=green
+node C "process" at 1,2 shape=diamond color=amber
+node R1 "retry-5s topic" at 2,1 icon=topic
+node D "orders-dlq topic" at 3,2 icon=topic color=red sub="alert on depth, redrive tool"
+node R2 "retry-1m topic" at 2,3 icon=topic
+M -> C
+C -> OK : "ok"
+C:R -> R1:B : "fail, attempt 1"
+R1:L -> C:T
+C:R -> R2:T : "fail, attempt 2"
+R2:L -> C:B
+C -> D : "fail, attempt 3"
 ```
 
 **Retry and delay tiers.** Each tier topic has one fixed delay, so due order equals arrival order: the tier consumer sleeps until `head.timestamp + delay` and pauses the partition, with no per-message timer (the retry-topic and DLQ pattern in Uber's 2018 engineering post on reliable reprocessing). Permanent errors skip the tiers and go straight to the DLQ. **Delay up to 7 days:** tiers (5 s, 1 min, 10 min, 1 h) cover short delays; longer ones go to a timer store keyed by `due_time` that publishes when due. Chaining tiers up to 1 day would take about 12 hops for 7 days: at an assumed 1% delayed traffic (10,000/s) that is 120,000 extra messages/s, 12% of peak, hence the timer store.
@@ -159,7 +176,7 @@ flowchart LR
 
 | Noisy neighbour | Effect | Control |
 |---|---|---|
-| Produce burst | Broker CPU and disk saturate | Byte-rate and request-time quotas, throttle at the broker |
+| Produce burst | Broker <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> and disk saturate | Byte-rate and request-time quotas, throttle at the broker |
 | Backfill consumer reading old data | Evicts the 17-minute page-cache tail for everyone | Fetch quota, cold reads served from object storage, not brokers |
 | Heavy tenant | Skews leaders and disks | Rack-aware balancing (for example Cruise Control), dedicated broker sets above a threshold |
 

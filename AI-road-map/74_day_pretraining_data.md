@@ -3,7 +3,7 @@
 Welcome to Day 74. You have a massive architecture, you have a perfect Tokenizer, and you have $100 Million to rent GPUs. 
 
 Where do you get the 1.4 Trillion tokens to satisfy the Chinchilla scaling laws? You scrape the entire internet (using datasets like Common Crawl).
-But the internet is $80\%$ spam, duplicate boilerplate, and SEO garbage. If you train an LLM on garbage, it will output garbage. 
+But the internet is $80\%$ spam, duplicate boilerplate, and SEO garbage. If you train an <abbr title="Large Language Model">LLM</abbr> on garbage, it will output garbage. 
 
 Today we build the massive Big Data engineering pipeline that cleans the internet.
 
@@ -19,7 +19,7 @@ To train LLaMA 3, Meta ran the entire internet through a strict pipeline:
 4. **Decontamination:** Ensure that none of the testing benchmarks (like Medical Exams) accidentally leaked into the training data!
 
 ### 2. The Danger of Duplicates
-If the exact same paragraph appears 1,000 times in your training data, the AI will memorize it perfectly. When a user writes a prompt that looks similar, the AI will regurgitate the paragraph verbatim. This is plagiarism, and it ruins the model's ability to generalize.
+If the exact same paragraph appears 1,000 times in your training data, the <abbr title="Artificial Intelligence">AI</abbr> will memorize it perfectly. When a user writes a prompt that looks similar, the <abbr title="Artificial Intelligence">AI</abbr> will regurgitate the paragraph verbatim. This is plagiarism, and it ruins the model's ability to generalize.
 **The Problem:** You have 100 Million documents. If you try to do an exact string comparison (`doc1 == doc2`) across all of them, the $O(N^2)$ algorithm will take 50,000 years to run.
 
 ### 3. MinHash LSH (Near-Deduplication)
@@ -30,7 +30,7 @@ How do you find near-duplicates in $O(N)$ time? We use **MinHash Locality Sensit
 
 ### 4. Quality Filtering (Heuristics & Classifiers)
 - **Heuristics:** Fast, hardcoded rules. (e.g., If the text has no punctuation, delete it. If the text is $90\%$ numbers, delete it. If the text has 50 consecutive curse words, delete it).
-- **Classifiers:** We take Wikipedia (High Quality) and raw Reddit comments (Low Quality). We train a tiny, fast AI classifier to distinguish between them. We then run the entire internet through this classifier. If the classifier says a webpage is low quality, we delete it!
+- **Classifiers:** We take Wikipedia (High Quality) and raw Reddit comments (Low Quality). We train a tiny, fast <abbr title="Artificial Intelligence">AI</abbr> classifier to distinguish between them. We then run the entire internet through this classifier. If the classifier says a webpage is low quality, we delete it!
 
 ---
 
@@ -129,7 +129,7 @@ You have removed duplicates. Now you must remove spam (like `"a a a a a a a"`).
 1. You have a tiny, pre-trained GPT-2 model.
 2. You pass a scraped paragraph into GPT-2. 
 3. Calculate the **Perplexity** (the exponential of the Cross-Entropy Loss). 
-4. Perplexity mathematically measures how "surprised" the AI is by the text.
+4. Perplexity mathematically measures how "surprised" the <abbr title="Artificial Intelligence">AI</abbr> is by the text.
 5. If the perplexity is extremely high (the text is absolute gibberish), you delete the document.
 6. If the perplexity is extremely low (e.g., `"The the the the"`), you also delete it because it is repetitive spam!
 
@@ -145,7 +145,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Architecture & Tokenizer:** 
    - Propose a Decoder-only architecture using Pre-Norm, SwiGLU, and RoPE. 
-   - State that you will train a custom BPE Tokenizer, ensuring you up-sample code and multilingual text to balance the fertility disparity.
+   - State that you will train a custom <abbr title="Byte Pair Encoding">BPE</abbr> Tokenizer, ensuring you up-sample code and multilingual text to balance the fertility disparity.
 2. **The Data Pipeline (The true differentiator):**
    - According to Chinchilla, 13B parameters requires ~260 Billion tokens. 
    - Detail the pipeline: CommonCrawl $\rightarrow$ MinHash Deduplication $\rightarrow$ Quality Classifier $\rightarrow$ Decontamination. 

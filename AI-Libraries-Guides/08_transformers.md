@@ -8,10 +8,10 @@
 `transformers` is an open-source library built by the company Hugging Face. It provides thousands of pre-trained models (LLMs, Vision Models, Audio Models) that you can download and run with just three lines of Python code. 
 
 **Why does it exist?**
-Before Hugging Face, if you wanted to use an AI model developed by Meta (like Llama) or Google (like BERT), you had to clone their massive GitHub repository, figure out their highly specific PyTorch code, and spend days getting the weights to load. 
-Hugging Face standardized the entire AI industry. They created a uniform API. Whether you are loading a text model, an image model, or an audio model, the code is always exactly the same: `AutoModel` and `AutoTokenizer`.
+Before Hugging Face, if you wanted to use an <abbr title="Artificial Intelligence">AI</abbr> model developed by Meta (like Llama) or Google (like BERT), you had to clone their massive GitHub repository, figure out their highly specific PyTorch code, and spend days getting the weights to load. 
+Hugging Face standardized the entire <abbr title="Artificial Intelligence">AI</abbr> industry. They created a uniform <abbr title="Application Programming Interface">API</abbr>. Whether you are loading a text model, an image model, or an audio model, the code is always exactly the same: `AutoModel` and `AutoTokenizer`.
 
-It is the single most important library in modern Generative AI.
+It is the single most important library in modern Generative <abbr title="Artificial Intelligence">AI</abbr>.
 
 ---
 
@@ -31,7 +31,7 @@ print(f"Transformers version: {transformers.__version__}")
 
 ---
 
-## 3. The "Hello World": The `pipeline` API (For Beginners)
+## 3. The "Hello World": The `pipeline` <abbr title="Application Programming Interface">API</abbr> (For Beginners)
 
 If you just want to use a model quickly without worrying about tensors, math, or tokenization, you use the `pipeline` abstraction.
 
@@ -56,7 +56,7 @@ The pipeline handles downloading the weights, tokenizing the English text into n
 
 ## 4. Deep Dive: Tokenizers and Models (For Pros)
 
-If you are building a real AI application, you almost never use the `pipeline`. You need granular control over the memory, the batching, and the generation parameters. You must split the pipeline into its two true components: The **Tokenizer** and the **Model**.
+If you are building a real <abbr title="Artificial Intelligence">AI</abbr> application, you almost never use the `pipeline`. You need granular control over the memory, the batching, and the generation parameters. You must split the pipeline into its two true components: The **Tokenizer** and the **Model**.
 
 ### A. The Tokenizer (Translating English to Math)
 Neural networks cannot read the letter "A". They only understand numbers. The Tokenizer splits your sentence into "Tokens" (which are usually chunks of words, not full words) and maps them to an ID number in a massive dictionary.
@@ -115,13 +115,13 @@ print(f"Final Generation: {final_text}")
 
 ## 5. Generating Text: The Parameter Masterclass
 
-When you call `model.generate()`, you are controlling exactly how the LLM "thinks". Let's break down the most critical parameters.
+When you call `model.generate()`, you are controlling exactly how the <abbr title="Large Language Model">LLM</abbr> "thinks". Let's break down the most critical parameters.
 
 ### Parameter Breakdown: `model.generate(...)`
 - `max_new_tokens` (int): The absolute hard limit on how many words it can generate.
-  - *Effect:* If you set this to 5, it will stop mid-sentence. If you set it to 2000, it might hallucinate forever, racking up API/GPU costs.
+  - *Effect:* If you set this to 5, it will stop mid-sentence. If you set it to 2000, it might hallucinate forever, racking up <abbr title="Application Programming Interface">API</abbr>/GPU costs.
 - `temperature` (float): Controls the randomness of the predictions. Default is usually `1.0`.
-  - *Effect of decreasing (e.g., 0.1):* The model becomes strict and deterministic. It will always pick the most mathematically probable next word. Use `0.1` for coding, math, or factual retrieval (RAG).
+  - *Effect of decreasing (e.g., 0.1):* The model becomes strict and deterministic. It will always pick the most mathematically probable next word. Use `0.1` for coding, math, or factual retrieval (<abbr title="Retrieval-Augmented Generation">RAG</abbr>).
   - *Effect of increasing (e.g., 1.5):* The model becomes wildly creative. It will pick low-probability words. If you set it to 2.0, it will output absolute gibberish. Use `0.8` to `1.2` for writing poetry or brainstorming.
 - `do_sample` (bool): 
   - *Effect:* If `False` (Greedy Decoding), the model *always* picks the #1 most likely word. Temperature is completely ignored. If `True`, it rolls a weighted dice (using the temperature) to pick the next word.
@@ -143,11 +143,11 @@ outputs = model.generate(
 
 ## 6. MAANG Interview Scenarios
 
-### Scenario 1: The Out-of-Memory (OOM) Disaster
+### Scenario 1: The Out-of-Memory (<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>) Disaster
 *Interviewer:* "You are trying to load Llama-3-70B on a server with 24GB of VRAM. It crashes immediately. Why, and how do you fix it?"
 
 *Answer:* "A 70-Billion parameter model stored in standard 32-bit float (`fp32`) requires exactly 4 bytes per parameter. 70B * 4 bytes = 280 Gigabytes of VRAM just to load the model. It is mathematically impossible to fit it on a 24GB GPU. 
-To fix this, I would use Hugging Face's integration with `bitsandbytes` to load the model in **4-bit Quantization**. This reduces the memory footprint to roughly 0.5 bytes per parameter, shrinking the 280GB model down to 35GB. Then, I would use `device_map="auto"` from the `accelerate` library to load 24GB onto the GPU, and offload the remaining 11GB onto the system RAM."
+To fix this, I would use Hugging Face's integration with `bitsandbytes` to load the model in **4-bit Quantization**. This reduces the memory footprint to roughly 0.5 bytes per parameter, shrinking the 280GB model down to 35GB. Then, I would use `device_map="auto"` from the `accelerate` library to load 24GB onto the GPU, and offload the remaining 11GB onto the system <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>."
 
 ### Scenario 2: Left-Padding vs Right-Padding
 *Interviewer:* "You are doing batch generation with `model.generate()`. You passed 10 sentences of different lengths into the tokenizer. The model's outputs are completely corrupted and hallucinated. Why?"
@@ -167,5 +167,5 @@ If you manually pass `input_ids` to the model without passing the `attention_mas
 If you want to classify text as Positive/Negative, you cannot use `AutoModelForCausalLM`. Causal models (like GPT) are designed to generate text. You must use `AutoModelForSequenceClassification` (like BERT), which explicitly attaches a classification "head" to the top of the neural network.
 
 ### ⚠️ Pitfall 3: Not caching your downloads
-When you call `from_pretrained("gpt2")`, Hugging Face downloads 1GB of data to your hidden `~/.cache/huggingface` folder. If you run this in a Docker container that rebuilds every day, you will be downloading gigabytes of data every single day, destroying your bandwidth and delaying deployment. 
+When you call `from_pretrained("gpt2")`, Hugging Face downloads 1GB of data to your hidden `~/.cache/huggingface` folder. If you run this in a <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container that rebuilds every day, you will be downloading gigabytes of data every single day, destroying your bandwidth and delaying deployment. 
 *Fix:* In production, you download the model once to a local directory, and load it from disk: `AutoModelForCausalLM.from_pretrained("./local_model_folder")`.

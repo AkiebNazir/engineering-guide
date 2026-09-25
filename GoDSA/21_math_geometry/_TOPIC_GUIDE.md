@@ -128,21 +128,24 @@ func powMod(base, exp, m int64) int64 {
 > times. Naively multiplying `base` by itself `exp` times is O(exp) — for
 > `exp = 10^9` that's the difference between instant and never-finishing.
 
-```mermaid
+```arch
 %% caption: Binary exponentiation: n halves every round, so O(log n) multiplications instead of n - 1. For negative n, invert x first.
-flowchart TD
-  A["pow(x, n): result = 1"] --> B{"n == 0 ?"}
-  B -->|yes| Z["return result"]:::ok
-  B -->|no| C{"n is odd?"}
-  C -->|yes| D["result *= x"]
-  C -->|no| E["skip"]
-  D --> F["x = x * x<br/>n = n / 2"]:::hot
-  E --> F
-  F --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node a "pow(x, n)" at 1,0 shape=pill sub="result = 1"
+node b "n == 0 ?" at 1,1 shape=diamond color=amber
+node z "return result" at 2,1 color=green
+node c "n is odd?" at 1,2 shape=diamond color=amber
+node e "skip" at 2,2 color=slate
+node d "result *= x" at 1,3
+node f "x = x * x" at 1,4 color=amber sub="n = n / 2"
+a -> b
+b -> z : "yes"
+b -> c : "no"
+c -> d : "yes"
+c -> e : "no"
+d -> f
+e:B -> f:R
+f:L -> b:L
 ```
 
 ### 2.3 Primality — no shortcuts either
@@ -396,19 +399,22 @@ interviews actually probe is the toolkit *underneath* the ten problems — modul
 extra question: **can an intermediate value leave the type?** Every snippet below was compiled with `go vet` and run on
 Go 1.24; every timing is the best of nine runs on this machine.
 
-```mermaid
+```arch
 %% caption: In Go, decide how wide the intermediate value can get before writing the formula — and never let a float be a key.
-flowchart TD
-  Q(["A math expression in Go"]) --> A{"How large can an intermediate value get?"}
-  A -->|"a product of two values below m, m at most 3.04 billion"| B["int64 is enough: a * b % m"]:::ok
-  A -->|"modulus up to 2^64"| C["bits.Mul64 + bits.Div64 (128-bit product)"]:::ok
-  A -->|"genuinely unbounded"| D["math/big"]:::ok
-  A -->|"a ratio or slope is the map key"| E["gcd-reduced [2]int key, never float64"]:::hot
-  A -->|"the square root of an integer"| F["math.Sqrt, then correct with r*r"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "A math expression in Go" at 0,0 shape=pill w=220
+node a "How large can an\nintermediate get?" at 0,2 shape=diamond color=amber w=260
+node b "int64 is enough: a * b % m" at 1,0 color=green w=340 sub="a product of two values below m, m at most 3.04 billion"
+node c "bits.Mul64 + bits.Div64" at 1,1 color=green w=340 sub="modulus up to 2^64 · 128-bit product"
+node d "math/big" at 1,2 color=green w=340 sub="genuinely unbounded"
+node e "gcd-reduced [2]int key, never float64" at 1,3 color=amber w=340 sub="a ratio or slope is the map key"
+node f "math.Sqrt, then correct with r*r" at 1,4 color=amber w=340 sub="the square root of an integer"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+a:R -> f:L
 ```
 
 ### 8.1 The overflow ladder: `int64` → 128-bit → `math/big`

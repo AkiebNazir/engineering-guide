@@ -1,10 +1,10 @@
 # Topic 15 · Advanced Graphs — Python Deep Dive
 
 > Topic 14 answered "can I get from A to B, and in what order do I visit
-> everything" with plain DFS/BFS. This topic adds a second axis every
+> everything" with plain <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>. This topic adds a second axis every
 > problem here cares about: **weight**. Once edges cost different amounts,
 > "reachable" stops being the interesting question and "cheapest" takes
-> over — and a plain BFS queue (FIFO, no notion of cost) is now the wrong
+> over — and a plain <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> queue (<abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>, no notion of cost) is now the wrong
 > tool. Five machines solve that one new question in five different
 > regimes (non-negative weights, negative weights, minimax paths, minimum
 > spanning trees, and structural weak-points that have no "weight" at all),
@@ -22,24 +22,29 @@ farther) node can ever be shorter. That non-negativity is the whole
 argument; it is also exactly what breaks the algorithm the instant a
 negative edge appears (§2).
 
-```mermaid
+```arch
 %% caption: Dijkstra with a heap. The stale-entry check replaces a decrease-key operation.
-flowchart TD
-  A["dist[src] = 0<br/>heap = [(0, src)]"] --> B{"heap empty?"}
-  B -->|yes| Z["dist holds the shortest paths"]:::ok
-  B -->|no| C["pop (d, u): the smallest distance"]
-  C --> D{"d > dist[u] ?"}
-  D -->|yes| S["stale entry: skip"]:::dim
-  S --> B
-  D -->|no| E["for each edge u to v with weight w"]
-  E --> F{"d + w is less than dist[v] ?"}
-  F -->|yes| G["dist[v] = d + w<br/>push (d + w, v)"]:::hot
-  F -->|no| B
-  G --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x90
+node a "Initialise" at 1,0 shape=pill w=220 sub="dist[src] = 0; heap = [(0, src)]"
+node b "heap empty?" at 1,1 shape=diamond color=amber
+node z "Done" at 0,1 color=green sub="dist holds the shortest paths"
+node c "pop (d, u)" at 1,2 sub="the smallest distance"
+node d "d > dist[u] ?" at 1,3 shape=diamond color=amber
+node s "Stale entry" at 2,3 color=slate sub="skip it"
+node e "For each edge u→v" at 1,4 sub="with weight w"
+node f "d + w < dist[v] ?" at 1,5 shape=diamond color=amber
+node g "dist[v] = d + w" at 1,6 color=amber sub="relax: push (d + w, v)"
+a -> b
+b -> z : "yes"
+b -> c : "no"
+c -> d
+d -> s : "yes"
+s:T -> b:R dashed
+d -> e : "no"
+e -> f
+f -> g : "yes"
+g:R -> b:R
+f:L -> b:L : "no"
 ```
 
 
@@ -144,7 +149,7 @@ route through a currently-farther node can produce a smaller max (its own
 running max is already >= the current node's, by heap-pop order, and `max`
 is monotone non-decreasing along any path). Same O(E log V). Problem 008
 additionally admits a Union-Find/Kruskal-flavored solution (§4) and a
-binary-search-on-the-answer + BFS/DFS solution — three independent correct
+binary-search-on-the-answer + <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> solution — three independent correct
 angles on one problem, worth naming all three in an interview.
 
 ---
@@ -204,7 +209,7 @@ def prim(n, adj, start=0):
 Problem 005 (Min Cost to Connect All Points) is the textbook dense case —
 n points, C(n,2) implicit edges — where array-based O(V^2) Prim's beats
 building and sorting O(V^2) edges for Kruskal's. Problem 011 (critical /
-pseudo-critical MST edges) is Kruskal's run repeatedly with one edge forced
+pseudo-critical <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> edges) is Kruskal's run repeatedly with one edge forced
 out or forced in — the edge-centric view is what makes "which edge" a
 natural question to ask at all.
 
@@ -217,20 +222,25 @@ A Union-Find tracks a partition of elements into disjoint sets, supporting
 `union(x, y)` (merge x's and y's sets), both in **amortized near-O(1)**.
 Two independent optimizations combine to get there:
 
-```mermaid
+```arch
 %% caption: Path compression: after find(1) every node on the path points straight at the root, so later finds are nearly O(1).
-flowchart LR
-  subgraph B["before find(1)"]
-    direction TB
-    b4(("4")) --> b3(("3")) --> b2(("2")) --> b1(("1"))
-  end
-  subgraph A["after path compression"]
-    direction TB
-    a4(("4")) --> a1(("1"))
-    a4 --> a2(("2"))
-    a4 --> a3(("3"))
-  end
-  B ==> A
+route straight
+grid 100x80
+group gb "before" color=slate
+node b4 "4" at 0,0 in gb shape=circle color=blue
+node b3 "3" at 0,1 in gb shape=circle color=blue
+node b2 "2" at 0,2 in gb shape=circle color=blue
+node b1 "1" at 0,3 in gb shape=circle color=amber
+node t "find(1) ⟹" at 1,2 shape=text
+group ga "after path compression" color=green
+node a4 "4" at 3,0 in ga shape=circle color=blue
+node a1 "1" at 2,3 in ga shape=circle color=green
+node a2 "2" at 3,3 in ga shape=circle color=green
+node a3 "3" at 4,3 in ga shape=circle color=green
+b4 -> b3 -> b2 -> b1
+a4 -> a1
+a4 -> a2
+a4 -> a3
 ```
 
 
@@ -535,26 +545,36 @@ rarely supply one.
 
 ## Part 8 · Decision Tree for This Folder
 
-```mermaid
+```arch
 %% caption: Which graph algorithm fits the question.
-flowchart TD
-  Q(["Graph problem: what is asked?"]) --> A{"Shortest path?"}
-  A -->|yes| A1{"Edge weights?"}
-  A1 -->|"all equal"| BFS["BFS"]:::ok
-  A1 -->|"0 or 1"| B01["0-1 BFS (deque)"]:::ok
-  A1 -->|"non-negative"| DJ["Dijkstra"]:::ok
-  A1 -->|"negative, or at most K edges"| BF["Bellman-Ford"]:::ok
-  A -->|no| B{"Connect everything at<br/>minimum total cost?"}
-  B -->|yes| MST["Kruskal (Union-Find) or Prim"]:::ok
-  B -->|no| C{"Are two nodes connected,<br/>edges arriving over time?"}
-  C -->|yes| UF["Union-Find"]:::ok
-  C -->|no| D{"Order with dependencies?"}
-  D -->|yes| TS["Topological sort"]:::ok
-  D -->|no| E["Bridges or SCC: Tarjan<br/>Minimise the worst edge: minimax Dijkstra"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x80
+node q "Graph problem: what is asked?" at 0,0 shape=pill
+node a "Shortest path?" at 0,1 shape=diamond color=amber
+node a1 "Edge weights?" at 1,1 shape=diamond color=amber
+node bfs "BFS" at 2,0 color=green w=200 sub="weights all equal"
+node b01 "0-1 BFS (deque)" at 2,1 color=green w=200 sub="weights 0 or 1"
+node dj "Dijkstra" at 2,2 color=green w=200 sub="non-negative weights"
+node bf "Bellman-Ford" at 2,3 color=green w=200 sub="negative, or at most K edges"
+node b "Connect all at min cost?" at 0,2 shape=diamond color=amber
+node mst "Kruskal or Prim" at 1,2 color=green sub="Kruskal uses Union-Find"
+node c "Connected? edges over time" at 0,3 shape=diamond color=amber
+node uf "Union-Find" at 1,3 color=green
+node d "Order with dependencies?" at 0,4 shape=diamond color=amber
+node ts "Topological sort" at 1,4 color=green
+node e "Bridges or SCC: Tarjan" at 0,5 color=green w=260 sub="minimise the worst edge: minimax Dijkstra"
+q -> a
+a -> a1 : "yes"
+a1:R -> bfs:L
+a1:R -> b01:L
+a1:R -> dj:L
+a1:R -> bf:L
+a -> b : "no"
+b -> mst : "yes"
+b -> c : "no"
+c -> uf : "yes"
+c -> d : "no"
+d -> ts : "yes"
+d -> e : "no"
 ```
 
 
@@ -632,21 +652,26 @@ flowchart TD
 The guide gives the algorithms; these are the questions asked *about* them. Every snippet was run, and each counter-example
 below was reproduced.
 
-```mermaid
+```arch
 %% caption: Choosing a shortest-path algorithm. The presence of negative edges, a DAG, or a single source decides it.
-flowchart TD
-  Q(["Shortest paths"]) --> A{"Edge weights?"}
-  A -->|"all equal / unweighted"| B["BFS  O(V+E)"]:::ok
-  A -->|"only 0 and 1"| C["0-1 BFS with a deque  O(V+E)"]:::ok
-  A -->|"non-negative"| D["Dijkstra with a heap  O((V+E) log V)"]:::ok
-  A -->|"some negative"| E{"Is the graph a DAG?"}
-  E -->|"yes"| F["relax in topological order  O(V+E)"]:::ok
-  E -->|"no"| G["Bellman-Ford  O(VE)<br/>also detects negative cycles"]:::hot
-  A -->|"all pairs, small V"| H["Floyd-Warshall  O(V^3)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Shortest paths" at 0,1 shape=pill
+node a "Edge weights?" at 0,2 shape=diamond color=amber
+node b "BFS" at 1,0 color=green w=200 sub="all equal / unweighted · O(V+E)"
+node c "0-1 BFS with a deque" at 1,1 color=green w=200 sub="only 0 and 1 · O(V+E)"
+node d "Dijkstra with a heap" at 1,2 color=green w=200 sub="non-negative · O((V+E) log V)"
+node h "Floyd-Warshall" at 1,3 color=green w=200 sub="all pairs, small V · O(V^3)"
+node e "Negative: a DAG?" at 1,4 shape=diamond color=amber
+node f "Relax in topo order" at 2,4 color=green sub="O(V+E)"
+node g "Bellman-Ford  O(VE)" at 1,5 color=amber w=200 sub="also detects negative cycles"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> h:L
+a:R -> e:L
+e -> f : "yes"
+e -> g : "no"
 ```
 
 ### 10.1 Why Dijkstra needs non-negative weights — a counter-example
@@ -785,17 +810,17 @@ Fifteen problems, six moves (union-find · Dijkstra and its variants · Bellman-
 | [002 · Satisfiability of Equality Equations](PyDSA/15_advanced_graphs/002_satisfiability_of_equality_equations_solution.py) <br>LC 990 · Medium | Two passes over the equations | Union every `==` first, then check every `!=` against the roots. **Trap:** interleaving both in input order (Example 4 breaks it); special-casing `a != a` (`find(a) == find(a)` already handles it). |
 | [003 · Network Delay Time](PyDSA/15_advanced_graphs/003_network_delay_time_solution.py) <br>LC 743 · Medium | Dijkstra; answer is the max | Single-source shortest paths; the network is informed when the *farthest* node is. **Trap:** skipping the stale-entry guard (correct but wasteful); summing the distances instead of taking the maximum. |
 | [004 · Cheapest Flights Within K Stops](PyDSA/15_advanced_graphs/004_cheapest_flights_within_k_stops_solution.py) <br>LC 787 · Medium | Bellman-Ford with a snapshot | "At most K stops" = at most K+1 edges: K+1 rounds, each relaxing against a *copy* of the previous round's distances. **Trap:** relaxing against the live array (more than one edge per round); plain Dijkstra with no stop count in the state. |
-| [005 · Min Cost to Connect All Points](PyDSA/15_advanced_graphs/005_min_cost_to_connect_all_points_solution.py) <br>LC 1584 · Medium | MST on a dense graph | On a complete graph, Prim's O(n²) array scan beats heap-based Prim and Kruskal. **Trap:** a heap by textbook habit; treating a spanning-*tree* problem as a shortest-*path* problem. |
+| [005 · Min Cost to Connect All Points](PyDSA/15_advanced_graphs/005_min_cost_to_connect_all_points_solution.py) <br>LC 1584 · Medium | <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> on a dense graph | On a complete graph, Prim's O(n²) array scan beats heap-based Prim and Kruskal. **Trap:** a heap by textbook habit; treating a spanning-*tree* problem as a shortest-*path* problem. |
 | [006 · Path With Minimum Effort](PyDSA/15_advanced_graphs/006_path_with_minimum_effort_solution.py) <br>LC 1631 · Medium | Minimax Dijkstra | The Dijkstra skeleton with the cost `max(d, w)` — the largest edge on the path. **Trap:** `d + w` (copy-pasted plain Dijkstra); skipping the stale-entry guard. |
-| [007 · Course Schedule IV](PyDSA/15_advanced_graphs/007_course_schedule_iv_solution.py) <br>LC 1462 · Medium | Floyd–Warshall reachability | Transitive closure in O(V³) with the intermediate node `k` in the **outermost** loop; queries are O(1). **Trap:** `k` innermost (a plausible but incomplete table); a fresh BFS per query. |
+| [007 · Course Schedule IV](PyDSA/15_advanced_graphs/007_course_schedule_iv_solution.py) <br>LC 1462 · Medium | Floyd–Warshall reachability | Transitive closure in O(V³) with the intermediate node `k` in the **outermost** loop; queries are O(1). **Trap:** `k` innermost (a plausible but incomplete table); a fresh <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per query. |
 | [008 · Swim in Rising Water](PyDSA/15_advanced_graphs/008_swim_in_rising_water_solution.py) <br>LC 778 · Hard | Dijkstra with node costs | The cost lives on the *cell entered* (its elevation): `max(d, grid[nr][nc])`, seeded with `grid[0][0]`. **Trap:** seeding `0` (the start's own elevation counts); using height *differences* (edge weights, as in 006). |
 | [009 · Alien Dictionary](PyDSA/15_advanced_graphs/009_alien_dictionary_solution.py) <br>LC 269 · Hard | Topological sort from data | Adjacent words give edges from their **first** differing letter (stop there); Kahn's over the letters. **Trap:** never checking `["abc", "ab"]` (an invalid prefix order); an edge per differing position. |
 | [010 · Reconstruct Itinerary](PyDSA/15_advanced_graphs/010_reconstruct_itinerary_solution.py) <br>LC 332 · Hard | Hierholzer's Eulerian path | Stack-and-commit-at-dead-end over lexically sorted edges, then reverse the route. **Trap:** greedily walking and stopping at the first dead end; forgetting the reverse. |
-| [011 · Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree](PyDSA/15_advanced_graphs/011_find_critical_and_pseudo_critical_edges_in_minimum_spanning_tree_solution.py) <br>LC 1489 · Hard | MST probes per edge | Exclude an edge: if the MST weight rises or the graph disconnects it is critical; include it: if the weight stays the same it is pseudo-critical. **Trap:** not checking that the excluded graph still connects all `n` nodes. |
+| [011 · Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree](PyDSA/15_advanced_graphs/011_find_critical_and_pseudo_critical_edges_in_minimum_spanning_tree_solution.py) <br>LC 1489 · Hard | <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> probes per edge | Exclude an edge: if the <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> weight rises or the graph disconnects it is critical; include it: if the weight stays the same it is pseudo-critical. **Trap:** not checking that the excluded graph still connects all `n` nodes. |
 | [012 · Critical Connections in a Network](PyDSA/15_advanced_graphs/012_critical_connections_in_a_network_solution.py) <br>LC 1192 · Hard | Tarjan's bridges | `low[v] > disc[u]` marks a bridge; skip the tree edge to the parent exactly once. **Trap:** treating the parent edge as a back edge (no bridge is ever found); recursion depth at `n = 10⁵`. |
 | [013 · Accounts Merge](PyDSA/15_advanced_graphs/013_accounts_merge_solution.py) <br>LC 721 · Medium | Union-find by shared email | Union accounts through shared *emails*; group the emails by root. **Trap:** merging by name (two different Johns); a single pairwise pass that misses transitive merges. |
 | [014 · Evaluate Division](PyDSA/15_advanced_graphs/014_evaluate_division_solution.py) <br>LC 399 · Medium | A weighted graph / union-find | Each `a / b = k` is an edge `a → b` of weight `k` and `b → a` of `1/k`; answer by the product along a path. **Trap:** returning `1.0` for `x / x` before checking that `x` exists; forgetting the reverse edges. |
-| [015 · Minimum Cost to Make at Least One Valid Path in a Grid](PyDSA/15_advanced_graphs/015_minimum_cost_to_make_at_least_one_valid_path_in_a_grid_solution.py) <br>LC 1368 · Hard | 0-1 BFS | Following an arrow costs 0, changing one costs 1 — a deque, 0-cost neighbours to the front. **Trap:** plain BFS (treats it as unweighted); pushing both kinds to the back (SPFA-like, loses the linear bound). |
+| [015 · Minimum Cost to Make at Least One Valid Path in a Grid](PyDSA/15_advanced_graphs/015_minimum_cost_to_make_at_least_one_valid_path_in_a_grid_solution.py) <br>LC 1368 · Hard | 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | Following an arrow costs 0, changing one costs 1 — a deque, 0-cost neighbours to the front. **Trap:** plain <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (treats it as unweighted); pushing both kinds to the back (SPFA-like, loses the linear bound). |
 
 ---
 <!-- problem-map:end -->
@@ -867,5 +892,5 @@ bipartiteness.
 
 ### Checklist additions
 
-- [ ] I can pick BFS / 0-1 BFS / Dijkstra / Bellman-Ford from the edge weights alone.
+- [ ] I can pick <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> / 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> / Dijkstra / Bellman-Ford from the edge weights alone.
 - [ ] I can write weighted union-find and explain the weight formula direction.

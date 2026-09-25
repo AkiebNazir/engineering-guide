@@ -78,18 +78,16 @@ as building a hash map once to make future lookups O(1).
 Read this twice; it is the fork the whole topic guide (and topic 03's) hangs
 on.
 
-```mermaid
+```arch
 %% caption: Turn 'subarray with sum k' into a lookup: one pass, one hash map.
-flowchart LR
-  A["Want: subarrays with sum = k"] --> B["sum(i..j) = P[j] - P[i]"]
-  B --> C["so we need P[i] = P[j] - k"]
-  C --> D["Scan once. At each j, look up<br/>P[j] - k in a hash map"]:::hot
-  D --> E["count += seen[P[j] - k]"]
-  E --> F["seen[P[j]] += 1"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node a "Want: subarrays\nwith sum = k" at 0,0
+node b "sum(i..j) = P[j] - P[i]" at 1,0
+node c "So we need P[i] = P[j] - k" at 2,0 w=215
+node d "Scan once" at 2,1 color=amber sub="at each j, look up P[j] - k in a hash map"
+node e "count += seen[P[j] - k]" at 1,1
+node f "seen[P[j]] += 1" at 0,1
+a -> b -> c -> d -> e -> f
 ```
 
 
@@ -248,17 +246,18 @@ legitimate thing to point out as a "gotcha I don't have to handle here."
 
 ## Part 2 · 2D Prefix Sums (LC 304)
 
-```mermaid
+```arch
 %% caption: Inclusion-exclusion: subtract the two strips, add back the corner both of them contained.
-flowchart TD
-  S["sum of the rectangle (r1, c1) to (r2, c2)"] --> T["P[r2+1][c2+1]<br/>the big block"]:::ok
-  S --> U["minus P[r1][c2+1]<br/>strip above"]:::bad
-  S --> V["minus P[r2+1][c1]<br/>strip on the left"]:::bad
-  S --> W["plus P[r1][c1]<br/>corner subtracted twice"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 175x100
+node s "Sum of the rectangle" at 1,0 shape=pill sub="(r1, c1) to (r2, c2)"
+node t "P[r2+1][c2+1]" at 0,1 color=green w=150 sub="the big block"
+node u "minus P[r1][c2+1]" at 1,1 color=red w=150 sub="strip above"
+node v "minus P[r2+1][c1]" at 2,1 color=red w=150 sub="strip on the left"
+node w "plus P[r1][c1]" at 3,1 color=green w=150 sub="corner subtracted twice"
+s:B -> t:T
+s:B -> u:T
+s:B -> v:T
+s:B -> w:T
 ```
 
 
@@ -309,22 +308,28 @@ which is O(m·n) per query and defeats the entire point of precomputing.
 
 ## Part 3 · Pattern Decision Tree
 
-```mermaid
+```arch
 %% caption: Which prefix-sum technique fits.
-flowchart TD
-  Q(["Range or subarray sum question"]) --> A{"Static array, many<br/>range-sum queries?"}
-  A -->|yes| B["Build P once, answer each query in O(1)"]:::ok
-  A -->|no| C{"Count or find subarrays<br/>with sum = k ?"}
-  C -->|yes| D["Prefix sum + hash map<br/>seen = {0: 1}"]:::ok
-  C -->|no| E{"Sum divisible by k ?"}
-  E -->|yes| F["Map of prefix sum mod k"]:::ok
-  E -->|no| G{"A matrix?"}
-  G -->|yes| H["2D prefix sum"]:::ok
-  G -->|no| I["Only if all values are positive:<br/>a sliding window may do"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 280x100
+node q "Range or subarray sum question" at 0,0 shape=pill
+node a "Static array, many range-sum queries?" at 0,1 shape=diamond color=amber
+node b "Build P once" at 1,1 color=green sub="answer each query in O(1)"
+node c "Count or find subarrays with sum = k?" at 0,2 shape=diamond color=amber
+node d "Prefix sum + hash map" at 1,2 color=green sub="seen = {0: 1}"
+node e "Sum divisible by k?" at 0,3 shape=diamond color=amber
+node f "Map of prefix sum mod k" at 1,3 color=green
+node g "A matrix?" at 0,4 shape=diamond color=amber
+node h "2D prefix sum" at 1,4 color=green
+node i "Only if all values are positive" at 0,5 color=slate sub="a sliding window may do"
+q -> a
+a -> b : "yes"
+a -> c : "no"
+c -> d : "yes"
+c -> e : "no"
+e -> f : "yes"
+e -> g : "no"
+g -> h : "yes"
+g -> i : "no"
 ```
 
 
@@ -469,12 +474,12 @@ A prefix trick works for any operation you can **undo** — that is what "subtra
 | Operation | Invertible? | Range query in O(1)? |
 |---|---|---|
 | sum, count | ✅ subtract | ✅ `P[r+1] - P[l]` |
-| XOR | ✅ `a ^ b ^ b == a` | ✅ `P[r+1] ^ P[l]` |
+| <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> | ✅ `a ^ b ^ b == a` | ✅ `P[r+1] ^ P[l]` |
 | product | ⚠️ divide — but not through a `0` | ✅ only if there are no zeros (or count zeros separately) |
 | **min / max** | ❌ no inverse | ❌ use a sparse table or segment tree (topic 26) |
 | gcd | ❌ | ❌ sparse table |
 
-XOR gives the "subarray XOR equals K" variant of the flagship problem with no new idea — swap `+` for `^` and
+<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> gives the "subarray <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> equals K" variant of the flagship problem with no new idea — swap `+` for `^` and
 `running - K` for `running ^ K`:
 
 ```python
@@ -490,7 +495,7 @@ def subarray_xor_k(nums, k):
 ### 7.3 Prefix sums explain Kadane
 
 `sum(a[l..r]) = P[r+1] − P[l]`, so the best subarray ending at `r` is `P[r+1]` minus the **smallest earlier
-prefix**. Keep that minimum as you go and you have Maximum Subarray (LC 53) without any DP table:
+prefix**. Keep that minimum as you go and you have Maximum Subarray (LC 53) without any <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table:
 
 ```python
 best, prefix, min_prefix = float("-inf"), 0, 0
@@ -593,7 +598,7 @@ Eight problems, five moves. Each **Trap** is one the tests in that problem's sol
 - [ ] I check the sign constraint FIRST, before deciding between a sliding
       window and a prefix-sum hashmap.
 - [ ] Build a difference array and say why `diff[r + 1] -= val` is the "undo" <!--ca-->
-- [ ] Say which aggregates a prefix trick works for (sum, XOR) and which need a different structure (min, max, gcd) <!--ca-->
+- [ ] Say which aggregates a prefix trick works for (sum, <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>) and which need a different structure (min, max, gcd) <!--ca-->
 - [ ] Explain Kadane as "prefix minus the smallest earlier prefix" <!--ca-->
 - [ ] Reduce "submatrices with sum K" to 1D by fixing two rows <!--ca-->
 - [ ] Say when a prefix array goes stale (point updates) and what replaces it <!--ca-->

@@ -45,7 +45,7 @@ HARDEST TECHNICAL PROBLEM and how I solved it:
 ### The checks from the prep plan
 
 - [ ] **I can draw the architecture from memory** — components, data flow, storage choices.
-- [ ] **I know the real numbers** — traffic, data size, latency, team size, timeline, business impact. If a number is confidential, give an order of magnitude and say so ("tens of thousands of QPS").
+- [ ] **I know the real numbers** — traffic, data size, latency, team size, timeline, business impact. If a number is confidential, give an order of magnitude and say so ("tens of thousands of <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>").
 - [ ] **I can separate my contribution from the team's** — name what I personally designed, decided, and led.
 - [ ] **I can explain the alternatives we rejected and why** — strong evidence of senior judgment.
 - [ ] **I know what broke and what I'd do differently today** — shows reflection and growth.

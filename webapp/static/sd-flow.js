@@ -27,6 +27,7 @@ function defineFlow(name, spec) {
 function mountFlow(L, spec) {
   L.fig.classList.add('lab-flow');
   const nodes = spec.nodes;
+  const uid = Math.random().toString(36).slice(2, 8);
   const st = { sc: 0, i: -1, t: 0, playing: false, speed: 1, hold: 0, raf: 0, last: 0, seen: false };
   const pairKey = (a, b) => [a, b].sort().join('|');
 
@@ -38,13 +39,8 @@ function mountFlow(L, spec) {
       </div>
       <p class="flow-summary"></p>
       <div class="flow-canvas">
-        <svg viewBox="0 0 ${FLOW_W} ${FLOW_H}" role="img" aria-label="${flowEsc(spec.title)}">
-          <defs>
-            <pattern id="flowGrid-${name}" width="25" height="25" patternUnits="userSpaceOnUse"><path d="M25 0H0V25" class="fl-grid"/></pattern>
-            
-          </defs>
-          <rect width="${FLOW_W}" height="${FLOW_H}" rx="18" fill="url(#flowGrid-${name})"/>
-          ${(spec.zones || []).map(z => `<g class="fl-zone"><rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="16"/><text x="${z.x + 14}" y="${z.y + 24}">${flowEsc(z.label)}</text></g>`).join('')}
+        <svg viewBox="0 0 ${FLOW_W} ${spec.h || FLOW_H}" role="img" aria-label="${flowEsc(spec.title)}">
+          ${(spec.zones || []).map(z => `<g class="fl-zone"><rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="14"/><text x="${z.x + 14}" y="${z.y + 24}">${flowEsc(z.label)}</text></g>`).join('')}
           <g class="fl-edges"></g>
           <g class="fl-nodes"></g>
           <g class="fl-packets"></g>
@@ -70,59 +66,191 @@ function mountFlow(L, spec) {
   const svg = $f('svg');
 
   /* ------------------------------------------------------------ geometry -- */
-  const box = id => { const n = nodes[id]; return { x: n.x, y: n.y, w: n.w || 150, h: n.h || 66 }; };
-  function border(id, tx, ty) {                     // point on node's outline toward (tx, ty)
-    const b = box(id), dx = tx - b.x, dy = ty - b.y;
-    if (!dx && !dy) return [b.x, b.y];
-    const s = Math.min((b.w / 2 + 6) / Math.abs(dx || 1e-9), (b.h / 2 + 6) / Math.abs(dy || 1e-9));
-    return [b.x + dx * s, b.y + dy * s];
+  // Every node is a card: an icon tile on the left, the label and a one-line
+  // sub under it. Width comes from the text so nothing is clipped.
+  const measure = (() => {
+    const c = document.createElement('canvas').getContext('2d');
+    return (txt, font) => { c.font = font; return c.measureText(String(txt || '')).width; };
+  })();
+  const FONT_L = `600 15px ${getComputedStyle(document.body).getPropertyValue('--sans') || 'system-ui, sans-serif'}`;
+  const FONT_TAG = `600 12.5px ${getComputedStyle(document.body).getPropertyValue('--sans') || 'system-ui, sans-serif'}`;
+  const FONT_S = `500 12.5px ${getComputedStyle(document.body).getPropertyValue('--sans') || 'system-ui, sans-serif'}`;
+  const fit = (txt, font, w) => {                    // shorten with an ellipsis rather than overflow
+    let s = String(txt || '');
+    if (measure(s, font) <= w) return s;
+    while (s.length > 1 && measure(s + '…', font) > w) s = s.slice(0, -1);
+    return s.trimEnd() + '…';
+  };
+  for (const n of Object.values(nodes)) {
+    const tw = Math.ceil(Math.max(measure(n.label, FONT_L), measure(n.sub, FONT_S)));
+    const side = Math.max(n.w || 0, tw + 70, 132);
+    // narrow columns: icon on top, text centred under it (the AWS tile look)
+    n._stack = !!n.maxW && side > n.maxW;
+    n._w = n._stack ? Math.min(n.maxW, Math.max(tw + 26, 112)) : side;
+    n._h = n._stack ? (n.sub ? 88 : 72) : (n.sub ? 58 : 48);
+    const room = n._stack ? n._w - 16 : n._w - 66;
+    n._label = fit(n.label, FONT_L, room); n._subT = n.sub ? fit(n.sub, FONT_S, room) : '';
   }
-  const seg = (a, b) => {
-    const [x1, y1] = border(a, nodes[b].x, nodes[b].y), [x2, y2] = border(b, nodes[a].x, nodes[a].y);
-    return { x1, y1, x2, y2 };
+  const box = id => { const n = nodes[id]; return { x: n.x, y: n.y, w: n._w, h: n._h }; };
+  const rectOf = id => { const b = box(id); return [b.x - b.w / 2, b.y - b.h / 2, b.x + b.w / 2, b.y + b.h / 2]; };
+
+  // Right-angle routes, AWS-diagram style. Try the simple shapes (straight,
+  // one elbow, a hop through the gutter) and keep the first that crosses no
+  // other card; the packet then rides exactly that polyline.
+  const hits = (pts, skip) => {
+    for (const id of Object.keys(nodes)) {
+      if (skip.includes(id)) continue;
+      const [x0, y0, x1, y1] = rectOf(id).map((v, i) => v + (i < 2 ? -6 : 6));
+      for (let k = 0; k < pts.length - 1; k++) {
+        const [ax, ay] = pts[k], [bx, by] = pts[k + 1];
+        if (Math.max(ax, bx) < x0 || Math.min(ax, bx) > x1 || Math.max(ay, by) < y0 || Math.min(ay, by) > y1) continue;
+        return true;
+      }
+    }
+    return false;
+  };
+  const len = pts => pts.slice(1).reduce((s, p, k) => s + Math.abs(p[0] - pts[k][0]) + Math.abs(p[1] - pts[k][1]), 0);
+  function route(a, b) {
+    const A = box(a), B = box(b), skip = [a, b];
+    const aR = A.x + A.w / 2, aL = A.x - A.w / 2, bR = B.x + B.w / 2, bL = B.x - B.w / 2;
+    const aT = A.y - A.h / 2, aB = A.y + A.h / 2, bT = B.y - B.h / 2, bB = B.y + B.h / 2;
+    const right = B.x > A.x;
+    const cand = [];
+    if (Math.abs(A.y - B.y) < 3 && (bL > aR || aL > bR)) cand.push(right ? [[aR, A.y], [bL, A.y]] : [[aL, A.y], [bR, A.y]]);
+    if (Math.abs(A.x - B.x) < 3) cand.push(B.y > A.y ? [[A.x, aB], [A.x, bT]] : [[A.x, aT], [A.x, bB]]);
+    if (bL > aR || aL > bR) {
+      const sx = right ? aR : aL, tx = right ? bL : bR;
+      const gaps = [(sx + tx) / 2, tx + (right ? -16 : 16), sx + (right ? 16 : -16)];
+      // endpoint offsets let two connectors meet the same card side apart
+      for (const gx of gaps) for (const oa of [0, -12, 12]) for (const ob of [0, -12, 12]) {
+        if (Math.abs(oa) * 2 + 8 > A.h || Math.abs(ob) * 2 + 8 > B.h) continue;
+        cand.push([[sx, A.y + oa], [gx, A.y + oa], [gx, B.y + ob], [tx, B.y + ob]]);
+      }
+      // leave from the top/bottom, turn once into the side of the target
+      cand.push([[A.x, B.y > A.y ? aB : aT], [A.x, B.y], [tx, B.y]]);
+      // leave from the side, drop into the top/bottom of the target
+      cand.push([[sx, A.y], [B.x, A.y], [B.x, B.y > A.y ? bT : bB]]);
+    } else {
+      // stacked in the same column: go down the side gutter
+      const down = B.y > A.y;
+      for (const side of [1, -1]) {
+        const gx = side > 0 ? Math.max(aR, bR) + 16 : Math.min(aL, bL) - 16;
+        cand.push([[A.x + side * A.w / 2, A.y], [gx, A.y], [gx, B.y], [B.x + side * B.w / 2, B.y]]);
+      }
+      cand.unshift(down ? [[A.x, aB], [A.x, (aB + bT) / 2], [B.x, (aB + bT) / 2], [B.x, bT]] : [[A.x, aT], [A.x, (aT + bB) / 2], [B.x, (aT + bB) / 2], [B.x, bB]]);
+    }
+    const clean = cand.map(p => p.filter((q, i) => i === 0 || q[0] !== p[i - 1][0] || q[1] !== p[i - 1][1]));
+    const ok = clean.filter(p => !hits(p, skip));
+    const pick = (ok.length ? ok : clean).reduce((best, p) => {
+      const off = (p[0][1] !== A.y && p[0][0] !== A.x ? 10 : 0) + (p[p.length - 1][1] !== B.y && p[p.length - 1][0] !== B.x ? 10 : 0);
+      const score = len(p) + (p.length - 2) * 40 + off + 3 * shared(p);
+      return !best || score < best.s ? { p, s: score } : best;
+    }, null);
+    drawn.push(pick.p);
+    return pick.p;
+  }
+  // length a candidate runs on top of connectors already routed (same line,
+  // overlapping span), plus a flat cost for landing on a used endpoint
+  const drawn = [];
+  function shared(p) {
+    let s = 0;
+    for (const q of drawn) {
+      if (q[q.length - 1][0] === p[p.length - 1][0] && q[q.length - 1][1] === p[p.length - 1][1]) s += 30;
+      if (q[0][0] === p[0][0] && q[0][1] === p[0][1]) s += 30;
+      for (let i = 0; i < p.length - 1; i++) for (let j = 0; j < q.length - 1; j++) {
+        const [a1, a2] = [p[i], p[i + 1]], [b1, b2] = [q[j], q[j + 1]];
+        if (a1[0] === a2[0] && b1[0] === b2[0] && Math.abs(a1[0] - b1[0]) < 4)
+          s += Math.max(0, Math.min(Math.max(a1[1], a2[1]), Math.max(b1[1], b2[1])) - Math.max(Math.min(a1[1], a2[1]), Math.min(b1[1], b2[1])));
+        if (a1[1] === a2[1] && b1[1] === b2[1] && Math.abs(a1[1] - b1[1]) < 4)
+          s += Math.max(0, Math.min(Math.max(a1[0], a2[0]), Math.max(b1[0], b2[0])) - Math.max(Math.min(a1[0], a2[0]), Math.min(b1[0], b2[0])));
+      }
+    }
+    return s;
+  }
+  const routes = new Map();
+  const polyline = (a, b) => {                       // same line in both directions
+    const k = pairKey(a, b);
+    if (!routes.has(k)) { const [p, q] = [a, b].sort(); routes.set(k, { from: p, pts: route(p, q) }); }
+    const r = routes.get(k);
+    return r.from === a ? r.pts : r.pts.slice().reverse();
+  };
+  const pathD = (pts, r = 10) => {
+    let d = `M${pts[0][0]} ${pts[0][1]}`;
+    for (let k = 1; k < pts.length - 1; k++) {
+      const [px, py] = pts[k - 1], [cx, cy] = pts[k], [nx, ny] = pts[k + 1];
+      const l1 = Math.hypot(cx - px, cy - py), l2 = Math.hypot(nx - cx, ny - cy), rr = Math.min(r, l1 / 2, l2 / 2);
+      d += ` L${cx - (cx - px) / (l1 || 1) * rr} ${cy - (cy - py) / (l1 || 1) * rr} Q${cx} ${cy} ${cx + (nx - cx) / (l2 || 1) * rr} ${cy + (ny - cy) / (l2 || 1) * rr}`;
+    }
+    const e = pts[pts.length - 1];
+    return d + ` L${e[0]} ${e[1]}`;
+  };
+  const along = (pts, t) => {                        // point at fraction t of a polyline
+    const total = len(pts) || 1;
+    let left = t * total;
+    for (let k = 0; k < pts.length - 1; k++) {
+      const [ax, ay] = pts[k], [bx, by] = pts[k + 1], l = Math.abs(bx - ax) + Math.abs(by - ay);
+      if (left <= l || k === pts.length - 2) { const f = l ? Math.min(1, left / l) : 0; return [ax + (bx - ax) * f, ay + (by - ay) * f]; }
+      left -= l;
+    }
+    return pts[pts.length - 1];
   };
 
   /* ------------------------------------------------------------- drawing -- */
+  const seenEdge = new Set();                         // a→b and b→a are one line
   $f('.fl-edges').innerHTML = spec.edges.map(([a, b, o = {}]) => {
-    const g = seg(a, b);
-    return `<line class="fl-edge${o.async ? ' is-async' : ''}" data-e="${pairKey(a, b)}" x1="${g.x1}" y1="${g.y1}" x2="${g.x2}" y2="${g.y2}"/>
-      <line class="fl-edge-flow" data-e="${pairKey(a, b)}" x1="${g.x1}" y1="${g.y1}" x2="${g.x2}" y2="${g.y2}"/>`;
+    if (seenEdge.has(pairKey(a, b))) return '';
+    seenEdge.add(pairKey(a, b));
+    const d = pathD(polyline(a, b));
+    return `<path class="fl-edge${o.async ? ' is-async' : ''}" data-e="${pairKey(a, b)}" d="${d}"/>
+      <path class="fl-edge-flow" data-e="${pairKey(a, b)}" d="${d}"/>`;
   }).join('');
 
-  const shape = (n, b) => {
-    const x = b.x - b.w / 2, y = b.y - b.h / 2;
-    if (n.kind === 'db') {
-      const ry = 11;
-      return `<path class="fl-shape" d="M${x} ${y + ry}v${b.h - 2 * ry}a${b.w / 2} ${ry} 0 0 0 ${b.w} 0v${-(b.h - 2 * ry)}a${b.w / 2} ${ry} 0 0 0 ${-b.w} 0z"/>
-        <ellipse class="fl-shape-line" cx="${b.x}" cy="${y + ry}" rx="${b.w / 2}" ry="${ry}"/>`;
-    }
-    if (n.kind === 'client') return `<rect class="fl-shape" x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="${b.h / 2}"/>`;
-    if (n.kind === 'queue') {
-      return `<rect class="fl-shape" x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="10"/>
-        ${[0, 1, 2, 3].map(k => `<rect class="fl-slot" x="${x + b.w - 40 + k * 8}" y="${y + 14}" width="5" height="${b.h - 28}" rx="2"/>`).join('')}`;
-    }
-    if (n.kind === 'cache') {
-      return `<rect class="fl-shape" x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="10"/>
-        <path class="fl-bolt" d="M${x + b.w - 24} ${y + b.h / 2 - 15}l-8 16h8l-4 14 12-19h-8l4-11z"/>`;
-    }
-    return `<rect class="fl-shape" x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="12"/>`;
+  const iconFor = n => {
+    const AD = typeof ArchDiagram !== 'undefined' ? ArchDiagram : null;
+    if (!AD) return null;
+    const name = n.icon || flowIcon(n);
+    return AD.resolveIcon(name) || AD.resolveIcon(FLOW_KIND_ICON[n.kind || 'svc']);
+  };
+  let gradN = 0;
+  const tile = (n, x, y, s) => {
+    const ic = iconFor(n);
+    if (!ic) return '';
+    if (ic.logo) return `<rect class="fl-tile-logo" x="${x}" y="${y}" width="${s}" height="${s}" rx="8"/><g class="fl-glyph" data-glyph="${ic.glyph}" data-x="${x + 5}" data-y="${y + 5}" data-s="${s - 10}"></g>`;
+    const [c1, c2] = ArchDiagram.CAT[ic.cat] || ArchDiagram.CAT.generic, gid = `flg-${uid}-${gradN++}`;
+    return `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>
+      <rect x="${x}" y="${y}" width="${s}" height="${s}" rx="8" fill="url(#${gid})"/>
+      <g class="fl-glyph" data-glyph="${ic.glyph}" data-fill="#fff" data-x="${x + 6}" data-y="${y + 6}" data-s="${s - 12}"></g>`;
   };
   $f('.fl-nodes').innerHTML = Object.entries(nodes).map(([id, n]) => {
-    const b = box(id);
-    const tx = n.kind === 'queue' || n.kind === 'cache' ? b.x - 14 : b.x;
-    return `<g class="fl-node kind-${n.kind || 'svc'}" data-n="${id}">
-      <rect class="fl-halo" x="${b.x - b.w / 2 - 8}" y="${b.y - b.h / 2 - 8}" width="${b.w + 16}" height="${b.h + 16}" rx="20"/>
-      ${shape(n, b)}
-      <text class="fl-label" x="${tx}" y="${b.y + (n.sub ? -1 : 7)}" text-anchor="middle">${flowEsc(n.label)}</text>
-      ${n.sub ? `<text class="fl-sub" x="${tx}" y="${b.y + 19}" text-anchor="middle">${flowEsc(n.sub)}</text>` : ''}
-      <g class="fl-badge" transform="translate(${b.x} ${b.y - b.h / 2 - 20})"><rect rx="13" height="26" y="-2"/><text text-anchor="middle" y="16"></text></g>
-      <text class="fl-down" x="${b.x}" y="${b.y + b.h / 2 + 22}" text-anchor="middle">unavailable</text>
+    const b = box(id), x = b.x - b.w / 2, y = b.y - b.h / 2, s = 32;
+    const title = n._label !== n.label || n._subT !== (n.sub || '') ? `<title>${flowEsc(n.label)}${n.sub ? ' · ' + flowEsc(n.sub) : ''}</title>` : '';
+    const text = n._stack
+      ? `<text class="fl-label" x="${b.x}" y="${y + s + 32}" text-anchor="middle">${flowEsc(n._label)}</text>
+         ${n.sub ? `<text class="fl-sub" x="${b.x}" y="${y + s + 50}" text-anchor="middle">${flowEsc(n._subT)}</text>` : ''}`
+      : `<text class="fl-label" x="${x + 56}" y="${b.y + (n.sub ? -3 : 5)}">${flowEsc(n._label)}</text>
+         ${n.sub ? `<text class="fl-sub" x="${x + 56}" y="${b.y + 15}">${flowEsc(n._subT)}</text>` : ''}`;
+    return `<g class="fl-node kind-${n.kind || 'svc'}" data-n="${id}">${title}
+      <rect class="fl-shape" x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="12"/>
+      ${n._stack ? tile(n, b.x - s / 2, y + 10, s) : tile(n, x + 13, b.y - s / 2, s)}
+      ${text}
+      <g class="fl-badge" transform="translate(${b.x} ${y < 90 ? y + b.h + 18 : y - 18})"><rect rx="12" height="24" y="-12"/><text text-anchor="middle" y="4.5"></text></g>
+      <text class="fl-down" x="${b.x}" y="${y + b.h + 18}" text-anchor="middle">unavailable</text>
     </g>`;
   }).join('');
+  // icon glyphs come from the same file the arch diagrams use
+  flowIcons().then(icons => {
+    $$f('.fl-glyph').forEach(g => {
+      const body = icons[g.dataset.glyph];
+      if (!body) return;
+      const w = body.w || 24, h = body.h || 24, s = +g.dataset.s, k = s / Math.max(w, h);
+      g.setAttribute('transform', `translate(${+g.dataset.x + (s - w * k) / 2} ${+g.dataset.y + (s - h * k) / 2}) scale(${k.toFixed(4)})`);
+      g.innerHTML = g.dataset.fill ? body.b.replace(/currentColor/g, g.dataset.fill) : body.b;
+    });
+  });
 
   const packet = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   packet.setAttribute('class', 'fl-packet');
-  packet.innerHTML = '<circle class="fl-pk-halo" r="18"/><circle class="fl-pk-dot" r="9"/><g class="fl-pk-tag"><rect rx="13" height="26"/><text text-anchor="middle" y="18"></text></g>';
+  packet.innerHTML = '<circle class="fl-pk-ring" r="9"/><circle class="fl-pk-dot" r="5.5"/><g class="fl-pk-tag"><rect rx="11" height="22"/><text text-anchor="middle" y="15"></text></g>';
   $f('.fl-packets').append(packet);
 
   /* ------------------------------------------------------------- scenario -- */
@@ -166,7 +294,7 @@ function mountFlow(L, spec) {
       if (badge) {
         const tx = bg.querySelector('text'), rect = bg.querySelector('rect');
         tx.textContent = badge;
-        const w = Math.max(64, badge.length * 8.7 + 26);
+        const w = Math.max(56, Math.ceil(measure(badge, FONT_TAG)) + 24);
         rect.setAttribute('width', w); rect.setAttribute('x', -w / 2);
         if (s.tone) bg.classList.add(`tone-${s.tone}`);
       }
@@ -184,16 +312,29 @@ function mountFlow(L, spec) {
       else if (s.async) packet.classList.add('tone-async');
       const hops = s.path.length - 1, pos = Math.min(hops - 1e-6, st.t * hops), k = Math.floor(pos);
       const f = pos - k, e = f < .5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
-      const g = seg(s.path[k], s.path[k + 1]);
-      const x = g.x1 + (g.x2 - g.x1) * e, y = g.y1 + (g.y2 - g.y1) * e;
+      const [x, y] = along(polyline(s.path[k], s.path[k + 1]), e);
       packet.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
       const tag = packet.querySelector('.fl-pk-tag'), tx = tag.querySelector('text'), rect = tag.querySelector('rect');
       if (tx.textContent !== s.label) {
         tx.textContent = s.label || '';
-        const w = Math.max(44, (s.label || '').length * 8.7 + 24);
+        const w = Math.max(44, Math.ceil(measure(s.label || '', FONT_TAG)) + 22);
         rect.setAttribute('width', w); rect.setAttribute('x', -w / 2);
       }
-      tag.setAttribute('transform', `translate(0 ${y < 100 ? 22 : -46})`);
+      // keep the tag clear of both cards on this hop: above them, or below if
+      // that would run into the lane headers
+      // keep the tag clear of every card: try just above/below the dot, then
+      // above/below the cards on this hop; never into the lane headers
+      const tw = +rect.getAttribute('width') || 60;
+      const A = box(s.path[k]), B = box(s.path[k + 1]);
+      const near = [A, B].filter(b => Math.abs(b.x - x) < b.w / 2 + tw / 2);
+      const top = Math.min(y - 16, ...near.map(b => b.y - b.h / 2 - 6));
+      const bot = Math.max(y + 16, ...near.map(b => b.y + b.h / 2 + 6));
+      const clear = ty => ty >= 40 && ty + 22 <= (spec.h || FLOW_H) - 6 && !Object.keys(nodes).some(id => {
+        const [x0, y0, x1, y1] = rectOf(id);
+        return x - tw / 2 < x1 + 3 && x + tw / 2 > x0 - 3 && ty < y1 + 3 && ty + 22 > y0 - 3;
+      });
+      const ty = [y - 38, y + 16, top - 24, bot, top - 50, bot + 26].find(clear) ?? (top - 24 >= 40 ? top - 24 : bot);
+      tag.setAttribute('transform', `translate(0 ${Math.round(ty - y)})`);
       tag.style.opacity = f > .8 && k === hops - 1 ? 0 : 1;          // don't cover the node it lands on
     }
 
@@ -311,53 +452,96 @@ function mountFlow(L, spec) {
   }
 }
 
+/* ---------------------------------------------------------------- icons --
+   Each card gets an AWS-style icon tile. An explicit `icon:` wins (any name
+   from webapp/ARCH_DIAGRAMS.md); otherwise the label is matched against a few
+   rules, and the node's kind is the fallback. Brand logos only when the label
+   or sub names the product. -- */
+const FLOW_KIND_ICON = { client: 'user', svc: 'service', db: 'db', cache: 'cache', queue: 'queue' };
+const FLOW_ICON_RULES = [
+  [/kafka/i, 'kafka-icon'], [/redis/i, 'redis'], [/postgres/i, 'postgresql'], [/mysql/i, 'mysql-icon'], [/cassandra/i, 'cassandra'],
+  [/elasticsearch|opensearch/i, 'elasticsearch'], [/memcache/i, 'memcached'], [/\bs3\b/i, 'aws-s3'], [/dynamo/i, 'aws-dynamodb'],
+  [/stripe/i, 'stripe'], [/twilio/i, 'twilio-icon'], [/\bgrpc\b/i, 'grpc'],
+];
+const FLOW_WORD_RULES = [
+  [/mobile|phone|\bapp\b(?!.*server)/i, 'mobile'], [/browser/i, 'browser'], [/admin|operator/i, 'admin'], [/driver|rider|user|visitor|creator|client|viewer|buyer|sender|customer|player|author|caller/i, 'user'],
+  [/\bdns\b|resolver/i, 'dns'], [/\bcdn\b|edge|\bpop\b/i, 'cdn'], [/waf|firewall/i, 'firewall'], [/load bal|\blb\b/i, 'lb'],
+  [/gateway/i, 'gateway'], [/\bapi\b/i, 'api'], [/auth|identity|token|oauth|\bidp\b/i, 'auth'], [/lock|lease|fenc/i, 'lock'],
+  [/queue|\bsqs\b|backlog|frontier/i, 'queue'], [/stream|topic|event|\blog\b|wal|journal|outbox relay|cdc/i, 'stream'],
+  [/relay|worker|consumer|fetcher|crawler|encoder|transcod|processor|job/i, 'worker'], [/schedul|cron|timer/i, 'scheduler'],
+  [/cache|hot set/i, 'cache'], [/search|index|autocomplete|trie/i, 'search'], [/analytic|metric|dashboard|olap|warehouse/i, 'metrics'],
+  [/model|llm|gpu|inference|embed/i, 'model'], [/rank|recommend|feature store/i, 'sort'], [/ledger|payment|psp|billing|wallet/i, 'payment'],
+  [/notif|push|apns|fcm/i, 'notify'], [/email|smtp/i, 'email'], [/sms|chat|message/i, 'message'], [/geo|map|location|route|\beta\b/i, 'map'],
+  [/video|media|stream(ing)? origin|hls/i, 'video'], [/image|photo|thumb/i, 'image'], [/object|blob|bucket|chunk|file|storage|archive/i, 'blob'],
+  [/replica|follower/i, 'replica'], [/shard|partition|\bdb\b|database|table|store|primary|ledger/i, 'db'], [/config|flag/i, 'flag'],
+  [/counter|limit/i, 'counter'], [/monitor|health|detector/i, 'monitor'], [/coordinat|zookeeper|etcd|raft|consensus/i, 'sync'],
+];
+function flowIcon(n) {
+  const text = `${n.label} ${n.sub || ''}`;
+  for (const [re, ic] of FLOW_ICON_RULES) if (re.test(text)) return ic;
+  if (n.kind === 'client') { for (const [re, ic] of FLOW_WORD_RULES.slice(0, 4)) if (re.test(n.label)) return ic; return 'user'; }
+  for (const [re, ic] of FLOW_WORD_RULES.slice(4)) if (re.test(n.label)) return ic;
+  return FLOW_KIND_ICON[n.kind || 'svc'];
+}
+let flowIconData = null;
+const flowIcons = () => (flowIconData ||= fetch('/arch-icons.json').then(r => (r.ok ? r.json() : {})).catch(() => ({})));
+
 /* ---------------------------------------------------------- lane layout --
    Most diagrams are a pipeline: clients on the left, state and external
-   systems on the right. lane() places nodes into evenly spaced, labelled
-   columns (zones) so nothing overlaps and nothing floats in dead space,
-   the way the URL-shortener diagram was hand-tuned — but computed. -- */
+   systems on the right. lane() places nodes into labelled columns (zones) on
+   one shared set of rows, so a node lines up with its neighbours in the
+   next column and the connectors between them run straight across.
+   A column with fewer nodes than the tallest spreads them over the rows
+   (a single node sits on the middle row); `row:` pins a node to a row
+   (0-based, halves allowed). The canvas is only as tall as the rows need. -- */
 function lane(cols, opts = {}) {
   const n = cols.length;
-  const padX = opts.padX ?? 14, gapX = opts.gapX ?? 22, padY = opts.padY ?? 58;
+  const padX = opts.padX ?? 12, gapX = opts.gapX ?? 14, top = 44, bottom = 22;
+  const rows = Math.max(...cols.map(c => c.nodes.length), ...cols.flatMap(c => c.nodes.map(nd => (nd.row ?? 0) + 1)));
   const colW = (FLOW_W - padX * 2 - gapX * (n - 1)) / n;
+  // cards stack (icon above text) when the column is too narrow for icon + text side by side
+  const stacks = cols.some(c => c.nodes.some(nd => Math.max(String(nd.label).length * 8.3, String(nd.sub || '').length * 6.6) + 70 > colW - 12));
+  const rowH = opts.rowH ?? (stacks ? 118 : 92);
+  const H = Math.max(opts.minH ?? 230, top + bottom + rows * rowH);
+  const rowY = r => top + (H - top - bottom) * (r + 0.5) / rows;
   const nodes = {}, zones = [];
   cols.forEach((col, i) => {
     const zx = padX + i * (colW + gapX);
-    zones.push({ x: zx, y: 12, w: colW, h: FLOW_H - 24, label: col.label });
-    const cx = zx + colW / 2;
-    const bandH = (FLOW_H - padY * 2) / col.nodes.length;
+    zones.push({ x: zx, y: 8, w: colW, h: H - 16, label: col.label });
+    const k = col.nodes.length;
     col.nodes.forEach((nd, j) => {
+      const r = nd.row ?? (k === 1 ? (rows - 1) / 2 : k === rows ? j : j * (rows - 1) / (k - 1));
       nodes[nd.id] = {
-        x: Math.round(cx), y: Math.round(padY + bandH * j + bandH / 2),
-        label: nd.label, sub: nd.sub, kind: nd.kind, w: nd.w, h: nd.h,
+        x: Math.round(zx + colW / 2), y: Math.round(rowY(r)), maxW: Math.floor(colW - 12),
+        label: nd.label, sub: nd.sub, kind: nd.kind, icon: nd.icon, w: nd.w,
       };
     });
   });
-  return { nodes, zones };
+  return { nodes, zones, h: H };
 }
 
 /* ============================================================= URL shortener == */
+const Lsh = lane([
+  { label: 'CLIENTS', nodes: [
+    { id: 'creator', label: 'Creator', sub: 'signed in', kind: 'client', row: 0 },
+    { id: 'visitor', label: 'Visitor', sub: 'opens link', kind: 'client', row: 2 }] },
+  { label: 'EDGE', nodes: [{ id: 'edge', label: 'Edge', sub: 'CDN · WAF', icon: 'cdn', row: 2 }] },
+  { label: 'SERVICES', nodes: [
+    { id: 'api', label: 'Link API', sub: 'create · disable', row: 0 },
+    { id: 'redirect', label: 'Redirect', sub: 'stateless svc', row: 2 }] },
+  { label: 'STATE', nodes: [
+    { id: 'db', label: 'Link DB', sub: 'source of truth', kind: 'db', row: 0 },
+    { id: 'cache', label: 'Redis', sub: 'link:{code}', kind: 'cache', row: 2 }] },
+  { label: 'ASYNC · DERIVED', nodes: [
+    { id: 'relay', label: 'Outbox relay', sub: 'polls commits', icon: 'worker', row: 0 },
+    { id: 'stream', label: 'Event stream', sub: 'Kafka', kind: 'queue', row: 1 },
+    { id: 'analytics', label: 'Analytics', sub: '≤ 5 min fresh', kind: 'db', icon: 'metrics', row: 2 }] },
+]);
 defineFlow('sd-flow-shortener', {
   title: 'Live request flow: create a link, then follow a click',
   hint: 'Pick a scenario. Each hop lights up, the packet shows what is sent, and the panel explains the decision made at that component and what it costs in latency.',
-  zones: [
-    { x: 12, y: 12, w: 126, h: 536, label: 'CLIENTS' },
-    { x: 150, y: 12, w: 330, h: 536, label: 'SERVING PATH' },
-    { x: 494, y: 12, w: 188, h: 536, label: 'STATE' },
-    { x: 694, y: 12, w: 194, h: 536, label: 'ASYNC · DERIVED' },
-  ],
-  nodes: {
-    creator:   { x: 75,  y: 135, label: 'Creator', sub: 'signed in', kind: 'client', w: 112, h: 64 },
-    visitor:   { x: 75,  y: 385, label: 'Visitor', sub: 'opens link', kind: 'client', w: 112, h: 64 },
-    edge:      { x: 232, y: 385, label: 'Edge', sub: 'CDN · WAF', w: 124 },
-    api:       { x: 398, y: 135, label: 'Link API', sub: 'create · disable', w: 146 },
-    redirect:  { x: 398, y: 385, label: 'Redirect', sub: 'stateless svc', w: 146 },
-    db:        { x: 588, y: 240, label: 'Link DB', sub: 'source of truth', kind: 'db', w: 168, h: 92 },
-    cache:     { x: 588, y: 478, label: 'Redis', sub: 'link:{code}', kind: 'cache', w: 168, h: 70 },
-    relay:     { x: 791, y: 135, label: 'Outbox relay', sub: 'polls commits', w: 176 },
-    stream:    { x: 791, y: 310, label: 'Event stream', sub: 'Kafka', kind: 'queue', w: 176 },
-    analytics: { x: 791, y: 478, label: 'Analytics', sub: '≤ 5 min fresh', kind: 'db', w: 176, h: 84 },
-  },
+  zones: Lsh.zones, h: Lsh.h,
+  nodes: Lsh.nodes,
   edges: [
     ['creator', 'api'], ['visitor', 'edge'], ['edge', 'redirect'],
     ['api', 'db'], ['redirect', 'cache'], ['redirect', 'db'],
@@ -478,16 +662,16 @@ defineFlow('sd-flow-shortener', {
   ],
 });
 const Lrl = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'EDGE', nodes: [{ id: 'waf', label: 'WAF', sub: 'L7 firewall' }] },
-  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'API Gateway', sub: 'authenticate & route', w: 160 }] },
-  { label: 'LIMIT STATE', nodes: [{ id: 'redis', label: 'Redis Cluster', sub: 'token bucket (Lua)', kind: 'cache', w: 160 }] },
-  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend', sub: 'protected service' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }] },
+  { label: 'EDGE', nodes: [{ id: 'waf', label: 'WAF', sub: 'L7 firewall', row: 0 }] },
+  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'API Gateway', sub: 'authenticate & route', w: 160, row: 0 }] },
+  { label: 'LIMIT STATE', nodes: [{ id: 'redis', label: 'Redis Cluster', sub: 'token bucket (Lua)', kind: 'cache', w: 160, row: 1 }] },
+  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend', sub: 'protected service', row: 0 }] },
 ]);
 defineFlow('sd-flow-ratelimiter', {
   title: 'Distributed Rate Limiter',
   hint: 'A request hits a rate limiter',
-  zones: Lrl.zones,
+  zones: Lrl.zones, h: Lrl.h,
   nodes: Lrl.nodes,
   edges: [
     ['client', 'waf'],
@@ -538,16 +722,16 @@ defineFlow('sd-flow-ratelimiter', {
   ]
 });
 const Lpb = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'EDGE', nodes: [{ id: 'cdn', label: 'CDN / Edge', sub: 'public cache' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'API Service', sub: 'auth & logic' }] },
-  { label: 'STATE', nodes: [{ id: 'meta', label: 'Metadata DB', sub: 'PostgreSQL', kind: 'db' }, { id: 's3', label: 'Object Store', sub: 'blob storage', kind: 'db' }] },
-  { label: 'BACKGROUND', nodes: [{ id: 'worker', label: 'Async Worker', sub: 'cleanup & expiry' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }] },
+  { label: 'EDGE', nodes: [{ id: 'cdn', label: 'CDN / Edge', sub: 'public cache', row: 0 }] },
+  { label: 'SERVICE', nodes: [{ id: 'api', label: 'API Service', sub: 'auth & logic', row: 0 }] },
+  { label: 'STATE', nodes: [{ id: 'meta', label: 'Metadata DB', sub: 'PostgreSQL', kind: 'db', row: 0 }, { id: 's3', label: 'Object Store', sub: 'blob storage', kind: 'db', row: 1 }] },
+  { label: 'BACKGROUND', nodes: [{ id: 'worker', label: 'Async Worker', sub: 'cleanup & expiry', row: 0.5 }] },
 ]);
 defineFlow('sd-flow-pastebin', {
   title: 'Pastebin Architecture',
   hint: 'Trace upload and read paths',
-  zones: Lpb.zones,
+  zones: Lpb.zones, h: Lpb.h,
   nodes: Lpb.nodes,
   edges: [
     ['client', 'cdn'],
@@ -607,16 +791,16 @@ defineFlow('sd-flow-pastebin', {
   ]
 });
 const Lnp = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'API · STATE', nodes: [{ id: 'api', label: 'Notification API', sub: 'auth & accept' }, { id: 'db', label: 'Record DB', sub: 'idempotency & log', kind: 'db' }] },
-  { label: 'QUEUE', nodes: [{ id: 'queue', label: 'Event Queue', sub: 'partitioned topic', kind: 'queue' }] },
-  { label: 'WORKERS', nodes: [{ id: 'workers', label: 'Worker Fleet', sub: 'fetch & dispatch' }] },
-  { label: 'EXTERNAL', nodes: [{ id: 'provider', label: '3rd Party', sub: 'FCM / SMS' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 1 }] },
+  { label: 'API', nodes: [{ id: 'api', label: 'Notification API', sub: 'auth & accept', row: 1 }] },
+  { label: 'QUEUE · STATE', nodes: [{ id: 'queue', label: 'Event Queue', sub: 'partitioned topic', kind: 'queue', row: 1 }, { id: 'db', label: 'Record DB', sub: 'idempotency & log', kind: 'db', row: 2 }] },
+  { label: 'WORKERS', nodes: [{ id: 'workers', label: 'Worker Fleet', sub: 'fetch & dispatch', row: 1 }] },
+  { label: 'EXTERNAL', nodes: [{ id: 'provider', label: '3rd Party', sub: 'FCM / SMS', icon: 'notify', row: 0 }] },
 ]);
 defineFlow('sd-flow-notifications', {
   title: 'Notification Platform',
   hint: 'Trace publish and delivery',
-  zones: Lnp.zones,
+  zones: Lnp.zones, h: Lnp.h,
   nodes: Lnp.nodes,
   edges: [
     ['client', 'api'],
@@ -662,14 +846,15 @@ defineFlow('sd-flow-notifications', {
   ]
 });
 const Lpp = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Upload API', sub: 'metadata & auth' }, { id: 'queue', label: 'Transform Q', sub: 'job queue', kind: 'queue' }, { id: 'cdn', label: 'CDN Edge', sub: 'public cache' }] },
-  { label: 'STORAGE · WORKERS', nodes: [{ id: 's3', label: 'Object Store', sub: 'original & variants', kind: 'db' }, { id: 'worker', label: 'Worker Fleet', sub: 'resize & scan' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 1 }] },
+  { label: 'API · EDGE', nodes: [{ id: 'api', label: 'Upload API', sub: 'metadata & auth', row: 0 }, { id: 'cdn', label: 'CDN Edge', sub: 'public cache', row: 2 }] },
+  { label: 'STORAGE', nodes: [{ id: 's3', label: 'Object Store', sub: 'original & variants', kind: 'db', row: 1 }] },
+  { label: 'PROCESSING', nodes: [{ id: 'queue', label: 'Transform Q', sub: 'job queue', kind: 'queue', row: 0 }, { id: 'worker', label: 'Worker Fleet', sub: 'resize & scan', row: 1 }] },
 ]);
 defineFlow('sd-flow-photopipeline', {
   title: 'Photo Upload & Pipeline',
   hint: 'Trace direct uploads and async processing',
-  zones: Lpp.zones,
+  zones: Lpp.zones, h: Lpp.h,
   nodes: Lpp.nodes,
   edges: [
     ['client', 'api'],
@@ -721,15 +906,15 @@ defineFlow('sd-flow-photopipeline', {
   ]
 });
 const Lch = lane([
-  { label: 'CLIENTS', nodes: [{ id: 'alice', label: 'Alice', kind: 'client' }, { id: 'bob', label: 'Bob', kind: 'client' }] },
-  { label: 'GATEWAYS', nodes: [{ id: 'gwa', label: 'Gateway A', sub: 'WebSocket state' }, { id: 'gwb', label: 'Gateway B', sub: 'WebSocket state' }] },
-  { label: 'ROUTING', nodes: [{ id: 'svc', label: 'Message Router', sub: 'business logic' }, { id: 'push', label: 'Push Svc', sub: 'FCM / APNs' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Chat Log', sub: 'Cassandra / KV', kind: 'db' }] },
+  { label: 'CLIENTS', nodes: [{ id: 'alice', label: 'Alice', kind: 'client', row: 0 }, { id: 'bob', label: 'Bob', kind: 'client', row: 1 }] },
+  { label: 'GATEWAYS', nodes: [{ id: 'gwa', label: 'Gateway A', sub: 'WebSocket state', row: 0 }, { id: 'gwb', label: 'Gateway B', sub: 'WebSocket state', row: 1 }] },
+  { label: 'ROUTING', nodes: [{ id: 'svc', label: 'Message Router', sub: 'business logic', row: 0 }, { id: 'push', label: 'Push Svc', sub: 'FCM / APNs', row: 1.5 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Chat Log', sub: 'Cassandra / KV', kind: 'db', row: 0 }] },
 ]);
 defineFlow('sd-flow-chat', {
   title: 'Real-Time Chat',
   hint: 'Trace a message from Alice to Bob',
-  zones: Lch.zones,
+  zones: Lch.zones, h: Lch.h,
   nodes: Lch.nodes,
   edges: [
     ['alice', 'gwa'],
@@ -786,7 +971,7 @@ const Lnf = lane([
 defineFlow('sd-flow-newsfeed', {
   title: 'Hybrid News Feed',
   hint: 'Trace fanout on write vs read',
-  zones: Lnf.zones,
+  zones: Lnf.zones, h: Lnf.h,
   nodes: Lnf.nodes,
   edges: [
     ['author', 'api_w'],
@@ -826,16 +1011,16 @@ defineFlow('sd-flow-newsfeed', {
 });
 
 const Lco = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Shopper', kind: 'client' }] },
-  { label: 'API', nodes: [{ id: 'api', label: 'Checkout API', sub: 'idempotent' }] },
-  { label: 'STATE', nodes: [{ id: 'db_o', label: 'Order DB', sub: 'PENDING state', kind: 'db' }, { id: 'db_i', label: 'Inventory DB', sub: 'conditional hold', kind: 'db' }] },
-  { label: 'SAGA', nodes: [{ id: 'saga', label: 'Saga Worker', sub: 'async payment' }] },
-  { label: 'EXTERNAL', nodes: [{ id: 'psp', label: 'Stripe / PSP', sub: 'external' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Shopper', kind: 'client', row: 0 }] },
+  { label: 'API', nodes: [{ id: 'api', label: 'Checkout API', sub: 'idempotent', row: 0 }] },
+  { label: 'STATE', nodes: [{ id: 'db_o', label: 'Order DB', sub: 'PENDING state', kind: 'db', row: 0 }, { id: 'db_i', label: 'Inventory DB', sub: 'conditional hold', kind: 'db', row: 1 }] },
+  { label: 'SAGA', nodes: [{ id: 'saga', label: 'Saga Worker', sub: 'async payment', row: 0 }] },
+  { label: 'EXTERNAL', nodes: [{ id: 'psp', label: 'Stripe / PSP', sub: 'external', row: 0 }] },
 ]);
 defineFlow('sd-flow-checkout', {
   title: 'Checkout Saga',
   hint: 'Trace the asynchronous payment state machine',
-  zones: Lco.zones,
+  zones: Lco.zones, h: Lco.h,
   nodes: Lco.nodes,
   edges: [
     ['client', 'api'],
@@ -881,13 +1066,13 @@ defineFlow('sd-flow-checkout', {
 const Lsa = lane([
   { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
   { label: 'SERVICE', nodes: [{ id: 'sug', label: 'Suggest API', sub: 'in-memory trie' }, { id: 'search', label: 'Search API', sub: 'query parser' }] },
-  { label: 'INDEX', nodes: [{ id: 'ingest', label: 'Ingest Pipeline', sub: 'async indexer' }, { id: 'idx', label: 'Search Index', sub: 'Elasticsearch', kind: 'db' }] },
-  { label: 'SOURCE', nodes: [{ id: 'db', label: 'Catalog DB', sub: 'source of truth', kind: 'db' }] },
+  { label: 'INDEX', nodes: [{ id: 'ingest', label: 'Ingest Pipeline', sub: 'async indexer', icon: 'worker', row: 0 }, { id: 'idx', label: 'Search Index', sub: 'Elasticsearch', kind: 'db', row: 1 }] },
+  { label: 'SOURCE', nodes: [{ id: 'db', label: 'Catalog DB', sub: 'source of truth', kind: 'db', row: 0 }] },
 ]);
 defineFlow('sd-flow-search', {
   title: 'Search & Autocomplete',
   hint: 'Trace suggest vs full search',
-  zones: Lsa.zones,
+  zones: Lsa.zones, h: Lsa.h,
   nodes: Lsa.nodes,
   edges: [
     ['client', 'sug'],
@@ -931,15 +1116,15 @@ defineFlow('sd-flow-search', {
 });
 
 const Lst = lane([
-  { label: 'BUYER', nodes: [{ id: 'buyer', label: 'Buyer', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'wait', label: 'Waiting Room', sub: 'rate limiter' }, { id: 'api', label: 'Booking API', sub: 'transactional' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Seat DB', sub: 'conditional updates', kind: 'db' }] },
-  { label: 'EXTERNAL', nodes: [{ id: 'pay', label: 'Payment', sub: 'external PSP' }] },
+  { label: 'BUYER', nodes: [{ id: 'buyer', label: 'Buyer', kind: 'client', row: 0 }] },
+  { label: 'SERVICE', nodes: [{ id: 'wait', label: 'Waiting Room', sub: 'rate limiter', icon: 'queue', row: 0 }, { id: 'api', label: 'Booking API', sub: 'transactional', row: 1 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Seat DB', sub: 'conditional updates', kind: 'db', row: 1 }] },
+  { label: 'EXTERNAL', nodes: [{ id: 'pay', label: 'Payment', sub: 'external PSP', row: 0 }] },
 ]);
 defineFlow('sd-flow-seats', {
   title: 'Seat Reservation',
   hint: 'Trace a high-contention booking',
-  zones: Lst.zones,
+  zones: Lst.zones, h: Lst.h,
   nodes: Lst.nodes,
   edges: [
     ['buyer', 'wait'],
@@ -978,16 +1163,18 @@ defineFlow('sd-flow-seats', {
 });
 
 const Lcr = lane([
-  { label: 'DISCOVERY', nodes: [{ id: 'disc', label: 'Discovery', sub: 'extract links' }] },
-  { label: 'DEDUP', nodes: [{ id: 'dup', label: 'URL Dedup', sub: 'Bloom filter', kind: 'cache' }] },
-  { label: 'FRONTIER', nodes: [{ id: 'front', label: 'Frontier', sub: 'per-host queues', kind: 'queue' }] },
-  { label: 'FETCH', nodes: [{ id: 'fetch', label: 'Fetcher', sub: 'politeness rules' }] },
-  { label: 'STORAGE', nodes: [{ id: 'store', label: 'Storage', sub: 'content dedup', kind: 'db' }] },
+  { label: 'PARSE · STORE', nodes: [
+    { id: 'disc', label: 'Discovery', sub: 'extract links', icon: 'search', row: 0 },
+    { id: 'store', label: 'Storage', sub: 'content dedup', kind: 'db', icon: 'storage', row: 1 }] },
+  { label: 'DEDUP', nodes: [{ id: 'dup', label: 'URL Dedup', sub: 'Bloom filter', kind: 'cache', icon: 'filter', row: 0 }] },
+  { label: 'CRAWL', nodes: [
+    { id: 'front', label: 'Frontier', sub: 'per-host queues', kind: 'queue', row: 0 },
+    { id: 'fetch', label: 'Fetcher', sub: 'politeness rules', row: 1 }] },
 ]);
 defineFlow('sd-flow-crawler', {
   title: 'Web Crawler',
   hint: 'Trace the URL discovery loop',
-  zones: Lcr.zones,
+  zones: Lcr.zones, h: Lcr.h,
   nodes: Lcr.nodes,
   edges: [
     ['disc', 'dup'],
@@ -1014,15 +1201,15 @@ defineFlow('sd-flow-crawler', {
   ]
 });
 const Lsc = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Scheduler API', sub: 'submit & state' }, { id: 'disp', label: 'Dispatcher', sub: 'cron & polling' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }] },
+  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Scheduler API', sub: 'submit & state' }, { id: 'disp', label: 'Dispatcher', sub: 'cron & polling', icon: 'scheduler' }] },
   { label: 'STATE', nodes: [{ id: 'db', label: 'State DB', sub: 'PostgreSQL', kind: 'db' }, { id: 'q', label: 'Task Queue', sub: 'ready to run', kind: 'queue' }] },
   { label: 'WORKERS', nodes: [{ id: 'worker', label: 'Worker Fleet', sub: 'execute tasks' }] },
 ]);
 defineFlow('sd-flow-scheduler', {
   title: 'Workflow Scheduler',
   hint: 'Trace task dispatch and execution',
-  zones: Lsc.zones,
+  zones: Lsc.zones, h: Lsc.h,
   nodes: Lsc.nodes,
   edges: [
     ['client', 'api'],
@@ -1058,15 +1245,17 @@ defineFlow('sd-flow-scheduler', {
 });
 
 const Lmt = lane([
-  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Agent', kind: 'client' }] },
-  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Ingest API', sub: 'validate & quota' }] },
-  { label: 'BUFFER', nodes: [{ id: 'wal', label: 'WAL Buffer', sub: 'durable stream', kind: 'queue' }] },
-  { label: 'STORAGE', nodes: [{ id: 'tsdb', label: 'TSDB', sub: 'blocks & index', kind: 'db' }, { id: 'comp', label: 'Compactor', sub: 'downsample' }] },
+  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Agent', kind: 'client', icon: 'server', row: 0 }] },
+  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Ingest API', sub: 'validate & quota', row: 0 }] },
+  { label: 'BUFFER', nodes: [{ id: 'wal', label: 'WAL Buffer', sub: 'durable stream', kind: 'queue', row: 0 }] },
+  { label: 'STORAGE', nodes: [
+    { id: 'tsdb', label: 'TSDB', sub: 'blocks & index', kind: 'db', icon: 'metrics', row: 0 },
+    { id: 'comp', label: 'Compactor', sub: 'downsample', icon: 'worker', row: 1 }] },
 ]);
 defineFlow('sd-flow-metrics', {
   title: 'Metrics Platform',
   hint: 'Trace high-volume ingest',
-  zones: Lmt.zones,
+  zones: Lmt.zones, h: Lmt.h,
   nodes: Lmt.nodes,
   edges: [
     ['agent', 'ingest'],
@@ -1099,15 +1288,15 @@ defineFlow('sd-flow-metrics', {
 });
 
 const Llg = lane([
-  { label: 'SERVICE', nodes: [{ id: 'app', label: 'Service', kind: 'client' }] },
-  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Log Agent', sub: 'local buffer' }] },
-  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Log Ingest', sub: 'redact & route' }] },
-  { label: 'STORAGE', nodes: [{ id: 'store', label: 'Log Store', sub: 'blob & index', kind: 'db' }] },
+  { label: 'SERVICE', nodes: [{ id: 'app', label: 'Service', kind: 'client', icon: 'service' }] },
+  { label: 'AGENT', nodes: [{ id: 'agent', label: 'Log Agent', sub: 'local buffer', icon: 'agent' }] },
+  { label: 'INGEST', nodes: [{ id: 'ingest', label: 'Log Ingest', sub: 'redact & route', icon: 'logs' }] },
+  { label: 'STORAGE', nodes: [{ id: 'store', label: 'Log Store', sub: 'blob & index', kind: 'db', icon: 'storage' }] },
 ]);
 defineFlow('sd-flow-logging', {
   title: 'Logging Platform',
   hint: 'Trace structured log delivery',
-  zones: Llg.zones,
+  zones: Llg.zones, h: Llg.h,
   nodes: Llg.nodes,
   edges: [
     ['app', 'agent'],
@@ -1129,15 +1318,17 @@ defineFlow('sd-flow-logging', {
   ]
 });
 const Ldv = lane([
-  { label: 'DEVICES', nodes: [{ id: 'd1', label: 'Device A', kind: 'client' }, { id: 'd2', label: 'Device B', kind: 'client' }] },
-  { label: 'API', nodes: [{ id: 'api', label: 'Sync API', sub: 'metadata commit' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Metadata DB', sub: 'version & cursor', kind: 'db' }, { id: 's3', label: 'Object Store', sub: 'immutable blocks', kind: 'db' }] },
-  { label: 'ASYNC', nodes: [{ id: 'pub', label: 'Change Feed', sub: 'async fanout' }] },
+  { label: 'BLOCKS', nodes: [{ id: 's3', label: 'Object Store', sub: 'immutable blocks', kind: 'db', icon: 'blob', row: 0.5 }] },
+  { label: 'DEVICES', nodes: [{ id: 'd1', label: 'Device A', kind: 'client', icon: 'desktop', row: 0 }, { id: 'd2', label: 'Device B', kind: 'client', icon: 'mobile', row: 1 }] },
+  { label: 'SYNC SERVICE', nodes: [
+    { id: 'api', label: 'Sync API', sub: 'metadata commit', row: 0 },
+    { id: 'pub', label: 'Change Feed', sub: 'async fanout', icon: 'stream', row: 1 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Metadata DB', sub: 'version & cursor', kind: 'db', icon: 'db', row: 0 }] },
 ]);
 defineFlow('sd-flow-drive', {
   title: 'Cloud Drive Sync',
   hint: 'Trace direct upload and multi-device sync',
-  zones: Ldv.zones,
+  zones: Ldv.zones, h: Ldv.h,
   nodes: Ldv.nodes,
   edges: [
     ['d1', 'api'],
@@ -1168,15 +1359,17 @@ defineFlow('sd-flow-drive', {
 });
 
 const Lvd = lane([
-  { label: 'CLIENTS', nodes: [{ id: 'creator', label: 'Creator', kind: 'client' }, { id: 'viewer', label: 'Viewer', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'job', label: 'Transcoder', sub: 'async ladder' }, { id: 'auth', label: 'Auth API', sub: 'signed manifests' }] },
-  { label: 'STORAGE', nodes: [{ id: 's3', label: 'Object Store', sub: 'derivatives', kind: 'db' }] },
-  { label: 'EDGE', nodes: [{ id: 'cdn', label: 'CDN Edge', sub: 'global cache' }] },
+  { label: 'CLIENTS', nodes: [{ id: 'creator', label: 'Creator', kind: 'client', row: 0 }, { id: 'viewer', label: 'Viewer', kind: 'client', row: 1.5 }] },
+  { label: 'EDGE · API', nodes: [
+    { id: 'auth', label: 'Auth API', sub: 'signed manifests', row: 1 },
+    { id: 'cdn', label: 'CDN Edge', sub: 'global cache', row: 2 }] },
+  { label: 'STORAGE', nodes: [{ id: 's3', label: 'Object Store', sub: 'source & renditions', kind: 'db', icon: 'blob', row: 0 }] },
+  { label: 'PROCESSING', nodes: [{ id: 'job', label: 'Transcoder', sub: 'async ladder', icon: 'video', row: 0 }] },
 ]);
 defineFlow('sd-flow-vod', {
   title: 'Video On Demand',
   hint: 'Trace upload, transcode, and streaming',
-  zones: Lvd.zones,
+  zones: Lvd.zones, h: Lvd.h,
   nodes: Lvd.nodes,
   edges: [
     ['creator', 's3'],
@@ -1214,15 +1407,15 @@ defineFlow('sd-flow-vod', {
 });
 
 const Lld = lane([
-  { label: 'CLIENTS', nodes: [{ id: 'client', label: 'Client', kind: 'client' }, { id: 'settle', label: 'Bank / PSP', kind: 'client' }] },
-  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Ledger API', sub: 'idempotent' }, { id: 'recon', label: 'Reconciler', sub: 'audit mismatches' }] },
-  { label: 'STATE', nodes: [{ id: 'db', label: 'Journal DB', sub: 'immutable entries', kind: 'db' }] },
-  { label: 'DERIVED', nodes: [{ id: 'proj', label: 'Projection', sub: 'materialized balance' }] },
+  { label: 'CLIENTS', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }, { id: 'settle', label: 'Bank / PSP', kind: 'client', icon: 'payment', row: 1 }] },
+  { label: 'SERVICE', nodes: [{ id: 'api', label: 'Ledger API', sub: 'idempotent', row: 0 }, { id: 'recon', label: 'Reconciler', sub: 'audit mismatches', icon: 'check', row: 1 }] },
+  { label: 'STATE', nodes: [{ id: 'db', label: 'Journal DB', sub: 'immutable entries', kind: 'db', icon: 'db', row: 0 }] },
+  { label: 'DERIVED', nodes: [{ id: 'proj', label: 'Projection', sub: 'balance view', icon: 'table', row: 0 }] },
 ]);
 defineFlow('sd-flow-ledger', {
   title: 'Payment Ledger',
   hint: 'Trace immutable double-entry accounting',
-  zones: Lld.zones,
+  zones: Lld.zones, h: Lld.h,
   nodes: Lld.nodes,
   edges: [
     ['client', 'api'],
@@ -1256,14 +1449,14 @@ defineFlow('sd-flow-ledger', {
 });
 const Lcc = lane([
   { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'APP', nodes: [{ id: 'api', label: 'App Node', sub: 'hash ring & stampede lock' }] },
+  { label: 'APP', nodes: [{ id: 'api', label: 'App Node', sub: 'hash ring · lock', icon: 'server' }] },
   { label: 'CACHE RING', nodes: [{ id: 'node_a', label: 'Cache Node A', sub: 'shard 1', kind: 'cache' }, { id: 'node_b', label: 'Cache Node B', sub: 'shard 2', kind: 'cache' }] },
   { label: 'ORIGIN', nodes: [{ id: 'db', label: 'Database', sub: 'origin', kind: 'db' }] },
 ]);
 defineFlow('sd-flow-cache', {
   title: 'Distributed Cache',
   hint: 'Trace consistent hashing and stampede protection',
-  zones: Lcc.zones,
+  zones: Lcc.zones, h: Lcc.h,
   nodes: Lcc.nodes,
   edges: [
     ['client', 'api'],
@@ -1301,16 +1494,16 @@ defineFlow('sd-flow-cache', {
 });
 
 const Lfl = lane([
-  { label: 'CLIENT', nodes: [{ id: 'req', label: 'User Req', kind: 'client' }] },
-  { label: 'APPLICATION', nodes: [{ id: 'app', label: 'Application', sub: 'SDK cache' }] },
-  { label: 'DISTRIBUTION', nodes: [{ id: 'cdn', label: 'Distribution', sub: 'CDN / SSE stream' }] },
-  { label: 'CONTROL PLANE', nodes: [{ id: 'api', label: 'Control Plane', sub: 'manage flags' }] },
+  { label: 'CLIENT', nodes: [{ id: 'req', label: 'User', sub: 'request', kind: 'client' }] },
+  { label: 'APPLICATION', nodes: [{ id: 'app', label: 'App', sub: 'SDK cache', icon: 'app' }] },
+  { label: 'DISTRIBUTION', nodes: [{ id: 'cdn', label: 'Flag CDN', sub: 'SSE stream', icon: 'cdn' }] },
+  { label: 'CONTROL PLANE', nodes: [{ id: 'api', label: 'Flag API', sub: 'manage flags', icon: 'flag' }] },
   { label: 'STATE', nodes: [{ id: 'db', label: 'Rules DB', sub: 'PostgreSQL', kind: 'db' }] },
 ]);
 defineFlow('sd-flow-flags', {
   title: 'Feature Flags',
   hint: 'Trace local evaluation and async updates',
-  zones: Lfl.zones,
+  zones: Lfl.zones, h: Lfl.h,
   nodes: Lfl.nodes,
   edges: [
     ['req', 'app'],
@@ -1344,12 +1537,12 @@ defineFlow('sd-flow-flags', {
 const Lrd = lane([
   { label: 'CLIENTS', nodes: [{ id: 'driver', label: 'Driver', kind: 'client' }, { id: 'rider', label: 'Rider', kind: 'client' }] },
   { label: 'DISPATCH', nodes: [{ id: 'api', label: 'Dispatch Svc', sub: 'match & offer' }] },
-  { label: 'STATE', nodes: [{ id: 'geo', label: 'Geo Index', sub: 'ephemeral locations', kind: 'cache' }, { id: 'db', label: 'Trip DB', sub: 'transactional state', kind: 'db' }] },
+  { label: 'STATE', nodes: [{ id: 'geo', label: 'Geo Index', sub: 'live locations', kind: 'cache', icon: 'map' }, { id: 'db', label: 'Trip DB', sub: 'transactional state', kind: 'db' }] },
 ]);
 defineFlow('sd-flow-ride', {
   title: 'Ride Dispatch',
   hint: 'Trace location pings and assignment',
-  zones: Lrd.zones,
+  zones: Lrd.zones, h: Lrd.h,
   nodes: Lrd.nodes,
   edges: [
     ['driver', 'api'],
@@ -1382,15 +1575,15 @@ defineFlow('sd-flow-ride', {
 });
 
 const Lgw = lane([
-  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', sub: 'tenant A', kind: 'client' }] },
-  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'Gateway', sub: 'auth · route · deadline' }, { id: 'quota', label: 'Quota store', sub: 'per-tenant buckets', kind: 'cache' }] },
-  { label: 'CONFIG', nodes: [{ id: 'policy', label: 'Route policy', sub: 'cached · versioned', kind: 'db' }] },
-  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend svc', sub: 're-authorizes' }] },
+  { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', sub: 'tenant A', kind: 'client', row: 0 }] },
+  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'Gateway', sub: 'auth · route · deadline', row: 0 }, { id: 'quota', label: 'Quota store', sub: 'per-tenant buckets', kind: 'cache', icon: 'counter', row: 1 }] },
+  { label: 'CONFIG', nodes: [{ id: 'policy', label: 'Route policy', sub: 'cached · versioned', kind: 'db', icon: 'flag', row: 1 }] },
+  { label: 'ORIGIN', nodes: [{ id: 'backend', label: 'Backend svc', sub: 're-authorizes', row: 0 }] },
 ]);
 defineFlow('sd-flow-gateway', {
   title: 'Multi-Tenant API Gateway',
   hint: 'Trace verified identity, quota, and a spoofed-header attempt',
-  zones: Lgw.zones,
+  zones: Lgw.zones, h: Lgw.h,
   nodes: Lgw.nodes,
   edges: [
     ['client', 'gw'],
@@ -1442,7 +1635,7 @@ const Lsf = lane([
 defineFlow('sd-flow-snowflake', {
   title: 'Unique ID Generator',
   hint: 'Trace in-process generation, a worker-ID lease, and a clock rollback',
-  zones: Lsf.zones,
+  zones: Lsf.zones, h: Lsf.h,
   nodes: Lsf.nodes,
   edges: [
     ['app', 'coord'],
@@ -1482,14 +1675,14 @@ defineFlow('sd-flow-snowflake', {
 
 const Ldy = lane([
   { label: 'CLIENT', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
-  { label: 'COORDINATOR', nodes: [{ id: 'coord', label: 'Coordinator', sub: 'any node' }] },
+  { label: 'COORDINATOR', nodes: [{ id: 'coord', label: 'Coordinator', sub: 'any node', icon: 'sync' }] },
   { label: 'REPLICAS (N=3)', nodes: [{ id: 'nodeA', label: 'Replica A', kind: 'db' }, { id: 'nodeB', label: 'Replica B', kind: 'db' }, { id: 'nodeC', label: 'Replica C', kind: 'db' }] },
-  { label: 'FAILOVER', nodes: [{ id: 'standin', label: 'Stand-in node', sub: 'holds a hint', kind: 'db' }] },
+  { label: 'FAILOVER', nodes: [{ id: 'standin', label: 'Stand-in node', sub: 'holds a hint', kind: 'db', row: 1.5 }] },
 ]);
 defineFlow('sd-flow-dynamo', {
   title: 'Distributed Key-Value Store',
   hint: 'Trace a quorum write, a sloppy-quorum failover, and conflicting reads',
-  zones: Ldy.zones,
+  zones: Ldy.zones, h: Ldy.h,
   nodes: Ldy.nodes,
   edges: [
     ['client', 'coord'],
@@ -1544,7 +1737,7 @@ const Led = lane([
 defineFlow('sd-flow-editor', {
   title: 'Collaborative Document Editor',
   hint: 'Trace operational transform, reconnect/resync, and session failover',
-  zones: Led.zones,
+  zones: Led.zones, h: Led.h,
   nodes: Led.nodes,
   edges: [
     ['a', 'gw'], ['b', 'gw'],
@@ -1597,7 +1790,7 @@ const Lse = lane([
 defineFlow('sd-flow-searchengine', {
   title: 'Web Search Engine — Query Serving',
   hint: 'Trace a cache hit, a full fan-out, and a hedged request against a slow leaf',
-  zones: Lse.zones,
+  zones: Lse.zones, h: Lse.h,
   nodes: Lse.nodes,
   edges: [
     ['user', 'fe'], ['fe', 'root'],
@@ -1642,13 +1835,13 @@ defineFlow('sd-flow-searchengine', {
 const Lpl = lane([
   { label: 'CLIENTS', nodes: [{ id: 'user', label: 'User', kind: 'client' }, { id: 'owner', label: 'Business owner', kind: 'client' }] },
   { label: 'EDGE · API', nodes: [{ id: 'edge', label: 'Edge / CDN', sub: 'result cache', kind: 'cache' }, { id: 'api', label: 'Places API' }] },
-  { label: 'SERVING', nodes: [{ id: 'gw', label: 'Search gateway' }] },
+  { label: 'SERVING', nodes: [{ id: 'gw', label: 'Search gateway', icon: 'search', row: 0 }] },
   { label: 'STATE', nodes: [{ id: 'index', label: 'S2 geo index', sub: 'in-memory', kind: 'cache' }, { id: 'db', label: 'Place store', sub: 'source of truth', kind: 'db' }] },
 ]);
 defineFlow('sd-flow-places', {
   title: 'Nearby Places Search',
   hint: 'Trace a cached search, an S2 index scan, and an async place update',
-  zones: Lpl.zones,
+  zones: Lpl.zones, h: Lpl.h,
   nodes: Lpl.nodes,
   edges: [
     ['user', 'edge'], ['edge', 'gw'], ['gw', 'index'],
@@ -1693,13 +1886,13 @@ const Lac = lane([
   { label: 'USER', nodes: [{ id: 'user', label: 'User', kind: 'client' }] },
   { label: 'CLICK SERVER', nodes: [{ id: 'cs', label: 'Click server', sub: 'log + redirect' }] },
   { label: 'DURABLE LOG', nodes: [{ id: 'log', label: 'Event log', sub: 'Kafka', kind: 'queue' }] },
-  { label: 'FAST PATH', nodes: [{ id: 'stream', label: 'Stream aggregator', sub: '1-min windows' }, { id: 'olap', label: 'Real-time OLAP', kind: 'db' }] },
-  { label: 'EXACT PATH', nodes: [{ id: 'archive', label: 'Raw archive', sub: 'immutable', kind: 'db' }, { id: 'batch', label: 'Batch job', sub: 'dedup + fraud' }] },
+  { label: 'FAST · EXACT', nodes: [{ id: 'stream', label: 'Stream aggregator', sub: '1-min windows', icon: 'worker', row: 0 }, { id: 'archive', label: 'Raw archive', sub: 'immutable', kind: 'db', icon: 'blob', row: 1 }] },
+  { label: 'RESULTS', nodes: [{ id: 'olap', label: 'Real-time OLAP', kind: 'db', icon: 'metrics', row: 0 }, { id: 'batch', label: 'Batch job', sub: 'dedup + fraud', row: 1 }] },
 ]);
 defineFlow('sd-flow-adclick', {
   title: 'Ad Click Aggregation',
   hint: 'Trace the non-blocking redirect, the streaming window, and batch billing',
-  zones: Lac.zones,
+  zones: Lac.zones, h: Lac.h,
   nodes: Lac.nodes,
   edges: [
     ['user', 'cs'], ['cs', 'log'],
@@ -1741,17 +1934,16 @@ defineFlow('sd-flow-adclick', {
 });
 
 const Ltr = lane([
-  { label: 'EVENTS', nodes: [{ id: 'ev', label: 'Events', sub: 'views / uses', kind: 'client' }] },
-  { label: 'LOG', nodes: [{ id: 'log', label: 'Event log', sub: 'by item_id', kind: 'queue' }] },
-  { label: 'COUNTING', nodes: [{ id: 'counter', label: 'Counter worker', sub: 'sketch + heap' }, { id: 'store', label: 'Minute buckets', kind: 'cache' }] },
-  { label: 'WINDOW', nodes: [{ id: 'merger', label: 'Window merger' }] },
-  { label: 'RESULTS', nodes: [{ id: 'topk', label: 'Top-K results', kind: 'db' }] },
-  { label: 'READERS', nodes: [{ id: 'client', label: 'Client', kind: 'client' }] },
+  { label: 'EVENTS', nodes: [{ id: 'ev', label: 'Events', sub: 'views / uses', kind: 'client', icon: 'mobile', row: 0 }] },
+  { label: 'LOG', nodes: [{ id: 'log', label: 'Event log', sub: 'by item_id', kind: 'queue', row: 0 }] },
+  { label: 'COUNTING', nodes: [{ id: 'counter', label: 'Counter worker', sub: 'sketch + heap', row: 0 }, { id: 'store', label: 'Minute buckets', kind: 'cache', row: 1 }] },
+  { label: 'WINDOW', nodes: [{ id: 'merger', label: 'Window merger', icon: 'scheduler', row: 1 }] },
+  { label: 'RESULTS · READERS', nodes: [{ id: 'client', label: 'Client', kind: 'client', row: 0 }, { id: 'topk', label: 'Top-K results', kind: 'db', row: 1 }] },
 ]);
 defineFlow('sd-flow-trending', {
   title: 'Top-K Trending',
   hint: 'Trace sketch counting, the sliding-window merge, and a cached read',
-  zones: Ltr.zones,
+  zones: Ltr.zones, h: Ltr.h,
   nodes: Ltr.nodes,
   edges: [
     ['ev', 'log'], ['log', 'counter'],
@@ -1792,16 +1984,16 @@ defineFlow('sd-flow-trending', {
 });
 
 const Llb = lane([
-  { label: 'SOURCE', nodes: [{ id: 'gs', label: 'Game server', sub: 'signed result', kind: 'client' }] },
-  { label: 'WRITE PATH', nodes: [{ id: 'api', label: 'Score service' }, { id: 'reader', label: 'Leaderboard API' }] },
-  { label: 'SOURCE OF TRUTH', nodes: [{ id: 'db', label: 'Score DB', sub: 'source of truth', kind: 'db' }] },
-  { label: 'PROJECTION', nodes: [{ id: 'upd', label: 'Leaderboard updater' }] },
-  { label: 'READ MODELS', nodes: [{ id: 'topset', label: 'Top-1000 set', kind: 'cache' }, { id: 'hist', label: 'Score histogram', kind: 'cache' }] },
+  { label: 'SOURCE', nodes: [{ id: 'gs', label: 'Game server', sub: 'signed result', kind: 'client', row: 0 }] },
+  { label: 'WRITE PATH', nodes: [{ id: 'api', label: 'Score service', row: 0 }, { id: 'db', label: 'Score DB', sub: 'source of truth', kind: 'db', row: 1 }] },
+  { label: 'PROJECTION', nodes: [{ id: 'upd', label: 'Rank updater', sub: 'CDC consumer', icon: 'worker', row: 1 }] },
+  { label: 'READ MODELS', nodes: [{ id: 'topset', label: 'Top-1000 set', sub: 'Redis sorted set', kind: 'cache', row: 0 }, { id: 'hist', label: 'Score histogram', sub: 'Redis buckets', kind: 'cache', row: 1 }] },
+  { label: 'READ API', nodes: [{ id: 'reader', label: 'Leaderboard API', icon: 'api' }] },
 ]);
 defineFlow('sd-flow-leaderboard', {
   title: 'Real-Time Leaderboard',
   hint: 'Trace a score submission, a top-100 read, and a long-tail rank estimate',
-  zones: Llb.zones,
+  zones: Llb.zones, h: Llb.h,
   nodes: Llb.nodes,
   edges: [
     ['gs', 'api'], ['api', 'db'],
@@ -1841,16 +2033,16 @@ defineFlow('sd-flow-leaderboard', {
 });
 
 const Lllm = lane([
-  { label: 'CLIENT', nodes: [{ id: 'ui', label: 'Mail client', sub: 'SSE stream', kind: 'client' }] },
-  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'AI gateway', sub: 'auth · quota' }] },
-  { label: 'ORCHESTRATION', nodes: [{ id: 'orch', label: 'Orchestrator', sub: 'context + guard' }, { id: 'ret', label: 'Mailbox index', sub: 'ACL-filtered', kind: 'db' }] },
-  { label: 'ROUTING', nodes: [{ id: 'router', label: 'Model router' }] },
-  { label: 'MODEL POOLS', nodes: [{ id: 'small', label: 'Small model pool' }, { id: 'large', label: 'Large model pool' }] },
+  { label: 'CLIENT', nodes: [{ id: 'ui', label: 'Mail client', sub: 'SSE stream', kind: 'client', row: 0 }] },
+  { label: 'GATEWAY', nodes: [{ id: 'gw', label: 'AI gateway', sub: 'auth · quota', row: 0 }] },
+  { label: 'ORCHESTRATION', nodes: [{ id: 'orch', label: 'Orchestrator', sub: 'context + guard', row: 0 }, { id: 'ret', label: 'Mailbox index', sub: 'ACL-filtered', kind: 'db', icon: 'search', row: 1 }] },
+  { label: 'ROUTING', nodes: [{ id: 'router', label: 'Model router', icon: 'sort', row: 0 }] },
+  { label: 'MODEL POOLS', nodes: [{ id: 'small', label: 'Small model pool', row: 0 }, { id: 'large', label: 'Large model pool', row: 1 }] },
 ]);
 defineFlow('sd-flow-llm', {
   title: 'LLM Assistant Feature',
   hint: 'Trace a cheap small-model answer, escalation, and a saturated-pool fallback',
-  zones: Lllm.zones,
+  zones: Lllm.zones, h: Lllm.h,
   nodes: Lllm.nodes,
   edges: [
     ['ui', 'gw'], ['gw', 'orch'],

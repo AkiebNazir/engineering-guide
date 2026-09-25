@@ -24,16 +24,16 @@ How do we mathematically fill in the blanks?
 - **MICE (Multiple Imputation):** The most advanced technique. It literally trains an entirely new Machine Learning model (like a Random Forest) for the sole purpose of predicting what the missing blank *should* have been!
 
 ### 3. Encoding (Turning Text into Math)
-AI cannot read the word `"Red"`. We must **Encode** it.
+<abbr title="Artificial Intelligence">AI</abbr> cannot read the word `"Red"`. We must **Encode** it.
 - **One-Hot Encoding:** Creates a new binary column for every possible category. (`Is_Red`: 1, `Is_Blue`: 0). 
-  - *The Flaw:* If your column is "Zipcode", One-Hot Encoding will create 40,000 new columns! This instantly triggers the **Curse of Dimensionality** (Day 28) and breaks your AI.
+  - *The Flaw:* If your column is "Zipcode", One-Hot Encoding will create 40,000 new columns! This instantly triggers the **Curse of Dimensionality** (Day 28) and breaks your <abbr title="Artificial Intelligence">AI</abbr>.
 - **Target Encoding:** The Kaggle champion secret. Instead of creating new columns, you replace the text with the *average target value*. If predicting House Prices, you replace the word `"New York"` with `$850,000`. It keeps the dimensions small while providing massive Information Gain!
 
 ### 4. Data Leakage (The Time Machine Paradox)
 Target Encoding is extremely dangerous because of **Data Leakage**.
 **The Analogy:** Imagine you are studying for a Final Exam. Accidentally, the teacher leaves the Answer Key for the *actual* exam mixed into your study notes. You memorize it. You score 100% on the practice test. But when you get into the real world with brand new questions, you fail miserably.
 
-If you apply Target Encoding to your *entire dataset* before you split it into `Train` and `Test`, the answers from the `Test` set "leak" into the averages of the `Train` set. The AI will just memorize the averages, score 100% accuracy, and instantly crash in production.
+If you apply Target Encoding to your *entire dataset* before you split it into `Train` and `Test`, the answers from the `Test` set "leak" into the averages of the `Train` set. The <abbr title="Artificial Intelligence">AI</abbr> will just memorize the averages, score 100% accuracy, and instantly crash in production.
 **The Fix:** You MUST split your data into Train/Test *first*, and only calculate the Target Encoding averages using the Train data!
 
 ---
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The Kaggle Titanic Dataset
-The most famous beginner ML dataset is the Titanic.
+The most famous beginner <abbr title="Machine Learning">ML</abbr> dataset is the Titanic.
 **Your Task:**
 1. Download the Titanic dataset (`import seaborn as sns; df = sns.load_dataset('titanic')`).
 2. It is incredibly messy. `Age` has missing values. `Deck` has massive missing values. `Sex` and `Embarked` are categorical text.
@@ -146,12 +146,12 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Explain that Target Encoding replaces "Zipcode 10001" with the average target answer for that Zipcode. 
    - State clearly that if the Junior Engineer encoded the *entire dataset* before splitting it, the averages literally contain the answers of the Test Set! The model didn't learn patterns; it just memorized the test answers hidden inside the Zipcode averages.
 2. **The Rare Category Problem:**
-   - Explain that if a Zipcode only appears exactly *once* in the training data, its Target Encoded value will perfectly equal its exact target answer. The AI will instantly realize this and overfit aggressively to that single number.
+   - Explain that if a Zipcode only appears exactly *once* in the training data, its Target Encoded value will perfectly equal its exact target answer. The <abbr title="Artificial Intelligence">AI</abbr> will instantly realize this and overfit aggressively to that single number.
 3. **The Fix (Smoothing & Cross-Validation):**
    - Conclude that Target Encoding must ALWAYS be fit strictly on the Training set. 
-   - To fix the rare category problem, you must apply **Smoothing**. This mathematical trick blends the specific Zipcode average with the *Global Average* of the entire dataset. If a Zipcode only has 1 row, the smoothing equation forces its value to be closer to the Global Average, mathematically preventing the AI from memorizing it!
+   - To fix the rare category problem, you must apply **Smoothing**. This mathematical trick blends the specific Zipcode average with the *Global Average* of the entire dataset. If a Zipcode only has 1 row, the smoothing equation forces its value to be closer to the Global Average, mathematically preventing the <abbr title="Artificial Intelligence">AI</abbr> from memorizing it!
 
 ---
-**Task for the end of the day:** Commit your code to Git. You now know how to build unbreakable, production-ready ML Pipelines.
+**Task for the end of the day:** Commit your code to Git. You now know how to build unbreakable, production-ready <abbr title="Machine Learning">ML</abbr> Pipelines.
 
 Tomorrow, in **Day 30**, we reach the grand finale of Phase 4. You will combine everything you have learned (PCA, XGBoost, Pipelines) into a single, massive **End-to-End Machine Learning Project!**

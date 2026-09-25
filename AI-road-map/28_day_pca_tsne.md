@@ -2,7 +2,7 @@
 
 Welcome to Day 28. Today, we address one of the most terrifying mathematical paradoxes in all of Data Science: **The Curse of Dimensionality**.
 
-You might think that giving an AI more data (more columns/features) makes it smarter. But the mathematics of the universe dictate the exact opposite. Today, you will learn why adding too much data physically destroys Machine Learning algorithms, and you will learn the brilliant mathematical techniques used to squash that data back down so the AI can understand it.
+You might think that giving an <abbr title="Artificial Intelligence">AI</abbr> more data (more columns/features) makes it smarter. But the mathematics of the universe dictate the exact opposite. Today, you will learn why adding too much data physically destroys Machine Learning algorithms, and you will learn the brilliant mathematical techniques used to squash that data back down so the <abbr title="Artificial Intelligence">AI</abbr> can understand it.
 
 ---
 
@@ -15,7 +15,7 @@ Why do algorithms like K-Means crash if your dataset has 1,000 columns (like an 
 - **2 Dimensions:** You drop the coin on a $10 \text{m} \times 10 \text{m}$ football field. Finding it is harder. The search space is now $100$ square meters.
 - **3 Dimensions:** You drop the coin in a $10 \times 10 \times 10$ cube in outer space. The search space is $1,000$ cubic meters.
 - **1,000 Dimensions:** The search space explodes to $10^{1000}$. The space becomes so unfathomably massive that every single data point in your dataset becomes billions of mathematical "miles" apart from every other data point. 
-Because every point is infinitely far away, distance-based algorithms (like K-Means or KNN) completely break down. The AI becomes paralyzed.
+Because every point is infinitely far away, distance-based algorithms (like K-Means or KNN) completely break down. The <abbr title="Artificial Intelligence">AI</abbr> becomes paralyzed.
 
 ### 2. PCA: Principal Component Analysis (The Shadow Analogy)
 To fix this curse, we must "squash" 1,000 dimensions down to 2 or 3 dimensions. We do this using **PCA**.
@@ -123,8 +123,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Eigenvector Proof:** Look at the `pca_raw_math` function. You just performed advanced Dimensionality Reduction without importing any ML libraries. You used raw Linear Algebra (`np.cov` and `np.linalg.eig`).
-2. **The Compression Power:** In `production_pca`, the AI analyzed 64-pixel images. It realized that the pixels in the dark corners of the image never change. It deleted those pixels and mathematically squashed the images down to just ~29 dimensions, successfully compressing the file size in half while retaining 95% of the visual data!
+1. **The Eigenvector Proof:** Look at the `pca_raw_math` function. You just performed advanced Dimensionality Reduction without importing any <abbr title="Machine Learning">ML</abbr> libraries. You used raw Linear Algebra (`np.cov` and `np.linalg.eig`).
+2. **The Compression Power:** In `production_pca`, the <abbr title="Artificial Intelligence">AI</abbr> analyzed 64-pixel images. It realized that the pixels in the dark corners of the image never change. It deleted those pixels and mathematically squashed the images down to just ~29 dimensions, successfully compressing the file size in half while retaining 95% of the visual data!
 
 ---
 
@@ -161,4 +161,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. You have successfully conquered the Curse of Dimensionality!
 
-Tomorrow, in **Day 29**, we will learn the final secret of Classical Machine Learning: **Feature Engineering & Data Imputation!** How do you handle missing data, corrupted numbers, and text without the AI crashing?
+Tomorrow, in **Day 29**, we will learn the final secret of Classical Machine Learning: **Feature Engineering & Data Imputation!** How do you handle missing data, corrupted numbers, and text without the <abbr title="Artificial Intelligence">AI</abbr> crashing?

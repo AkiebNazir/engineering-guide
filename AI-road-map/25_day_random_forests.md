@@ -141,11 +141,11 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Parallelization & Latency:** 
-   - Explain that XGBoost is a *sequential* algorithm (Tree 2 cannot be built until Tree 1 is finished). Random Forest is fully *parallelizable* (You can build all 100 trees at the exact same time on 100 different CPU cores). If the system requires massive, low-latency retraining every 5 minutes, Random Forest wins.
+   - Explain that XGBoost is a *sequential* algorithm (Tree 2 cannot be built until Tree 1 is finished). Random Forest is fully *parallelizable* (You can build all 100 trees at the exact same time on 100 different <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cores). If the system requires massive, low-latency retraining every 5 minutes, Random Forest wins.
 2. **Hyperparameter Fragility:**
    - Note that XGBoost is incredibly fragile. If you don't tune the Learning Rate and Depth perfectly, it will overfit and explode. Random Forest is the ultimate "Out-of-the-Box" algorithm. It requires almost zero tuning to achieve 95% of its maximum potential.
 3. **Maintenance & Data Drift:**
-   - Conclude that in a corporate environment where Data Drift occurs (the real-world data slowly changes over the years), a finely-tuned XGBoost model will catastrophically fail, requiring a Senior ML Engineer to constantly babysit and retune it. A Random Forest's inherent chaos and high-variance bagging make it incredibly robust to data drift, making it the perfect low-maintenance model for a lean startup or banking system.
+   - Conclude that in a corporate environment where Data Drift occurs (the real-world data slowly changes over the years), a finely-tuned XGBoost model will catastrophically fail, requiring a Senior <abbr title="Machine Learning">ML</abbr> Engineer to constantly babysit and retune it. A Random Forest's inherent chaos and high-variance bagging make it incredibly robust to data drift, making it the perfect low-maintenance model for a lean startup or banking system.
 
 ---
 **Task for the end of the day:** Commit your code to Git. You have built one of the most trusted algorithms in the history of finance and medicine.

@@ -7,9 +7,9 @@
 > pointing at them, and two nodes can be connected by more than one path, or
 > by a path that loops back on itself. That single change is why every graph
 > traversal in this folder starts with a `visited` set that trees never
-> needed: without it, DFS/BFS on a cyclic graph does not terminate, it spins
-> forever re-walking the same cycle. Everything else in this guide — DFS,
-> BFS, topological sort, cycle detection, connected components, the
+> needed: without it, <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> on a cyclic graph does not terminate, it spins
+> forever re-walking the same cycle. Everything else in this guide — <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>,
+> <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, topological sort, cycle detection, connected components, the
 > grid-as-graph trick, bipartite checking — is a variation on "walk the graph
 > without walking the same node twice, and use what order you visited nodes
 > in to answer a question."
@@ -76,15 +76,22 @@ Mechanically these are the *same two traversals* as topic 07 (queue/deque
 BFS) and topic 10 (tree DFS/BFS) — a stack (or recursion) for DFS, a
 `collections.deque` for BFS. What's different:
 
-```mermaid
+```arch
 %% caption: From A: BFS visits by distance (A, B, C, D, E, F) using a queue. DFS dives first (A, B, D, F, E, C) using a stack or recursion. Both need a visited set, or the cycle A-B-D-F-E-C loops forever.
-flowchart LR
-  A(("A")) --- B(("B"))
-  A --- C(("C"))
-  B --- D(("D"))
-  C --- E(("E"))
-  D --- F(("F"))
-  E --- F
+route straight
+grid 90x80
+node A "A" at 0,1 shape=circle color=blue
+node B "B" at 1,0 shape=circle color=blue
+node C "C" at 1,2 shape=circle color=blue
+node D "D" at 2,0 shape=circle color=blue
+node E "E" at 2,2 shape=circle color=blue
+node F "F" at 3,1 shape=circle color=blue
+A -- B
+A -- C
+B -- D
+C -- E
+D -- F
+E -- F
 ```
 
 
@@ -154,7 +161,7 @@ DFS (stack):  push 0
   pop 3, visited={0,1,2,3}
   stack empty -> done.  Without `visited`: 0->1->0->1->0->... forever.
 
-BFS (queue):  queue=[0], visited={0}
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (queue):  queue=[0], visited={0}
   pop 0 -> order=[0], neighbors 1,2 unvisited -> visited={0,1,2}, queue=[1,2]
   pop 1 -> order=[0,1], neighbors 0(seen),2(seen),3 -> visited={0,1,2,3}, queue=[2,3]
   pop 2 -> order=[0,1,2], neighbors 0(seen),1(seen)
@@ -253,16 +260,16 @@ A directed graph can revisit an already-fully-explored node legitimately
 again via C; that's not a cycle, D just has two predecessors). The fix is
 **three colors** instead of a boolean:
 
-```mermaid
+```arch
 %% caption: An edge into a GRAY node is a back edge, which means a directed cycle. An edge into a BLACK node is harmless, and one visited set cannot tell the two apart.
-flowchart LR
-  W["WHITE<br/>unvisited"] -->|"DFS enters"| G["GRAY<br/>on the current path"]:::hot
-  G -->|"all neighbours finished"| B["BLACK<br/>fully done"]:::ok
-  G -.->|"edge to a GRAY node"| C["cycle found"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 280x100
+node W "WHITE" at 0,0 color=slate sub="unvisited"
+node G "GRAY" at 1,0 color=amber sub="on the current path"
+node B "BLACK" at 2,0 color=green sub="fully done"
+node C "cycle found" at 1,1 color=red
+W -> G : "DFS enters"
+G -> B : "all neighbours finished"
+G ..> C : "edge to a GRAY node"
 ```
 
 
@@ -331,24 +338,28 @@ a graph with a cycle, because a cycle has no valid linear order.
 **Idea:** a node with no unprocessed prerequisites (in-degree 0) can safely
 go first. Peel those off, decrement their neighbors' in-degrees, repeat.
 
-```mermaid
+```arch
 %% caption: Kahn's algorithm: repeatedly take a node with no remaining prerequisites. If some nodes never reach indegree 0, they are on a cycle.
-flowchart TD
-  A["compute the indegree of every node"] --> B["queue = all nodes with indegree 0"]
-  B --> C{"queue empty?"}
-  C -->|no| D["pop u, append u to the order"]
-  D --> E["for each edge u to v:<br/>indegree[v] -= 1"]
-  E --> F{"indegree[v] is 0 ?"}
-  F -->|yes| G["push v"]
-  F -->|no| C
-  G --> C
-  C -->|yes| H{"len(order) == n ?"}
-  H -->|yes| I["valid topological order"]:::ok
-  H -->|no| J["cycle: some nodes never reached 0"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node A "compute the indegree of every node" at 0,0 w=230
+node B "queue = all nodes with indegree 0" at 0,1 w=230
+node C "queue empty?" at 0,2 shape=diamond color=amber
+node D "pop u, append u to the order" at 0,3 w=230
+node E "for each edge u to v:\nindegree[v] -= 1" at 0,4 w=230
+node F "indegree[v] is 0 ?" at 0,5 shape=diamond color=amber
+node G "push v" at 0,6
+node H "len(order) == n ?" at 1,2 shape=diamond color=amber
+node I "valid topological order" at 1,3 color=green
+node J "cycle: some nodes never reached 0" at 2,2 color=red w=180
+A -> B -> C
+C -> D : "no"
+D -> E -> F
+F -> G : "yes"
+F:L -> C:L : "no"
+G:L -> C:L
+C -> H : "yes"
+H -> I : "yes"
+H -> J : "no"
 ```
 
 
@@ -688,20 +699,36 @@ The eighteen problems teach traversal, components, cycle detection, topological 
 These are the variants interviews ask next. Every snippet was run against LeetCode's own examples, and every count below is
 measured.
 
-```mermaid
+```arch
 %% caption: Choosing the graph tool. The question being asked — reach, distance, order, cycle, or partition — picks the traversal.
-flowchart TD
-  Q(["A graph problem"]) --> A{"What is asked?"}
-  A -->|"is X reachable / how many groups"| B["DFS or BFS + visited<br/>(components: outer loop over all nodes)"]:::ok
-  A -->|"fewest steps, unweighted"| C["BFS (multi-source if several starts,<br/>bidirectional if start AND goal known)"]:::ok
-  A -->|"a valid ORDER of dependencies"| D["topological sort: Kahn or DFS postorder;<br/>fewer than n nodes out = a cycle"]:::ok
-  A -->|"is there a cycle"| E["undirected: parent tracking / union-find<br/>directed: three colours"]:::ok
-  A -->|"two groups, no edge inside a group"| F["2-colouring (bipartite)"]:::ok
-  A -->|"weights on edges"| G["not this topic: Dijkstra, Bellman-Ford (topic 15)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x80
+node Q "A graph problem" at 0,1 shape=pill
+node A "What is asked?" at 0,2 shape=diamond color=amber
+node qb "is X reachable / how many groups" at 1,0 shape=pill w=190
+node qc "fewest steps, unweighted" at 1,1 shape=pill w=190
+node qd "a valid ORDER of dependencies" at 1,2 shape=pill w=190
+node qe "is there a cycle" at 1,3 shape=pill w=190
+node qf "two groups, no edge inside a group" at 1,4 shape=pill w=190
+node qg "weights on edges" at 1,5 shape=pill w=190
+node B "DFS or BFS + visited" at 2,0 color=green w=260 sub="components: outer loop over all nodes"
+node C "BFS" at 2,1 color=green w=260 sub="multi-source if several starts, bidirectional if start AND goal known"
+node D "topological sort: Kahn or DFS postorder" at 2,2 color=green w=260 sub="fewer than n nodes out = a cycle"
+node E "undirected: parent tracking / union-find" at 2,3 color=green w=260 sub="directed: three colours"
+node F "2-colouring (bipartite)" at 2,4 color=green w=260
+node G "not this topic" at 2,5 color=amber w=260 sub="Dijkstra, Bellman-Ford (topic 15)"
+Q -> A
+A:R -> qb:L
+A:R -> qc:L
+A:R -> qd:L
+A:R -> qe:L
+A:R -> qf:L
+A:R -> qg:L
+qb -> B
+qc -> C
+qd -> D
+qe -> E
+qf -> F
+qg -> G
 ```
 
 ### 12.1 Bidirectional BFS: search from both ends, always expand the smaller side
@@ -834,23 +861,23 @@ Eighteen problems, seven moves (flood fill · components · clone/copy · multi-
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Flood Fill](PyDSA/14_graphs/001_flood_fill_solution.py) <br>LC 733 · Easy | Flood fill | DFS/BFS from one cell, recolouring the connected region of the original colour. **Trap:** re-reading `image[sr][sc]` inside the helper instead of capturing `old_color` once; missing the `color == old_color` guard (infinite recursion). |
+| [001 · Flood Fill](PyDSA/14_graphs/001_flood_fill_solution.py) <br>LC 733 · Easy | Flood fill | <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from one cell, recolouring the connected region of the original colour. **Trap:** re-reading `image[sr][sc]` inside the helper instead of capturing `old_color` once; missing the `color == old_color` guard (infinite recursion). |
 | [002 · Number of Islands](PyDSA/14_graphs/002_number_of_islands_solution.py) <br>LC 200 · Medium | Count components on a grid | One traversal per unvisited land cell counts the islands; mark visited on **enqueue**. **Trap:** comparing to the integer `1` when the grid holds the string `"1"`; marking on dequeue (the same cell is queued many times). |
 | [003 · Max Area of Island](PyDSA/14_graphs/003_max_area_of_island_solution.py) <br>LC 695 · Medium | Flood that returns a size | The traversal returns the number of cells; the answer is the max over components. **Trap:** returning a boolean (`or` short-circuits the sum); forgetting to mark the current cell before recursing. |
 | [004 · Clone Graph](PyDSA/14_graphs/004_clone_graph_solution.py) <br>LC 133 · Medium | Clone with a `dict` | A map *original → clone* (a set cannot say which clone to reuse); register the clone **before** recursing. **Trap:** a set of visited originals; registering after the recursive call (a cycle recurses forever). |
-| [005 · Walls and Gates](PyDSA/14_graphs/005_walls_and_gates_solution.py) <br>LC 286 · Medium | Multi-source BFS from the gates | Seed one queue with *every* gate; the first time a cell is reached is its nearest gate. O(R·C) total. **Trap:** one BFS per gate then a min per cell (O(gates · R · C)). |
-| [006 · Rotting Oranges](PyDSA/14_graphs/006_rotting_oranges_solution.py) <br>LC 994 · Medium | Level-by-level BFS | Count minutes per **level**, not per cell: freeze `len(q)` before draining. **Trap:** incrementing `minutes` on every dequeue. |
+| [005 · Walls and Gates](PyDSA/14_graphs/005_walls_and_gates_solution.py) <br>LC 286 · Medium | Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from the gates | Seed one queue with *every* gate; the first time a cell is reached is its nearest gate. O(R·C) total. **Trap:** one <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per gate then a min per cell (O(gates · R · C)). |
+| [006 · Rotting Oranges](PyDSA/14_graphs/006_rotting_oranges_solution.py) <br>LC 994 · Medium | Level-by-level <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | Count minutes per **level**, not per cell: freeze `len(q)` before draining. **Trap:** incrementing `minutes` on every dequeue. |
 | [007 · Pacific Atlantic Water Flow](PyDSA/14_graphs/007_pacific_atlantic_water_flow_solution.py) <br>LC 417 · Medium | Reverse flood fill | Flood *uphill* from each ocean's border cells, then intersect. **Trap:** using the forward rule `<=` in the reverse flood (computes the wrong question). |
 | [008 · Surrounded Regions](PyDSA/14_graphs/008_surrounded_regions_solution.py) <br>LC 130 · Medium | Flood from the border | Mark everything reachable from a border `O`; flip the rest. **Trap:** flipping interior regions eagerly and trying to undo when one touches the border. |
-| [009 · Number of Connected Components in an Undirected Graph](PyDSA/14_graphs/009_number_of_connected_components_in_an_undirected_graph_solution.py) <br>LC 323 · Medium | Components by DFS | An outer loop over all nodes with **one** `visited` set; count the starts. **Trap:** a one-directional adjacency list for an undirected graph; resetting `visited` per node. |
+| [009 · Number of Connected Components in an Undirected Graph](PyDSA/14_graphs/009_number_of_connected_components_in_an_undirected_graph_solution.py) <br>LC 323 · Medium | Components by <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> | An outer loop over all nodes with **one** `visited` set; count the starts. **Trap:** a one-directional adjacency list for an undirected graph; resetting `visited` per node. |
 | [010 · Graph Valid Tree](PyDSA/14_graphs/010_graph_valid_tree_solution.py) <br>LC 261 · Medium | A tree is connected *and* has n−1 edges | Both conditions are required. **Trap:** checking only the edge count (two pieces can have `n − 1` edges); checking only connectivity (one cycle can hide in a connected graph). |
-| [011 · Course Schedule](PyDSA/14_graphs/011_course_schedule_solution.py) <br>LC 207 · Medium | Directed cycle detection | A cycle iff DFS meets a **grey** (on-stack) node; a single `visited` set gives false positives. **Trap:** one `visited` set; reversing the edge direction (`[a, b]` means `b → a`). |
+| [011 · Course Schedule](PyDSA/14_graphs/011_course_schedule_solution.py) <br>LC 207 · Medium | Directed cycle detection | A cycle iff <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> meets a **grey** (on-stack) node; a single `visited` set gives false positives. **Trap:** one `visited` set; reversing the edge direction (`[a, b]` means `b → a`). |
 | [012 · Course Schedule II](PyDSA/14_graphs/012_course_schedule_ii_solution.py) <br>LC 210 · Medium | Topological order (Kahn) | Repeatedly remove in-degree-0 nodes; if fewer than `n` come out, a cycle left some stuck. **Trap:** the single `visited` set again; returning a partial order without checking `len(order) == n`. |
 | [013 · Redundant Connection](PyDSA/14_graphs/013_redundant_connection_solution.py) <br>LC 684 · Medium | Redundant connection | The extra edge is the first whose endpoints are *already connected* — a reachability question. **Trap:** asking "is `(u, v)` already an edge?" instead of "is `v` reachable from `u`?" |
-| [014 · 01 Matrix](PyDSA/14_graphs/014_01_matrix_solution.py) <br>LC 542 · Medium | Multi-source BFS from the zeros | Seed the queue with **all** zeros at once. **Trap:** one BFS per `1`-cell; marking visited on dequeue. |
-| [015 · Shortest Path in Binary Matrix](PyDSA/14_graphs/015_shortest_path_in_binary_matrix_solution.py) <br>LC 1091 · Medium | BFS with 8 directions | The same BFS with eight neighbours and an early `-1` when either endpoint is blocked. **Trap:** copy-pasting the 4-direction list; skipping the endpoint checks. |
+| [014 · 01 Matrix](PyDSA/14_graphs/014_01_matrix_solution.py) <br>LC 542 · Medium | Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from the zeros | Seed the queue with **all** zeros at once. **Trap:** one <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per `1`-cell; marking visited on dequeue. |
+| [015 · Shortest Path in Binary Matrix](PyDSA/14_graphs/015_shortest_path_in_binary_matrix_solution.py) <br>LC 1091 · Medium | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> with 8 directions | The same <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> with eight neighbours and an early `-1` when either endpoint is blocked. **Trap:** copy-pasting the 4-direction list; skipping the endpoint checks. |
 | [016 · Word Ladder](PyDSA/14_graphs/016_word_ladder_solution.py) <br>LC 127 · Hard | Word ladder | Group words by wildcard pattern (`h*t`) so neighbours cost O(L) instead of comparing every pair. **Trap:** an O(n²·L) pairwise adjacency build; forgetting to mark or remove a word once visited. |
-| [017 · Is Graph Bipartite?](PyDSA/14_graphs/017_is_graph_bipartite_solution.py) <br>LC 785 · Medium | Bipartite = 2-colourable | BFS/DFS assigning alternating colours; a same-colour neighbour is an odd cycle. **Trap:** starting only from node 0 (a triangle in another component goes unchecked); colouring on dequeue. |
+| [017 · Is Graph Bipartite?](PyDSA/14_graphs/017_is_graph_bipartite_solution.py) <br>LC 785 · Medium | Bipartite = 2-colourable | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> assigning alternating colours; a same-colour neighbour is an odd cycle. **Trap:** starting only from node 0 (a triangle in another component goes unchecked); colouring on dequeue. |
 | [018 · Open the Lock](PyDSA/14_graphs/018_open_the_lock_solution.py) <br>LC 752 · Medium | An implicit graph | The graph is never built: `neighbors(state)` generates moves (4 digits × 2 directions). **Trap:** forgetting to check that `"0000"` is not a deadend; marking visited on dequeue. |
 
 ---
@@ -860,34 +887,34 @@ Eighteen problems, seven moves (flood fill · components · clone/copy · multi-
 
 - [ ] I can state, in one sentence, why a graph traversal needs a `visited`
       set when the equivalent tree traversal (topic 10) did not.
-- [ ] I can write DFS (recursive and iterative-with-stack) and BFS
+- [ ] I can write <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (recursive and iterative-with-stack) and <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>
       (`collections.deque`) on an adjacency-list graph from memory, marking
-      `visited` at the correct point for each (§4.2's note on BFS: enqueue,
+      `visited` at the correct point for each (§4.2's note on <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: enqueue,
       not dequeue).
-- [ ] I know when to reach for BFS (shortest path, unweighted) vs DFS
+- [ ] I know when to reach for <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (shortest path, unweighted) vs <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>
       (reachability, components, cycle detection, topological order) — Part
       2's closing paragraph.
 - [ ] I can explain why undirected and directed cycle detection need
       different techniques (parent-skip vs 3-color), and why the undirected
       technique gives false positives if applied to a directed graph (Part
       4).
-- [ ] I can write Kahn's BFS-based topological sort from scratch, including
+- [ ] I can write Kahn's <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>-based topological sort from scratch, including
       why `len(order) < n` is a free cycle check (§5.1).
 - [ ] I can spot a 2D grid as a graph problem and reuse the bounds-check +
       DIRECTIONS helper without re-deriving it (Part 6).
 - [ ] I can state the tradeoff between mutating a grid in place as a
       visited-marker vs using a separate `visited` set, and give a concrete
       example where mutation breaks correctness (§6.1, Pacific Atlantic).
-- [ ] I understand multi-source BFS (seed the queue with every source
+- [ ] I understand multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (seed the queue with every source
       before the first pop) and can name two problems in this folder that
       need it (§6.3).
 - [ ] I can explain 2-coloring / bipartite checking and state the odd-cycle
       equivalence (Part 7).
 - [ ] I know that union-find belongs to topic 15, not here, and can still
-      solve 013 with plain DFS/BFS cycle detection in the meantime.
+      solve 013 with plain <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> cycle detection in the meantime.
 </content>
-- [ ] Explain bidirectional BFS, why the smaller frontier is expanded, and when it does *not* help <!--ca-->
-- [ ] Classify DFS edges (tree, back, forward, cross) and say which one means a cycle <!--ca-->
+- [ ] Explain bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, why the smaller frontier is expanded, and when it does *not* help <!--ca-->
+- [ ] Classify <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> edges (tree, back, forward, cross) and say which one means a cycle <!--ca-->
 - [ ] Use relative coordinates as a shape key (Distinct Islands) and a set of labels (Making a Large Island) <!--ca-->
 - [ ] Solve "eventual safe states" by reversing the graph and running Kahn on out-degrees <!--ca-->
 - [ ] Say what changes when the edges gain weights (0/1, non-negative, negative) <!--ca-->
@@ -900,25 +927,25 @@ Added 16 Sep 2026 from the Google prep plan.
 
 ### 017 Is Graph Bipartite? — Part 7 of this guide, now with a problem file
 
-BFS 2-coloring from EVERY uncolored node (the graph may be disconnected). A conflict edge plus the two
-BFS-tree paths to their common ancestor is an odd cycle, so "bipartite" and "no odd cycle" are the same
-statement. The file demonstrates the classic bug (BFS only from node 0 misses a triangle in another
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> 2-coloring from EVERY uncolored node (the graph may be disconnected). A conflict edge plus the two
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>-tree paths to their common ancestor is an odd cycle, so "bipartite" and "no odd cycle" are the same
+statement. The file demonstrates the classic bug (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> only from node 0 misses a triangle in another
 component) and a union-find alternative.
 
 ### 018 Open the Lock — the implicit graph
 
 Nothing in the statement says "graph", which is why Google asks it. Nodes are the 10^4 codes, edges are
-single-wheel turns, deadends are deleted nodes, and "fewest moves" means BFS. Generate neighbors on
+single-wheel turns, deadends are deleted nodes, and "fewest moves" means <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>. Generate neighbors on
 demand; never build the graph.
 
 Two measured lessons from the file:
 
 - **Mark visited on ENQUEUE.** Marking on dequeue gives the same answer with ~4x the queue pushes
   (40,000 vs 9,999 for target 5555).
-- **Bidirectional BFS** expanded 47 codes instead of 822 for target 0202, but only helped a little for
+- **Bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>** expanded 47 codes instead of 822 for target 0202, but only helped a little for
   target 5555 (7,486 vs 9,995), where the search nearly fills the 10^4-state space either way.
 
 ### Checklist additions
 
 - [ ] I can model "turn a wheel / change a letter / move a tile" puzzles as implicit graphs in under 5 minutes.
-- [ ] I can explain why mark-on-enqueue matters and when bidirectional BFS pays off.
+- [ ] I can explain why mark-on-enqueue matters and when bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> pays off.

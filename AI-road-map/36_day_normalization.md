@@ -15,19 +15,19 @@ The goal is to force the data flowing out of Layer 1 to always have a Mean of $0
 **The Equation:** $\hat{x} = \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} \cdot \gamma + \beta$
 - Subtract the Mean ($\mu$), divide by the Variance ($\sigma^2$).
 - The $\epsilon$ is a tiny number (e.g., $1e-5$) to prevent mathematically dividing by zero.
-- **The Magic Parameters:** The AI is given two special, learnable numbers: $\gamma$ (Gamma) and $\beta$ (Beta). If the AI decides that Normalization is actually hurting the layer, it can use $\gamma$ and $\beta$ to mathematically undo the normalization and return the data to its original state!
+- **The Magic Parameters:** The <abbr title="Artificial Intelligence">AI</abbr> is given two special, learnable numbers: $\gamma$ (Gamma) and $\beta$ (Beta). If the <abbr title="Artificial Intelligence">AI</abbr> decides that Normalization is actually hurting the layer, it can use $\gamma$ and $\beta$ to mathematically undo the normalization and return the data to its original state!
 
 ### 2. BatchNorm (Used in Vision / CNNs)
 Introduced in 2015, BatchNorm calculates the Mean and Variance across the entire **Batch** of data (e.g., across 32 images at the same time). 
-- **The Flaw:** If your Batch Size is too small (e.g., 2 images), the Mean and Variance are completely inaccurate, and the math breaks. Furthermore, BatchNorm fails completely on Text (NLP). Sentence A has 5 words, Sentence B has 100 words. You cannot reliably calculate a mean across sequences of different lengths!
+- **The Flaw:** If your Batch Size is too small (e.g., 2 images), the Mean and Variance are completely inaccurate, and the math breaks. Furthermore, BatchNorm fails completely on Text (<abbr title="Natural Language Processing">NLP</abbr>). Sentence A has 5 words, Sentence B has 100 words. You cannot reliably calculate a mean across sequences of different lengths!
 
 ### 3. LayerNorm (Used in Transformers / ChatGPT)
-To fix the NLP problem, LayerNorm was invented. It completely ignores the Batch. 
+To fix the <abbr title="Natural Language Processing">NLP</abbr> problem, LayerNorm was invented. It completely ignores the Batch. 
 Instead, it calculates the Mean and Variance across the **Features** (the embedding dimensions) of a *single* word/token, independently of everything else.
 Because it ignores the Batch Size, LayerNorm works perfectly on sentences of any length. This is exactly why ChatGPT and all Transformers use LayerNorm.
 
 ### 4. RMSNorm (Used in LLaMA)
-Calculating the Mean ($\mu$) millions of times a second takes a lot of CPU power.
+Calculating the Mean ($\mu$) millions of times a second takes a lot of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> power.
 The creators of RMSNorm realized something brilliant: *We don't actually need the Mean!*
 RMSNorm deletes the Mean calculation entirely. It just calculates the Root Mean Square (RMS) of the numbers and divides by it. 
 $\hat{x} = \frac{x}{\text{RMS}(x)} \cdot \gamma$
@@ -124,14 +124,14 @@ Spend 15 minutes drafting a verbal answer to this question.
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
-1. **The BatchNorm Failure in NLP:** 
+1. **The BatchNorm Failure in <abbr title="Natural Language Processing">NLP</abbr>:** 
    - State that BatchNorm requires calculating the mean across the Batch Dimension. 
-   - In NLP, sentences in a batch have varying lengths (padded with zeros). Calculating a batch-wide mean across padded zero-tokens mathematically corrupts the statistics.
+   - In <abbr title="Natural Language Processing">NLP</abbr>, sentences in a batch have varying lengths (padded with zeros). Calculating a batch-wide mean across padded zero-tokens mathematically corrupts the statistics.
 2. **The LayerNorm Solution:**
    - Explain that LayerNorm calculates the mean and variance across the *Feature/Embedding Dimension* of a single token. It is completely independent of other sentences in the batch and completely independent of sentence length.
 3. **The RMSNorm Optimization:**
    - Conclude that RMSNorm hypothesizes that the "Mean-Centering" step of LayerNorm isn't actually what provides the stability; it's the "Variance Scaling" that matters. 
-   - By dropping the Mean calculation, RMSNorm saves massive memory bandwidth and compute cycles, speeding up LLM training and inference by ~10% without sacrificing any accuracy.
+   - By dropping the Mean calculation, RMSNorm saves massive memory bandwidth and compute cycles, speeding up <abbr title="Large Language Model">LLM</abbr> training and inference by ~10% without sacrificing any accuracy.
 
 ---
 **Task for the end of the day:** Commit your code to Git. You have successfully stabilized the neural network architecture.

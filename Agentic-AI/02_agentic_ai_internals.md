@@ -8,28 +8,30 @@
 
 ## 0. The Picture First — read this before the internals
 
-> 💡 An LLM on its own is a **brilliant expert locked in a room, with no hands and no memory**.
+> 💡 An <abbr title="Large Language Model">LLM</abbr> on its own is a **brilliant expert locked in a room, with no hands and no memory**.
 > It can only read a note slid under the door and write a note back. An **agent** is what you
 > get when an assistant stands outside that door: reads the note, does what it asks (search the
-> web, run code, call an API), slides the result back in — and repeats until the expert writes
+> web, run code, call an <abbr title="Application Programming Interface">API</abbr>), slides the result back in — and repeats until the expert writes
 > "done."
 
 ### 0.1 Chatbot vs. agent
 
-```mermaid
+```arch
 %% caption: A chatbot answers in one shot. An agent loops — think, act, look at the result — until it is done.
-flowchart LR
-    subgraph chat["Plain chatbot · 1 LLM call"]
-        direction TB
-        q1["User question"] --> l1["LLM"] --> a1["Answer<br/>from training memory only<br/>(may be stale or guessed)"]
-    end
-    subgraph agent["Agent · many LLM calls in a loop"]
-        direction TB
-        q2["User question"] --> l2["LLM decides<br/>the next step"]
-        l2 -->|"needs data"| t2["Harness runs a tool<br/>search · calculator · API"]
-        t2 -->|"result, as text"| l2
-        l2 -->|"has enough"| a2["Final answer<br/>grounded in real tool results"]
-    end
+group chat "Plain chatbot · 1 LLM call" color=slate
+node q1 "User question" at 0,0 in chat icon=user
+node l1 "LLM" at 0,1 in chat icon=llm
+node a1 "Answer" at 0,2 in chat icon=doc sub="from training memory only (may be stale or guessed)"
+group agent "Agent · many LLM calls in a loop" color=teal
+node q2 "User question" at 1,0 in agent icon=user
+node l2 "LLM decides" at 1,1 in agent icon=llm sub="the next step"
+node t2 "Harness runs a tool" at 2,1 in agent icon=tool sub="search · calculator · API"
+node a2 "Final answer" at 1,2 in agent icon=check sub="grounded in real tool results"
+q1 -> l1 -> a1
+q2 -> l2
+l2 -> t2 : "needs data"
+t2:T -> l2:R : "result, as text"
+l2 -> a2 : "has enough"
 ```
 
 ### 0.2 The running example for this whole module
@@ -43,22 +45,26 @@ unreliable at exact arithmetic. So a good agent does this:
 
 | Step | The model writes | The harness does | Result fed back |
 |---|---|---|---|
-| 1 | "I need live weather." → `get_weather({"city": "Paris"})` | calls the weather API | `18°C` *(example value)* |
+| 1 | "I need live weather." → `get_weather({"city": "Paris"})` | calls the weather <abbr title="Application Programming Interface">API</abbr> | `18°C` *(example value)* |
 | 2 | "Convert to °F." → `calculator({"expression": "18 * 9 / 5 + 32"})` | evaluates it | `64.4` |
 | 3 | `Final Answer: It's 18°C (64.4°F) in Paris.` | sees "Final Answer" → stops | — |
 
-Three LLM calls, two tool calls, one answer. Every section below zooms into one part of this table.
+Three <abbr title="Large Language Model">LLM</abbr> calls, two tool calls, one answer. Every section below zooms into one part of this table.
+
+<div class="lab" data-viz="flow-agent-loop"></div>
 
 ### 0.3 The four parts every agent has
 
-```mermaid
+```arch
 %% caption: Every agent framework (LangGraph, CrewAI, the Claude Agent SDK, …) is a variation of these four boxes.
-flowchart LR
-    LOOP["① Loop<br/>call the LLM<br/>again and again"] --> PARSE["② Parser<br/>text → tool name<br/>+ arguments"]
-    PARSE --> DISPATCH["③ Dispatcher<br/>run the tool,<br/>result → text"]
-    DISPATCH --> STOP{"④ Stop?<br/>final answer ·<br/>step limit"}
-    STOP -->|"no — append to transcript"| LOOP
-    STOP -->|"yes"| DONE["Reply to the user"]
+node loop "① Loop" at 0,0 shape=card icon=sync sub="call the LLM again and again"
+node parse "② Parser" at 1,0 shape=card icon=code sub="text → tool name + arguments"
+node disp "③ Dispatcher" at 2,0 shape=card icon=tool sub="run the tool, result → text"
+node stop "④ Stop? final answer · step limit" at 2,1 shape=diamond color=amber
+node done "Reply to the user" at 2,2 shape=pill color=green
+loop -> parse -> disp -> stop
+stop:L -> loop:B : "no — append to transcript"
+stop -> done : "yes"
 ```
 
 | Part | Restaurant analogy | In the reference code (§5) |
@@ -73,7 +79,7 @@ flowchart LR
 ## 1. Core Intuition & Mechanical Problem Statement
 
 An "agent" is not a new model capability — it is a **control loop wrapped around a
-stateless text-completion function**. The LLM itself has no memory, no ability to
+stateless text-completion function**. The <abbr title="Large Language Model">LLM</abbr> itself has no memory, no ability to
 execute code, and no concept of "steps." Everything that makes a system agentic is
 externally engineered:
 
@@ -100,25 +106,15 @@ engineering is entirely in steps 2–4.
 ReAct (Reason + Act) interleaves free-text reasoning with structured tool invocation.
 As a finite state machine:
 
-```
-        ┌────────────┐
-   ┌───►│  THINK      │  generate free-text "Thought: ..."
-   │    └─────┬───────┘
-   │          ▼
-   │    ┌────────────┐
-   │    │  ACT        │  generate "Action: <tool>\nAction Input: {json}"
-   │    └─────┬───────┘
-   │          ▼
-   │    ┌────────────┐
-   │    │  OBSERVE    │  execute tool, append result as "Observation: ..."
-   │    └─────┬───────┘
-   │          │
-   └──────────┘  loop while not terminated
-              │
-              ▼ (model emits "Final Answer: ...")
-        ┌────────────┐
-        │  TERMINATE  │
-        └────────────┘
+```arch
+%% caption: ReAct as a finite state machine: think, act, observe, and repeat until the model emits a Final Answer.
+node think "THINK" at 0,0 color=blue sub="generate free-text “Thought: ...”"
+node act "ACT" at 0,1 color=blue sub="generate “Action: <tool>” + “Action Input: {json}”"
+node obs "OBSERVE" at 0,2 color=blue sub="execute tool, append result as “Observation: ...”"
+node term "TERMINATE" at 2,0 shape=pill color=green
+think -> act -> obs
+obs:L -> think:L : "loop while not terminated"
+think -> term : "model emits “Final Answer: ...”"
 ```
 
 Each iteration appends to a **growing transcript** (the scratchpad — see §2.3) that is
@@ -133,17 +129,24 @@ longer prefix, since intermediate "thoughts" genuinely change the input).
 
 #### 🖼️ The same state machine, rendered
 
-```mermaid
+```arch
 %% caption: ReAct as a state machine. The loop only exits through a Final Answer or the step limit.
-stateDiagram-v2
-    [*] --> Think
-    Think --> Act: wants a tool
-    Act --> Observe: harness runs the tool
-    Observe --> Think: result appended to transcript
-    Think --> Done: writes Final Answer
-    Think --> GaveUp: max_steps reached
-    Done --> [*]
-    GaveUp --> [*]
+grid 190x130
+node start "start" at 1,0 shape=pill color=slate
+node think "Think" at 1,1 shape=circle color=blue w=96
+node act "Act" at 1,2 shape=circle color=blue w=96
+node obs "Observe" at 0,2 shape=circle color=blue w=96
+node done "Done" at 2,2 shape=circle color=green w=96
+node gave "GaveUp" at 3,2 shape=circle color=red w=96
+node end "end" at 2.5,3 shape=pill color=slate
+start -> think
+think -> act : "wants a tool"
+act -> obs : "harness runs the tool"
+obs:T -> think:L : "result appended to transcript"
+think:R -> done:T : "writes Final Answer"
+think:R -> gave:T : "max_steps reached"
+done -> end
+gave -> end
 ```
 
 #### 🧮 Worked example — the weather agent, call by call
@@ -220,16 +223,23 @@ Going from 10 → 20 steps doubles the work you asked for but multiplies the tok
 
 ### 2.2 Plan-and-Solve vs. Reflexion — different graph topologies
 
-**Plan-and-Solve** decouples planning from execution into two distinct LLM calls:
+**Plan-and-Solve** decouples planning from execution into two distinct <abbr title="Large Language Model">LLM</abbr> calls:
 
-```
-Question ──► [PLANNER call] ──► ordered subtask list [s1, s2, ..., sn]
-                                        │
-                    ┌───────────────────┴────────────────────┐
-                    ▼                                          ▼
-            [EXECUTOR call: s1]  ──►  [EXECUTOR call: s2] ──► ... ──► sn
-                    │                          │
-              (each executor call sees the plan + results of prior subtasks)
+```arch
+%% caption: Plan-and-Solve: one planning call writes the subtask list, then executor calls work through it in order.
+grid 150x110
+node q "Question" at 1.5,0 shape=pill color=slate
+node plan "PLANNER call" at 1.5,1 icon=llm
+node list "ordered subtask list" at 1.5,2 color=blue sub="[s1, s2, ..., sn]"
+node e1 "EXECUTOR call" at 0,3 color=orange sub="s1"
+node e2 "EXECUTOR call" at 1,3 color=orange sub="s2"
+node dots "..." at 2,3 shape=text
+node en "EXECUTOR call" at 3,3 color=orange sub="sn"
+node note "each executor call sees the plan + results of prior subtasks" at 1.5,3.8 shape=text
+q -> plan -> list
+list:B -> e1:T
+list:B -> en:T
+e1 -> e2 -> dots -> en
 ```
 
 This trades ReAct's per-step improvisation for an upfront commitment to a task
@@ -240,21 +250,17 @@ built-in replanning trigger unless explicitly added).
 **Reflexion** adds an explicit **self-critique feedback loop** around a base
 ReAct/Plan-and-Solve loop:
 
-```
-┌──────────────┐     ┌──────────────┐     ┌───────────────┐
-│  ACTOR loop   │────►│  EVALUATOR    │────►│  did it        │
-│  (attempt     │     │  (score the   │     │  succeed?      │
-│   the task)   │     │   trajectory) │     └───────┬────────┘
-└──────▲────────┘     └──────────────┘              │
-       │                                     no ─────┤───── yes ──► DONE
-       │        ┌──────────────────┐                 │
-       └────────│  SELF-REFLECTION  │◄────────────────┘
-                 │  (generate a     │
-                 │  verbal critique │
-                 │  of what failed, │
-                 │  store in        │
-                 │  episodic memory)│
-                 └──────────────────┘
+```arch
+%% caption: Reflexion wraps a self-critique loop around the actor; the critique is stored in episodic memory, not in the weights.
+node actor "ACTOR loop" at 0,0 color=blue sub="attempt the task"
+node eval "EVALUATOR" at 1,0 color=purple sub="score the trajectory"
+node ok "did it succeed?" at 2,0 shape=diamond color=amber
+node done "DONE" at 3.3,0 shape=pill color=green
+node refl "SELF-REFLECTION" at 1,1 shape=card icon=idea sub="generate a verbal critique of what failed, store in episodic memory"
+actor -> eval -> ok
+ok -> done : "yes"
+ok:B -> refl:R : "no"
+refl:L -> actor:B
 ```
 
 The critical mechanism: the reflection is **not a gradient update** — no weights
@@ -278,15 +284,20 @@ vector store, connecting directly to Module 3).
 
 **Calls 2–5 — the executor** runs one step at a time, seeing the plan plus earlier results.
 
-```mermaid
+```arch
 %% caption: Plan-and-Solve with an added replanning edge. Without the dashed edge, step 4 happily schedules a closed museum.
-flowchart LR
-    Q["Trip request"] --> PL["PLANNER<br/>writes steps 1–4"]
-    PL --> S1["Step 1<br/>Louvre · Notre-Dame · Montmartre"]
-    S1 --> S2["Step 2<br/>hours check"]
-    S2 --> CHK{"Result breaks<br/>the plan?"}
-    CHK -->|"no"| S3["Step 3<br/>lunch"] --> S4["Step 4<br/>schedule + cost"] --> A["Itinerary"]
-    CHK -. "yes: 'Louvre is closed on Tuesdays'" .-> PL
+node q "Trip request" at 0,0 shape=pill color=slate
+node pl "PLANNER" at 1,0 icon=llm sub="writes steps 1–4"
+node s1 "Step 1" at 2,0 color=blue sub="Louvre · Notre-Dame · Montmartre"
+node s2 "Step 2" at 3,0 color=blue sub="hours check"
+node chk "Result breaks the plan?" at 3,1 shape=diamond color=amber
+node s3 "Step 3" at 2,1 color=blue sub="lunch"
+node s4 "Step 4" at 1,1 color=blue sub="schedule + cost"
+node a "Itinerary" at 0,1 shape=pill color=green
+q -> pl -> s1 -> s2 -> chk
+chk -> s3 : "no"
+s3 -> s4 -> a
+chk:R ..> pl:T : "yes: 'Louvre is closed on Tuesdays'"
 ```
 
 > ⚠️ Plain Plan-and-Solve has **no** "result breaks the plan?" check — it commits to the plan.
@@ -325,7 +336,7 @@ Task: Write is_palindrome(s) ...
 > 💡 No weights changed. Wipe the memory buffer and the "lesson" is gone. Persist it to a
 > database and you've built episodic memory (§2.4).
 
-| Pattern | LLM calls | Strength | Weakness | Reach for it when… |
+| Pattern | <abbr title="Large Language Model">LLM</abbr> calls | Strength | Weakness | Reach for it when… |
 |---|---|---|---|---|
 | **ReAct** | one per step | adapts after every observation | expensive, can wander | the path depends on what tools return |
 | **Plan-and-Solve** | 1 plan + 1 per step | cheap, predictable, easy to show a user | brittle if reality changes the plan | the task decomposes cleanly up front |
@@ -333,19 +344,19 @@ Task: Write is_palindrome(s) ...
 
 ### 2.3 Tool-calling mechanics: from schema to constrained decoding
 
-A tool schema (JSON Schema-like) is **serialized directly into the system prompt** as
+A tool schema (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema-like) is **serialized directly into the system prompt** as
 text — there is no separate "function calling channel" at the raw model level; even
 provider APIs that expose a `tools=[...]` parameter are, under the hood, injecting a
 formatted tool description into the prompt and applying constrained decoding on the
 output side. Two enforcement strategies exist:
 
 1. **Prompt-only (unconstrained)**: the schema is shown as an example/instruction; the
-   model is trusted to emit matching JSON. Fails whenever the model hallucinates a
-   field name, produces invalid JSON (trailing comma, unescaped quote), or emits
+   model is trusted to emit matching <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. Fails whenever the model hallucinates a
+   field name, produces invalid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> (trailing comma, unescaped quote), or emits
    free-text mixed with the structured block.
 2. **Grammar-constrained decoding**: the token sampling step itself (§2.4 of Module 1)
    is restricted at each position to only tokens that keep the output a valid parse
-   under a formal grammar (a JSON-Schema-derived context-free grammar, compiled to a
+   under a formal grammar (a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-Schema-derived context-free grammar, compiled to a
    pushdown automaton or regex-based token mask). At each decode step, invalid tokens
    are masked to $-\infty$ logits **before** sampling — structurally identical to the
    top-k/top-p masking mechanism in Module 1, except the mask is grammar-derived rather
@@ -354,7 +365,7 @@ output side. Two enforcement strategies exist:
    have hallucinated argument values).
 
 **Handling structured-output parse failures** (when constrained decoding isn't
-available, e.g. calling a third-party API) requires the harness itself to implement
+available, e.g. calling a third-party <abbr title="Application Programming Interface">API</abbr>) requires the harness itself to implement
 self-correction: attempt to parse → on failure, **do not crash the loop** — feed the
 parser error back into the transcript as an observation (`"PARSE_ERROR: ..."`) and let
 the next model call see its own mistake and retry. This is a special case of the
@@ -363,17 +374,23 @@ reference code below.
 
 #### 🖼️ A tool call, end to end
 
-```mermaid
+```arch
 %% caption: The tool schema travels into the prompt as text, and the tool call travels back out as text. Your code does all the validating and executing.
-flowchart LR
-    SCH["Tool schema<br/>(JSON)"] -->|"serialised into<br/>the system prompt"| PR["Prompt text"]
-    PR --> LLM["LLM"]
-    LLM -->|"generated text"| OUT["{'city': 'Paris'}"]
-    OUT --> P{"Parses?<br/>Tool exists?<br/>Args match schema?"}
-    P -->|"yes"| RUN["Run get_weather('Paris')"]
-    RUN -->|"'18°C' as text"| PR
-    P -->|"no"| ERR["Observation:<br/>PARSE_ERROR / unknown tool"]
-    ERR -->|"model sees its mistake<br/>and retries"| PR
+node sch "Tool schema" at 0,1 icon=json sub="(JSON)"
+node pr "Prompt text" at 1.4,1 icon=prompt
+node llm "LLM" at 2.4,1 icon=llm
+node out "{'city': 'Paris'}" at 2.4,2 color=slate
+node p "Parses? Tool exists? Args match schema?" at 2.4,3 shape=diamond color=amber
+node run "Run get_weather('Paris')" at 1.4,3 icon=tool
+node err "Observation" at 3.5,3 color=red sub="PARSE_ERROR / unknown tool"
+sch -> pr : "serialised into the system prompt"
+pr -> llm
+llm -> out : "generated text"
+out -> p
+p -> run : "yes"
+run -> pr : "'18°C' as text"
+p -> err : "no"
+err:T -> pr:T : "model sees its mistake and retries"
 ```
 
 The schema the model reads:
@@ -395,17 +412,17 @@ The schema the model reads:
 | # | Model output | What the harness should do | Caught by |
 |---|---|---|---|
 | 1 | `{"city": "Paris"}` | ✔ run the tool | — |
-| 2 | `{"city": "Paris"` *(missing `}`)* | feed back `PARSE_ERROR: invalid JSON` | JSON parser / constrained decoding |
+| 2 | `{"city": "Paris"` *(missing `}`)* | feed back `PARSE_ERROR: invalid JSON` | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> parser / constrained decoding |
 | 3 | tool `get_forecast` *(doesn't exist)* | feed back `ERROR: unknown tool 'get_forecast'` | registry lookup |
 | 4 | `{"town": "Paris"}` | feed back `missing required field 'city'` | schema validation / constrained decoding |
 | 5 | `{"city": "Parsi"}` *(typo)* | tool returns "city not found" → feed that back | **nothing but the tool itself** |
 
-> ⚠️ Case 5 is the lesson: constrained decoding guarantees the output is **valid JSON of the
+> ⚠️ Case 5 is the lesson: constrained decoding guarantees the output is **valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> of the
 > right shape**. It cannot guarantee the **values are right**.
 
 #### 🧮 Worked example — constrained decoding, one token at a time
 
-The model has written `{"city": ` so far. The next token must start a JSON string. Before
+The model has written `{"city": ` so far. The next token must start a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> string. Before
 sampling, the grammar masks everything else:
 
 | Candidate next token | Model's probability | Allowed by grammar? | After mask + renormalise |
@@ -418,11 +435,15 @@ sampling, the grammar masks everything else:
 *(Probabilities are illustrative.)* Same mechanism as top-k masking in Module 1 §3.3 — the only
 difference is *who* decides which tokens get −∞: a grammar instead of a probability cutoff.
 
-```mermaid
+```arch
 %% caption: Constrained decoding adds one masking step between logits and sampling.
-flowchart LR
-    L["logits for every<br/>vocab token"] --> G["grammar mask<br/>invalid → −∞"] --> S["softmax"] --> PICK["sample"] --> ST["advance the<br/>grammar state"]
-    ST -->|"next token"| G
+node l "logits" at 0,0 color=slate sub="for every vocab token"
+node g "grammar mask" at 1,0 color=amber sub="invalid → −∞"
+node s "softmax" at 2,0 color=blue
+node pick "sample" at 3,0 color=blue
+node st "advance the grammar state" at 3,1 color=amber
+l -> g -> s -> pick -> st
+st:L -> g:B : "next token"
 ```
 
 ### 2.4 Memory architectures
@@ -441,12 +462,12 @@ scarcest resource:
   budget is exceeded. Cheapest, but can silently discard load-bearing early
   observations (e.g. a fact retrieved in step 2 that's needed in step 20).
 - **Summarization/compaction**: periodically replace a run of scratchpad entries with
-  an LLM-generated summary, trading fidelity for token budget. Requires an extra LLM
+  an <abbr title="Large Language Model">LLM</abbr>-generated summary, trading fidelity for token budget. Requires an extra <abbr title="Large Language Model">LLM</abbr>
   call and risks summarization-induced information loss compounding over many rounds
   of re-summarization.
 - **Hierarchical memory**: keep full detail for the last $k$ steps, summarized detail
   for older steps, and offload anything older still to episodic/semantic memory
-  retrievable on demand — the agentic analogue of CPU cache hierarchies (L1/L2/L3 vs.
+  retrievable on demand — the agentic analogue of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache hierarchies (L1/L2/L3 vs.
   disk).
 
 #### 🖼️ The four memories, as a person would have them
@@ -458,31 +479,30 @@ scarcest resource:
 | Episodic | your diary of past days | "Last Monday's session: user rebooked a flight twice" |
 | Semantic | facts you simply *know* | "User is vegetarian. Prefers flights after 10 am." |
 
-```mermaid
+```arch
 %% caption: Memory as a hierarchy, like CPU caches. The closer to the prompt, the smaller, faster and more detailed.
-flowchart LR
-    subgraph ctx["Context window (the only thing the LLM sees)"]
-        direction TB
-        R["Last few steps<br/>full detail"]
-        S["Older steps<br/>summarised"]
-        F["Retrieved facts<br/>from long-term memory"]
-    end
-    OLD["Even older steps"] -->|"summarise"| S
-    DB[("Episodic + semantic store<br/>vector DB · SQL")] -->|"search by relevance"| F
-    R -->|"end of session: distil facts"| DB
+group ctx "Context window: all the LLM sees" color=teal icon=prompt
+node r "Last few steps" at 1.5,0 in ctx color=teal w=215 sub="full detail"
+node s "Older steps" at 1.5,1 in ctx color=teal w=215 sub="summarised"
+node f "Retrieved facts" at 1.5,2 in ctx color=teal w=215 sub="from long-term memory"
+node old "Even older steps" at 0,1 color=slate
+node db "Episodic + semantic store" at 2.5,1 icon=vector sub="vector DB · SQL"
+old -> s : "summarise"
+db:B -> f:R : "search by relevance"
+r:R -> db:T : "end of session: distil facts"
 ```
 
 #### 🧮 Worked example — memory across two sessions
 
 **Monday.** User: *"I'm vegetarian and I hate early flights."* At the end of the session, one
-extra LLM call distils the conversation into facts and stores them:
+extra <abbr title="Large Language Model">LLM</abbr> call distils the conversation into facts and stores them:
 
 ```json
 [{"fact": "User is vegetarian", "source": "session-2026-09-07"},
  {"fact": "User prefers flights departing after 10:00", "source": "session-2026-09-07"}]
 ```
 
-**Friday, brand-new session.** User: *"Book me a weekend in Rome."* Before the first LLM call, the
+**Friday, brand-new session.** User: *"Book me a weekend in Rome."* Before the first <abbr title="Large Language Model">LLM</abbr> call, the
 harness searches the store with that message and prepends what it finds:
 
 ```text
@@ -513,16 +533,21 @@ Budget: **1,000 tokens** of scratchpad. Each step adds **300 tokens**. Step 1 co
 
 **Supervisor (hub-and-spoke) topology**:
 
-```
-                    ┌─────────────┐
-            ┌──────►│  Worker A   │──────┐
-            │       └─────────────┘      │
-┌───────────┴─┐     ┌─────────────┐   ┌──▼──────────┐
-│ Supervisor   │────►│  Worker B   │──►│  Supervisor  │──► final answer
-│ (routes task,│     └─────────────┘   │  (aggregates │
-│  no direct   │     ┌─────────────┐   │   results)   │
-│  worker↔worker)────►│  Worker C   │──►└─────────────┘
-                      └─────────────┘
+```arch
+%% caption: Supervisor (hub-and-spoke): all communication goes through the supervisor; workers never talk to each other directly.
+node sup "Supervisor" at 0,1 icon=agent sub="routes task, no direct worker↔worker"
+node wa "Worker A" at 1,0 icon=bot
+node wb "Worker B" at 1,1 icon=bot
+node wc "Worker C" at 1,2 icon=bot
+node agg "Supervisor" at 2,1 icon=agent sub="aggregates results"
+node fin "final answer" at 3,1 shape=pill color=green
+sup -> wa
+sup -> wb
+sup -> wc
+wa -> agg
+wb -> agg
+wc -> agg
+agg -> fin
 ```
 
 All communication is mediated through the supervisor — workers never talk directly.
@@ -532,12 +557,15 @@ cost of the supervisor becoming both a bottleneck and a single point of failure.
 
 **Peer-to-peer (debate) topology**:
 
-```
-   Agent A ◄──────────► Agent B
-      │                     │
-      └─────► Agent C ◄─────┘
-   (fully connected: each agent sees every other agent's latest output
-    each round, and produces a revised opinion; repeat for R rounds)
+```arch
+%% caption: Peer-to-peer (debate) topology: agents exchange outputs directly, with no supervisor in the middle.
+node a "Agent A" at 0,0 icon=agent
+node b "Agent B" at 2,0 icon=agent
+node c "Agent C" at 1,1 icon=agent
+node note "fully connected: each agent sees every other agent's latest output each round, and produces a revised opinion; repeat for R rounds" at 1,1.9 shape=text w=300
+a <-> b
+a:B -> c:L
+b:B -> c:R
 ```
 
 Coordination complexity is $O(n^2)$ messages per round (all-to-all), used for debate/
@@ -547,7 +575,7 @@ point.
 **Deadlock and termination**: without an explicit termination condition, multi-agent
 loops can cycle indefinitely (agent A waits on B's tool result, B's tool call depends
 on a state only A can set — logically identical to a circular-wait deadlock in
-concurrent systems). Standard fixes, direct analogues of OS/distributed-systems
+concurrent systems). Standard fixes, direct analogues of <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>/distributed-systems
 techniques:
 
 - **Hard step/round budget** (timeout-based deadlock breaking).
@@ -595,12 +623,14 @@ Question: *"Is 1 a prime number?"* Three agents, each sees the others' last answ
 | 1 | No | Yes — "only divisible by 1 and itself" | No | answers differ → continue |
 | 2 | No | **No** — "a prime needs exactly two distinct divisors; 1 has one" | No | all agree → **converged, stop** |
 
-```mermaid
+```arch
 %% caption: Peer-to-peer debate. Every agent reads every other agent, every round.
-flowchart LR
-    A["Agent A"] <--> B["Agent B"]
-    B <--> C["Agent C"]
-    C <--> A
+node a "Agent A" at 0,0 icon=agent
+node b "Agent B" at 2,0 icon=agent
+node c "Agent C" at 1,1 icon=agent
+a <-> b
+b:B <-> c:R
+c:L <-> a:B
 ```
 
 **Why supervisors are the default — message counts per round:**
@@ -613,11 +643,12 @@ flowchart LR
 
 #### 🖼️ Deadlock — and the three standard escapes
 
-```mermaid
+```arch
 %% caption: A circular wait. Neither agent can move until the other does.
-flowchart LR
-    A["Booking agent<br/>waits for a confirmed price<br/>before reserving"] -->|"waits on"| B["Pricing agent<br/>waits for a reservation ID<br/>before quoting a price"]
-    B -->|"waits on"| A
+node a "Booking agent" at 0,0 shape=card icon=agent sub="waits for a confirmed price before reserving"
+node b "Pricing agent" at 2,0 shape=card icon=agent sub="waits for a reservation ID before quoting a price"
+a:T -> b:T : "waits on"
+b:B -> a:B : "waits on"
 ```
 
 | Escape | How it breaks the cycle |
@@ -630,19 +661,26 @@ flowchart LR
 
 ## 3. Low-Level Execution Flow & Data Structures
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│ AGENT LOOP ITERATION                                                  │
-│                                                                        │
-│  1. prompt = system_prompt + tool_schemas + question + scratchpad.render()│
-│  2. raw_text = LLM(prompt)                     <- single stateless call│
-│  3. if raw_text starts with "Final Answer:" -> TERMINATE               │
-│  4. else: try parse_action(raw_text) -> (tool_name, args)             │
-│       on ParseError: append "PARSE_ERROR: ..." observation, continue  │
-│  5. result = tool_registry[tool_name].fn(**args)   <- side effect here│
-│  6. scratchpad.add(action=tool_name, action_input=args, observation=result)│
-│  7. goto 1, unless max_steps exceeded -> raise                        │
-└──────────────────────────────────────────────────────────────────────┘
+```arch
+%% caption: One agent-loop iteration: a single stateless LLM call, a parse, and (usually) one tool side effect, repeated until a Final Answer or the step limit.
+node s1 "1. Build the prompt" at 1,0 color=blue sub="system_prompt + tool_schemas + question + scratchpad.render()"
+node s2 "2. Call the LLM" at 1,1 icon=llm sub="raw_text = LLM(prompt), a single stateless call"
+node d3 "3. Starts with “Final Answer:”?" at 1,2 shape=diamond color=amber
+node term "TERMINATE" at 2,2 shape=pill color=green
+node s4 "4. Parse the action" at 1,3 color=blue sub="parse_action(raw_text) → (tool_name, args)"
+node perr "Append “PARSE_ERROR: ...”" at 2,4 color=red sub="as the observation, continue"
+node s5 "5. Run the tool" at 1,4 icon=tool sub="result = tool_registry[tool_name].fn(**args), side effect here"
+node s6 "6. Record the step" at 1,5 color=blue sub="scratchpad.add(action=tool_name, action_input=args, observation=result)"
+node d7 "7. max_steps exceeded?" at 1,6 shape=diamond color=amber
+node raise "raise" at 2,6 shape=pill color=red
+s1 -> s2 -> d3
+d3 -> term : "yes"
+d3 -> s4 : "else"
+s4:R -> perr:T : "on ParseError"
+perr:R -> s1:R : "continue"
+s4 -> s5 -> s6 -> d7
+d7 -> raise : "yes"
+d7:L -> s1:L : "no: goto 1"
 ```
 
 **Core data structures**:
@@ -682,7 +720,7 @@ flowchart LR
 - **Prompt-injection via tool output**: an observation returned from an external tool
   (e.g. a scraped webpage) is untrusted text fed straight back into the prompt — a
   malicious tool result can attempt to override the system prompt's instructions. This
-  is structurally identical to SQL injection: untrusted data crossing into a
+  is structurally identical to <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection: untrusted data crossing into a
   control-plane channel without escaping/sandboxing.
 
 ---
@@ -715,23 +753,32 @@ sequenceDiagram
     H->>MAIL: send (should never happen)
 ```
 
-It's SQL injection with words: data (the page) crosses into the control channel (the prompt).
+It's <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection with words: data (the page) crosses into the control channel (the prompt).
 There is no perfect filter, so defences are **layered** around the dispatcher:
 
-```mermaid
+```arch
 %% caption: A guarded dispatcher. Each check is cheap; together they turn "the model asked for it" into "the model asked for it AND it is allowed".
-flowchart TD
-    A["Model requests an action"] --> T{"Tool exists and<br/>args match schema?"}
-    T -->|"no"| E["Observation: error → retry"]
-    T -->|"yes"| P{"Tool allowed for<br/>this task? (least privilege)"}
-    P -->|"no"| E
-    P -->|"yes"| R{"Same action repeated<br/>3× in a row?"}
-    R -->|"yes"| STOP["Break the loop"]
-    R -->|"no"| IRR{"Irreversible?<br/>send · pay · delete"}
-    IRR -->|"yes"| HUM["Ask the human to confirm"]
-    IRR -->|"no"| RUN["Run it"]
-    HUM -->|"approved"| RUN
-    RUN --> OBS["Wrap the result as<br/>untrusted data in the transcript"]
+node a "Model requests an action" at 1,0 icon=llm
+node t "Tool exists and args match schema?" at 1,1 shape=diamond color=amber
+node e "Observation: error → retry" at 0,1.5 color=red
+node p "Tool allowed for this task? (least privilege)" at 1,2 shape=diamond color=amber
+node r "Same action repeated 3× in a row?" at 1,3 shape=diamond color=amber
+node stop "Break the loop" at 2,3 shape=pill color=red
+node irr "Irreversible? send · pay · delete" at 1,4 shape=diamond color=amber
+node hum "Ask the human to confirm" at 2,4 icon=user
+node run "Run it" at 1,5 icon=tool
+node obs "Wrap the result as untrusted data" at 1,6 shape=card icon=shield sub="in the transcript"
+a -> t
+t -> e : "no"
+t -> p : "yes"
+p -> e : "no"
+p -> r : "yes"
+r -> stop : "yes"
+r -> irr : "no"
+irr -> hum : "yes"
+irr -> run : "no"
+hum:B -> run:R : "approved"
+run -> obs
 ```
 
 For the recipe task, the summariser simply shouldn't *have* `send_email` — least privilege stops
@@ -751,7 +798,7 @@ Without the detector, the loop burns every remaining step up to `max_steps` doin
 
 **Retrying something that isn't safe to retry.** `charge_card(amount=40)` succeeds, but the response
 times out before reaching the harness. A naive retry charges the customer **twice**. The fix is an
-idempotency key: `charge_card(amount=40, idempotency_key="order-981")` — the payment API recognises
+idempotency key: `charge_card(amount=40, idempotency_key="order-981")` — the payment <abbr title="Application Programming Interface">API</abbr> recognises
 the second call as a duplicate and returns the first result instead.
 
 ---
@@ -1017,7 +1064,7 @@ mindmap
 **Test yourself** — answer out loud first, then open.
 
 <details>
-<summary>1. Between two LLM calls, where does the agent's memory of step 1 physically live?</summary>
+<summary>1. Between two <abbr title="Large Language Model">LLM</abbr> calls, where does the agent's memory of step 1 physically live?</summary>
 
 In the transcript text your harness re-sends as part of the next prompt (plus any external store you
 explicitly query). The model itself keeps nothing between calls.
@@ -1035,7 +1082,7 @@ number of steps (O(k²)).
 <details>
 <summary>3. Constrained decoding is on, yet the model called get_weather with city "Parsi". Why wasn't it prevented?</summary>
 
-Constrained decoding enforces *shape* (valid JSON, right fields, right types). "Parsi" is a perfectly
+Constrained decoding enforces *shape* (valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, right fields, right types). "Parsi" is a perfectly
 valid string. Wrong *values* can only be caught by the tool, validation logic, or the model's next step.
 
 </details>

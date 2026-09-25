@@ -2,7 +2,7 @@
 
 Welcome to Day 91, and welcome to **Phase 4: LLMs — Training, Fine-Tuning & Alignment**.
 
-We are leaving the Application Layer (RAG, Agents, Prompting) behind. We are now entering the Core AI Engineering layer. Over the next 30 days, you will learn how to build, train, and align massive AI models.
+We are leaving the Application Layer (<abbr title="Retrieval-Augmented Generation">RAG</abbr>, Agents, Prompting) behind. We are now entering the Core <abbr title="Artificial Intelligence">AI</abbr> Engineering layer. Over the next 30 days, you will learn how to build, train, and align massive <abbr title="Artificial Intelligence">AI</abbr> models.
 
 Today, we break open the black box. The "Standard" Transformer from 2017 is dead. We will look at the exact architectural optimizations used inside LLaMA 3, Mistral, and Google's Gemma.
 
@@ -10,7 +10,7 @@ Today, we break open the black box. The "Standard" Transformer from 2017 is dead
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Modern LLM Architecture
+### 1. The Modern <abbr title="Large Language Model">LLM</abbr> Architecture
 If you open the source code for Meta's LLaMA 3, it is still a Decoder-Only Transformer, but with heavy mathematical modifications:
 - **RMSNorm:** Standard LayerNorm calculates both the Mean and Variance of the vectors. LLaMA uses Root Mean Square Normalization (RMSNorm). It skips the Mean calculation entirely! This saves $10\%$ of compute time per layer without losing accuracy.
 - **SwiGLU FFN:** The standard Transformer uses a ReLU activation in the Feed-Forward Network. LLaMA uses SwiGLU (Swish-Gated Linear Unit). It adds an extra matrix multiplication "Gate" that mathematically controls how much information flows through the network, significantly improving the model's reasoning capabilities.
@@ -31,7 +31,7 @@ $P \approx 12 \cdot L \cdot d^2$
 For a massive model:
 - The **Embedding Table** (Vocabulary Size $\times$ Dimension) is actually a tiny fraction of the total parameters.
 - The **Attention Matrices** ($W_Q, W_K, W_V, W_O$) hold roughly $30\%$ of the weights.
-- The **Feed-Forward Networks** (SwiGLU) hold the massive majority ($>60\%$) of the 70 Billion parameters! The FFN is where the factual knowledge of the LLM is stored!
+- The **Feed-Forward Networks** (SwiGLU) hold the massive majority ($>60\%$) of the 70 Billion parameters! The FFN is where the factual knowledge of the <abbr title="Large Language Model">LLM</abbr> is stored!
 
 ---
 

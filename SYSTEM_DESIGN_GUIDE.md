@@ -36,7 +36,7 @@ Two rules carry a surprising amount of weight:
 
 | Term | Plain meaning | Why it matters |
 |---|---|---|
-| Availability | Fraction of eligible requests that succeed. | An API can be “up” while users get errors; measure at the request boundary. |
+| Availability | Fraction of eligible requests that succeed. | An <abbr title="Application Programming Interface">API</abbr> can be “up” while users get errors; measure at the request boundary. |
 | Latency | Time for one operation. Report percentiles, especially p95/p99, not only an average. | Long-tail pauses are what users notice and what exhaust connection pools. |
 | Throughput | Work completed per unit time: requests/s, messages/s, bytes/s. | Drives capacity and partition count. |
 | Durability | Probability acknowledged data survives over time. | A cache may be highly available but not durable. |
@@ -55,7 +55,7 @@ Two rules carry a surprising amount of weight:
 
 ### Availability math
 
-An SLO is a target such as “99.9% of successful `GET /feed` requests finish within 300 ms over 28 days.” Its error budget is `1 − SLO`: 0.1% in this case. A 99.9% monthly availability target permits about 43.2 minutes of failed time, but request-success SLIs are usually more meaningful than a wall-clock uptime calculation. Google’s SRE guidance explicitly recommends user-relevant SLIs and acknowledges that 100% targets are neither realistic nor usually desirable.[^sre-slo]
+An <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> is a target such as “99.9% of successful `GET /feed` requests finish within 300 ms over 28 days.” Its error budget is `1 − SLO`: 0.1% in this case. A 99.9% monthly availability target permits about 43.2 minutes of failed time, but request-success SLIs are usually more meaningful than a wall-clock uptime calculation. Google’s SRE guidance explicitly recommends user-relevant SLIs and acknowledges that 100% targets are neither realistic nor usually desirable.[^sre-slo]
 
 ### Little’s Law: the one formula to remember
 

@@ -4,7 +4,7 @@ Welcome to Day 139.
 
 When traditional Python code fails, it throws a giant red Stack Trace on your screen pointing to the exact line of code.
 When an Agent fails, it might just say, *"I am sorry, I cannot do that."* 
-Or even worse, it might confidently output a completely hallucinated answer without throwing any errors at all. This is called a **Silent Failure**, and it is the nightmare of AI Engineers.
+Or even worse, it might confidently output a completely hallucinated answer without throwing any errors at all. This is called a **Silent Failure**, and it is the nightmare of <abbr title="Artificial Intelligence">AI</abbr> Engineers.
 
 Today, we learn **Observability**. We will use Tracing to look inside the Agent's brain.
 
@@ -14,7 +14,7 @@ Today, we learn **Observability**. We will use Tracing to look inside the Agent'
 
 ### 1. Logging vs. Tracing
 A **Log** is a flat string of text (e.g., `[INFO] Agent started`). It is useless for LLMs.
-A **Trace** is a Directed Acyclic Graph (DAG). It tracks the hierarchical parent-child relationship of the execution.
+A **Trace** is a Directed Acyclic Graph (<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>). It tracks the hierarchical parent-child relationship of the execution.
 If a LangGraph agent runs, the Trace shows:
 ```text
 ▼ Agent Execution (Total: 4.2s, $0.03)
@@ -27,11 +27,11 @@ If a LangGraph agent runs, the Trace shows:
 In production, you must build Grafana dashboards tracking these exact metrics:
 - **Token Cost per Session:** (If an agent averages $\$0.05$ but suddenly spikes to $\$2.00$, it is stuck in a loop!)
 - **Step Count:** (The Trajectory length. Optimal is 3 steps. If it takes 15 steps, your prompt is broken).
-- **Tool Success Rate:** (If the `database_query` tool fails $40\%$ of the time, the LLM is probably hallucinating the SQL syntax).
+- **Tool Success Rate:** (If the `database_query` tool fails $40\%$ of the time, the <abbr title="Large Language Model">LLM</abbr> is probably hallucinating the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> syntax).
 
 ### 3. Observability Platforms
 You do not build tracing from scratch. You use platforms like **LangSmith** (built by LangChain) or **Arize Phoenix** (Open Source).
-These platforms capture every API call, visualize the Trace Graph, and allow you to see the exact raw JSON prompt that was sent to OpenAI at step 4 of the loop.
+These platforms capture every <abbr title="Application Programming Interface">API</abbr> call, visualize the Trace Graph, and allow you to see the exact raw <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> prompt that was sent to OpenAI at step 4 of the loop.
 
 ### 4. Time-Travel Debugging
 If a user reports a bug in production, you can download the failed Trace from LangSmith, load it into your local Jupyter Notebook, change the system prompt slightly, and **Replay** the exact same trace locally to see if your new prompt fixes the bug!
@@ -118,8 +118,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Nested Data Structure:** By appending dictionaries to the `trace_tree`, we created a hierarchical view of the execution. If this script crashes, we can print the JSON and immediately see exactly which Span failed and how long it took.
-2. **Cost Tracking at the Node Level:** We tracked the cost of *each specific LLM call*. This is crucial. If the total cost is $\$2.00$, the Trace tells us if `LLM_Thinking_Phase_1` cost $\$1.90` (a bloated system prompt) or if it was `LLM_Generation_Phase_2`.
+1. **The Nested Data Structure:** By appending dictionaries to the `trace_tree`, we created a hierarchical view of the execution. If this script crashes, we can print the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> and immediately see exactly which Span failed and how long it took.
+2. **Cost Tracking at the Node Level:** We tracked the cost of *each specific <abbr title="Large Language Model">LLM</abbr> call*. This is crucial. If the total cost is $\$2.00$, the Trace tells us if `LLM_Thinking_Phase_1` cost $\$1.90` (a bloated system prompt) or if it was `LLM_Generation_Phase_2`.
 
 ---
 

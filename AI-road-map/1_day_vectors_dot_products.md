@@ -1,6 +1,6 @@
 # Day 1: Vectors, Dot Products & Geometric Intuition
 
-Welcome to Day 1. As your Principal AI Engineer tutor, my goal today is to strip away the abstractions. Modern AI (especially Transformers and Vector Databases) is entirely built on top of high-dimensional geometry. If you don't understand what a dot product is physically doing in high-dimensional space, you will never truly understand attention mechanisms, semantic search, or how large language models (LLMs) connect ideas.
+Welcome to Day 1. As your Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer tutor, my goal today is to strip away the abstractions. Modern <abbr title="Artificial Intelligence">AI</abbr> (especially Transformers and Vector Databases) is entirely built on top of high-dimensional geometry. If you don't understand what a dot product is physically doing in high-dimensional space, you will never truly understand attention mechanisms, semantic search, or how large language models (LLMs) connect ideas.
 
 Let's build the bedrock with deep intuition, analogies, and real-world enterprise applications.
 
@@ -32,7 +32,7 @@ $$ \mathbf{a} \cdot \mathbf{b} = \sum_{i=1}^{n} a_i b_i = a_1b_1 + a_2b_2 + \dot
 > Step 2: Sum them up: $8 + (-3) = 5$.
 > Result: $\mathbf{a} \cdot \mathbf{b} = 5$.
 > 
-> **AI Context (Neural Networks):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Neural Networks):** 
 > In a neural network, $\mathbf{a}$ could be the **weights** of a neuron (e.g., $2 \times$ importance for feature 1, $3 \times$ for feature 2). $\mathbf{b}$ is the **input data**. The result ($5$) is the raw "activation score" before passing it to an activation function like ReLU. A higher positive number means the input strongly activated this neuron!
 
 > **Real-World Intuition:** Imagine you are a Hiring Manager. 
@@ -53,7 +53,7 @@ Where:
 > $\mathbf{a} \cdot \mathbf{b} = 4 \times 3 \times 0.5 = 6$.
 > *Notice:* If the angle was $0^\circ$ (pointing in exact same direction), $\cos(0) = 1$, and the dot product would be $4 \times 3 \times 1 = 12$ (the maximum possible overlap).
 > 
-> **AI Context (Contrastive Learning):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Contrastive Learning):** 
 > When training models like CLIP (which connects images to text), the model tries to maximize the dot product between the image vector and the correct text vector. By pushing the dot product higher, the math forces $\cos(\theta)$ to approach $1$, physically moving the vectors to point in the exact same direction in the embedding space!
 
 ### 3. Cosine Similarity: Direction is Everything
@@ -68,7 +68,7 @@ $$ \cos(\theta) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}
 > Result: $\cos(\theta) = \frac{0}{12} = 0$. 
 > An output of $0$ means the vectors are perfectly $90^\circ$ apart (orthogonal).
 > 
-> **AI Context (Semantic Search):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Semantic Search):** 
 > If vector $\mathbf{a}$ represents the word "Apple" and vector $\mathbf{b}$ represents the word "Car", they have no semantic overlap. Their cosine similarity is $0$. If you search for "Apple", the system skips "Car" because the math proves they are orthogonal concepts.
 
 > **Analogy:** Consider two Netflix users.
@@ -82,7 +82,7 @@ $$ \cos(\theta) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}
 > Imagine mixing paint with two primary colors: `[Red, Blue]`.
 > - Your small cup: `[1 drop Red, 2 drops Blue]`. This makes a specific shade of Dark Purple.
 > - A massive bucket: `[10 drops Red, 20 drops Blue]`. This is much larger (magnitude), but it is the *exact same shade of Dark Purple*.
-> In AI terms, because they have the exact same ratio (1:2), we say they "point in the same direction." 
+> In <abbr title="Artificial Intelligence">AI</abbr> terms, because they have the exact same ratio (1:2), we say they "point in the same direction." 
 > Cosine Similarity checks if two vectors are the exact same "shade of color" (recipe), completely ignoring the size of the bucket!
 
 > **Breaking Down the Math Trick:**
@@ -97,7 +97,7 @@ Cosine similarity outputs a value between $[-1, 1]$:
 - $0$: Vectors are orthogonal *(perpendicular at 90 degrees, meaning they share absolutely no mathematical or semantic overlap)*. 
 - $-1$: Vectors point in perfectly opposite directions (Exact opposites).
 
-> **Enterprise Context (RAG & Semantic Search):** 
+> **Enterprise Context (<abbr title="Retrieval-Augmented Generation">RAG</abbr> & Semantic Search):** 
 > When you use ChatGPT or search Google, your text query is converted into a high-dimensional vector (e.g., 1536 dimensions for OpenAI's `text-embedding-3-small`). The database contains millions of document vectors. The system computes the **Cosine Similarity** between your query vector and the document vectors. The documents that point in the closest direction to your query are returned as the most semantically relevant results.
 
 ### 4. Orthogonal Projection: Casting Shadows
@@ -114,7 +114,7 @@ $$ \text{proj}_{\mathbf{a}}\mathbf{b} = \left( \frac{\mathbf{a} \cdot \mathbf{b}
 > Step 4 (Multiply by $\mathbf{a}$): $2 \times [1, 0] = [2, 0]$.
 > The shadow of $[2, 3]$ on the X-axis is exactly $[2, 0]$! We effectively stripped away the Y-component.
 > 
-> **AI Context (Bias Removal & Dimensionality Reduction):**
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Bias Removal & Dimensionality Reduction):**
 > Imagine you have word embeddings. You notice the vector for "Doctor" is biased and leans closer to "Man" than "Woman". 
 > You can isolate the "Gender Direction" by taking the vector for `(Man - Woman)`. Let's call this Vector $\mathbf{a}$.
 > To make "Doctor" (Vector $\mathbf{b}$) gender-neutral, you calculate the **projection** of "Doctor" onto the "Gender Direction", and you subtract that projection from the original "Doctor" vector. The math literally casts a shadow on the gender axis and deletes it!
@@ -220,7 +220,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **Type Hinting:** Using `np.ndarray` and `float` makes code readable, robust, and MAANG-standard.
-2. **Edge Cases:** Notice how we handle zero-division in `cosine_similarity`. In production ML pipelines, a stray zero-vector (e.g., a blank document or a new user) will crash your training loops via `NaN` propagation if not handled.
+2. **Edge Cases:** Notice how we handle zero-division in `cosine_similarity`. In production <abbr title="Machine Learning">ML</abbr> pipelines, a stray zero-vector (e.g., a blank document or a new user) will crash your training loops via `NaN` propagation if not handled.
 3. **Vectorization:** `np.sum(v1 * v2)` computes the product element-wise purely in underlying C code, completely bypassing slow Python `for` loops. This is how neural networks are trained so fast.
 
 ---
@@ -241,7 +241,7 @@ You are given three short documents (sentences):
 3. Compute the pairwise **cosine similarity** between all three documents using *only* your own math implementation from memory (no SciPy/Sklearn).
 4. Print which two documents are the most similar.
 
-*Why this matters:* You are literally building the foundational logic behind Google Search circa 1998, and the exact same geometric logic used in modern RAG pipelines today.
+*Why this matters:* You are literally building the foundational logic behind Google Search circa 1998, and the exact same geometric logic used in modern <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipelines today.
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -265,4 +265,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - You would explicitly choose **Cosine Similarity** (or the dot product if the vectors are already $L_2$ normalized) for text retrieval, semantic search, or collaborative filtering because you care about the *direction* (the semantic meaning or user taste profile) and want your system to be invariant to the magnitude (how active a user is, or how long a document is).
 
 ---
-**Task for the end of the day:** Commit your code to Git. Read over your notes. Once you feel comfortable explaining exactly why LLM embeddings use cosine similarity, you are ready for Day 2: Matrix Operations!
+**Task for the end of the day:** Commit your code to Git. Read over your notes. Once you feel comfortable explaining exactly why <abbr title="Large Language Model">LLM</abbr> embeddings use cosine similarity, you are ready for Day 2: Matrix Operations!

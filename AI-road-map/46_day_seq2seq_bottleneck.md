@@ -12,17 +12,17 @@ To solve this, we must build two completely separate neural networks and bolt th
 
 ### 1. The Encoder-Decoder Architecture
 Seq2Seq splits the translation task into two phases:
-1. **The Encoder (The Reader):** An LSTM that reads the English sentence word by word. It does not output any predictions. Its only job is to update its Hidden State ($h_t$). When it finishes reading the final word, its final Hidden State contains the mathematical "meaning" of the entire English sentence. This final state is called the **Context Vector**.
-2. **The Decoder (The Writer):** A completely separate LSTM. We inject the Context Vector directly into its brain. The Decoder then starts predicting the French translation, one word at a time, until it outputs a special `<END>` token.
+1. **The Encoder (The Reader):** An <abbr title="Long Short-Term Memory">LSTM</abbr> that reads the English sentence word by word. It does not output any predictions. Its only job is to update its Hidden State ($h_t$). When it finishes reading the final word, its final Hidden State contains the mathematical "meaning" of the entire English sentence. This final state is called the **Context Vector**.
+2. **The Decoder (The Writer):** A completely separate <abbr title="Long Short-Term Memory">LSTM</abbr>. We inject the Context Vector directly into its brain. The Decoder then starts predicting the French translation, one word at a time, until it outputs a special `<END>` token.
 
 ### 2. Teacher Forcing (Exposure Bias)
 Training the Decoder is incredibly difficult. 
-If the correct French sentence is *"Je suis un chat"*, but the Decoder accidentally hallucinates and outputs *"Tu"* for the first word, the LSTM will feed *"Tu"* back into itself for step 2. The entire rest of the sentence is now mathematically doomed!
-**The Fix:** **Teacher Forcing**. During training, even if the AI guesses *"Tu"*, we physically intercept the loop and force the correct word (*"Je"*) into the input of Step 2. This keeps the network mathematically stable during training.
+If the correct French sentence is *"Je suis un chat"*, but the Decoder accidentally hallucinates and outputs *"Tu"* for the first word, the <abbr title="Long Short-Term Memory">LSTM</abbr> will feed *"Tu"* back into itself for step 2. The entire rest of the sentence is now mathematically doomed!
+**The Fix:** **Teacher Forcing**. During training, even if the <abbr title="Artificial Intelligence">AI</abbr> guesses *"Tu"*, we physically intercept the loop and force the correct word (*"Je"*) into the input of Step 2. This keeps the network mathematically stable during training.
 
 ### 3. Beam Search
 During inference (production), Teacher Forcing is turned off. 
-If the AI just greedily picks the #1 most confident word at every step, it often writes sentences that are grammatically broken.
+If the <abbr title="Artificial Intelligence">AI</abbr> just greedily picks the #1 most confident word at every step, it often writes sentences that are grammatically broken.
 **Beam Search** fixes this. Instead of picking the #1 word, it picks the Top 3 words (Beam Width = 3). It then branches out and simulates the entire rest of the sentence for all 3 paths! Finally, it multiplies the probabilities of the entire sentence together and picks the path that makes the most global sense.
 
 ### 4. The Bottleneck Problem (The Fatal Flaw)
@@ -162,10 +162,10 @@ if __name__ == "__main__":
 ### 🛠️ The Challenge: Beam Search Mathematics
 Let's understand why greedy decoding fails.
 **Your Task:**
-1. The AI is translating: *"I am full"*. 
-2. Step 1 (Greedy): The AI predicts *"Je"* (90%), *"Tu"* (5%). It picks *"Je"*.
-3. Step 2 (Greedy): Following *"Je"*, the AI predicts *"suis"* (80%), *"mangé"* (10%). It picks *"suis"*. (Sentence: *"Je suis"*)
-4. Step 3 (Greedy): Following *"Je suis"*, the AI predicts *"plein"* (60%) [Meaning: physically full of food]. Total path probability: $0.90 \times 0.80 \times 0.60 = \mathbf{0.432}$.
+1. The <abbr title="Artificial Intelligence">AI</abbr> is translating: *"I am full"*. 
+2. Step 1 (Greedy): The <abbr title="Artificial Intelligence">AI</abbr> predicts *"Je"* (90%), *"Tu"* (5%). It picks *"Je"*.
+3. Step 2 (Greedy): Following *"Je"*, the <abbr title="Artificial Intelligence">AI</abbr> predicts *"suis"* (80%), *"mangé"* (10%). It picks *"suis"*. (Sentence: *"Je suis"*)
+4. Step 3 (Greedy): Following *"Je suis"*, the <abbr title="Artificial Intelligence">AI</abbr> predicts *"plein"* (60%) [Meaning: physically full of food]. Total path probability: $0.90 \times 0.80 \times 0.60 = \mathbf{0.432}$.
 5. Now, run Beam Search. Instead of picking *"Je"*, Beam Search explores *"J'ai"* (I have) which had a lower Step 1 probability of 70%.
 6. Following *"J'ai"*, it predicts *"mangé"* (95%).
 7. Following *"mangé"*, it predicts *"assez"* (I have eaten enough) (85%). 

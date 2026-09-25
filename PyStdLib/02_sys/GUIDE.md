@@ -38,7 +38,7 @@ Python itself is running in.
 
 Level 1 is `sys.argv`, the single most common use. Level 2 covers `sys.exit`, the
 standard streams, and `sys.platform`/`version_info`. Level 3 combines them into a
-buffering-aware CLI-style idiom. Level 4 triggers `SystemExit` and inspects
+buffering-aware <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr>-style idiom. Level 4 triggers `SystemExit` and inspects
 `sys.exc_info()` inside a real `except` block. Level 5 is the import machinery:
 `sys.path` resolution order and the `sys.modules` cache. Level 6 measures
 `sys.intern()` against ordinary string equality/identity. Level 7 is the recursion
@@ -46,5 +46,5 @@ limit: a real `RecursionError` triggered on purpose, then raised and lowered saf
 Level 8 pairs `sys.getsizeof` with `gc.get_referents` to compute a real deep size and
 show how badly the shallow number undercounts nested containers. Level 9 is a
 correctness trap around catching `SystemExit` with an overly broad `except`. Level 10
-is a small capstone CLI that parses `argv`, writes buffered progress to `stdout`,
+is a small capstone <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> that parses `argv`, writes buffered progress to `stdout`,
 reports errors to `stderr`, and exits with a real status code.

@@ -24,6 +24,21 @@ With `N` replicas, a write succeeds after `W` acknowledgements and a read querie
 
 Quorums are not linearizability by themselves: concurrent writes, clock-based versions, and "sloppy" quorums that accept writes on stand-in nodes during partitions can still expose anomalies. Dynamo-style stores trade that away deliberately for availability.
 
+```arch
+%% caption: If R + W > N, the read and write quorums must overlap on at least one node, guaranteeing the read sees the latest write.
+node cw "Client (Write)" at 0,0 icon=client color=blue
+node cr "Client (Read)" at 0,2 icon=client color=green
+group rep "Replicas (N=3)" color=slate style=dashed
+node r1 "Node 1" at 3,-1 in rep icon=db color=blue
+node r2 "Node 2 (Overlap)" at 3,1 in rep icon=db color=amber
+node r3 "Node 3" at 3,3 in rep icon=db color=green
+
+cw -> r1 : "writes"
+cw -> r2 : "writes (W=2)"
+cr -> r3 : "reads"
+cr -> r2 : "reads (R=2)"
+```
+
 ## Raft
 
 Raft is the consensus algorithm most systems implement today (etcd, Consul, CockroachDB, TiKV, many internal Google-style control planes use Paxos-family equivalents). It turns consensus into two sub-problems you can explain in an interview:
@@ -68,7 +83,7 @@ Paxos solves agreement on a single value with *proposers*, *acceptors* and *lear
 
 A **lease** is a lock with an expiry: the holder must renew it before it runs out, so a crashed holder eventually releases it without anyone detecting the crash.
 
-The classic bug: a leaseholder pauses (GC, VM migration), its lease expires, a new holder is granted the lease, and then the old holder wakes up and writes anyway. The fix is a **fencing token** — a number that increases every time the lease is granted. The protected resource remembers the highest token it has seen and rejects writes carrying an older one.
+The classic bug: a leaseholder pauses (<abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> migration), its lease expires, a new holder is granted the lease, and then the old holder wakes up and writes anyway. The fix is a **fencing token** — a number that increases every time the lease is granted. The protected resource remembers the highest token it has seen and rejects writes carrying an older one.
 
 ```mermaid
 %% caption: The storage rejects the paused client because its fencing token is older than one it has already seen.
@@ -103,7 +118,7 @@ Design rules: keep the data small (kilobytes, not gigabytes), keep write rates l
 
 ## Membership and failure detection
 
-- **Heartbeats with timeouts** are simple but binary: too short and you get false positives during GC pauses; too long and failover is slow.
+- **Heartbeats with timeouts** are simple but binary: too short and you get false positives during <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pauses; too long and failover is slow.
 - **Phi-accrual detectors** (Cassandra, Akka) output a suspicion level based on the observed heartbeat-interval distribution, so each consumer can pick its own threshold.
 - **Gossip protocols** (SWIM, Cassandra, Consul's Serf) spread membership and health state by having each node periodically exchange state with a few random peers. Information reaches all `N` nodes in `O(log N)` rounds, there is no central coordinator, and load per node is constant. The trade-off is eventual, not instant, agreement on membership.
 

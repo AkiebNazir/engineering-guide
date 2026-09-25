@@ -23,7 +23,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope estimates: event rate, distinct keys per window, memory for exact vs approximate counting.
-3. API contract for reading top-K results.
+3. <abbr title="Application Programming Interface">API</abbr> contract for reading top-K results.
 4. Baseline architecture: ingestion, counting, windowing, serving.
 5. Counting at scale: exact vs count-min sketch + heap, merging across servers.
 6. Sliding windows, trend scoring, slicing by dimension, and abuse filtering.

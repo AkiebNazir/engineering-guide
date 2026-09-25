@@ -4,7 +4,7 @@ Welcome to Day 171.
 
 We are beginning the **MAANG System Design** phase. For the next 10 days, we are taking everything you learned over the last 170 days and applying it to high-level architectural whiteboarding.
 
-If you interview for a Senior/Lead ML role at Netflix, TikTok, or YouTube, you will be asked to design a **Recommendation Engine**.
+If you interview for a Senior/Lead <abbr title="Machine Learning">ML</abbr> role at Netflix, TikTok, or YouTube, you will be asked to design a **Recommendation Engine**.
 You have 45 minutes to design a system that takes 1 Billion videos, scores them against 100 Million users, and returns the top 10 videos in under 200 milliseconds.
 
 Today, we learn the **Two-Tower Architecture** and the **Candidate Generation $\rightarrow$ Ranking** cascade.
@@ -14,7 +14,7 @@ Today, we learn the **Two-Tower Architecture** and the **Candidate Generation $\
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The 200ms Math Problem
-Imagine YouTube has 1 Billion videos. If a user opens the app, you cannot pass all 1 Billion videos through a massive LLM or Deep Neural Network to score them. It would take 3 years to render the homepage.
+Imagine YouTube has 1 Billion videos. If a user opens the app, you cannot pass all 1 Billion videos through a massive <abbr title="Large Language Model">LLM</abbr> or Deep Neural Network to score them. It would take 3 years to render the homepage.
 Because of the strict 200ms latency budget, Recommendation Engines are built as a **Funnel**.
 
 ### 2. The Funnel Architecture
@@ -136,7 +136,7 @@ The system above suffers from the "Echo Chamber" problem (it only shows the user
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Funnel Architecture:** Clearly draw the L0 (Candidate Generation) $\rightarrow$ L1 (Ranking) cascade on the whiteboard. Mention the 200ms latency budget constraint.
-2. **Feature Store Integration:** Explain how the Ranking model cannot query an SQL database. It must query a Redis Feature Store (Day 166) to get the user's real-time engagement history (e.g., "They just liked 3 dog videos 5 seconds ago").
+2. **Feature Store Integration:** Explain how the Ranking model cannot query an <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database. It must query a Redis Feature Store (Day 166) to get the user's real-time engagement history (e.g., "They just liked 3 dog videos 5 seconds ago").
 3. **The Cold Start Problem:** If a new video is uploaded 1 second ago, it has zero views. It will never be ranked high! Propose a multi-armed bandit approach: force 5% of all user traffic to see brand-new videos, collect their engagement metrics, and use those metrics to jumpstart the video's ranking score.
 4. **Data Pipelining:** How do we train the models? Explain that the frontend logs stream into Kafka, which dumps into a Data Lake (Snowflake), which trains the Two-Tower model nightly via Airflow.
 

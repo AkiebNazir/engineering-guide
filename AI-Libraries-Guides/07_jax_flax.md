@@ -17,7 +17,7 @@ Why would anyone want this? Because if data is immutable, the compiler knows exa
 
 ## 2. Setup & Installation
 
-JAX is notoriously tricky to install for GPUs because it relies heavily on specific CUDA versions. For CPU, it is simple:
+JAX is notoriously tricky to install for GPUs because it relies heavily on specific CUDA versions. For <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, it is simple:
 
 ```bash
 pip install jax jaxlib flax

@@ -2,7 +2,7 @@
 
 Welcome to Day 86. Up until now, we have assumed that our Embedding Model (like `sentence-transformers/all-MiniLM-L6-v2`) works perfectly. 
 
-But pre-trained models are trained on Wikipedia and Reddit. If your company builds quantum computers, the embedding model has no idea what your technical jargon means. It will map your quantum physics documents to random places in the vector space, and your entire RAG pipeline will collapse.
+But pre-trained models are trained on Wikipedia and Reddit. If your company builds quantum computers, the embedding model has no idea what your technical jargon means. It will map your quantum physics documents to random places in the vector space, and your entire <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline will collapse.
 
 Today, we learn how to train our own mathematical Embedding Models from scratch using **Contrastive Learning**.
 
@@ -32,7 +32,7 @@ To build a world-class model, you must use **Hard Negatives**.
 The model sees the words *"How to fix a flat"*, assumes they are similar, and gets penalized heavily by the Loss function! This forces the model to look deeper than just keyword matching and truly understand the semantic difference between rubber tires and glass TVs.
 
 ### 4. Matryoshka Representation Learning (MRL)
-Storing 100 Million 1024-dimensional vectors requires terabytes of expensive RAM. What if you could slice the vector in half to save space? Normally, slicing a vector destroys the math.
+Storing 100 Million 1024-dimensional vectors requires terabytes of expensive <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. What if you could slice the vector in half to save space? Normally, slicing a vector destroys the math.
 **Matryoshka Learning** (like Russian nesting dolls) is a brilliant trick. During training, we calculate the Contrastive Loss on the full 1024 dimensions. But we ALSO calculate the loss on the first 512 dimensions, the first 256, and the first 64!
 This mathematically forces the model to pack the most important semantic information into the *very first 64 numbers*! The remaining numbers just add fine details. 
 In production, you can literally slice `vector[:256]`, shrinking your database costs by 4x without retraining the model!
@@ -150,7 +150,7 @@ Creating massive datasets of Hard Negatives is expensive.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your production RAG system's retrieval accuracy dropped 15% after your company pivoted from analyzing Wikipedia articles to analyzing proprietary chemical engineering patents. Diagnose the issue and propose a concrete data pipeline to train a custom embedding model."*
+*"Your production <abbr title="Retrieval-Augmented Generation">RAG</abbr> system's retrieval accuracy dropped 15% after your company pivoted from analyzing Wikipedia articles to analyzing proprietary chemical engineering patents. Diagnose the issue and propose a concrete data pipeline to train a custom embedding model."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -158,7 +158,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **The Diagnosis (Domain Shift):** 
    - State that the pre-trained embedding model suffers from Out-Of-Vocabulary (OOV) and Domain Shift issues. The complex chemical jargon was never seen during the model's pre-training, so it arbitrarily clusters the technical words.
 2. **The Data Pipeline (Synthetic Generation):**
-   - Propose using a massive Teacher LLM (like GPT-4) to synthetically generate training data.
+   - Propose using a massive Teacher <abbr title="Large Language Model">LLM</abbr> (like GPT-4) to synthetically generate training data.
    - Feed a chemical patent paragraph to GPT-4. Prompt it: *"Generate 3 questions that this paragraph perfectly answers."* 
    - You now have thousands of (Anchor Question, Positive Paragraph) pairs generated for pennies!
 3. **Training & Evaluation (MTEB):**
@@ -168,6 +168,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-Congratulations. You have completed the next 10 days! You have mastered Enterprise AI, Model Compression, and the most advanced RAG architectures on the planet.
+Congratulations. You have completed the next 10 days! You have mastered Enterprise <abbr title="Artificial Intelligence">AI</abbr>, Model Compression, and the most advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> architectures on the planet.
 
-In the next block (Days 87-96), we will cover **Vector Databases, Prompt Engineering, Agentic Tool Use (Function Calling), and Reinforcement Learning from Human Feedback (RLHF)!**
+In the next block (Days 87-96), we will cover **Vector Databases, Prompt Engineering, Agentic Tool Use (Function Calling), and Reinforcement Learning from Human Feedback (<abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>)!**

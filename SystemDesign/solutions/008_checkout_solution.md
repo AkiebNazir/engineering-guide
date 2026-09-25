@@ -37,7 +37,7 @@ The contract has two halves. **Safety** (never violated): no double charge, no u
 | Direct in-transaction payment call | Call the payment provider while holding DB locks for the order/inventory row. | Never at scale. | Provider latency or outage holds locks open, blocking unrelated checkouts — a remote failure becomes a local outage. |
 | Two-phase commit across order, inventory, and provider | One coordinator, all participants prepare then commit. | Only between databases you own. | The provider is not an XA participant, and a coordinator crash leaves locks held across a remote call. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/checkouts
@@ -89,6 +89,32 @@ POST /internal/webhooks/provider      # provider → us, signed
 The double-entry financial journal is owned by the ledger service ([017 — Payment Ledger](017_payment_ledger_solution.md)); confirmed captures, refunds, and adjustments post there as new entries, never as edits. **Inventory invariant**: for every SKU, `Σ available + Σ qty of HELD and COMMITTED holds = initial + restocks − write-offs`. The reconciler checks it continuously.
 
 ## Architecture and flow
+
+```arch
+%% caption: The order shard commits intent through an outbox, inventory holds stock with conditional updates, and the saga worker is the only thing that calls the payment provider, outside every transaction and lock.
+node client "Client" at 1,0 icon=client
+node gw "API gateway" at 1,1 icon=gateway sub="auth, per-user limits"
+node order "Order service" at 1,2 icon=service sub="idempotent checkout"
+node inv "Inventory service" at 2,2 icon=service sub="holds, hot-SKU shards"
+node stock "Stock + holds" at 3,2 icon=db sub="stock_shards, holds"
+node orderdb "Order shard" at 1,3 icon=db sub="orders, keys, outbox"
+node saga "Payment saga worker" at 2,3 icon=worker
+node provider "Payment provider" at 3,3 icon=payment
+node queue "Outbox queue" at 1,4 icon=queue sub="by order_id"
+node rec "Reconciler" at 0,4 icon=sync sub="stuck + settled"
+client -> gw -> order
+order -> inv : "reserve"
+inv -> stock : "decrement"
+order -> orderdb : "txn 1, txn 2"
+orderdb ..> queue : "relay"
+queue:R -> saga:B
+saga:T -> inv:B : "commit / release"
+saga:L -> orderdb:R : "state"
+saga -> provider : "authorize"
+provider:R ..> order:T : "webhook"
+rec:B -> provider:B : "compare"
+rec:T -> orderdb:L : "heal"
+```
 
 ```mermaid
 %% caption: The provider call sits outside every database transaction and every inventory lock, so a slow provider degrades saga throughput and never the lock table.
@@ -157,29 +183,44 @@ Do not call the payment provider from inside the database transaction that holds
 |---|---|---|---|---|
 | Single-row conditional update | `UPDATE … SET available = available - q WHERE sku=? AND available >= q` | ~670/s per row: 4.5× short at burst, backlog grows ~2.3k/s | Exact, trivial, no new component | Lock-wait queue grows to tens of seconds, blowing the 3 s target |
 | **Sharded stock counters** (chosen default) | Split the units over k rows (k = 8: 1,250 each); a request tries the shard chosen by `hash(order_id) mod k`, and probes a bounded number of others if it is short | 8 × 670 ≈ **5.3k/s**, so 3k/s is ~56% utilization | Same primitive and same database, near-linear write scaling, shards may sit on different nodes | Tail fragmentation (see below) and a slightly approximate "remaining" figure |
-| Per-SKU serialized allocator | All reserves for a SKU route to one single-writer owner (an actor or a log partition keyed by `sku_id`) holding the counter in memory and appending decisions to a replicated log in batches | Tens of thousands per second (a batched log append, not a row lock, is the limit) | Exact, FIFO-fair, no retry storms, natural fit for atomic multi-SKU bundles | A new stateful component, a leader-failover gap of seconds per SKU, and the counter must be rebuilt from the log and reconciled with holds |
+| Per-SKU serialized allocator | All reserves for a SKU route to one single-writer owner (an actor or a log partition keyed by `sku_id`) holding the counter in memory and appending decisions to a replicated log in batches | Tens of thousands per second (a batched log append, not a row lock, is the limit) | Exact, <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>-fair, no retry storms, natural fit for atomic multi-SKU bundles | A new stateful component, a leader-failover gap of seconds per SKU, and the counter must be rebuilt from the log and reconciled with holds |
 | Token-bucket admission in front of either | A per-SKU bucket (say 4k tokens/s, burst 2k) plus a cached `SOLD_OUT` flag at the edge | Shed load before it reaches storage: 30k/s of refreshes cost cache reads, not row locks | Protects the database from a crowd it cannot serve anyway | Rejected users get 429 or 409 even if a unit is about to be released |
 
-**Decision.** Default every SKU to a single row. Promote a SKU to sharded counters when it is flagged hot, either from the marketing calendar or automatically when its lock-wait p99 exceeds 50 ms or its attempts exceed ~300/s. Choose k from the burst: `k = ceil(peak ÷ (per-row rate × 0.5))`, so 3,000 ÷ (670 × 0.5) ≈ 9; I use k = 8 (56% utilization, close enough to the 50% target and a clean power-of-two layout) and verify it with a load test. Always put the admission bucket and the `SOLD_OUT` edge flag in front. Use the serialized allocator instead when FIFO fairness is a stated requirement ("the first 10k clickers win") or bundles must be atomic across SKUs. This trades a slightly fuzzy remaining-count and a tail-handling routine for horizontal scaling on the database we already run; the cost is acceptable because the alternative that avoids it, a per-SKU single-writer service, is a new stateful tier to operate for a handful of SKUs a year.
+**Decision.** Default every SKU to a single row. Promote a SKU to sharded counters when it is flagged hot, either from the marketing calendar or automatically when its lock-wait p99 exceeds 50 ms or its attempts exceed ~300/s. Choose k from the burst: `k = ceil(peak ÷ (per-row rate × 0.5))`, so 3,000 ÷ (670 × 0.5) ≈ 9; I use k = 8 (56% utilization, close enough to the 50% target and a clean power-of-two layout) and verify it with a load test. Always put the admission bucket and the `SOLD_OUT` edge flag in front. Use the serialized allocator instead when <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> fairness is a stated requirement ("the first 10k clickers win") or bundles must be atomic across SKUs. This trades a slightly fuzzy remaining-count and a tail-handling routine for horizontal scaling on the database we already run; the cost is acceptable because the alternative that avoids it, a per-SKU single-writer service, is a new stateful tier to operate for a handful of SKUs a year.
 
-```mermaid
+```arch
 %% caption: The edge flag and admission bucket keep post-sell-out traffic off the database, and the sharded conditional update plus a tail collapse keep it exact.
-flowchart TD
-    A[Reserve request for hot SKU] --> B{SOLD_OUT flag set at edge}
-    B -- yes --> C[409 OUT_OF_STOCK from cache]
-    B -- no --> D{Admission bucket has a token}
-    D -- no --> E[429 with jittered Retry-After]
-    D -- yes --> F[Insert hold row keyed by order_id and sku_id]
-    F --> G{Row already existed}
-    G -- yes --> H[Return the existing hold]
-    G -- no --> I[Conditional decrement on shard hash mod k]
-    I --> J{rowcount is 1}
-    J -- yes --> K[Hold HELD, expiry in 5 min]
-    J -- no --> L{Probed fewer than 3 shards}
-    L -- yes --> I
-    L -- no --> M{Sum of shards is 0}
-    M -- yes --> N[Set SOLD_OUT flag and answer 409]
-    M -- no --> O[Tail collapse then retry once]
+grid 190x105
+node A "Reserve request for hot SKU" at 1,0 shape=pill
+node B "SOLD_OUT flag set at edge?" at 1,1 shape=diamond color=amber
+node C "409 OUT_OF_STOCK" at 2,1 color=red sub="from cache"
+node D "Admission bucket has a token?" at 1,2 shape=diamond color=amber
+node E "429" at 2,2 color=red sub="jittered Retry-After"
+node F "Insert hold row" at 1,3 sub="keyed by order_id and sku_id"
+node G "Row already existed?" at 1,4 shape=diamond color=amber
+node H "Return the existing hold" at 2,4
+node I "Conditional decrement" at 1,5 sub="on shard hash mod k"
+node J "rowcount is 1?" at 1,6 shape=diamond color=amber
+node K "Hold HELD" at 2,6 color=green sub="expiry in 5 min"
+node L "Probed fewer than 3 shards?" at 1,7 shape=diamond color=amber
+node M "Sum of shards is 0?" at 1,8 shape=diamond color=amber
+node N "Set SOLD_OUT flag" at 2,8 color=red sub="answer 409"
+node O "Tail collapse" at 0,8 sub="then retry once"
+A -> B
+B -> C : "yes"
+B -> D : "no"
+D -> E : "no"
+D -> F : "yes"
+F -> G
+G -> H : "yes"
+G -> I : "no"
+I -> J
+J -> K : "yes"
+J -> L : "no"
+L:L -> I:L : "yes"
+L -> M : "no"
+M -> N : "yes"
+M -> O : "no"
 ```
 
 **What each part does, with numbers.**
@@ -187,25 +228,34 @@ flowchart TD
 - **The reserve is one transaction.** Insert the hold row `(order_id, sku_id, shard_no, qty, HELD, expires_at)` with `ON CONFLICT DO NOTHING`, and if a row was inserted run the conditional decrement on the shard; `rowcount = 0` rolls the transaction back and the next probe starts. The hold's primary key is the idempotency key, so a retried reserve cannot take units twice. Never read `available`, decide in application code, and write it back: that read-then-write is the oversell.
 - **Purchase limits bound the tail.** At most 2 units per buyer and one live hold per `(user, SKU)` (assumption). This also blunts scalpers, and it is what keeps `qty` small enough for the tail rule.
 - **Tail fragmentation.** Shards deplete unevenly, so late in the sale a request for 2 units can find every probed shard holding 1. When `Σ available < k × max_qty` (here 8 × 2 = 16) a rebalancer collapses the remainder into shard 0 in one transaction and switches the SKU back to single-row mode. The last 16 units then sell at 670/s, which is fine; nobody is racing for them at 3k/s any more. "Sold out" is declared only when the shard sum is zero, never on the first empty probe.
-- **Released stock is offered to a waitlist first.** With ~1,200 units cycling through failed payments, opening each release to the public re-triggers a stampede on a nearly empty SKU. The unit goes to the head of a per-SKU FIFO waitlist (a notification with a 2-minute claim window, itself a hold) and joins the open pool only after that. The cost is complexity and slightly slower recycling; the benefit is a fair, quiet tail. Simpler variant: flip `SOLD_OUT` off and tell clients to re-check no more often than every 5 s, jittered.
+- **Released stock is offered to a waitlist first.** With ~1,200 units cycling through failed payments, opening each release to the public re-triggers a stampede on a nearly empty SKU. The unit goes to the head of a per-SKU <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> waitlist (a notification with a 2-minute claim window, itself a hold) and joins the open pool only after that. The cost is complexity and slightly slower recycling; the benefit is a fair, quiet tail. Simpler variant: flip `SOLD_OUT` off and tell clients to re-check no more often than every 5 s, jittered.
 - **Expiry is a sweeper for liveness, a guard for safety.** A background job releases holds where `status='HELD' AND expires_at < now()` using the same guarded release the checkout path uses. Correctness never depends on it: the commit step is `UPDATE holds SET status='COMMITTED' WHERE order_id=? AND sku_id=? AND status='HELD' AND expires_at > now()` using the *database's* clock, so an expired hold cannot commit whether or not the sweeper has run.
 
 More on sharding a single hot key and why probes must be bounded is in [Partitioning and hot keys](../building_blocks/25_partitioning_and_hot_keys.md). The same conditional-update discipline, under a waiting room, is developed in [010 — Seat Reservation](010_seat_reservation_solution.md).
 
 ## State machine and legal transitions
 
-```mermaid
+```arch
 %% caption: Money-affecting steps happen only after every free-to-undo step succeeded, and every arrow is a guarded conditional update on the current state.
-flowchart LR
-    CREATED -->|all lines held| PAYMENT_PENDING
-    CREATED -->|a line rejected| OUT_OF_STOCK
-    PAYMENT_PENDING -->|authorized and holds committed| CONFIRMED
-    PAYMENT_PENDING -->|declined or resolved as not authorized| PAYMENT_FAILED
-    PAYMENT_PENDING -->|hold expired at commit, auth voided| EXPIRED
-    PAYMENT_PENDING -->|customer cancels| CANCELLED
-    CONFIRMED -->|cancel before capture, void plus restock| CANCELLED
-    CONFIRMED -->|cancel or return after capture| REFUND_PENDING
-    REFUND_PENDING -->|provider confirms refund| REFUNDED
+grid 250x120
+node created "CREATED" at 1,0 shape=pill color=blue
+node oos "OUT_OF_STOCK" at 2,0 shape=pill color=red
+node expired "EXPIRED" at 0,0 shape=pill color=red sub="auth voided"
+node pp "PAYMENT_PENDING" at 1,1 shape=pill color=amber
+node cancelled "CANCELLED" at 2,1.5 shape=pill color=slate
+node failed "PAYMENT_FAILED" at 0,2 shape=pill color=red
+node confirmed "CONFIRMED" at 1,2 shape=pill color=green
+node rp "REFUND_PENDING" at 1,3 shape=pill color=amber
+node refunded "REFUNDED" at 1,4 shape=pill color=slate
+created -> oos : "a line rejected"
+created -> pp : "all lines held"
+pp:L -> expired:B : "hold lapsed at commit"
+pp:L -> failed:T : "declined or not authorized"
+pp -> confirmed : "authorized, holds committed"
+pp:R -> cancelled:T : "customer cancels"
+confirmed:R -> cancelled:B : "cancel before capture"
+confirmed -> rp : "cancel or return after capture"
+rp -> refunded : "provider confirms refund"
 ```
 
 | From | To | Trigger | Guard and side effects |
@@ -319,7 +369,7 @@ The policy choice is what to do about a price that rises inside the quote window
 
 Measure: checkout success rate excluding customer declines, synchronous latency p50/p99 with a per-stage split, oldest-`PAYMENT_PENDING` age, hold expiry rate and hold-to-confirm latency, idempotency hit rate, provider latency p50/p99 and timeout rate, unknown-outcome resolution time, webhook lag and duplicate rate, outbox lag, reconciliation mismatches per day by class, hot-SKU lock-wait p99 and shard skew, and the two invariants directly: **oversell** (orders `CONFIRMED` against an expired or consumed hold, or `Σ` inventory not balancing) and **duplicate money** (orders with more than one live authorization or capture).
 
-The one paging alert is **any nonzero oversell or duplicate-money invariant**, because it is the zero-tolerance requirement burning. Ticket-level signals: age of the oldest `PAYMENT_PENDING` crossing 2 min (the "reconciliation within minutes" SLO), reconciliation mismatch rate crossing a small absolute threshold, and payment saga backlog age.
+The one paging alert is **any nonzero oversell or duplicate-money invariant**, because it is the zero-tolerance requirement burning. Ticket-level signals: age of the oldest `PAYMENT_PENDING` crossing 2 min (the "reconciliation within minutes" <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>), reconciliation mismatch rate crossing a small absolute threshold, and payment saga backlog age.
 
 Interview close: "I never call an external payment provider while holding a database lock — checkout uses a local transaction to durably record intent (order, outbox event), holds stock with a conditional update keyed by the order, and a separate saga drives the slow, fallible provider call, with idempotency keys on both the client request and every provider call, and reconciliation as the backstop for the outcomes I can't observe in real time."
 
@@ -329,7 +379,7 @@ Trade-off to state: "I authorize and hold stock before confirming and capture la
 
 1. **"How does this work across regions?"** Make one region the writer for a user's orders (by home region) and keep the idempotency key with the order, so a retry after failover lands on the same record. Inventory needs a home per SKU; a cross-region hold costs a round trip, so for a global drop give each region a stock quota (sized from expected demand) and rebalance slowly, accepting "sold out here, in stock there" as the price of local latency. Provider keys derive from order ids, so a re-driven saga in another region cannot double charge.
 2. **"What changes at 10× and 100×?"** At 10× (8.3k/s sustained, 25k/s burst) the order shards grow from 16 to ~160 or the rows per shard are cut by batching; the sharded counters raise k; the provider's rate limit contract becomes the first hard wall. At 100× (83k/s) run the whole stack as independent cells per user cohort, add multiple provider accounts or acquirers, and move hot SKUs to the serialized allocator because per-row parallelism stops being enough.
-3. **"What if I need strict no-oversell and strict fairness?"** Use the per-SKU serialized allocator (single writer, FIFO log) so the order of arrival is the order of decision, and never shard the counter, which removes tail fragmentation. The cost is a stateful tier and a failover gap; hold stock only when the user reaches payment, since holds at add-to-cart starve inventory with abandoned carts.
+3. **"What if I need strict no-oversell and strict fairness?"** Use the per-SKU serialized allocator (single writer, <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> log) so the order of arrival is the order of decision, and never shard the counter, which removes tail fragmentation. The cost is a stateful tier and a failover gap; hold stock only when the user reaches payment, since holds at add-to-cart starve inventory with abandoned carts.
 4. **"What dominates cost?"** Provider fees are a percentage of the money moved and dwarf compute, so the levers are authorization approval rate, avoiding refunds by preferring voids, not paying for declines (fraud checks first), and retry policy. Infrastructure is small: 4.6 TB/year of orders and a few thousand provider calls per second at burst.
 5. **"How do you defend against abuse?"** Purchase limits per user and payment method, a waiting room in front of announced drops, bot and velocity scoring before the authorization call, single-use checkout tokens, and per-SKU admission buckets so a crowd cannot turn the hot row into a denial of service for every other product.
 6. **"Why not charge first and reserve after?"** Payment succeeds, stock has sold out, and you are refunding paying customers: fees, chargebacks, and trust. Reserve-then-authorize means the expensive, slow, fallible step only happens for orders we can actually fulfill.
@@ -340,7 +390,7 @@ Trade-off to state: "I authorize and hold stock before confirming and capture la
 
 1. **Treating a timeout as a failure.** The charge may have succeeded, so releasing stock and telling the customer to retry produces a double charge. Keep the order pending and resolve with the same idempotency key, then a lookup by reference.
 2. **Calling the provider inside a database transaction.** Provider latency becomes lock hold time and a provider incident becomes a full outage. Commit intent first, call outside.
-3. **A server-generated idempotency key per request.** A key minted per HTTP request dedupes nothing. The client generates one key per intent and reuses it; provider keys derive from stable ids plus an attempt number.
+3. **A server-generated idempotency key per request.** A key minted per <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request dedupes nothing. The client generates one key per intent and reuses it; provider keys derive from stable ids plus an attempt number.
 4. **Decrementing inventory after payment.** A window opens between charge and decrement where the same unit is sold twice. Hold first, authorize second.
 5. **Read-then-write on stock.** Two buyers read `available = 1`, both write. Use one conditional update whose `rowcount` decides.
 6. **One row for a hot SKU, or sharded counters with no tail rule.** The first queues every buyer behind a lock; the second reports "sold out" while units sit in other shards. Shard by measured burst, collapse the tail, and declare sold out only on a zero shard sum.

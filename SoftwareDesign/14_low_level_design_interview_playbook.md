@@ -55,7 +55,7 @@ distributed rate-limiting service?"* Answering the wrong one is a common silent 
 - **Amazon, Uber, Microsoft, Atlassian, Flipkart, Swiggy, many startups:** explicit OOD /
   machine-coding rounds.
 - **Google:** rarely labelled "LLD", but coding rounds frequently are stateful designs
-  (implement an LRU/LFU cache, a snapshot array, a file system, a key-value store with
+  (implement an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>/<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> cache, a snapshot array, a file system, a key-value store with
   transactions, an iterator over nested data, a time-based store) and are graded on code
   structure as well as correctness. Follow-ups push on extensibility and concurrency.
 - **Senior (L5+/SDE III) loops:** expectations shift from "correct classes" to "clean
@@ -121,7 +121,7 @@ list becomes your acceptance criteria.
 | **Concurrency** | Multiple entry gates / threads / users acting simultaneously? |
 | **Persistence** | In memory only, or should the design allow a database later? |
 | **Failure cases** | Full lot, invalid ticket, payment failure, double booking |
-| **Interface** | Library API, CLI, REST? (Usually: plain classes + a driver) |
+| **Interface** | Library <abbr title="Application Programming Interface">API</abbr>, <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr>, <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>? (Usually: plain classes + a driver) |
 
 ### Example: parking lot
 
@@ -166,7 +166,7 @@ This is enough. Resist drawing `Gate`, `Attendant`, `DisplayBoard`, `PaymentProc
 
 ---
 
-## 6 · Step 3 — Public API and key flows (5 min)
+## 6 · Step 3 — Public <abbr title="Application Programming Interface">API</abbr> and key flows (5 min)
 
 Write the **public method signatures** of the main service/facade and trace the one or
 two most important flows. This is where the design gets checked before code exists.
@@ -218,9 +218,9 @@ import threading, itertools
 ### Stay out of these time sinks
 
 - Getters/setters for every field.
-- Full CRUD for every entity.
+- Full <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> for every entity.
 - Persistence code — a dict-backed repository is enough; say "this becomes a table".
-- Input parsing/menus, unless it's a machine-coding round that requires a CLI.
+- Input parsing/menus, unless it's a machine-coding round that requires a <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr>.
 
 If time is short, **stub a secondary strategy** (`class PeakPricing: ...  # TODO`) and
 say how it would work. A running core beats complete-but-broken.
@@ -403,7 +403,7 @@ safe result:   1600 (expected 1600)
 | **One coarse lock** | `with self._lock:` around every public mutating method | Interviews by default; low contention | Serialises everything |
 | **Lock striping / per-entity locks** | One lock per floor / show / account; lock IDs in a fixed order when taking several | Independent entities (different shows don't contend) | Deadlock risk if order isn't fixed |
 | **Read-write lock** | Many readers, one writer | Read-heavy (availability queries) | Python stdlib has none; Go has `sync.RWMutex` |
-| **Atomic compare-and-set** | `if spot.state == FREE: spot.state = TAKEN` atomically | Single-field claims | Needs a CAS primitive (Go `atomic`, DB conditional update) |
+| **Atomic compare-and-set** | `if spot.state == FREE: spot.state = TAKEN` atomically | Single-field claims | Needs a <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> primitive (Go `atomic`, DB conditional update) |
 | **Optimistic concurrency** | Read version, write "where version = v", retry on conflict | Low-conflict writes; maps to databases | Retries under contention |
 | **Holds with expiry** | Reserve temporarily (seat hold 10 min), confirm or release | Booking flows with payment in the middle | Expiry sweeper, clock handling |
 | **Single-writer / actor** | All mutations go through one thread/goroutine via a queue | State machines (elevator controller) | Throughput of one thread |
@@ -418,7 +418,7 @@ safe result:   1600 (expected 1600)
   it's how deadlocks and latency spikes happen.
 - **Acquire multiple locks in a global order** (e.g. by ID) — the transfer-between-accounts
   classic.
-- **Python's GIL does not make your check-then-act atomic.** Threads switch between
+- **Python's <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> does not make your check-then-act atomic.** Threads switch between
   bytecodes; `x += 1` on a shared attribute is not atomic across threads.
 - **Across processes/machines**, the lock moves to the database (conditional update,
   `SELECT … FOR UPDATE`, unique constraints) or a lease-based lock — and every operation
@@ -519,7 +519,7 @@ The **key point** is what separates a strong answer. ✅ = worked, runnable solu
 | **In-memory KV store with nested transactions** | Stack of write-sets; tombstones for deletes; commit merges into parent; O(1) get via layering | ✅ 006 |
 | **Logging framework** | Levels as a chain/threshold; appenders × formatters (composition); hierarchical loggers; async appender | ✅ 007 |
 | **Tic-tac-toe (N×N) / board game** | O(1) win detection with row/col/diagonal counters; players as strategies; move validation | ✅ 008 |
-| **LRU / LFU cache** | Hash map + doubly linked list (LRU) / frequency buckets (LFU), eviction as a strategy, thread safety | ✅ 009 |
+| **<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> / <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> cache** | Hash map + doubly linked list (<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>) / frequency buckets (<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>), eviction as a strategy, thread safety | ✅ 009 |
 | **Unix `find` / file search** | Composite file tree; Specification filters with AND/OR/NOT; lazy traversal | ✅ 010 |
 | **Meeting room / hotel booking** | Half-open intervals; per-room sorted bookings with bisect for O(log n) conflict check; room selection strategy | ✅ 011 |
 | **Rate limiter library** | Algorithms as strategies (token bucket, sliding window log/counter); per-key state; injected clock | ✅ 012 |
@@ -545,7 +545,7 @@ The **key point** is what separates a strong answer. ✅ = worked, runnable solu
 | **In-memory file system** | Composite tree; path resolution; `ls`/`mkdir`/`addContent` (`PyDSA/25_design/009`) | |
 | **Snapshot array / time-based KV** | Per-key version lists + binary search (`PyDSA/25_design/012`) | |
 | **Stack Overflow / Q&A site** | Votes and reputation rules; question/answer/comment Composite; tags; bounty state | |
-| **Stock exchange order book** | Price-level maps + FIFO queues per level; match engine; order types as strategies | ✅ 013 |
+| **Stock exchange order book** | Price-level maps + <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> queues per level; match engine; order types as strategies | ✅ 013 |
 | **Coupon / discount engine** | Rules as Specifications + actions; stacking and priority rules; idempotent redemption | |
 | **Traffic signal controller** | State machine with timed transitions; injected clock; emergency override | |
 | **Cricket / sports scoreboard** | Event-sourced ball-by-ball log; derived stats as projections | |
@@ -583,7 +583,7 @@ Score each 0–2 after a practice run. 16+ is interview-ready.
 | 2 | Entities | God class / missing record entities | Mostly right | Right entities, value objects, discovered records |
 | 3 | Invariants | Not identified | Some, owners unclear | Each named with its single owner |
 | 4 | Abstractions | None or everywhere | Some justified | Exactly at variation points, justified aloud |
-| 5 | API | Unclear | Signatures present | Minimal, typed, errors specified |
+| 5 | <abbr title="Application Programming Interface">API</abbr> | Unclear | Signatures present | Minimal, typed, errors specified |
 | 6 | Working code | Doesn't run | Happy path runs | Core flow + a failure path demonstrated |
 | 7 | Code quality | Hard to read | OK | Clean names, enums, small methods, no magic numbers |
 | 8 | Concurrency | Not mentioned | Mentioned vaguely | Race identified, critical section and granularity chosen |

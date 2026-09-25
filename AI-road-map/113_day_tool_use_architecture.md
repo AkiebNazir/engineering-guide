@@ -4,21 +4,21 @@ Welcome to Day 113.
 
 Language models have a fatal flaw: They are frozen in time. If you ask a base model *"What is the current stock price of Apple?"*, it will either confidently hallucinate a number, or it will apologize and state that its training data cut-off was 6 months ago.
 
-But what if the LLM could browse the internet? What if it could use a calculator to solve math? What if it could run Python code? 
-Today, we take our first step toward Agentic AI: **Tool Use (Function Calling)**.
+But what if the <abbr title="Large Language Model">LLM</abbr> could browse the internet? What if it could use a calculator to solve math? What if it could run Python code? 
+Today, we take our first step toward Agentic <abbr title="Artificial Intelligence">AI</abbr>: **Tool Use (Function Calling)**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Tool Paradigm
-You do not teach the LLM the stock price. You give the LLM a "Tool" (a Python function that calls the Yahoo Finance API). 
-When the user asks a question, the LLM makes a mathematical decision:
+You do not teach the <abbr title="Large Language Model">LLM</abbr> the stock price. You give the <abbr title="Large Language Model">LLM</abbr> a "Tool" (a Python function that calls the Yahoo Finance <abbr title="Application Programming Interface">API</abbr>). 
+When the user asks a question, the <abbr title="Large Language Model">LLM</abbr> makes a mathematical decision:
 1. *Do I know the answer from my pre-training?* -> Just answer.
-2. *Is this a dynamic/math question?* -> Output a JSON command to trigger a Tool!
+2. *Is this a dynamic/math question?* -> Output a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> command to trigger a Tool!
 
 ### 2. The Tool Schema
-How does the LLM know what tools exist? You inject a JSON Schema into the System Prompt. 
+How does the <abbr title="Large Language Model">LLM</abbr> know what tools exist? You inject a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema into the System Prompt. 
 The schema describes the tool's name, its purpose, and the arguments it requires.
 ```json
 {
@@ -31,18 +31,18 @@ The schema describes the tool's name, its purpose, and the arguments it requires
 ```
 
 ### 3. The Execution Loop (The 4 Steps)
-Tool use is not magic. The LLM cannot execute Python code. The LLM just outputs text. You (the developer) must build the loop:
+Tool use is not magic. The <abbr title="Large Language Model">LLM</abbr> cannot execute Python code. The <abbr title="Large Language Model">LLM</abbr> just outputs text. You (the developer) must build the loop:
 1. **The Request:** User asks: *"What is Apple's stock?"*
-2. **The LLM Decision:** The LLM outputs strict JSON: `{"tool_call": "get_stock_price", "args": {"ticker": "AAPL"}}`. **(The LLM stops generating here!)**
-3. **The Backend Execution:** Your Python backend intercepts this JSON. *Your Python code* actually calls the Yahoo Finance API and gets the number `150.25`.
-4. **The Feedback:** Your Python backend creates a new message in the chat history: `Role: Tool, Content: "150.25"`. You send this *back* to the LLM. 
-5. **The Final Answer:** The LLM reads the tool response and generates: *"Apple's current stock price is $150.25."*
+2. **The <abbr title="Large Language Model">LLM</abbr> Decision:** The <abbr title="Large Language Model">LLM</abbr> outputs strict <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>: `{"tool_call": "get_stock_price", "args": {"ticker": "AAPL"}}`. **(The <abbr title="Large Language Model">LLM</abbr> stops generating here!)**
+3. **The Backend Execution:** Your Python backend intercepts this <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. *Your Python code* actually calls the Yahoo Finance <abbr title="Application Programming Interface">API</abbr> and gets the number `150.25`.
+4. **The Feedback:** Your Python backend creates a new message in the chat history: `Role: Tool, Content: "150.25"`. You send this *back* to the <abbr title="Large Language Model">LLM</abbr>. 
+5. **The Final Answer:** The <abbr title="Large Language Model">LLM</abbr> reads the tool response and generates: *"Apple's current stock price is $150.25."*
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Tool Use Execution Loop from scratch in Python. We will define a mock Weather API and simulate the LLM deciding to call it!
+Let's build a Tool Use Execution Loop from scratch in Python. We will define a mock Weather <abbr title="Application Programming Interface">API</abbr> and simulate the <abbr title="Large Language Model">LLM</abbr> deciding to call it!
 
 Create a file named `tool_use.py`:
 
@@ -127,40 +127,40 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Middleman:** You are the middleman. The LLM is trapped inside a box. It slides a note under the door saying *"Please run this tool"*. You run the tool on your laptop, and slide the result back under the door. 
-2. **Structured Generation:** How did we guarantee the LLM outputted valid JSON for the `arguments`? We used the techniques from Day 112 (Constrained Decoding/JSON Mode)!
+1. **The Middleman:** You are the middleman. The <abbr title="Large Language Model">LLM</abbr> is trapped inside a box. It slides a note under the door saying *"Please run this tool"*. You run the tool on your laptop, and slide the result back under the door. 
+2. **Structured Generation:** How did we guarantee the <abbr title="Large Language Model">LLM</abbr> outputted valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> for the `arguments`? We used the techniques from Day 112 (Constrained Decoding/<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Mode)!
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: Multi-Step Tool Chains
-Sometimes an LLM needs to use multiple tools in a row before talking to the user.
+Sometimes an <abbr title="Large Language Model">LLM</abbr> needs to use multiple tools in a row before talking to the user.
 **Your Task:**
 1. Conceptually map out the loop for the prompt: *"What is the stock price of the company that makes the iPhone?"*
-2. **Turn 1:** LLM calls Tool 1: `search_web("Company that makes iPhone")`. 
+2. **Turn 1:** <abbr title="Large Language Model">LLM</abbr> calls Tool 1: `search_web("Company that makes iPhone")`. 
 3. **Turn 2:** Backend returns `"Apple Inc. (Ticker: AAPL)"`.
-4. **Turn 3:** LLM reads the history and calls Tool 2: `get_stock_price("AAPL")`.
+4. **Turn 3:** <abbr title="Large Language Model">LLM</abbr> reads the history and calls Tool 2: `get_stock_price("AAPL")`.
 5. **Turn 4:** Backend returns `150.25`.
-6. **Turn 5:** LLM answers the user.
-Notice how the LLM recursively calls itself until it has all the information it needs!
+6. **Turn 5:** <abbr title="Large Language Model">LLM</abbr> answers the user.
+Notice how the <abbr title="Large Language Model">LLM</abbr> recursively calls itself until it has all the information it needs!
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design a tool-use system where the LLM has access to 500 enterprise tools (APIs, databases, internal services). How do you handle tool discovery, selection, and the massive context window bloat?"*
+*"Design a tool-use system where the <abbr title="Large Language Model">LLM</abbr> has access to 500 enterprise tools (APIs, databases, internal services). How do you handle tool discovery, selection, and the massive context window bloat?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Context Bloat Problem:** 
-   - State that if you put 500 JSON Tool Schemas into the System Prompt, it will consume 20,000 tokens. The LLM will become confused (Lost in the Middle), latency will skyrocket, and API costs will bankrupt the company.
-2. **Dynamic Tool Retrieval (RAG for Tools):**
+   - State that if you put 500 <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Tool Schemas into the System Prompt, it will consume 20,000 tokens. The <abbr title="Large Language Model">LLM</abbr> will become confused (Lost in the Middle), latency will skyrocket, and <abbr title="Application Programming Interface">API</abbr> costs will bankrupt the company.
+2. **Dynamic Tool Retrieval (<abbr title="Retrieval-Augmented Generation">RAG</abbr> for Tools):**
    - Propose embedding the descriptions of all 500 tools into a Vector Database. 
    - When the user asks a question, run a vector similarity search between the User Prompt and the Tool Descriptions. Retrieve only the Top 5 most relevant tools. 
-   - Inject *only* those 5 JSON schemas into the LLM's prompt! This reduces the context window from 20,000 tokens to 500 tokens!
+   - Inject *only* those 5 <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schemas into the <abbr title="Large Language Model">LLM</abbr>'s prompt! This reduces the context window from 20,000 tokens to 500 tokens!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

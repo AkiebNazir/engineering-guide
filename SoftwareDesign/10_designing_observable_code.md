@@ -21,7 +21,7 @@ outputs shown are real (timestamps and random IDs removed where noted).
 
 | Topic | Where |
 |---|---|
-| SLI/SLO/error budgets, alert design, RED/USE, incident response | `SystemDesign/building_blocks/15_observability_and_reliability.md` |
+| <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr>/<abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>/error budgets, alert design, RED/USE, incident response | `SystemDesign/building_blocks/15_observability_and_reliability.md` |
 | Cross-cutting concerns as middleware/decorators around ports | `08_application_architecture_in_code.md` §9 |
 | Error context, "log once at the boundary" | `06_error_handling_and_failure_design.md` §3–§4 |
 | Profiling and tracing tools hands-on | `PyEngineering/22_profiling_optimization`, `GoEngineering/35_profiling_and_tracing` |
@@ -55,21 +55,24 @@ outputs shown are real (timestamps and random IDs removed where noted).
 | **Metrics** | Numeric time series (name + labels → value) | *Is something wrong? How much? Since when?* | Cheap per event; cost grows with **label combinations** | `http_requests_total{route="/orders/{id}",status="5xx"}` |
 | **Logs** | Discrete events with fields | *What exactly happened to this request/order/user?* | Cost grows with **volume** (every event is stored) | `{"msg":"charge declined","order_id":"o-42","reason":"insufficient_funds"}` |
 | **Traces** | Tree of timed spans for one request across services | *Where did the time go? Which dependency failed?* | Usually **sampled**; cost grows with spans per request | `POST /checkout 840ms → payments.charge 790ms` |
-| **Profiles** (the fourth) | Stack samples over time | *Which code is burning CPU/memory?* | Continuous, low-overhead sampling | pprof flame graph |
+| **Profiles** (the fourth) | Stack samples over time | *Which code is burning <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>/memory?* | Continuous, low-overhead sampling | pprof flame graph |
 
 The debugging workflow uses them in sequence:
 
-```
- ALERT (metric)            →  "p99 latency on /checkout crossed 800 ms at 14:02"
-   │  slice by labels            region=br, version=1.4.2 — only there
-   ▼
- EXEMPLAR / TRACE          →  a slow request: payments.charge = 790 ms of 840 ms
-   │  follow trace_id
-   ▼
- LOGS for that trace_id    →  "retrying charge attempt=3 error=timeout provider=acme-br"
-   │
-   ▼
- PROFILE / CODE            →  connection pool to acme-br exhausted after 1.4.2 lowered max size
+```arch
+%% caption: The standard observability workflow moves from aggregate metrics down to specific traces, logs, and code.
+node metric "ALERT (Metric)\n'p99 latency > 800ms'" at 0,0 icon=metrics color=red
+node slice "Slice by Labels\n'region=br, version=1.4'" at 2,0 icon=filter color=slate style=dashed
+node trace "EXEMPLAR / TRACE\n'payments = 790ms'" at 0,1 icon=search color=amber
+node traceid "Follow trace_id" at 2,1 icon=link color=slate style=dashed
+node log "LOGS (for trace_id)\n'retrying charge...'" at 0,2 icon=file color=blue
+node code "PROFILE / CODE\n'connection pool exhausted'" at 0,3 icon=code color=green
+
+metric -> trace : "slice\nby labels"
+metric ..> slice : "insight"
+trace -> log : "follow\ntrace_id"
+trace ..> traceid : "insight"
+log -> code
 ```
 
 This only works if the three signals **share identifiers**: the same `route`, `version`,
@@ -135,7 +138,7 @@ Output:
 {"msg": "order placed", "order_id": "o-2", "amount_cents": 90000}
 ```
 
-Constant message, variable fields, one JSON object per line — that's the whole idea. A
+Constant message, variable fields, one <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object per line — that's the whole idea. A
 real service adds the parts below: request context attached automatically instead of
 passed by hand, central redaction, and the traceback logged once at the boundary.
 
@@ -261,9 +264,9 @@ central redaction — is the same.
 | Level | Means | Who acts | Example |
 |---|---|---|---|
 | **ERROR** | A request/job failed and the system could not recover | Someone should look (often via a metric alert, not the log itself) | Unhandled exception at the boundary; data inconsistency detected |
-| **WARN** | Something unexpected, handled, but a trend would be a problem | Nobody now; dashboards | Retry succeeded on attempt 3; fallback used; deprecated API called |
+| **WARN** | Something unexpected, handled, but a trend would be a problem | Nobody now; dashboards | Retry succeeded on attempt 3; fallback used; deprecated <abbr title="Application Programming Interface">API</abbr> called |
 | **INFO** | Significant business or lifecycle events | Nobody; used for investigation | Service started with config hash; order placed; job completed |
-| **DEBUG** | Detail useful while developing or diagnosing one component | Off in production, or on dynamically per request/module | SQL text, cache hit/miss per key |
+| **DEBUG** | Detail useful while developing or diagnosing one component | Off in production, or on dynamically per request/module | <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> text, cache hit/miss per key |
 
 The most common failure is **everything at ERROR**: expected outcomes (a user typed a
 wrong password, a 404 for a missing resource) logged as errors. Then the error rate on a
@@ -285,7 +288,7 @@ log 4xx at INFO or not at all, and count them in a metric.
 
 ### Don't log these
 
-- **Secrets and credentials:** passwords, tokens, API keys, session cookies,
+- **Secrets and credentials:** passwords, tokens, <abbr title="Application Programming Interface">API</abbr> keys, session cookies,
   `Authorization` headers, connection strings.
 - **Personal data you don't need:** full names, emails, addresses, card numbers, message
   bodies. Log the **ID** instead; the data is one lookup away for someone authorised.
@@ -471,7 +474,7 @@ second — and a page that makes 20 backend calls hits that tail on ~18% of page
 
 Histogram design notes:
 
-- **Bucket boundaries are part of the API.** Choose them around your SLO (if the target is
+- **Bucket boundaries are part of the <abbr title="Application Programming Interface">API</abbr>.** Choose them around your <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> (if the target is
   300 ms, have a bucket boundary at 0.3). Changing buckets later breaks historical
   comparisons.
 - Percentiles from histograms are **estimates bounded by bucket edges** ("≤ 1 s"). Native
@@ -505,7 +508,7 @@ route (40) × status class (5) × method (4) × region (6)   =     4,800 series 
 |---|---|
 | Route **template** `/orders/{id}` | Raw path `/orders/8f3a…` |
 | Status class `2xx`/`4xx`/`5xx`, or status code | Error **message** text |
-| Method, region, version, dependency name | User ID, order ID, email, IP address |
+| Method, region, version, dependency name | User ID, order ID, email, <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> address |
 | Error **type** from a closed enum | Request ID, trace ID, timestamps |
 
 The `CardinalityError` guard in the example is a pattern worth having in a shared metrics
@@ -520,7 +523,7 @@ wrapper: fail loudly in tests rather than silently in the metrics bill.
 | Every resource pool / queue (**USE**) | Utilisation (in use / max), Saturation (waiters, queue depth), Errors (acquire timeouts) |
 | Every background job / consumer | Items processed, failures, **lag** (age of oldest unprocessed item), last success timestamp |
 | Every cache | Hits, misses, evictions, size |
-| Runtime | GC pauses, heap, threads/goroutines, open FDs (usually from the client library) |
+| Runtime | <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pauses, heap, threads/goroutines, open FDs (usually from the client library) |
 
 "Last success timestamp" deserves emphasis: a cron job that silently stops running
 produces **no errors at all**. Alert on `time() - job_last_success_timestamp_seconds > 2h`.
@@ -531,7 +534,7 @@ produces **no errors at all**. Alert on `time() - job_last_success_timestamp_sec
 
 A **trace** is the tree of work done for one request. Each node is a **span**: a name,
 start, duration, attributes, status, and a parent. Propagating the trace and parent IDs
-across process boundaries (the W3C `traceparent` HTTP header) stitches spans from many
+across process boundaries (the W3C `traceparent` <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> header) stitches spans from many
 services into one tree.
 
 A span is just an id, a name, a parent id, and a duration — before context propagation
@@ -690,7 +693,7 @@ What this toy tracer shows about the real thing (OpenTelemetry):
 - **Parenting is implicit** through a context variable, exactly like request-scoped log
   fields. Application code opens spans; it never passes span objects around.
 - **Propagation is explicit at process boundaries:** `inject()` writes headers on the
-  client; `continue_trace()` reads them on the server. Every HTTP client, gRPC stub, and
+  client; `continue_trace()` reads them on the server. Every <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> client, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> stub, and
   queue producer/consumer needs this — **message queues included**, or async work shows up
   as disconnected traces. Put the headers in message metadata.
 - **Errors mark the span** and re-raise; the span doesn't swallow anything.
@@ -703,7 +706,7 @@ What this toy tracer shows about the real thing (OpenTelemetry):
 | Instrument | Why |
 |---|---|
 | Inbound request (automatic via framework middleware) | Root of the tree |
-| Every outbound call: HTTP, gRPC, DB, cache, queue (automatic via client instrumentation) | Where latency usually lives |
+| Every outbound call: <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, DB, cache, queue (automatic via client instrumentation) | Where latency usually lives |
 | Significant internal steps a human would name ("pricing.compute", "fraud.score") | Distinguishes your time from dependency time |
 | **Not** every function | Span overhead and noise; use a profiler for function-level detail |
 
@@ -1018,7 +1021,7 @@ pipelines have their own outages.
   the email address is not needed in a log that 200 engineers can read.
 - **Types that can't be logged** (`Secret` in §9, a `SensitiveStr` whose `__repr__`
   returns `[REDACTED]` in Python) are more reliable than reviewer vigilance.
-- **Scrub at the boundary too:** framework access logs and HTTP client debug logging
+- **Scrub at the boundary too:** framework access logs and <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> client debug logging
   capture headers (`Authorization`, cookies) and query strings (`?token=`).
 - **Retention and deletion apply to telemetry.** A GDPR deletion request covers personal
   data in logs; the less you log, the less there is to find and delete.
@@ -1035,7 +1038,7 @@ during the incident it was meant to help with. Test the parts that matter:
 
 | Test | How |
 |---|---|
-| **Critical logs are emitted with required fields** | Capture output (`caplog` in pytest, a `bytes.Buffer` handler in Go); assert on parsed JSON fields, not on message strings |
+| **Critical logs are emitted with required fields** | Capture output (`caplog` in pytest, a `bytes.Buffer` handler in Go); assert on parsed <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> fields, not on message strings |
 | **Secrets never appear** | Run a request containing a canary secret through the full stack; assert the canary is absent from all captured output (as §2's example does) |
 | **Metrics change as expected** | Use an isolated registry per test; assert counter deltas after an operation |
 | **Cardinality is bounded** | Metric wrapper rejects unknown label values in tests (§4) |
@@ -1136,7 +1139,7 @@ canary value that must never appear in output.
 ## 14 · Checklist
 
 **Logs**
-- [ ] Structured (JSON) with constant messages and fields.
+- [ ] Structured (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>) with constant messages and fields.
 - [ ] Request ID, trace ID, user/tenant ID, version attached automatically.
 - [ ] Levels mean actions; client errors are not ERROR.
 - [ ] Errors logged once at the boundary with type and cause.
@@ -1146,12 +1149,12 @@ canary value that must never appear in output.
 **Metrics**
 - [ ] RED for every endpoint and every outbound dependency.
 - [ ] USE for every pool and queue; lag for consumers; last-success for jobs.
-- [ ] Latency as histograms with buckets around the SLO.
+- [ ] Latency as histograms with buckets around the <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>.
 - [ ] Names follow conventions with base-unit suffixes; labels are bounded.
 - [ ] Business outcome metrics for core flows.
 
 **Traces**
-- [ ] Inbound and outbound calls instrumented; context propagated over HTTP, gRPC, and queues.
+- [ ] Inbound and outbound calls instrumented; context propagated over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, and queues.
 - [ ] Significant internal steps have spans; IDs are span attributes, not metric labels.
 - [ ] Sampling keeps errors and slow requests.
 

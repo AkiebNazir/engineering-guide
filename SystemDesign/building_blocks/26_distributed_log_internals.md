@@ -2,7 +2,7 @@
 
 A durable event stream ([09](09_messaging_and_streaming.md)) is not a queue with a bigger disk. It is a **partitioned, replicated, append-only log** whose consumers own their read position. That one choice explains its throughput, its ordering guarantee, its replay, and every way it fails. Saying "Kafka" commits you to all of it, so this block states the property first and the product second (Kafka, per its 4.0 documentation and the 2011 paper by Kreps, Narkhede and Rao).
 
-> 🎯 Say the commitments, not the brand: "An append-only log partitioned by `order_id`. Order holds per partition only. A write is durable once every in-sync replica has it and at least two exist. Consumers commit after processing, so delivery is at-least-once and handlers are idempotent. I watch consumer lag, not CPU."
+> 🎯 Say the commitments, not the brand: "An append-only log partitioned by `order_id`. Order holds per partition only. A write is durable once every in-sync replica has it and at least two exist. Consumers commit after processing, so delivery is at-least-once and handlers are idempotent. I watch consumer lag, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>."
 
 ## The log abstraction
 
@@ -15,13 +15,15 @@ A **partition** is one log. Records are appended at the end, never modified, and
 | Time index | Timestamp to offset, so a consumer can "seek to 10 minutes ago". | A `.timeindex` file per segment. |
 | Retention | Deletes whole segments by age or size, never the one being written. | 7 days, no size limit by default. |
 
-```mermaid
+```arch
 %% caption: A read is two binary searches and a short scan, so its cost does not grow with the amount of data retained.
-flowchart LR
-    req["Fetch from offset 1,234,567"] --> seg["Binary search segments<br/>by first offset"]
-    seg --> idx["Sparse index: largest entry<br/>at or below the target"]
-    idx --> scan["Scan forward at most<br/>about 4 KiB"]
-    scan --> ret["Return a chunk from there"]
+grid 160x100
+node req "Fetch from offset 1,234,567" at 0,0 shape=pill color=slate
+node seg "Binary search segments" at 0,1 shape=card icon=search sub="by first offset" w=260
+node idx "Sparse index" at 0,2 shape=card icon=index sub="largest entry at or below the target" w=260
+node scan "Scan forward" at 0,3 shape=card icon=file sub="at most about 4 KiB" w=260
+node ret "Return a chunk from there" at 0,4 shape=pill color=green
+req -> seg -> idx -> scan -> ret
 ```
 
 The paper describes the same shape: segment files of about 1 GB, appends to the last, and an in-memory sorted list of each segment's first offset. Modern Kafka numbers records densely (the 2011 paper used byte positions). Because retention deletes whole segments, a quiet partition can keep data past `retention.ms` until its segment rolls.
@@ -35,12 +37,12 @@ The paper describes the same shape: segment files of about 1 GB, appends to the 
 | Sequential I/O | Appends only. Docs: about 600 MB/s linear against about 100 KB/s random writes on their reference array. | Many partitions per spinning disk. |
 | Page cache | No in-process cache; caught-up consumers cause no disk reads. | A consumer far behind reads from disk. |
 | Batching | Producer batches per partition (`batch.size` 16 KiB, `linger.ms` 5 in 4.0), consumer fetches big chunks, batches stay compressed on disk. | Linger is latency added on purpose. |
-| Zero-copy | `sendfile`: the paper counts 4 copies and 2 syscalls without it. | Not used with TLS. |
-| Durability by replication | Flush is left to the OS by default; the docs say fsync on every write costs two to three orders of magnitude. | Loss of every replica's unflushed data at once. |
+| Zero-copy | `sendfile`: the paper counts 4 copies and 2 syscalls without it. | Not used with <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>. |
+| Durability by replication | Flush is left to the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> by default; the docs say fsync on every write costs two to three orders of magnitude. | Loss of every replica's unflushed data at once. |
 
 The paper measured 50,000 and 400,000 msgs/s for batch sizes 1 and 50 (200-byte messages, one producer, 2011). Quote the ratio, not the absolute: batching bought about 8x. In the sizing example below, 200 MB/s in 16 KiB batches is 12,200 batches/s instead of 200,000 records/s, a 16x cut in requests.
 
-**What to say:** "Random writes become sequential, the OS does the caching, bytes skip user space, and durability comes from replication rather than fsync."
+**What to say:** "Random writes become sequential, the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> does the caching, bytes skip user space, and durability comes from replication rather than fsync."
 
 ## Partitions: the unit of order and parallelism
 
@@ -110,17 +112,22 @@ Consumers sharing a `group.id` split the partitions; a **group coordinator** bro
 | Static (`group.instance.id`) | A restarting member keeps its partitions if back within the session timeout. | Real failures are detected later. |
 | KIP-848 (GA in 4.0, opt in via `group.protocol=consumer`) | Broker-side assignment, no stop-the-world. | Needs 4.0-era clients and brokers. |
 
-```mermaid
+```arch
 %% caption: The order of commit and processing decides whether a crash loses work or repeats it.
-flowchart TB
-    poll["poll returns offsets 100 to 199"] --> a{"Commit order"}
-    a -->|"commit 200 first"| a1["crash during processing"]
-    a1 --> a2["restart at 200: 100 to 199 skipped<br/>AT-MOST-ONCE"]
-    a -->|"process first"| b1["crash before commit"]
-    b1 --> b2["restart at 100: records repeated<br/>AT-LEAST-ONCE"]
+node poll "poll returns offsets 100 to 199" at 1,0 shape=pill color=slate
+node a "Commit order" at 1,1 shape=diamond color=amber
+node a1 "crash during processing" at 0,2 color=red
+node a2 "restart at 200" at 0,3 color=red sub="100 to 199 skipped · AT-MOST-ONCE"
+node b1 "crash before commit" at 2,2 color=orange
+node b2 "restart at 100" at 2,3 color=orange sub="records repeated · AT-LEAST-ONCE"
+poll -> a
+a -> a1 : "commit 200 first"
+a1 -> a2
+a -> b1 : "process first"
+b1 -> b2
 ```
 
-Auto-commit (default on, every 5 s) can repeat a few seconds of work after a crash. Default to at-least-once with idempotent handlers; choose at-most-once only when a lost record is cheaper than a duplicate. **Consumer lag** (log end offset minus committed offset, per partition) is the primary SLI. Alert on lag *growing* over a window, and convert it to time: `lag / (capacity - inflow)`. With 6M records behind and 250k/s capacity against 200k/s inflow, drain time is 6M / 50k = 120 s.
+Auto-commit (default on, every 5 s) can repeat a few seconds of work after a crash. Default to at-least-once with idempotent handlers; choose at-most-once only when a lost record is cheaper than a duplicate. **Consumer lag** (log end offset minus committed offset, per partition) is the primary <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr>. Alert on lag *growing* over a window, and convert it to time: `lag / (capacity - inflow)`. With 6M records behind and 250k/s capacity against 200k/s inflow, drain time is 6M / 50k = 120 s.
 
 ## Retention versus compaction
 
@@ -153,7 +160,7 @@ From each vendor's documentation; verify quotas before quoting them.
 | | Kafka-style log | Pulsar-style | Managed pub/sub (Google Cloud Pub/Sub) | SQS-style queue | Kinesis Data Streams |
 |---|---|---|---|---|---|
 | Storage | Partition logs on broker disks (+ tier) | Brokers serve, BookKeeper stores segments | Managed, no partitions | Managed, deleted on ack | Managed shards |
-| Order | Per partition | Per partition or key | Per ordering key (opt-in) | FIFO: per message group | Per shard |
+| Order | Per partition | Per partition or key | Per ordering key (opt-in) | <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>: per message group | Per shard |
 | Replay | Any retained offset | Cursor reset | Seek to timestamp | None | 24 h to 365 days retention |
 | Scale unit | Partition | Partition or subscription mode | Subscription | Workers | Shard (2 MB/s read) |
 | You operate | Brokers, disks, partitions | Brokers and bookies | Nothing | Nothing | Shard count |

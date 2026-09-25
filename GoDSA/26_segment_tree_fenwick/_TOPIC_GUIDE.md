@@ -24,8 +24,8 @@ nums[3] = 99   // one write...
 
 | Structure | Build | Point Update | Range Query | Handles non-sum ops? |
 |---|:--:|:--:|:--:|:--:|
-| Prefix sum array (Topic 04) | O(n) | **O(n)** | O(1) | No — sum/XOR only, and even those need a full rebuild on update |
-| Fenwick Tree (BIT) | O(n log n) / O(n) | **O(log n)** | O(log n) | Only invertible ops (sum, XOR) |
+| Prefix sum array (Topic 04) | O(n) | **O(n)** | O(1) | No — sum/<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> only, and even those need a full rebuild on update |
+| Fenwick Tree (BIT) | O(n log n) / O(n) | **O(log n)** | O(log n) | Only invertible ops (sum, <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>) |
 | Segment Tree | O(n) | **O(log n)** | O(log n) | ✅ Any associative op: sum, min, max, gcd |
 
 A static, never-mutated array should still just use a prefix sum — it's simpler
@@ -94,16 +94,25 @@ the diagram above.
 > progress walking up or down the implicit tree. Always allocate `tree` of size
 > `n+1` and ignore index 0.
 
-```mermaid
+```arch
 %% caption: Update at i walks UP with i += i & -i (3, 4, 8). A prefix query walks the other way with i -= i & -i (7, 6, 4). Each tree[i] covers the last (i & -i) elements ending at i.
-flowchart BT
-  t1["tree[1] = a1"] --> t2["tree[2] = a1..a2"]
-  t2 --> t4["tree[4] = a1..a4"]
-  t3["tree[3] = a3"] --> t4
-  t4 --> t8["tree[8] = a1..a8"]
-  t5["tree[5] = a5"] --> t6["tree[6] = a5..a6"]
-  t6 --> t8
-  t7["tree[7] = a7"] --> t8
+route straight
+grid 88x80
+node t8 "tree[8]" at 7,0 color=blue w=72 sub="a1..a8"
+node t4 "tree[4]" at 3,1 color=blue w=72 sub="a1..a4"
+node t2 "tree[2]" at 1,2 color=blue w=72 sub="a1..a2"
+node t6 "tree[6]" at 5,2 color=blue w=72 sub="a5..a6"
+node t1 "tree[1]" at 0,3 color=blue w=72 sub="a1"
+node t3 "tree[3]" at 2,3 color=blue w=72 sub="a3"
+node t5 "tree[5]" at 4,3 color=blue w=72 sub="a5"
+node t7 "tree[7]" at 6,3 color=blue w=72 sub="a7"
+t1 -> t2
+t2 -> t4
+t3 -> t4
+t4 -> t8
+t5 -> t6
+t6 -> t8
+t7 -> t8
 ```
 
 ### 2.3 Update: walk UP by repeatedly adding the lowest set bit
@@ -197,27 +206,39 @@ right child `2i+1` covers `[mid+1, hi]`.
    tree[4]:[0..1] tree[5]:[2..3] tree[6]:[4..5] tree[7]:[6..7]
 ```
 
-```mermaid
+```arch
 %% caption: Query [2..5] needs only the two highlighted nodes, [2..3] and [4..5]: O(log n) nodes are ever visited. Lazy propagation postpones a range update on a node until a query must look at its children.
-flowchart TD
-  r["[0..7]"] --> l1["[0..3]"]
-  r --> r1["[4..7]"]
-  l1 --> a["[0..1]"]
-  l1 --> b["[2..3]"]:::hot
-  r1 --> c["[4..5]"]:::hot
-  r1 --> d["[6..7]"]
-  a --> a0["0"]
-  a --> a1["1"]
-  b --> b2["2"]
-  b --> b3["3"]
-  c --> c4["4"]
-  c --> c5["5"]
-  d --> d6["6"]
-  d --> d7["7"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 72x85
+node r "[0..7]" at 4,0 shape=box color=blue w=64
+node l1 "[0..3]" at 2,1 shape=box color=blue w=64
+node r1 "[4..7]" at 6,1 shape=box color=blue w=64
+node a "[0..1]" at 1,2 shape=box color=blue w=64
+node b "[2..3]" at 3,2 shape=box color=amber w=64
+node c "[4..5]" at 5,2 shape=box color=amber w=64
+node d "[6..7]" at 7,2 shape=box color=blue w=64
+node a0 "0" at 0,3 shape=circle color=slate
+node a1 "1" at 1,3 shape=circle color=slate
+node b2 "2" at 2,3 shape=circle color=slate
+node b3 "3" at 3,3 shape=circle color=slate
+node c4 "4" at 4,3 shape=circle color=slate
+node c5 "5" at 5,3 shape=circle color=slate
+node d6 "6" at 6,3 shape=circle color=slate
+node d7 "7" at 7,3 shape=circle color=slate
+r -> l1
+r -> r1
+l1 -> a
+l1 -> b
+r1 -> c
+r1 -> d
+a -> a0
+a -> a1
+b -> b2
+b -> b3
+c -> c4
+c -> c5
+d -> d6
+d -> d7
 ```
 
 ### 3.2 Why the array is over-allocated to `4*n`
@@ -507,21 +528,26 @@ purely because LC's array is 0-indexed but the Fenwick tree's math requires
 Parts 2–6 give the two structures; this Part writes out what an interview asks about around them, in Go, and measures it. Every type below was compiled with `go vet` and checked against a brute-force reference on hundreds of random operation sequences
 (non-power-of-two sizes included), on Go 1.24 (darwin/arm64).
 
-```mermaid
+```arch
 %% caption: Which range structure? Invertible aggregate and point updates: Fenwick. Anything else, or range updates: segment tree. Static data: prefix sums or a sparse table.
-flowchart TD
-  Q(["Range query problem"]) --> A{"Does the array change?"}
-  A -->|"no"| B{"Aggregate?"}
-  B -->|"sum / xor"| P["prefix sums, O(1) per query"]:::ok
-  B -->|"min / max / gcd"| SP["sparse table, O(1) per query"]:::ok
-  A -->|"yes"| C{"Aggregate has an inverse?"}
-  C -->|"yes, point updates"| F["Fenwick tree"]:::ok
-  C -->|"yes, range updates"| F2["two Fenwick trees, or a lazy segment tree"]:::hot
-  C -->|"no (min, max, gcd)"| S["segment tree (iterative if no lazy tags)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x85
+node q "Range query problem" at 1,0 shape=pill
+node a "Does the array\nchange?" at 1,1 shape=diamond color=amber
+node b "Aggregate?" at 0,2 shape=diamond color=amber
+node p "Prefix sums" at 0,3 color=green w=180 sub="O(1) per query"
+node sp "Sparse table" at 0,4 color=green w=180 sub="O(1) per query"
+node c "Aggregate has\nan inverse?" at 2,2 shape=diamond color=amber
+node f "Fenwick tree" at 2,3 color=green w=180
+node f2 "Two Fenwick trees" at 2,4 color=amber w=180 sub="or a lazy segment tree"
+node s "Segment tree" at 1,3 color=amber w=180 sub="iterative if no lazy tags"
+q -> a
+a:L -> b:T : "no"
+a:R -> c:T : "yes"
+b -> p : "sum / xor"
+b:L -> sp:L : "min / max / gcd"
+c -> f : "yes, point updates"
+c:R -> f2:R : "yes, range updates"
+c:L -> s:T : "no (min, max, gcd)"
 ```
 
 ### 7.1 The Fenwick tree, complete — linear build, delta updates, and the `k`-th element

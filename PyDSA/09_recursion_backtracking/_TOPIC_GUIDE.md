@@ -1,6 +1,6 @@
 # Topic 09 · Recursion / Backtracking — Python Deep Dive
 
-> Backtracking is not a new algorithm. It is DFS over a **decision tree you build
+> Backtracking is not a new algorithm. It is <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> over a **decision tree you build
 > as you go**: each recursive call is a node, each choice you try is an edge, and
 > a leaf is either a complete valid answer or a dead end. The entire topic is one
 > template — **choose → explore → unchoose** — instantiated with fourteen
@@ -15,13 +15,13 @@
 
 ---
 
-## Part 0 · Fibonacci is not backtracking — it is the bridge to DP
+## Part 0 · Fibonacci is not backtracking — it is the bridge to <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 
 001 sits in this topic because it is **recursion without a decision tree** — no
 choices, no leaves, no path to build. It exists here to demonstrate the single
 most important fact about naive recursion before you need it for real: **naive
 recursion recomputes the same subproblem exponentially many times**, and
-memoization turns the call *graph* (a DAG with massive overlap) into a call
+memoization turns the call *graph* (a <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> with massive overlap) into a call
 *tree* traversal that visits each distinct subproblem once.
 
 ```
@@ -41,7 +41,7 @@ naive `fib(n)` makes `O(2^n)` calls (technically `O(φ^n)`, φ ≈ 1.618) becaus
 recursion tree has no memory across branches. Memoizing collapses it to `O(n)`
 distinct subproblems, each solved once. Problem 001's runtime demo measures the
 actual call count for both versions — this is not asserted, it is counted live.
-**This is the exact idea DP topics 16–17 build an entire toolkit around: naive
+**This is the exact idea <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> topics 16–17 build an entire toolkit around: naive
 recursion over overlapping subproblems is exponential; caching results (top-down
 memoization) or filling them bottom-up (tabulation) makes it polynomial.** Keep
 001 in mind when you get there — it is the smallest possible example of the
@@ -57,22 +57,26 @@ the problem asks you to *produce* them, not just count or optimize one.
 
 ## Part 1 · The universal template
 
-```mermaid
+```arch
 %% caption: The choose, explore, un-choose loop that every backtracking problem shares.
-flowchart TD
-  S["backtrack(state)"] --> B{"state is a complete answer?"}
-  B -->|yes| R["record a COPY of state"]:::ok
-  B -->|no| L["for each choice available now"]
-  L --> P{"choice breaks a constraint?"}
-  P -->|yes| SK["skip it (prune)"]:::bad
-  P -->|no| C["1. choose: modify state"]
-  C --> E["2. explore: backtrack(state)"]
-  E --> U["3. un-choose: undo the change"]:::hot
-  U --> L
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x100
+node S "backtrack(state)" at 0,0 shape=pill
+node B "complete answer?" at 0,1 shape=diamond color=amber
+node R "Record a COPY of state" at 1,1 shape=card icon=doc color=green
+node L "for each choice available now" at 0,2 shape=box
+node P "breaks a constraint?" at 1,2 shape=diamond color=amber
+node SK "skip it" at 2,2 color=red sub="prune"
+node C "1. choose" at 1,3 shape=card icon=check sub="modify state"
+node E "2. explore" at 1,4 shape=card icon=tree sub="backtrack(state)"
+node U "3. un-choose" at 0,4 shape=card icon=delete color=amber sub="undo the change"
+S -> B
+B -> R : "yes"
+B -> L : "no"
+L -> P
+P -> SK : "yes"
+P -> C : "no"
+C -> E -> U
+U -> L
 ```
 
 
@@ -138,19 +142,23 @@ combinations is the shape of `choices_at()`.** Everything else — the template,
 the recursion, the leaf test — is identical. Internalize this table before
 memorizing any individual solution:
 
-```mermaid
+```arch
 %% caption: Subsets as a decision tree: each level is one element, each branch is a choice, and the leaves are the answers.
-flowchart TD
-  r["[ ]"] -->|"take 1"| a["[1]"]
-  r -->|"skip 1"| b["[ ]"]
-  a -->|"take 2"| a1["[1, 2]"]:::ok
-  a -->|"skip 2"| a2["[1]"]:::ok
-  b -->|"take 2"| b1["[2]"]:::ok
-  b -->|"skip 2"| b2["[ ]"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 100x100
+node r "[ ]" at 1.5,0 shape=circle color=blue
+node a "[1]" at 0.5,1 shape=circle color=blue
+node b "[ ]" at 2.5,1 shape=circle color=blue
+node a1 "[1, 2]" at 0,2 shape=circle color=green
+node a2 "[1]" at 1,2 shape=circle color=green
+node b1 "[2]" at 2,2 shape=circle color=green
+node b2 "[ ]" at 3,2 shape=circle color=green
+r -> a : "take 1"
+r -> b : "skip 1"
+a -> a1 : "take 2"
+a -> a2 : "skip 2"
+b -> b1 : "take 2"
+b -> b2 : "skip 2"
 ```
 
 
@@ -191,18 +199,21 @@ duplicates at the end. On `[1,1,1,1,1,1,1,1,1,1]` (subsets), that naive
 approach constructs and discards `2^10 = 1024` branches to arrive at 11 unique
 results.
 
-```mermaid
+```arch
 %% caption: Sort first, then skip a value equal to the previous one at the same level of the tree. Deeper levels may still use it.
-flowchart TD
-  r["[ ]   nums sorted = [1, 1, 2]"] -->|"i=0: pick the first 1"| a["[1]"]
-  r -->|"i=1: equals nums[0] at the same level"| x["skip"]:::bad
-  r -->|"i=2: pick 2"| c["[2]"]
-  a -->|"i=1: pick the second 1<br/>(deeper level, allowed)"| a1["[1, 1]"]:::ok
-  a -->|"i=2: pick 2"| a2["[1, 2]"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 250x160
+node r "[ ]" at 1,0 color=blue sub="nums sorted = [1, 1, 2]"
+node a "[1]" at 0,1 color=blue
+node x "skip" at 1,1 color=red
+node c "[2]" at 2,1 color=blue
+node a1 "[1, 1]" at 0,2 color=green
+node a2 "[1, 2]" at 1,2 color=green
+r -> a : "i=0: pick the first 1"
+r -> x : "i=1: equals nums[0]\nat the same level"
+r -> c : "i=2: pick 2"
+a -> a1 : "i=1: second 1\n(deeper, allowed)"
+a -> a2 : "i=2: pick 2"
 ```
 
 
@@ -273,19 +284,20 @@ cells continues the word?" The state that must be choose/unchosen here is not a
 almost always represented as mutating the board cell itself (e.g. to `'#'`) or a
 parallel `visited` grid.
 
-```mermaid
+```arch
 %% caption: Grid backtracking: mark the cell on the way in, and always restore it on the way out.
-flowchart LR
-  A["at cell (r, c)"] --> B{"in bounds, letter matches,<br/>not visited?"}
-  B -->|no| X["return False"]:::bad
-  B -->|yes| C["MARK the cell as visited"]
-  C --> D["try the 4 neighbours"]
-  D --> E["UNMARK: restore the letter"]:::hot
-  E --> F["return True if any neighbour succeeded"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node A "at cell (r, c)" at 0,0 shape=pill
+node B "in bounds, letter matches, not visited?" at 0,1 shape=diamond color=amber
+node X "return False" at 1,1 color=red
+node C "MARK the cell as visited" at 0,2
+node D "try the 4 neighbours" at 0,3
+node E "UNMARK: restore the letter" at 0,4 color=amber
+node F "return True if any neighbour succeeded" at 0,5 shape=pill color=green
+A -> B
+B -> X : "no"
+B -> C : "yes"
+C -> D -> E -> F
 ```
 
 
@@ -492,25 +504,25 @@ and should be done last.
 
 ### Where this goes next
 
-- **Topic 10 - Trees (DFS).** A binary tree traversal IS this same template
+- **Topic 10 - Trees (<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>).** A binary tree traversal IS this same template
   with the pool of choices fixed at exactly {left child, right child} and
   usually no unchoose step for the tree itself (you're not mutating tree
   structure) -- though you still push/pop a `path` list the same way when
   collecting root-to-leaf paths (e.g. LC 113 Path Sum II). Recognize 012
-  Word Search as the missing link: it's tree-shaped DFS over a grid where
+  Word Search as the missing link: it's tree-shaped <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> over a grid where
   the "tree" is generated on the fly from 4-way adjacency instead of
   `.left`/`.right` pointers.
-- **Topics 16/17 - DP.** 001 Fibonacci already showed the mechanism: when a
-  backtracking-shaped recursion's calls form a DAG with repeated
+- **Topics 16/17 - <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>.** 001 Fibonacci already showed the mechanism: when a
+  backtracking-shaped recursion's calls form a <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> with repeated
   subproblems (not a tree of genuinely distinct paths), add a memo dict
   keyed by the recursion's state signature and you've turned exponential
-  backtracking into polynomial DP. The test is always the one from Part 0:
+  backtracking into polynomial <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>. The test is always the one from Part 0:
   do sibling branches ever recompute the *same* subproblem? Subsets/
   Permutations/Combinations never do (every leaf is a distinct answer, so
   there's nothing to memoize) -- that's what makes them backtracking and not
-  DP. Combination-Sum-style problems with a numeric target (007, 009) are
+  <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>. Combination-Sum-style problems with a numeric target (007, 009) are
   the borderline case: memoizing (index, remaining_target) is exactly how
-  you'd convert 007 into the unbounded-knapsack DP you'll meet in topic 17.
+  you'd convert 007 into the unbounded-knapsack <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> you'll meet in topic 17.
 
 
 ---
@@ -581,7 +593,7 @@ empty cell with the fewest legal digits next, so dead ends appear near the root 
 
 ### 10.3 New choice shapes: segments and lengths (LC 93)
 
-Restore IP Addresses has no shared pool: at each step you choose the **length** (1–3) of the next segment, with two
+Restore <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> Addresses has no shared pool: at each step you choose the **length** (1–3) of the next segment, with two
 validity rules (`<= 255`, no leading zero). The path is the four segments so far:
 
 ```python
@@ -606,7 +618,7 @@ The depth limit (exactly 4 parts) is what keeps this tiny: the tree has at most 
 ### 10.4 Precompute what the tree keeps re-asking (Palindrome Partitioning)
 
 The naive solution re-checks `s[start:end+1] == s[start:end+1][::-1]` at every node. Precompute a table once — an
-`O(n²)` DP — and each test is `O(1)`:
+`O(n²)` <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> — and each test is `O(1)`:
 
 ```python
 is_pal = [[False] * n for _ in range(n)]
@@ -616,9 +628,9 @@ for i in range(n - 1, -1, -1):
 ```
 
 The output is still exponential (`"aaaa"` has `2³ = 8` partitions), but the per-node cost drops from `O(n)` to `O(1)`.
-This is the bridge to DP: when a *sub-question* repeats, tabulate it.
+This is the bridge to <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: when a *sub-question* repeats, tabulate it.
 
-### 10.5 When the state repeats, backtracking becomes DP
+### 10.5 When the state repeats, backtracking becomes <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 
 If two different paths can arrive at the **same state** (`index`, `remaining`, a bitmask of used items) and the question
 is a *count* or a *yes/no* rather than "list every path", memoise the state. Word Break, Partition to K Equal Sum
@@ -663,7 +675,7 @@ for x in nums: res += [r + [x] for r in res]      # [1,2,3] -> [[],[1],[2],[1,2]
 | Follow-up | The answer |
 |---|---|
 | "Only count them / only find one." | Count: return an integer up the stack (no path stored). Find one: return `True` up the stack and stop at the first success (the *cascade return* of Sudoku). |
-| "Can you do better than exponential?" | For *enumeration* no — the output has `2ⁿ` / `n!` entries. For counting or existence, look for repeating states (DP) or structure (N-Queens counting has no closed form). |
+| "Can you do better than exponential?" | For *enumeration* no — the output has `2ⁿ` / `n!` entries. For counting or existence, look for repeating states (<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) or structure (N-Queens counting has no closed form). |
 | "It is too slow." | Prune earlier (validity before recursing), order the choices (sort, most-constrained first), bound the loop, use bitmasks, exploit symmetry (N-Queens: solve the left half, mirror it). |
 | "Recursion limit / very deep." | CPython stops at ~1000 frames. Backtracking depth is usually small (`n`), but convert to an explicit stack if not. |
 | "Parallelise it." | Split at the first level: each first choice is an independent subtree, so give each to a worker and merge the results. |
@@ -680,7 +692,7 @@ Fourteen problems, five moves (memoisation as the bridge · the three base shape
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Fibonacci Number](PyDSA/09_recursion_backtracking/001_fibonacci_number_solution.py) <br>LC 509 · Easy | The bridge to DP | Naive recursion recomputes overlapping subproblems exponentially; caching each result the first time turns O(2ⁿ) into O(n). This is *not* backtracking — there is one answer, not a tree of distinct paths. **Trap:** off-by-one base cases (`F(0) = F(1) = 1`); a cache that is rebuilt on every call. |
+| [001 · Fibonacci Number](PyDSA/09_recursion_backtracking/001_fibonacci_number_solution.py) <br>LC 509 · Easy | The bridge to <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> | Naive recursion recomputes overlapping subproblems exponentially; caching each result the first time turns O(2ⁿ) into O(n). This is *not* backtracking — there is one answer, not a tree of distinct paths. **Trap:** off-by-one base cases (`F(0) = F(1) = 1`); a cache that is rebuilt on every call. |
 | [002 · Subsets](PyDSA/09_recursion_backtracking/002_subsets_solution.py) <br>LC 78 · Medium | Subsets — every node is an answer | Record the current path at *every* node, then extend it with each later index: `2ⁿ` results. **Trap:** `results.append(path)` instead of `path[:]` — every entry aliases the one list that is later popped empty. |
 | [003 · Subsets II](PyDSA/09_recursion_backtracking/003_subsets_ii_solution.py) <br>LC 90 · Medium | Sort, then skip equal siblings | Sort so equal values are adjacent, then skip a value that repeats the previous *sibling at the same node*: `i > start and nums[i] == nums[i-1]`. **Trap:** not sorting (`[2, 1, 2]`); `i > 0` instead of `i > start` (forbids legitimate reuse across depths). |
 | [004 · Permutations](PyDSA/09_recursion_backtracking/004_permutations_solution.py) <br>LC 46 · Medium | Permutations | At each slot choose any *unused* element (a `used[]` array or an in-place swap); leaves are complete arrangements: `n!`. **Trap:** appending the shared `path` instead of a copy. |
@@ -715,11 +727,11 @@ Fourteen problems, five moves (memoisation as the bridge · the three base shape
       search space numbers to back it up.
 - [ ] I never `results.append(path)` — always `path[:]` or `list(path)` — and I
       can explain exactly what breaks if I forget (§8).
-- [ ] I can distinguish "overlapping subproseblems -> DP" from "disjoint paths in
+- [ ] I can distinguish "overlapping subproseblems -> <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>" from "disjoint paths in
       a decision tree -> backtracking" using Fibonacci vs. Subsets as the two
       reference points.
 - [ ] Say what a `break` on sorted candidates saves (loop iterations) and what it does *not* (recursive calls) <!--ca-->
 - [ ] Bound a combinations loop by what is still needed, and quote the measured effect <!--ca-->
 - [ ] Write N-Queens with bitmasks, and explain the most-constrained-cell heuristic for Sudoku <!--ca-->
 - [ ] Precompute a palindrome table for Palindrome Partitioning, and say why the output is still exponential <!--ca-->
-- [ ] Say when backtracking becomes DP (repeated state + a count or yes/no question) <!--ca-->
+- [ ] Say when backtracking becomes <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (repeated state + a count or yes/no question) <!--ca-->

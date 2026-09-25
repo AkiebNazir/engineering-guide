@@ -18,19 +18,19 @@ At every single timestep, we add a microscopic amount of Gaussian noise to the i
 - $x_{1000}$ is pure, mathematically perfect, random Gaussian noise.
 **Crucial Note:** This requires ZERO artificial intelligence. This is a strict, fixed mathematical formula: $q(x_t|x_{t-1})$. We literally just add random numbers to pixels.
 
-### 2. The Reverse Process (The AI)
-If we can destroy an image, can we learn to reverse the formula? Can we teach an AI to look at $x_{500}$ and figure out exactly how to subtract the static to get back to $x_{499}$?
-Yes. We train a **U-Net** (The CNN architecture from Day 42 that features Skip Connections).
+### 2. The Reverse Process (The <abbr title="Artificial Intelligence">AI</abbr>)
+If we can destroy an image, can we learn to reverse the formula? Can we teach an <abbr title="Artificial Intelligence">AI</abbr> to look at $x_{500}$ and figure out exactly how to subtract the static to get back to $x_{499}$?
+Yes. We train a **U-Net** (The <abbr title="Convolutional Neural Network">CNN</abbr> architecture from Day 42 that features Skip Connections).
 1. We give the U-Net a noisy image $x_t$, and we explicitly tell it the current timestep $t$.
 2. The U-Net outputs an image. But it does NOT output the clean dog! 
 3. The U-Net outputs **the exact mathematical noise** that was added to the image. 
 
 ### 3. The Objective Function (So simple it's genius)
-The Loss Function for Diffusion is arguably the simplest math in all of Generative AI.
+The Loss Function for Diffusion is arguably the simplest math in all of Generative <abbr title="Artificial Intelligence">AI</abbr>.
 We know exactly what noise we added to the image (we added it ourselves in the Forward process). We call this $\epsilon$.
-The AI guesses the noise. We call this $\epsilon_\theta$.
+The <abbr title="Artificial Intelligence">AI</abbr> guesses the noise. We call this $\epsilon_\theta$.
 **The Loss:** $\mathcal{L} = \|\epsilon - \epsilon_\theta(x_t, t)\|^2$.
-It's just Mean Squared Error! If the AI guesses the noise perfectly, the MSE is 0.
+It's just Mean Squared Error! If the <abbr title="Artificial Intelligence">AI</abbr> guesses the noise perfectly, the MSE is 0.
 
 ### 4. Generating an Image (Sampling)
 Once trained, how do we make art?
@@ -39,7 +39,7 @@ Once trained, how do we make art?
 3. The U-Net predicts the noise. We mathematically subtract that noise from $x_{1000}$ to get $x_{999}$.
 4. We pass $x_{999}$ back into the U-Net. We subtract the noise to get $x_{998}$.
 5. We repeat this loop exactly 1,000 times! At $x_0$, a photorealistic image emerges.
-**The Catch:** Running a massive CNN 1,000 times in a row just to generate 1 image takes several seconds. This is why Diffusion models are incredibly slow compared to GANs.
+**The Catch:** Running a massive <abbr title="Convolutional Neural Network">CNN</abbr> 1,000 times in a row just to generate 1 image takes several seconds. This is why Diffusion models are incredibly slow compared to GANs.
 
 ---
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The Closed Form Shortcut:** Notice we did not use a `for` loop to add noise 500 times. Because Gaussian distributions have a mathematical property where the sum of two Gaussians is just another Gaussian, we can pre-calculate the `alphas_cumprod` array and instantly jump from $x_0$ to $x_t$ in one single calculation!
-2. **The Loss Function:** If you were training the AI right now, you would pass `noisy_images` and `timesteps` into your U-Net. The U-Net would output a prediction. Your loss would simply be: `MSELoss(unet_prediction, actual_noise)`.
+2. **The Loss Function:** If you were training the <abbr title="Artificial Intelligence">AI</abbr> right now, you would pass `noisy_images` and `timesteps` into your U-Net. The U-Net would output a prediction. Your loss would simply be: `MSELoss(unet_prediction, actual_noise)`.
 
 ---
 
@@ -163,4 +163,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. You have mastered the absolute state-of-the-art in Generative Vision.
 
-Tomorrow, in **Day 59**, we tackle data that doesn't fit in grids or sequences. How do we run AI on a Social Network or a Molecule? Welcome to **Graph Neural Networks (GNNs)!**
+Tomorrow, in **Day 59**, we tackle data that doesn't fit in grids or sequences. How do we run <abbr title="Artificial Intelligence">AI</abbr> on a Social Network or a Molecule? Welcome to **Graph Neural Networks (GNNs)!**

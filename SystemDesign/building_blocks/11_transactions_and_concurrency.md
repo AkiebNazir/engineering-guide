@@ -1,6 +1,6 @@
 # Transactions, Isolation, Locking, and Sagas
 
-## ACID, precisely
+## <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr>, precisely
 
 A transaction groups changes so all of them succeed or none do.
 
@@ -9,7 +9,7 @@ A transaction groups changes so all of them succeed or none do.
 - **Isolation:** concurrent transactions appear to not interfere, to a degree defined by the chosen isolation level (not automatically "fully").
 - **Durability:** once committed, the change survives a crash.
 
-**What ACID does NOT promise:** anything about other replicas. A committed transaction on the primary is durable and isolated *on that node* — a follower can still be lagging behind it. ACID is a single-node (or single-cluster-with-consensus) guarantee; consistency across replicas is a separate, explicit choice (see `10_distributed_systems_theory.md`). Don't let "the DB is ACID" imply "reads anywhere are correct."
+**What <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> does NOT promise:** anything about other replicas. A committed transaction on the primary is durable and isolated *on that node* — a follower can still be lagging behind it. <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> is a single-node (or single-cluster-with-consensus) guarantee; consistency across replicas is a separate, explicit choice (see `10_distributed_systems_theory.md`). Don't let "the DB is <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr>" imply "reads anywhere are correct."
 
 ## Isolation anomalies
 
@@ -19,19 +19,19 @@ Weaker isolation levels trade correctness for concurrency throughput. Know which
 |---|---|---|
 | Lost update | Two requests both read `stock=10`, each computes `9`, both write `9` — one decrement is silently lost even though two units sold. | Row lock, compare-and-swap/version check, a single atomic conditional `UPDATE`, or a level that detects the conflict (snapshot isolation in PostgreSQL aborts the loser with `40001`; serializable) — see the table below, because this is database-dependent. |
 | Dirty read | Transaction A reads a value transaction B wrote but hasn't committed yet; B then rolls back — A acted on data that never existed. | Read committed or stronger — never read uncommitted data. |
-| Non-repeatable read | Transaction A reads a row, does other work, reads the same row again — it changed because B committed an update in between. | Repeatable read, locking read, or a consistent snapshot (MVCC). |
+| Non-repeatable read | Transaction A reads a row, does other work, reads the same row again — it changed because B committed an update in between. | Repeatable read, locking read, or a consistent snapshot (<abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr>). |
 | Phantom | Transaction A runs `SELECT ... WHERE status='pending'` twice in one transaction; the second run sees a new row B inserted and committed in between. | Serializable isolation, predicate locking, or explicit re-validation. |
 | Write skew | Two transactions each independently check a *different* row and see their own local condition holds (e.g. "at least one of two on-call doctors is scheduled"), but the combination they jointly produce violates the invariant (both go off-call). | Serializable isolation, or an explicit materialized constraint/lock covering the actual invariant, not just each transaction's own row. |
 
 ### What each isolation level actually defends
 
-The level *names* are a SQL-standard vocabulary, and databases implement them differently. Read the table as "what is true for that mechanism," not "what the label guarantees everywhere":
+The level *names* are a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>-standard vocabulary, and databases implement them differently. Read the table as "what is true for that mechanism," not "what the label guarantees everywhere":
 
 | Level | Dirty read | Non-repeatable read | Phantom | Lost update | Write skew |
 |---|---|---|---|---|---|
 | Read committed | blocked | possible | possible | possible (for a read, compute in the app, write pattern) | possible |
-| Repeatable read (the SQL-standard label, and MySQL/InnoDB's default level) | blocked | blocked | usually blocked (DB-dependent) | possible ¹ | possible |
-| Snapshot isolation (PostgreSQL's `REPEATABLE READ`; Oracle's `SERIALIZABLE`; SQL Server's `SNAPSHOT`) | blocked | blocked | blocked for reads of the snapshot | blocked ² (the second writer to a row is aborted, you retry) | **possible** |
+| Repeatable read (the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>-standard label, and MySQL/InnoDB's default level) | blocked | blocked | usually blocked (DB-dependent) | possible ¹ | possible |
+| Snapshot isolation (PostgreSQL's `REPEATABLE READ`; Oracle's `SERIALIZABLE`; <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> Server's `SNAPSHOT`) | blocked | blocked | blocked for reads of the snapshot | blocked ² (the second writer to a row is aborted, you retry) | **possible** |
 | Serializable | blocked | blocked | blocked | blocked | blocked ³ |
 
 ¹ **MySQL/InnoDB.** A plain `SELECT` reads a snapshot fixed at the transaction's first read, but `UPDATE`, `DELETE` and locking reads (`FOR UPDATE`) act on the *latest committed* row, not the snapshot (MySQL reference manual, "Consistent Nonlocking Reads"). So "read `stock=10`, compute `9` in the app, `UPDATE ... SET stock = 9`" can silently overwrite a concurrent committed change: the lost update is still possible unless you use `FOR UPDATE`, a version check, or an atomic `SET stock = stock - 1`.
@@ -40,7 +40,7 @@ The level *names* are a SQL-standard vocabulary, and databases implement them di
 
 ³ **Serializable is implemented differently too.** PostgreSQL uses serializable snapshot isolation: it lets transactions run optimistically and aborts one with `40001` when it detects a dangerous pattern, so you need retry logic. MySQL/InnoDB implements it with locking (plain reads become shared-locking reads), so you get blocking and deadlocks instead. Oracle's level named `SERIALIZABLE` is really snapshot isolation, so write skew is possible there; check the vendor's documentation before you trust the label.
 
-Read committed is a common default (PostgreSQL, Oracle, SQL Server, and most OLTP workloads) because it's cheap and blocks the anomaly people picture when they say "dirty data." It does **not** protect an inventory-style read-modify-write. That needs a row lock (`SELECT ... FOR UPDATE`), a version check, or a conditional update (`WHERE available >= :qty`), and the conditional update is the one that is correct at *every* isolation level because the read and the write happen inside one atomic statement. Stronger levels can also fix it (footnotes ² and ³), but only if the application catches `40001` and retries. In an interview, say the mechanism you rely on, not just the level name.
+Read committed is a common default (PostgreSQL, Oracle, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> Server, and most OLTP workloads) because it's cheap and blocks the anomaly people picture when they say "dirty data." It does **not** protect an inventory-style read-modify-write. That needs a row lock (`SELECT ... FOR UPDATE`), a version check, or a conditional update (`WHERE available >= :qty`), and the conditional update is the one that is correct at *every* isolation level because the read and the write happen inside one atomic statement. Stronger levels can also fix it (footnotes ² and ³), but only if the application catches `40001` and retries. In an interview, say the mechanism you rely on, not just the level name.
 
 > 💡 Snapshot isolation is the answer to "does REPEATABLE READ stop lost updates?" It depends on the database: yes in PostgreSQL, not by itself in InnoDB. Neither stops write skew, which needs serializable isolation or an explicit lock or constraint that covers the invariant.
 
@@ -71,11 +71,11 @@ Good under high contention (hot row that many transactions want). Costs: waiting
 
 ### Keep transactions short
 
-Never hold a database lock — or an open transaction at all — across a remote call (payment provider, email service, another microservice). A slow or hung downstream call turns into a long-held lock, which turns into every other transaction on that row queuing behind a call you don't control. Do the remote call outside the transaction: reserve locally (conditional update, short transaction), call out, then commit the final state in a second short transaction. This is exactly why the saga pattern below exists — a single ACID transaction across services isn't available at all.
+Never hold a database lock — or an open transaction at all — across a remote call (payment provider, email service, another microservice). A slow or hung downstream call turns into a long-held lock, which turns into every other transaction on that row queuing behind a call you don't control. Do the remote call outside the transaction: reserve locally (conditional update, short transaction), call out, then commit the final state in a second short transaction. This is exactly why the saga pattern below exists — a single <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> transaction across services isn't available at all.
 
 ## The saga pattern
 
-A distributed "transaction" spanning independent services/databases has no cheap global ACID equivalent (two-phase commit exists but is a coordination and availability liability few systems accept). A **saga** replaces it with a sequence of local, durable steps, each with an explicit compensation for undoing its effect if a later step fails.
+A distributed "transaction" spanning independent services/databases has no cheap global <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> equivalent (two-phase commit exists but is a coordination and availability liability few systems accept). A **saga** replaces it with a sequence of local, durable steps, each with an explicit compensation for undoing its effect if a later step fails.
 
 ```mermaid
 %% caption: If shipment creation fails after payment succeeded, compensations run in reverse order back through the completed steps.
@@ -109,6 +109,27 @@ Key rules, all non-negotiable:
 
 ### Orchestration vs. choreography
 
+
+```arch
+%% caption: Orchestration uses a central coordinator; choreography relies on services reacting to events.
+group orch "Orchestration (Centralized)" color=blue
+node coord "Coordinator\n(State Machine)" at 0,1 in orch icon=app
+node s1 "Service A" at 2,0 in orch icon=server
+node s2 "Service B" at 2,1 in orch icon=server
+node s3 "Service C" at 2,2 in orch icon=server
+
+coord -> s1 : "1. call"
+coord -> s2 : "2. call"
+coord -> s3 : "3. call"
+
+group chor "Choreography (Event-Driven)" color=green
+node ca "Service A" at 4,1 in chor icon=server
+node cb "Service B" at 6,1 in chor icon=server
+node cc "Service C" at 8,1 in chor icon=server
+
+ca -> cb : "event A done"
+cb -> cc : "event B done"
+```
 | Style | How it works | Choose it when | Cost |
 |---|---|---|---|
 | Orchestration | One coordinator service explicitly calls each step and its compensation, holding the saga's state machine. | You need clear visibility into where every saga instance is, and central control over ordering/retries. | The orchestrator becomes a required dependency and a single place that must be built well — but it's also the single place you look at to debug anything. |

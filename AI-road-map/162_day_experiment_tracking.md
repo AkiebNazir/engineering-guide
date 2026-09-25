@@ -13,7 +13,7 @@ Today, we learn **Experiment Tracking**. We will use enterprise-grade tools like
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Reproducibility Crisis
-If an ML engineer leaves the company, and they leave behind a file named `best_model_final_v3.pkl`, the company is in trouble.
+If an <abbr title="Machine Learning">ML</abbr> engineer leaves the company, and they leave behind a file named `best_model_final_v3.pkl`, the company is in trouble.
 To reproduce a model, you need:
 1. **The Exact Code:** Which Git commit was running?
 2. **The Exact Data:** Was the data cleaned? Did it include the December dataset?
@@ -24,7 +24,7 @@ Experiment Trackers act as a "Flight Data Recorder" for your training script, au
 
 ### 2. The Big Two Trackers
 1. **MLflow:** Open-source, created by Databricks. It is the enterprise standard for tracking experiments, saving artifacts (model files), and deploying them to production. It runs locally for free.
-2. **Weights & Biases (WandB):** The gold standard for Deep Learning and LLM training. Used by OpenAI to track GPT-4 training. It features incredible live charts, interactive dashboards, and cloud hosting.
+2. **Weights & Biases (WandB):** The gold standard for Deep Learning and <abbr title="Large Language Model">LLM</abbr> training. Used by OpenAI to track GPT-4 training. It features incredible live charts, interactive dashboards, and cloud hosting.
 
 ### 3. What Exactly Are We Tracking?
 - **Parameters (Inputs):** Learning rate `0.001`, batch size `32`, optimizer `AdamW`.
@@ -132,7 +132,7 @@ MLflow has an "Autolog" feature that prevents you from having to type `mlflow.lo
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your team of 10 ML researchers runs 500 experiments per month on a massive GPU cluster. Many experiments are abandoned. How do you design an experiment lifecycle management system to ensure 100% reproducibility and prevent wasted compute?"*
+*"Your team of 10 <abbr title="Machine Learning">ML</abbr> researchers runs 500 experiments per month on a massive GPU cluster. Many experiments are abandoned. How do you design an experiment lifecycle management system to ensure 100% reproducibility and prevent wasted compute?"*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:

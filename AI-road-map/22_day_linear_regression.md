@@ -2,7 +2,7 @@
 
 Welcome to Day 22! Today, you officially cross the threshold into **Phase 4: Classical Machine Learning**. 
 
-Before Deep Neural Networks existed, the world ran on statistical learning algorithms. While Deep Learning is great for analyzing unstructured data (like images and text), Classical ML algorithms still absolutely dominate structured, tabular data (Excel sheets, financial records, medical databases).
+Before Deep Neural Networks existed, the world ran on statistical learning algorithms. While Deep Learning is great for analyzing unstructured data (like images and text), Classical <abbr title="Machine Learning">ML</abbr> algorithms still absolutely dominate structured, tabular data (Excel sheets, financial records, medical databases).
 
 We begin with the grandfather of all Machine Learning: **Ordinary Least Squares (OLS) Linear Regression**.
 
@@ -153,6 +153,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Alternatively, apply **Lasso ($L_1$) Regularization**, which will algorithmically identify the redundant feature and automatically force its weight to exactly `0.0`.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have officially run your first Classical ML algorithm. 
+**Task for the end of the day:** Commit your code to Git. You have officially run your first Classical <abbr title="Machine Learning">ML</abbr> algorithm. 
 
 Tomorrow, in **Day 23**, we take the straight line of Linear Regression and bend it using a Sigmoid function to create the ultimate binary classification algorithm: **Logistic Regression!**

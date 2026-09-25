@@ -8,7 +8,7 @@ The invariant is not "exactly once sent"—a provider can accept a message while
 
 **Functional scope:** accept notification requests from internal services (single recipient or campaign), apply preferences/consent/quiet hours, render templates per locale, deliver over push (APNs/FCM), email, SMS, and in-app inbox, track delivery/open/bounce, and expose status. **Out of scope:** authoring UI for marketing campaigns, the email provider itself.
 
-**Non-functional:** the question's contract is a password reset *delivered* within 10 s at p99. We own the first half, so the budget is transactional p99 intent-to-provider-handoff under 5 s, leaving about 5 s for the provider and network (push is usually a second or two; email and SMS delivery time depends on the carrier or mailbox provider, which is why the promise is handoff plus a per-channel delivery SLI, not a guarantee of inbox time); campaigns may take hours but must not delay transactional traffic; no lost intents (durable before acknowledging the caller); duplicates rare and bounded; regional data residency for PII.
+**Non-functional:** the question's contract is a password reset *delivered* within 10 s at p99. We own the first half, so the budget is transactional p99 intent-to-provider-handoff under 5 s, leaving about 5 s for the provider and network (push is usually a second or two; email and SMS delivery time depends on the carrier or mailbox provider, which is why the promise is handoff plus a per-channel delivery <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr>, not a guarantee of inbox time); campaigns may take hours but must not delay transactional traffic; no lost intents (durable before acknowledging the caller); duplicates rare and bounded; regional data residency for PII.
 
 ## Scale estimates
 
@@ -23,7 +23,7 @@ The invariant is not "exactly once sent"—a provider can accept a message while
 
 The numbers that shape the design: the **100k/s peak** (partitioned queues, horizontally scaled workers), **provider rate limits** (usually lower than our peak, so we need per-provider throttling and backlog), and **SMS cost** (preference and dedupe correctness saves real money).
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```http
 POST /v1/notifications
@@ -47,6 +47,30 @@ POST /v1/providers/{name}/webhook    → signed delivery/bounce/complaint callba
 `202 Accepted` — the caller gets durability, not delivery. Replaying the same `Idempotency-Key` returns the same `notification_id`.
 
 ## Data and architecture
+
+```arch
+%% caption: A product event becomes a durable, deduplicated intent before any provider is called; queues and token buckets pace the sends, and provider callbacks only update attempt state.
+node product "Product service" at 1,0 icon=service sub="DB + outbox"
+group core "Notification platform" color=blue icon=notify
+node intake "Notification intake" at 1,1 in core icon=api sub="dedupe, route"
+node intent "Intent store" at 2,1 in core icon=nosql sub="intents + attempts"
+node pref "Preferences" at 2,2 in core icon=kv sub="consent, quiet hours"
+node queue "Priority + channel queues" at 1,3 in core icon=queue sub="partitioned by user_id"
+node sched "Schedule store" at 2,3 in core icon=time sub="not_before buckets"
+node workers "Email / push / SMS workers" at 1,4 in core icon=worker
+node buckets "Provider token buckets" at 2,4 in core icon=counter sub="shared store"
+node provider "Provider" at 0,5 icon=email sub="email, push, SMS"
+product -> intake
+intake -> intent : "record"
+intent -> pref : "evaluate"
+pref:L -> queue:T : "enqueue"
+pref -> sched : "quiet hours"
+sched:L ..> queue:R : "due"
+queue -> workers
+workers -> buckets : "take token"
+workers:B -> provider:R : "send"
+provider:T ..> intake:L : "signed webhook"
+```
 
 ```mermaid
 %% caption: The intent is durable before any provider is called; the provider callback only ever updates delivery-attempt state, never creates a new intent.
@@ -84,7 +108,7 @@ Do not send inline from product requests: a slow provider turns signup/checkout 
 
 Three layers, each cheap:
 
-1. **Intake dedupe.** Unique constraint on `idempotency_key` (or `(event_id, user_id, category)`). A retried API call or a replayed outbox event hits the constraint and returns the existing intent.
+1. **Intake dedupe.** Unique constraint on `idempotency_key` (or `(event_id, user_id, category)`). A retried <abbr title="Application Programming Interface">API</abbr> call or a replayed outbox event hits the constraint and returns the existing intent.
 2. **Worker claim.** An attempt row moves `PENDING → SENDING` with a conditional update (`WHERE status = 'PENDING'`), plus a lease timeout. Two workers that both received the same queue message can't both claim it.
 3. **Provider idempotency.** Pass our attempt id as the provider's idempotency/reference key when supported (many email/SMS APIs support it). If the provider times out *after* accepting, the retry is deduplicated on their side; if not supported, we accept a small duplicate risk and prefer it over silently dropping a password reset.
 
@@ -92,12 +116,25 @@ The one unavoidable window: the worker calls the provider, the provider accepts,
 
 ## Deep dive 2: Priority isolation and provider rate limits
 
-```text
-            ┌──────────── transactional queue (per channel) ──► dedicated worker pool
-intake ────►├──────────── standard queue ─────────────────────► shared pool
-            └──────────── bulk/campaign queue ────────────────► capped pool
-                                     │
-                     per-provider token buckets (global, in a shared store)
+```arch
+%% caption: Each priority class gets its own queue and worker pool, and every pool draws from the same per-provider token buckets.
+node intake "Intake" at 0,1 icon=api
+node tq "Transactional queue" at 1,0 icon=queue sub="per channel"
+node sq "Standard queue" at 1,1 icon=queue
+node bq "Bulk / campaign queue" at 1,2 icon=queue
+node tp "Dedicated worker pool" at 2,0 icon=worker
+node sp "Shared pool" at 2,1 icon=worker
+node cp "Capped pool" at 2,2 icon=worker
+node tb "Per-provider token buckets" at 3,1 icon=counter sub="global, shared store"
+intake:R -> tq:L
+intake -> sq
+intake:R -> bq:L
+tq -> tp
+sq -> sp
+bq -> cp
+tp:R -> tb:T
+sp -> tb
+cp:R -> tb:B
 ```
 
 - **Separate queues and worker pools per priority class.** Weighted fair queuing is not enough on its own: if a campaign consumes all provider rate-limit tokens, transactional traffic still waits. Reserve a share of each provider's quota for transactional traffic.
@@ -136,10 +173,10 @@ Protect PII, phone/email addresses, templates, and webhook secrets. Audit prefer
 ## Follow-ups the interviewer will ask
 
 1. **"How does this work across regions, with data residency?"** Keep each user's intents, preferences and device tokens in their home region and run intake, queues and workers there, so PII never crosses a border. A global campaign controller splits a campaign into per-region shards, each with its own rate budget, and the idempotency key is enforced in the home region only. If a region fails, a paired region may take over only where residency rules allow it; otherwise its transactional messages queue until it recovers, and you state that trade-off.
-2. **"What changes at 10× and 100×?"** At 10× peak is about 1M intents/s and 460k callbacks/s; the log ingest is 500 MB/s at 500 B per intent, so partitions and workers scale out, but provider rate limits bind first. At 100× you need several providers per channel, dedicated sending IP pools for email, direct carrier or aggregator connections for SMS, and a cell-per-region design so one bad partition does not affect everyone.
+2. **"What changes at 10× and 100×?"** At 10× peak is about 1M intents/s and 460k callbacks/s; the log ingest is 500 MB/s at 500 B per intent, so partitions and workers scale out, but provider rate limits bind first. At 100× you need several providers per channel, dedicated sending <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> pools for email, direct carrier or aggregator connections for SMS, and a cell-per-region design so one bad partition does not affect everyone.
 3. **"What if unsubscribes and quiet hours must be honoured strictly, and duplicates are never acceptable?"** Check consent at send time from a version-stamped cache invalidated on write (about 100k lookups/s at peak, mostly cache hits), and give each user an opt-out epoch so queued items from before the change are dropped by the worker. Exactly-once across a provider boundary is impossible; get effectively-once with provider idempotency keys, and where a channel (often SMS) lacks them, state the small duplicate window per category.
 4. **"What dominates cost?"** SMS: at the assumed $0.005-0.05, one 20M-recipient SMS campaign is $100k-$1M, while push and in-app are nearly free. Levers: push first and SMS only if unread after N minutes, suppress dead numbers and bounced addresses, digest low-value messages, and require approval and a budget for any SMS campaign above a cost threshold. Track cost per intent so the number is visible.
-5. **"How is it abused, by callers or by attackers?"** A retrying caller can create the "100 copies" problem, so cap per user per category per hour at intake (say 5 pushes an hour) on top of the intent dedupe key. Attackers trigger OTP or verification SMS to premium or foreign numbers ("SMS pumping"), so limit per phone number, per IP and per account, by destination country, and alert on per-country spend. Verify webhook signatures and timestamps, and use signed, unguessable unsubscribe tokens.
+5. **"How is it abused, by callers or by attackers?"** A retrying caller can create the "100 copies" problem, so cap per user per category per hour at intake (say 5 pushes an hour) on top of the intent dedupe key. Attackers trigger OTP or verification SMS to premium or foreign numbers ("SMS pumping"), so limit per phone number, per <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> and per account, by destination country, and alert on per-country spend. Verify webhook signatures and timestamps, and use signed, unguessable unsubscribe tokens.
 6. **"Marketing sent the wrong copy to 20M users. How fast can you stop it?"** Cancelling sets campaign state, and each worker checks a locally cached campaign state refreshed about every 2 s before calling the provider. At 5.6k/s that is at most ~11k more messages plus what is already in flight, versus 168k if it took 30 s. Also make the campaign unique on `(campaign_id, user_id, channel)` so a double-submitted send cannot double-deliver.
 7. **"You fail over from SMS provider A to B after a timeout. Can the user get two texts?"** Yes, if A accepted the message and the response was lost. So fail over only on definitive failures or an open circuit breaker, retry ambiguous timeouts on the same provider with the same idempotency reference first, and for transactional messages accept the small duplicate risk after a bounded wait because a lost password reset is worse. Marketing does not fail over past its lease.
 8. **"A single priority queue is simpler than separate queues and pools."** A single queue with priority lanes works at small scale, and on brokers without native priorities you end up with separate topics anyway. Separate pools give bulkheads: a hung connection or slow provider on bulk traffic cannot consume the workers or the provider quota that transactional traffic needs, and each class can have its own retry and expiry policy. The cost is more infrastructure to run, which is justified only because a 20M-recipient campaign must never delay a password reset.
@@ -159,7 +196,7 @@ Protect PII, phone/email addresses, templates, and webhook secrets. Audit prefer
 
 - **Migration and rollout path.** Move callers off direct provider calls one product at a time through the outbox, running the platform in shadow mode first (compute the decision, do not send, compare with the legacy path). Ramp a new provider from 1% to 10% to 100% of a channel with a one-flag rollback, and version templates so a bad template rolls back without a deploy.
 - **Cost model.** Show cost per channel and per intent, identify SMS as the dominant line, and set per-tenant budgets and approval thresholds. Then show the savings from push-first with SMS fallback and from suppression.
-- **Ownership and blast radius.** Give the transactional path its own SLO and on-call, isolated from campaigns, and run cells per region so an incident stays local. Product teams own categories and templates; the platform owns delivery, consent and audit; legal owns retention and erasure requests (deleting a user's intents on request).
+- **Ownership and blast radius.** Give the transactional path its own <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> and on-call, isolated from campaigns, and run cells per region so an incident stays local. Product teams own categories and templates; the platform owns delivery, consent and audit; legal owns retention and erasure requests (deleting a user's intents on request).
 - **Build versus buy.** Providers (APNs, FCM, an email service, an SMS aggregator) are bought. Build the intent model, the consent and preference store, and priority isolation, since these are where correctness and differentiation live. A thin multi-provider abstraction is cheap insurance against an outage or a price change.
 - **What to measure first.** Volume by category, the SMS share, provider timeout and error rates, the duplicate rate, and the fraction of notifications ever opened. That last number decides how much low-value traffic to digest or suppress.
 - **Phased evolution.** Ship transactional email and push with idempotent intents, add priority isolation and pacing before the first campaign, add SMS with cost controls, then multi-provider failover and multi-region residency.

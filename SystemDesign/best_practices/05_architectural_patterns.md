@@ -14,7 +14,7 @@ Presentation  →  Application/Business  →  Data Access  →  Database
 
 ## Hexagonal / ports and adapters
 
-The domain sits in the center, exposing **ports** (interfaces) for what it needs (a repository, a notifier) and what it offers (a use case). **Adapters** implement those ports against real infrastructure (Postgres, SMTP, HTTP).
+The domain sits in the center, exposing **ports** (interfaces) for what it needs (a repository, a notifier) and what it offers (a use case). **Adapters** implement those ports against real infrastructure (Postgres, SMTP, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>).
 
 ```text
         ┌───────────────── adapters (infrastructure) ─────────────────┐
@@ -50,7 +50,7 @@ Generalizes hexagonal into concentric rings: entities → use cases → interfac
 └─────────────────────────────────────────┘
 ```
 
-**Cost:** more files, more interfaces, more indirection than a layered CRUD app needs — earns its keep when domain logic is genuinely complex and must outlive specific frameworks/DB choices, not for a thin CRUD wrapper.
+**Cost:** more files, more interfaces, more indirection than a layered <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> app needs — earns its keep when domain logic is genuinely complex and must outlive specific frameworks/DB choices, not for a thin <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> wrapper.
 
 ## MVC and MVVM
 
@@ -69,10 +69,10 @@ The real trade-off is not "microservices are better." It is deployment/ownership
 |---|---|---|
 | Deployment | One unit; simpler pipeline. | Independent deploys per service; more pipelines to maintain. |
 | Team ownership | Contention on shared codebase as team grows. | Clear ownership boundary per service, enables independent teams. |
-| Transactions | In-process ACID transactions across modules. | Cross-service transactions require sagas/eventual consistency (see [08 — checkout solution](../solutions/008_checkout_solution.md) for a worked example). |
+| Transactions | In-process <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> transactions across modules. | Cross-service transactions require sagas/eventual consistency (see [08 — checkout solution](../solutions/008_checkout_solution.md) for a worked example). |
 | Failure isolation | One bug can crash the whole process. | A failing service degrades gracefully if callers have timeouts/circuit breakers — but now failure is distributed and harder to trace. |
 | Operational cost | One thing to deploy, monitor, scale. | N services × (deploy pipeline, on-call surface, service discovery, network hop latency, distributed tracing needs). |
-| Refactoring | Easy — compiler/IDE sees the whole codebase. | A cross-service refactor requires coordinated multi-repo/multi-team changes. |
+| Refactoring | Easy — compiler/<abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> sees the whole codebase. | A cross-service refactor requires coordinated multi-repo/multi-team changes. |
 
 Default to a monolith until a real organizational boundary (independent scaling needs, independent deploy cadence, independent team ownership) justifies paying the network/operational tax of splitting it. Splitting too early produces a "distributed monolith" — all the network cost, none of the independence, because services still deploy in lockstep.
 
@@ -86,7 +86,7 @@ Split the write model (commands, enforces invariants) from the read model (queri
 
 **Earns its complexity when:** read and write access patterns diverge sharply (e.g., writes are narrow and transactional, reads need denormalized, highly indexed, differently-shaped views for many different UI screens), or when read and write load need independent scaling. Ties directly to replication trade-offs in `../building_blocks/06_database_internals.md` — the read model is usually a replica or a materialized projection, and staleness between write and read model is the cost you're accepting.
 
-**Don't use it as:** a default for a simple CRUD screen with one reasonable read shape — a single model with one repository already does the job, and CQRS adds a synchronization pipeline you now have to operate and debug when the two sides disagree.
+**Don't use it as:** a default for a simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> screen with one reasonable read shape — a single model with one repository already does the job, and CQRS adds a synchronization pipeline you now have to operate and debug when the two sides disagree.
 
 ## Event sourcing
 

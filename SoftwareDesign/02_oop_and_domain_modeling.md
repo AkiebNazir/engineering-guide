@@ -20,10 +20,10 @@ Examples are in **Python** (the interview language) with **Go** where its idioms
 | Topic | Where |
 |---|---|
 | GoF pattern catalog and idiomatic use | `04_design_patterns_in_practice.md` §1 (all 23 at a glance), §3–§18 |
-| DRY, KISS, YAGNI, and the other named principles | `01_philosophy_of_software_design.md` §17 (index of where each is treated) |
+| <abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr>, <abbr title="Keep It Simple, Stupid - A design principle noting that most systems work best if they are kept simple rather than made complicated.">KISS</abbr>, <abbr title="You Aren't Gonna Need It - A principle of extreme programming that states a programmer should not add functionality until deemed necessary.">YAGNI</abbr>, and the other named principles | `01_philosophy_of_software_design.md` §17 (index of where each is treated) |
 | Deep modules, information hiding, illegal states | `01_philosophy_of_software_design.md` §3, §4, §8 |
 | Bounded contexts and aggregates at service scale | `CSFundamentals/04_software_engineering_deep_dive.md` §1 |
-| Python MRO, descriptors, metaclasses | `PyEngineering/31_advanced_oop_and_mro`, `26_metaprogramming_descriptors_decorators` |
+| Python <abbr title="Method Resolution Order. The order in which a programming language resolves a method or attribute in a class hierarchy.">MRO</abbr>, descriptors, metaclasses | `PyEngineering/31_advanced_oop_and_mro`, `26_metaprogramming_descriptors_decorators` |
 | Go interfaces and embedding in depth | `GoEngineering/33_advanced_interfaces_and_composition` |
 
 ---
@@ -470,7 +470,7 @@ class ProviderUnavailable(PaymentError): ...   # retryable
 ### Mixins: the Python middle ground
 
 A mixin adds one narrow capability and is never instantiated alone. Use sparingly; each
-mixin is still inheritance, and several together make MRO questions real.
+mixin is still inheritance, and several together make <abbr title="Method Resolution Order. The order in which a programming language resolves a method or attribute in a class hierarchy.">MRO</abbr> questions real.
 
 ```python
 import json
@@ -801,7 +801,7 @@ zip_code = order.shipping_zip()
 ```
 
 **Don't apply it mechanically.** It is about coupling to *structure that might change*,
-not about counting dots. `df.groupby("x").sum().reset_index()` is a fluent API over one
+not about counting dots. `df.groupby("x").sum().reset_index()` is a fluent <abbr title="Application Programming Interface">API</abbr> over one
 abstraction and is fine. `Path("a").parent.name` navigates value objects that will never
 restructure — also fine. Adding `order.shipping_zip()`, `order.shipping_city()`,
 `order.shipping_country()`... to avoid dots creates a shallow, bloated `Order`. Ask:
@@ -919,7 +919,7 @@ Verbs: borrow, return, incur, reserve, notify, collect.
 
 - "≤ 5 active loans" → `Member` (or a `LoanService` holding a lock per member).
 - "a copy is on at most one active loan" → `BookCopy` status.
-- "first reservation wins" → `ReservationQueue` per `Book` (FIFO).
+- "first reservation wins" → `ReservationQueue` per `Book` (<abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>).
 - "fine = max(0, days_late) × rate" → `LoanPolicy.fine(loan, returned_at)` — pure.
 
 ### Step 4 — Find what varies → put an interface there
@@ -948,7 +948,7 @@ boundary is a bounded context (`CSFundamentals/04_software_engineering_deep_dive
 
 ---
 
-## 12 · SOLID as questions, not commandments
+## 12 · <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> as questions, not commandments
 
 The five rules are stated, with the failure each prevents, in the subsection below. What
 senior engineers add is **knowing the question each principle asks and its failure
@@ -1028,7 +1028,7 @@ A subtype must honour the parent's **contract**, not just its signatures:
 | History | No new mutation paths the parent forbade | `MutablePoint(ImmutablePoint)` |
 
 Python's own standard library carries a famous exemption: `bool` is a subclass of `int`,
-so `True + True == 2`, and `isinstance(True, int)` is `True` — which is why JSON
+so `True + True == 2`, and `isinstance(True, int)` is `True` — which is why <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>
 validators and `sum()`-based code sometimes treat booleans as numbers by accident.
 
 ### DIP vs. dependency injection vs. IoC containers
@@ -1091,7 +1091,7 @@ Client        ParkingLot         Floor            Spot          PricingPolicy
 
 ---
 
-## 14 · OOP vs. functional vs. data-oriented
+## 14 · <abbr title="Object-Oriented Programming - A programming paradigm based on the concept of 'objects', which can contain data and code.">OOP</abbr> vs. functional vs. data-oriented
 
 Knowing when *not* to use objects is part of design maturity.
 
@@ -1108,7 +1108,7 @@ Knowing when *not* to use objects is part of design maturity.
 - With **functions + sum types / `match`**, adding an *operation* is easy (one new
   function), adding a *type* touches every function.
 
-Choose based on which axis will grow. A compiler's AST gains operations (passes) more
+Choose based on which axis will grow. A compiler's <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> gains operations (passes) more
 often than node types → functions + `match` (or Visitor). A payment platform gains
 payment methods more often than operations → classes.
 

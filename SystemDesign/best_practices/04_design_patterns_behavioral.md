@@ -121,7 +121,7 @@ class AuthMiddleware(Middleware):
         return next_handler(request)
 ```
 
-**Name it directly:** an HTTP middleware pipeline (auth → rate-limit → logging → handler) *is* Chain of Responsibility — recognizing this means you already understand how to reason about ordering, short-circuiting, and per-link failure handling in any middleware stack you build or review.
+**Name it directly:** an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> middleware pipeline (auth → rate-limit → logging → handler) *is* Chain of Responsibility — recognizing this means you already understand how to reason about ordering, short-circuiting, and per-link failure handling in any middleware stack you build or review.
 
 **When it's overkill:** a fixed, short sequence of two steps that will never grow is simpler as two direct function calls than as a generalized chain.
 

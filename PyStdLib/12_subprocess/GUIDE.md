@@ -8,13 +8,13 @@ stdlib's replacement for `os.system`/backticks-style shelling out.
 ## When to reach for it
 
 - Running an external command and getting its result → `subprocess.run()`, the
-  high-level, blocking, "do this and give me the outcome" API — covers the vast
+  high-level, blocking, "do this and give me the outcome" <abbr title="Application Programming Interface">API</abbr> — covers the vast
   majority of real usage.
 - Needing to interact with a long-running process while it runs (stream output,
   send input mid-flight, enforce a timeout) → `subprocess.Popen`, the lower-level
   handle `run()` is built on.
-- Needing real OS-level parallelism across CPU cores, shared memory, or process
-  pools for CPU-bound work in your OWN Python code → that's a different problem
+- Needing real <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>-level parallelism across <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cores, shared memory, or process
+  pools for <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound work in your OWN Python code → that's a different problem
   (`multiprocessing`), covered in `PyEngineering/33_concurrency_models_ipc`.
   `subprocess` is for talking to *other programs*, not for parallelizing your own
   Python functions.

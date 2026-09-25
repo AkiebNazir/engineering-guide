@@ -6,11 +6,11 @@ This tutorial covers the exact step-by-step process of defining, compiling, and 
 
 ---
 
-## Step 1: The Why (The Problem with JSON)
+## Step 1: The Why (The Problem with <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>)
 
 Imagine your Go backend needs to send a "User" object to your Python microservice.
 
-If you use JSON, the payload looks like this:
+If you use <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, the payload looks like this:
 ```json
 {
   "id": 1,
@@ -18,7 +18,7 @@ If you use JSON, the payload looks like this:
 }
 ```
 
-This string is **27 bytes** long over the network. Furthermore, the Python server has to run a CPU-intensive text-parsing algorithm to figure out that `"1"` is actually an integer.
+This string is **27 bytes** long over the network. Furthermore, the Python server has to run a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-intensive text-parsing algorithm to figure out that `"1"` is actually an integer.
 
 Protobuf fixes this by **sharing the schema in advance**. If both Go and Python know that a `User` has an `id` and a `name`, you don't need to send the words `"id"` or `"name"` over the network. You just send the raw binary data: `[ID binary] [Name binary]`.
 
@@ -115,7 +115,7 @@ print(f"Serialized Payload: {binary_payload}")
 ```
 
 ### Deserialization (Reading data)
-Imagine you received that `b'\x08\x01\x12\x05Alice\x18\x01'` payload from Kafka, Redis, or a UDP socket.
+Imagine you received that `b'\x08\x01\x12\x05Alice\x18\x01'` payload from Kafka, Redis, or a <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr> socket.
 
 ```python
 import user_pb2

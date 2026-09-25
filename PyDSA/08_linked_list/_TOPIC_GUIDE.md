@@ -31,7 +31,7 @@ linked list's node at position `i` doesn't need anyone to move: inserting
 means allocating one new node and rewiring **two references**, regardless of
 how long the list is — *provided you already have a reference to the node
 before the insertion point*. That "provided" is the entire catch, and it's
-why linked lists are frequently combined with a hashmap (Part on LRU below)
+why linked lists are frequently combined with a hashmap (Part on <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> below)
 to convert "find the node" from O(n) into O(1).
 
 The flip side is real and worth saying out loud in an interview: **no random
@@ -91,21 +91,19 @@ carefully you must think about wiring*:
 
 ### 1.3 The #1 bug in this entire topic: losing a reference before saving it
 
-```mermaid
+```arch
 %% caption: Overwrite cur.next before saving it and the rest of the list becomes unreachable.
-flowchart LR
-  subgraph W["Wrong order"]
-    direction LR
-    w1["cur.next = prev"] --> w2["cur = cur.next<br/>(now points backwards!)"]:::bad
-  end
-  subgraph R["Right order"]
-    direction LR
-    r1["nxt = cur.next<br/>save it first"]:::ok --> r2["cur.next = prev"] --> r3["prev = cur"] --> r4["cur = nxt"]
-  end
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 150x90
+group W "Wrong order" color=red
+node w1 "cur.next = prev" at 0,0 in W
+node w2 "cur = cur.next\n(now points backwards!)" at 1,0 in W color=red
+group R "Right order" color=green
+node r1 "nxt = cur.next" at 0,1 in R color=green sub="save it first"
+node r2 "cur.next = prev" at 1,1 in R
+node r3 "prev = cur" at 2,1 in R
+node r4 "cur = nxt" at 3,1 in R
+w1:R -> w2:L
+r1 -> r2 -> r3 -> r4
 ```
 
 
@@ -233,16 +231,15 @@ is O(1) space but two passes instead of one).
 
 ### 3.2 Slow/fast for cycle detection (003) — the proof, not just the recipe
 
-```mermaid
+```arch
 %% caption: Slow moves 1, fast moves 2, and they meet inside the cycle. Restart one pointer at head and move both one step at a time: they meet at the cycle entry.
-flowchart LR
-  H["head"] -->|"a steps"| E["cycle entry"]:::hot
-  E -->|"b steps"| M["meeting point"]:::ok
-  M -->|"c - b steps<br/>(rest of the cycle)"| E
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x110
+node H "head" at 0,0 shape=pill
+node E "cycle entry" at 1,0 color=amber
+node M "meeting point" at 2,0 color=green
+H -> E : "a steps"
+E:R -> M:L : "b steps"
+M:B -> E:B : "c - b steps (rest of cycle)"
 ```
 
 
@@ -305,18 +302,23 @@ again in later topics).
 
 ### 4.1 The three-pointer dance (001) — memorise this verbatim
 
-```mermaid
+```arch
 %% caption: Reversal: every next pointer is flipped once, in a single pass, O(1) extra space.
-flowchart LR
-  subgraph B["before"]
-    direction LR
-    a1["1"] --> a2["2"] --> a3["3"] --> a4["None"]
-  end
-  subgraph A["after"]
-    direction LR
-    b3["3"] --> b2["2"] --> b1["1"] --> b0["None"]
-  end
-  B ==> A
+route straight
+grid 90x100
+group B "before" color=slate
+node a1 "1" at 0,0 in B shape=circle color=blue
+node a2 "2" at 1,0 in B shape=circle color=blue
+node a3 "3" at 2,0 in B shape=circle color=blue
+node a4 "None" at 3,0 in B shape=pill
+group A "after" color=green
+node b3 "3" at 0,1 in A shape=circle color=green
+node b2 "2" at 1,1 in A shape=circle color=green
+node b1 "1" at 2,1 in A shape=circle color=green
+node b0 "None" at 3,1 in A shape=pill
+a1 -> a2 -> a3 -> a4
+b3 -> b2 -> b1 -> b0
+a1 ==> b3
 ```
 
 
@@ -438,25 +440,23 @@ O(1) `get`/`put` needs **both** a hashmap (O(1) lookup by key) and a doubly
 linked list (O(1) reordering to "most recent," O(1) eviction of "least
 recent"). Neither alone is sufficient:
 
-```mermaid
+```arch
 %% caption: LRU cache: the hash map gives O(1) lookup, the doubly linked list gives O(1) reorder and eviction.
-flowchart LR
-  subgraph HM["hash map: key to node"]
-    k1["key 1"]
-    k2["key 2"]
-    k3["key 3"]
-  end
-  subgraph DLL["doubly linked list: order of use"]
-    direction LR
-    H["head sentinel"] <--> N3["node 3<br/>most recent"]:::ok <--> N1["node 1"] <--> N2["node 2<br/>least recent"]:::bad <--> T["tail sentinel"]
-  end
-  k1 -.-> N1
-  k2 -.-> N2
-  k3 -.-> N3
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 120x100
+group HM "hash map: key to node" color=purple
+node k3 "key 3" at 1,0 in HM shape=pill
+node k1 "key 1" at 2,0 in HM shape=pill
+node k2 "key 2" at 3,0 in HM shape=pill
+group DLL "doubly linked list: order of use" color=blue
+node H "head" at 0,1 in DLL sub="sentinel"
+node N3 "node 3" at 1,1 in DLL color=green sub="most recent"
+node N1 "node 1" at 2,1 in DLL
+node N2 "node 2" at 3,1 in DLL color=red sub="least recent"
+node T "tail" at 4,1 in DLL sub="sentinel"
+H <-> N3 <-> N1 <-> N2 <-> T
+k1 ..> N1
+k2 ..> N2
+k3 ..> N3
 ```
 
 
@@ -734,7 +734,7 @@ Fifteen problems, six moves (reversal · dummy head · fast/slow · fixed gap ·
       new algorithms to memorise separately.
 - [ ] I compare nodes with `is`, never `==`/value equality, when the question
       is about identity (cycles, "is this the same node").
-- [ ] I can explain why LRU needs BOTH a hashmap and a doubly linked list,
+- [ ] I can explain why <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> needs BOTH a hashmap and a doubly linked list,
       and why singly linked isn't enough.
 - [ ] I know the O(n)-space (hashmap) vs. O(1)-space (interleave) solutions
       to "copy with random pointer" and can explain the ordering problem the

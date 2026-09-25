@@ -61,19 +61,21 @@ LC 42 (Trapping Rain Water).
 > big. Each move deletes one whole row (or column) of the n×n grid of candidate pairs without
 > examining it. This is the correctness argument interviewers want to hear, not just "it works."
 
-```mermaid
+```arch
 %% caption: One step of the converging scan. The comparison tells you which endpoint can never be part of an answer, so it is dropped for good.
-flowchart TD
-  S["sum = nums[lo] + nums[hi]"] --> Q{"compare with target"}
-  Q -->|"sum == target"| F["found the pair"]:::ok
-  Q -->|"sum < target"| L["nums[lo] plus ANY remaining element<br/>is at most sum, still too small<br/>so drop lo: lo++"]:::hot
-  Q -->|"sum > target"| H["nums[hi] plus ANY remaining element<br/>is at least sum, still too big<br/>so drop hi: hi--"]:::hot
-  L --> N["window shrinks by one:<br/>at most n - 1 steps in total"]
-  H --> N
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x100
+node s "sum = nums[lo] + nums[hi]" at 1,0 shape=pill
+node q "compare with target" at 1,1 shape=diamond color=amber
+node l "Drop lo: lo++" at 0,2 shape=card icon=sort color=orange sub="nums[lo] plus ANY remaining element is at most sum, still too small"
+node f "Found the pair" at 1,2 shape=card icon=check color=green
+node h "Drop hi: hi--" at 2,2 shape=card icon=sort color=orange sub="nums[hi] plus ANY remaining element is at least sum, still too big"
+node n "Window shrinks by one" at 1,3 shape=card icon=filter sub="at most n - 1 steps in total"
+s -> q
+q -> f : "sum == target"
+q -> l : "sum < target"
+q -> h : "sum > target"
+l -> n
+h -> n
 ```
 
 ### 1.2 Fast/slow pointers
@@ -280,11 +282,11 @@ func toLower(b byte) byte {
 ```
 
 > ⚠️ **Indexing `s[i]` on a `string` gives a `byte`, and byte-indexing walks
-> UTF-8 code units, not characters.** For LC 125's ASCII-only test data this is
+> <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 code units, not characters.** For LC 125's ASCII-only test data this is
 > fine and is also the *fastest* option — no decode, no allocation. But the
 > moment a problem statement allows non-ASCII letters (accented characters,
 > non-Latin scripts), indexing bytes from both ends can land you **inside** a
-> multi-byte UTF-8 sequence, comparing garbage halves of two different
+> multi-byte <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 sequence, comparing garbage halves of two different
 > codepoints. The fix is the same one from Topic 01 §2.6:
 > ```go
 > r := []rune(s)              // O(n) decode once, up front
@@ -483,23 +485,30 @@ matter.
 <!-- block:02_go_1_choose -->
 ## Part 8 · Choosing the Pattern — and Its Neighbours
 
-```mermaid
+```arch
 %% caption: Choosing the two-pointer pattern. The first question that matters is whether the data is sorted (or sortable without destroying the answer).
-flowchart TD
-  Q(["Read the problem"]) --> A{"Linked list, or a sequence<br/>that can cycle?"}
-  A -->|"yes"| C["Fast / slow: cycle"]:::ok
-  A -->|"no"| B{"Modify the slice in place?"}
-  B -->|"yes: filter or compact"| D["Read / write pointers"]:::ok
-  B -->|"yes: group into regions"| P["Partition pointers<br/>(Dutch national flag)"]:::ok
-  B -->|"no"| E{"Two separate sequences?"}
-  E -->|"yes"| F["Parallel / merge pointers"]:::ok
-  E -->|"no"| G{"Sorted, or symmetric?<br/>(palindrome, pair sum)"}
-  G -->|"yes"| H["Converging pointers"]:::ok
-  G -->|"no"| I["Probably not two pointers.<br/>Try a map or a window."]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x100
+node q "Read the problem" at 1,0 shape=pill
+node a "Linked list, or a sequence that can cycle?" at 1,1 shape=diamond color=amber
+node c "Fast / slow: cycle" at 0,1 shape=card icon=sync color=green
+node b "Modify the slice in place?" at 1,2 shape=diamond color=amber
+node d "Read / write pointers" at 0,2 shape=card icon=edit color=green sub="to filter or compact"
+node p "Partition pointers" at 2,2 shape=card icon=layers color=green sub="to group into regions (Dutch national flag)"
+node e "Two separate sequences?" at 1,3 shape=diamond color=amber
+node f "Parallel / merge pointers" at 0,3 shape=card icon=sync color=green
+node g "Sorted, or symmetric?" at 1,4 shape=diamond color=amber sub="palindrome, pair sum"
+node h "Converging pointers" at 0,4 shape=card icon=sort color=green
+node i "Probably not two pointers" at 2,4 shape=card icon=question color=slate sub="Try a map or a window."
+q -> a
+a -> c : "yes"
+a -> b : "no"
+b -> d : "yes"
+b -> p : "yes"
+b -> e : "no"
+e -> f : "yes"
+e -> g : "no"
+g -> h : "yes"
+g -> i : "no"
 ```
 
 **The most important fork is LC 1 vs LC 167.** Two Sum (unsorted, return *indices*) must use a map,
@@ -652,7 +661,7 @@ version — but knowing the library form, and that difference, is a strong signa
 | Trying to shrink the caller's slice | The header is copied into your function; `nums = nums[:k]` changes only your copy. | Return `k` (LC 26/27 do) or return the new slice. |
 | A pointer index that is a `uint` | `hi--` at 0 wraps to `18446744073709551615`, and the loop runs on. | Keep indices `int` — `len()` already returns one. |
 | Substring cost | **In Go, `s[i:j]` is O(1)** — a new header over the same bytes. Python's slice copies, which is why its guide calls slicing the #1 hidden O(n²). | `isPalindrome(s[l+1:r+1])` is cheap in Go. Still avoid it if you also mutate the bytes. |
-| Byte vs rune | `s[i]` walks UTF-8 code units; from both ends you can land *inside* a multi-byte character. | ASCII contract → bytes; otherwise `[]rune(s)` once, up front. |
+| Byte vs rune | `s[i]` walks <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 code units; from both ends you can land *inside* a multi-byte character. | ASCII contract → bytes; otherwise `[]rune(s)` once, up front. |
 | `abs` | Go has no integer `abs` (`math.Abs` takes a `float64`). | Write `if d < 0 { d = -d }`, or a two-line helper. |
 | `range` re-evaluated? | The `range` expression is evaluated **once**: `for i := range nums` fixes the count at the start. | Compacting in place inside it is fine; *appending* inside it is not what you want. |
 | `sort.Slice` is not stable | Irrelevant for 3Sum, but wrong for "sort people by weight, ties by arrival". | `slices.SortStableFunc`, or `sort.SliceStable`. |

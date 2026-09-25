@@ -1,18 +1,18 @@
 # Day 45: GRU & Bidirectional RNNs
 
-Welcome to Day 45. The LSTM is a mathematical masterpiece, but it has a massive problem: **RAM**.
-Because the LSTM uses 4 separate weight matrices to calculate its gates, it takes up a massive amount of memory and is very slow to train. 
+Welcome to Day 45. The <abbr title="Long Short-Term Memory">LSTM</abbr> is a mathematical masterpiece, but it has a massive problem: **<abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>**.
+Because the <abbr title="Long Short-Term Memory">LSTM</abbr> uses 4 separate weight matrices to calculate its gates, it takes up a massive amount of memory and is very slow to train. 
 
-In 2014, researchers discovered a way to streamline the math. They created a network that runs 25% faster than an LSTM, uses less RAM, and achieves the exact same accuracy. It is called the **GRU**.
+In 2014, researchers discovered a way to streamline the math. They created a network that runs 25% faster than an <abbr title="Long Short-Term Memory">LSTM</abbr>, uses less <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, and achieves the exact same accuracy. It is called the **<abbr title="Gated Recurrent Unit">GRU</abbr>**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The GRU (Gated Recurrent Unit)
-How do you streamline an LSTM? You aggressively delete parts of it!
-1. **Delete the Cell State Highway:** The GRU completely removes the $C_t$ Cell State. It goes back to using a single memory stream: the Hidden State ($h_t$).
-2. **Combine the Gates:** The LSTM has a Forget Gate and an Input Gate. The GRU combines them into a single **Update Gate ($z_t$)**. 
+### 1. The <abbr title="Gated Recurrent Unit">GRU</abbr> (Gated Recurrent Unit)
+How do you streamline an <abbr title="Long Short-Term Memory">LSTM</abbr>? You aggressively delete parts of it!
+1. **Delete the Cell State Highway:** The <abbr title="Gated Recurrent Unit">GRU</abbr> completely removes the $C_t$ Cell State. It goes back to using a single memory stream: the Hidden State ($h_t$).
+2. **Combine the Gates:** The <abbr title="Long Short-Term Memory">LSTM</abbr> has a Forget Gate and an Input Gate. The <abbr title="Gated Recurrent Unit">GRU</abbr> combines them into a single **Update Gate ($z_t$)**. 
    - If $z_t = 1.0$, the network *keeps* the old memory and ignores the new word.
    - If $z_t = 0.0$, the network *deletes* the old memory and instantly absorbs the new word. 
    - It is a mathematical seesaw. By forcing the network to choose between the Past and the Present, you only need 1 gate instead of 2!
@@ -20,24 +20,24 @@ How do you streamline an LSTM? You aggressively delete parts of it!
 
 ### 2. Bidirectional RNNs
 Imagine reading this sentence: *"I sat by the river bank."*
-If the AI reads left-to-right, when it hits the word *"bank"*, it thinks of money. It doesn't know it's a river bank until it reads the context, but the context is in the past!
+If the <abbr title="Artificial Intelligence">AI</abbr> reads left-to-right, when it hits the word *"bank"*, it thinks of money. It doesn't know it's a river bank until it reads the context, but the context is in the past!
 Wait, what about this sentence: *"The bank of the river was muddy."*
-When the AI reads *"bank"*, the word *"river"* is in the **future**. Standard RNNs cannot read the future!
+When the <abbr title="Artificial Intelligence">AI</abbr> reads *"bank"*, the word *"river"* is in the **future**. Standard RNNs cannot read the future!
 
 **The Solution:** Bidirectional RNNs (BiRNNs).
 You spin up *two* separate LSTMs. 
-- LSTM #1 reads the sentence left-to-right.
-- LSTM #2 reads the sentence right-to-left (backwards).
-When you ask the network what the word "bank" means, it literally concatenates the memory of LSTM #1 (the Past) with the memory of LSTM #2 (the Future). The AI suddenly has perfect 360-degree context!
+- <abbr title="Long Short-Term Memory">LSTM</abbr> #1 reads the sentence left-to-right.
+- <abbr title="Long Short-Term Memory">LSTM</abbr> #2 reads the sentence right-to-left (backwards).
+When you ask the network what the word "bank" means, it literally concatenates the memory of <abbr title="Long Short-Term Memory">LSTM</abbr> #1 (the Past) with the memory of <abbr title="Long Short-Term Memory">LSTM</abbr> #2 (the Future). The <abbr title="Artificial Intelligence">AI</abbr> suddenly has perfect 360-degree context!
 
 ### 3. Deep RNNs
-Just like CNNs, you can stack RNNs on top of each other. The output of RNN Layer 1 becomes the input sequence for RNN Layer 2. However, unlike CNNs which can be 150 layers deep, RNNs rarely go beyond 3 to 5 layers. Because they already loop through time, a 3-layer RNN reading a 50-word sentence is mathematically equivalent to a 150-layer deep network! Stacking them too deep causes severe instability.
+Just like CNNs, you can stack RNNs on top of each other. The output of <abbr title="Recurrent Neural Network">RNN</abbr> Layer 1 becomes the input sequence for <abbr title="Recurrent Neural Network">RNN</abbr> Layer 2. However, unlike CNNs which can be 150 layers deep, RNNs rarely go beyond 3 to 5 layers. Because they already loop through time, a 3-layer <abbr title="Recurrent Neural Network">RNN</abbr> reading a 50-word sentence is mathematically equivalent to a 150-layer deep network! Stacking them too deep causes severe instability.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Bidirectional GRU from scratch in PyTorch to see exactly how the "Forward" and "Backward" memory streams are concatenated.
+Let's build a Bidirectional <abbr title="Gated Recurrent Unit">GRU</abbr> from scratch in PyTorch to see exactly how the "Forward" and "Backward" memory streams are concatenated.
 
 Create a file named `gru_bidirectional.py`:
 
@@ -107,35 +107,35 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **`bidirectional=True`:** This single argument is magic. Under the hood, PyTorch reverses the sequence array, runs a second independent GRU, reverses the output back, and glues the two matrices together.
-2. **`hidden_size * 2`:** If you forget to double the input size of the `nn.Linear` layer, PyTorch will crash. If your hidden size is 20, the Forward GRU outputs 20 numbers, and the Backward GRU outputs 20 numbers. The final concatenated memory for the word is 40 numbers!
+1. **`bidirectional=True`:** This single argument is magic. Under the hood, PyTorch reverses the sequence array, runs a second independent <abbr title="Gated Recurrent Unit">GRU</abbr>, reverses the output back, and glues the two matrices together.
+2. **`hidden_size * 2`:** If you forget to double the input size of the `nn.Linear` layer, PyTorch will crash. If your hidden size is 20, the Forward <abbr title="Gated Recurrent Unit">GRU</abbr> outputs 20 numbers, and the Backward <abbr title="Gated Recurrent Unit">GRU</abbr> outputs 20 numbers. The final concatenated memory for the word is 40 numbers!
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: GRU vs LSTM Math
-The GRU uses a single Update Gate ($z_t$) to replace the Forget and Input gates. 
+### 🛠️ The Challenge: <abbr title="Gated Recurrent Unit">GRU</abbr> vs <abbr title="Long Short-Term Memory">LSTM</abbr> Math
+The <abbr title="Gated Recurrent Unit">GRU</abbr> uses a single Update Gate ($z_t$) to replace the Forget and Input gates. 
 The Math: $h_t = (1 - z_t) * h_{t-1} + (z_t) * \tilde{h}_t$
 **Your Task:**
 1. Look at the math equation above.
 2. If $z_t$ evaluates to exactly $1.0$, what happens to the Past Memory ($h_{t-1}$)? (Answer: It is multiplied by $(1-1) = 0$, completely deleting the past).
 3. If $z_t$ evaluates to exactly $0.0$, what happens to the New Memory ($\tilde{h}_t$)? (Answer: It is multiplied by $0$, completely ignoring the new word).
-4. Realize the genius of this constraint: The GRU is physically forced to balance the budget. If it wants to remember 80% of the past, it is only allowed to absorb 20% of the present!
+4. Realize the genius of this constraint: The <abbr title="Gated Recurrent Unit">GRU</abbr> is physically forced to balance the budget. If it wants to remember 80% of the past, it is only allowed to absorb 20% of the present!
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Bidirectional RNNs provide massive boosts to accuracy by allowing the network to see the 'Future' context of a word. However, you are tasked with building a Real-Time Speech Translation system for a live video call. Why is it mathematically impossible to use a Bidirectional RNN for this product, and what architectural alternatives exist?"*
+*"Bidirectional RNNs provide massive boosts to accuracy by allowing the network to see the 'Future' context of a word. However, you are tasked with building a Real-Time Speech Translation system for a live video call. Why is it mathematically impossible to use a Bidirectional <abbr title="Recurrent Neural Network">RNN</abbr> for this product, and what architectural alternatives exist?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Causality Flaw of BiRNNs:** 
-   - State that a Bidirectional RNN requires the entire sequence to be present in RAM before it can process the very first word (because the Backward RNN must start at the end of the sentence and read backwards).
-   - In a Live Video Call, the user is currently speaking. The end of the sentence literally does not exist yet. The AI would have to wait in silence for the user to finish their entire paragraph before translating the first word, causing unacceptable latency.
+   - State that a Bidirectional <abbr title="Recurrent Neural Network">RNN</abbr> requires the entire sequence to be present in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> before it can process the very first word (because the Backward <abbr title="Recurrent Neural Network">RNN</abbr> must start at the end of the sentence and read backwards).
+   - In a Live Video Call, the user is currently speaking. The end of the sentence literally does not exist yet. The <abbr title="Artificial Intelligence">AI</abbr> would have to wait in silence for the user to finish their entire paragraph before translating the first word, causing unacceptable latency.
 2. **The Alternative (Causal/Unidirectional):**
    - Explain that for real-time streaming, you must use strictly **Unidirectional** (Causal) LSTMs or GRUs, which only process data from Left-to-Right.
    - Mention that you can use a sliding "Look-ahead" window. If you delay the translation by just 300 milliseconds, you can capture 2 or 3 future words, giving the Unidirectional model enough context to translate accurately without requiring the entire sentence!

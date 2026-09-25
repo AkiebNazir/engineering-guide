@@ -10,17 +10,26 @@
 
 ## Part 1 · The Four Patterns
 
-```mermaid
+```arch
 %% caption: The four two-pointer patterns and the problems that use them.
-flowchart TD
-  R(["Two pointers"]) --> A["Converging<br/>l at 0, r at n-1"]
-  R --> B["Fast / slow: read and write<br/>in-place filtering"]
-  R --> C["Fast / slow: cycle<br/>Floyd tortoise and hare"]
-  R --> D["Parallel<br/>one pointer per sequence"]
-  A --> A1["pair sums, 3Sum,<br/>container with most water,<br/>palindrome check"]
-  B --> B1["remove duplicates,<br/>move zeroes, partition"]
-  C --> C1["linked-list cycle,<br/>happy number"]
-  D --> D1["merge sorted arrays,<br/>subsequence check"]
+grid 230x80
+node r "Two pointers" at 0,0 shape=pill
+node a "Converging" at 1,0 color=blue w=215 sub="l at 0, r at n-1"
+node b "Fast / slow: read and write" at 1,1 color=blue w=215 sub="in-place filtering"
+node c "Fast / slow: cycle" at 1,2 color=blue w=215 sub="Floyd tortoise and hare"
+node d "Parallel" at 1,3 color=blue w=215 sub="one pointer per sequence"
+node a1 "Pair sums, 3Sum" at 2,0 w=210 sub="container with most water, palindrome check"
+node b1 "Remove duplicates" at 2,1 w=210 sub="move zeroes, partition"
+node c1 "Linked-list cycle" at 2,2 w=210 sub="happy number"
+node d1 "Merge sorted arrays" at 2,3 w=210 sub="subsequence check"
+r:R -> a:L
+r:B -> b:L
+r:B -> c:L
+r:B -> d:L
+a -> a1
+b -> b1
+c -> c1
+d -> d1
 ```
 
 
@@ -47,23 +56,27 @@ solution — you have a guess.
 
 ### 1.1 Converging pointers (`l = 0`, `r = n-1`, move inward)
 
-```mermaid
+```arch
 %% caption: Converging pointers: each step discards one end that cannot be part of the answer.
-flowchart TD
-  S["l = 0, r = n - 1"] --> W{"l is left of r ?"}
-  W -->|no| X["done"]
-  W -->|yes| E["look at a[l] and a[r]"]
-  E --> C{"compare with the target or condition"}
-  C -->|"answer found"| F["record it"]:::ok
-  C -->|"too small, need bigger"| L["l += 1"]
-  C -->|"too big, need smaller"| R["r -= 1"]
-  L --> W
-  R --> W
-  F --> W
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 260x90
+node s "l = 0, r = n - 1" at 1,0 shape=pill
+node w "l is left of r ?" at 1,1 shape=diamond color=amber
+node x "done" at 0,1 shape=pill
+node e "Look at a[l] and a[r]" at 1,2
+node c "Compare with the target or condition" at 1,3.5 shape=diamond color=amber
+node l "l += 1" at 2,2.5
+node f "Record it" at 2,3.5 color=green
+node r "r -= 1" at 2,4.5
+s -> w
+w -> x : "no"
+w -> e : "yes"
+e -> c
+c:R -> f:L : "answer found"
+c:R -> l:L : "too small, need bigger"
+c:R -> r:L : "too big, need smaller"
+l:R -> w:R
+f:R -> w:R
+r:R -> w:R
 ```
 
 
@@ -368,22 +381,28 @@ O(n)."* Claiming O(n) for 3Sum is a red flag.
 
 ## Part 5 · Choosing the Pattern — a decision procedure
 
-```mermaid
+```arch
 %% caption: Choosing the two-pointer pattern.
-flowchart TD
-  Q(["Read the problem"]) --> A{"Linked list, or a sequence<br/>that can cycle?"}
-  A -->|yes| C["Fast / slow: cycle"]:::ok
-  A -->|no| B{"Modify the array in place?"}
-  B -->|yes| D["Fast / slow: read and write"]:::ok
-  B -->|no| E{"Two separate sequences?"}
-  E -->|yes| F["Parallel pointers"]:::ok
-  E -->|no| G{"Sorted, or symmetric?<br/>(palindrome, pair sum)"}
-  G -->|yes| H["Converging pointers"]:::ok
-  G -->|no| I["Probably not two pointers.<br/>Try hashing or a window."]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 270x100
+node q "Read the problem" at 0,0 shape=pill
+node a "Linked list, or a sequence that can cycle?" at 0,1 shape=diamond color=amber
+node c "Fast / slow: cycle" at 1,1 color=green
+node b "Modify the array in place?" at 0,2 shape=diamond color=amber
+node d "Fast / slow: read and write" at 1,2 color=green
+node e "Two separate sequences?" at 0,3 shape=diamond color=amber
+node f "Parallel pointers" at 1,3 color=green
+node g "Sorted, or symmetric?" at 0,4 shape=diamond color=amber sub="palindrome, pair sum"
+node h "Converging pointers" at 1,4 color=green
+node i "Probably not two pointers" at 0,5 color=slate sub="Try hashing or a window."
+q -> a
+a -> c : "yes"
+a -> b : "no"
+b -> d : "yes"
+b -> e : "no"
+e -> f : "yes"
+e -> g : "no"
+g -> h : "yes"
+g -> i : "no"
 ```
 
 
@@ -519,7 +538,7 @@ def longest_palindrome(s):
     return s[best[0]:best[1]]                          # "babad" -> "bab",  "cbbd" -> "bb"
 ```
 
-O(n²) time, **O(1) space** — the DP table and Manacher's algorithm are the alternatives; this is the one to
+O(n²) time, **O(1) space** — the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table and Manacher's algorithm are the alternatives; this is the one to
 write first. Forgetting the even centre (`expand(c, c + 1)`) is the classic miss: `"cbbd"` has no odd
 palindrome longer than 1.
 

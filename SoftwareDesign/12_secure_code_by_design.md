@@ -10,7 +10,7 @@ without checking where it points, a comparison that leaks timing, an input with 
 limit. The OWASP Top 10 has been dominated by the same handful of categories for twenty
 years.
 
-The design lesson is that **"be careful" doesn't scale.** A codebase with 400 SQL queries
+The design lesson is that **"be careful" doesn't scale.** A codebase with 400 <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> queries
 will have one that someone wrote carelessly. Secure design means structuring code so the
 insecure version is **hard to write, easy to spot in review, and caught by tests** — the
 same way `01`–`11` structure code so complexity and bugs are hard to introduce.
@@ -23,7 +23,7 @@ data.
 
 | Topic | Where |
 |---|---|
-| AuthN vs. AuthZ across services, OAuth/OIDC/JWT, KMS and envelope encryption, GDPR deletion, abuse prevention | `SystemDesign/building_blocks/14_security.md` |
+| AuthN vs. AuthZ across services, OAuth/OIDC/<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>, KMS and envelope encryption, GDPR deletion, abuse prevention | `SystemDesign/building_blocks/14_security.md` |
 | Where authorization lives in a layered service | `08_application_architecture_in_code.md` §5 |
 | Keeping secrets and PII out of logs; redacting types | `10_designing_observable_code.md` §2, §9, §10 |
 | Unsafe deserialisation (`pickle`, YAML) | `09_data_design_and_schema_evolution.md` §8 |
@@ -74,10 +74,10 @@ boundary without being checked, encoded, or bounded.
 Rules that follow:
 
 1. **Validate at the entry boundary; encode at the exit boundary.** Input validation
-   ("is this a positive integer ≤ 100?") and output encoding ("escape this for SQL / HTML /
+   ("is this a positive integer ≤ 100?") and output encoding ("escape this for <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> / HTML /
    shell") are different jobs. You need both; neither replaces the other.
 2. **Identity comes from verified credentials, never from request fields.** A `user_id`
-   in the JSON body or an `X-Tenant-ID` header is attacker-controlled.
+   in the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> body or an `X-Tenant-ID` header is attacker-controlled.
 3. **"Internal" is not "trusted".** Messages from another team's service, rows written by
    another system, and responses from partner APIs are inputs too. Most breaches pivot
    through something that was trusted because it was internal.
@@ -89,7 +89,7 @@ Rules that follow:
 ## 2 · Injection: keep data from becoming code
 
 Injection happens whenever untrusted data is **concatenated into a string that another
-interpreter parses** — SQL, a shell, a file path, HTML, LDAP, a template, a log line. The
+interpreter parses** — <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, a shell, a file path, HTML, LDAP, a template, a log line. The
 fix is always the same shape: **pass data through a channel that the interpreter never
 parses as code** (parameters, argv arrays, path APIs, auto-escaping templates).
 
@@ -118,7 +118,7 @@ safe query:   ('SELECT role FROM users WHERE email = ?', ("x' OR '1'='1",))
 
 The unsafe version's `WHERE` clause now says "or true" — the attacker's string became
 part of the query's logic. The safe version's query text never changes; the input travels
-as data the SQL engine treats literally, however it's spelled. The example below shows
+as data the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> engine treats literally, however it's spelled. The example below shows
 that same difference changing a query's *result* against a real database, plus the same
 shape of bug in a shell command and a file path.
 
@@ -207,27 +207,27 @@ ALL PASSED
 
 | Interpreter | Vulnerable | Safe design |
 |---|---|---|
-| SQL | f-strings / `%` / `+` building queries | Placeholders (`?`, `%s`, `$1`) for values; **allowlist** for identifiers like sort columns; query builders / ORMs that parameterise |
+| <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> | f-strings / `%` / `+` building queries | Placeholders (`?`, `%s`, `$1`) for values; **allowlist** for identifiers like sort columns; query builders / ORMs that parameterise |
 | Shell | `shell=True`, `os.system`, `sh -c` with interpolation | `subprocess.run([...])` argv list; no shell; pass `--` before user-supplied arguments so `-rf` isn't read as an option |
 | Filesystem | `base / user_name` then open | Generate server-side names (UUIDs) and store the user's name as metadata; if you must use user paths, resolve and check containment; Go `os.Root` (§10) |
 | HTML | String templates, `innerHTML` | Auto-escaping templates (§7) |
-| Logs | Writing raw user input with newlines | Structured JSON logs (`10` §2) escape control characters |
+| Logs | Writing raw user input with newlines | Structured <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> logs (`10` §2) escape control characters |
 | Regex | `re.compile(user_input)` | `re.escape()` when matching literally |
 | Templates | Rendering user-supplied *templates* (Jinja2 `Template(user_str)`) | Never; that is remote code execution (SSTI). Users supply data, not templates |
 
 Design moves that make the safe version the default:
 
-- **Repository methods take typed values, never SQL fragments** (`08` §4). There is no
+- **Repository methods take typed values, never <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> fragments** (`08` §4). There is no
   `where: str` parameter to concatenate into.
-- **Ban the dangerous API with a linter**: Bandit (`B602` shell=True, `B608` SQL string
-  building), Semgrep rules, `gosec` in Go. A pattern that fails CI is not a pattern that
+- **Ban the dangerous <abbr title="Application Programming Interface">API</abbr> with a linter**: Bandit (`B602` shell=True, `B608` <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> string
+  building), Semgrep rules, `gosec` in Go. A pattern that fails <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> is not a pattern that
   appears in code.
 - **Prefer generated identifiers** over user-supplied names for anything that becomes a
   path, key, or command argument.
 
 The `resolve()` + `is_relative_to` check above also follows symlinks, but it has a
 time-of-check-to-time-of-use gap: a symlink swapped in between the check and the `open`
-defeats it. Where attackers can write into the directory, use an API that resolves and opens
+defeats it. Where attackers can write into the directory, use an <abbr title="Application Programming Interface">API</abbr> that resolves and opens
 atomically relative to a directory handle (`openat`-style; Go's `os.Root`).
 
 ---
@@ -236,7 +236,7 @@ atomically relative to a directory handle (`openat`-style; Go's `os.Root`).
 
 Broken access control is the #1 category in the OWASP Top 10 (2021). The typical bug is
 not a wrong rule; it is **a missing check** on one of hundreds of code paths — an endpoint
-added later, an export job, a GraphQL resolver, a bulk API.
+added later, an export job, a GraphQL resolver, a bulk <abbr title="Application Programming Interface">API</abbr>.
 
 So design authorization so that forgetting it is structurally difficult:
 
@@ -407,12 +407,12 @@ The design choices:
 | Choice | Why it matters |
 |---|---|
 | **`Principal` is built only from a verified token** | Handlers can't accidentally authorise based on `body["user_id"]` |
-| **Tenant scoping lives in the repository's construction** (`store.for_tenant(t).get(id)`) | There is no `get(id)` that ignores tenancy. A cross-tenant leak requires deliberately bypassing the API, which is visible in review |
+| **Tenant scoping lives in the repository's construction** (`store.for_tenant(t).get(id)`) | There is no `get(id)` that ignores tenancy. A cross-tenant leak requires deliberately bypassing the <abbr title="Application Programming Interface">API</abbr>, which is visible in review |
 | **Policy in one table, deny by default** | Unlisted role or action → denied. Adding a role grants nothing until someone writes the grant |
 | **Tenant check before role check in `can`** | An admin of Globex is not an admin of Acme — the most common multi-tenant bug |
 | **`NotFound` for resources the caller may not even see** | Returning `403` for another tenant's document confirms it exists (enumeration). `403` only when the caller can see it but not do this action |
 | **Load the resource, then authorise** | Object-level checks need the object's owner and tenant (IDOR prevention) |
-| **Literal expected-policy table in a test** | A reviewer reads the table; the test enforces every role × action × relationship. A policy change that isn't reflected in the table fails CI |
+| **Literal expected-policy table in a test** | A reviewer reads the table; the test enforces every role × action × relationship. A policy change that isn't reflected in the table fails <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> |
 
 Beyond the example:
 
@@ -424,7 +424,7 @@ Beyond the example:
   every use case.
 - **Authorise bulk and list operations per item** or with a scoped query; "can list
   documents" doesn't mean "can list every document".
-- **Mass assignment:** never copy request JSON directly onto a model
+- **Mass assignment:** never copy request <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> directly onto a model
   (`user.update(**body)`), or a client sends `{"role": "admin"}`. Parse into a command DTO
   that contains only the fields the caller may set.
 - **Re-check on sensitive actions** (password change, payout destination, deleting an
@@ -538,10 +538,10 @@ reproducible, and Python's Mersenne Twister state can be reconstructed from 624 
 
 | Need | Use | Never |
 |---|---|---|
-| Session IDs, reset tokens, API keys, nonces | `secrets.token_urlsafe(32)`, Go `crypto/rand` | `random`, `math/rand`, UUIDv1, timestamps, incrementing IDs |
+| Session IDs, reset tokens, <abbr title="Application Programming Interface">API</abbr> keys, nonces | `secrets.token_urlsafe(32)`, Go `crypto/rand` | `random`, `math/rand`, UUIDv1, timestamps, incrementing IDs |
 | Store passwords | `argon2id` (via `argon2-cffi`), `scrypt`, or `bcrypt`, with per-password salt and stored parameters | MD5/SHA-1/SHA-256 (fast hashes, even salted), reversible encryption |
 | Compare secrets, MACs, tokens | `hmac.compare_digest`, Go `subtle.ConstantTimeCompare` | `==`, which can return early at the first differing byte and leak timing |
-| Integrity of data you issue (tokens, signed URLs, cookies) | HMAC-SHA-256 with a server-held key, or a vetted library (`itsdangerous`, a JWT library with algorithm allowlisting) | Plain hashes (`sha256(key + data)` is vulnerable to length extension), unsigned base64 |
+| Integrity of data you issue (tokens, signed URLs, cookies) | HMAC-SHA-256 with a server-held key, or a vetted library (`itsdangerous`, a <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> library with algorithm allowlisting) | Plain hashes (`sha256(key + data)` is vulnerable to length extension), unsigned base64 |
 | Encrypt data | AEAD: AES-GCM or ChaCha20-Poly1305 via `cryptography`, Go `crypto/cipher` | Designing your own scheme; ECB mode; encryption without authentication |
 | Store secrets | Secret manager / workload identity, injected at runtime | Source code, config files in the repo, container images, environment dumps in logs |
 
@@ -601,7 +601,7 @@ http://example.com/cat.png -> BLOCK
 That looks reasonable and is exactly what real SSRF filters get bypassed through: the
 denylist checks the *hostname string*, not where it actually resolves. A domain the
 attacker controls can point at `169.254.169.254` and never appear in `BLOCKED_HOSTS`;
-the same address is spellable as `2130706433` or `[::ffff:127.0.0.1]`; and a DNS answer
+the same address is spellable as `2130706433` or `[::ffff:127.0.0.1]`; and a <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> answer
 can change between the check and the connect. The full example below fixes all of that
 by checking the **resolved** address against an allowlist of "public", not a denylist of
 hostnames.
@@ -700,16 +700,16 @@ ALL PASSED
 
 Why each part of the design is necessary:
 
-- **Check the resolved IP, not the hostname string.** Attackers own domains that resolve to
+- **Check the resolved <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>, not the hostname string.** Attackers own domains that resolve to
   `169.254.169.254`, and IPs have many spellings (`2130706433`, `0x7f.1`, `[::ffff:127.0.0.1]`).
   String denylists always miss one.
 - **Allowlist "public" (`is_global`) rather than denylisting private ranges.** New special
   ranges appear; an allowlist fails closed.
 - **Check every resolved address.** A name with one public and one private A record passes a
   check that looks only at the first.
-- **Pin the checked address for the connection.** If the HTTP client re-resolves the name, a
-  **DNS rebinding** attacker returns a public IP to the check and a private IP to the
-  connect. Connect to the validated IP (with the original `Host` header / SNI), or route
+- **Pin the checked address for the connection.** If the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> client re-resolves the name, a
+  **<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> rebinding** attacker returns a public <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> to the check and a private <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> to the
+  connect. Connect to the validated <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> (with the original `Host` header / SNI), or route
   through an egress proxy that enforces the policy at connect time.
 - **Re-validate redirects** — or disable them. A public URL that 302-redirects to
   `http://169.254.169.254/` bypasses a check done only on the first URL.
@@ -724,7 +724,7 @@ Why each part of the design is necessary:
 ## 6 · Resource exhaustion as a security bug
 
 Availability is part of security. Any input whose processing cost is unbounded lets one
-cheap request consume large amounts of memory or CPU.
+cheap request consume large amounts of memory or <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.
 
 The general shape, minimal — reject before doing the work, not after:
 
@@ -834,17 +834,17 @@ ALL PASSED
 ```
 
 A 190 KB upload expands to 200 MB; each extra character of input doubles the nested regex's
-time — at n = 40 that is hours of CPU from a 41-byte string.
+time — at n = 40 that is hours of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> from a 41-byte string.
 
 | Input | Bound |
 |---|---|
 | Request bodies, uploads | Max size at the proxy **and** in the app; streaming reads with a limit |
 | Archives, compressed bodies (`Content-Encoding: gzip`) | Count decompressed bytes as they are produced; limit file count and nesting |
-| JSON / XML | Max size, max depth, max array length; disable XML external entities and DTDs (`defusedxml`) |
+| <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> / <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> | Max size, max depth, max array length; disable <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> external entities and DTDs (`defusedxml`) |
 | Collections in requests (IDs, batch items) | Max items per request (`11` §3) |
 | Pagination | Max page size, server-enforced |
 | Regex on user input | No nested quantifiers; length limits; a linear-time engine (RE2 / `google-re2`, Go `regexp`) |
-| Expensive operations (password hashing, report generation, search) | Rate limits per identity and per IP; queues with bounded depth |
+| Expensive operations (password hashing, report generation, search) | Rate limits per identity and per <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>; queues with bounded depth |
 | Images | Check pixel dimensions before decoding (a small PNG can declare 50,000 × 50,000 pixels) |
 | Anything that fans out (webhooks, emails, invitations) | Per-account quotas |
 | Time | Timeouts on every request and outbound call (`06` §6) |
@@ -866,7 +866,7 @@ The correct escaping **depends on the output context**:
 | HTML body | `<p>{name}</p>` | HTML entities: `<` → `&lt;` |
 | HTML attribute | `<input value="{name}">` | Attribute encoding, always quoted |
 | URL in `href`/`src` | `<a href="{url}">` | Scheme allowlist (`https:`), then URL encoding — `javascript:` URLs execute |
-| Inside `<script>` | `var user = {name};` | JavaScript string encoding (JSON with `<`, `>`, `&` escaped) |
+| Inside `<script>` | `var user = {name};` | JavaScript string encoding (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> with `<`, `>`, `&` escaped) |
 | CSS | `style="color: {c}"` | Avoid; allowlist values |
 
 That's why "sanitise input" is the wrong mental model — the same string needs different
@@ -922,7 +922,7 @@ Design defences:
 5. **Cookies:** `HttpOnly` (scripts can't read session cookies), `Secure`, `SameSite=Lax` or
    `Strict` (also the primary CSRF defence, together with CSRF tokens for state-changing
    form posts).
-6. **JSON APIs:** serve with `Content-Type: application/json` and `X-Content-Type-Options:
+6. **<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> APIs:** serve with `Content-Type: application/json` and `X-Content-Type-Options:
    nosniff` so responses can't be interpreted as HTML.
 
 ---
@@ -953,7 +953,7 @@ is a feature someone forgets to opt into.
 
 | Insecure default | Secure default |
 |---|---|
-| `verify=False` option commonly copied from Stack Overflow | TLS verification always on; a custom CA bundle option instead of a disable switch |
+| `verify=False` option commonly copied from Stack Overflow | <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> verification always on; a custom CA bundle option instead of a disable switch |
 | New endpoints public unless decorated `@requires_auth` | Every route requires authentication unless explicitly decorated `@public` |
 | Roles grant access unless denied | Deny unless granted (§3) |
 | Debug mode, stack traces, admin consoles enabled by default | Off unless an explicit development profile is selected |
@@ -979,7 +979,7 @@ fail-closed controls need their own availability engineering (caching recent dec
 local policy evaluation), because they turn dependency outages into user-facing errors.
 
 **Error messages:** don't reveal whether an account exists ("email not found" vs. "wrong
-password" lets attackers enumerate users); don't return stack traces, SQL errors, or
+password" lets attackers enumerate users); don't return stack traces, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> errors, or
 internal hostnames (`06` §4).
 
 ---
@@ -1066,16 +1066,16 @@ What happened:
 - **One template value, three encodings:** HTML-escaped in the body, replaced with the
   safe placeholder `#ZgotmplZ` in `href` because `javascript:` is an unsafe URL scheme, and
   JavaScript-string-encoded inside `<script>`. `text/template` would have emitted all three
-  raw — same API, very different safety; `gosec` and code review should flag
+  raw — same <abbr title="Application Programming Interface">API</abbr>, very different safety; `gosec` and code review should flag
   `text/template` producing HTML.
 - **`os.Root`** blocks both `../` traversal and a **symlink** pointing outside the
   directory, with no separate check-then-open gap.
-- **`subtle.ConstantTimeCompare`** for API keys; `crypto/rand` for key material. (`math/rand`
+- **`subtle.ConstantTimeCompare`** for <abbr title="Application Programming Interface">API</abbr> keys; `crypto/rand` for key material. (`math/rand`
   is for simulations only.)
 - Go's `database/sql` placeholders (`db.QueryContext(ctx, "… WHERE id = $1", id)`) and
   `exec.Command(name, args...)` (no shell) follow the same rules as §2.
 - Run **`govulncheck`** (reports only vulnerabilities in code paths you actually call) and
-  **`gosec`** in CI.
+  **`gosec`** in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.
 
 ---
 
@@ -1092,7 +1092,7 @@ compromised maintainer accounts, malicious updates, build-system compromise) tar
 | **Review new dependencies** | Maintainer activity, download counts vs. name similarity (typosquats), install scripts, permissions it needs; OpenSSF Scorecard |
 | **Verify provenance** | Sigstore signatures, SLSA build provenance, PyPI Trusted Publishing |
 | **Private registry / proxy** | Mirror approved packages; prevents dependency confusion (a public package with your internal package's name) |
-| **Least-privilege CI** | Build jobs without production credentials; pinned CI actions by commit SHA; secrets scoped per job |
+| **Least-privilege <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>** | Build jobs without production credentials; pinned <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> actions by commit SHA; secrets scoped per job |
 | **SBOM** | Generate a software bill of materials so "are we affected by CVE-X?" is a query, not an investigation |
 | **Secret scanning** | Pre-commit hooks and repository scanning (gitleaks, GitHub secret scanning); rotate anything that leaked — deleting the commit is not enough |
 
@@ -1138,9 +1138,9 @@ link creation.
 | **Injection payload tests** | Concatenation regressions | Quotes, `;`, `../`, `$(…)`, `<script>` through each input; assert no behaviour change |
 | **Canary secrets** | Secrets in logs/responses/errors | `10` §11 |
 | **Fuzzing parsers** | Crashes, hangs, memory blow-ups on malformed input | Atheris / Hypothesis (Python), `go test -fuzz` |
-| **Limits tests** | Missing bounds | Oversized body, deeply nested JSON, zip bomb, 10,000-item batch → rejected quickly |
+| **Limits tests** | Missing bounds | Oversized body, deeply nested <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, zip bomb, 10,000-item batch → rejected quickly |
 | **Race tests on limits** | Double-spend, token reuse | Fire 50 concurrent redemptions; assert exactly one succeeds |
-| **SAST in CI** | Known-bad patterns | Bandit, Semgrep, CodeQL, gosec |
+| **SAST in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>** | Known-bad patterns | Bandit, Semgrep, CodeQL, gosec |
 | **Dependency scanning** | Known CVEs | `pip-audit`, `govulncheck` |
 | **DAST / penetration tests** | Deployed misconfiguration | OWASP ZAP in staging; external pentests for major launches |
 
@@ -1157,7 +1157,7 @@ def test_every_route_requires_authentication(client, app):
 ```
 
 A new endpoint without authentication fails this test by default — the secure default
-again, enforced in CI.
+again, enforced in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.
 
 ---
 
@@ -1165,7 +1165,7 @@ again, enforced in CI.
 
 | Red flag | Vulnerability | Fix |
 |---|---|---|
-| f-string / `+` / `%` building SQL | SQL injection | Placeholders; identifier allowlists |
+| f-string / `+` / `%` building <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> | <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection | Placeholders; identifier allowlists |
 | `shell=True`, `os.system`, `sh -c` with variables | Command injection | argv lists |
 | `open(base + user_path)` | Path traversal | Generated names; containment check; `os.Root` |
 | `requests.get(user_url)` | SSRF | §5 validation, pinned IPs, isolated egress |
@@ -1190,15 +1190,15 @@ again, enforced in CI.
 
 ## 15 · Interview questions and model answers
 
-**Q: How do you prevent SQL injection?**
+**Q: How do you prevent <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection?**
 Never build queries by string concatenation with user data. Use parameterised queries for
 values; for identifiers such as sort columns, map user input through an allowlist. Keep
-repository interfaces typed so no SQL fragments cross them, and enforce it with a linter like
-Bandit or Semgrep in CI. Database accounts with least privilege limit the damage if something
+repository interfaces typed so no <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> fragments cross them, and enforce it with a linter like
+Bandit or Semgrep in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>. Database accounts with least privilege limit the damage if something
 slips through.
 
 **Q: What's an IDOR and how do you design against it?**
-Insecure direct object reference: the API returns or modifies an object by ID without checking
+Insecure direct object reference: the <abbr title="Application Programming Interface">API</abbr> returns or modifies an object by ID without checking
 that the caller may access that specific object. Design against it by deriving the principal
 from verified credentials, loading resources through repositories scoped to the caller's tenant,
 authorising each action on the loaded object with a deny-by-default policy, returning 404 for
@@ -1214,14 +1214,14 @@ of those per second.
 **Q: A feature fetches a user-supplied URL. What are the risks?**
 SSRF: the server can be steered to internal services, localhost admin endpoints, or the cloud
 metadata service to steal credentials. Mitigate with a scheme and port allowlist, resolving the
-host and requiring every address to be public, connecting to the validated address to defeat DNS
+host and requiring every address to be public, connecting to the validated address to defeat <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>
 rebinding, re-validating or disabling redirects, size and time limits on the response, and running
 fetchers in a network segment with no internal access.
 
 **Q: Input validation or output encoding?**
 Both, for different reasons. Validation at the entry boundary rejects data that doesn't fit the
 domain — types, ranges, sizes. Encoding at the output boundary makes data inert for a specific
-interpreter — SQL parameters, argv arrays, context-aware HTML escaping. Validation can't replace
+interpreter — <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> parameters, argv arrays, context-aware HTML escaping. Validation can't replace
 encoding, because a perfectly valid name like `O'Brien` or `<3` still breaks a concatenated query or
 page.
 
@@ -1235,7 +1235,7 @@ reliability work, like caching recent decisions or evaluating policy locally.
 Make the secure path the default and the insecure path conspicuous: typed repository APIs,
 auto-escaping templates, authentication required on every route unless explicitly marked public,
 deny-by-default policies, secret types that redact themselves. Enforce with linters and tests that
-fail CI — route-auth tests, authorization matrices, dependency scanning — and do threat modeling in
+fail <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> — route-auth tests, authorization matrices, dependency scanning — and do threat modeling in
 design reviews for high-risk features.
 
 ---
@@ -1245,11 +1245,11 @@ design reviews for high-risk features.
 **Boundaries and input**
 - [ ] Trust boundaries are identified; "internal" inputs are treated as untrusted.
 - [ ] Every input has type, range, size, and count limits enforced server-side.
-- [ ] Parsers are bounded (depth, decompressed size, dimensions); XML entities disabled.
+- [ ] Parsers are bounded (depth, decompressed size, dimensions); <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> entities disabled.
 - [ ] Regexes on user input are linear-time or length-limited.
 
 **Injection and output**
-- [ ] SQL uses placeholders; identifiers come from allowlists.
+- [ ] <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> uses placeholders; identifiers come from allowlists.
 - [ ] Processes are started with argv lists, no shell.
 - [ ] File paths are generated, or contained with traversal-resistant APIs.
 - [ ] HTML is rendered through context-aware auto-escaping; raw-HTML escapes are rare and reviewed.
@@ -1270,6 +1270,6 @@ design reviews for high-risk features.
 
 **Process**
 - [ ] Limits, balances, and one-time tokens are enforced atomically.
-- [ ] Dependencies are pinned, scanned, and minimised; CI has least privilege.
+- [ ] Dependencies are pinned, scanned, and minimised; <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> has least privilege.
 - [ ] High-risk features get a STRIDE threat model in the design doc.
-- [ ] SAST, dependency scanning, fuzzing, and negative tests run in CI.
+- [ ] SAST, dependency scanning, fuzzing, and negative tests run in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.

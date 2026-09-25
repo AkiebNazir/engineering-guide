@@ -8,7 +8,7 @@ from application code. A CTE (`WITH ... AS (...)`, Common Table Expression) is t
 same idea with a name attached, so you can build a query out of clearly-labeled
 steps instead of one deeply nested blob. A **recursive** CTE goes one step further:
 it can reference itself, which is how you traverse a tree or hierarchy — or generate
-a sequence — in pure SQL.
+a sequence — in pure <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>.
 
 ## Setup used for this level
 
@@ -123,7 +123,7 @@ Real output:
 Grace
 ```
 
-(`lib/pq` needs `sslmode=disable` in the DSN for a local, non-TLS lab database — pgx
+(`lib/pq` needs `sslmode=disable` in the DSN for a local, non-<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> lab database — pgx
 infers this automatically. `lib/pq` is in maintenance mode upstream; it still works
 fine and is worth recognizing in older codebases, but `pgx/v5/stdlib` is the
 actively-maintained choice for new `database/sql` code today.)

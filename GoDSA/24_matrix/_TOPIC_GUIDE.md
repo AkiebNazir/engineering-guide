@@ -11,7 +11,7 @@
 
 ### 1.1 The layout, drawn
 
-Topics 4 and 17 touched this in passing for prefix sums and DP tables. Here it's
+Topics 4 and 17 touched this in passing for prefix sums and <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> tables. Here it's
 the main event.
 
 ```go
@@ -38,7 +38,7 @@ for i := range grid {
 The outer slice is one contiguous block of 3-word row headers. Each row's data
 is its **own** `runtime.mallocgc` call. Nothing here promises row 1 lives next
 to row 0 in memory — the allocator is free to put them anywhere, and after a few rounds
-of GC and reallocation elsewhere in the program, it may.
+of <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> and reallocation elsewhere in the program, it may.
 
 Compare to a **flattened** representation:
 
@@ -59,7 +59,7 @@ What the guarantee is *worth* is a different question — measured in Part 9.1, 
 
 ### 1.2 Building a fresh grid — the same aliasing bug, in a new house
 
-Topic 17 flagged this for DP tables; it bites just as hard when a matrix
+Topic 17 flagged this for <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> tables; it bites just as hard when a matrix
 problem asks you to *construct* output, not just read input.
 
 ```go
@@ -188,24 +188,28 @@ right-to-left along what's now a degenerate "bottom" row that's the same as
 the top row already emitted. Trace a 1×n and an n×1 input by hand once; the
 need for the guards becomes obvious.
 
-```mermaid
+```arch
 %% caption: Spiral traversal: four shrinking boundaries. The two inner checks stop a single leftover row or column from being walked twice.
-flowchart TD
-  A["top, bottom = 0, m - 1<br/>left, right = 0, n - 1"] --> B{"top ≤ bottom and left ≤ right ?"}
-  B -->|no| Z["done"]:::ok
-  B -->|yes| C["row top: left to right, top += 1"]
-  C --> D["column right: top to bottom, right -= 1"]
-  D --> E{"top ≤ bottom ?"}
-  E -->|yes| F["row bottom: right to left, bottom -= 1"]
-  E -->|no| B
-  F --> G{"left ≤ right ?"}
-  G -->|yes| H["column left: bottom to top, left += 1"]
-  G -->|no| B
-  H --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x78
+node a "top, bottom = 0, m - 1" at 1,0 shape=pill w=240 sub="left, right = 0, n - 1"
+node b "top ≤ bottom and\nleft ≤ right ?" at 1,1 shape=diamond color=amber
+node z "done" at 0,1 color=green
+node c "row top: left to right" at 1,2 w=260 sub="top += 1"
+node d "column right: top to bottom" at 1,3 w=260 sub="right -= 1"
+node e "top ≤ bottom ?" at 1,4 shape=diamond color=amber
+node f "row bottom: right to left" at 1,5 w=260 sub="bottom -= 1"
+node g "left ≤ right ?" at 1,6 shape=diamond color=amber
+node h "column left: bottom to top" at 1,7 w=260 sub="left += 1"
+a -> b
+b -> z : "no"
+b -> c : "yes"
+c -> d -> e
+e -> f : "yes"
+e:R -> b:R : "no"
+f -> g
+g -> h : "yes"
+g:R -> b:R : "no"
+h:R -> b:R
 ```
 
 ### 3.2 Diagonal — `r+c` is constant along a diagonal, `r-c` along an anti-diagonal
@@ -253,8 +257,8 @@ func findDiagonalOrder(m [][]int) []int {
 
 ## Part 4 · Flood Fill — Visited Grid vs. Mutate-in-Place
 
-Grid BFS/DFS (number of islands, flood fill, rotting oranges) reuses topic 14's
-BFS/DFS mechanics wholesale — see that guide for the queue/recursion tradeoffs.
+Grid <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (number of islands, flood fill, rotting oranges) reuses topic 14's
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> mechanics wholesale — see that guide for the queue/recursion tradeoffs.
 The one matrix-specific decision is **how to track "visited"**:
 
 ```go
@@ -287,7 +291,7 @@ grid[r][c] = 0   // or a sentinel like 2, distinct from "land" and "water"
 | Rotate 90° in place | O(rows·cols) | O(1) | Transpose + per-row reverse |
 | Spiral traversal | O(rows·cols) | O(1)* | Four shrinking boundaries |
 | Diagonal traversal | O(rows·cols) | O(rows+cols) | Bucket by `r+c`, then flatten |
-| Flood fill (BFS/DFS) | O(rows·cols) | O(rows·cols) worst case | Visited grid or recursion stack |
+| Flood fill (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>) | O(rows·cols) | O(rows·cols) worst case | Visited grid or recursion stack |
 | Row-major flattened access | O(1) per cell | — | `data[r*cols+c]`, one allocation |
 
 \* excluding the output slice
@@ -314,7 +318,7 @@ grid[r][c] = 0   // or a sentinel like 2, distinct from "land" and "water"
 | In-place 90° rotation | O(n²) | O(1) | LC 48 Rotate Image |
 | Boundary-shrinking spiral | O(rows·cols) | O(1)* | LC 54 Spiral Matrix |
 | Diagonal bucketing | O(rows·cols) | O(rows+cols) | LC 498 Diagonal Traverse |
-| Grid flood fill (BFS/DFS) | O(rows·cols) | O(rows·cols) | LC 200 Number of Islands, LC 733 Flood Fill |
+| Grid flood fill (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>) | O(rows·cols) | O(rows·cols) | LC 200 Number of Islands, LC 733 Flood Fill |
 | Row/column zero-marking | O(rows·cols) | O(1)† | LC 73 Set Matrix Zeroes |
 
 \* excluding output · † using first row/column as sentinels instead of a separate boolean grid
@@ -410,22 +414,28 @@ Part 1 draws the `[][]int` layout. This Part measures what the layout does and d
 arrays), and gives every rotation as an index formula. All numbers are Go 1.24 on darwin/arm64, best of seven runs; all code was compiled with `go vet`, and the
 rotations were checked against the formulas on 400 random square matrices (sizes 0–7).
 
-```mermaid
+```arch
 %% caption: Read the constraints first: shape, in-place, and which ordering the rows and columns guarantee decide the technique.
-flowchart TD
-  Q(["A matrix problem"]) --> A{"Must the answer be computed in place?"}
-  A -->|"yes, and it is square"| B["rotate/reflect with swaps: transpose + reverse, or 4-way ring cycles"]:::ok
-  A -->|"yes, but a new value needs old neighbours"| C["encode old + 2*new in the cell, decode in a second pass"]:::hot
-  A -->|"yes, and rows/columns must be remembered"| D["row 0 and column 0 as markers (capture them first)"]:::hot
-  A -->|"no"| E{"A traversal order?"}
-  E -->|"yes"| F["four shrinking boundaries, or dirs with a turn rule"]:::ok
-  E -->|"a search"| G{"ONE global sorted order?"}
-  G -->|"yes"| H["binary search on the flat index r*cols + c"]:::ok
-  G -->|"only rows and columns sorted"| I["staircase from the top-right corner, O(m + n)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x85
+node q "A matrix problem" at 0,0 shape=pill
+node a "Must the answer be\ncomputed in place?" at 0,1 shape=diamond color=amber w=280
+node b "Rotate/reflect with swaps" at 1,0 color=green w=300 sub="yes, and it is square · transpose + reverse, or 4-way ring cycles"
+node c "Encode old + 2*new in the cell" at 1,1 color=amber w=300 sub="yes, but a new value needs old neighbours · decode in a second pass"
+node d "Row 0 and column 0 as markers" at 1,2 color=amber w=300 sub="yes, and rows/columns must be remembered · capture them first"
+node e "A traversal order?" at 0,3 shape=diamond color=amber
+node f "Four shrinking boundaries" at 1,3 color=green w=300 sub="or dirs with a turn rule"
+node g "ONE global sorted order?" at 0,4 shape=diamond color=amber
+node h "Binary search on the flat index" at 1,4 color=green w=300 sub="r*cols + c"
+node i "Staircase from the top-right corner" at 0,5 color=amber w=260 sub="O(m + n)"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a -> e : "no"
+e -> f : "yes"
+e -> g : "a search"
+g -> h : "yes"
+g -> i : "only rows and columns sorted"
 ```
 
 ### 9.1 What the layout costs — measured
@@ -442,7 +452,7 @@ Summing every cell of an `n × n` `[]int` grid, direct loops (no closure in the 
 Two conclusions. **The layout barely mattered:** rows allocated back to back sat next to each other, so the pointer-per-row structure cost nothing measurable
 (a third variant — a `[][]int` whose rows are sub-slices of one backing array — measured the same again). **The loop order mattered a great deal:** walking down
 columns was about 3× slower at 2 MB and about **12× slower at 134 MB**, for either layout, because each step lands on a different cache line. So write the row index in the
-outer loop, and treat "flatten it" as an allocation and ergonomics decision, not a speed-up. (In topic 21 or 14 this shows up as "why is my grid BFS slow": the
+outer loop, and treat "flatten it" as an allocation and ergonomics decision, not a speed-up. (In topic 21 or 14 this shows up as "why is my grid <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> slow": the
 neighbour order is fine, the *sweep* order is what to check.)
 
 If you want one contiguous block *and* `grid[r][c]` syntax, slice a single backing array — with a **full slice expression** so a row cannot grow into its neighbour:

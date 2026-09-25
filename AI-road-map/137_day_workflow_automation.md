@@ -2,7 +2,7 @@
 
 Welcome to Day 137. 
 
-Most AI tutorials end with a script running in your terminal. But in the real world, enterprise businesses do not run in terminals. They run on event-driven workflows, CRMs (Salesforce), ticketing systems (Jira), and messaging apps (Slack).
+Most <abbr title="Artificial Intelligence">AI</abbr> tutorials end with a script running in your terminal. But in the real world, enterprise businesses do not run in terminals. They run on event-driven workflows, CRMs (Salesforce), ticketing systems (Jira), and messaging apps (Slack).
 
 Today, we take our Agents out of the sandbox and wire them into **Enterprise Event-Driven Architectures**.
 
@@ -12,8 +12,8 @@ Today, we take our Agents out of the sandbox and wire them into **Enterprise Eve
 
 ### 1. Event-Triggered vs Agent-Triggered
 There are two ways an Agent interacts with a workflow:
-- **Event-Triggered (Reactive):** The Agent is asleep. A customer submits a Zendesk ticket. Zendesk fires a Webhook to your AWS API Gateway. This instantly wakes up the Agent, passing the ticket data directly into its prompt.
-- **Agent-Triggered (Proactive):** The Agent is awake and analyzing data. It realizes the data is stale. The Agent makes an API call to Airflow, triggering a massive Spark ETL pipeline, and then goes to sleep until Airflow pings it back!
+- **Event-Triggered (Reactive):** The Agent is asleep. A customer submits a Zendesk ticket. Zendesk fires a Webhook to your AWS <abbr title="Application Programming Interface">API</abbr> Gateway. This instantly wakes up the Agent, passing the ticket data directly into its prompt.
+- **Agent-Triggered (Proactive):** The Agent is awake and analyzing data. It realizes the data is stale. The Agent makes an <abbr title="Application Programming Interface">API</abbr> call to Airflow, triggering a massive Spark ETL pipeline, and then goes to sleep until Airflow pings it back!
 
 ### 2. The Integration Layer (Webhooks & Message Queues)
 Agents are slow. If a webhook expects a response in 3 seconds, but your Agent takes 30 seconds to think, the webhook will timeout and crash. 
@@ -21,7 +21,7 @@ To fix this, you must use **Message Queues (AWS SQS, Kafka, RabbitMQ)**.
 The Webhook drops the payload into the Queue and instantly returns a `200 OK`. A worker pool of Agents pulls payloads from the Queue at their own pace.
 
 ### 3. Workflow Engines
-Instead of writing complex API routing in Python, enterprises use workflow engines like **Temporal, n8n, or Zapier**. These platforms handle the API authentication, retry logic, and timeouts. You simply add an "AI Agent Node" in the middle of their visual drag-and-drop graph!
+Instead of writing complex <abbr title="Application Programming Interface">API</abbr> routing in Python, enterprises use workflow engines like **Temporal, n8n, or Zapier**. These platforms handle the <abbr title="Application Programming Interface">API</abbr> authentication, retry logic, and timeouts. You simply add an "<abbr title="Artificial Intelligence">AI</abbr> Agent Node" in the middle of their visual drag-and-drop graph!
 
 ---
 
@@ -107,8 +107,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **No Infinite Loops:** Notice that this is not a ReAct `while` loop. In highly deterministic enterprise workflows, you don't want the agent guessing what to do. You define the rigid API steps (Extract -> Query CRM -> Resolve) and only use the LLM for the "thinking" parts (Intent Extraction and Text Generation).
-2. **Context-Aware Decisions:** The Agent's output drastically changed depending on the CRM API response. This proves the Agent is deeply integrated into the business logic.
+1. **No Infinite Loops:** Notice that this is not a ReAct `while` loop. In highly deterministic enterprise workflows, you don't want the agent guessing what to do. You define the rigid <abbr title="Application Programming Interface">API</abbr> steps (Extract -> Query CRM -> Resolve) and only use the <abbr title="Large Language Model">LLM</abbr> for the "thinking" parts (Intent Extraction and Text Generation).
+2. **Context-Aware Decisions:** The Agent's output drastically changed depending on the CRM <abbr title="Application Programming Interface">API</abbr> response. This proves the Agent is deeply integrated into the business logic.
 
 ---
 
@@ -120,22 +120,22 @@ You are automating a hiring pipeline.
 1. Conceptually design an Agent-Triggered workflow.
 2. The Webhook: A candidate submits a Resume PDF.
 3. Node 1: Agent extracts skills from PDF.
-4. Node 2: Agent queries the HR Database (Greenhouse API) to match skills against open Job Reqs.
-5. Node 3: If match score > 80%, the Agent triggers a Calendly API to email the candidate an interview link.
-6. Write out the architecture. What happens if the Calendly API is down? Where does the message go? (Hint: Dead Letter Queue).
+4. Node 2: Agent queries the HR Database (Greenhouse <abbr title="Application Programming Interface">API</abbr>) to match skills against open Job Reqs.
+5. Node 3: If match score > 80%, the Agent triggers a Calendly <abbr title="Application Programming Interface">API</abbr> to email the candidate an interview link.
+6. Write out the architecture. What happens if the Calendly <abbr title="Application Programming Interface">API</abbr> is down? Where does the message go? (Hint: Dead Letter Queue).
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design an AI-powered operations platform that automates 80% of IT support tickets. Cover: ticket classification, automated resolution, escalation, and human handoff."*
+*"Design an <abbr title="Artificial Intelligence">AI</abbr>-powered operations platform that automates 80% of IT support tickets. Cover: ticket classification, automated resolution, escalation, and human handoff."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Ingestion & Queuing Layer:** 
-   - State that all incoming tickets must hit an SQS Queue. A fast LLM (Classifier) pulls from the queue and routes the ticket to the correct specialized Agent (Network Agent, Hardware Agent, Password Agent).
+   - State that all incoming tickets must hit an SQS Queue. A fast <abbr title="Large Language Model">LLM</abbr> (Classifier) pulls from the queue and routes the ticket to the correct specialized Agent (Network Agent, Hardware Agent, Password Agent).
 2. **The Execution Layer:**
    - The Specialized Agent attempts to resolve the issue using its specific Tools (e.g., pinging a router, resetting Active Directory).
 3. **Escalation & Handoff:**
@@ -147,4 +147,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 We have fully automated our enterprise workflow. But there is a massive danger. What if our Agent hallucinates and decides to delete the CEO's Active Directory account?
 
-Tomorrow, in **Day 138**, we learn the ultimate safety protocol for production AI: **Human-in-the-Loop (HITL) and Approval Gates**!
+Tomorrow, in **Day 138**, we learn the ultimate safety protocol for production <abbr title="Artificial Intelligence">AI</abbr>: **Human-in-the-Loop (HITL) and Approval Gates**!

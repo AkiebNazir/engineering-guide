@@ -1,6 +1,9 @@
-# L5 Deep Dive: Google-Style Follow-Ups — Scaling a Coding Answer
+# Google-Style Follow-Ups — Scaling a Coding Answer
 
-After you solve the problem, a Google interviewer often changes it:
+This is the capstone of the module — read it after files `01`–`09`, once you can
+already solve a base coding problem confidently. It takes that solved problem and
+stretches it exactly the way a strong interviewer does. After you solve the problem,
+a Google interviewer often changes it:
 
 1. **What if the input is a stream and you can't store it all?**
 2. **What if the data doesn't fit in memory, or is spread across many machines?**
@@ -32,7 +35,7 @@ Details on the probabilistic structures: `SystemDesign/building_blocks/20_specia
 
 | Problem shape | Technique |
 |---|---|
-| Sort huge data | **External merge sort**: sort chunks that fit in RAM, write runs, k-way merge with a heap (`PyDSA` merge k sorted lists) |
+| Sort huge data | **External merge sort**: sort chunks that fit in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, write runs, k-way merge with a heap (`PyDSA` merge k sorted lists) |
 | Count / group / join | **Hash partitioning**: route each record to one of P files/machines by `hash(key) % P` so equal keys meet; process each partition independently (**MapReduce** shuffle) |
 | Top-k over huge data | Partition by key, compute per-partition counts, keep per-partition top-k, merge. For approximate: count-min sketches merged across machines |
 | Deduplicate | Hash partition, then dedupe within each partition; or a Bloom filter pass first |
@@ -42,6 +45,22 @@ Details on the probabilistic structures: `SystemDesign/building_blocks/20_specia
 | Data spread over machines, need a global order | Range partitioning with sampled split points (like TeraSort) |
 
 Always mention: **network is the bottleneck** (minimize shuffles), **skew** (one hot key overloads a partition — salt it), and **stragglers/failures** (retries, speculative execution).
+
+```arch
+%% caption: When data is too large for one machine, hash partitioning ensures that all instances of the same key route to the same worker for aggregation.
+group m "Map (Hash Split)" color=slate style=dashed
+node r1 "Record (Key A)" at 0,0 in m icon=file color=blue
+node r2 "Record (Key B)" at 0,1 in m icon=file color=green
+node r3 "Record (Key A)" at 0,2 in m icon=file color=blue
+
+group r "Reduce (Process)" color=slate style=dashed
+node w1 "Worker 1\n(Handles Hash A)" at 3,0 in r icon=worker color=amber
+node w2 "Worker 2\n(Handles Hash B)" at 3,2 in r icon=worker color=amber
+
+r1 -> w1 : "hash(A) % 2"
+r3 -> w1 : "hash(A) % 2"
+r2 -> w2 : "hash(B) % 2"
+```
 
 ## 3. Toolkit: Millions of Queries (Precompute)
 
@@ -56,9 +75,9 @@ Always mention: **network is the bottleneck** (minimize shuffles), **skew** (one
 | k-th smallest in a range | Merge sort tree / wavelet tree / persistent segment tree | O(log² n) |
 | Shortest path between any pair, small graph | Floyd–Warshall | O(1) |
 | Shortest path, large sparse graph | Landmarks (ALT), contraction hierarchies (how map routing works) | fast in practice |
-| Tree distance / LCA | Binary lifting or Euler tour + sparse table | O(log n) / O(1) |
+| Tree distance / <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> | Binary lifting or Euler tour + sparse table | O(log n) / O(1) |
 | Connectivity with only edge additions | Union-Find | ~O(1) |
-| Repeated identical queries | Memoization / caching (LRU) | O(1) on hit |
+| Repeated identical queries | Memoization / caching (<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>) | O(1) on hit |
 | Geo "nearby" | Geohash / quadtree / S2 index | O(log n + results) |
 
 Name the trade-off: **precomputation time and memory vs query latency**, and how updates invalidate precomputed data.
@@ -80,8 +99,8 @@ See `05_concurrency_deep_dive.md` for primitives. The answer structure:
 | Zeros | Division-based tricks (product except self) | Count zeros; prefix/suffix products |
 | Duplicates | Binary search on rotated arrays (worst case O(n)); permutations/combinations (dedupe); strict vs non-strict comparisons | Skip equal neighbors after sorting; `bisect_left` vs `bisect_right` |
 | Cycles in a graph/"tree" | Plain recursion revisits forever; topological order doesn't exist | Visited sets; cycle detection (three colors / Kahn's leftover nodes) |
-| Directed instead of undirected | Union-Find for cycle detection doesn't apply | DFS with recursion-stack colors |
-| Weighted instead of unweighted | BFS no longer gives shortest paths | Dijkstra; 0-1 BFS if weights are 0/1 |
+| Directed instead of undirected | Union-Find for cycle detection doesn't apply | <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> with recursion-stack colors |
+| Weighted instead of unweighted | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> no longer gives shortest paths | Dijkstra; 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> if weights are 0/1 |
 | Unsorted instead of sorted | Two pointers / binary search | Sort first (O(n log n)) or hash map (O(n)) |
 | Online (items arrive one at a time) | Offline sorting tricks | Heaps, balanced BSTs, streaming algorithms |
 | k is huge vs tiny | Heap of size k becomes O(n) memory | Quickselect for one-shot; switch structure by k |
@@ -106,7 +125,7 @@ See `05_concurrency_deep_dive.md` for primitives. The answer structure:
 
 | Follow-up | Answer |
 |---|---|
-| Stream | Exact: maintain counts + a structure ordered by count (hash map + count buckets gives O(1) increments, like LFU). Bounded memory: **count-min sketch + min-heap of k candidates**, or **Misra–Gries / Space-Saving** (guaranteed to find items with frequency > n/k). |
+| Stream | Exact: maintain counts + a structure ordered by count (hash map + count buckets gives O(1) increments, like <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>). Bounded memory: **count-min sketch + min-heap of k candidates**, or **Misra–Gries / Space-Saving** (guaranteed to find items with frequency > n/k). |
 | Too big / distributed | MapReduce word count: map emits (item, 1), combiner sums locally, shuffle by item hash, reduce sums; then each reducer keeps a local top-k and a final merge takes the global top-k. **Precision:** local top-k then merge is exact only if you merge full counts for candidates; with approximation, oversample (keep top 10k per shard). |
 | Many queries for different k | Sort items by count once (O(u log u)); each query is a prefix. |
 | Concurrent | Sharded counters (lock per shard) + periodic merge into a published snapshot that queries read lock-free. |
@@ -118,28 +137,28 @@ See `05_concurrency_deep_dive.md` for primitives. The answer structure:
 
 | Follow-up | Answer |
 |---|---|
-| Stream of intervals | Keep merged disjoint intervals in a balanced BST / sorted list keyed by start; each insert finds neighbors by binary search and merges with the (possibly several) overlapping ones. O(log n + merged) per insert (LC 352, LC 715 Range Module). |
+| Stream of intervals | Keep merged disjoint intervals in a balanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> / sorted list keyed by start; each insert finds neighbors by binary search and merges with the (possibly several) overlapping ones. O(log n + merged) per insert (LC 352, LC 715 Range Module). |
 | Doesn't fit | External sort by start, then a single streaming merge pass (only the current merged interval is held in memory). |
 | Many "is point x covered?" queries | Binary search over the merged, sorted list: O(log n). |
 | Concurrent inserts | Lock around the sorted structure; or per-range shards (by coordinate) with care for intervals crossing shard boundaries. |
 | Constraint change: touching intervals [1,2],[2,3] | Decide whether closed or half-open; the comparison changes from `<` to `<=`. |
 
-## 9. Worked Example: LRU Cache
+## 9. Worked Example: <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache
 
 **Base:** hash map + doubly linked list, O(1) get/put.
 
 | Follow-up | Answer |
 |---|---|
-| Thread-safe | One mutex around both operations (`get` mutates recency). Scale with lock striping: N independent LRU shards chosen by key hash (approximate global LRU). |
-| Too big for one machine | Distributed cache: consistent hashing across nodes, per-node LRU. Replication for hot keys. That's the distributed cache design problem. |
+| Thread-safe | One mutex around both operations (`get` mutates recency). Scale with lock striping: N independent <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> shards chosen by key hash (approximate global <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>). |
+| Too big for one machine | Distributed cache: consistent hashing across nodes, per-node <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>. Replication for hot keys. That's the distributed cache design problem. |
 | Values expensive to compute | Single-flight: concurrent misses for the same key wait on one in-flight computation. |
 | TTL expiry | Store expiry time; check lazily on `get`; a background sweeper or a timing wheel / heap for proactive eviction. |
-| Constraint change: evict least *frequently* used | LFU: key → node, frequency → doubly linked list, track `min_freq` (`PyDSA/25_design/008`). |
+| Constraint change: evict least *frequently* used | <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>: key → node, frequency → doubly linked list, track `min_freq` (`PyDSA/25_design/008`). |
 | Cache miss storms after restart | Warm-up from a snapshot or gradual traffic ramp. |
 
 ## 10. Worked Example: Number of Islands
 
-**Base:** BFS/DFS flood fill, O(m·n).
+**Base:** <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> flood fill, O(m·n).
 
 | Follow-up | Answer |
 |---|---|
@@ -148,7 +167,7 @@ See `05_concurrency_deep_dive.md` for primitives. The answer structure:
 | Many queries: "which island is (r, c) in?" | Precompute a label per cell once; O(1) per query. |
 | Land added over time (LC 305 Number of Islands II) | Union-Find: each new land cell unions with land neighbors; count = components. ~O(α) per addition. |
 | Concurrent updates | Union-Find with a lock (or lock-free concurrent union-find in research systems); readers of the count read an atomic. |
-| Very deep recursion | Iterative BFS/stack; recursive DFS hits Python's recursion limit on large grids. |
+| Very deep recursion | Iterative <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/stack; recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> hits Python's recursion limit on large grids. |
 
 ## 11. Worked Example: Median of a Data Stream
 

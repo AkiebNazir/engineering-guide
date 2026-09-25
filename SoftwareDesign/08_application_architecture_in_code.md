@@ -12,9 +12,9 @@ on what, where the business rules live, where I/O happens, and how the pieces ge
 together at startup.
 
 Get this right and a codebase stays changeable for years: the database can be swapped
-in a test for a dictionary, a new API (gRPC next to REST) is a new adapter rather than
-a rewrite, and business rules can be read without wading through SQL. Get it wrong and
-every change touches controllers, models, and SQL at once.
+in a test for a dictionary, a new <abbr title="Application Programming Interface">API</abbr> (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> next to <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>) is a new adapter rather than
+a rewrite, and business rules can be read without wading through <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>. Get it wrong and
+every change touches controllers, models, and <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> at once.
 
 Examples are in **Python** with a **Go** translation in §12. The worked example in §4 is
 a complete program: concatenate its code blocks in order and it runs.
@@ -61,8 +61,8 @@ Inside one deployable, "architecture" comes down to answers to four questions:
 
 | Question | Bad answer | Good answer |
 |---|---|---|
-| **Where do business rules live?** | Scattered across HTTP handlers, ORM models, SQL, and cron scripts | In one place (domain objects / pure functions), each rule once |
-| **What depends on what?** | Everything imports everything; the domain imports the ORM | Dependencies point **toward** the business rules, never away from them |
+| **Where do business rules live?** | Scattered across <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> handlers, <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> models, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, and cron scripts | In one place (domain objects / pure functions), each rule once |
+| **What depends on what?** | Everything imports everything; the domain imports the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> | Dependencies point **toward** the business rules, never away from them |
 | **Where does I/O happen?** | Anywhere, including deep inside calculations | At the edges: adapters called by a thin orchestration layer |
 | **Who decides which implementation is used?** | Each class constructs its own collaborators | One composition root (`main`) wires everything |
 
@@ -82,20 +82,16 @@ architectural problem.
 
 The classic arrangement (also called n-tier):
 
-```
- ┌──────────────────────────────┐
- │ Presentation (HTTP, CLI, UI) │
- └──────────────┬───────────────┘
-                │ depends on
- ┌──────────────▼───────────────┐
- │ Business / service layer     │
- └──────────────┬───────────────┘
-                │ depends on
- ┌──────────────▼───────────────┐
- │ Data access (ORM, SQL)       │
- └──────────────┬───────────────┘
-                ▼
-            Database
+```arch
+%% caption: In a traditional layered architecture, dependencies point downward toward the database.
+node pres "Presentation\n(HTTP, CLI, UI)" at 0,0 icon=internet color=blue
+node biz "Business / service layer" at 0,1 icon=app color=green
+node data "Data access\n(ORM, SQL)" at 0,2 icon=db color=amber
+node db "Database" at 0,3 icon=db color=slate
+
+pres -> biz : "depends on"
+biz -> data : "depends on"
+data -> db
 ```
 
 - **Strict layering:** each layer may call only the one directly below. Safe, but
@@ -103,15 +99,15 @@ The classic arrangement (also called n-tier):
 - **Relaxed layering:** a layer may call any layer below. Less boilerplate, weaker
   guarantees.
 
-**What it gets right:** presentation code does not contain SQL; there is a place for
+**What it gets right:** presentation code does not contain <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>; there is a place for
 business logic.
 
 **The flaw:** the arrows point **down toward the database**. The business layer
 depends on the data-access layer, so:
 
-1. You cannot test business rules without a database (or mocking the ORM).
+1. You cannot test business rules without a database (or mocking the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>).
 2. Data-access types (`OrderRow`, `SQLAlchemy Model`) leak upward into business code,
-   and then into HTTP responses.
+   and then into <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> responses.
 3. The database schema becomes the de facto domain model — "design the tables first,
    then write services that shuffle rows" — producing an anemic model (`02` §3).
 
@@ -151,26 +147,27 @@ The trick that makes it possible is **dependency inversion**: when the core need
 something from the outside (store an order, charge a card), the core **defines an
 interface in its own vocabulary**, and the outside **implements** it.
 
-```
-                 DRIVING side                                  DRIVEN side
-            (things that call us)                         (things we call)
+```arch
+%% caption: In a clean/hexagonal architecture, dependencies point inward. The domain is at the center, isolated from I/O.
+group drv "Driving Side (Calls us)" color=blue
+node http "HTTP handler" at 0,0 in drv icon=internet
+node q "Queue consumer" at 0,2 in drv icon=queue
 
-  ┌────────────┐   ┌────────────┐                     ┌────────────┐   ┌────────────┐
-  │ HTTP       │   │ Queue      │                     │ SQLite /   │   │ Stripe     │
-  │ handler    │   │ consumer   │                     │ Postgres   │   │ client     │
-  └─────┬──────┘   └─────┬──────┘                     └─────▲──────┘   └─────▲──────┘
-        │ calls          │ calls                 implements │    implements  │
-  ══════╪════════════════╪══════ ADAPTERS ═════════════════╪════════════════╪═══════
-        ▼                ▼                                  │                │
-  ┌──────────────────────────────┐          ┌──────────────┴────────────────┴─────┐
-  │ Driving port: the use case   │ ───uses─▶│ Driven ports: OrderRepository,      │
-  │ PlaceOrder(cmd) -> order_id  │          │ PaymentGateway, Clock  (interfaces) │
-  └──────────────┬───────────────┘          └─────────────────────────────────────┘
-                 │ uses
-         ┌───────▼────────┐
-         │ DOMAIN         │   Order, Money, Line, rules, domain errors
-         │ (pure Python)  │   imports nothing outside the standard library
-         └────────────────┘
+group dpt "Driven Side (We call)" color=amber
+node pg "SQLite / Postgres" at 4,0 in dpt icon=db
+node st "Stripe client" at 4,2 in dpt icon=app
+
+group core "Core / Domain" color=green
+node uc "Driving Port\n(Use Case)" at 2,1 in core icon=function
+node pt "Driven Ports\n(Interfaces)" at 3,1 in core icon=code style=dashed
+node dom "DOMAIN\n(Pure logic)" at 2,3 in core icon=layers
+
+http -> uc : "calls"
+q -> uc : "calls"
+uc -> dom : "uses"
+uc -> pt : "uses"
+pg ..> pt : "implements"
+st ..> pt : "implements"
 ```
 
 Vocabulary:
@@ -182,7 +179,7 @@ Vocabulary:
 | **Port** | An interface owned by the core | `OrderRepository`, `PaymentGateway` |
 | **Driving (primary) port** | How the outside invokes the core | The `PlaceOrder` callable |
 | **Driven (secondary) port** | What the core needs from the outside | `OrderRepository` |
-| **Adapter** | Technology-specific code that implements or calls a port | `SqliteOrderRepository`, HTTP handler |
+| **Adapter** | Technology-specific code that implements or calls a port | `SqliteOrderRepository`, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> handler |
 | **Composition root** | The one place concrete adapters are chosen and wired | `main.py` / `cmd/server/main.go` |
 
 In miniature, before the full worked example in §4 — the whole idea is dependency
@@ -231,11 +228,11 @@ In an interview, name the rule, not the diagram.
 
 | Change | Layered (DB-centric) | Ports & adapters |
 |---|---|---|
-| Unit-test a business rule | Needs a DB or ORM mocks | Plain objects, milliseconds |
+| Unit-test a business rule | Needs a DB or <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> mocks | Plain objects, milliseconds |
 | Add a queue consumer entry point | Copy logic from the controller, or call the controller | New driving adapter calling the same use case |
-| Move from REST to gRPC | Rules tangled with request objects must be untangled | New driving adapter |
+| Move from <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> to <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> | Rules tangled with request objects must be untangled | New driving adapter |
 | Swap Postgres → DynamoDB | Every service touching `Session` changes | New repository adapter; core untouched |
-| Upgrade the ORM major version | Touches business code | Touches adapters only |
+| Upgrade the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> major version | Touches business code | Touches adapters only |
 
 Be honest about the last two rows: swapping databases is **rare**, and a repository
 interface does not magically hide transactional or query-capability differences. The
@@ -445,7 +442,7 @@ class PlaceOrder:
                       charges again with the SAME key; the provider dedupes it.
 ```
 
-Rule: **you cannot put a database and a remote payment API in one atomic
+Rule: **you cannot put a database and a remote payment <abbr title="Application Programming Interface">API</abbr> in one atomic
 transaction.** So record intent first, make the external call idempotent, record the
 outcome second, and make sure something (a retry or a sweeper for old `PENDING`
 orders) finishes interrupted work. Publishing the event after commit has the same shape
@@ -507,7 +504,7 @@ SCHEMA = """CREATE TABLE orders (
   placed_at TEXT NOT NULL, lines_json TEXT NOT NULL)"""
 ```
 
-Storing lines as JSON is a persistence decision (fine for a demo, and sometimes for
+Storing lines as <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is a persistence decision (fine for a demo, and sometimes for
 real). The domain does not know or care; changing to a `order_lines` table changes
 this file only.
 
@@ -583,7 +580,7 @@ internals. Tests using them assert on outcomes ("the order is stored as cancelle
 not on call sequences ("`save` was called twice"), so they survive refactoring. To keep
 a fake honest, run the same contract tests against the fake and the real adapter.
 
-### 4.6 Driving adapter — HTTP
+### 4.6 Driving adapter — <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>
 
 ```python
 # ───────────────────────── adapters/http.py (driving adapter) ─────────────────────────
@@ -687,6 +684,8 @@ ALL PASSED
 Every arrow points toward `domain`. `domain` has no outgoing arrows. That is the whole
 architecture; everything else is detail.
 
+<div class="lab" data-viz="flow-place-order"></div>
+
 ---
 
 ## 5 · Where does each concern go?
@@ -696,14 +695,14 @@ here". A default placement for each concern:
 
 | Concern | Put it in | Not in | Why |
 |---|---|---|---|
-| **Syntactic validation** (field present, is an int, valid JSON, string length) | Driving adapter / request schema (Pydantic, protobuf) | Domain | It is about the transport format |
+| **Syntactic validation** (field present, is an int, valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, string length) | Driving adapter / request schema (Pydantic, protobuf) | Domain | It is about the transport format |
 | **Semantic validation / invariants** (qty > 0, ≤ 50 lines, can't cancel shipped) | Domain objects, constructors, value objects | Controllers | Every entry point must obey it |
 | **Rules needing other data** (SKU exists, customer credit limit) | Use case fetches data, domain decides | Domain calling a repository | Keeps the domain free of I/O |
-| **Authentication** (who are you) | Edge middleware | Use case | Transport-specific (cookie, JWT, mTLS) |
+| **Authentication** (who are you) | Edge middleware | Use case | Transport-specific (cookie, <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>, mTLS) |
 | **Authorization** (may *this* user do *this* to *this* order) | Use case (or a policy object it calls) | Only in middleware | Needs the loaded resource; must hold for every entry point |
 | **Transactions** | Use case (Unit of Work) | Repository methods, controllers | One business operation = one consistency boundary (§7) |
 | **Mapping to/from rows** | Repository adapter | Domain, use case | Only the adapter knows the schema |
-| **Mapping errors to HTTP codes** | Driving adapter | Domain | `422` is an HTTP concept |
+| **Mapping errors to <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> codes** | Driving adapter | Domain | `422` is an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> concept |
 | **Retries of remote calls** | Driven adapter (one layer only) | Everywhere | Retries at several layers multiply (3×3×3 = 27 attempts) |
 | **Caching** | Decorator adapter around a port (`CachingCatalog(DictCatalog)`) | Inside domain logic | Invalidation is an infrastructure concern |
 | **Logging, metrics, tracing** | Middleware + adapters; domain events for business-significant facts | `print` in domain methods | §9 |
@@ -740,7 +739,7 @@ There are three natural shapes for "an order":
 |---|---|---|---|
 | **Request/response DTO** | Driving adapter | Wire format, versioning, public contract | `{"order_id": "...", "total": "3.60"}` |
 | **Domain model** | Domain | Enforcing rules, expressing behaviour | `Order` with `Money`, `Status` enum, methods |
-| **Persistence model** | Driven adapter | Storage layout, indexes, migrations | a row with `lines_json`, or an ORM class |
+| **Persistence model** | Driven adapter | Storage layout, indexes, migrations | a row with `lines_json`, or an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> class |
 
 The same order as three shapes, in code:
 
@@ -785,28 +784,28 @@ no reason to exist on the DTO at all, which is the point of keeping the shapes s
 
 **Why keep them separate?** Each changes for different reasons:
 
-- Renaming a DB column must not change the public API (breaking clients).
-- Adding an internal field (`fraud_score`) must not leak it to API responses.
-- A public API must keep `total` as a string for five years; the domain can change freely.
+- Renaming a DB column must not change the public <abbr title="Application Programming Interface">API</abbr> (breaking clients).
+- Adding an internal field (`fraud_score`) must not leak it to <abbr title="Application Programming Interface">API</abbr> responses.
+- A public <abbr title="Application Programming Interface">API</abbr> must keep `total` as a string for five years; the domain can change freely.
 
-A real incident shape: an endpoint returns `jsonify(user.__dict__)` from the ORM model.
-Someone adds `password_hash` to the model. It is now in the API response.
+A real incident shape: an endpoint returns `jsonify(user.__dict__)` from the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> model.
+Someone adds `password_hash` to the model. It is now in the <abbr title="Application Programming Interface">API</abbr> response.
 
 **The cost — the mapping tax.** Three shapes means two mappings per boundary to write,
-test, and keep in sync. For a CRUD endpoint with no rules, that is pure boilerplate.
+test, and keep in sync. For a <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> endpoint with no rules, that is pure boilerplate.
 
 | Situation | Recommendation |
 |---|---|
-| Public/external API | **Always** a separate DTO. Your API is a contract (`03` §10). |
+| Public/external <abbr title="Application Programming Interface">API</abbr> | **Always** a separate DTO. Your <abbr title="Application Programming Interface">API</abbr> is a contract (`03` §10). |
 | Rich domain with real invariants | Separate domain model from persistence model |
-| Internal CRUD admin screen | One shape (e.g., an ORM model) is fine |
+| Internal <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> admin screen | One shape (e.g., an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> model) is fine |
 | Read-only listing/report | Query straight into a DTO; skip the domain model (§10) |
 
-**Active Record vs. Data Mapper** (Fowler) is the same choice at the ORM level:
+**Active Record vs. Data Mapper** (Fowler) is the same choice at the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> level:
 
-- **Active Record** (Django ORM, Rails, Peewee): the object *is* a row and saves itself
+- **Active Record** (Django <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>, Rails, Peewee): the object *is* a row and saves itself
   (`order.save()`). Minimal mapping; domain and persistence are fused. Excellent for
-  CRUD-heavy apps.
+  <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr>-heavy apps.
 - **Data Mapper** (SQLAlchemy classical/imperative mapping, the repository in §4): domain
   objects know nothing about storage; a separate mapper moves data. More code; the
   domain stays pure.
@@ -887,7 +886,7 @@ Consequences:
 
 | Lifetime | Examples | How, without a framework |
 |---|---|---|
-| **Process (singleton)** | Connection pool, HTTP client, config, catalog cache | Create once in `main`, pass down |
+| **Process (singleton)** | Connection pool, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> client, config, catalog cache | Create once in `main`, pass down |
 | **Request / unit of work** | DB transaction, per-request logger with request ID | Create per request in the adapter or a factory passed in |
 | **Transient** | Value objects, commands | Just construct them |
 
@@ -989,11 +988,22 @@ construction, and pressure to add display-only getters to domain objects.
 
 **CQRS-lite:** keep one database, but split the code path.
 
-```
- Commands (writes)                         Queries (reads)
- ─────────────────                         ───────────────
- HTTP ─▶ use case ─▶ domain ─▶ repository  HTTP ─▶ query service ─▶ SQL ─▶ DTO
-          (rules, UoW, events)                     (no domain objects, no UoW)
+```arch
+%% caption: CQRS-lite splits the read path (optimized for display) from the write path (optimized for domain rules).
+group w "Commands (Writes)" color=red
+node h1 "HTTP" at 0,0 in w icon=internet
+node uc "Use Case\n(Rules, UoW)" at 1,0 in w icon=function
+node dom "Domain" at 2,0 in w icon=layers
+node repo "Repository" at 3,0 in w icon=db
+
+group r "Queries (Reads)" color=green
+node h2 "HTTP" at 0,1 in r icon=internet
+node qs "Query Service\n(No UoW)" at 1,1 in r icon=search
+node sql "SQL\n(No domain objs)" at 2,1 in r icon=db
+node dto "DTO" at 3,1 in r icon=file
+
+h1 -> uc -> dom -> repo
+h2 -> qs -> sql -> dto
 ```
 
 ```python
@@ -1048,15 +1058,15 @@ modified?" check gets copied into eight scripts, each slightly different.
 
 | Signal | Lean toward |
 |---|---|
-| CRUD over forms; rules are "field required" | Transaction script, Active Record, framework defaults |
+| <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> over forms; rules are "field required" | Transaction script, Active Record, framework defaults |
 | Few rules, one entry point, small team | Layered with a service layer; don't add ports yet |
 | Rules that span several fields/objects, state machines, money | Domain model with value objects |
-| Multiple entry points (API + queue + cron) run the same logic | Use cases as the shared driving port |
+| Multiple entry points (<abbr title="Application Programming Interface">API</abbr> + queue + cron) run the same logic | Use cases as the shared driving port |
 | Slow tests because everything needs a DB | Ports for driven dependencies |
 | Integration with volatile or external systems | Adapter + anti-corruption layer at that boundary |
 
 Architecture can be **uneven on purpose**: the billing module gets a full domain model
-and ports; the admin CRUD module next to it uses the ORM directly. Consistency matters
+and ports; the admin <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> module next to it uses the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> directly. Consistency matters
 within a module; forcing every module into the heaviest style is a known way to drown a
 codebase in pass-through layers.
 
@@ -1077,7 +1087,7 @@ Go idioms change the surface, not the idea:
   returns `*Service`.
 - **`context.Context` is the first parameter** of anything that does I/O.
 - **Errors are values:** sentinel errors for categories, `%w` wrapping, `errors.Is` at
-  the edge to map to HTTP status.
+  the edge to map to <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status.
 
 ```go
 package main
@@ -1257,7 +1267,7 @@ true charge order o-3: payment declined
 (Condensed to one file so it runs with `go run`; the cancellation-on-decline step from
 §4.3 is left out. In a real repo each `──` section is its own file in the named package.)
 
-The HTTP adapter maps errors with `errors.Is`, keeping HTTP out of the domain:
+The <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> adapter maps errors with `errors.Is`, keeping <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> out of the domain:
 
 ```go
 func statusFor(err error) int {
@@ -1302,7 +1312,7 @@ orders_service/                          orders/
 
 Two styles are common and both are fine: adapters **inside** each feature (above, left),
 or adapters grouped by **technology** in their own packages (above, right — idiomatic in
-Go, where a `postgres` package holds all SQL). What matters is the import direction.
+Go, where a `postgres` package holds all <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>). What matters is the import direction.
 
 ### Enforce it, or it will erode
 
@@ -1312,7 +1322,7 @@ A boundary that is only a convention is gone within a year. Make the build check
 |---|---|
 | Go `internal/` directories | The compiler rejects imports of `internal/` from outside the parent tree |
 | Go import cycles | The compiler rejects cycles outright |
-| `import-linter` (Python) | Contracts like "`ordering.domain` may not import `sqlite3`, `ordering.adapters`" in CI |
+| `import-linter` (Python) | Contracts like "`ordering.domain` may not import `sqlite3`, `ordering.adapters`" in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> |
 | `depguard` (golangci-lint) | Deny lists: `internal/order` may not import `database/sql` |
 | Bazel `visibility` (Google) | Per-target allow lists of who may depend on a package |
 | ArchUnit (Java), a pytest that walks imports | Arbitrary architecture rules as tests |
@@ -1372,7 +1382,7 @@ domain/pricing.py: imports ['sqlite3']
 ALL PASSED
 ```
 
-Run this over every file in `domain/` in a CI step and the boundary is enforced by a
+Run this over every file in `domain/` in a <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> step and the boundary is enforced by a
 machine, not by a reviewer's memory.
 
 ---
@@ -1381,17 +1391,17 @@ machine, not by a reviewer's memory.
 
 | Anti-pattern | Symptom | Fix |
 |---|---|---|
-| **Fat controller** | Handlers with business `if`s, SQL, and email sending | Parse → call use case → translate; move rules to domain |
+| **Fat controller** | Handlers with business `if`s, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, and email sending | Parse → call use case → translate; move rules to domain |
 | **Anemic domain + god service** | `OrderService` 2,000 lines; `Order` has only fields | Move each rule onto the object that owns the data (`02` §3) |
-| **Leaky repository** | Repo returns ORM rows, query builders, or cursors; takes SQL fragments | Return domain objects; name methods for domain queries |
+| **Leaky repository** | Repo returns <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> rows, query builders, or cursors; takes <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> fragments | Return domain objects; name methods for domain queries |
 | **Ports named after vendors** | `StripePort`, `S3Interface` in the core | Name by need: `PaymentGateway`, `BlobStore` |
 | **Pass-through layers** | Controller → Service → Manager → Repository, each forwarding the same call | Collapse layers that add nothing; not every module needs every layer |
 | **Interface for everything** | `IFoo` + `FooImpl` for pure logic with one impl | Interfaces at I/O boundaries and real variation points only |
 | **Transactions in repositories** | Each `save()` commits | Unit of Work owned by the use case (§7) |
 | **Network call inside a DB transaction** | Lock wait timeouts correlate with a slow dependency | Commit, call, commit (§4.3) |
 | **Shared `common`/`core` package** | Every feature imports it; it imports half of them back | Move code to the feature that owns it; share only stable primitives |
-| **Domain importing framework** | `from django.db import models` in rule code; Pydantic validators holding business rules | Keep framework types in adapters (fine to relax for simple CRUD, §11) |
-| **One model for everything** | ORM class used as API response and domain object | Separate DTOs at public boundaries at minimum (§6) |
+| **Domain importing framework** | `from django.db import models` in rule code; Pydantic validators holding business rules | Keep framework types in adapters (fine to relax for simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr>, §11) |
+| **One model for everything** | <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> class used as <abbr title="Application Programming Interface">API</abbr> response and domain object | Separate DTOs at public boundaries at minimum (§6) |
 | **Architecture astronautics** | Hexagonal + CQRS + event sourcing for a to-do app | Match weight to domain complexity (§11) |
 
 ---
@@ -1402,8 +1412,8 @@ machine, not by a reviewer's memory.
 The core (domain + use cases) defines interfaces — ports — for what it needs from the
 outside, and technology-specific adapters implement them; source dependencies point
 inward. The main practical benefits are that business logic is testable in milliseconds
-without infrastructure, and that new entry points (API, queue consumer, CLI) reuse the
-same use cases. I'd use it when there are real business rules; for CRUD I'd keep a
+without infrastructure, and that new entry points (<abbr title="Application Programming Interface">API</abbr>, queue consumer, <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr>) reuse the
+same use cases. I'd use it when there are real business rules; for <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> I'd keep a
 simple layered or framework-default design.
 
 **Q: Layered vs. clean architecture — what's the actual difference?**
@@ -1437,12 +1447,12 @@ locator pattern, which hides dependencies.
 **Q: Isn't mapping between DTOs, domain objects, and rows a waste?**
 It's a cost, so pay it where it buys something. Public APIs always get their own DTOs
 because they're contracts. Rich domains get separate persistence models so rules are
-testable and schema changes stay local. Internal CRUD and read-only queries can use one
+testable and schema changes stay local. Internal <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> and read-only queries can use one
 shape.
 
 **Q: How do you stop the architecture from eroding?**
 Make boundaries machine-checked: Go `internal/` and no import cycles, `import-linter`
-or depguard contracts in CI, Bazel visibility. Plus code review against the dependency
+or depguard contracts in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>, Bazel visibility. Plus code review against the dependency
 rule and keeping `main` as the only place that imports concrete adapters.
 
 **Q: Tell me about an architecture decision you'd make differently.**
@@ -1457,11 +1467,11 @@ and its tests went from needing a DB to running in 200 ms."
 ## 16 · Checklist
 
 **Dependencies**
-- [ ] The domain imports no framework, ORM, HTTP, or I/O library.
+- [ ] The domain imports no framework, <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, or I/O library.
 - [ ] Every source dependency points toward the domain.
 - [ ] Ports are named for the core's needs, not for vendors.
 - [ ] Only the composition root imports concrete adapters.
-- [ ] Boundaries are enforced by the compiler or a CI check.
+- [ ] Boundaries are enforced by the compiler or a <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> check.
 
 **Placement**
 - [ ] Controllers only parse, call a use case, and translate results/errors.
@@ -1472,7 +1482,7 @@ and its tests went from needing a DB to running in 200 ms."
 - [ ] Time, IDs, and randomness are injected.
 
 **Shapes**
-- [ ] Public API responses use DTOs, never ORM or domain objects directly.
+- [ ] Public <abbr title="Application Programming Interface">API</abbr> responses use DTOs, never <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> or domain objects directly.
 - [ ] Reads that don't enforce rules bypass the domain model.
 
 **Proportion**

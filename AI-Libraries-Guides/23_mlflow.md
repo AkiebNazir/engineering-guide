@@ -82,7 +82,7 @@ If you open your terminal and type `mlflow ui`, a beautiful web dashboard opens 
 ## 4. Deep Dive: The Model Registry (Pro Level)
 
 Tracking experiments is great, but how do you deploy a model? 
-You use the **Model Registry**. It is exactly like Docker Hub, but for ML models. It handles versioning and environment stages (Staging vs Production).
+You use the **Model Registry**. It is exactly like <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> Hub, but for <abbr title="Machine Learning">ML</abbr> models. It handles versioning and environment stages (Staging vs Production).
 
 ### Parameter Breakdown: `log_model(..., registered_model_name)`
 - `registered_model_name` (str): 
@@ -105,7 +105,7 @@ with mlflow.start_run():
 A senior data scientist reviews `Version 3` in the MLflow UI, sees it has 99% accuracy, and clicks "Transition to Production."
 
 **The Production Code:**
-Your backend engineering team (who writes the API server) does NOT need the model file locally. They just query MLflow!
+Your backend engineering team (who writes the <abbr title="Application Programming Interface">API</abbr> server) does NOT need the model file locally. They just query MLflow!
 
 ```python
 import mlflow.sklearn
@@ -118,7 +118,7 @@ production_model = mlflow.sklearn.load_model(model_uri)
 
 # production_model.predict(new_patient_data)
 ```
-If the Data Science team promotes `Version 4` to Production tomorrow, the API server will automatically pull the new model without the backend team changing a single line of code!
+If the Data Science team promotes `Version 4` to Production tomorrow, the <abbr title="Application Programming Interface">API</abbr> server will automatically pull the new model without the backend team changing a single line of code!
 
 ---
 
@@ -146,13 +146,13 @@ with mlflow.start_run():
 ## 6. MAANG Interview Scenarios
 
 ### Scenario 1: The Model Signature Disaster
-*Interviewer:* "A Data Scientist trained a model using `[Age, Salary, ZipCode]` and registered it in MLflow. The backend engineer deployed it. The frontend sent an API request with `[Salary, Age, ZipCode]`. The model didn't crash; it outputted a prediction, but the prediction was completely wrong. How does MLflow prevent this?"
+*Interviewer:* "A Data Scientist trained a model using `[Age, Salary, ZipCode]` and registered it in MLflow. The backend engineer deployed it. The frontend sent an <abbr title="Application Programming Interface">API</abbr> request with `[Salary, Age, ZipCode]`. The model didn't crash; it outputted a prediction, but the prediction was completely wrong. How does MLflow prevent this?"
 
 *Answer:* "Standard `.pkl` files do not save schema metadata. The model just multiplies the first number it receives, assuming it is Age. To prevent this, we must log a **Model Signature** in MLflow. During training, we capture the exact input schema (names and data types of the Pandas dataframe) and pass it to `mlflow.sklearn.log_model(..., signature=signature)`. 
-In production, when MLflow receives the API request `[Salary, Age, ZipCode]`, it intercepts the request, checks the strict Signature schema, realizes the columns are out of order, and strictly rejects the request with a clear Validation Error before the model executes the faulty math."
+In production, when MLflow receives the <abbr title="Application Programming Interface">API</abbr> request `[Salary, Age, ZipCode]`, it intercepts the request, checks the strict Signature schema, realizes the columns are out of order, and strictly rejects the request with a clear Validation Error before the model executes the faulty math."
 
 ### Scenario 2: MLflow vs Weights & Biases (WandB)
 *Interviewer:* "We are starting a new Deep Learning team. Should we use MLflow or Weights & Biases?"
 
-*Answer:* "It depends on the phase of the lifecycle. MLflow is the undisputed king of the **Deployment and Registry** phase. Its ability to serve models as REST APIs and manage Staging/Production tags is enterprise-grade. However, its UI for tracking complex real-time GPU metrics and visualizing Deep Learning loss curves is quite basic.
+*Answer:* "It depends on the phase of the lifecycle. MLflow is the undisputed king of the **Deployment and Registry** phase. Its ability to serve models as <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs and manage Staging/Production tags is enterprise-grade. However, its UI for tracking complex real-time GPU metrics and visualizing Deep Learning loss curves is quite basic.
 Weights & Biases (WandB) is the king of the **Experiment Tracking** phase. It provides gorgeous, real-time, highly collaborative cloud dashboards for Deep Learning teams to watch loss curves train live over 3 weeks. Most top-tier companies actually use both: WandB to track the massive Deep Learning experiments, and MLflow to Register and Deploy the final winning model."

@@ -24,21 +24,24 @@ always stays ahead of both read cursors. This is the array-with-slack
 special case of the merge-sort merge step; no comparison sort needed at
 all, just the merge primitive run backwards.
 
-```mermaid
+```arch
 %% caption: Merging from the back never overwrites an element that has not been read yet, so nums1's spare space is used in place.
-flowchart LR
-  A["i = m - 1, j = n - 1, k = m + n - 1"] --> B{"j ≥ 0 ?"}
-  B -->|no| Z["done: what is left of nums1<br/>is already in place"]:::ok
-  B -->|yes| C{"i ≥ 0 and nums1[i] #gt; nums2[j] ?"}
-  C -->|yes| D["nums1[k] = nums1[i], i -= 1"]
-  C -->|no| E["nums1[k] = nums2[j], j -= 1"]
-  D --> F["k -= 1"]
-  E --> F
-  F --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x80
+node a "i = m - 1, j = n - 1, k = m + n - 1" at 1,0 shape=pill w=280
+node b "j ≥ 0 ?" at 1,1 shape=diamond color=amber
+node z "Done" at 2,1 color=green w=190 sub="what is left of nums1 is already in place"
+node c "i ≥ 0 and\nnums1[i] > nums2[j] ?" at 1,2 shape=diamond color=amber
+node e "nums1[k] = nums2[j]" at 2,2 w=190 sub="j -= 1"
+node d "nums1[k] = nums1[i]" at 1,3 w=190 sub="i -= 1"
+node f "k -= 1" at 1,4 w=190
+a -> b
+b -> z : "no"
+b -> c : "yes"
+c -> d : "yes"
+c -> e : "no"
+d -> f
+e:B -> f:R
+f:L -> b:L
 ```
 
 
@@ -62,22 +65,25 @@ the array around it with three pointers (`low`/`mid`/`high`) in exactly
 one pass, O(1) space. This IS quicksort's 3-way partition step, specialized
 to a domain small enough that the whole sort collapses to that one step.
 
-```mermaid
+```arch
 %% caption: Dutch national flag: one pass, three regions. The 2 case does not advance mid because the swapped-in value is still unexamined.
-flowchart TD
-  A["lo = 0, mid = 0, hi = n - 1"] --> B{"mid is at most hi ?"}
-  B -->|no| Z["sorted"]:::ok
-  B -->|yes| C{"nums[mid]"}
-  C -->|"0"| D["swap(lo, mid)<br/>lo += 1, mid += 1"]
-  C -->|"1"| E["mid += 1"]
-  C -->|"2"| F["swap(mid, hi), hi -= 1<br/>do NOT advance mid"]:::hot
-  D --> B
-  E --> B
-  F --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 180x80
+node a "lo = 0, mid = 0, hi = n - 1" at 1,0 shape=pill w=240
+node b "mid ≤ hi ?" at 1,1 shape=diamond color=amber
+node z "sorted" at 0,1 color=green
+node c "nums[mid]" at 1,2 shape=diamond color=amber
+node d "swap(lo, mid)" at 2,2 w=190 sub="lo += 1, mid += 1"
+node e "mid += 1" at 2,3 w=190
+node f "swap(mid, hi), hi -= 1" at 2,4 color=amber w=190 sub="do NOT advance mid"
+a -> b
+b -> z : "no"
+b -> c : "yes"
+c:R -> d:L : "0"
+c:R -> e:L : "1"
+c:R -> f:L : "2"
+d:R -> b:R
+e:R -> b:R
+f:R -> b:R
 ```
 
 
@@ -154,19 +160,22 @@ comparison can only distinguish between two possibilities, so you need at
 least `log₂(n!) ≈ n log n` comparisons to identify which ordering you're
 looking at, no matter how cleverly you choose them.
 
-```mermaid
+```arch
 %% caption: Comparison sorts cannot beat O(n log n). Non-comparison sorts do, by exploiting a known domain.
-flowchart TD
-  Q(["Need to sort or order"]) --> A{"Keys from a small known domain?<br/>(3 values, 0..k, digits)"}
-  A -->|yes| B["Counting, bucket, radix or Dutch flag<br/>O(n + k), no comparisons"]:::ok
-  A -->|no| C["Comparison sort<br/>O(n log n) is the lower bound"]:::hot
-  C --> D{"Custom order needed?"}
-  D -->|yes| E["key= or functools.cmp_to_key"]
-  D -->|no| F["sorted() or list.sort() (Timsort)"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Need to sort or order" at 0,0 shape=pill
+node a "Small known\nkey domain?" at 0,1 shape=diamond color=amber
+node b "Counting, bucket, radix or Dutch flag" at 1,1 color=green w=300 sub="3 values, 0..k, digits · O(n + k), no comparisons"
+node c "Comparison sort" at 0,2 color=amber w=230 sub="O(n log n) is the lower bound"
+node d "Custom order needed?" at 0,3 shape=diamond color=amber
+node e "key= or functools.cmp_to_key" at 1,3 w=260
+node f "sorted() or list.sort()" at 0,4 w=230 sub="Timsort"
+q -> a
+a -> b : "yes"
+a -> c : "no"
+c -> d
+d -> e : "yes"
+d -> f : "no"
 ```
 
 
@@ -318,7 +327,7 @@ The lower bound is `⌈log₂(n!)⌉`, which for `n = 100,000` is **1,516,704** 
 on a million ints took **101 ms** when shuffled, **2.9 ms** when already sorted, **3.0 ms** when reversed and **31 ms** with
 four distinct values. Auxiliary space is at most `n/2` extra slots (a merge only buffers the *shorter* run), plus `n` slots for the cached keys when you pass `key=`.
 
-### 6.2 The API you should be fluent in
+### 6.2 The <abbr title="Application Programming Interface">API</abbr> you should be fluent in
 
 ```python
 sorted(iterable, key=None, reverse=False)   # returns a NEW list, accepts any iterable
@@ -376,22 +385,28 @@ Problem 002 bans `sorted()` and Problems 007–008 hook into a sort's internals,
 algorithms, state their properties without hesitation, and say how each one fails. All the code below passed 400 random
 checks against `sorted()` (values in `[-10, 10]`, lengths 0–40, so duplicates and negatives are exercised).
 
-```mermaid
+```arch
 %% caption: Choosing a sort by the constraint in front of you. Stability, space and a known key range each rule some algorithms out.
-flowchart TD
-  Q(["Sort n items"]) --> A{"Keys are integers in a small known range?"}
-  A -->|"yes"| B["counting sort (stable, prefix sums)<br/>or LSD radix for wider integers"]:::ok
-  A -->|"no"| C{"Must equal keys keep input order?"}
-  C -->|"yes"| D{"O(1) extra space required?"}
-  D -->|"no"| E["merge sort - O(n) buffer, O(n log n) guaranteed"]:::ok
-  D -->|"yes, and it is a linked list"| F["bottom-up merge on the list"]:::ok
-  C -->|"no"| G{"Worst-case guarantee needed?"}
-  G -->|"yes, O(1) space"| H["heap sort"]:::hot
-  G -->|"average case is fine"| I["3-way quicksort, random pivot"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Sort n items" at 0,0 shape=pill
+node a "Integer keys in\na small range?" at 0,1 shape=diamond color=amber
+node b "Counting sort" at 1,1 color=green w=250 sub="stable, prefix sums · or LSD radix for wider integers"
+node c "Equal keys keep\ninput order?" at 0,2 shape=diamond color=amber
+node d "O(1) extra space\nrequired?" at 1,2 shape=diamond color=amber
+node e "Merge sort" at 2,2 color=green w=190 sub="O(n) buffer, O(n log n) guaranteed"
+node f "Bottom-up merge on the list" at 1,3 color=green w=250
+node g "Worst case\nguaranteed?" at 0,4 shape=diamond color=amber
+node h "Heap sort" at 1,4 color=amber w=190
+node i "3-way quicksort, random pivot" at 0,5 color=amber w=250
+q -> a
+a -> b : "yes"
+a -> c : "no"
+c -> d : "yes"
+d -> e : "no"
+d -> f : "yes, a linked list"
+c -> g : "no"
+g -> h : "yes, O(1) space"
+g -> i : "average case fine"
 ```
 
 | Algorithm | Best | Average | Worst | Extra space | Stable |

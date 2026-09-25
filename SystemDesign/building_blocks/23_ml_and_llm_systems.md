@@ -1,31 +1,35 @@
 # ML and LLM Systems
 
-Google designs increasingly include a model somewhere: a recommendation feed, search ranking, spam detection, or an LLM-powered feature. You are not expected to design the model. You are expected to design the **system around it** — how features get to the model, how predictions are served within a latency budget, how the model is kept fresh, how it is evaluated, and what it costs.
+Google designs increasingly include a model somewhere: a recommendation feed, search ranking, spam detection, or an <abbr title="Large Language Model">LLM</abbr>-powered feature. You are not expected to design the model. You are expected to design the **system around it** — how features get to the model, how predictions are served within a latency budget, how the model is kept fresh, how it is evaluated, and what it costs.
 
 > 💡 Treat a model as a dependency with unusual properties: expensive per call, sometimes slow, probabilistic, silently degradable, and dependent on data pipelines that can break without any error.
 
 ## The two loops
 
-```mermaid
+```arch
 %% caption: Offline, models are trained on logged data. Online, they serve predictions. Logging what was served closes the loop.
-flowchart LR
-    subgraph offline[Offline loop · hours to days]
-        logs[(Event logs)] --> etl[Feature pipelines]
-        etl --> fs_off[(Offline feature store)]
-        fs_off --> train[Training]
-        train --> eval[Evaluation]
-        eval --> reg[(Model registry)]
-    end
-    subgraph online[Online loop · milliseconds]
-        req([Request]) --> svc[Serving service]
-        svc --> fs_on[(Online feature store)]
-        svc --> model[Model server]
-        model --> svc
-        svc --> resp([Response])
-    end
-    reg -->|deploy| model
-    svc -->|log features + prediction + outcome| logs
-    etl -->|materialise| fs_on
+grid 160x100
+group offline "Offline loop · hours to days" color=blue icon=time
+node logs "Event logs" at 0,1 in offline icon=logs
+node etl "Feature pipelines" at 0,2 in offline icon=workflow
+node fs_off "Offline feature store" at 0,3 in offline icon=storage
+node train "Training" at 0,4 in offline icon=model
+node eval "Evaluation" at 0,5 in offline icon=check
+node reg "Model registry" at 0,6 in offline icon=archive
+group online "Online loop · milliseconds" color=teal icon=speed
+node req "Request" at 2,0 in online shape=pill
+node resp "Response" at 3,0 in online shape=pill
+node svc "Serving service" at 2,1 in online icon=service
+node model "Model server" at 3,6 in online icon=llm
+node fs_on "Online feature store" at 2,2 in online icon=kv
+logs -> etl -> fs_off -> train -> eval -> reg
+req -> svc
+svc -> fs_on
+svc:R <-> model:T
+svc:T -> resp:L
+reg -> model : "deploy"
+svc -> logs : "log features + prediction + outcome"
+etl -> fs_on : "materialise"
 ```
 
 ## Feature stores and training-serving skew
@@ -56,7 +60,7 @@ Embeddings turn users, items, queries, and documents into vectors where similar 
 |---|---|---|
 | HNSW | Multi-layer proximity graph; search greedily walks from coarse to fine layers. | Excellent recall and latency; memory-hungry; slower to build and update. |
 | IVF (inverted file) | Cluster vectors with k-means; search only the few nearest clusters. | Memory-efficient; recall depends on how many clusters you probe. |
-| Product quantization (PQ) | Compress vectors into short codes; compare compressed distances. | Huge memory savings; some accuracy loss. Often combined with IVF. |
+| Product quantization (<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>) | Compress vectors into short codes; compare compressed distances. | Huge memory savings; some accuracy loss. Often combined with IVF. |
 | ScaNN (Google) | Anisotropic quantization tuned for maximum inner product search. | State-of-the-art speed/recall for dot-product similarity at Google scale. |
 
 Operational points: shard the index (by item partition) and fan out queries; rebuild or incrementally update as items change; filter (e.g. "in stock, in region") either before search with partitioned indexes or after with over-fetching.
@@ -65,14 +69,14 @@ Operational points: shard the index (by item partition) and fan out queries; reb
 
 - **Latency budget first**: decide how much of the request's p99 the model may use, and choose model size, hardware, and caching to fit.
 - **Batching**: GPUs and TPUs are efficient only when they process many inputs at once. A serving system collects requests for a few milliseconds and runs them as one batch — trading a small, bounded latency increase for several times the throughput.
-- **CPU vs accelerator**: small ranking models often run on CPU next to the service; large models need GPUs/TPUs in a dedicated serving tier.
+- **<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> vs accelerator**: small ranking models often run on <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> next to the service; large models need GPUs/TPUs in a dedicated serving tier.
 - **Caching**: cache predictions for repeated inputs (popular queries, logged-out homepages) and cache embeddings for items that rarely change.
 - **Fallbacks**: if the model is slow or down, serve a cheaper model, a cached result, or a heuristic (most popular). A recommender that times out should still show a page.
 - **Rollout**: shadow traffic, then canary, then an A/B test on online metrics — offline metrics alone do not decide a launch.
 
-## LLM serving
+## <abbr title="Large Language Model">LLM</abbr> serving
 
-LLM inference has two phases with different bottlenecks:
+<abbr title="Large Language Model">LLM</abbr> inference has two phases with different bottlenecks:
 
 1. **Prefill** processes the whole prompt in parallel and produces the first token. Cost grows with prompt length; this sets time-to-first-token.
 2. **Decode** generates one token at a time, each step reading the growing **KV cache** (attention keys and values for all previous tokens). This is memory-bound and sets tokens per second.
@@ -81,7 +85,7 @@ Key techniques to name:
 
 | Technique | What it does | Why it matters |
 |---|---|---|
-| Token streaming (SSE) | Send tokens as they are produced. | Perceived latency drops to time-to-first-token. |
+| Token streaming (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>) | Send tokens as they are produced. | Perceived latency drops to time-to-first-token. |
 | Continuous batching | Add new requests to the running batch as soon as any sequence finishes. | Several times higher throughput than static batching (vLLM, TGI). |
 | PagedAttention | Allocate KV cache in fixed-size blocks instead of one contiguous region per request. | Near-zero fragmentation → more concurrent sequences per GPU. |
 | Prefix (prompt) caching | Reuse the KV cache for a shared prefix such as a long system prompt or document. | Cuts prefill cost and latency for repeated context. |
@@ -91,7 +95,7 @@ Key techniques to name:
 
 ### Cost and quotas
 
-LLM cost scales with tokens, so product decisions are cost decisions. Put per-user and per-tenant **token quotas** and rate limits at the gateway, choose the smallest model that meets quality per task (route easy requests to cheap models), cap `max_tokens`, cache aggressively, and track cost per feature as a first-class metric.
+<abbr title="Large Language Model">LLM</abbr> cost scales with tokens, so product decisions are cost decisions. Put per-user and per-tenant **token quotas** and rate limits at the gateway, choose the smallest model that meets quality per task (route easy requests to cheap models), cap `max_tokens`, cache aggressively, and track cost per feature as a first-class metric.
 
 ### Safety and quality
 
@@ -99,7 +103,7 @@ LLM cost scales with tokens, so product decisions are cost decisions. Put per-us
 - Grounding: retrieval-augmented generation with citations for factual features.
 - Evaluation: an offline eval set with automated graders for every model or prompt change, plus online feedback signals and human review samples.
 
-## Monitoring ML systems
+## Monitoring <abbr title="Machine Learning">ML</abbr> systems
 
 Everything in [15_observability_and_reliability.md](15_observability_and_reliability.md) still applies, plus signals that normal monitoring misses:
 
@@ -111,7 +115,7 @@ Everything in [15_observability_and_reliability.md](15_observability_and_reliabi
 ## Interview angles
 
 - "Design YouTube recommendations" → funnel (candidates → ranking → re-ranking), embeddings + ANN for retrieval, feature store, logging for training, freshness of new videos (cold start), A/B testing.
-- "Add an AI assistant to Gmail" → gateway with quotas, streaming, context assembly from the user's data with permission checks, prefix caching of the system prompt, safety filters, cost controls, graceful fallback when the model is unavailable.
+- "Add an <abbr title="Artificial Intelligence">AI</abbr> assistant to Gmail" → gateway with quotas, streaming, context assembly from the user's data with permission checks, prefix caching of the system prompt, safety filters, cost controls, graceful fallback when the model is unavailable.
 - "How do you know the model got worse?" → drift and data-quality monitors, delayed-label quality metrics, canary comparisons against the previous model.
 
 ## Going deeper

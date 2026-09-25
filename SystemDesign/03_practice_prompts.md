@@ -1,9 +1,9 @@
 # Twenty System Design Practice Prompts
 
-For each prompt, state requirements/non-goals, estimates, API/data, baseline flow, bottleneck, failure plan, SLOs, security, and evolution. Solve before opening `04_twenty_practice_solutions.md`.
+For each prompt, state requirements/non-goals, estimates, <abbr title="Application Programming Interface">API</abbr>/data, baseline flow, bottleneck, failure plan, SLOs, security, and evolution. Solve before opening `04_twenty_practice_solutions.md`.
 
 ## 02 Rate Limiter
-Design API quotas: 100 requests/minute/API key, controlled bursts, millions of keys, route and tenant policies, and a safe degraded mode for checkout.
+Design <abbr title="Application Programming Interface">API</abbr> quotas: 100 requests/minute/<abbr title="Application Programming Interface">API</abbr> key, controlled bursts, millions of keys, route and tenant policies, and a safe degraded mode for checkout.
 
 ## 03 Pastebin
 Create/read/expire public, unlisted, and private text snippets. Reads are 1,000× writes, snippets reach 10 MB, and reads must be globally fast.
@@ -54,10 +54,10 @@ Implement internal transfers with exact balances, immutable audit, external sett
 Design cache client/ring, TTL/eviction, consistent hashing, hot-key protection, node replacement, replication, and source fallback.
 
 ## 19 Feature Flags
-Create low-latency flag evaluation surviving control-plane outage, targeted rollout, kill switch, SDK updates, audit, and stale-config policy.
+Create low-latency flag evaluation surviving control-plane outage, targeted rollout, kill switch, <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> updates, audit, and stale-config policy.
 
 ## 20 Ride Dispatch
 Accept driver location updates, find nearby eligible drivers, assign exactly once, and provide real-time trip state under high city-scale load.
 
-## 21 Multi-Tenant API Gateway
+## 21 Multi-Tenant <abbr title="Application Programming Interface">API</abbr> Gateway
 Route/version hundreds of APIs; authenticate, enforce quotas and tenant isolation, propagate tracing, and protect backends during tenant abuse.

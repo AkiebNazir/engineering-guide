@@ -1,6 +1,6 @@
 # Day 32: Activation Functions (ReLU, GELU, SiLU)
 
-Welcome to Day 32. Yesterday, you discovered that if you stack 100 linear Perceptrons together, the network still fails the XOR problem. 
+Welcome to Day 32. Yesterday, you discovered that if you stack 100 linear Perceptrons together, the network still fails the <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> problem. 
 Why? Because $2x \cdot 3x \cdot 4x = 24x$. No matter how many straight lines you stack, the math physically collapses back into a single straight line. 
 
 To draw a curve, you must introduce **Non-Linearity**. You must place a mathematical "Gatekeeper" inside the neuron. This is the **Activation Function**. Today, we look at the evolution of these gatekeepers, and why choosing the wrong one will instantly kill your network.
@@ -31,7 +31,7 @@ If a neuron's weights accidentally update poorly and fall below zero, ReLU outpu
 ### 4. The SOTA: GELU (BERT) & SiLU (LLaMA)
 To fix the Dying ReLU problem, Google and Microsoft created hyper-advanced, smooth activation functions.
 - **GELU (Gaussian Error Linear Unit):** Used in BERT and GPT. Instead of a hard chop at 0, it uses the Gaussian probability curve. It acts almost exactly like ReLU, but it is beautifully smooth at 0, allowing a tiny trickle of negative numbers to slip through so the neuron never dies.
-- **SiLU (Swish):** Used in Meta's LLaMA. $f(x) = x \cdot \text{Sigmoid}(x)$. It was actually discovered by an AI searching for math formulas. It has a property called **Self-Gating**: the input value mathematically decides its own probability of passing through the gate. This smoothness makes billion-parameter models converge massively faster.
+- **SiLU (Swish):** Used in Meta's LLaMA. $f(x) = x \cdot \text{Sigmoid}(x)$. It was actually discovered by an <abbr title="Artificial Intelligence">AI</abbr> searching for math formulas. It has a property called **Self-Gating**: the input value mathematically decides its own probability of passing through the gate. This smoothness makes billion-parameter models converge massively faster.
 
 ---
 

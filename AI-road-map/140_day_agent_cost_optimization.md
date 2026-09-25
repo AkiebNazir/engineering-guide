@@ -13,14 +13,14 @@ Today, we learn the brutal engineering of **Agent Cost Optimization**: Model Rou
 
 ### 1. Model Routing (Triage)
 You do not need a Ferrari to go to the grocery store. You do not need GPT-4o for every task.
-**Model Routing** uses a tiny, hyper-fast classifier model at the very front of your API. 
+**Model Routing** uses a tiny, hyper-fast classifier model at the very front of your <abbr title="Application Programming Interface">API</abbr>. 
 - If the user asks *"Summarize this paragraph"*, the Router sends the task to Llama-3 8B (Cost: $\$0.0001$).
-- If the user asks *"Migrate my SQL database"*, the Router sends the task to GPT-4o (Cost: $\$0.15$).
+- If the user asks *"Migrate my <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database"*, the Router sends the task to GPT-4o (Cost: $\$0.15$).
 
 ### 2. Semantic Caching
 Traditional caching looks for exact string matches. If User A asks *"How to reset password?"* and User B asks *"How to reset password?"*, the server returns the cached answer.
 But what if User B asks *"I forgot my password, help me"*? A traditional cache misses.
-**Semantic Caching** embeds the user's question into a Vector Database. It calculates the Cosine Similarity. It realizes User A and User B are asking the *exact same semantic question*, and returns User A's Agent trajectory to User B. The LLM is never invoked!
+**Semantic Caching** embeds the user's question into a Vector Database. It calculates the Cosine Similarity. It realizes User A and User B are asking the *exact same semantic question*, and returns User A's Agent trajectory to User B. The <abbr title="Large Language Model">LLM</abbr> is never invoked!
 
 ### 3. Prompt Compression (LLMLingua)
 Your Agent's System Prompt might be 2,000 tokens. 
@@ -33,7 +33,7 @@ A ReAct agent can get trapped in an infinite loop, burning $\$5.00$ on a single 
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Cost-Optimized Agent API! We will implement a mock Semantic Cache and a Model Router to see how we can bypass expensive API calls.
+Let's build a Cost-Optimized Agent <abbr title="Application Programming Interface">API</abbr>! We will implement a mock Semantic Cache and a Model Router to see how we can bypass expensive <abbr title="Application Programming Interface">API</abbr> calls.
 
 Create a file named `agent_cost_optimization.py`:
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Cache Bypass:** In Scenario 2, the user typed completely different words than Scenario 1, but the Vector DB recognized the mathematical *meaning* was the same. The $\$0.15$ GPT-4o call was completely bypassed. This is the #1 way to save money in enterprise AI.
+1. **The Cache Bypass:** In Scenario 2, the user typed completely different words than Scenario 1, but the Vector DB recognized the mathematical *meaning* was the same. The $\$0.15$ GPT-4o call was completely bypassed. This is the #1 way to save money in enterprise <abbr title="Artificial Intelligence">AI</abbr>.
 2. **The Router Bypass:** In Scenario 3, the cache missed, but the Router sent the task to Llama-3 instead of GPT-4o, reducing the cost by $99\%$. 
 
 ---
@@ -149,4 +149,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 Congratulations! You have completed **Phase 6/7 Foundations** and understand Enterprise Agent infrastructure.
 
-Tomorrow, in **Day 141**, we enter **Chunk 8: Complex Multi-Modal & Retrieval Agents**. We will upgrade basic RAG into **Agentic Corrective RAG (CRAG)**!
+Tomorrow, in **Day 141**, we enter **Chunk 8: Complex Multi-Modal & Retrieval Agents**. We will upgrade basic <abbr title="Retrieval-Augmented Generation">RAG</abbr> into **Agentic Corrective <abbr title="Retrieval-Augmented Generation">RAG</abbr> (CRAG)**!

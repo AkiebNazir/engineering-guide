@@ -6,7 +6,7 @@
 `LIMIT`/`OFFSET` (or keyset pagination) decides which slice of that ordered set you
 actually see. These three combine into almost every "show me a page of results"
 query you'll ever write — and the difference between the naive and the correct way
-to do the third one is one of the most common real-world performance bugs in SQL.
+to do the third one is one of the most common real-world performance bugs in <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>.
 
 ## Setup used for this level
 
@@ -102,7 +102,7 @@ which is exactly backwards from what you want out of "page 10,000 of my results.
 
 Instead of "skip N rows," keyset pagination asks "give me the next rows after the
 last one I saw." It needs the previous page's last sort-key value, which the caller
-(the API client, typically) already has:
+(the <abbr title="Application Programming Interface">API</abbr> client, typically) already has:
 
 ```sql
 -- first page
@@ -202,7 +202,7 @@ with psycopg.connect("postgresql://dsa:dsa@localhost:5544/dsa") as conn:
 
 ## Common mistakes
 
-- **`OFFSET`-based "page 50" links in a public API** that gets meaningfully slower
+- **`OFFSET`-based "page 50" links in a public <abbr title="Application Programming Interface">API</abbr>** that gets meaningfully slower
   under real data volume, then gets blamed on "the database" rather than the
   pagination strategy.
 - **Keyset pagination on a non-unique or non-indexed column.** The seek predicate

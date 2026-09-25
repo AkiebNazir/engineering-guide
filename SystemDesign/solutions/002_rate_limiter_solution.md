@@ -6,7 +6,7 @@ A rate limiter decides whether an actor may consume more work now. It protects a
 
 The question's constraints are the contract (millions of keys, tens of thousands of requests per second, under 5 ms added at p99, no single point of failure, policy changes within a minute). The numbers below are the assumptions this solution picks inside those ranges:
 
-- Each API key may make 100 requests/minute and burst to 20 requests.
+- Each <abbr title="Application Programming Interface">API</abbr> key may make 100 requests/minute and burst to 20 requests.
 - `POST /checkout` has a stricter 10 requests/minute limit.
 - A tenant has a total plan quota independent of individual keys.
 - The fleet has **5M active keys** and **50k peak requests/second** across about 50 stateless gateways. The limiter adds under **5 ms at p99**, and a policy change reaches every gateway within **one minute**.
@@ -24,7 +24,7 @@ The key product decision is what each route does when the limiter's backing stor
 | Route class | Limiter unavailable | Why |
 |---|---|---|
 | `POST /checkout` | **Degrade, do not reject:** a local conservative limit plus a per-gateway concurrency cap; keep serving | Rejecting all checkouts costs revenue, while unlimited checkouts invite card testing. Downstream fraud and payment limits still apply. |
-| Authentication, expensive AI or report calls | **Fail closed** (or a much stricter local limit) | Unbounded cost or brute force is worse than rejecting some callers. |
+| Authentication, expensive <abbr title="Artificial Intelligence">AI</abbr> or report calls | **Fail closed** (or a much stricter local limit) | Unbounded cost or brute force is worse than rejecting some callers. |
 | Cached product browse | **Fail open with a bounded local fallback** | Cheap, low risk, and rate limiting there is about fairness, not safety. |
 
 ## Algorithms
@@ -34,7 +34,7 @@ The key product decision is what each route does when the limiter's backing stor
 | Fixed window | Counter resets at a time boundary. | Coarse simple quota. | Boundary burst: nearly 2× quota in seconds. |
 | Sliding log | Store every request timestamp in a window. | Small-volume exact policy. | Memory/write expensive. |
 | Sliding counter | Combine current/previous window counts. | Smooth approximation. | Not perfectly exact. |
-| Token bucket | Refill tokens steadily; spend per request; cap burst. | Most API limits. | Needs atomic time/refill/spend operation. |
+| Token bucket | Refill tokens steadily; spend per request; cap burst. | Most <abbr title="Application Programming Interface">API</abbr> limits. | Needs atomic time/refill/spend operation. |
 | Leaky bucket | Drain accepted work at fixed rate. | Smooth downstream work/output. | Queues/delay rather than immediate admission. |
 
 Use token bucket here. Store `(tokens, last_refill_ms)` under key `rl:{policy}:{actor}`. On each request, atomically calculate elapsed refill, cap at capacity, and either subtract cost or deny. Do not implement read → calculate → write as separate operations: concurrent requests will overspend.
@@ -85,6 +85,23 @@ Why each detail is there:
 
 ## Architecture and policy evaluation
 
+```arch
+%% caption: Every request passes the WAF and one gateway check; the gateway spends tenant, key and route tokens in one script call on one sharded store, and only allowed requests reach the backend.
+node client "Client" at 1,0 icon=client
+node waf "WAF" at 1,1 icon=firewall sub="bot / abuse filter"
+node config "Policy config store" at 0,2 icon=file sub="versioned policies"
+node gw "API gateway" at 1,2 icon=gateway sub="auth + fleet-wide slice"
+node backend "Backend" at 2,2 icon=server
+group store "Bucket store, 8 shards" color=blue icon=db
+node primary "Shard primary" at 1,3 in store icon=redis sub="Lua token bucket"
+node replica "Shard replica" at 0,3 in store icon=replica sub="promoted on failure"
+client -> waf -> gw
+config ..> gw : "poll 10 s"
+gw -> primary : "one EVALSHA"
+gw -> backend : "allowed"
+primary ..> replica : "async"
+```
+
 ```mermaid
 %% caption: One script call checks the tenant, key and route buckets atomically on one shard; the fleet-wide bucket is enforced locally from a leased slice, and any denial rejects before the backend is touched.
 sequenceDiagram
@@ -109,7 +126,7 @@ sequenceDiagram
     end
 ```
 
-Evaluate cheapest broad limits first, then more specific limits. A request must pass all applicable policies. Identity comes from validated credentials, not a caller-supplied `user_id` header. Use IP limits as a secondary abuse signal because NAT can combine many legitimate users and attackers can rotate addresses.
+Evaluate cheapest broad limits first, then more specific limits. A request must pass all applicable policies. Identity comes from validated credentials, not a caller-supplied `user_id` header. Use <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> limits as a secondary abuse signal because NAT can combine many legitimate users and attackers can rotate addresses.
 
 The fleet-wide bucket is not in the atomic call because it would have to share a hash tag with every tenant and become one hot shard. Instead each gateway holds a local slice of it and refills the slice periodically. Only authenticated requests reach the store, so a flood of made-up keys cannot create bucket state.
 
@@ -170,13 +187,13 @@ Choose per limit class, not once: large quotas get per-region budgets, per-key l
 
 ## The limiter as a shared dependency
 
-Every request now depends on the limiter, so its availability multiplies into the API's. If the API is 99.99% available (4.3 minutes of downtime per 30 days) and the limiter is 99.9% (43 minutes), a hard dependency on every route gives 0.9999 × 0.999 ≈ 99.89%, about 47 minutes: an error budget 10× worse than the API alone. So the limiter must be a *soft* dependency on nearly every route, which is what the per-route table sets up.
+Every request now depends on the limiter, so its availability multiplies into the <abbr title="Application Programming Interface">API</abbr>'s. If the <abbr title="Application Programming Interface">API</abbr> is 99.99% available (4.3 minutes of downtime per 30 days) and the limiter is 99.9% (43 minutes), a hard dependency on every route gives 0.9999 × 0.999 ≈ 99.89%, about 47 minutes: an error budget 10× worse than the <abbr title="Application Programming Interface">API</abbr> alone. So the limiter must be a *soft* dependency on nearly every route, which is what the per-route table sets up.
 
 - **Deadline, not retries.** Timeout 4 ms. By Little's law the in-flight calls are `50k/s × latency`: 50 at 1 ms, 200 at the 4 ms cap, 2,500 if the store stalls at 50 ms, and 25,000 at 500 ms, which exhausts connection pools and threads. There is no retry to another shard, because a bucket lives on exactly one; a lost reply that is retried can only double-spend, which errs toward rejecting.
 - **Circuit breaker.** When more than 50% of calls in a 1 s window time out, stop calling the store and use the route's fallback for 5 s, then probe with about 1% of traffic. This saves 4 ms per request and stops hammering a sick shard.
 - **Blast radius.** One shard of eight down puts 12.5% of keys on their fallback for the failover window (assume 10-30 s), not everyone. Run checkout on its own small shard pool so a browse flood cannot starve it.
 - **Sizing the local fallback.** A per-gateway limit of `L × k / N` (limit `L`, `N = 50` gateways, safety factor `k = 4`) gives 8/min per gateway for a 100/min key. A key spread evenly over all gateways could then reach 400/min, a bounded 4× over-admission, and only keys concentrated on fewer than `N/k` gateways see false rejections. That is acceptable for a degraded mode measured in minutes.
-- **Checkout needs a different fallback.** The same formula gives 10 × 4 / 50 = 0.8/min per gateway, which is unusable. Either hash-route checkout by API key to at most 2 gateways so a local bucket is nearly exact (limit × 4 / 2 = 20/min per gateway), or cap checkout admission per gateway and per IP, and lean on downstream fraud and payment limits. Expect to over-admit an abusive key for the outage's duration and alert loudly.
+- **Checkout needs a different fallback.** The same formula gives 10 × 4 / 50 = 0.8/min per gateway, which is unusable. Either hash-route checkout by <abbr title="Application Programming Interface">API</abbr> key to at most 2 gateways so a local bucket is nearly exact (limit × 4 / 2 = 20/min per gateway), or cap checkout admission per gateway and per <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>, and lean on downstream fraud and payment limits. Expect to over-admit an abusive key for the outage's duration and alert loudly.
 - **Recovery.** A shard that loses state (asynchronous replication loses the last writes on failover) restarts every bucket full, so each active key gets at most one extra burst of 20. That is harmless for browse; for checkout, start buckets at half capacity for the first minute after a failover.
 - **Clock skew after failover.** A new primary whose clock is behind is clamped by `max(0, now − ts)`; one that is ahead by 200 ms adds at most `0.2 s × 1.67 = 0.33` tokens. Negligible.
 
@@ -186,13 +203,13 @@ Every request now depends on the limiter, so its availability multiplies into th
 |---|---|
 | Limiter store slow | 4 ms timeout, then the route's policy; do not queue all requests. The circuit breaker opens after 50% timeouts in 1 s. |
 | Limiter node fails | Promote the shard's replica (seconds to tens of seconds); that shard's keys use the route fallback meanwhile. No retry to another shard, and no retry storm. |
-| Whole limiter tier or region down | Every route runs its fallback: checkout degraded, browse open, auth and AI closed. Page on it only if a sensitive route is in fallback. |
+| Whole limiter tier or region down | Every route runs its fallback: checkout degraded, browse open, auth and <abbr title="Artificial Intelligence">AI</abbr> closed. Page on it only if a sensitive route is in fallback. |
 | Bad deploy or bad policy | Validate and canary policy changes (1% for 15 s); reject limits below 1/min or more than 100× the previous value without an override; one-click rollback by version. |
-| Hot API key | One key should not create a hot shard; a single key is one bucket at one shard and a bounded number of calls, so reject early and monitor it. |
+| Hot <abbr title="Application Programming Interface">API</abbr> key | One key should not create a hot shard; a single key is one bucket at one shard and a bounded number of calls, so reject early and monitor it. |
 | Hot tenant | Split the tenant bucket into `k` slices when it exceeds ~10k req/s. |
 | Clock issue | Use server/store time in the atomic operation; do not trust client clocks. |
 | Policy update | Version/configure centrally, distribute and cache with bounded staleness (≤ 20 s) and audit. |
-| Attack spreads over keys | Add tenant/IP/device/action/cost-based limits and WAF/anomaly controls. |
+| Attack spreads over keys | Add tenant/<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/device/action/cost-based limits and WAF/anomaly controls. |
 | Attack with random keys | Authenticate first, so only valid keys create state; TTL bounds live buckets to about 600k. |
 
 Rate limit cost can be weighted: a search request costs one token; an expensive report/export costs ten. This is often more useful than a raw request count.
@@ -209,10 +226,10 @@ Interview close: “I use an atomic token bucket because it permits bounded burs
 2. **"What changes at 10× and 100×?"** At 10× (500k req/s) the store needs 7.5 cores at 15 µs per call, so about 30 shards to stay near 25% utilisation, and the shared store becomes the main cost. At 100× (5M req/s) that is roughly 300 shards, which is not sensible, so move to local token leasing: each gateway takes a batch of tokens (say 10% of a key's per-second refill) and settles with the store asynchronously, keeping central checks only for small, strict per-key limits.
 3. **"What if the quota must be exact, such as a billing plan of 1M calls a month?"** Per-request synchronisation is the wrong tool. Keep a durable counter per tenant and hand each gateway a lease (say 1% of the remaining quota); over-admission is bounded by the outstanding leases, and leases shrink as the quota runs out, so the hard cap is enforced by leasing rather than by a per-request round trip. Stricter still: for a strict no-overshoot cap across regions, pin the tenant to one home region and pay the cross-region latency for the others.
 4. **"What does this cost?"** Very little relative to what it protects: 16 small nodes (8 shards with replicas) for 50k req/s, and under 1.5 GB of state. The real cost is the extra 1 ms round trip on every request, so the levers are local pre-filters and token leasing for big tenants, plus skipping the store for routes with no quota. If only 0.01% of keys ever hit a limit (measure it), most checks are wasted.
-5. **"How does someone abuse the limiter itself?"** By sending random or spoofed keys to create state, so authenticate first and create buckets only for valid principals, with the TTL bounding live buckets to about 600k; by spreading a credential-stuffing attack over a million IPs so that per-key limits never trigger, which needs per-tenant, per-IP/ASN, per-device and cost-weighted limits plus a challenge rather than only a 429; and by hammering one key to make its shard hot, which a bounded call cost and early rejection contain.
+5. **"How does someone abuse the limiter itself?"** By sending random or spoofed keys to create state, so authenticate first and create buckets only for valid principals, with the TTL bounding live buckets to about 600k; by spreading a credential-stuffing attack over a million IPs so that per-key limits never trigger, which needs per-tenant, per-<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/ASN, per-device and cost-weighted limits plus a challenge rather than only a 429; and by hammering one key to make its shard hot, which a bounded call cost and early rejection contain.
 6. **"What happens to token refill if the store's clock is wrong after a failover?"** The refill uses `max(0, now − ts)`, so a clock that jumped backward adds nothing, and a clock 200 ms ahead adds at most 0.33 tokens. Only a large forward jump matters, and the timing source is a single store clock per shard, never the client or the gateway.
 7. **"Why not fail open everywhere? It is simpler and keeps availability."** It is a legitimate default for low-risk routes and I use it for browse. But the limiter matters most during an attack or overload, exactly when its store may be stressed too, and unlimited expensive or credential-guessing traffic is worse than rejecting some callers. So it is a per-route setting with a fallback, not a global one, and checkout, which must keep working, gets a conservative local limit rather than either extreme.
-8. **"Why a shared store at all? Enforce limit ÷ N at each gateway."** That works only if a key's traffic is spread evenly over the `N` gateways. For 10/min over 50 gateways it is 0.2/min each, and any skew or session affinity causes false rejections, while an even spread of 400/min goes unnoticed. I would use local-only limiting for coarse, high-volume protections such as per-IP flood control and keep the shared store for per-key and tenant quotas.
+8. **"Why a shared store at all? Enforce limit ÷ N at each gateway."** That works only if a key's traffic is spread evenly over the `N` gateways. For 10/min over 50 gateways it is 0.2/min each, and any skew or session affinity causes false rejections, while an even spread of 400/min goes unnoticed. I would use local-only limiting for coarse, high-volume protections such as per-<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> flood control and keep the shared store for per-key and tenant quotas.
 
 ## Common mistakes
 
@@ -229,7 +246,7 @@ Interview close: “I use an atomic token bucket because it permits bounded burs
 
 - **Migration and rollout path.** Run new limits in shadow mode first (evaluate and log, do not enforce), then enforce for 1% of traffic and ramp; grandfather existing customers when a limit tightens. To replace the limiter tier, dual-run both and compare decisions before switching.
 - **Cost model.** Show that limiter cost is tiny next to the backend it protects (16 small nodes and 1 ms per request), that it scales linearly with req/s until about 100× where leasing takes over, and which single knob (local pre-filter hit rate) reduces shared-store calls.
-- **Ownership and blast radius.** Own the limiter as a platform service with its own SLO, separate shard pools for critical routes (checkout), and a client library that carries the fallback logic so no team re-implements it. A limiter outage must degrade routes, never take them down.
+- **Ownership and blast radius.** Own the limiter as a platform service with its own <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>, separate shard pools for critical routes (checkout), and a client library that carries the fallback logic so no team re-implements it. A limiter outage must degrade routes, never take them down.
 - **Build versus buy.** For standard per-key and per-tenant quotas, use the gateway's native limiter or a proven service (for example the open-source `envoyproxy/ratelimit` service, which is backed by Redis) rather than writing one. Build only what is genuinely yours: cost-weighted tokens, checkout's degraded mode and the tenant slicing.
 - **What to measure first.** The per-key traffic distribution (how top-heavy), the share of keys that ever hit a limit, per-route deny rate, and the gateway-to-limiter latency tail. They set the shard count, whether local pre-filters pay off, and which routes need which fallback.
 - **Phased evolution.** Start with one Redis and a local fallback, shard by hash tag with hot-tenant slicing, add local leases for big tenants, then per-region budgets when you go multi-region. Add each only when its number forces it.
@@ -243,5 +260,5 @@ Implement the atomic token bucket from this page in Redis (or an in-memory locke
 - `test_fixed_window_boundary_burst`: send 100 requests just before and 100 just after a window boundary; assert the fixed window admits about 200 and the token bucket admits about the capacity plus refill.
 - `test_idle_bucket_expires_full`: wait `capacity / refill` seconds with no traffic; assert the key is gone and the next request sees a full bucket.
 - `test_policy_change_applies_next_request`: lower the capacity mid-run; assert tokens are clamped and the next decision uses the new limit.
-- `test_route_fallbacks_on_timeout`: inject a 50 ms store delay; assert checkout is served under the local limit, the AI route is rejected, browse is allowed, and added latency stays under 5 ms.
+- `test_route_fallbacks_on_timeout`: inject a 50 ms store delay; assert checkout is served under the local limit, the <abbr title="Artificial Intelligence">AI</abbr> route is rejected, browse is allowed, and added latency stays under 5 ms.
 - `test_cluster_slot_or_fail`: call the script with keys in different hash tags; assert it errors instead of silently splitting the check.

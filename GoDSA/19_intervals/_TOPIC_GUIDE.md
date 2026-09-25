@@ -249,21 +249,23 @@ Splitting into two arrays deliberately throws away the start/end *pairing* —
 we only need the multiset of start times and the multiset of end times, not
 which end belongs to which start, since we're only counting concurrency.
 
-```mermaid
+```arch
 %% caption: Meeting rooms II: the heap holds the end time of every room in use. Its maximum size is the answer.
-flowchart TD
-  A["sort meetings by start"] --> B["next meeting (s, e)"]
-  B --> C{"heap not empty and<br/>heap[0] ≤ s ?"}
-  C -->|"yes: earliest room is free"| D["pop it: reuse that room"]:::ok
-  C -->|no| E["a new room is needed"]:::hot
-  D --> F["push e"]
-  E --> F
-  F --> G["rooms = max(rooms, len(heap))"]
-  G --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x80
+node a "sort meetings by start" at 1,0 shape=pill w=200
+node b "next meeting (s, e)" at 1,1 w=230
+node c "heap not empty and\nheap[0] ≤ s ?" at 1,2 shape=diamond color=amber
+node e "A new room is needed" at 2,2 color=amber w=190
+node d "Pop it: reuse that room" at 1,3 color=green w=230
+node f "push e" at 1,4 w=230
+node g "rooms = max(rooms, len(heap))" at 1,5 w=230
+a -> b -> c
+c -> d : "yes: earliest room free"
+c -> e : "no"
+d -> f
+e:B -> f:R
+f -> g
+g:L -> b:L
 ```
 
 ### 5.2 Min-heap of active end times — O(n log n) time, O(n) space
@@ -363,20 +365,24 @@ itself is always linear.
 All code below ran on Go 1.24.5 against LeetCode's own examples; the online structure was also checked against a naive version
 on 5,000 random inputs (0 mismatches).
 
-```mermaid
+```arch
 %% caption: Choosing the interval technique. The question — merge, select, count concurrency, cover, or answer online — picks the sort and the structure.
-flowchart TD
-  Q(["An interval problem"]) --> A{"What is asked?"}
-  A -->|"combine overlapping ones"| B["sort by START, sweep and merge"]:::ok
-  A -->|"keep the MOST non-overlapping"| C["sort by END, greedy selection"]:::ok
-  A -->|"peak overlap / resources needed"| D["sweep line: +1 / -1 events,<br/>or a min-heap of end times"]:::ok
-  A -->|"cover a range with the FEWEST intervals"| E["sort by start, greedy farthest reach"]:::hot
-  A -->|"intersect two sorted lists"| F["two pointers: advance the one that ends first"]:::ok
-  A -->|"intervals arrive online"| G["sorted slice + sort.Search, or a balanced tree"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "An interval problem" at 0,1 shape=pill
+node a "What is asked?" at 0,2 shape=diamond color=amber
+node b "Sort by START, sweep and merge" at 1,0 color=green w=400 sub="combine overlapping ones"
+node c "Sort by END, greedy selection" at 1,1 color=green w=400 sub="keep the MOST non-overlapping"
+node d "Sweep line: +1 / -1 events" at 1,2 color=green w=400 sub="peak overlap / resources needed · or a min-heap of end times"
+node e "Sort by start, greedy farthest reach" at 1,3 color=amber w=400 sub="cover a range with the FEWEST intervals"
+node f "Two pointers" at 1,4 color=green w=400 sub="intersect two sorted lists · advance the one that ends first"
+node g "Sorted slice + sort.Search, or a balanced tree" at 1,5 color=amber w=400 sub="intervals arrive online"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+a:R -> f:L
+a:R -> g:L
 ```
 
 ### The boundary is different for almost every problem
@@ -529,7 +535,7 @@ Sort the *starts* with their indices, then for each interval `sort.Search` for t
 |---|---|
 | "Online intervals." | A sorted structure with neighbour lookup (`sort.Search`, or a balanced tree for O(log n) inserts). |
 | "Peak overlap, many queries." | A segment tree with lazy range-add (topic 26), or an interval tree. |
-| "Weighted intervals?" | Greedy fails — DP over end-sorted intervals with a binary search for the last compatible one. |
+| "Weighted intervals?" | Greedy fails — <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> over end-sorted intervals with a binary search for the last compatible one. |
 | "Merge with a tolerance `k`?" | Merge when `cur[0] <= last[1] + k`. |
 | "Rectangles?" | Sweep one axis with a structure over the other (Skyline generalisations, Rectangle Area II). |
 | "Huge / streaming?" | Start-sorted streams merge in one pass with O(1) state; unsorted ones need an external sort. |

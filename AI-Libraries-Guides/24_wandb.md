@@ -2,7 +2,7 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In Guide 23, we learned MLflow is great for saving models and deploying them. But if you are training a massive LLM on 8 GPUs for 3 weeks, MLflow's UI is too basic. You need to watch the Loss curve update live, monitor GPU temperatures so the server doesn't melt, and compare 50 different training runs overlaid on the same graph. **Weights & Biases (WandB)** is the industry standard for this.
+*Why is this tool relevant?* In Guide 23, we learned MLflow is great for saving models and deploying them. But if you are training a massive <abbr title="Large Language Model">LLM</abbr> on 8 GPUs for 3 weeks, MLflow's UI is too basic. You need to watch the Loss curve update live, monitor GPU temperatures so the server doesn't melt, and compare 50 different training runs overlaid on the same graph. **Weights & Biases (WandB)** is the industry standard for this.
 
 **What is it?**
 WandB is a developer-first MLOps platform heavily focused on the **Experiment Tracking** phase of Deep Learning. It acts as a cloud-based dashboard for your training loops.
@@ -14,7 +14,7 @@ Before WandB, researchers used TensorBoard, which was clunky and ran locally, ma
 
 ## 2. Setup & Installation
 
-You will need a free account at wandb.ai to get an API key.
+You will need a free account at wandb.ai to get an <abbr title="Application Programming Interface">API</abbr> key.
 
 ```bash
 pip install wandb
@@ -172,5 +172,5 @@ By simply passing the logger to the Trainer, every time you call `self.log('loss
 ### Scenario 2: The GPU Temperature Crash
 *Interviewer:* "We left a massive Llama-3 fine-tuning job running over the weekend. On Monday, the server had crashed. The Loss curve looked perfectly normal right up until the crash. How can WandB help us debug this?"
 
-*Answer:* "WandB doesn't just log software metrics; it logs **System Metrics** automatically in the background. If we open the WandB dashboard and switch to the 'System' tab, we will see line charts for GPU Memory Utilization, GPU Temperature, and CPU RAM usage. 
-I would look at the GPU Temperature graph. If it spiked to 95°C right before the crash, we know it was a physical thermal throttling shutdown. If the System RAM graph slowly climbed from 10GB to 256GB and then flatlined, we know we have a Memory Leak in our Python `DataLoader` (likely holding onto tensors without calling `.detach()`), resulting in an OS-level Out-Of-Memory kill."
+*Answer:* "WandB doesn't just log software metrics; it logs **System Metrics** automatically in the background. If we open the WandB dashboard and switch to the 'System' tab, we will see line charts for GPU Memory Utilization, GPU Temperature, and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> usage. 
+I would look at the GPU Temperature graph. If it spiked to 95°C right before the crash, we know it was a physical thermal throttling shutdown. If the System <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> graph slowly climbed from 10GB to 256GB and then flatlined, we know we have a Memory Leak in our Python `DataLoader` (likely holding onto tensors without calling `.detach()`), resulting in an <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>-level Out-Of-Memory kill."

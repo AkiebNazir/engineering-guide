@@ -2,18 +2,21 @@
 
 Everything up to here was Redis's data types. This level is about the *pattern* most
 people actually reach for Redis to build: a cache sitting in front of a slower system of
-record (a database, an external API). The data type barely matters (usually a plain
-string holding serialized JSON); what matters is **who writes to the cache, and when**.
+record (a database, an external <abbr title="Application Programming Interface">API</abbr>). The data type barely matters (usually a plain
+string holding serialized <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>); what matters is **who writes to the cache, and when**.
 
 ## Three patterns
 
-```mermaid
-flowchart TB
-    subgraph "Cache-aside (lazy loading)"
-        A1[App] -->|1 read| C1[(Cache)]
-        A1 -->|2 miss: read| D1[(DB)]
-        A1 -->|3 populate| C1
-    end
+```arch
+%% caption: Cache-aside: the app reads the cache, falls back to the DB on a miss, then populates the cache itself.
+grid 220x120
+group ca "Cache-aside (lazy loading)" color=blue icon=cache
+node app "App" at 0,0 in ca icon=app
+node cache "Cache" at 1,0 in ca icon=cache
+node db "DB" at 0,1 in ca icon=db
+app:R -> cache:L : "1. read"
+app -> db : "2. miss: read"
+app:T -> cache:T : "3. populate"
 ```
 
 **Cache-aside** (a.k.a. lazy loading): the application checks the cache first; on a miss,
@@ -87,6 +90,8 @@ crashes before the flush — a real durability tradeoff, not free performance.
 
 Redis itself doesn't enforce any of these — they're an application-level discipline about
 who calls `SET` and when. Redis just provides the fast key-value layer underneath.
+
+<div class="lab" data-viz="flow-cache-aside"></div>
 
 ## TTL-based expiry and eviction
 

@@ -24,11 +24,11 @@ outputs shown are real. The Go example passes `go run -race`.
 | Topic | Where |
 |---|---|
 | Primitives, Coffman conditions, bounded blocking queue, Go worker pool | `CSFundamentals/05_concurrency_deep_dive.md` |
-| Making LRU/rate limiter/hash map thread-safe (table) | `CSFundamentals/05` §7 |
+| Making <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>/rate limiter/hash map thread-safe (table) | `CSFundamentals/05` §7 |
 | Concurrency toolkit for LLD interviews (locking options table) | `14_low_level_design_interview_playbook.md` §9 |
 | Timeouts, deadlines, cancellation, `CancelledError` | `06_error_handling_and_failure_design.md` §6 |
 | Optimistic concurrency and DB-level locking | `PyEngineering/10_transactions_concurrency_control`, `SystemDesign/building_blocks/11` |
-| Runnable concurrent cache, pipeline, pub/sub, asyncio internals, GIL | `PyEngineering/12–16`, `26`, `27`, `33`, `34`; `GoEngineering/12–16`, `26`, `31` |
+| Runnable concurrent cache, pipeline, pub/sub, asyncio internals, <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> | `PyEngineering/12–16`, `26`, `27`, `33`, `34`; `GoEngineering/12–16`, `26`, `31` |
 
 ---
 
@@ -90,7 +90,7 @@ Levels worth naming (from Goetz / Bloch):
 | **Thread-safe** | Every public method is atomic; no external locking needed for single calls | `queue.Queue`, Go `sync.Map`, `atomic.Int64` |
 | **Conditionally thread-safe** | Some sequences need external locking | Iterating a synchronised collection while others modify it |
 | **Not thread-safe** | Caller must synchronise all access | `list`, `dict` for compound use, Go `map`, most classes |
-| **Thread-confined** | Must only be used from one thread | Tkinter/GUI objects, `sqlite3.Connection` by default, asyncio objects outside their loop |
+| **Thread-confined** | Must only be used from one thread | Tkinter/<abbr title="Graphical User Interface. A form of user interface that allows users to interact with electronic devices through graphical icons.">GUI</abbr> objects, `sqlite3.Connection` by default, asyncio objects outside their loop |
 
 ---
 
@@ -279,10 +279,10 @@ Design rules the example encodes:
 7. **Don't leak references to guarded state.** Returning `self._items` (a live list) lets
    callers mutate it without the lock. Return a copy, a tuple, or an immutable view.
 
-**Python-specific:** the GIL does not make your code thread-safe. It makes single
+**Python-specific:** the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> does not make your code thread-safe. It makes single
 bytecodes atomic, and switches threads *between* them; `self.value += 1` is several
-bytecodes (load, add, store). Free-threaded CPython (PEP 703, `python3.13t`) removes the
-GIL entirely, so code that "worked because of the GIL" will break there first.
+bytecodes (load, add, store). Free-threaded CPython (<abbr title="Python Enhancement Proposal. A design document providing information to the Python community, describing a new feature or its environment.">PEP</abbr> 703, `python3.13t`) removes the
+<abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> entirely, so code that "worked because of the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr>" will break there first.
 
 **Granularity**, when one lock becomes a bottleneck:
 
@@ -298,17 +298,17 @@ GIL entirely, so code that "worked because of the GIL" will break there first.
 
 ## 4 · APIs that make races impossible to write
 
-The best fix for a check-then-act race is an API that **doesn't let callers write the
+The best fix for a check-then-act race is an <abbr title="Application Programming Interface">API</abbr> that **doesn't let callers write the
 check and the act separately**. Give them the compound operation.
 
-| Racy API (caller composes) | Atomic API (object composes) |
+| Racy <abbr title="Application Programming Interface">API</abbr> (caller composes) | Atomic <abbr title="Application Programming Interface">API</abbr> (object composes) |
 |---|---|
 | `if k not in m: m[k] = v` | `m.setdefault(k, v)`, Go `sync.Map.LoadOrStore` |
 | `v = m.get(k); m[k] = v + 1` | `counter.increment(k)`, `atomic.AddInt64` |
 | `if q.size() > 0: q.pop()` | `q.get(timeout=…)` / `q.get_nowait()` raising `Empty` |
 | `if seat.is_free(): seat.book(u)` | `seat.try_book(u) -> bool` |
 | `if balance >= x: withdraw(x)` | `withdraw(x)` raising `InsufficientFunds` |
-| `if not os.path.exists(p): open(p, "w")` | `open(p, "x")` (exclusive create; the OS does it atomically) |
+| `if not os.path.exists(p): open(p, "w")` | `open(p, "x")` (exclusive create; the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> does it atomically) |
 | `SELECT … ; UPDATE … ` | `UPDATE … WHERE version = ?` / `INSERT … ON CONFLICT DO NOTHING` |
 
 **Rule: a thread-safe object's methods should be whole business operations, not
@@ -611,7 +611,7 @@ Properties:
 
 Design details in the example:
 
-- **The public API never touches state** — it only enqueues messages. That makes the
+- **The public <abbr title="Application Programming Interface">API</abbr> never touches state** — it only enqueues messages. That makes the
   thread-safety contract trivial to audit.
 - **Replies travel back through a `Future`**, so callers can wait with a timeout.
 - **Snapshots are copies**, never the live dict.
@@ -693,9 +693,9 @@ before any of them resumes to subtract. Rules for async code:
    `asyncio.Lock` (or restructure so the await comes before the check).
 2. **`asyncio.Lock` is not `threading.Lock`.** Asyncio primitives are not thread-safe;
    threading locks block the whole event loop. Use each only in its own world.
-3. **Never block the event loop.** `time.sleep`, `requests.get`, a CPU-heavy loop, or a
+3. **Never block the event loop.** `time.sleep`, `requests.get`, a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-heavy loop, or a
    synchronous DB driver inside `async def` freezes *every* coroutine. Offload with
-   `await asyncio.to_thread(fn)` (I/O) or a process pool (CPU).
+   `await asyncio.to_thread(fn)` (I/O) or a process pool (<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>).
 4. **Function colour is a design boundary.** `async` functions can only be awaited from
    async code, so async-ness spreads up the call stack. Keep the domain core
    **synchronous and pure** (`01` §9, `08` §4) and make only the I/O shell async; then
@@ -1237,7 +1237,7 @@ passes `None`. In Go the same trick uses channels to pause a goroutine at a chos
 |---|---|---|
 | Many concurrent network calls (I/O-bound, high fan-out) | **asyncio** (thousands of tasks cheaply) or threads (tens–hundreds) | Goroutines |
 | Blocking libraries with no async version | Threads (`ThreadPoolExecutor`, `asyncio.to_thread`) | Goroutines |
-| CPU-bound work (parsing, image processing, numerics) | **Processes** (`ProcessPoolExecutor`), native extensions releasing the GIL (NumPy), or free-threaded 3.13t | Goroutines (uses all cores) |
+| <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound work (parsing, image processing, numerics) | **Processes** (`ProcessPoolExecutor`), native extensions releasing the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> (NumPy), or free-threaded 3.13t | Goroutines (uses all cores) |
 | Shared state machine with strict ordering | Single-writer actor (thread or task) | Goroutine owning state |
 | Pipeline of stages | Queues between workers | Channels between goroutines |
 
@@ -1258,11 +1258,11 @@ unbounded `go` per request item is still an unbounded resource.
 | Taking two locks without a global order | Deadlock | Order by ID; or one coarser lock |
 | Returning internal list/dict from a guarded object | Mutated without the lock | Return copies/tuples/immutable views |
 | `await` between a check and an act | Async race | `asyncio.Lock`, or re-check after the await |
-| `time.sleep` / sync HTTP / sync DB inside `async def` | Freezes the event loop | `asyncio.to_thread`, async client |
+| `time.sleep` / sync <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> / sync DB inside `async def` | Freezes the event loop | `asyncio.to_thread`, async client |
 | `create_task` without keeping a reference or awaiting | Lost tasks and swallowed exceptions | `TaskGroup` |
 | `gather` over an unbounded list | Resource exhaustion, rate limiting | Semaphore / worker pool |
-| Unbounded queue in front of a slow consumer | Memory grows until OOM | Bounded queue + backpressure |
-| "Works because of the GIL" | Breaks on free-threaded Python and in any refactor | Explicit synchronisation |
+| Unbounded queue in front of a slow consumer | Memory grows until <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> | Bounded queue + backpressure |
+| "Works because of the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr>" | Breaks on free-threaded Python and in any refactor | Explicit synchronisation |
 | `RWMutex` everywhere "for performance" | Often slower; writer starvation | Plain mutex until profiling says otherwise |
 | Goroutine with no exit path (`for { <-ch }` with no ctx/close) | Goroutine leak | `select` on `ctx.Done()`; close channels from the sender |
 | Tests that "usually pass" | Hidden race | Force the interleaving; run `-race`; stress with invariants |
@@ -1318,7 +1318,7 @@ keys don't expire together; serve stale data while refreshing in the background.
 **Q: How do you test concurrent code?**
 Keep the logic sequential and test it directly; make the concurrent shell thin. Reproduce
 specific races deterministically with barriers or channels at injected hook points. Run
-Go's race detector in CI. Stress test with many threads and assert invariants like
+Go's race detector in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>. Stress test with many threads and assert invariants like
 conservation of money. Put timeouts on tests so deadlocks fail instead of hanging.
 
 ---
@@ -1347,4 +1347,4 @@ conservation of money. Put timeouts on tests so deadlocks fail instead of hangin
 **Verification**
 - [ ] The thread-safety contract is documented.
 - [ ] Known races have deterministic reproduction tests.
-- [ ] `go test -race` (or equivalent) runs in CI; stress tests assert invariants.
+- [ ] `go test -race` (or equivalent) runs in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>; stress tests assert invariants.

@@ -101,18 +101,20 @@ Appending one element at a time to a `[]int`, the capacity goes (measured on Go 
 Same amortization argument as Python: geometric growth ⇒ **O(1) amortized append**,
 with individual appends occasionally O(n).
 
-```mermaid
+```arch
 %% caption: Every append is one of two very different events. Whether other slices see your write depends on which one you hit.
-flowchart TD
-  A["s = append(s, x)"] --> Q{"len(s) < cap(s)?"}
-  Q -->|"yes: room left"| W["write into the SAME backing array<br/>O(1)"]:::hot
-  W --> AL["every other slice over that array<br/>can see (or be overwritten by) the write"]:::bad
-  Q -->|"no: full"| G["allocate a bigger array, copy len elements<br/>O(n), amortized away"]
-  G --> IND["s now points at a NEW array<br/>old slices are unaffected"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x110
+node a "s = append(s, x)" at 0.5,0 shape=pill
+node q "len(s) < cap(s)?" at 0.5,1 shape=diamond color=amber
+node w "Write in place" at 0,2 shape=card icon=edit color=orange sub="into the SAME backing array, O(1)"
+node al "Shared write" at 0,3 shape=card icon=warn color=red sub="every other slice over that array can see (or be overwritten by) the write"
+node g "Grow and copy" at 1,2 shape=card icon=layers sub="allocate a bigger array, copy len elements; O(n), amortized away"
+node ind "New array" at 1,3 shape=card icon=check color=green sub="s now points at a NEW array; old slices are unaffected"
+a -> q
+q -> w : "yes: room left"
+q -> g : "no: full"
+w -> al
+g -> ind
 ```
 
 ```go
@@ -153,7 +155,7 @@ s == nil                 // true
 ```
 
 A `nil` slice is a perfectly good empty slice. `make([]int, 0)` is only different
-in that it is non-nil — which matters solely for `== nil` checks and JSON
+in that it is non-nil — which matters solely for `== nil` checks and <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>
 encoding (`null` vs `[]`). Prefer `var s []int`.
 
 ### 1.6 Go's sort
@@ -187,41 +189,52 @@ which is the modern form.
 
 Go 1.24 replaced the map implementation. Since then (this repo builds on Go 1.24.5) the built-in `map`
 is a **Swiss table** — an *open-addressing* design from Google's Abseil library, adapted in
-`internal/runtime/maps`. The API and the language guarantees are unchanged; the insides are not. Older
+`internal/runtime/maps`. The <abbr title="Application Programming Interface">API</abbr> and the language guarantees are unchanged; the insides are not. Older
 material (and some interviewers) describe the previous design — bucketed chaining, section 2.3 — so
 know both, and say which toolchain you mean.
 
-```
-Map ──► directory of tables          (a small map, ≤ 8 entries, is ONE group and skips all of this)
-          └─ table                    an open-addressed array of groups, ≤ 1024 slots
-               └─ group               8 control bytes packed in one 64-bit word  +  8 key/value slots
-                    control byte      1 bit "empty / deleted / full"  +  7 bits of the key's hash (H2)
+```arch
+%% caption: The Swiss-table map, from the outside in. A small map (at most 8 entries) is ONE group and skips the directory and tables.
+grid 200x100
+node m "Map" at 0,0 icon=kv
+node dir "Directory of tables" at 1,0 shape=card icon=folder
+node t "Table" at 1,1 shape=card icon=table sub="an open-addressed array of groups, ≤ 1024 slots"
+node g "Group" at 1,2 shape=card icon=grid sub="8 control bytes packed in one 64-bit word + 8 key/value slots"
+node cb "Control byte" at 1,3 shape=card icon=number sub="1 bit empty / deleted / full + 7 bits of the key's hash (H2)"
+m -> dir
+dir -> t : "contains"
+t -> g : "contains"
+g -> cb : "per slot"
+m:B -> g:L : "small map, ≤ 8 entries" dashed
 ```
 
-```mermaid
+```arch
 %% caption: A Swiss-table lookup. The hash is split: high bits choose where to look, the low 7 bits are a cheap fingerprint tested against all 8 slots of a group at once.
-flowchart TD
-  K["m[key]"] --> H["h = hash(key), seeded per map"]
-  H --> T["top bits choose the table<br/>(directory of tables)"]
-  T --> G["H1 = upper 57 bits<br/>picks the starting group"]
-  G --> C["compare H2 = low 7 bits with ALL 8<br/>control bytes: a few bit operations on one word"]
-  C --> M{"a slot matches?"}
-  M -->|"yes"| E{"full key equal?"}
-  E -->|"yes"| F["found: return the value"]:::ok
-  E -->|"no: 1 in 128 false positive"| X
-  M -->|"no"| X{"group has an empty slot?"}
-  X -->|"yes"| N["absent: return the zero value"]:::ok
-  X -->|"no, group is full"| S["quadratic probe:<br/>move to the next group"]:::hot
-  S --> C
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x95
+node k "m[key]" at 0,0 shape=pill
+node h "Hash the key" at 0,1 icon=key shape=card sub="h = hash(key), seeded per map"
+node t "Choose the table" at 0,2 shape=card icon=table sub="top bits choose the table (directory of tables)"
+node g "Starting group" at 0,3 shape=card icon=grid sub="H1 = upper 57 bits picks the starting group"
+node c "Compare H2" at 0,4 shape=card icon=filter color=blue sub="H2 = low 7 bits vs ALL 8 control bytes: a few bit operations on one word"
+node m "a slot matches?" at 0,5 shape=diamond color=amber
+node e "full key equal?" at 0,6 shape=diamond color=amber
+node f "Found" at 0,7 shape=card icon=check color=green sub="return the value"
+node x "group has an empty slot?" at 1,5 shape=diamond color=amber
+node s "Quadratic probe" at 1,4 shape=card icon=sync color=orange sub="move to the next group"
+node n "Absent" at 2,5 shape=card icon=check color=green sub="return the zero value"
+k -> h -> t -> g -> c -> m
+m -> e : "yes"
+m -> x : "no"
+e -> f : "yes"
+e:R -> x:B : "no: 1 in 128 false positive"
+x -> n : "yes"
+x -> s : "no, group is full"
+s -> c
 ```
 
 The pieces, in the order a lookup uses them:
 
-1. **Hash** the key with a **per-map random seed** (hardware-accelerated where the CPU allows). Every map has its own seed, so an attacker cannot precompute colliding keys —
+1. **Hash** the key with a **per-map random seed** (hardware-accelerated where the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> allows). Every map has its own seed, so an attacker cannot precompute colliding keys —
    flooding resistance is built in, not opt-in.
 2. The **top bits** index a **directory** of tables (*extendible hashing*). One table needs zero bits.
 3. **H1** — the upper 57 bits — picks the starting **group** inside that table. **H2** — the low 7 bits — is stored in the
@@ -232,7 +245,7 @@ The pieces, in the order a lookup uses them:
    an empty slot, and that is what proves "absent".
 
 **Load factor is 7/8** (a table averages 7 of every 8 slots full before it grows). Open addressing keeps
-keys and values in one flat array, which is friendlier to the CPU cache than chasing overflow pointers.
+keys and values in one flat array, which is friendlier to the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache than chasing overflow pointers.
 
 ### 2.2 Growth and deletion in the Swiss map
 
@@ -562,22 +575,28 @@ is the time-space dial; resize is O(n) but amortizes away.
 <!-- block:01_go_1_choose -->
 ## Part 6 · Choosing the Structure in Go
 
-```mermaid
+```arch
 %% caption: Which Go container fits the question being asked. Go has no built-in set, Counter or deque, so the answer is always a slice, an array or a map.
-flowchart TD
-  Q(["What do you need from the data?"]) --> A{"Only: have I seen this before?"}
-  A -->|"yes"| S["map[T]struct{}<br/>or map[T]bool"]:::ok
-  A -->|"no"| B{"A value or count per key?"}
-  B -->|"key is a small fixed range, e.g. a-z"| C["[26]int array<br/>no hashing, no allocation"]:::ok
-  B -->|"any comparable key"| D["map[K]V<br/>arrays and structs are valid keys"]:::ok
-  B -->|"neither"| E{"Position or order matters?"}
-  E -->|"by index"| F["[]T slice"]:::ok
-  E -->|"sorted order, ranges"| G["slices.Sort once,<br/>then slices.BinarySearch"]:::ok
-  E -->|"repeated min or max"| H["container/heap"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x100
+node q "What do you need from the data?" at 1,0 shape=pill
+node a "Only: have I seen this before?" at 1,1 shape=diamond color=amber
+node s "Set" at 0,1 shape=card icon=check color=green sub="map[T]struct{} or map[T]bool"
+node b "A value or count per key?" at 1,2 shape=diamond color=amber
+node c "[26]int array" at 0,3 shape=card icon=counter color=green sub="e.g. a-z; no hashing, no allocation"
+node d "map[K]V" at 2,3 shape=card icon=kv color=green sub="arrays and structs are valid keys"
+node e "Position or order matters?" at 1,4 shape=diamond color=amber
+node f "[]T slice" at 0,5 shape=card icon=table color=green
+node g "Sort, then search" at 1,5 shape=card icon=sort color=green sub="slices.Sort once, then slices.BinarySearch"
+node hp "container/heap" at 2,5 shape=card icon=tree color=green
+q -> a
+a -> s : "yes"
+a -> b : "no"
+b -> c : "key in a small fixed range"
+b -> d : "any comparable key"
+b -> e : "neither"
+e -> f : "by index"
+e -> g : "sorted order, ranges"
+e -> hp : "repeated min or max"
 ```
 
 | You need | Python | Go |

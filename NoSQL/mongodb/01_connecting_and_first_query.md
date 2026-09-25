@@ -70,7 +70,7 @@ found: {'_id': ObjectId('6ab3afb50f508c39008ab2d6'), 'name': 'Ada Lovelace', 'ro
 is ObjectId: True
 ```
 
-Naming note: mongosh uses `camelCase` (`insertOne`, `findOne`); pymongo uses `snake_case` (`insert_one`, `find_one`) to match Python convention, but the operations and the wire protocol underneath are identical. If you can do it in one, you can name the pymongo equivalent by snake-casing it — this holds for nearly the entire CRUD and aggregation API across both.
+Naming note: mongosh uses `camelCase` (`insertOne`, `findOne`); pymongo uses `snake_case` (`insert_one`, `find_one`) to match Python convention, but the operations and the wire protocol underneath are identical. If you can do it in one, you can name the pymongo equivalent by snake-casing it — this holds for nearly the entire <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> and aggregation <abbr title="Application Programming Interface">API</abbr> across both.
 
 ## Connecting with Go (`mongo-driver/v2`)
 
@@ -114,7 +114,7 @@ is ObjectID: true
 
 Two things worth noticing immediately against the Python version above:
 
-- **`bson.M` (a `map[string]any`) prints as Extended JSON, not Go's normal `map[...]` syntax** — the driver gives `bson.M` a `String()`/JSON marshaler so a printed document is still human-readable, but every scalar comes back tagged with its BSON type (`{"$numberInt":"28"}`, not bare `28`) unless you decode into a concrete Go struct instead of a generic map. Decoding into a typed struct with `bson:"age"` tags avoids this entirely and is the more idiomatic approach for real application code — `bson.M` is mainly for ad hoc/exploratory code, exactly like this level's demo.
+- **`bson.M` (a `map[string]any`) prints as Extended <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, not Go's normal `map[...]` syntax** — the driver gives `bson.M` a `String()`/<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> marshaler so a printed document is still human-readable, but every scalar comes back tagged with its BSON type (`{"$numberInt":"28"}`, not bare `28`) unless you decode into a concrete Go struct instead of a generic map. Decoding into a typed struct with `bson:"age"` tags avoids this entirely and is the more idiomatic approach for real application code — `bson.M` is mainly for ad hoc/exploratory code, exactly like this level's demo.
 - **`InsertedID` comes back as `any`**, requiring a type assertion (`res.InsertedID.(bson.ObjectID)`) to get the concrete `bson.ObjectID` — pymongo's `result.inserted_id` is already the concrete `ObjectId` Python type with no cast needed, one of the small frictions of Go's static typing meeting a dynamically-shaped document model.
 
 Duplicate `_id`, same enforced-uniqueness behavior as pymongo, surfaced as a Go `error` instead of a Python exception:
@@ -134,7 +134,7 @@ Go has no exceptions — every driver call that can fail returns an `error` as i
 
 Every document in a MongoDB collection has an `_id` field, and MongoDB **enforces uniqueness of `_id` within a collection** with an index it creates automatically (`_id_`) — this is the one piece of implicit schema/index every collection always has, even a totally validator-free one.
 
-If you don't supply `_id` yourself, the driver generates an `ObjectId`: a 12-byte value, not a random UUID, structured as:
+If you don't supply `_id` yourself, the driver generates an `ObjectId`: a 12-byte value, not a random <abbr title="Universally Unique Identifier - A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems.">UUID</abbr>, structured as:
 
 ```
 | 4 bytes: unix timestamp (seconds) | 5 bytes: random, per-process | 3 bytes: incrementing counter |
@@ -154,6 +154,6 @@ db.users.insert_one({"_id": "ada_lovelace", "role": "engineer"})
 
 - **Assuming `find_one`/`findOne` with no filter returns "the first inserted document."** It returns *a* document matching the (empty) filter with no guaranteed order unless you sort. Don't rely on insertion order without an explicit `sort()`.
 - **Forgetting a write only fully lands once acknowledged.** `insert_one` under default settings waits for acknowledgment before returning, but that default is a write-concern choice, not a law of nature — level 10 covers what changes when you loosen or tighten it.
-- **Treating `ObjectId` as a random UUID.** It's structured and leaks a creation timestamp (`ObjectId.generation_time` in pymongo, or decode the first 4 bytes yourself) — don't expose raw `_id` values somewhere that timestamp leak matters (e.g. as a public API's opaque identifier if you want to hide creation order/volume from competitors).
+- **Treating `ObjectId` as a random <abbr title="Universally Unique Identifier - A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems.">UUID</abbr>.** It's structured and leaks a creation timestamp (`ObjectId.generation_time` in pymongo, or decode the first 4 bytes yourself) — don't expose raw `_id` values somewhere that timestamp leak matters (e.g. as a public <abbr title="Application Programming Interface">API</abbr>'s opaque identifier if you want to hide creation order/volume from competitors).
 
-The next level builds outward from `insertOne`/`findOne` into the rest of CRUD.
+The next level builds outward from `insertOne`/`findOne` into the rest of <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr>.

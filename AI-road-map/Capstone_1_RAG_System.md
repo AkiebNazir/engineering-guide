@@ -1,13 +1,13 @@
 # Capstone Project 1: The End-to-End RAG System
 
 ## Objective
-Build a system that can accurately answer questions based entirely on a private corpus of documents (e.g., your personal PDFs, codebase, or company handbooks). The LLM must not hallucinate external knowledge.
+Build a system that can accurately answer questions based entirely on a private corpus of documents (e.g., your personal PDFs, codebase, or company handbooks). The <abbr title="Large Language Model">LLM</abbr> must not hallucinate external knowledge.
 
 ## Tech Stack to Use
 - **Data Orchestration:** LlamaIndex or LangChain Core
 - **Vector Database:** ChromaDB (for local persistent storage)
 - **Embeddings:** OpenAI `text-embedding-3-small` or Hugging Face `all-MiniLM-L6-v2`
-- **LLM:** OpenAI `gpt-4o-mini` or Anthropic `claude-3-haiku`
+- **<abbr title="Large Language Model">LLM</abbr>:** OpenAI `gpt-4o-mini` or Anthropic `claude-3-haiku`
 
 ## Step-by-Step Implementation Guide
 
@@ -31,8 +31,8 @@ Build a system that can accurately answer questions based entirely on a private 
 1. Construct a strict Prompt Template:
    > "You are an expert assistant. Answer the user's question using ONLY the following context. If the context does not contain the answer, say 'I do not know.'"
 2. Inject the retrieved chunks into the prompt.
-3. Call the LLM and print the response.
+3. Call the <abbr title="Large Language Model">LLM</abbr> and print the response.
 
 ### Pro-Level Extensions (Optional but highly recommended)
 - **Metadata Filtering:** Add metadata to your chunks (e.g., "Year=2024", "Department=Engineering") and implement a feature where the user can filter the search space before querying.
-- **RAG Evaluation:** Write 10 test questions and use the **Ragas** library to calculate the `faithfulness` and `context_precision` of your system.
+- **<abbr title="Retrieval-Augmented Generation">RAG</abbr> Evaluation:** Write 10 test questions and use the **Ragas** library to calculate the `faithfulness` and `context_precision` of your system.

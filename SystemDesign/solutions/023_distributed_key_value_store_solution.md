@@ -12,7 +12,7 @@ Why leaderless rather than leader-per-partition: the requirement to stay **writa
 
 ## Capacity
 
-- Data: 100 TB × replication factor 3 = 300 TB raw. At ~2 TB of usable data per node (leaving room for compaction and growth), about **150 nodes** at the end state. At 10 TB the same arithmetic gives 30 TB ÷ 2 = 15 nodes, but the peak QPS applies from day one, so throughput sizes the early fleet (next bullet).
+- Data: 100 TB × replication factor 3 = 300 TB raw. At ~2 TB of usable data per node (leaving room for compaction and growth), about **150 nodes** at the end state. At 10 TB the same arithmetic gives 30 TB ÷ 2 = 15 nodes, but the peak <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> applies from day one, so throughput sizes the early fleet (next bullet).
 - Load: 250K ops/s peak ÷ 150 nodes ≈ 1,700 ops/s per node, and each op touches `N = 3` replicas, so ~750K replica operations/s cluster-wide and ~5,000 per node. Assuming a node sustains about 10,000 replica ops/s of 10 KB values at p99 < 10 ms (an assumption to load-test), throughput needs 750K ÷ 10K = 75 nodes, so we **start at ~75 nodes, not 20**, and capacity takes over as data grows toward 100 TB.
 - Bandwidth: clients read 200K × 10 KB = 2 GB/s and writes replicate 50K × 10 KB × 3 = 1.5 GB/s, about 23 MB/s per node at 150 nodes (47 MB/s at 75), well within 10 GbE. Peak ingest of 500 MB/s would be 43 TB/day if sustained, versus the ~250 GB/day needed to grow by 90 TB in a year, so peak writes are mostly overwrites and compaction is the real disk cost: at an assumed 10× write amplification, 1.5 GB/s × 10 ÷ 150 = 100 MB/s of disk writes per node.
 - Latency: an in-region round trip is ~0.5 ms; waiting for the 2nd-fastest of 3 replicas keeps p99 well under 10 ms if nodes are not overloaded.
@@ -28,6 +28,27 @@ delete(key, context?)                              → ok                    # w
 `context` is an opaque version vector. Clients that ignore it get last-writer-wins behaviour; clients that merge (like a shopping cart that unions items) get no lost updates.
 
 ## Partitioning with consistent hashing
+
+```arch
+%% caption: Any node coordinates a request and fans it out to the key's N = 3 preference-list replicas in different zones; a stand-in holds hinted writes for a replica that is down.
+node client "Clients" at 1,0 icon=users sub="partition-aware library"
+node lb "Load balancer" at 2,1 icon=lb sub="to any node"
+group ring "Consistent-hash ring: 128 vnodes per node, gossip membership" color=blue icon=network
+node coord "Coordinator" at 1,2 in ring icon=server sub="any node"
+node r1 "Replica 1" at 0,3 in ring icon=db sub="zone A, <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree"
+node r2 "Replica 2" at 1,3 in ring icon=db sub="zone B, <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree"
+node r3 "Replica 3" at 2,3 in ring icon=db sub="zone C, <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree"
+node hint "Stand-in node" at 3,3 in ring icon=server sub="hints for replica 3"
+client -> coord : "one fewer hop"
+client:R -> lb:T
+lb:B -> coord:R
+coord -> r1
+coord -> r2 : "W acks / R replies"
+coord -> r3
+coord ..> hint : "sloppy quorum"
+hint ..> r3 : "handoff"
+r1 <..> r2 : "Merkle repair"
+```
 
 Keys are hashed (e.g. MurmurHash3 128-bit) onto a ring. Each physical node owns many **virtual nodes** (tokens) — say 128 — spread around the ring. A key is stored on the first `N` *distinct physical* nodes found walking clockwise from its hash (its **preference list**), skipping virtual nodes of nodes already chosen and, ideally, choosing replicas in different racks/zones.
 

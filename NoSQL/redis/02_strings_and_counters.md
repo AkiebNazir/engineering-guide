@@ -1,6 +1,6 @@
 # Strings and Atomic Counters
 
-The Redis "string" type holds anything up to 512 MB — text, JSON, a serialized blob, or a
+The Redis "string" type holds anything up to 512 MB — text, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, a serialized blob, or a
 number. When it holds a number, Redis gives you a set of commands that increment or
 decrement it **atomically**, with no read-modify-write race, because (level 00) only one
 command executes on the server at a time.

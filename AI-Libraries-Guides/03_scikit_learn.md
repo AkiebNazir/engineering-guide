@@ -6,9 +6,9 @@
 Scikit-Learn (`sklearn`) is the undisputed king of classical Machine Learning in Python. It provides hundreds of algorithms for Classification, Regression, Clustering, and Dimensionality Reduction.
 
 **Why does it exist?**
-Before Scikit-Learn, every researcher wrote their own algorithm from scratch with different function names and data formats. Scikit-Learn created the **Uniform API**. Whether you are running a simple Linear Regression or a complex Random Forest, the code is always the exact same: `model.fit(X, y)` and `model.predict(X)`. 
+Before Scikit-Learn, every researcher wrote their own algorithm from scratch with different function names and data formats. Scikit-Learn created the **Uniform <abbr title="Application Programming Interface">API</abbr>**. Whether you are running a simple Linear Regression or a complex Random Forest, the code is always the exact same: `model.fit(X, y)` and `model.predict(X)`. 
 
-While Deep Learning (PyTorch) is used for text and images, Scikit-Learn is still the weapon of choice for 90% of enterprise tabular data (Excel spreadsheets, SQL databases).
+While Deep Learning (PyTorch) is used for text and images, Scikit-Learn is still the weapon of choice for 90% of enterprise tabular data (Excel spreadsheets, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> databases).
 
 ---
 
@@ -59,7 +59,7 @@ print(f"Accuracy: {acc * 100:.2f}%") # 96.49%
 
 ---
 
-## 4. Deep Dive: The Scikit-Learn API Contract
+## 4. Deep Dive: The Scikit-Learn <abbr title="Application Programming Interface">API</abbr> Contract
 
 Every object in Scikit-Learn falls into one of three categories. If you understand these three, you understand the entire library.
 
@@ -110,7 +110,7 @@ encoded_cities = encoder.fit_transform(df[['city']])
 *Junior Engineers* apply transformers to their training data manually, one by one.
 *Senior Engineers* use `Pipelines`. 
 
-A Pipeline chains transformers and a predictor together. It guarantees that when you deploy the model to production, the raw incoming JSON data is scaled and encoded exactly the same way the training data was. It completely eliminates **Data Leakage**.
+A Pipeline chains transformers and a predictor together. It guarantees that when you deploy the model to production, the raw incoming <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> data is scaled and encoded exactly the same way the training data was. It completely eliminates **Data Leakage**.
 
 ```python
 from sklearn.pipeline import Pipeline

@@ -1,7 +1,7 @@
 # Day 54: Speech & Audio Processing (Mel Spectrograms & CTC)
 
 Welcome to Day 54. We have mastered Text and Vision. Today, we enter the world of Audio. 
-How do we train an AI to listen to a microphone and transcribe spoken human language?
+How do we train an <abbr title="Artificial Intelligence">AI</abbr> to listen to a microphone and transcribe spoken human language?
 
 ---
 
@@ -10,7 +10,7 @@ How do we train an AI to listen to a microphone and transcribe spoken human lang
 ### 1. The Waveform Flaw
 Raw audio from a microphone is recorded as a 1D waveform. A standard microphone takes 16,000 measurements of air pressure every single second ($16$kHz). 
 If a user speaks for 10 seconds, the raw audio file contains $160,000$ numbers. 
-If you feed an array of $160,000$ numbers into an LSTM, the sequence length is so massive that the RNN will instantly crash out of memory. Audio waveforms are mathematically too dense for AI.
+If you feed an array of $160,000$ numbers into an <abbr title="Long Short-Term Memory">LSTM</abbr>, the sequence length is so massive that the <abbr title="Recurrent Neural Network">RNN</abbr> will instantly crash out of memory. Audio waveforms are mathematically too dense for <abbr title="Artificial Intelligence">AI</abbr>.
 
 ### 2. The Solution: Mel Spectrograms
 We do not feed audio into Neural Networks. We feed **Images**.
@@ -23,7 +23,7 @@ To make it even better, we map the Y-axis to the **Mel Scale**. The Mel Scale ma
 By turning audio into a 2D Image, we can just use the Computer Vision CNNs (Day 38) to "Look" at the audio!
 
 ### 3. The Alignment Problem
-We have the Audio Image. We pass it through a CNN+RNN. The network outputs predictions for 100 audio frames.
+We have the Audio Image. We pass it through a <abbr title="Convolutional Neural Network">CNN</abbr>+<abbr title="Recurrent Neural Network">RNN</abbr>. The network outputs predictions for 100 audio frames.
 The human label for this audio is the word *"Hello"*.
 **The Problem:** The word *"Hello"* has 5 letters. The audio has 100 frames. How do we know *which* specific audio frame corresponds to the letter "e"? 
 Humans cannot manually label 100 audio frames! The alignment is completely unknown.
@@ -43,7 +43,7 @@ By letting the network predict blanks and duplicates, CTC allows us to train Spe
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's write a Python script that mathematically demonstrates the CTC Decoding rules! You will see exactly how the AI collapses 20 frames of raw audio predictions down to a single English word.
+Let's write a Python script that mathematically demonstrates the CTC Decoding rules! You will see exactly how the <abbr title="Artificial Intelligence">AI</abbr> collapses 20 frames of raw audio predictions down to a single English word.
 
 Create a file named `ctc_decoding.py`:
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Double Letter Rule:** Look at the raw output: `lll__ll`. The word "Hello" has two "l"s. If the AI output `llllll`, CTC Rule 2 would aggressively collapse it into a single "l", resulting in "Helo". To spell "Hello", the AI *must* predict a Blank token between the two "l"s to break the collapse! 
+1. **The Double Letter Rule:** Look at the raw output: `lll__ll`. The word "Hello" has two "l"s. If the <abbr title="Artificial Intelligence">AI</abbr> output `llllll`, CTC Rule 2 would aggressively collapse it into a single "l", resulting in "Helo". To spell "Hello", the <abbr title="Artificial Intelligence">AI</abbr> *must* predict a Blank token between the two "l"s to break the collapse! 
 2. **Alignment-Free Training:** Because this collapse algorithm is mathematically differentiable (via dynamic programming), PyTorch's `nn.CTCLoss()` calculates the loss for all possible valid alignments simultaneously. You just give it the Audio Image and the text "Hello", and it does the rest!
 
 ---
@@ -125,8 +125,8 @@ You want to wake up a device when a user says "Hey Siri".
 1. Conceptually design the architecture.
 2. Step 1: Record 1 second of audio (16,000 numbers).
 3. Step 2: Use `torchaudio.transforms.MelSpectrogram()` to convert the 16,000 numbers into a 2D image map.
-4. Step 3: Because it is now an image, you do not need an RNN or CTC! Feed the Mel Spectrogram directly into a 2D CNN (ResNet).
-5. Step 4: The CNN uses a binary classifier (Sigmoid) at the end: `1.0 = "Hey Siri"`, `0.0 = "Background Noise"`. 
+4. Step 3: Because it is now an image, you do not need an <abbr title="Recurrent Neural Network">RNN</abbr> or CTC! Feed the Mel Spectrogram directly into a 2D <abbr title="Convolutional Neural Network">CNN</abbr> (ResNet).
+5. Step 4: The <abbr title="Convolutional Neural Network">CNN</abbr> uses a binary classifier (Sigmoid) at the end: `1.0 = "Hey Siri"`, `0.0 = "Background Noise"`. 
 6. This architecture is so small and efficient it can run on a smartwatch battery 24/7!
 
 ### 🎤 MAANG Technical Interview Prep
@@ -141,14 +141,14 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Model Selection (No Seq2Seq):** 
    - State clearly that Seq2Seq with standard Attention is physically impossible for real-time speech. The Decoder must wait for the Encoder to process the entire audio file before translating the first word. 
-   - Propose using a **Streaming Architecture** like an RNN-T (Recurrent Neural Network Transducer) or a Unidirectional LSTM with CTC. These models output text chunk-by-chunk as the audio flows in.
+   - Propose using a **Streaming Architecture** like an <abbr title="Recurrent Neural Network">RNN</abbr>-T (Recurrent Neural Network Transducer) or a Unidirectional <abbr title="Long Short-Term Memory">LSTM</abbr> with CTC. These models output text chunk-by-chunk as the audio flows in.
 2. **The Streaming Pipeline:**
    - Explain the ingestion: Audio is chunked into 20ms frames, passed through a fast STFT to generate Mel Spectrograms, and fed to the GPU in batches.
 3. **Error Handling (Language Model Integration):**
    - Conclude that CTC models often make spelling mistakes (e.g., guessing "recognize speech" vs "wreck a nice beach"). 
-   - To fix this, you must explicitly integrate an external **N-gram Language Model** or a shallow Neural LM during the Beam Search decoding phase to mathematically force the AI to choose grammatically correct phoneme sequences!
+   - To fix this, you must explicitly integrate an external **N-gram Language Model** or a shallow Neural LM during the Beam Search decoding phase to mathematically force the <abbr title="Artificial Intelligence">AI</abbr> to choose grammatically correct phoneme sequences!
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have given your AI the ability to hear.
+**Task for the end of the day:** Commit your code to Git. You have given your <abbr title="Artificial Intelligence">AI</abbr> the ability to hear.
 
-Tomorrow, in **Day 55**, we pause to tie it all together. We will conduct a massive **Phase 2 Mid-Review**, combining the entire NLP pipeline, and applying our sequence models to Financial Time Series forecasting!
+Tomorrow, in **Day 55**, we pause to tie it all together. We will conduct a massive **Phase 2 Mid-Review**, combining the entire <abbr title="Natural Language Processing">NLP</abbr> pipeline, and applying our sequence models to Financial Time Series forecasting!

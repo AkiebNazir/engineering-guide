@@ -1,6 +1,6 @@
 # os — operating system interface
 
-`os` is Go's window onto the OS: files, directories, environment variables, the
+`os` is Go's window onto the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>: files, directories, environment variables, the
 process's own argv/exit code, and low-level process plumbing like pipes. Reach
 for it whenever you need to touch the filesystem or the environment the
 program is running in.
@@ -32,7 +32,7 @@ program is running in.
 
 ## What the 10 levels cover
 
-Levels 1-3 build up the everyday API: reading/writing whole files, opening
+Levels 1-3 build up the everyday <abbr title="Application Programming Interface">API</abbr>: reading/writing whole files, opening
 with explicit flags plus `Stat`, and the working-directory/environment
 functions (`Getwd`, `Chdir`, `Getenv`, `LookupEnv`, `Setenv`). Level 4 triggers
 a real not-exist error and handles it with `errors.Is`. Level 5 contrasts

@@ -1,6 +1,12 @@
-# L5 Deep Dive: Running the 45-Minute Coding Round
+# Running the 45-Minute Coding Round
 
-Knowing algorithms is necessary but not sufficient. Interviewers write feedback on **four things**: communication, problem solving, code quality, and verification (testing your own code). An optimal answer reached silently, with sloppy code and no testing, can still come back as a weak rating. At L5 there's a fifth, implicit signal: **did you drive it, or did the interviewer drag you through it?**
+This file is about *performing* what you know, not learning new CS concepts — it
+applies whether this is your first technical interview or your tenth, at any level.
+Knowing algorithms is necessary but not sufficient. Interviewers write feedback on
+**four things**: communication, problem solving, code quality, and verification
+(testing your own code). An optimal answer reached silently, with sloppy code and no
+testing, can still come back as a weak rating. At L5 there's a fifth, implicit
+signal: **did you drive it, or did the interviewer drag you through it?**
 
 This file is the execution layer: the timeline, a clarifying-question list you can use until it's automatic, the edge-case checklist, how to think out loud, how to use hints, how to recover when stuck, and how to verify code without running it.
 
@@ -26,6 +32,21 @@ This file is the execution layer: the timeline, a clarifying-question list you c
 | 38–45 | **Follow-ups** | Optimizations, scaling, variations. Often a second, harder part arrives here. | Discussion or part 2 |
 
 If part 1 is easy, **go faster**: you're expected to reach part 2. If you're at minute 25 and haven't started coding, say so and pick the approach you can finish.
+
+```arch
+%% caption: The coding round follows a strict progression; getting agreement on the design before coding is the most critical gate.
+route straight
+node clarify "1. Clarify\n(0-5 min)" at 0,0 icon=question color=blue
+node design "2. Design & Agree\n(5-12 min)" at 2,0 icon=idea color=amber
+node code "3. Code\n(12-30 min)" at 4,0 icon=code color=green
+node verify "4. Verify / Trace\n(30-38 min)" at 6,0 icon=check color=green
+node fup "5. Follow-ups\n(38-45 min)" at 8,0 icon=time color=slate
+
+clarify -> design
+design -> code
+code -> verify
+verify -> fup
+```
 
 ## 3. Clarifying Questions — Your Personal List
 
@@ -100,8 +121,8 @@ Costly: arguing with the hint, ignoring it, or asking for another hint immediate
 In order:
 1. **Go back to a small example** and solve it by hand. Watch what *you* do; that's often the algorithm.
 2. **Solve a simpler version**: sorted input, no duplicates, k = 1, a 1D version of a 2D problem.
-3. **Brute force first**, then ask what work it repeats (→ memoization/DP) or what it scans repeatedly (→ hashing, prefix sums, heaps, two pointers).
-4. **List techniques that fit the constraints**: n ≤ 20 → bitmask; "shortest" → BFS/Dijkstra; "count ways" → DP; "k largest" → heap; "contiguous" → sliding window/prefix sums.
+3. **Brute force first**, then ask what work it repeats (→ memoization/<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) or what it scans repeatedly (→ hashing, prefix sums, heaps, two pointers).
+4. **List techniques that fit the constraints**: n ≤ 20 → bitmask; "shortest" → <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/Dijkstra; "count ways" → <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>; "k largest" → heap; "contiguous" → sliding window/prefix sums.
 5. **Ask a specific question**: "Is it OK to use O(n) extra space?" beats "I'm stuck."
 6. **Say what you're trying** at every step so the interviewer can steer.
 

@@ -11,12 +11,12 @@ Today, we learn how to force mathematical rules onto our optimization algorithms
 ## 🕒 HOUR 1: DEEP THEORY & MATHEMATICS
 
 ### 1. Constrained Optimization & Lagrange Multipliers
-How do you tell an AI to minimize an error, but force it to obey a strict rule? You use a **Lagrange Multiplier** ($\lambda$). 
+How do you tell an <abbr title="Artificial Intelligence">AI</abbr> to minimize an error, but force it to obey a strict rule? You use a **Lagrange Multiplier** ($\lambda$). 
 A Lagrange Multiplier is a mathematical trick that permanently glues the constraint directly into the Loss Function. 
 
 Instead of minimizing $\mathcal{L}(x)$ and hoping it obeys the rule $g(x) \leq 0$, we create the Lagrangian:
 $$ L(x, \lambda) = \mathcal{L}(x) + \lambda g(x) $$
-Now, if the AI breaks the rule, the $\lambda$ penalty explodes, forcing the AI back into the allowed zone!
+Now, if the <abbr title="Artificial Intelligence">AI</abbr> breaks the rule, the $\lambda$ penalty explodes, forcing the <abbr title="Artificial Intelligence">AI</abbr> back into the allowed zone!
 
 ### 2. Support Vector Machines (The Widest Street)
 Imagine a 2D graph with red dots (Cats) and blue dots (Dogs). You want to draw a straight line to separate them. 
@@ -28,12 +28,12 @@ $$ \min \frac{1}{2}\|\mathbf{w}\|^2 \quad \text{subject to} \quad y_i(\mathbf{w}
 - $\frac{1}{2}\|\mathbf{w}\|^2$: Minimizing the weights mathematically maximizes the width of the street.
 - $y_i(\mathbf{w}\cdot\mathbf{x}_i + b) \geq 1$: This is the **Constraint!** It strictly forbids any cat or dog from stepping inside the street!
 
-> **AI Context (Support Vectors):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Support Vectors):** 
 > Once the SVM finds the perfect street, it only cares about the specific data points that perfectly touch the edges of the street. These points are called **Support Vectors**. If you delete all the other millions of dots from your dataset, the street wouldn't move an inch! The SVM mathematically ignores 99% of your data.
 
 ### 3. The Kernel Trick (Warping the Universe)
 What if the red dots are in a circle, surrounded by a ring of blue dots? You *cannot* draw a straight line to separate them. A standard SVM fails.
-**The Kernel Trick** is a mathematical cheat code. Instead of trying to draw a curved line, the Kernel Trick mathematically warps the 2D universe, throwing all the dots into a 3D (or even infinitely dimensional) space where a perfectly flat plane *can* slice between them. It does this without ever actually calculating infinite dimensions, saving your CPU!
+**The Kernel Trick** is a mathematical cheat code. Instead of trying to draw a curved line, the Kernel Trick mathematically warps the 2D universe, throwing all the dots into a 3D (or even infinitely dimensional) space where a perfectly flat plane *can* slice between them. It does this without ever actually calculating infinite dimensions, saving your <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>!
 
 ---
 
@@ -129,7 +129,7 @@ In the real world, datasets are messy. A dog might accidentally be standing comp
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"In the early 2000s, Support Vector Machines completely dominated the AI industry. Neural Networks were considered dead. Why were SVMs so mathematically attractive to researchers? Furthermore, why did Deep Learning eventually crush SVMs, and are there any scenarios where you would still choose an SVM today?"*
+*"In the early 2000s, Support Vector Machines completely dominated the <abbr title="Artificial Intelligence">AI</abbr> industry. Neural Networks were considered dead. Why were SVMs so mathematically attractive to researchers? Furthermore, why did Deep Learning eventually crush SVMs, and are there any scenarios where you would still choose an SVM today?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -144,6 +144,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Note that if you have a **very small dataset** (e.g., 500 rows of medical data), a Neural Network will massively overfit. An SVM is still the absolute best choice for tiny, high-dimensional datasets.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have officially completed **Phase 3: Optimization**. You know exactly how AI models learn, how they break, and how to control them mathematically.
+**Task for the end of the day:** Commit your code to Git. You have officially completed **Phase 3: Optimization**. You know exactly how <abbr title="Artificial Intelligence">AI</abbr> models learn, how they break, and how to control them mathematically.
 
 Tomorrow, in **Day 21**, we review everything we've learned and officially cross the threshold into **Phase 4: Modern Deep Learning Architecture!**

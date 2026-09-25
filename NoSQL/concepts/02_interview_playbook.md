@@ -10,7 +10,7 @@ refresher.
 1. Explain **embedding vs. referencing** in MongoDB and give a real reason to choose
    each (`mongodb/04`).
 2. State what **write concern and read concern** actually control, and connect them to
-   the CAP/BASE tradeoff (`mongodb/10`, `concepts/01`).
+   the <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>/<abbr title="Basically Available, Soft state, Eventual consistency. A consistency model used by many NoSQL databases, prioritizing availability over strict consistency.">BASE</abbr> tradeoff (`mongodb/10`, `concepts/01`).
 3. Explain **why Redis is single-threaded** and why that's a feature, not a limitation,
    for its use case (`redis/00`).
 4. Name at least two **cache invalidation strategies** and the failure mode each one is
@@ -21,7 +21,7 @@ refresher.
    distributed locking as solved.
 6. Design a **single-table access pattern** for a DynamoDB-style store given a short
    list of required queries (`concepts/00`).
-7. Answer **"SQL or NoSQL for this system"** by naming the actual access pattern, not
+7. Answer **"<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> or <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> for this system"** by naming the actual access pattern, not
    the brand (`concepts/01`).
 
 ## Data modeling questions, worked
@@ -56,7 +56,7 @@ rank, _ := r.ZRevRank(ctx, "leaderboard", "alice").Result()
 ZREVRANK alice (her leaderboard position) -> 3
 ```
 
-**"Rate-limit an API to 100 requests/minute per user, across multiple app servers."**
+**"Rate-limit an <abbr title="Application Programming Interface">API</abbr> to 100 requests/minute per user, across multiple app servers."**
 Shared Redis, not an in-process counter (`redis/09`) — the counter has to live
 somewhere every app server instance can see it, or a user hitting different servers
 bypasses the limit entirely. Name the sliding-window approach specifically over a fixed
@@ -96,7 +96,7 @@ a strong, specific answer.
 
 **"Why can't Redis be a primary database for everything?"** It's in-memory by design —
 durability is a deliberate afterthought (RDB snapshots / AOF, `redis/10`), both slower
-and less durable than a WAL-backed disk-first database by default. It excels at being
+and less durable than a <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>-backed disk-first database by default. It excels at being
 fast and disposable-if-needed (a cache, a session store, a rate limiter) precisely
 because it isn't trying to be the system of record.
 
@@ -119,7 +119,7 @@ vice versa).
 
 ## What's next
 
-This closes the SQL and NoSQL modules together. Both point back to
+This closes the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> and <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> modules together. Both point back to
 `SystemDesign/building_blocks/` and `CSFundamentals/03_databases_deep_dive.md` for the
 storage-engine and distributed-systems theory underlying everything demonstrated
 hands-on across both ladders.

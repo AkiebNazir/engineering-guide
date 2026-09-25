@@ -19,8 +19,8 @@ in every LLD round.
 |---|---|
 | Deep modules, information hiding, pass-through layers | `01_philosophy_of_software_design.md` §3–§6 |
 | Layered, hexagonal, clean architecture diagrams | `SystemDesign/best_practices/05_architectural_patterns.md` |
-| HTTP/REST/gRPC wire-level API design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `SystemDesign/building_blocks/04_api_design_low_level.md` |
-| Service-level API evolution, sagas | `CSFundamentals/04_software_engineering_deep_dive.md` §3–§4 |
+| <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>/<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> wire-level <abbr title="Application Programming Interface">API</abbr> design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `SystemDesign/building_blocks/04_api_design_low_level.md` |
+| Service-level <abbr title="Application Programming Interface">API</abbr> evolution, sagas | `CSFundamentals/04_software_engineering_deep_dive.md` §3–§4 |
 | Error taxonomy code | `PyEngineering/17_error_taxonomy`, `GoEngineering/17_error_taxonomy` |
 | Monorepos and packaging | `PyEngineering/30_packaging_distribution_monorepos` |
 
@@ -261,7 +261,7 @@ For a package: **Ce** = efferent (outgoing) dependencies, **Ca** = afferent (inc
   extended without modification); unstable packages concrete.
 - **Main sequence:** `A + I ≈ 1`. The two failure corners:
   - **Zone of pain** (`A≈0, I≈0`): concrete *and* depended on by everything — e.g. a
-    shared `models.py` with concrete ORM classes all features import. Every change hurts.
+    shared `models.py` with concrete <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> classes all features import. Every change hurts.
     (Genuinely stable concrete things like the stdlib are fine here — they don't change.)
   - **Zone of uselessness** (`A≈1, I≈1`): abstract interfaces nobody uses.
 
@@ -309,7 +309,7 @@ package becomes a shared library used by many teams, **REP/CRP** grow in importa
 
 - `_private` names and `__all__` are conventions, not enforcement. Enforce boundaries with
   a tool: **import-linter** contracts (e.g. "`orders.domain` may not import
-  `orders.api`"; "`payments` and `orders` are independent") in CI.
+  `orders.api`"; "`payments` and `orders` are independent") in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.
 - Keep `__init__.py` light; heavy imports there create cycles and slow startup.
 - Import cycles typically surface as `ImportError: cannot import name X (most likely due
   to a circular import)`. Fixing with a function-local import hides the design problem.
@@ -354,7 +354,7 @@ There's no line count. Use these tests instead:
 
 ## 7 · Designing function and method signatures
 
-A signature is the smallest API you design, and you design hundreds a week.
+A signature is the smallest <abbr title="Application Programming Interface">API</abbr> you design, and you design hundreds a week.
 
 ### Parameters
 
@@ -456,14 +456,14 @@ def record_seen(user_id: str, db) -> None:
 
 ## 8 · Error contracts
 
-An error is part of the API. Design it as carefully as the success path.
+An error is part of the <abbr title="Application Programming Interface">API</abbr>. Design it as carefully as the success path.
 
 ### Decide what callers can do about it
 
 Every error you expose should map to a caller **action**. Classify by action, not by
 where it came from:
 
-| Category | Caller should… | Python | Go | HTTP analogue |
+| Category | Caller should… | Python | Go | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> analogue |
 |---|---|---|---|---|
 | Invalid input | fix the request; don't retry | `ValueError` subclass | sentinel / typed error | 400 / 422 |
 | Not found | handle absence | `KeyError` subclass or `Optional` | `ErrNotFound` | 404 |
@@ -497,7 +497,7 @@ func (e *ConflictError) Error() string { return fmt.Sprintf("conflict: current v
    `psycopg.errors.UniqueViolation` couples every caller to Postgres. Translate to
    `Conflict` at the adapter. (But keep the cause: `raise Conflict(...) from e`.)
 2. **Wrap with context, don't replace.** `%w` in Go, `raise ... from e` in Python.
-3. **`%w` makes an error part of your API.** In Go, wrapping with `%w` lets callers
+3. **`%w` makes an error part of your <abbr title="Application Programming Interface">API</abbr>.** In Go, wrapping with `%w` lets callers
    `errors.Is` against the inner error — so you can never change that inner error
    without breaking them. Use `%v` when the cause is an implementation detail.
 4. **Don't use exceptions for expected control flow** in hot paths, and don't use
@@ -571,12 +571,12 @@ means callers either over-lock or race.
 
 ---
 
-## 10 · Evolving an API without breaking callers
+## 10 · Evolving an <abbr title="Application Programming Interface">API</abbr> without breaking callers
 
 Once code is published — to other teams, other services, or the public — its
 **observable behaviour** is the contract, not just its signature.
 
-> **Hyrum's Law:** "With a sufficient number of users of an API, it does not matter what
+> **Hyrum's Law:** "With a sufficient number of users of an <abbr title="Application Programming Interface">API</abbr>, it does not matter what
 > you promise in the contract: all observable behaviors of your system will be depended
 > on by somebody."
 
@@ -632,7 +632,7 @@ environment, which is why breaking a popular Python library is so painful.
 
 ## 11 · Configuration and extension points
 
-Every configuration option and extension point is an API with a maintenance cost.
+Every configuration option and extension point is an <abbr title="Application Programming Interface">API</abbr> with a maintenance cost.
 
 ### Configuration
 
@@ -663,7 +663,7 @@ def load_config(env: dict[str, str]) -> AppConfig:
 ### Extension points (plugins, hooks, strategies)
 
 - Add them where the problem **demonstrably** varies (second customer, second vendor) —
-  not in anticipation. YAGNI applies (`01` §14).
+  not in anticipation. <abbr title="You Aren't Gonna Need It - A principle of extreme programming that states a programmer should not add functionality until deemed necessary.">YAGNI</abbr> applies (`01` §14).
 - Prefer **passing a function or small interface** over a plugin registry.
 - If you do need a registry (e.g. discovered at runtime), make registration explicit
   (`register("s3", S3Store)`) rather than import side effects.
@@ -782,7 +782,7 @@ narrowing accepted inputs, and the subtle ones: adding a method to an interface 
 implementers), adding an enum value (breaks exhaustive matches), and — by Hyrum's Law —
 any observable behaviour change with enough users.
 
-**Q: How do you design errors for an API?**
+**Q: How do you design errors for an <abbr title="Application Programming Interface">API</abbr>?**
 By what the caller can do: invalid input (don't retry), not found, conflict (re-read),
 transient (retry with backoff), and bugs (crash). Translate implementation errors at the
 boundary so callers don't depend on your database driver; wrap to keep context and

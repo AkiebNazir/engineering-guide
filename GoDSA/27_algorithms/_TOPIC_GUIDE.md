@@ -2,7 +2,7 @@
 
 > This topic is about algorithms whose *guarantee* matters more than their container: a shuffle that produces every permutation equally often, a random pick that hits its exact target
 > probability, an order statistic found without sorting, a recursion that re-derives the same sub-expression only once. In Go two things change the picture: the standard library's
-> randomness API has a few sharp edges (an *exclusive* `Intn`, a `Seed` that is now a no-op, a modulo-bias trap on small ranges), and compiled code means the "asymptotically better" algorithm
+> randomness <abbr title="Application Programming Interface">API</abbr> has a few sharp edges (an *exclusive* `Intn`, a `Seed` that is now a no-op, a modulo-bias trap on small ranges), and compiled code means the "asymptotically better" algorithm
 > — quickselect — actually beats sorting, which it does not in CPython. Every number below was measured on Go 1.24 (darwin/arm64), and every algorithm was compiled with `go vet` and checked against a brute-force reference or a chi-square test.
 
 ---
@@ -50,20 +50,24 @@ For an algorithm that is uniform over `k` outcomes the statistic follows a chi-s
 magnitude. Use enough trials for every expected count to be at least ~5, and never judge by eye. A test that fixes the seed checks *one* outcome, not the distribution. (Even a correct algorithm exceeds the line occasionally: the recycled `rand10` of Part 5 gave χ² = 18.6 in one batch, and a mean of 8.26 with 2 of 40
 batches above 16.92 over forty batches — exactly the 5 % that the threshold promises.)
 
-```mermaid
+```arch
 %% caption: Choosing the randomness tool. Each branch is one problem in this topic; all of them rest on a uniform Intn.
-flowchart TD
-  Q(["Need a random outcome"]) --> A{"What shape is the input?"}
-  A -->|"an array to permute"| B["Fisher-Yates: swap a[i] with a[Intn(i+1)]"]:::ok
-  A -->|"a stream or list of unknown length"| C["reservoir sampling: keep item m with probability 1/m"]:::ok
-  A -->|"items with weights"| D["prefix sums + sort.SearchInts, or the alias method"]:::ok
-  A -->|"a range with forbidden values"| E["shrink to the whitelist size, remap once"]:::hot
-  A -->|"a generator with the wrong range"| F["rejection sampling on a uniform grid"]:::hot
-  A -->|"an order statistic, not a sorted array"| G["quickselect with a random pivot and 3-way partition"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "Need a random outcome" at 0,0 shape=pill w=200
+node a "What shape is\nthe input?" at 0,3 shape=diamond color=amber
+node b "Fisher-Yates" at 1,0 color=green w=380 sub="an array to permute · swap a[i] with a[Intn(i+1)]"
+node c "Reservoir sampling" at 1,1 color=green w=380 sub="a stream or list of unknown length · keep item m with probability 1/m"
+node d "Prefix sums + sort.SearchInts" at 1,2 color=green w=380 sub="items with weights · or the alias method"
+node e "Shrink to the whitelist size, remap once" at 1,3 color=amber w=380 sub="a range with forbidden values"
+node f "Rejection sampling on a uniform grid" at 1,4 color=amber w=380 sub="a generator with the wrong range"
+node g "Quickselect, random pivot, 3-way partition" at 1,5 color=amber w=380 sub="an order statistic, not a sorted array"
+q -> a
+a:R -> b:L
+a:R -> c:L
+a:R -> d:L
+a:R -> e:L
+a:R -> f:L
+a:R -> g:L
 ```
 
 ---
@@ -104,17 +108,15 @@ Six permutations of `[0, 1, 2]`, 600,000 shuffles each, expected 100,000 per per
 
 ---
 
-```mermaid
+```arch
 %% caption: Fisher-Yates shuffle: n! equally likely orderings, because position i receives each of the i+1 eligible items with probability 1/(i+1).
-flowchart TD
-  A["for i from n - 1 down to 1"] --> B["j = random integer in 0..i (inclusive)"]
-  B --> C["swap a[i] and a[j]"]
-  C --> D["a[i..n-1] is final:<br/>the eligible range shrinks by one"]:::ok
-  D --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x75
+node a "for i from n - 1 down to 1" at 0,0 shape=pill w=280
+node b "j = random integer in 0..i" at 0,1 w=280 sub="inclusive"
+node c "swap a[i] and a[j]" at 0,2 w=280
+node d "a[i..n-1] is final" at 0,3 color=green w=280 sub="the eligible range shrinks by one"
+a -> b -> c -> d
+d:R -> a:R
 ```
 
 ## Part 3 · Reservoir Sampling (Problems 002, 003)
@@ -396,18 +398,19 @@ Counting comparisons on `n = 100,000` (mean of 20 runs): **1.95 n** for the mini
 
 A size-`k` heap is the right tool when the data streams past or `k` is small and memory is tight (O(n log k)); `Select` is right for an in-memory slice.
 
-```mermaid
+```arch
 %% caption: Quickselect discards the side that cannot hold the answer: expected O(n) (n + n/2 + n/4 ...), versus O(n log n) for a full sort.
-flowchart TD
-  A["kth smallest of a[lo..hi]"] --> B["pick a pivot and partition:<br/>smaller | pivot | larger"]
-  B --> C{"pivot's final index p vs k"}
-  C -->|"p == k"| D["answer = a[p]"]:::ok
-  C -->|"k is less than p"| E["recurse into the LEFT part only"]
-  C -->|"k is greater than p"| F["recurse into the RIGHT part only"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x85
+node a "kth smallest of a[lo..hi]" at 1,0 shape=pill w=240
+node b "Pick a pivot and partition" at 1,1 w=240 sub="smaller | pivot | larger"
+node c "pivot's final\nindex p vs k" at 1,2 shape=diamond color=amber
+node e "Recurse into the LEFT part only" at 0,3 w=190
+node d "answer = a[p]" at 1,3 color=green w=190
+node f "Recurse into the RIGHT part only" at 2,3 w=190
+a -> b -> c
+c -> d : "p == k"
+c:L -> e:T : "k < p"
+c:R -> f:T : "k > p"
 ```
 
 ### 6.2 Problem 007: the k-th largest *numeric string*
@@ -491,7 +494,7 @@ func diffWays(expr string, memo map[string][]int) []int {
 // diffWays("2-1-1") sorted = [0 2]      diffWays("2*3-4*5") sorted = [-34 -14 -10 -10 10]
 ```
 
-Split at every operator, combine every left result with every right result. The number of results for `n` operands is the Catalan number `C(n−1)`: nine operands (`1+2+…+9`) give **1,430** values. The memo is keyed by *substring* — two occurrences of `"1+1"` share an entry, which is correct — not by an index pair as in DP. The base case must test "no operator in this slice", not "one character", or multi-digit
+Split at every operator, combine every left result with every right result. The number of results for `n` operands is the Catalan number `C(n−1)`: nine operands (`1+2+…+9`) give **1,430** values. The memo is keyed by *substring* — two occurrences of `"1+1"` share an entry, which is correct — not by an index pair as in <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>. The base case must test "no operator in this slice", not "one character", or multi-digit
 numbers such as `"11"` break; `res == nil` is that test. A `map[string][]int` shared across the whole recursion is what turns the exponential re-derivation into work proportional to the number of distinct substrings.
 
 ---
@@ -504,7 +507,7 @@ numbers such as `"11"` break; `res == nil` is that test. A `map[string][]int` sh
 | Shuffle | `random.shuffle(a)` in place | `rand.Shuffle(n, swap)` with a swap closure, or `rand.Perm(n)` |
 | Weighted choice | `random.choices(pop, weights=)` | none — prefix sums + `sort.SearchInts`, or the alias method |
 | Reproducible runs | `random.seed(s)` | `rand.New(rand.NewSource(s))`; top-level `rand.Seed` is a no-op in Go 1.24 |
-| Thread safety | one shared generator, guarded by the GIL for single calls | top-level functions are safe; a `*rand.Rand` is not |
+| Thread safety | one shared generator, guarded by the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> for single calls | top-level functions are safe; a `*rand.Rand` is not |
 | Quickselect vs sorting | the built-in sort wins (105 ms vs 152 ms per 10⁶) | quickselect wins (7.3 ms vs 51.4 ms per 10⁶) |
 | Numeric-string ordering | key `(len(s), s)` | `cmp.Or(cmp.Compare(len(x), len(y)), strings.Compare(x, y))` |
 | Parsing very long digit strings | `int()` limit of 4,300 digits (ValueError) | `strconv.Atoi` returns the max int and `ErrRange` |

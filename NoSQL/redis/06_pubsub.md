@@ -81,7 +81,7 @@ PUBLISH with zero listeners -> return value: 0 (0 = nobody got it, and it's gone
 listening," and the message is not retrievable afterward by any means. There is no
 `SUBSCRIBE` option that means "and also give me what I missed."
 
-**Go (`go-redis/v9`):** `go-redis`'s pub/sub API is shaped very differently from
+**Go (`go-redis/v9`):** `go-redis`'s pub/sub <abbr title="Application Programming Interface">API</abbr> is shaped very differently from
 Python's blocking `for msg in p.listen()` loop — `Subscribe` returns a `*PubSub` whose
 `.Channel()` method gives you an ordinary Go channel of messages, meant to be read from
 inside a goroutine (or a `select`), which fits Go's concurrency model far more
@@ -144,7 +144,7 @@ event, a task that must run exactly once, an audit event — pub/sub is the wron
 Redis's durable alternative: messages are appended to a persisted, replayable log with
 IDs, consumer groups can each track their own read position, and a consumer that was
 offline can catch up on everything it missed when it reconnects. That's a fundamentally
-different data structure and API from pub/sub, not a configuration flag on it.
+different data structure and <abbr title="Application Programming Interface">API</abbr> from pub/sub, not a configuration flag on it.
 
 The rule of thumb: reach for **pub/sub** when the message is disposable and "eventually
 consistent, or don't care" is fine; reach for **Streams** (or a dedicated queue like
@@ -165,7 +165,7 @@ answer for your use case.
 - **In Go, never calling `sub.Close()`.** An unclosed `*PubSub` leaks both its
   underlying connection and the goroutine reading from `.Channel()` if nothing is ever
   sent again — always `defer sub.Close()` right after `Subscribe`, the same discipline
-  as closing a file or an HTTP response body.
+  as closing a file or an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> response body.
 
 ## What's next
 

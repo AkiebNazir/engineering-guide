@@ -69,10 +69,26 @@ At-least-once delivery is the practical default — a message can be redelivered
 | Unique event ID + dedup table | Consumer checks (or inserts with a unique constraint on) the event ID before applying the effect; a duplicate delivery either no-ops or fails the insert harmlessly. |
 | Conditional state transition | Apply the effect as a conditional update keyed on current state (`UPDATE orders SET status='SHIPPED' WHERE id=? AND status='PAID'`) so replaying the same event again is a no-op once the transition has already happened. |
 
-"Exactly once" is a claim about a bounded system boundary (e.g., a stream processor's internal state with transactional commits), not an end-to-end guarantee across an arbitrary consumer's side effects — don't promise it for "send an email" or "call a third-party API" without the consumer itself being idempotent.
+"Exactly once" is a claim about a bounded system boundary (e.g., a stream processor's internal state with transactional commits), not an end-to-end guarantee across an arbitrary consumer's side effects — don't promise it for "send an email" or "call a third-party <abbr title="Application Programming Interface">API</abbr>" without the consumer itself being idempotent.
 
 ## Transactional outbox
 
+
+```arch
+%% caption: The outbox pattern guarantees a database mutation and its corresponding event are committed atomically before a background relay publishes it.
+node app "Application" at 0,0 icon=app color=blue
+group db "Database Transaction" color=amber style=dashed
+node tbl "Domain Table" at 2,-1 in db icon=db
+node out "Outbox Table" at 2,1 in db icon=db
+node relay "Relay Process\n(Polling / CDC)" at 4,1 icon=timer color=slate
+node q "Message Broker" at 6,1 icon=queue color=green
+
+app -> tbl : "1. write"
+app -> out : "1. write event"
+out -> relay : "2. read unpublished"
+relay -> q : "3. publish"
+relay -> out : "4. mark published"
+```
 The classic gap: your business transaction commits to the database, then the process crashes before it publishes the corresponding event — the database says it happened, but nothing downstream ever finds out. Or the reverse: the event publishes, then the transaction rolls back, and downstream systems now believe something happened that didn't.
 
 The **transactional outbox** pattern closes this by writing the business change and an outbox row for the event *in the same database transaction*, so they commit or roll back together — atomically consistent by construction, no distributed transaction needed. A separate relay process then reads unpublished outbox rows and publishes them to the queue/stream, marking them published once acknowledged.

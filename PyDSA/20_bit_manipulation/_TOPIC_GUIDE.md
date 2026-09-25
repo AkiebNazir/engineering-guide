@@ -1,7 +1,7 @@
 # Topic 20 · Bit Manipulation — Python Deep Dive
 
 > Every problem in this folder reduces to one of four moves: cancel a value
-> against itself with XOR, strip or isolate the lowest set bit with `n & (n-1)`
+> against itself with <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>, strip or isolate the lowest set bit with `n & (n-1)`
 > / `n & -n`, count set-bit occurrences per position instead of per value, or
 > emulate a fixed-width machine word inside a language that doesn't have one.
 > The last item is THE distinguishing skill of this topic in Python — most of
@@ -14,15 +14,13 @@
 
 ### 1.0 The four core identities
 
-```mermaid
+```arch
 %% caption: n & (n-1) clears the lowest set bit. Repeat until n is 0 to count set bits, or test n & (n-1) == 0 for a power of two.
-flowchart LR
-  A["n = 1100"] --> B["n - 1 = 1011<br/>the lowest 1 became 0,<br/>the bits below it flipped"]
-  B --> C["n and (n - 1) = 1000<br/>lowest set bit cleared"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node a "n = 1100" at 0,0 color=blue
+node b "n - 1 = 1011" at 1,0 w=200 sub="the lowest 1 became 0, the bits below it flipped"
+node c "n & (n - 1) = 1000" at 2,0 color=green w=170 sub="lowest set bit cleared"
+a -> b -> c
 ```
 
 
@@ -55,9 +53,9 @@ original either clears that lowest run (`n & (n-1)`) or keeps only it
 
 ---
 
-### 1.1 XOR self-cancellation — Single Number (001) and its family
+### 1.1 <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> self-cancellation — Single Number (001) and its family
 
-`a ^ a == 0` for any `a`, and XOR is commutative/associative, so XOR-ing an
+`a ^ a == 0` for any `a`, and <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> is commutative/associative, so <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-ing an
 entire array collapses every value that appears an even number of times to
 zero, leaving only the value that appears an odd number of times:
 
@@ -71,22 +69,22 @@ nums = [4, 1, 2, 1, 2]
 
 This generalises two directions in this folder:
 
-- **"Exactly one element appears once, rest appear twice"** — 001, plain XOR.
-- **"Exactly one appears once, rest appear THREE times"** (008) — plain XOR
+- **"Exactly one element appears once, rest appear twice"** — 001, plain <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>.
+- **"Exactly one appears once, rest appear THREE times"** (008) — plain <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>
   no longer works (`a ^ a ^ a == a`, doesn't cancel). Needs §1.2's
   per-bit-position counting instead.
 - **"Exactly TWO elements appear once, rest appear twice"** (009) — plain
-  XOR of everything gives `a ^ b`, not `a` or `b` alone. The fix: find any
+  <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> of everything gives `a ^ b`, not `a` or `b` alone. The fix: find any
   bit where `a` and `b` differ (any set bit of `a ^ b`, isolated with
   `diff & -diff`, see §1.0), then partition the whole array by that bit and
-  XOR each partition separately. Since `a` and `b` differ on that bit, they
+  <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> each partition separately. Since `a` and `b` differ on that bit, they
   land in different partitions, and every duplicate pair still shares the
   same bit value (duplicates are identical numbers) so they still cancel
   within their partition.
 
 ### 1.2 Counting bits per position — "every element appears k times except one"
 
-When XOR can't cancel a value that appears an odd multiple of k times (any
+When <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> can't cancel a value that appears an odd multiple of k times (any
 k >= 3), fall back to first principles: for each of the 32 bit positions,
 sum how many of the n numbers have that bit set. If every number but one
 appears exactly k times, then (count at that position) mod k is 0 for every
@@ -105,7 +103,7 @@ answer = 0b01 = 1...
 ```
 
 Counting Bits (003) uses a related but distinct idea: rather than counting
-population per bit position, it builds a DP over `i` using the recurrence
+population per bit position, it builds a <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> over `i` using the recurrence
 `bits[i] = bits[i >> 1] + (i & 1)` — "the popcount of `i` is the popcount of
 `i` with its lowest bit dropped, plus that dropped bit." This is O(n) total
 instead of O(n log n) from calling a popcount routine on every value.
@@ -154,24 +152,25 @@ This is the single biggest way this topic differs in Python versus
 C/C++/Java/Go, and it is worth understanding in real depth, not just
 memorizing "mask with `0xFFFFFFFF`."
 
-```mermaid
+```arch
 %% caption: Python ints are unbounded, so negatives have infinitely many leading 1s. Mask to 32 bits to emulate fixed width, then convert back if the sign bit is set.
-flowchart LR
-  A["Python int<br/>-1 = ...1111 (infinite)"] -->|"x and 0xFFFFFFFF"| B["unsigned 32-bit<br/>4294967295"]
-  B --> C{"x #gt; 0x7FFFFFFF ?"}
-  C -->|yes| D["x - 2**32<br/>(back to signed)"]:::ok
-  C -->|no| E["x as is"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node a "Python int" at 1,0 color=blue w=200 sub="-1 = ...1111 (infinite)"
+node b "unsigned 32-bit" at 1,1 w=200 sub="4294967295"
+node c "x > 0x7FFFFFFF?" at 1,2 shape=diamond color=amber
+node d "x - 2**32" at 0,3 color=green sub="back to signed"
+node e "x as is" at 2,3 color=green
+a -> b : "x & 0xFFFFFFFF"
+b -> c
+c:L -> d:T : "yes"
+c:R -> e:T : "no"
 ```
 
 
 **In C/Java/Go**, an `int` is a fixed number of bits (32, typically). Every
 bitwise operation is defined modulo `2**32`: shifting bits off the top edge
 of the word discards them, and the highest bit is interpreted as the sign
-bit (two's complement) — the CPU's ALU does this natively, for free, as a
+bit (two's complement) — the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>'s ALU does this natively, for free, as a
 side effect of the hardware register width.
 
 **In Python**, `int` is arbitrary-precision. There is no register, no fixed
@@ -246,22 +245,28 @@ you must explicitly do `(~x) & 0xFFFFFFFF`, masking after inverting.
 
 ## Part 2 · Pattern Decision Tree
 
-```mermaid
+```arch
 %% caption: Which bit trick fits.
-flowchart TD
-  Q(["Bit problem"]) --> A{"Everything appears twice,<br/>one exception?"}
-  A -->|yes| X["XOR everything: pairs cancel"]:::ok
-  A -->|no| B{"Appears k times,<br/>one exception?"}
-  B -->|yes| C["Count each bit position mod k"]:::ok
-  B -->|no| D{"Power of two, or count set bits?"}
-  D -->|yes| E["n and (n - 1) trick"]:::ok
-  D -->|no| F{"AND over a range?"}
-  F -->|yes| G["Shift both ends right until equal:<br/>common prefix"]:::ok
-  F -->|no| H["Small set of items:<br/>enumerate bitmask subsets"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x80
+node q "Bit problem" at 0,0 shape=pill
+node a "Everything twice,\none exception?" at 0,1 shape=diamond color=amber
+node x "XOR everything" at 1,1 color=green w=250 sub="pairs cancel"
+node b "Appears k times,\none exception?" at 0,2 shape=diamond color=amber
+node c "Count each bit position mod k" at 1,2 color=green w=250
+node d "Power of two, or count set bits?" at 0,3 shape=diamond color=amber
+node e "n & (n - 1) trick" at 1,3 color=green w=250
+node f "AND over a range?" at 0,4 shape=diamond color=amber
+node g "Shift both ends right until equal" at 1,4 color=green w=250 sub="common prefix"
+node h "Small set of items" at 0,5 color=green w=250 sub="enumerate bitmask subsets"
+q -> a
+a -> x : "yes"
+a -> b : "no"
+b -> c : "yes"
+b -> d : "no"
+d -> e : "yes"
+d -> f : "no"
+f -> g : "yes"
+f -> h : "no"
 ```
 
 
@@ -311,10 +316,10 @@ flowchart TD
 
 | Operation | Cost | Note |
 |---|---|---|
-| XOR-fold an array of n elements | O(n) time, O(1) space | 001, 009 |
+| <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-fold an array of n elements | O(n) time, O(1) space | 001, 009 |
 | `n & (n - 1)` popcount loop | O(k), k = number of set bits | 002 |
 | Per-bit-position counting, 32 bits × n elements | O(32n) = O(n) | 008 |
-| Counting Bits 0..n via DP | O(n) total | vs O(n log n) calling popcount per value |
+| Counting Bits 0..n via <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> | O(n) total | vs O(n log n) calling popcount per value |
 | Reverse 32 bits | O(32) = O(1) | fixed iteration count |
 | Sum of two ints via bit-add loop | O(32) = O(1), masked | unbounded without masking (§1.4) |
 | Reverse integer digits | O(log10(n)) | digit count, plus O(1) overflow check |
@@ -394,18 +399,20 @@ range-AND common-prefix trick, a different flavor of bit elimination.
 The guide covers the four core identities and Python's no-fixed-width gotcha. These are the techniques that recur once you
 leave the ten problems. Every snippet was run, and the timings are measurements from this machine (CPython 3.13).
 
-```mermaid
+```arch
 %% caption: A bitmask is a set of small integers. Add, remove, toggle and test are one operation each, and a whole set fits in one machine word.
-flowchart LR
-  S["set {3, 5}<br/>mask = 0b101000"] --> A["add x:  mask |= 1 << x"]:::ok
-  S --> R["remove x:  mask &= ~(1 << x)"]:::ok
-  S --> T["toggle x:  mask ^= 1 << x"]:::ok
-  S --> Q["contains x:  mask >> x & 1"]:::ok
-  S --> U["union |   intersection &   difference & ~"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x70
+node s "set {3, 5}" at 0,2 color=blue sub="mask = 0b101000"
+node a "add x" at 1,0 color=green w=240 sub="mask |= 1 << x"
+node r "remove x" at 1,1 color=green w=240 sub="mask &= ~(1 << x)"
+node t "toggle x" at 1,2 color=green w=240 sub="mask ^= 1 << x"
+node c "contains x" at 1,3 color=green w=240 sub="mask >> x & 1"
+node u "set algebra" at 1,4 color=green w=240 sub="union |   intersection &   difference & ~"
+s:R -> a:L
+s:R -> r:L
+s:R -> t:L
+s:R -> c:L
+s:R -> u:L
 ```
 
 ### 6.1 A bitmask *is* a set
@@ -545,15 +552,15 @@ Ten problems, five moves (XOR cancellation · clear/isolate the lowest set bit �
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Single Number](PyDSA/20_bit_manipulation/001_single_number_solution.py) <br>LC 136 · Easy | XOR cancellation | XOR everything: `x ^ x == 0` and `x ^ 0 == x`, in any order (commutative and associative), so pairs vanish and the single value remains. O(1) space. **Trap:** reaching for a `Counter`/set (violates the O(1)-space constraint); believing XOR only cancels *adjacent* duplicates. |
+| [001 · Single Number](PyDSA/20_bit_manipulation/001_single_number_solution.py) <br>LC 136 · Easy | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> cancellation | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> everything: `x ^ x == 0` and `x ^ 0 == x`, in any order (commutative and associative), so pairs vanish and the single value remains. O(1) space. **Trap:** reaching for a `Counter`/set (violates the O(1)-space constraint); believing <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> only cancels *adjacent* duplicates. |
 | [002 · Number of 1 Bits](PyDSA/20_bit_manipulation/002_number_of_1_bits_solution.py) <br>LC 191 · Easy | Clear the lowest set bit | `n & (n - 1)` clears it, so the loop runs exactly `popcount(n)` times. **Trap:** adding `& 0xFFFFFFFF` masking that this problem does not need; capping the loop at 32 fixed iterations *and* using `n & (n - 1)`. |
 | [003 · Counting Bits](PyDSA/20_bit_manipulation/003_counting_bits_solution.py) <br>LC 338 · Easy | Popcount from a smaller index | `ans[i] = ans[i >> 1] + (i & 1)` — drop the lowest bit, then add it back. **Trap:** an array of length `n` instead of `n + 1`; not being explicit that `>>`/`&` (not `//`/`%`) is the bit-manipulation framing. |
 | [004 · Reverse Bits](PyDSA/20_bit_manipulation/004_reverse_bits_solution.py) <br>LC 190 · Easy | Mirror each bit | For `i` in `0..31`, take bit `i` of `n` and place it at `31 - i` of the result. **Trap:** placing it at `i` (a no-op copy that still "runs"); `bin(n)[2:].zfill(32)[::-1]` without confirming `n >= 0`. |
-| [005 · Missing Number](PyDSA/20_bit_manipulation/005_missing_number_solution.py) <br>LC 268 · Easy | XOR with indices | XOR every index, every value and `n` itself: what remains is the missing number. **Trap:** starting the accumulator at `0` instead of `n`; `len(nums) - 1` in the Gauss-sum alternative. |
-| [006 · Sum of Two Integers](PyDSA/20_bit_manipulation/006_sum_of_two_integers_solution.py) <br>LC 371 · Medium | Addition = XOR + carry | `a ^ b` is the sum ignoring carry, `(a & b) << 1` is the carry; repeat until the carry is 0. In Python **both must be masked to 32 bits** and the result sign-fixed. **Trap:** the textbook C loop with no masking (an infinite loop on negatives); masking `a` and `b` but not `carry`. |
+| [005 · Missing Number](PyDSA/20_bit_manipulation/005_missing_number_solution.py) <br>LC 268 · Easy | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> with indices | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> every index, every value and `n` itself: what remains is the missing number. **Trap:** starting the accumulator at `0` instead of `n`; `len(nums) - 1` in the Gauss-sum alternative. |
+| [006 · Sum of Two Integers](PyDSA/20_bit_manipulation/006_sum_of_two_integers_solution.py) <br>LC 371 · Medium | Addition = <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> + carry | `a ^ b` is the sum ignoring carry, `(a & b) << 1` is the carry; repeat until the carry is 0. In Python **both must be masked to 32 bits** and the result sign-fixed. **Trap:** the textbook C loop with no masking (an infinite loop on negatives); masking `a` and `b` but not `carry`. |
 | [007 · Reverse Integer](PyDSA/20_bit_manipulation/007_reverse_integer_solution.py) <br>LC 7 · Medium | Digit peel with an overflow check | `rev = rev * 10 + digit`, then check the 32-bit range. **Trap:** no bounds check (Python never overflows, so nothing signals the problem); testing `abs(rev) > 2**31` instead of the asymmetric `[-2³¹, 2³¹ − 1]`. |
-| [008 · Single Number II](PyDSA/20_bit_manipulation/008_single_number_ii_solution.py) <br>LC 137 · Medium | Count bits per position | For each of the 32 positions, sum that bit across all numbers mod 3; the surviving bits spell the answer. **Trap:** the XOR fold (`x ^ x ^ x == x`, so triples do *not* cancel); forgetting the sign fix-up on the final unsigned pattern. |
-| [009 · Single Number III](PyDSA/20_bit_manipulation/009_single_number_iii_solution.py) <br>LC 260 · Medium | Split by a differing bit | XOR everything to get `a ^ b`, isolate its lowest set bit (`diff & -diff`), and partition the array by that bit — then fold each group separately. **Trap:** returning `[diff, 0]`; folding both groups into *one* accumulator. |
+| [008 · Single Number II](PyDSA/20_bit_manipulation/008_single_number_ii_solution.py) <br>LC 137 · Medium | Count bits per position | For each of the 32 positions, sum that bit across all numbers mod 3; the surviving bits spell the answer. **Trap:** the <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> fold (`x ^ x ^ x == x`, so triples do *not* cancel); forgetting the sign fix-up on the final unsigned pattern. |
+| [009 · Single Number III](PyDSA/20_bit_manipulation/009_single_number_iii_solution.py) <br>LC 260 · Medium | Split by a differing bit | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> everything to get `a ^ b`, isolate its lowest set bit (`diff & -diff`), and partition the array by that bit — then fold each group separately. **Trap:** returning `[diff, 0]`; folding both groups into *one* accumulator. |
 | [010 · Bitwise AND of Numbers Range](PyDSA/20_bit_manipulation/010_bitwise_and_of_numbers_range_solution.py) <br>LC 201 · Medium | Shift to the common prefix | The AND of a range keeps only the common binary prefix of `left` and `right`: shift **both** right until equal, then shift back. **Trap:** a brute-force loop over `~2³¹` numbers; shifting only one endpoint. |
 
 ---
@@ -561,9 +568,9 @@ Ten problems, five moves (XOR cancellation · clear/isolate the lowest set bit �
 
 ## Checklist Before Leaving This Topic
 
-- [ ] I can state XOR self-cancellation and why it solves "exactly one
+- [ ] I can state <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> self-cancellation and why it solves "exactly one
       element appears an odd number of times, rest appear an even number."
-- [ ] I can explain why plain XOR fails when the repeated count is 3 (or any
+- [ ] I can explain why plain <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> fails when the repeated count is 3 (or any
       odd k >= 3), and what per-bit-position counting does instead.
 - [ ] I can derive `n & (n - 1)` clearing the lowest set bit and `n & -n`
       isolating it, from how two's complement subtraction/negation flips
@@ -580,7 +587,7 @@ Ten problems, five moves (XOR cancellation · clear/isolate the lowest set bit �
 - [ ] I can explain why AND of a numeric range collapses to the common
       binary prefix of the endpoints, and derive the paired-right-shift
       algorithm for it.
-- [ ] I can tell, from the problem statement alone, whether XOR-folding,
+- [ ] I can tell, from the problem statement alone, whether <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-folding,
       per-bit counting, or 32-bit emulation is the tool needed, in under 10
       seconds.
 </content>

@@ -3,13 +3,13 @@
 Welcome to Day 41. Until today, our Neural Networks could only perform **Image Classification**. They could look at a photo and say *"There is a Dog in this image."* 
 But what if it's a photo of a busy street? Where exactly is the dog? Is it in the path of my self-driving car? 
 
-Today, we transition from Classification to **Object Detection**. We must teach the AI to draw a perfect mathematical boundary around the object.
+Today, we transition from Classification to **Object Detection**. We must teach the <abbr title="Artificial Intelligence">AI</abbr> to draw a perfect mathematical boundary around the object.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Dark Ages: Sliding Windows (R-CNN)
+### 1. The Dark Ages: Sliding Windows (R-<abbr title="Convolutional Neural Network">CNN</abbr>)
 In 2014, if you wanted to find a dog, you took a tiny $50 \times 50$ box and literally slid it across the image thousands of times. You ran your ResNet on every single crop. It took ~20 seconds to process a single image. If a self-driving car takes 20 seconds to see a dog, the car crashes.
 
 ### 2. The Revolution: YOLO (You Only Look Once)
@@ -21,7 +21,7 @@ Every single cell in that grid acts as an independent detective. Every cell is m
 - `Width`: How wide is the box?
 - `Height`: How tall is the box?
 - `Confidence`: How confident am I that there is actually an object here? (0.0 to 1.0)
-Because it only passes through the network once, YOLO can process 150 frames per second. It is the king of real-time AI.
+Because it only passes through the network once, YOLO can process 150 frames per second. It is the king of real-time <abbr title="Artificial Intelligence">AI</abbr>.
 
 ### 3. Anchor Boxes
 It is mathematically very difficult for a network to predict raw Width and Height from scratch. 
@@ -29,10 +29,10 @@ Instead, YOLO uses **Anchor Boxes**. Before training, the engineers define 3 def
 1. A tall, skinny box (for standing humans).
 2. A short, wide box (for cars).
 3. A square box (for dogs).
-Instead of predicting absolute Width and Height, the AI just predicts *adjustments* (offsets) to the closest anchor box. (e.g., *"Take the skinny box and make it 10% wider"*). This makes training 10x more stable.
+Instead of predicting absolute Width and Height, the <abbr title="Artificial Intelligence">AI</abbr> just predicts *adjustments* (offsets) to the closest anchor box. (e.g., *"Take the skinny box and make it 10% wider"*). This makes training 10x more stable.
 
 ### 4. IoU and NMS (Cleaning up the Chaos)
-- **IoU (Intersection over Union):** How do we grade the AI's box? We take the AI's Predicted Box, and the True Human-Drawn Box. The formula is `Area of Overlap / Area of Union (Total Area)`. If the boxes perfectly overlap, IoU is 1.0. If they don't touch, IoU is 0.0.
+- **IoU (Intersection over Union):** How do we grade the <abbr title="Artificial Intelligence">AI</abbr>'s box? We take the <abbr title="Artificial Intelligence">AI</abbr>'s Predicted Box, and the True Human-Drawn Box. The formula is `Area of Overlap / Area of Union (Total Area)`. If the boxes perfectly overlap, IoU is 1.0. If they don't touch, IoU is 0.0.
 - **NMS (Non-Maximum Suppression):** A large bus might span across 4 different YOLO grid cells. All 4 cells might excitedly predict a bounding box around the exact same bus! NMS is an algorithm that looks at all 4 overlapping boxes, keeps the one with the highest `Confidence` score, and brutally deletes the other 3.
 
 ---
@@ -149,7 +149,7 @@ A standard ResNet outputs `[Batch, 1000]` for classification.
 A YOLO model outputs a massive Grid tensor.
 **Your Task:**
 1. In PyTorch, write an `nn.Module` called `YOLO_Head`.
-2. Assume the incoming feature map from the CNN backbone is `[Batch, 256, 13, 13]`.
+2. Assume the incoming feature map from the <abbr title="Convolutional Neural Network">CNN</abbr> backbone is `[Batch, 256, 13, 13]`.
 3. Use a $1 \times 1$ Convolution to change the channel dimension from `256` to `30`.
 4. *Why 30?* If you have 2 Anchor Boxes, each box predicts 5 numbers (x, y, w, h, conf) + 10 class probabilities. $2 \times (5 + 10) = 30$.
 5. Your output should be `[Batch, 30, 13, 13]`. You have just built the mathematical architecture of YOLO v1!
@@ -165,7 +165,7 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Architecture (YOLO + FPN):** 
-   - State that 60 FPS immediately disqualifies two-stage detectors like Faster R-CNN. You must use a single-shot detector like **YOLOv8**. 
+   - State that 60 FPS immediately disqualifies two-stage detectors like Faster R-<abbr title="Convolutional Neural Network">CNN</abbr>. You must use a single-shot detector like **YOLOv8**. 
    - Because the scratches are "tiny", you must explicitly state that you will utilize a **Feature Pyramid Network (FPN)**. Standard YOLO downsamples the image drastically (losing tiny pixels). FPN merges high-resolution early layers with deep semantic layers to detect tiny micro-objects.
 2. **Hardware Constraints:**
    - Explain that processing 60 FPS requires edge deployment. You will export the PyTorch model to **TensorRT** and apply INT8 Quantization to run it on an Nvidia Jetson Orin at the factory edge, avoiding network latency to the cloud.
@@ -174,6 +174,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Mention Data Imbalance. 99.9% of glass is perfect. You will mathematically need to use **Focal Loss** (from Day 35!) to force the model to learn the incredibly rare scratch examples.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have given your AI the ability to locate objects in physical space.
+**Task for the end of the day:** Commit your code to Git. You have given your <abbr title="Artificial Intelligence">AI</abbr> the ability to locate objects in physical space.
 
 Tomorrow, in **Day 42**, we take it one step further. We won't just draw a box. We will predict the exact shape of the object down to the single pixel. Welcome to **Image Segmentation & Transfer Learning**.

@@ -120,7 +120,7 @@ The number of drafted words ($K$) is a critical hyperparameter.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Your LLM serving system has a strict latency Service Level Agreement (SLA) of 50ms Time-Per-Output-Token (TPOT). Currently, your 70B model is hitting 100ms. Compare three optimization strategies: Speculative Decoding, Model Quantization, and Distillation (training a smaller model). Which would you deploy?"*
+*"Your <abbr title="Large Language Model">LLM</abbr> serving system has a strict latency Service Level Agreement (<abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr>) of 50ms Time-Per-Output-Token (TPOT). Currently, your 70B model is hitting 100ms. Compare three optimization strategies: Speculative Decoding, Model Quantization, and Distillation (training a smaller model). Which would you deploy?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -130,13 +130,13 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **Speculative Decoding (The Second Step):**
    - If Quantization isn't enough, propose Speculative Decoding. State clearly that its primary advantage is that it is **provably lossless** (0% intelligence degradation), making it perfect for strict enterprise environments. 
 3. **Distillation (The Last Resort):**
-   - Explain that Distillation (training a 13B model to mimic the 70B model) will absolutely hit the 50ms SLA, but it requires massive upfront compute costs (to generate synthetic data and train) and inherently sacrifices peak intelligence.
+   - Explain that Distillation (training a 13B model to mimic the 70B model) will absolutely hit the 50ms <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr>, but it requires massive upfront compute costs (to generate synthetic data and train) and inherently sacrifices peak intelligence.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
 The model is now fast. But we have a new problem.
-If you use the LLM as the backend for a web app, you need it to output JSON data so your database can read it. 
-$95\%$ of the time, the LLM outputs perfect JSON. But $5\%$ of the time, it forgets a closing bracket `}`, crashing your entire production database pipeline! 
+If you use the <abbr title="Large Language Model">LLM</abbr> as the backend for a web app, you need it to output <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> data so your database can read it. 
+$95\%$ of the time, the <abbr title="Large Language Model">LLM</abbr> outputs perfect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. But $5\%$ of the time, it forgets a closing bracket `}`, crashing your entire production database pipeline! 
 
-Tomorrow, in **Day 112**, we learn **Structured Generation**. We will mathematically force the LLM to output $100\%$ valid JSON, every single time!
+Tomorrow, in **Day 112**, we learn **Structured Generation**. We will mathematically force the <abbr title="Large Language Model">LLM</abbr> to output $100\%$ valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, every single time!

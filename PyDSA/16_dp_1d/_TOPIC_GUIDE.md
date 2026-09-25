@@ -26,34 +26,40 @@ single step from `n-1`, or a double step from `n-2` — so every way to reach
 those two sets never overlap (they're distinguished by the last move).
 That gives the recurrence `ways(n) = ways(n-1) + ways(n-2)`.
 
-```mermaid
+```arch
 %% caption: The four stages of a DP solution and what each one costs.
-flowchart LR
-  A["1. Naive recursion<br/>O(2^n) time"]:::bad --> B["2. Memoize (top-down)<br/>O(n) time, O(n) space"] --> C["3. Tabulate (bottom-up)<br/>O(n) time, O(n) table"] --> D["4. Keep only what is read<br/>O(n) time, O(1) space"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 175x80
+node a "1. Naive recursion" at 0,0 color=red sub="O(2^n) time"
+node b "2. Memoize (top-down)" at 1,0 sub="O(n) time, O(n) space"
+node c "3. Tabulate (bottom-up)" at 2,0 sub="O(n) time, O(n) table"
+node d "4. Keep only what is read" at 3,0 color=green sub="O(n) time, O(1) space"
+a -> b -> c -> d
 ```
 
 
 ### Stage 1 — naive recursion (state it, price it, do not ship it)
 
-```mermaid
+```arch
 %% caption: Naive recursion recomputes the same subproblems: f(3) twice, f(2) three times. Only n distinct states exist, so caching each one turns O(2^n) into O(n).
-flowchart TD
-  f5["f(5)"] --> f4["f(4)"]
-  f5 --> f3a["f(3)"]:::bad
-  f4 --> f3b["f(3)"]:::bad
-  f4 --> f2a["f(2)"]:::hot
-  f3a --> f2b["f(2)"]:::hot
-  f3a --> f1a["f(1)"]
-  f3b --> f2c["f(2)"]:::hot
-  f3b --> f1b["f(1)"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node f5 "f(5)" at 2,0 shape=circle color=blue
+node f4 "f(4)" at 1,1 shape=circle color=blue
+node f3a "f(3)" at 3,1 shape=circle color=red
+node f3b "f(3)" at 0.5,2 shape=circle color=red
+node f2a "f(2)" at 1.5,2 shape=circle color=amber
+node f2b "f(2)" at 2.5,2 shape=circle color=amber
+node f1a "f(1)" at 3.5,2 shape=circle color=blue
+node f2c "f(2)" at 0,3 shape=circle color=amber
+node f1b "f(1)" at 1,3 shape=circle color=blue
+f5 -> f4
+f5 -> f3a
+f4 -> f3b
+f4 -> f2a
+f3a -> f2b
+f3a -> f1a
+f3b -> f2c
+f3b -> f1b
 ```
 
 
@@ -152,7 +158,7 @@ does the recurrence reach (Part 2).
 
 ---
 
-## Part 1 · Recognizing a 1D DP problem
+## Part 1 · Recognizing a 1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem
 
 Ask two questions:
 
@@ -165,15 +171,15 @@ Ask two questions:
    `dp[j]` for `j < i`) — not the whole future, and not a second
    independent dimension like "which items are still available"?
 
-If both are "yes," it's 1D DP. If the state needs a *pair* of indices (two
+If both are "yes," it's 1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>. If the state needs a *pair* of indices (two
 pointers into two different strings, a `(row, col)` in a grid, "index AND
 how much budget is left" as two independent knobs that both vary) — that's
-topic 17 (2D DP). If there's no overlap between subproblems at all (every
+topic 17 (2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>). If there's no overlap between subproblems at all (every
 node in the recursion tree is a genuinely distinct partial answer, like
-Topic 09's subsets/permutations) — that's backtracking, not DP; caching
+Topic 09's subsets/permutations) — that's backtracking, not <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>; caching
 buys nothing because nothing repeats.
 
-**The giveaway phrases** that point at 1D DP: "number of ways to reach/make
+**The giveaway phrases** that point at 1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: "number of ways to reach/make
 ...", "minimum cost to reach/climb/decode...", "longest such-and-such
 ending at/starting at position i", "can you partition/break this into...".
 Each maps directly onto a state definition in the table below.
@@ -229,20 +235,24 @@ avoidable bug in this topic comes from.
 
 Work through these in order:
 
-```mermaid
+```arch
 %% caption: Choosing what dp[i] should mean.
-flowchart TD
-  Q(["Optimisation or counting problem"]) --> A{"Each choice depends only on<br/>the last few items?"}
-  A -->|yes| A1["dp[i] = best answer for the first i items<br/>(climb stairs, house robber)"]:::ok
-  A -->|no| B{"Subsequence that must END at i?"}
-  B -->|yes| B1["dp[i] = best answer ENDING at i<br/>(LIS). Final answer: max over all i"]:::ok
-  B -->|no| C{"Choose items to hit a target?"}
-  C -->|yes| C1["dp[t] = best answer for target t<br/>(coin change, knapsack)"]:::ok
-  C -->|no| D["Add a dimension: topic 17"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "Optimisation or counting problem" at 0,0 shape=pill
+node a "Depends only on last few items?" at 0,1 shape=diamond color=amber
+node a1 "dp[i] = best for first i items" at 1,1 color=green w=230 sub="climb stairs, house robber"
+node b "Subsequence must END at i?" at 0,2 shape=diamond color=amber
+node b1 "dp[i] = best ENDING at i" at 1,2 color=green w=230 sub="LIS; final answer: max over all i"
+node c "Choose items to hit a target?" at 0,3 shape=diamond color=amber
+node c1 "dp[t] = best for target t" at 1,3 color=green w=230 sub="coin change, knapsack"
+node d "Add a dimension" at 0,4 color=slate sub="topic 17"
+q -> a
+a -> a1 : "yes"
+a -> b : "no"
+b -> b1 : "yes"
+b -> c : "no"
+c -> c1 : "yes"
+c -> d : "no"
 ```
 
 
@@ -251,20 +261,20 @@ flowchart TD
    yes/no ("can it be done")? This fixes what `dp[i]` STORES (a count, a
    number, a boolean) before you've picked what `i` even ranges over.
 
-2. **What does "the last decision" look like?** DP recurrences are almost
+2. **What does "the last decision" look like?** <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> recurrences are almost
    always "what was the LAST step taken to arrive at state `i`, and what do
    I need to already know to evaluate each candidate last-step?" For
    climbing stairs, the last step was a 1-move or a 2-move — two
    candidates, `dp[i-1]` and `dp[i-2]`. For word break, the last decision
    was "which dictionary word ends exactly at position `i`" — scan all
-   valid word lengths ending there. For LIS, the last decision was "which
+   valid word lengths ending there. For <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr>, the last decision was "which
    earlier, smaller element does this one extend" — scan all `j < i` with
    `nums[j] < nums[i]`.
 
 3. **Does the reach go back a FIXED small window, or does it scan a
    variable range?** Fixed window (tribonacci: 3 back; climbing stairs:
    2 back; house robber: 2 back) means an O(n) loop with O(1)
-   space-optimization available (Part 0 stage 4). Variable range (LIS,
+   space-optimization available (Part 0 stage 4). Variable range (<abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr>,
    word break, coin change, decode ways, combination sum IV) means an
    inner loop/scan per `dp[i]`, usually O(n) or O(n * target) total — no
    free space optimization, because you may need every earlier cell, not
@@ -304,7 +314,7 @@ just implemented. This is the single most missed detail in the whole
 folder; 014's solution file traces both directions on a tiny input so you
 can see the wrong-direction answer diverge from the right one.
 
-**Trap B — Python's recursion limit is real at DP-relevant depths.** Naive
+**Trap B — Python's recursion limit is real at <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>-relevant depths.** Naive
 or even memoized top-down recursion for `n` up to a few thousand can hit
 Python's default `sys.getrecursionlimit()` (1000) well before it hits any
 time-complexity trouble — a purely CORRECT `O(n)` memoized solution can
@@ -330,7 +340,7 @@ recurrence is derivable once you've correctly named the state.
 
 ---
 
-## Part 6 · Added Problem (017) · Russian Doll Envelopes — Reducing 2D to LIS
+## Part 6 · Added Problem (017) · Russian Doll Envelopes — Reducing 2D to <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr>
 
 Added 16 Sep 2026 from the Google prep plan.
 
@@ -342,7 +352,7 @@ heights with the patience-sorting `tails` array and `bisect_left`.
   height sequence, so equal widths never falsely nest (`[[3,4],[3,5]]` -> 1, not 2).
 - `bisect_left`, not `bisect_right`: equal heights must replace, not extend (`[[1,1],[2,1]]` -> 1).
 
-Measured: O(n^2) DP took ~445 ms at n = 4,000; the LIS version took ~1 ms, and ~41 ms at n = 100,000.
+Measured: O(n^2) <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> took ~445 ms at n = 4,000; the <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> version took ~1 ms, and ~41 ms at n = 100,000.
 
 - [ ] I can explain both halves of the sort key and the bisect_left choice.
 
@@ -353,20 +363,24 @@ The guide teaches the *method* (state → transition → base case → order). T
 problem in the folder falls into, and — the part interviews probe — **the one line that separates two families that look
 identical**. Every snippet was run against LeetCode's own examples while writing this section.
 
-```mermaid
+```arch
 %% caption: The six 1D shapes. The wording of the question picks the family; the family fixes the loop order and the direction.
-flowchart TD
-  Q(["1D DP problem"]) --> A{"What varies?"}
-  A -->|"position i, look back a FIXED window"| L["Linear recurrence<br/>Fibonacci, Stairs, Tribonacci"]:::ok
-  A -->|"position i, take it or skip it"| T["Take-or-skip<br/>House Robber I and II"]:::ok
-  A -->|"a target VALUE, items reusable"| U["Unbounded knapsack<br/>Coin Change, Perfect Squares, Combination Sum IV"]:::hot
-  A -->|"a target VALUE, each item once"| Z["0/1 knapsack, sums scanned HIGH to LOW<br/>Partition Equal Subset Sum"]:::hot
-  A -->|"best answer ENDING at i, scan earlier j"| S["Sequence DP<br/>LIS, Word Break, Decode Ways, Max Product"]:::ok
-  A -->|"a centre or an interval"| P["Substring DP<br/>Palindromes: expand or table"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "1D DP problem" at 0,1 shape=pill
+node a "What varies?" at 0,2 shape=diamond color=amber
+node l "Linear recurrence" at 1,0 color=green w=400 sub="position i, FIXED look-back · Fibonacci, Stairs, Tribonacci"
+node t "Take-or-skip" at 1,1 color=green w=400 sub="position i, take it or skip it · House Robber I and II"
+node u "Unbounded knapsack" at 1,2 color=amber w=400 sub="target VALUE, items reusable · Coin Change, Perfect Squares, Combination Sum IV"
+node z "0/1 knapsack, sums HIGH to LOW" at 1,3 color=amber w=400 sub="target VALUE, each item once · Partition Equal Subset Sum"
+node s "Sequence DP" at 1,4 color=green w=400 sub="best ENDING at i, scan earlier j · LIS, Word Break, Decode Ways, Max Product"
+node p "Substring DP" at 1,5 color=green w=400 sub="a centre or an interval · Palindromes: expand or table"
+q -> a
+a:R -> l:L
+a:R -> t:L
+a:R -> u:L
+a:R -> z:L
+a:R -> s:L
+a:R -> p:L
 ```
 
 ### 7.1 Take or skip — House Robber I and II
@@ -540,11 +554,11 @@ Seventeen problems, six families (linear recurrence · take-or-skip · unbounded
 | [010 · Coin Change](PyDSA/16_dp_1d/010_coin_change_solution.py) <br>LC 322 · Medium | Unbounded knapsack, minimise | `dp[a] = 1 + min(dp[a - c])` with `INF` for unreachable and `dp[0] = 0`. **Trap:** using `-1` as the sentinel inside the `min`; assuming greedy works (`[1,3,4]`, 6). |
 | [011 · Maximum Product Subarray](PyDSA/16_dp_1d/011_maximum_product_subarray_solution.py) <br>LC 152 · Medium | Two rolling states | Track the max *and* the min product ending here — a negative flips them. **Trap:** copy-pasting Kadane's single running max. |
 | [012 · Word Break](PyDSA/16_dp_1d/012_word_break_solution.py) <br>LC 139 · Medium | Prefix segmentation | `dp[i]` = some `dp[j]` is true and `s[j:i]` is a word; use a `set`, and only try lengths up to the longest word. **Trap:** a list for the dictionary (O(words) per check); recursion without a memo. |
-| [013 · Longest Increasing Subsequence](PyDSA/16_dp_1d/013_longest_increasing_subsequence_solution.py) <br>LC 300 · Medium | LIS ending at `i`, or patience sorting | O(n²) over earlier `j`, or O(n log n) with `tails` and `bisect_left`. **Trap:** `bisect_right` on a strict LIS (equal values extend the tail); reading `tails` as the subsequence. |
+| [013 · Longest Increasing Subsequence](PyDSA/16_dp_1d/013_longest_increasing_subsequence_solution.py) <br>LC 300 · Medium | <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> ending at `i`, or patience sorting | O(n²) over earlier `j`, or O(n log n) with `tails` and `bisect_left`. **Trap:** `bisect_right` on a strict <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> (equal values extend the tail); reading `tails` as the subsequence. |
 | [014 · Partition Equal Subset Sum](PyDSA/16_dp_1d/014_partition_equal_subset_sum_solution.py) <br>LC 416 · Medium | 0/1 knapsack in 1D | Odd total → false; else "is `total/2` reachable?" scanning sums **high to low**. **Trap:** scanning low to high — the same item is reused and 0/1 silently becomes unbounded. |
 | [015 · Combination Sum IV](PyDSA/16_dp_1d/015_combination_sum_iv_solution.py) <br>LC 377 · Medium | Unbounded knapsack, count sequences | `dp[t] = Σ dp[t - x]` with the *target* in the outer loop (order matters). **Trap:** copying Coin Change II's coins-outside loop — it counts combinations and under-counts. |
 | [016 · Perfect Squares](PyDSA/16_dp_1d/016_perfect_squares_solution.py) <br>LC 279 · Medium | Unbounded knapsack over squares | Coin Change with the coins replaced by `1, 4, 9, …, k² <= n`. **Trap:** a floating-point `int(k**0.5) ** 2 == i` test (off by one near perfect squares) instead of an integer `k * k <= i` loop. |
-| [017 · Russian Doll Envelopes](PyDSA/16_dp_1d/017_russian_doll_envelopes_solution.py) <br>LC 354 · Hard | Reduce 2D nesting to LIS | Sort by width ascending, height **descending**, then a *strict* LIS of heights. **Trap:** ascending heights on equal widths (`[[3,4],[3,5]]` returns 2); `bisect_right` (equal heights nest). |
+| [017 · Russian Doll Envelopes](PyDSA/16_dp_1d/017_russian_doll_envelopes_solution.py) <br>LC 354 · Hard | Reduce 2D nesting to <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> | Sort by width ascending, height **descending**, then a *strict* <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> of heights. **Trap:** ascending heights on equal widths (`[[3,4],[3,5]]` returns 2); `bisect_right` (equal heights nest). |
 
 ---
 <!-- problem-map:end -->
@@ -555,5 +569,5 @@ Seventeen problems, six families (linear recurrence · take-or-skip · unbounded
 - [ ] Name the family (linear, take-or-skip, unbounded, 0/1, sequence, substring) from the wording of a problem <!--ca-->
 - [ ] Choose the loop order for *counting* (coins outside = combinations, target outside = sequences) and say what each counts <!--ca-->
 - [ ] Scan a 1D 0/1 knapsack high-to-low, and show the counter-example (`[2]`, target 4) for low-to-high <!--ca-->
-- [ ] Write patience-sorting LIS with `bisect_left`, and reconstruct the actual subsequence <!--ca-->
+- [ ] Write patience-sorting <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> with `bisect_left`, and reconstruct the actual subsequence <!--ca-->
 - [ ] Track both the max and the min for a product recurrence, and say why <!--ca-->

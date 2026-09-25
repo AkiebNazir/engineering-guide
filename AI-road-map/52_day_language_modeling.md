@@ -16,17 +16,17 @@ If I give you the sequence: *"The cat sat on the"*, you instantly know the next 
 ### 2. The Old Way: N-gram Models & Smoothing
 Before Neural Networks, we used pure statistics. 
 An **N-gram Language Model** (e.g., a Trigram model) simply looks at Wikipedia and counts. 
-If the AI wants to know the probability of *"mat"* following *"sat on the"*, it counts how many times *"sat on the mat"* appears in Wikipedia, and divides it by how many times *"sat on the"* appears.
-- **The Fatal Flaw (Sparsity):** What if the phrase *"sat on the spaceship"* never appeared in Wikipedia? The math evaluates to $0 / 10 = 0.0\%$. The AI mathematically believes the sentence is impossible! 
+If the <abbr title="Artificial Intelligence">AI</abbr> wants to know the probability of *"mat"* following *"sat on the"*, it counts how many times *"sat on the mat"* appears in Wikipedia, and divides it by how many times *"sat on the"* appears.
+- **The Fatal Flaw (Sparsity):** What if the phrase *"sat on the spaceship"* never appeared in Wikipedia? The math evaluates to $0 / 10 = 0.0\%$. The <abbr title="Artificial Intelligence">AI</abbr> mathematically believes the sentence is impossible! 
 - **Smoothing:** To prevent $0.0\%$, researchers used "Laplace Smoothing" (adding +1 to every count) or "Kneser-Ney Smoothing" to borrow probabilities from smaller N-grams. It was a mathematical hack.
 
 ### 3. The New Way: Neural Language Models
 In 2003, Yoshua Bengio invented the Neural Language Model. 
-Instead of counting raw words, the AI passes the words through **Word Embeddings** (Day 48). 
-Because the Embeddings teach the AI that "Cat" and "Dog" are geometrically identical, if the AI has seen *"The dog sat on the spaceship"*, it can successfully predict *"The cat sat on the spaceship"* even if that exact sequence has never appeared in human history! 
+Instead of counting raw words, the <abbr title="Artificial Intelligence">AI</abbr> passes the words through **Word Embeddings** (Day 48). 
+Because the Embeddings teach the <abbr title="Artificial Intelligence">AI</abbr> that "Cat" and "Dog" are geometrically identical, if the <abbr title="Artificial Intelligence">AI</abbr> has seen *"The dog sat on the spaceship"*, it can successfully predict *"The cat sat on the spaceship"* even if that exact sequence has never appeared in human history! 
 
-### 4. Perplexity (PPL): How to Grade an LLM
-If an AI takes an exam, we grade it using "Accuracy" (e.g., 90%). 
+### 4. Perplexity (PPL): How to Grade an <abbr title="Large Language Model">LLM</abbr>
+If an <abbr title="Artificial Intelligence">AI</abbr> takes an exam, we grade it using "Accuracy" (e.g., 90%). 
 You cannot use Accuracy for Language Modeling because language is subjective. There is no single "correct" next word. 
 We grade Language Models using **Perplexity (PPL)**.
 - **The Math:** $\text{PPL} = \exp(\text{Cross Entropy Loss})$. (Or $2^H$).
@@ -37,7 +37,7 @@ We grade Language Models using **Perplexity (PPL)**.
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Neural Language Model using an LSTM. We will train it to predict the next word, and we will write the exact formula to calculate its Perplexity!
+Let's build a Neural Language Model using an <abbr title="Long Short-Term Memory">LSTM</abbr>. We will train it to predict the next word, and we will write the exact formula to calculate its Perplexity!
 
 Create a file named `language_model.py`:
 
@@ -145,7 +145,7 @@ You trained the model. Now you must use it to generate new text!
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"OpenAI releases a report stating GPT-4 achieved a Perplexity of 12.5 on a specific coding benchmark. What exactly does this number mathematically tell you? What does it NOT tell you? How would you evaluate the LLM beyond perplexity?"*
+*"OpenAI releases a report stating GPT-4 achieved a Perplexity of 12.5 on a specific coding benchmark. What exactly does this number mathematically tell you? What does it NOT tell you? How would you evaluate the <abbr title="Large Language Model">LLM</abbr> beyond perplexity?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -156,7 +156,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Explain that Perplexity only measures the model's ability to mimic the exact statistical distribution of the training data. 
    - It does **not** measure factual accuracy, logical reasoning, or safety. A model can have an amazing Perplexity of 2.0 while confidently generating grammatically perfect, highly-probable misinformation or toxic content!
 3. **Beyond Perplexity (Evaluation):**
-   - Conclude that LLMs must be evaluated using **Downstream Tasks** (e.g., MMLU for knowledge, HumanEval for code) and **Human/LLM-as-a-Judge Evaluation** (e.g., Chatbot Arena ELO ratings) to measure actual helpfulness and alignment to human intent.
+   - Conclude that LLMs must be evaluated using **Downstream Tasks** (e.g., MMLU for knowledge, HumanEval for code) and **Human/<abbr title="Large Language Model">LLM</abbr>-as-a-Judge Evaluation** (e.g., Chatbot Arena ELO ratings) to measure actual helpfulness and alignment to human intent.
 
 ---
 **Task for the end of the day:** Commit your code to Git. You now understand the objective function of the most powerful AIs on earth.

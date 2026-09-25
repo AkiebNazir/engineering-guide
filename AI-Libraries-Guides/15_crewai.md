@@ -5,7 +5,7 @@
 *Why is this tool relevant?* In early 2023, frameworks like AutoGPT and BabyAGI went viral. They attempted to create one massive, god-like Agent to do everything. They failed miserably and were largely abandoned because a single prompt cannot juggle researching, coding, testing, and writing simultaneously without hallucinating. **CrewAI** is the modern solution. It uses Role-Playing and multi-agent orchestration.
 
 **What is it?**
-CrewAI is a framework for orchestrating autonomous AI agents. Instead of one god-like agent, you create a "Crew" of highly specialized micro-agents (e.g., a "Senior Python Developer" and a "QA Tester"). 
+CrewAI is a framework for orchestrating autonomous <abbr title="Artificial Intelligence">AI</abbr> agents. Instead of one god-like agent, you create a "Crew" of highly specialized micro-agents (e.g., a "Senior Python Developer" and a "QA Tester"). 
 
 **Why does it exist?**
 It mimics human organizational structures. You define **Agents** (who), **Tasks** (what), and a **Crew** (how they collaborate). CrewAI handles the complex background logic of agents talking to each other, passing data, and delegating work when they get stuck.
@@ -140,8 +140,8 @@ enterprise_crew = Crew(
 ```
 
 **What happens differently here?**
-You do NOT assign tasks to specific agents anymore. You give the tasks to the **Manager LLM**. 
-The Manager reads the tasks, looks at the Agents available, and autonomously decides who should do what. The Manager can review the Writer's draft, decide it's not good enough, and send it back to the Writer with feedback. It is a fully autonomous AI corporation.
+You do NOT assign tasks to specific agents anymore. You give the tasks to the **Manager <abbr title="Large Language Model">LLM</abbr>**. 
+The Manager reads the tasks, looks at the Agents available, and autonomously decides who should do what. The Manager can review the Writer's draft, decide it's not good enough, and send it back to the Writer with feedback. It is a fully autonomous <abbr title="Artificial Intelligence">AI</abbr> corporation.
 
 ---
 
@@ -155,6 +155,6 @@ LangGraph (Guide 14) is a strict State Machine. You explicitly draw every node a
 CrewAI is highly autonomous. You just define the Personas and the Goals, and the LLMs figure out how to talk to each other to solve it. It is vastly faster to develop in CrewAI, and it handles creative, open-ended research tasks brilliantly, but it sacrifices strict deterministic control. Many modern architectures actually combine them: using LangGraph for the strict outer loop, and a CrewAI team for a specific creative node within the graph."
 
 ### Scenario 2: The Delegation Loop Bug
-*Interviewer:* "You set up a Hierarchical Crew. The Manager delegates a coding task to the Developer. The Developer writes broken code. The Manager reviews it, says 'This is broken,' and delegates it back. They loop infinitely until we hit API limits. How do you fix this?"
+*Interviewer:* "You set up a Hierarchical Crew. The Manager delegates a coding task to the Developer. The Developer writes broken code. The Manager reviews it, says 'This is broken,' and delegates it back. They loop infinitely until we hit <abbr title="Application Programming Interface">API</abbr> limits. How do you fix this?"
 
 *Answer:* "This is a classic failure mode in autonomous agents. I would implement two safeguards. First, I would strictly enforce `max_iter=5` on the Developer agent, so it forcibly terminates its attempts. Second, I would inject a custom 'Code Execution/Linter Tool' into the Developer agent. Right now, the Manager is acting as the compiler, which is inefficient. If the Developer agent has a tool to run the code itself, it can read the Python traceback locally and fix the syntax errors *before* returning the final draft to the Manager, drastically reducing the delegation cycle."

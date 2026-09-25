@@ -42,7 +42,7 @@ L6 is not "L5 with more boxes". The diagram can be identical. What changes is wh
 | Dimension | L5 does | L6 adds |
 |---|---|---|
 | Scoping | Proposes requirements and scale, names what is out of scope. | Asks what decision the system serves and for whom, spots the requirement nobody said (a migration, a compliance rule, a second team's consumer), and proposes a phase-one scope that ships. |
-| Estimation | Computes the few numbers that decide something. | Finds the number that dominates cost or risk (often write amplification or storage, not read QPS), skips the rest, and says what would make the estimate wrong. |
+| Estimation | Computes the few numbers that decide something. | Finds the number that dominates cost or risk (often write amplification or storage, not read <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>), skips the rest, and says what would make the estimate wrong. |
 | Depth | Two hard problems, unprompted. | Depth wherever the risk is, including the unglamorous parts (backfill, deletion, schema evolution), and a sense of when to stop. |
 | Trade-offs | Compares, commits, names the cost. | Quantifies the cost in money, latency and on-call burden, and says what evidence would reverse the decision. |
 | Operations | Failure modes, SLIs, one paging alert. | Rollout path (canary, cell by cell, rollback triggers), blast-radius boundaries, the migration from the old system, and how you would know it works before scaling it. |
@@ -52,7 +52,7 @@ Three moments, as an L5 sentence and an L6 sentence. The numbers are illustrativ
 
 **Scoping**
 - L5: "I'll assume 300M daily users, read-heavy, with ranking and ads out of scope. Is that the right scope?"
-- L6: "Before sizing anything: what is the feed for? If the goal is retention, a blank page hurts more than a slightly stale one, so I'll optimize for never being empty. I'd ship phase one as reverse-chronological with hybrid fan-out and add ranking behind the same API in phase two. Does that ordering match the goal?"
+- L6: "Before sizing anything: what is the feed for? If the goal is retention, a blank page hurts more than a slightly stale one, so I'll optimize for never being empty. I'd ship phase one as reverse-chronological with hybrid fan-out and add ranking behind the same <abbr title="Application Programming Interface">API</abbr> in phase two. Does that ordering match the goal?"
 
 **Estimation**
 - L5: "300M users × 10 opens a day ÷ 86,400 is about 35K reads per second, about 100K at a 3× peak, so one database cannot serve this and we need a cache."
@@ -71,13 +71,13 @@ Three moments, as an L5 sentence and an L6 sentence. The numbers are illustrativ
 | Minutes | Phase | What you produce | The trap |
 |---|---|---|---|
 | 0–5 | Requirements | Core features, out-of-scope list, scale, latency, availability vs consistency. | Spending 12 minutes here, or skipping non-functional requirements entirely. |
-| 5–10 | Estimates & API | Peak QPS, storage, bandwidth; main endpoints. | Numbers with no consequence ("so 12K QPS… anyway"). |
+| 5–10 | Estimates & <abbr title="Application Programming Interface">API</abbr> | Peak <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage, bandwidth; main endpoints. | Numbers with no consequence ("so 12K <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>… anyway"). |
 | 10–15 | Data model | Entities, access patterns, database choice with the rejected alternative, first shard key. | Picking a database by brand name. |
 | 15–25 | High-level design | Baseline diagram; one write and one read walked end to end. | Drawing 15 boxes before any of them are justified. |
 | 25–38 | Deep dives | Two hard problems, alternatives compared, decisions made. | Going wide instead of deep; waiting for the interviewer to pick. |
 | 38–45 | Failure & evolution | What breaks, how you notice, what changes at 10×. | Running out of time before ever mentioning failure. |
 
-> 💡 Say the plan out loud in the first 30 seconds: *"I'll spend a few minutes on requirements and scale, sketch the API and data model, draw a baseline, then go deep on the two hardest parts and finish with failure modes."* It signals that you drive the round, and it gives the interviewer a map to interrupt against.
+> 💡 Say the plan out loud in the first 30 seconds: *"I'll spend a few minutes on requirements and scale, sketch the <abbr title="Application Programming Interface">API</abbr> and data model, draw a baseline, then go deep on the two hardest parts and finish with failure modes."* It signals that you drive the round, and it gives the interviewer a map to interrupt against.
 
 ---
 
@@ -105,11 +105,11 @@ You are estimating to make decisions, not to be precise. Round everything to one
 
 The core formulas:
 
-- **QPS** = daily active users × actions per user ÷ 86,400. Peak ≈ 2–3× average (more for spiky products).
+- **<abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>** = daily active users × actions per user ÷ 86,400. Peak ≈ 2–3× average (more for spiky products).
 - **Storage** = records per day × size × 365 × years × replication factor.
-- **Bandwidth** = QPS × payload size × 8 bits.
+- **Bandwidth** = <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> × payload size × 8 bits.
 - **Cache** = roughly 20% of the daily read set if access is skewed (80/20).
-- **Servers** = peak QPS ÷ what one server handles, plus headroom for a zone failure.
+- **Servers** = peak <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> ÷ what one server handles, plus headroom for a zone failure.
 
 The estimator below lets you check your mental arithmetic against presets for common problems.
 
@@ -120,10 +120,10 @@ The estimator below lets you check your mental arithmetic against presets for co
 | L1 cache reference | 0.5 ns | |
 | Main memory reference | 100 ns | |
 | Compress 1 KB (fast codec) | 2–10 µs | |
-| Read 4 KB randomly from SSD | ~100 µs | |
+| Read 4 KB randomly from <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> | ~100 µs | |
 | Round trip within a datacenter | ~500 µs | |
-| Read 1 MB sequentially from SSD | ~1 ms | |
-| Disk seek (HDD) | ~10 ms | 20× slower than a datacenter round trip |
+| Read 1 MB sequentially from <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> | ~1 ms | |
+| Disk seek (<abbr title="Hard Disk Drive - An electro-mechanical data storage device that stores and retrieves digital data using magnetic storage.">HDD</abbr>) | ~10 ms | 20× slower than a datacenter round trip |
 | Round trip California ↔ Netherlands | ~150 ms | Why CDNs and regional replicas exist |
 
 | Power of two | Exact | Approx. | Name |
@@ -154,22 +154,22 @@ When you reach the deep-dive phase, pick the parts where the problem is actually
 | Problem family | The hard parts to volunteer | Building block |
 |---|---|---|
 | URL shortener, pastebin | ID generation and collisions; read-heavy caching; redirects and analytics without slowing the hot path. | [10](building_blocks/10_distributed_systems_theory.md), [07](building_blocks/07_caching.md) |
-| Rate limiter, API gateway | Algorithm choice; atomic counters in a shared store; multi-region limits; fail-open vs fail-closed. | [04](building_blocks/04_api_design_low_level.md) |
+| Rate limiter, <abbr title="Application Programming Interface">API</abbr> gateway | Algorithm choice; atomic counters in a shared store; multi-region limits; fail-open vs fail-closed. | [04](building_blocks/04_api_design_low_level.md) |
 | Key-value store, distributed cache | Partitioning with consistent hashing; quorum replication; conflict resolution; hot keys; rebalancing. | [19](building_blocks/19_consensus_and_coordination.md), [25](building_blocks/25_partitioning_and_hot_keys.md) |
 | News feed, notifications | Fan-out on write vs read; celebrity accounts; ranking; delivery guarantees and deduplication. | [09](building_blocks/09_messaging_and_streaming.md) |
 | Chat, Google Docs | Connection servers and presence; per-conversation ordering; offline sync; OT vs CRDT. | [22](building_blocks/22_realtime_and_collaboration.md) |
-| Drive, YouTube, photo pipeline | Chunked resumable uploads; dedup; transcoding DAG; CDN; view counting at scale. | [08](building_blocks/08_object_storage.md) |
+| Drive, YouTube, photo pipeline | Chunked resumable uploads; dedup; transcoding <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>; <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>; view counting at scale. | [08](building_blocks/08_object_storage.md) |
 | Web search, autocomplete | Crawl → index → serve; sharding the inverted index; fan-out and tail latency; top-K per prefix. | [20](building_blocks/20_specialized_data_structures.md) |
 | Maps, nearby, ride sharing | Geospatial indexing (geohash, quadtree, S2); location update volume; matching without double assignment. | [20](building_blocks/20_specialized_data_structures.md) |
 | Ad clicks, metrics, top-K | Windowed stream aggregation; late data and watermarks; exactly-once counting; batch reconciliation. | [21](building_blocks/21_batch_and_stream_processing.md) |
 | Payments, booking | Idempotency; double-entry ledger; sagas and reconciliation; holds with expiry; contention. | [11](building_blocks/11_transactions_and_concurrency.md) |
-| LLM or ML feature | Serving cost and batching; token streaming; caching; quotas; evaluation and safety. | [23](building_blocks/23_ml_and_llm_systems.md) |
+| <abbr title="Large Language Model">LLM</abbr> or <abbr title="Machine Learning">ML</abbr> feature | Serving cost and batching; token streaming; caching; quotas; evaluation and safety. | [23](building_blocks/23_ml_and_llm_systems.md) |
 | Message queue, distributed log | Partitioned replicated log; acks and in-sync replicas versus latency; consumer groups and rebalancing; delivery semantics; retention and compaction. | [26](building_blocks/26_distributed_log_internals.md) · [031](problems/031_distributed_message_queue_question.md) |
 | Ranked feed, recommendations | Retrieval, then a ranking cascade under a per-stage latency budget; feature serving; session-stable pagination; exploration; fallback when the ranker is down. | [31](building_blocks/31_ranking_recommendation_and_experimentation.md), [23](building_blocks/23_ml_and_llm_systems.md) · [032](problems/032_ranked_home_feed_question.md) |
-| Live streaming and comments | Ingest, real-time transcode, low-latency packaging; fan-out of one mega-stream through the CDN; comment fan-out and sampling; the glass-to-glass latency budget. | [29](building_blocks/29_cdn_and_streaming_media.md), [22](building_blocks/22_realtime_and_collaboration.md) · [033](problems/033_live_streaming_and_comments_question.md) |
+| Live streaming and comments | Ingest, real-time transcode, low-latency packaging; fan-out of one mega-stream through the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>; comment fan-out and sampling; the glass-to-glass latency budget. | [29](building_blocks/29_cdn_and_streaming_media.md), [22](building_blocks/22_realtime_and_collaboration.md) · [033](problems/033_live_streaming_and_comments_question.md) |
 | Routing, maps, ETA | Preprocessing the road graph (contraction hierarchies), sharding it, live traffic weights, map matching, and how an ETA model is fed. | [20](building_blocks/20_specialized_data_structures.md), [25](building_blocks/25_partitioning_and_hot_keys.md) · [034](problems/034_maps_routing_and_eta_question.md) |
 | Object store | Erasure coding versus replication (durability arithmetic); metadata index separate from data placement; repair bandwidth; garbage collection; LIST at scale. | [08](building_blocks/08_object_storage.md), [25](building_blocks/25_partitioning_and_hot_keys.md) · [035](problems/035_distributed_object_store_question.md) |
-| CDN | Request steering; cache hierarchy; hot objects and request coalescing; purge; TLS at the edge; caches embedded in ISP networks. | [29](building_blocks/29_cdn_and_streaming_media.md), [27](building_blocks/27_multi_region_and_global_traffic.md) · [036](problems/036_content_delivery_network_question.md) |
+| <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> | Request steering; cache hierarchy; hot objects and request coalescing; purge; <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> at the edge; caches embedded in ISP networks. | [29](building_blocks/29_cdn_and_streaming_media.md), [27](building_blocks/27_multi_region_and_global_traffic.md) · [036](problems/036_content_delivery_network_question.md) |
 | Experimentation platform | Hash bucketing and layers; exposure logging; sample-ratio mismatch; power and variance reduction; guardrail metrics. | [31](building_blocks/31_ranking_recommendation_and_experimentation.md), [21](building_blocks/21_batch_and_stream_processing.md) · [037](problems/037_experimentation_platform_question.md) |
 | Video conferencing | SFU versus MCU; signaling; simulcast and congestion control; cascaded SFUs across regions. | [22](building_blocks/22_realtime_and_collaboration.md), [02](building_blocks/02_networking.md) · [038](problems/038_video_conferencing_question.md) |
 | Social graph | Objects and associations; cache tiers; hot edge lists; two-hop queries; privacy checks on every read. | [30](building_blocks/30_social_graph_and_caching_at_scale.md), [25](building_blocks/25_partitioning_and_hot_keys.md) · [039](problems/039_social_graph_service_question.md) |
@@ -201,8 +201,8 @@ Walk the diagram box by box and say what happens when each one fails:
 | Cache cluster | Requests fall through to the database; protect it with request coalescing, a circuit breaker, and serving stale values. Warm the cache before shifting traffic back. |
 | One database shard | Reads fail over to a replica; writes to that key range pause for the election window. Other shards are unaffected — that is the point of partitioning. |
 | Message queue backs up | Consumers scale out to the partition count; producers apply backpressure; lower-priority work is shed first. |
-| A whole region | DNS/anycast shifts traffic; the surviving region needs spare capacity (plan N+1 regions); state replication lag defines RPO. Steering, replication modes and failback are in [27](building_blocks/27_multi_region_and_global_traffic.md). |
-| A bad deploy | Canary, automated rollback on SLO burn, feature flags to turn off new paths. |
+| A whole region | <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>/anycast shifts traffic; the surviving region needs spare capacity (plan N+1 regions); state replication lag defines RPO. Steering, replication modes and failback are in [27](building_blocks/27_multi_region_and_global_traffic.md). |
+| A bad deploy | Canary, automated rollback on <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> burn, feature flags to turn off new paths. |
 | A dependency is slow, not down | A request that fans out to many servers is as slow as the slowest reply. Set deadlines, hedge a request after roughly the p95 latency, and return a partial result when a shard is late. These are the techniques in Dean and Barroso, "The Tail at Scale" (CACM, 2013), summarized in [24](building_blocks/24_google_papers.md). |
 | A traffic spike or retry storm | Shed low-priority requests early, cap retries with a budget, and degrade the product before the page. See [28](building_blocks/28_overload_control_and_graceful_degradation.md). |
 

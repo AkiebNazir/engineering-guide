@@ -1,36 +1,36 @@
 # Day 115: LLM Reasoning (CoT, ToT & ReAct)
 
-Welcome to Day 115. We have given our LLM memory and tools. 
-But standard LLMs still fail at logic. If you ask an LLM a complex math puzzle, it will instantly blurt out the wrong answer. 
+Welcome to Day 115. We have given our <abbr title="Large Language Model">LLM</abbr> memory and tools. 
+But standard LLMs still fail at logic. If you ask an <abbr title="Large Language Model">LLM</abbr> a complex math puzzle, it will instantly blurt out the wrong answer. 
 
 Why? Because the Transformer architecture forces the model to predict the final answer in a single mathematical pass. Humans don't do that. If you ask a human $245 \times 13$, they don't blurt out the answer. They pull out a scratchpad and do the math step-by-step.
 
-Today, we teach the LLM how to use a scratchpad. We learn **Cognitive Architectures**.
+Today, we teach the <abbr title="Large Language Model">LLM</abbr> how to use a scratchpad. We learn **Cognitive Architectures**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. Chain-of-Thought (CoT)
-The simplest and most famous hack in AI history. By simply appending the phrase *"Let's think step-by-step"* to your prompt, you force the LLM to output its intermediate reasoning *before* outputting the final answer.
-Because the LLM uses its own generated text as the context for the next word, "thinking out loud" mathematically improves its logical accuracy by $300\%$!
+The simplest and most famous hack in <abbr title="Artificial Intelligence">AI</abbr> history. By simply appending the phrase *"Let's think step-by-step"* to your prompt, you force the <abbr title="Large Language Model">LLM</abbr> to output its intermediate reasoning *before* outputting the final answer.
+Because the <abbr title="Large Language Model">LLM</abbr> uses its own generated text as the context for the next word, "thinking out loud" mathematically improves its logical accuracy by $300\%$!
 
 ### 2. Self-Consistency
-If an LLM makes a mistake on Step 2 of a CoT, the entire final answer will be wrong. 
-To fix this, we use **Self-Consistency**: We run the exact same CoT prompt 5 times in parallel. The LLM will generate 5 different reasoning paths. We take the "Majority Vote" of the final answers!
+If an <abbr title="Large Language Model">LLM</abbr> makes a mistake on Step 2 of a CoT, the entire final answer will be wrong. 
+To fix this, we use **Self-Consistency**: We run the exact same CoT prompt 5 times in parallel. The <abbr title="Large Language Model">LLM</abbr> will generate 5 different reasoning paths. We take the "Majority Vote" of the final answers!
 
 ### 3. Tree of Thought (ToT)
 CoT is strictly linear. Humans don't think linearly. We explore a path, realize it's a dead end, and backtrack.
-**Tree of Thought** allows the LLM to brainstorm 3 different possible *next steps*. We ask the LLM to "score" each step from 1 to 10. We use a standard computer science Breadth-First-Search (BFS) algorithm to navigate this "Tree" of logic, abandoning paths that score low!
+**Tree of Thought** allows the <abbr title="Large Language Model">LLM</abbr> to brainstorm 3 different possible *next steps*. We ask the <abbr title="Large Language Model">LLM</abbr> to "score" each step from 1 to 10. We use a standard computer science Breadth-First-Search (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>) algorithm to navigate this "Tree" of logic, abandoning paths that score low!
 
 ### 4. The ReAct Architecture (Reason + Act)
 The ultimate Agent paradigm. It merges Chain of Thought with Tool Use.
-Instead of just calling a tool, the LLM is forced into a strict loop:
+Instead of just calling a tool, the <abbr title="Large Language Model">LLM</abbr> is forced into a strict loop:
 1. **Thought:** *"I need to find the CEO of Apple. I should use the Web Search tool."*
 2. **Action:** `SearchWeb(Apple CEO)`
 3. **Observation:** *"Tim Cook is the CEO of Apple."*
 4. **Thought:** *"Now I need to find Tim Cook's age. I will use the Search tool again."*
-By forcing the LLM to literally "think" about what it just observed, the agent can solve incredibly complex, multi-step web research tasks autonomously!
+By forcing the <abbr title="Large Language Model">LLM</abbr> to literally "think" about what it just observed, the agent can solve incredibly complex, multi-step web research tasks autonomously!
 
 ---
 
@@ -131,8 +131,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Parsing Logic:** A ReAct agent relies entirely on Regex string parsing. If the LLM hallucinates and outputs `ActionToTake: get_stock_ticker` instead of the strict `Action: get_stock_ticker`, your regex will fail and the agent crashes! This is why you must use highly aligned models for agentic tasks.
-2. **The Prompt History:** The prompt grows continuously with every loop. The LLM gets to literally "read its own mind" from previous steps!
+1. **The Parsing Logic:** A ReAct agent relies entirely on Regex string parsing. If the <abbr title="Large Language Model">LLM</abbr> hallucinates and outputs `ActionToTake: get_stock_ticker` instead of the strict `Action: get_stock_ticker`, your regex will fail and the agent crashes! This is why you must use highly aligned models for agentic tasks.
+2. **The Prompt History:** The prompt grows continuously with every loop. The <abbr title="Large Language Model">LLM</abbr> gets to literally "read its own mind" from previous steps!
 
 ---
 
@@ -142,8 +142,8 @@ if __name__ == "__main__":
 ToT is extremely difficult to code because it requires managing multiple parallel conversational branches.
 **Your Task:**
 1. Conceptually design a Python script that maintains a List of active "Paths".
-2. Ask the LLM to generate 3 possible "Thoughts" for the next step.
-3. Use a secondary LLM call to score each Thought from 1 to 10.
+2. Ask the <abbr title="Large Language Model">LLM</abbr> to generate 3 possible "Thoughts" for the next step.
+3. Use a secondary <abbr title="Large Language Model">LLM</abbr> call to score each Thought from 1 to 10.
 4. Keep the path with the highest score, append it to the history, and repeat!
 
 ### 🎤 MAANG Technical Interview Prep
@@ -157,9 +157,9 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Fallibility of Text Generation:** 
-   - State that LLMs are not calculators. Even with CoT, if an LLM is asked to multiply two 8-digit numbers, it will fail because its arithmetic is statistically approximated.
+   - State that LLMs are not calculators. Even with CoT, if an <abbr title="Large Language Model">LLM</abbr> is asked to multiply two 8-digit numbers, it will fail because its arithmetic is statistically approximated.
 2. **Tool-Backed ReAct:**
-   - Propose a ReAct framework where the LLM is explicitly forbidden from doing math. If it needs to calculate taxes, it must output Python code or call a Calculator API (falling back to symbolic, deterministic algorithms).
+   - Propose a ReAct framework where the <abbr title="Large Language Model">LLM</abbr> is explicitly forbidden from doing math. If it needs to calculate taxes, it must output Python code or call a Calculator <abbr title="Application Programming Interface">API</abbr> (falling back to symbolic, deterministic algorithms).
 3. **Verification (Process Reward Models):**
    - Explain that for a 10-step audit, the chance of a hallucination on a single step is high. Propose using a Process Reward Model (PRM)—a secondary model that evaluates the logical validity of *each individual step* before allowing the agent to proceed to the next step.
 

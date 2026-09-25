@@ -1,10 +1,10 @@
 # Day 18: Learning Rate Scheduling & Warmup Strategies
 
-Welcome to Day 18. Back in Day 15, you learned that the **Learning Rate ($\eta$)** is the absolute most important hyperparameter in AI. 
+Welcome to Day 18. Back in Day 15, you learned that the **Learning Rate ($\eta$)** is the absolute most important hyperparameter in <abbr title="Artificial Intelligence">AI</abbr>. 
 
 If you guess a number that is too high, the model explodes to infinity. If you guess a number that is too low, the model takes a lifetime to train and gets stuck in terrible Local Minima.
 
-The secret of modern AI? **We stopped trying to guess a single perfect number.** Today, we learn how to write algorithms that dynamically warp and twist the learning rate while the model is training.
+The secret of modern <abbr title="Artificial Intelligence">AI</abbr>? **We stopped trying to guess a single perfect number.** Today, we learn how to write algorithms that dynamically warp and twist the learning rate while the model is training.
 
 ---
 
@@ -40,7 +40,7 @@ Why? Because at initialization, all the weights in the massive network are compl
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG
 
-Let's write code to visualize these abstract mathematical schedules. You must see exactly what these curves look like to understand how they control the AI.
+Let's write code to visualize these abstract mathematical schedules. You must see exactly what these curves look like to understand how they control the <abbr title="Artificial Intelligence">AI</abbr>.
 
 Create a file named `lr_schedules.py`:
 
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The LLM Standard:** Look closely at the `Warmup + Cosine Decay` graph. This single curve is responsible for training GPT-4, Llama 3, and Claude. The steep upward slope protects the random weights. The gentle downward slope ensures the model perfectly converges.
+1. **The <abbr title="Large Language Model">LLM</abbr> Standard:** Look closely at the `Warmup + Cosine Decay` graph. This single curve is responsible for training GPT-4, Llama 3, and Claude. The steep upward slope protects the random weights. The gentle downward slope ensures the model perfectly converges.
 2. **Warm Restarts:** Look at the purple graph. Notice the violent vertical lines resetting the LR to the maximum. If the model accidentally fell into a terrible Local Minimum during the first 250 steps, that sudden spike kicks the model right back out into the open to try again!
 
 ---
@@ -153,7 +153,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - **Justification:** At initialization, a 7B parameter network has massive gradient variance. Without warmup, the Adam optimizer's momentum and variance trackers will permanently destabilize, and the model will suffer catastrophic divergence.
 2. **Phase 2: The Peak:**
    - Hitting the maximum learning rate.
-   - **Justification:** We need the LR to be as large as mathematically possible (without exploding) to act as implicit regularization, bouncing the LLM out of sharp local minima and forcing it to find a generalized, flat minimum.
+   - **Justification:** We need the LR to be as large as mathematically possible (without exploding) to act as implicit regularization, bouncing the <abbr title="Large Language Model">LLM</abbr> out of sharp local minima and forcing it to find a generalized, flat minimum.
 3. **Phase 3: Cosine Decay (90% of training):**
    - Slowly decaying the LR down to about 10% of the peak value.
    - **Justification:** Cosine decay provides a much smoother descent than linear decay, ensuring the model's weights have time to slowly settle and refine their language representations.
@@ -162,6 +162,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - **Justification:** The "landing gear." This ensures the model perfectly sinks into the exact mathematical center of the Global Minimum, squeezing out the final fractions of a percent of accuracy.
 
 ---
-**Task for the end of the day:** Commit your code to Git. Look at your Python graphs and realize that training an AI is just as much art as it is math. 
+**Task for the end of the day:** Commit your code to Git. Look at your Python graphs and realize that training an <abbr title="Artificial Intelligence">AI</abbr> is just as much art as it is math. 
 
 Tomorrow, in **Day 19**, we look at how to stop our models from memorizing the data. We dive into the ultimate mathematical battle: **Regularization, Bias, and Variance!**

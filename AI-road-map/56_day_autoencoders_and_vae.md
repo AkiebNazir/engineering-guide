@@ -1,17 +1,17 @@
 # Day 56: Autoencoders & Variational Autoencoders (VAE)
 
-Welcome to Day 56. Everything we have built so far (CNNs, RNNs, CRFs) has been **Discriminative AI**. The AI receives an image of a dog, and outputs the word "Dog". 
-Today, we cross the threshold. We are going to teach the AI how to generate a brand new, photorealistic image of a dog that has never existed in human history. Welcome to **Generative AI**.
+Welcome to Day 56. Everything we have built so far (CNNs, RNNs, CRFs) has been **Discriminative <abbr title="Artificial Intelligence">AI</abbr>**. The <abbr title="Artificial Intelligence">AI</abbr> receives an image of a dog, and outputs the word "Dog". 
+Today, we cross the threshold. We are going to teach the <abbr title="Artificial Intelligence">AI</abbr> how to generate a brand new, photorealistic image of a dog that has never existed in human history. Welcome to **Generative <abbr title="Artificial Intelligence">AI</abbr>**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Autoencoder
-An Autoencoder is an AI shaped like an hourglass. It has two parts:
+An Autoencoder is an <abbr title="Artificial Intelligence">AI</abbr> shaped like an hourglass. It has two parts:
 1. **The Encoder:** Takes a massive $784$-pixel image, and mathematically crushes it down into a tiny bottleneck of $32$ numbers. This is the **Latent Space**.
 2. **The Decoder:** Takes those 32 numbers, and tries to "un-crush" them back into the exact original $784$-pixel image.
-The loss function is simple Mean Squared Error (MSE). The AI is penalized if the reconstructed image doesn't match the original.
+The loss function is simple Mean Squared Error (MSE). The <abbr title="Artificial Intelligence">AI</abbr> is penalized if the reconstructed image doesn't match the original.
 
 ### 2. The Generative Flaw
 If you rip the Encoder off, and just feed 32 random numbers into the Decoder, will it generate a beautiful image? 
@@ -23,7 +23,7 @@ In 2013, the VAE solved this. We change the Encoder.
 Instead of forcing the Encoder to output 32 static numbers, we force the Encoder to output a **Probability Distribution**. 
 For every latent variable, the Encoder outputs a Mean ($\mu$) and a Variance ($\sigma^2$). 
 The Decoder then **Samples** a random coordinate from within that probability distribution! 
-By forcing the AI to use random samples, it learns that an entire *region* of space represents a "Dog", not just one specific coordinate!
+By forcing the <abbr title="Artificial Intelligence">AI</abbr> to use random samples, it learns that an entire *region* of space represents a "Dog", not just one specific coordinate!
 
 ### 4. The KL Divergence Penalty
 To prevent the probability distributions from flying infinitely far apart, we add a Calculus penalty called **KL Divergence**. 
@@ -169,7 +169,7 @@ A **Conditional VAE** lets you ask: *"Draw me a number 7."*
 1. Conceptually modify the `VAE` class.
 2. In the `encode` step, concatenate the Image `[Batch, 784]` with a One-Hot Vector of the label `[Batch, 10]`. The input is now 794!
 3. In the `decode` step, concatenate the random noise `[Batch, 20]` with the exact same One-Hot Vector `[Batch, 10]`.
-4. By forcing the Decoder to look at the label while it decodes the noise, the AI mathematically learns to separate the "style" (the noise) from the "class" (the label)!
+4. By forcing the Decoder to look at the label while it decodes the noise, the <abbr title="Artificial Intelligence">AI</abbr> mathematically learns to separate the "style" (the noise) from the "class" (the label)!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -185,11 +185,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - State that the ELBO Loss has two parts: Reconstruction (BCE) and KL Divergence (KLD). 
    - Explain that if the Decoder is extremely powerful (like a deep Autoregressive model), it might decide that listening to the Encoder is too difficult. It achieves a mathematical KLD loss of $0.0$ by forcing all the Encoder's means and variances to exactly $0, 1$. The Decoder then entirely ignores the latent space and generates images on its own. The Latent Space has "collapsed"!
 2. **KL Annealing:**
-   - Explain that KL Annealing is a training hack. At Epoch 1, you multiply the KLD loss by $0.0$. This forces the AI to only care about Reconstruction, forcing it to use the Latent Space. Over 50 epochs, you slowly fade the KLD multiplier up to $1.0$.
+   - Explain that KL Annealing is a training hack. At Epoch 1, you multiply the KLD loss by $0.0$. This forces the <abbr title="Artificial Intelligence">AI</abbr> to only care about Reconstruction, forcing it to use the Latent Space. Over 50 epochs, you slowly fade the KLD multiplier up to $1.0$.
 3. **$\beta$-VAE:**
-   - Conclude that $\beta$-VAE introduces a permanent hyperparameter ($\beta$) to scale the KLD term. By setting $\beta > 1$, you force the AI to prioritize a perfectly disentangled Latent Space, at the slight cost of image blurriness.
+   - Conclude that $\beta$-VAE introduces a permanent hyperparameter ($\beta$) to scale the KLD term. By setting $\beta > 1$, you force the <abbr title="Artificial Intelligence">AI</abbr> to prioritize a perfectly disentangled Latent Space, at the slight cost of image blurriness.
 
 ---
-**Task for the end of the day:** Commit your code to Git. Welcome to Generative AI.
+**Task for the end of the day:** Commit your code to Git. Welcome to Generative <abbr title="Artificial Intelligence">AI</abbr>.
 
 Tomorrow, in **Day 57**, we meet the VAE's arch-nemesis. An architecture so mathematically violent it is trained by making two Neural Networks fight to the death. Welcome to **Generative Adversarial Networks (GANs)!**

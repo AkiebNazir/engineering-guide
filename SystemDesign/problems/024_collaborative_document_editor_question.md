@@ -24,7 +24,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope estimates: concurrent connections, operation rate, and storage for content and history.
-3. API and wire protocol between client and server.
+3. <abbr title="Application Programming Interface">API</abbr> and wire protocol between client and server.
 4. Baseline architecture: connection handling, document sessions, storage.
 5. Concurrency control: operational transformation vs CRDTs, and your choice.
 6. Revision history, snapshots, offline editing, permissions, and failure handling.

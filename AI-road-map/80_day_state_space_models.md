@@ -1,6 +1,6 @@
 # Day 80: State Space Models (Mamba)
 
-Welcome to Day 80. The Transformer has ruled Artificial Intelligence since 2017. But it has a fatal flaw: The Attention Mechanism is $O(N^2)$ quadratic. If you double the context window from 4K words to 8K words, it takes 4x the compute and memory. If you want to feed an entire book into an LLM (100K tokens), the Transformer will crash the GPU.
+Welcome to Day 80. The Transformer has ruled Artificial Intelligence since 2017. But it has a fatal flaw: The Attention Mechanism is $O(N^2)$ quadratic. If you double the context window from 4K words to 8K words, it takes 4x the compute and memory. If you want to feed an entire book into an <abbr title="Large Language Model">LLM</abbr> (100K tokens), the Transformer will crash the GPU.
 
 In late 2023, Albert Gu and Tri Dao released **Mamba**. It is a **State Space Model (SSM)**. It has the intelligence of a Transformer, but scales linearly at $O(N)$. It can process infinite context. Today, we look at the architecture that might kill the Transformer.
 
@@ -8,7 +8,7 @@ In late 2023, Albert Gu and Tri Dao released **Mamba**. It is a **State Space Mo
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The RNN vs The Transformer
+### 1. The <abbr title="Recurrent Neural Network">RNN</abbr> vs The Transformer
 - **RNNs (Recurrent Neural Networks):** Process text sequentially ($O(N)$). Word 2 relies on Word 1. Word 3 relies on Word 2. Because it is sequential, it cannot be parallelized on a GPU. It is slow to train. Also, by Word 1000, it forgets what Word 1 was.
 - **Transformers:** Process the entire sequence simultaneously. Highly parallelizable on GPUs (Fast to train!). But it requires every word to look at every other word ($O(N^2)$). It crashes on long documents.
 
@@ -17,7 +17,7 @@ SSMs borrow math from physics and control systems.
 In physics, if you want to track a moving rocket, you don't need to remember its entire past trajectory. You just maintain a continuous **"Hidden State"** $h(t)$ (its current velocity and position). When new data arrives ($x(t)$), you update the state using two matrices: $A$ (how the state evolves) and $B$ (how the input affects the state).
 The math: $h'(t) = A \cdot h(t) + B \cdot x(t)$
 
-**The HiPPO Initialization:** How do we stop the model from forgetting the past like an RNN? Researchers discovered a mathematical initialization for the $A$ matrix called HiPPO. It mathematically guarantees that the state vector $h(t)$ optimally memorizes the *entire history* of the sequence!
+**The HiPPO Initialization:** How do we stop the model from forgetting the past like an <abbr title="Recurrent Neural Network">RNN</abbr>? Researchers discovered a mathematical initialization for the $A$ matrix called HiPPO. It mathematically guarantees that the state vector $h(t)$ optimally memorizes the *entire history* of the sequence!
 
 ### 3. Mamba: The Selective SSM
 Older SSMs (like S4) used a fixed $B$ matrix. This meant they processed every word exactly the same way. If they read the word *"um"*, they memorized it just as strongly as the word *"Murder"*.
@@ -25,9 +25,9 @@ Older SSMs (like S4) used a fixed $B$ matrix. This meant they processed every wo
 When Mamba reads a word, a tiny linear layer looks at the word and *decides* whether to update the hidden state (memorize) or ignore it completely (Selective Filtering)! It acts like an intelligent, differentiable memory drive.
 
 ### 4. The Hardware-Aware Parallel Scan
-If Mamba processes tokens sequentially to update the hidden state, shouldn't it be as slow as an RNN?
+If Mamba processes tokens sequentially to update the hidden state, shouldn't it be as slow as an <abbr title="Recurrent Neural Network">RNN</abbr>?
 **No.** Tri Dao (the creator of Flash Attention) wrote a custom C++ algorithm called a **Parallel Scan**. Because the state updates are associative, the GPU can compute the sequential updates *in parallel* across the tiny, hyper-fast SRAM memory on the GPU cores. 
-Mamba achieves the parallel training speed of a Transformer, with the $O(N)$ linear inference speed of an RNN!
+Mamba achieves the parallel training speed of a Transformer, with the $O(N)$ linear inference speed of an <abbr title="Recurrent Neural Network">RNN</abbr>!
 
 ---
 
@@ -141,8 +141,8 @@ if __name__ == "__main__":
 
 ### 🛠️ The Challenge: In-Context Learning Failure
 SSMs struggle with one specific thing: "Copy-Paste" tasks (In-Context Learning).
-If you put a 50-line JSON file into the prompt, and ask the model to extract a specific key, a Transformer can look back, find the exact word, and copy it perfectly via Attention. 
-An SSM has compressed that entire JSON into a single hidden state $h(t)$. It physically cannot "look back". 
+If you put a 50-line <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> file into the prompt, and ask the model to extract a specific key, a Transformer can look back, find the exact word, and copy it perfectly via Attention. 
+An SSM has compressed that entire <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> into a single hidden state $h(t)$. It physically cannot "look back". 
 **Your Task:**
 1. Conceptually design a **Hybrid Architecture** (like Jamba).
 2. Stack 8 Mamba Layers, followed by 1 Transformer Attention Layer, followed by 8 Mamba layers.
@@ -153,7 +153,7 @@ An SSM has compressed that entire JSON into a single hidden state $h(t)$. It phy
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Mamba achieves linear scaling and solves the quadratic context bottleneck. However, Transformers still dominate the production LLM space. Why? Discuss the trade-offs between SSMs and Transformers regarding In-Context Learning, optimization difficulty, and hardware ecosystems."*
+*"Mamba achieves linear scaling and solves the quadratic context bottleneck. However, Transformers still dominate the production <abbr title="Large Language Model">LLM</abbr> space. Why? Discuss the trade-offs between SSMs and Transformers regarding In-Context Learning, optimization difficulty, and hardware ecosystems."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -161,12 +161,12 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **The In-Context Learning Flaw:** 
    - State that because SSMs compress the past into a fixed-size vector $h(t)$, their resolution degrades. They are fundamentally worse than Transformers at tasks that require exact retrieval of a specific word from 10,000 words ago (Needle in a Haystack).
 2. **The Ecosystem Moat:**
-   - Explain that Transformers have 7 years of deeply optimized ecosystem tooling. Flash Attention, vLLM, TensorRT, KV-Cache paging, and LoRA adapters are all built specifically for the $QKV$ architecture. Mamba requires entirely new CUDA kernels and serving infrastructure to be built from scratch.
+   - Explain that Transformers have 7 years of deeply optimized ecosystem tooling. Flash Attention, vLLM, TensorRT, KV-Cache paging, and <abbr title="Low-Rank Adaptation">LoRA</abbr> adapters are all built specifically for the $QKV$ architecture. Mamba requires entirely new CUDA kernels and serving infrastructure to be built from scratch.
 3. **Training Instability:**
    - Note that maintaining numerical stability when multiplying the $A\_bar$ matrix sequentially thousands of times is extremely difficult. The continuous-time math is highly sensitive to learning rates compared to the robust, normalized matrix multiplications of a Transformer.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-You have reached the edge of modern AI Architecture. MoE and Mamba are state-of-the-art.
+You have reached the edge of modern <abbr title="Artificial Intelligence">AI</abbr> Architecture. <abbr title="Mixture of Experts">MoE</abbr> and Mamba are state-of-the-art.
 Starting Tomorrow, in **Day 81**, we pivot. How do we take a standard model and force it to handle a 1-Million word context window? We will explore **Ring Attention** and **Context Parallelism**!

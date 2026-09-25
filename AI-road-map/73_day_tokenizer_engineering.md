@@ -11,11 +11,11 @@ Today, we learn how to compress the entirety of human language into a perfectly 
 
 ### 1. The Tokenization Dilemma
 How do we convert words into numbers?
-- **Word-Level:** If every unique word gets an ID, our dictionary needs to be $1,000,000$ words long. The Embedding Matrix ($1,000,000 \times 512$) will use 2 Gigabytes of VRAM just to store the dictionary! Worse, if someone typos *"Applesz"*, the AI crashes because the word is Out-Of-Vocabulary (OOV).
+- **Word-Level:** If every unique word gets an ID, our dictionary needs to be $1,000,000$ words long. The Embedding Matrix ($1,000,000 \times 512$) will use 2 Gigabytes of VRAM just to store the dictionary! Worse, if someone typos *"Applesz"*, the <abbr title="Artificial Intelligence">AI</abbr> crashes because the word is Out-Of-Vocabulary (OOV).
 - **Character-Level:** If every letter gets an ID, our dictionary is only 26 letters! But the word *"Apple"* now takes 5 sequence steps to process. The $O(N^2)$ Attention mechanism will crash because sentences become 5x longer!
 
-### 2. The Solution: Byte-Pair Encoding (BPE)
-BPE is the golden middle ground. We build a dictionary of **Sub-words**.
+### 2. The Solution: Byte-Pair Encoding (<abbr title="Byte Pair Encoding">BPE</abbr>)
+<abbr title="Byte Pair Encoding">BPE</abbr> is the golden middle ground. We build a dictionary of **Sub-words**.
 1. We start with the base characters: `a, b, c...`
 2. We scan the entire internet and count the most frequent adjacent pairs. 
 3. We see that `t` and `h` appear next to each other millions of times. We merge them into a single new token: `th`.
@@ -24,21 +24,21 @@ BPE is the golden middle ground. We build a dictionary of **Sub-words**.
 
 ### 3. The Fertility Disparity (The Multilingual Flaw)
 "Fertility" is the mathematical average of how many tokens it takes to represent one word.
-Most companies (like OpenAI) built their BPE tokenizers by scanning English text.
+Most companies (like OpenAI) built their <abbr title="Byte Pair Encoding">BPE</abbr> tokenizers by scanning English text.
 - **English Fertility:** $\approx 1.2$ tokens per word.
 - **Hindi Fertility:** $\approx 3.5$ tokens per word.
 
 **Why this is a disaster:** If a Hindi speaker types a 1,000-word prompt, it becomes 3,500 tokens.
-1. The AI hits its context window limit 3x faster.
+1. The <abbr title="Artificial Intelligence">AI</abbr> hits its context window limit 3x faster.
 2. The $O(N^2)$ attention mechanism runs 9x slower!
-3. The user gets charged 3x more API credits!
+3. The user gets charged 3x more <abbr title="Application Programming Interface">API</abbr> credits!
 Tokenization is not just linguistics; it is a critical engineering optimization.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a BPE Tokenizer entirely from scratch using the HuggingFace `tokenizers` library. We will train it on a tiny corpus and watch it mathematically learn to merge characters!
+Let's build a <abbr title="Byte Pair Encoding">BPE</abbr> Tokenizer entirely from scratch using the HuggingFace `tokenizers` library. We will train it on a tiny corpus and watch it mathematically learn to merge characters!
 
 Create a file named `train_tokenizer.py`:
 
@@ -103,18 +103,18 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **Pre-tokenization:** We split the text by whitespace *before* running BPE. If we didn't do this, BPE might merge the end of one word with the beginning of the next word (e.g., merging the `e` and `i` in `the internet`), which ruins linguistic structure!
-2. **Special Tokens:** `[PAD]` ensures batches are rectangular. `[BOS]` (Beginning of Sequence) and `[EOS]` (End of Sequence) are critical for telling the AI when to start and stop generating.
+1. **Pre-tokenization:** We split the text by whitespace *before* running <abbr title="Byte Pair Encoding">BPE</abbr>. If we didn't do this, <abbr title="Byte Pair Encoding">BPE</abbr> might merge the end of one word with the beginning of the next word (e.g., merging the `e` and `i` in `the internet`), which ruins linguistic structure!
+2. **Special Tokens:** `[PAD]` ensures batches are rectangular. `[BOS]` (Beginning of Sequence) and `[EOS]` (End of Sequence) are critical for telling the <abbr title="Artificial Intelligence">AI</abbr> when to start and stop generating.
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The Code Tokenizer
-If you train a Tokenizer on Wikipedia, it will merge letters into English words. But if you try to use that Tokenizer for an AI coding assistant, it will be incredibly inefficient.
+If you train a Tokenizer on Wikipedia, it will merge letters into English words. But if you try to use that Tokenizer for an <abbr title="Artificial Intelligence">AI</abbr> coding assistant, it will be incredibly inefficient.
 **Your Task:**
 1. Conceptually design a corpus of 100 Python scripts.
-2. If you ran BPE on this, what merges would you expect to see?
+2. If you ran <abbr title="Byte Pair Encoding">BPE</abbr> on this, what merges would you expect to see?
 3. It would merge `d`, `e`, `f` into the single token `def`.
 4. It would merge 4 spaces `    ` into a single token, drastically reducing the sequence length of indented loops!
 5. This is exactly how GitHub Copilot's tokenizer was designed!
@@ -124,18 +124,18 @@ If you train a Tokenizer on Wikipedia, it will merge letters into English words.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You are building a multilingual LLM for global deployment. English uses 1.2 tokens/word but Hindi uses 3.5 tokens/word. Explain exactly how this disparity affects serving cost, model quality, and user experience. How would you architect the Tokenizer training pipeline to fix this?"*
+*"You are building a multilingual <abbr title="Large Language Model">LLM</abbr> for global deployment. English uses 1.2 tokens/word but Hindi uses 3.5 tokens/word. Explain exactly how this disparity affects serving cost, model quality, and user experience. How would you architect the Tokenizer training pipeline to fix this?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Compounding Cost:** 
-   - State that LLM compute is $O(N^2)$ for Attention, and autoregressive generation requires $O(N)$ KV-Cache memory. A 3x increase in tokens means a 9x increase in compute and a 3x increase in VRAM, making Hindi generation massively slower and significantly more expensive to serve.
+   - State that <abbr title="Large Language Model">LLM</abbr> compute is $O(N^2)$ for Attention, and autoregressive generation requires $O(N)$ KV-Cache memory. A 3x increase in tokens means a 9x increase in compute and a 3x increase in VRAM, making Hindi generation massively slower and significantly more expensive to serve.
 2. **The Quality Degradation:**
-   - Explain that if a word is shattered into 4 meaningless sub-characters, the LLM struggles to learn the semantic meaning of the word compared to English where the entire word is processed instantly as a single vector.
+   - Explain that if a word is shattered into 4 meaningless sub-characters, the <abbr title="Large Language Model">LLM</abbr> struggles to learn the semantic meaning of the word compared to English where the entire word is processed instantly as a single vector.
 3. **The Solution (Data Sampling):**
-   - Conclude that BPE is a purely statistical algorithm. If your corpus is 95% English, BPE will allocate 95% of the 50,000 vocabulary slots to English subwords.
-   - To fix this, you must **Up-sample** the Hindi text data *during the Tokenizer training phase*. By intentionally feeding the Tokenizer a balanced mix of 50% English and 50% Hindi, BPE will allocate thousands of vocab slots to full Hindi words, equalizing the fertility rate!
+   - Conclude that <abbr title="Byte Pair Encoding">BPE</abbr> is a purely statistical algorithm. If your corpus is 95% English, <abbr title="Byte Pair Encoding">BPE</abbr> will allocate 95% of the 50,000 vocabulary slots to English subwords.
+   - To fix this, you must **Up-sample** the Hindi text data *during the Tokenizer training phase*. By intentionally feeding the Tokenizer a balanced mix of 50% English and 50% Hindi, <abbr title="Byte Pair Encoding">BPE</abbr> will allocate thousands of vocab slots to full Hindi words, equalizing the fertility rate!
 
 ---
 **Task for the end of the day:** Commit your code to Git.

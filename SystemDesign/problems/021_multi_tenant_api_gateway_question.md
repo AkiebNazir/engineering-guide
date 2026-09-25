@@ -1,15 +1,15 @@
 # 021 — Design a Multi-Tenant API Gateway
 
-Design an API gateway that routes and versions hundreds of internal APIs for many tenants while protecting backends from abuse.
+Design an <abbr title="Application Programming Interface">API</abbr> gateway that routes and versions hundreds of internal APIs for many tenants while protecting backends from abuse.
 
 ## Functional requirements
 
-- The gateway routes incoming requests to the correct backend service and API version based on path/host/header.
+- The gateway routes incoming requests to the correct backend service and <abbr title="Application Programming Interface">API</abbr> version based on path/host/header.
 - Each request is authenticated and authorized before reaching a backend.
 - Each tenant has an enforced quota/rate limit, isolated from other tenants' usage.
 - A tracing/correlation ID is propagated end-to-end for every request.
 - A single abusive or misbehaving tenant must not degrade latency or availability for other tenants.
-- Operators can roll out a new API version or route change without downtime.
+- Operators can roll out a new <abbr title="Application Programming Interface">API</abbr> version or route change without downtime.
 
 ## Constraints to assume
 
@@ -24,8 +24,8 @@ Design an API gateway that routes and versions hundreds of internal APIs for man
 Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
-2. Back-of-envelope QPS, storage, and bandwidth estimates.
-3. API contracts and core data model.
+2. Back-of-envelope <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage, and bandwidth estimates.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
 5. Rate-limiting and tenant-isolation strategy that contains a single abusive tenant.
 6. Cache, scale, abuse, failure, and observability plan.

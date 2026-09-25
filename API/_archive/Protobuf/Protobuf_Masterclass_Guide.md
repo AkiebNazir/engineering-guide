@@ -2,22 +2,22 @@
 
 To master Protocol Buffers, you must stop thinking about data as "human-readable strings" and start understanding **Serialization**, **Binary Bit-Shifting**, and **Schema Evolution**.
 
-## Part 1: The Core Philosophy (The Cost of JSON)
+## Part 1: The Core Philosophy (The Cost of <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>)
 
-JSON is amazing for web browsers and humans. It is terrible for machines.
+<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is amazing for web browsers and humans. It is terrible for machines.
 
-Look at this JSON payload:
+Look at this <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> payload:
 ```json
 {"user_id": 123456, "is_active": true}
 ```
-In JSON, the string `"user_id"` takes up 9 bytes. The number `123456` is sent as the characters `"1" "2" "3" "4" "5" "6"`, taking 6 bytes. Total payload size: ~39 bytes.
+In <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, the string `"user_id"` takes up 9 bytes. The number `123456` is sent as the characters `"1" "2" "3" "4" "5" "6"`, taking 6 bytes. Total payload size: ~39 bytes.
 
 **The Protobuf Paradigm:**
 Protobuf strips away the keys entirely. The sender and receiver agree on a `.proto` schema ahead of time.
 Instead of sending `"user_id"`, Protobuf sends the binary tag `1`. Instead of characters for numbers, it sends the raw binary integer.
 The equivalent Protobuf payload is roughly **3 to 4 bytes**.
 
-When you are sending 100,000 messages per second through a Kafka queue, saving 35 bytes per message saves you Terabytes of network bandwidth and drastically reduces CPU serialization time.
+When you are sending 100,000 messages per second through a Kafka queue, saving 35 bytes per message saves you Terabytes of network bandwidth and drastically reduces <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> serialization time.
 
 ---
 
@@ -72,7 +72,7 @@ message TelemetryEvent {
 
 ## Part 4: Schema Evolution (The Golden Rules)
 
-The biggest advantage of Protobuf over JSON is that it is fundamentally designed to allow your data structures to evolve without breaking older code running in production.
+The biggest advantage of Protobuf over <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is that it is fundamentally designed to allow your data structures to evolve without breaking older code running in production.
 
 If you have a v1 microservice talking to a v2 microservice, they will seamlessly communicate if you follow the **Golden Rules of Schema Evolution**:
 

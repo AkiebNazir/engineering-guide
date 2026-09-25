@@ -23,9 +23,9 @@ A problem is a candidate for a greedy algorithm only if it has **both**:
    problem, and an optimal solution to the whole problem contains an
    optimal solution to that subproblem.
 
-Optimal substructure alone is not enough — DP problems have it too (that's
-*why* DP works on them). The dividing line is the greedy-choice property:
-DP explores (or memoizes) multiple choices per state because no single
+Optimal substructure alone is not enough — <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problems have it too (that's
+*why* <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> works on them). The dividing line is the greedy-choice property:
+<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> explores (or memoizes) multiple choices per state because no single
 choice is provably safe in isolation; greedy commits to one choice per
 state because it *is* provably safe, and never backtracks.
 
@@ -34,21 +34,24 @@ state because it *is* provably safe, and never backtracks.
 The exchange argument is the standard proof technique for the
 greedy-choice property. The shape is always the same:
 
-```mermaid
+```arch
 %% caption: The exchange argument: show that swapping the greedy choice into any optimal solution never makes it worse.
-flowchart TD
-  A["Greedy picks choice g first"] --> B["Take ANY optimal solution O"]
-  B --> C{"Does O already contain g?"}
-  C -->|yes| E["some optimal solution contains g"]:::ok
-  C -->|no| D["swap g in for the element it displaces in O"]
-  D --> F{"still feasible and no worse?"}
-  F -->|yes| E
-  F -->|no| X["greedy choice is WRONG: look at DP"]:::bad
-  E --> G["repeat on the remaining subproblem"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x80
+node a "Greedy picks choice g first" at 0,0 w=200
+node b "Take ANY optimal solution O" at 0,1 w=200
+node c "Does O already contain g?" at 0,2 shape=diamond color=amber
+node e "Some optimal solution contains g" at 1,2 color=green w=200
+node g "Repeat on the remaining subproblem" at 2,2 w=180
+node d "Swap g in" at 0,3 w=200 sub="for the element it displaces in O"
+node f "Still feasible and no worse?" at 0,4 shape=diamond color=amber
+node x "Greedy choice is WRONG" at 0,5 color=red w=200 sub="look at DP"
+a -> b -> c
+c -> e : "yes"
+c -> d : "no"
+d -> f
+f:R -> e:B : "yes"
+f -> x : "no"
+e -> g
 ```
 
 
@@ -82,26 +85,28 @@ runtime demo) where doing so strictly *decreases* the sum compared to the
 provably-correct choice ("always negate the current minimum"). When you
 cannot complete step 2 above — when the swap you'd need to perform
 provably makes things worse in some case — that is your signal the greedy
-idea is wrong, and you need DP (explore both choices, remember the best)
+idea is wrong, and you need <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (explore both choices, remember the best)
 instead.
 
-### 1.2 The generic greedy vs. DP decision test
+### 1.2 The generic greedy vs. <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> decision test
 
 Ask: **"If I make the locally-best choice now, could a worse-looking
 choice now ever lead to a strictly better outcome later?"**
 
-```mermaid
+```arch
 %% caption: Greedy or DP?
-flowchart TD
-  Q(["Optimisation problem"]) --> A{"Can you prove a local choice is safe?<br/>(exchange argument)"}
-  A -->|yes| G["Greedy: sort or scan once"]:::ok
-  A -->|no| B{"Do subproblems overlap?"}
-  B -->|yes| D["Dynamic programming"]:::ok
-  B -->|no| C["Backtracking or search"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 220x80
+node q "Optimisation problem" at 0,0 shape=pill
+node a "Local choice provably safe?\n(exchange argument)" at 0,1 shape=diamond color=amber
+node g "Greedy" at 1,1 color=green sub="sort or scan once"
+node b "Do subproblems overlap?" at 0,2 shape=diamond color=amber
+node d "Dynamic programming" at 1,2 color=green
+node c "Backtracking or search" at 0,3 color=slate
+q -> a
+a -> g : "yes"
+a -> b : "no"
+b -> d : "yes"
+b -> c : "no"
 ```
 
 
@@ -109,7 +114,7 @@ flowchart TD
   greedy, O(n) or O(n log n) typically.
 - If you can find *even one* counterexample where the answer is "yes" →
   the locally-best choice is not safe; you need to consider both branches
-  and keep the better one — that's DP (topics 16–17), often paying an
+  and keep the better one — that's <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (topics 16–17), often paying an
   extra O(n) or O(n²) factor for the memoized exploration greedy avoids.
 
 ---
@@ -146,7 +151,7 @@ do a single scan.
   *smallest* remaining card, because nothing smaller exists to complete a
   group that needs it — sorting (or a min-heap) makes that smallest card
   available in O(log n) instead of an O(n) scan every round.
-- **Jump Game II** (004): a BFS-flavored greedy over "levels" — implicitly
+- **Jump Game II** (004): a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>-flavored greedy over "levels" — implicitly
   processes the array in the order that keeps the reachable frontier
   monotone; no explicit sort needed here because the array index *is* the
   sort key, but the *pattern* (advance a frontier, commit once you can't
@@ -162,29 +167,29 @@ at the end.
   maximum possible count of unmatched `(` after each character, given that
   `*` can be `(`, `)`, or empty. This is still greedy (no branching
   explosion — the range summarizes all live branches in O(1) extra space)
-  but it's a step beyond a single running scalar; the DP alternative
+  but it's a step beyond a single running scalar; the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> alternative
   (problem 010's O(n²) contrast) tracks the *same* information but as an
   explicit boolean table over `(i, balance)` instead of collapsing it to
-  an interval, which is the concrete illustration of "DP explores, greedy
+  an interval, which is the concrete illustration of "<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> explores, greedy
   collapses" from Part 1.
 
 ---
 
-## Part 3 · "Provably greedy" vs. "looks greedy but needs DP" — contrast with topics 16/17
+## Part 3 · "Provably greedy" vs. "looks greedy but needs <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>" — contrast with topics 16/17
 
 The whole reason topic 18 exists as a separate unit from topics 16–17 (1D
-and 2D DP) is that several classic problems *look* identical in shape to a
-DP problem but admit a proof that collapses the DP table to O(1) state.
+and 2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) is that several classic problems *look* identical in shape to a
+<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem but admit a proof that collapses the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table to O(1) state.
 
-| Signal | Points toward greedy | Points toward DP |
+| Signal | Points toward greedy | Points toward <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> |
 |---|---|---|
-| Can you name the exchange argument in one or two sentences? | Yes → greedy is likely provably correct | No, or every attempt finds a counterexample → DP |
-| Does today's optimal choice ever depend on *which* choice was optimal several steps back (not just the current running state)? | No — a small fixed summary (a running max, a range, a frontier index) is always enough | Yes → you need to remember more than a constant amount of history → DP table |
-| Do two different prefixes that reach the "same-looking" local state ever need to be treated differently later? | No, they're interchangeable | Yes → local state alone doesn't determine the future → DP |
+| Can you name the exchange argument in one or two sentences? | Yes → greedy is likely provably correct | No, or every attempt finds a counterexample → <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> |
+| Does today's optimal choice ever depend on *which* choice was optimal several steps back (not just the current running state)? | No — a small fixed summary (a running max, a range, a frontier index) is always enough | Yes → you need to remember more than a constant amount of history → <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table |
+| Do two different prefixes that reach the "same-looking" local state ever need to be treated differently later? | No, they're interchangeable | Yes → local state alone doesn't determine the future → <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> |
 | Best time to buy/sell stock **II** (unlimited transactions, no fee, no cooldown) | **Greedy** — capture every uphill move (problem 006) | — |
-| Best time to buy/sell stock **with cooldown / transaction fee / at most k transactions** | — | **DP** — the "should I sell now" choice depends on state (holding vs. not, transactions used) that a single running max can't capture; that's exactly topic 16's DP-1D territory |
-| Jump Game / Jump Game II (can-you-reach / min-jumps) | **Greedy** — farthest-reachable frontier is a provably sufficient summary | Longest Increasing Subsequence-style "which specific path" problems | **DP** — need the actual sequence/count, not just reachability |
-| Coin change with unlimited coins of *fixed given* denominations, minimize count | Greedy **only** works for specific denomination sets (e.g. canonical currency systems like US coins) — no general exchange argument | **DP** in general — classic counterexample: coins `{1, 3, 4}`, target `6` → greedy takes `4+1+1` (3 coins), optimal is `3+3` (2 coins) |
+| Best time to buy/sell stock **with cooldown / transaction fee / at most k transactions** | — | **<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>** — the "should I sell now" choice depends on state (holding vs. not, transactions used) that a single running max can't capture; that's exactly topic 16's <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>-1D territory |
+| Jump Game / Jump Game II (can-you-reach / min-jumps) | **Greedy** — farthest-reachable frontier is a provably sufficient summary | Longest Increasing Subsequence-style "which specific path" problems | **<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>** — need the actual sequence/count, not just reachability |
+| Coin change with unlimited coins of *fixed given* denominations, minimize count | Greedy **only** works for specific denomination sets (e.g. canonical currency systems like US coins) — no general exchange argument | **<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>** in general — classic counterexample: coins `{1, 3, 4}`, target `6` → greedy takes `4+1+1` (3 coins), optimal is `3+3` (2 coins) |
 
 The last row is the canonical cautionary tale to keep in mind whenever a
 problem *smells* greedy: coin change's greedy heuristic ("always take the
@@ -208,7 +213,7 @@ heuristic shown visibly failing where relevant.
    what you know the true optimum to be.
 3. If it breaks, write down *why* — that failure mode is usually the seed
    of either a corrected greedy rule (add a tiebreak, change the sort key)
-   or evidence you actually need DP.
+   or evidence you actually need <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>.
 4. If it survives, write the one/two-sentence exchange argument down
    before writing code — if you can't articulate it, you don't yet know
    *why* it works, only that it happened to pass your test cases, which is
@@ -222,14 +227,14 @@ heuristic shown visibly failing where relevant.
 |---|---|---|---|
 | 001 | Maximize Sum of Array After K Negations | Sort, then scan | Broken heuristic (negate-largest) shown failing live |
 | 002 | Maximum Subarray (Kadane's) | Running best-so-far | O(n) vs. brute-force O(n²)/O(n³), measured |
-| 003 | Jump Game | Running frontier | O(n²) DP alternative shown for contrast |
-| 004 | Jump Game II | Running frontier (level/BFS-flavored) | O(n²) DP alternative shown for contrast |
+| 003 | Jump Game | Running frontier | O(n²) <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> alternative shown for contrast |
+| 004 | Jump Game II | Running frontier (level/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>-flavored) | O(n²) <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> alternative shown for contrast |
 | 005 | Gas Station | Running total + reset point | Exchange argument on *why* the reset point works |
-| 006 | Best Time to Buy/Sell Stock II | Running best-so-far | Contrast with cooldown/fee variants which need DP (topic 16) |
+| 006 | Best Time to Buy/Sell Stock II | Running best-so-far | Contrast with cooldown/fee variants which need <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (topic 16) |
 | 007 | Hand of Straights | Sort, then scan (min-heap variant) | Why you must always start from the current minimum |
 | 008 | Merge Triplets to Form Target Triplet | Filter, then scan | Coordinate-wise max is only safe on "usable" triplets |
 | 009 | Partition Labels | Sort/precompute, then scan | Same family as interval merging (topic 19) |
-| 010 | Valid Parenthesis String | Range/bound tracking | O(n²) DP-over-balance alternative shown for contrast |
+| 010 | Valid Parenthesis String | Range/bound tracking | O(n²) <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>-over-balance alternative shown for contrast |
 
 <!-- block:18_py_1_beyond -->
 ## Part 6 · Proof Techniques, Interval Scheduling and the Classics Beyond the Ten
@@ -238,19 +243,22 @@ The guide teaches *when* greedy is legal and gives ten problems. This Part adds 
 the classic scheduling problem the ten do not include, and a way to **test a greedy** before you trust it. Every snippet was
 run, and every count below is from a randomised cross-check on this machine.
 
-```mermaid
+```arch
 %% caption: A greedy is only as good as its proof. Try to break it with a small counter-example first, then name the argument.
-flowchart TD
-  Q(["A greedy idea"]) --> A{"Can you find a small counter-example?<br/>(brute-force the tiny inputs)"}
-  A -->|"yes"| D["not greedy: use DP or search<br/>(coins 1,3,4 for 6)"]:::bad
-  A -->|"no"| B{"Which argument fits?"}
-  B -->|"swap an optimal choice for the greedy one, no worse"| E["exchange argument"]:::ok
-  B -->|"after every step, greedy is at least as far ahead as any other"| S["greedy stays ahead"]:::ok
-  B -->|"every partial choice is extendable to an optimum"| M["matroid / structural argument"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "A greedy idea" at 0,0 shape=pill
+node a "Small counter-example?\n(brute-force tiny inputs)" at 0,1 shape=diamond color=amber
+node d "Not greedy: use DP or search" at 1,1 color=red w=230 sub="e.g. coins 1,3,4 for 6"
+node b "Which argument fits?" at 0,2 shape=diamond color=amber
+node e "Exchange argument" at 1,2 color=green w=380 sub="swap an optimal choice for the greedy one, no worse"
+node s "Greedy stays ahead" at 1,3 color=green w=380 sub="after every step, greedy is at least as far ahead as any other"
+node m "Matroid / structural argument" at 1,4 color=green w=380 sub="every partial choice extends to an optimum"
+q -> a
+a -> d : "yes"
+a -> b : "no"
+b:R -> e:L
+b:R -> s:L
+b:R -> m:L
 ```
 
 ### 6.1 Two proof styles, in one sentence each
@@ -321,11 +329,11 @@ worth more than a proof attempted in minutes — and the counter-example goes st
 ### 6.5 When greedy fails — and the variant that rescues it
 
 - **Coin Change** with denominations `{1, 3, 4}`, amount 6: greedy takes `4 + 1 + 1` (3 coins), the optimum is `3 + 3` (2). Greedy
-  works only for *canonical* systems (US coins) — no exchange argument exists in general, so use DP.
+  works only for *canonical* systems (US coins) — no exchange argument exists in general, so use <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>.
 - **Knapsack:** sort by value-per-weight and take greedily. With **splittable** items (*fractional* knapsack) this is
-  optimal — capacity 50 on `(60,10), (100,20), (120,30)` gives **240**. With **indivisible** items (0/1) it is *not* — the DP
+  optimal — capacity 50 on `(60,10), (100,20), (120,30)` gives **240**. With **indivisible** items (0/1) it is *not* — the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
   optimum is **220**. Same data, opposite verdicts; the difference is whether you may take a fraction.
-- **Stock with cooldown / fee / `k` transactions** needs DP (topic 17): "should I sell now?" depends on state a single running
+- **Stock with cooldown / fee / `k` transactions** needs <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (topic 17): "should I sell now?" depends on state a single running
   maximum cannot hold. Unlimited transactions with no fee is greedy (sum every rise).
 
 ### 6.6 Greedy algorithms you already know
@@ -344,10 +352,10 @@ worth more than a proof attempted in minutes — and the counter-example goes st
 | Follow-up | The answer |
 |---|---|
 | "Prove it." | State the exchange argument or the quantity greedy keeps ahead on, in one sentence. |
-| "Why not DP?" | Greedy is O(n log n) or O(n); DP was needed only if a small counter-example exists — show you looked for one. |
+| "Why not <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>?" | Greedy is O(n log n) or O(n); <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> was needed only if a small counter-example exists — show you looked for one. |
 | "Does the sort key matter?" | Yes — it *is* the algorithm (6.2). Give the counter-example for the tempting wrong key. |
 | "Ties?" | Encode the tie-break as an explicit secondary key; do not rely on stability. |
-| "Weighted intervals?" | Greedy fails — weighted interval scheduling is a DP over end-time-sorted intervals with a binary search for the last compatible one. |
+| "Weighted intervals?" | Greedy fails — weighted interval scheduling is a <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> over end-time-sorted intervals with a binary search for the last compatible one. |
 | "Online / streaming?" | Some greedies work online (Kadane, farthest reach), others need the whole input sorted. |
 
 ---
@@ -363,9 +371,9 @@ Ten problems, four moves (sort then scan · running best-so-far · running front
 | [001 · Maximize Sum Of Array After K Negations](PyDSA/18_greedy/001_maximize_sum_of_array_after_k_negations_solution.py) <br>LC 1005 · Easy | Sort, then scan | Negate the most negative numbers first while `k` lasts (each flip adds `2·\|x\|`); if `k` is still odd afterwards, negate the smallest value of the *already-negated* array. **Trap:** "always negate the current maximum" (shown failing live); taking the leftover-`k` minimum from the pre-flip array. |
 | [002 · Maximum Subarray](PyDSA/18_greedy/002_maximum_subarray_solution.py) <br>LC 53 · Medium | Running best-so-far (Kadane) | `curr = max(x, curr + x)` extends or restarts in one expression, and `best` records the maximum. O(n) against the brute force's O(n²)/O(n³). **Trap:** `best = 0` (allows the empty subarray — wrong on all-negative input); `curr = max(0, curr) + x` (the same bug). |
 | [003 · Jump Game](PyDSA/18_greedy/003_jump_game_solution.py) <br>LC 55 · Medium | Running frontier | Track `farthest`; `i > farthest` means you can never arrive — fail; otherwise extend. No per-step jump choices at all. **Trap:** "always take the biggest jump" (walks into a `0`); only the early-success check without the `i > farthest` guard; comparing against `n` instead of `n - 1`. |
-| [004 · Jump Game II](PyDSA/18_greedy/004_jump_game_ii_solution.py) <br>LC 45 · Medium | Running frontier by levels | BFS in disguise: the current level ends at `level_end`; crossing it costs one more jump and sets the next end to `farthest`. **Trap:** "always jump exactly `nums[i]`" (overshoots a better staging index); looping to `n` instead of `n - 1` (a spurious extra jump). |
+| [004 · Jump Game II](PyDSA/18_greedy/004_jump_game_ii_solution.py) <br>LC 45 · Medium | Running frontier by levels | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> in disguise: the current level ends at `level_end`; crossing it costs one more jump and sets the next end to `farthest`. **Trap:** "always jump exactly `nums[i]`" (overshoots a better staging index); looping to `n` instead of `n - 1` (a spurious extra jump). |
 | [005 · Gas Station](PyDSA/18_greedy/005_gas_station_solution.py) <br>LC 134 · Medium | Running total + reset point | A solution exists iff `sum(gas) >= sum(cost)`; when the tank goes negative, restart after the failed stretch. **Trap:** the local test `gas[i] >= cost[i]` (ignores the carried tank); omitting the global feasibility check. |
-| [006 · Best Time to Buy and Sell Stock II](PyDSA/18_greedy/006_best_time_to_buy_and_sell_stock_ii_solution.py) <br>LC 122 · Medium | Sum every rise | With unlimited trades, no fee and no cooldown, profit = the sum of every positive day-to-day increase. **Trap:** hunting for one best (buy, sell) pair (that is LC 121); reusing the trick once a cooldown or fee exists (that is DP). |
+| [006 · Best Time to Buy and Sell Stock II](PyDSA/18_greedy/006_best_time_to_buy_and_sell_stock_ii_solution.py) <br>LC 122 · Medium | Sum every rise | With unlimited trades, no fee and no cooldown, profit = the sum of every positive day-to-day increase. **Trap:** hunting for one best (buy, sell) pair (that is LC 121); reusing the trick once a cooldown or fee exists (that is <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>). |
 | [007 · Hand of Straights](PyDSA/18_greedy/007_hand_of_straights_solution.py) <br>LC 846 · Medium | Sort, then start from the minimum | Always start the next run at the *smallest* remaining card (forced, by the exchange argument); count copies with a `Counter`. **Trap:** starting from an arbitrary or highest-count card (strands a smaller value); dropping the `len(hand) % groupSize` early return. |
 | [008 · Merge Triplets to Form Target Triplet](PyDSA/18_greedy/008_merge_triplets_to_form_target_triplet_solution.py) <br>LC 1899 · Medium | Filter, then scan | Merging is a coordinate-wise max, so discard any triplet with a coordinate **above** the target, then check that the survivors reach every coordinate. **Trap:** merging without filtering (one over-target coordinate poisons the max); filtering on only one or two coordinates; `>=` instead of `>`. |
 | [009 · Partition Labels](PyDSA/18_greedy/009_partition_labels_solution.py) <br>LC 763 · Medium | Precompute last index, then scan | Store each letter's last occurrence first; extend `end` to the farthest last-occurrence seen; cut when `i == end`. **Trap:** closing a partition once a letter "looks stable"; building the last-occurrence map in the same forward pass. |

@@ -202,7 +202,7 @@ you either way.
   keeps a tiny sliver of old data forever instead of being cleaned up.
 - **Assuming Redis being down means "fail open" is automatically the right default.** For
   many APIs, if the rate limiter can't be reached, you want to fail open (let requests
-  through) rather than take the whole API down — but that's a product decision, not a
+  through) rather than take the whole <abbr title="Application Programming Interface">API</abbr> down — but that's a product decision, not a
   given; decide and document which one you want up front.
 
 ## What's next

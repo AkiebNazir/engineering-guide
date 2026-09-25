@@ -16,20 +16,22 @@
 Binary search does **not** require a sorted array. It requires a predicate
 `f(x)` over an ordered space such that:
 
-```mermaid
+```arch
 %% caption: Binary search finds where a monotone predicate flips from False to True. Each probe discards the half that cannot contain the flip.
-flowchart LR
-  subgraph FALSE["predicate is False"]
-    direction LR
-    a0["F"] --- a1["F"] --- a2["F"] --- a3["F"]
-  end
-  subgraph TRUE["predicate is True"]
-    direction LR
-    a4["T"] --- a5["T"] --- a6["T"]
-  end
-  a3 ==>|"flip: the first True is the answer"| a4
-  style FALSE stroke:#d9534f
-  style TRUE stroke:#3fa66b
+grid 64x80
+route straight
+group fg "predicate is False" color=red
+node a0 "F" at 0,0 in fg shape=circle color=red
+node a1 "F" at 1,0 in fg shape=circle color=red
+node a2 "F" at 2,0 in fg shape=circle color=red
+node a3 "F" at 3,0 in fg shape=circle color=red
+group tg "predicate is True" color=green
+node a4 "T" at 7,0 in tg shape=circle color=green
+node a5 "T" at 8,0 in tg shape=circle color=green
+node a6 "T" at 9,0 in tg shape=circle color=green
+a0 -- a1 -- a2 -- a3
+a4 -- a5 -- a6
+a3 ==> a4 : "flip: the first True is the answer"
 ```
 
 
@@ -68,18 +70,19 @@ specific value, or the insertion point for one, or a boundary between two
 regions of the array. `lo`/`hi` are **array indices**. Problems 001–005,
 007–008 live here.
 
-```mermaid
+```arch
 %% caption: Two families: search on the array's indices, or search on the range of candidate answers.
-flowchart TD
-  Q(["What are lo and hi moving over?"]) --> A["Indices of a sorted array"]
-  Q --> B["Candidate answers<br/>(speed, capacity, days ...)"]
-  A --> A1["Family A: search ON the array<br/>while lo ≤ hi, hi = mid - 1"]:::ok
-  B --> B1["Family B: search ON the answer<br/>while lo #lt; hi, hi = mid"]:::hot
-  B1 --> B2["needs feasible(x), monotone:<br/>False ... False True ... True"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x100
+node q "What are lo and hi moving over?" at 0.5,0 shape=pill
+node a "Indices of a sorted array" at 0,1
+node b "Candidate answers" at 1,1 sub="speed, capacity, days ..."
+node a1 "Family A: search ON the array" at 0,2 color=green sub="while lo ≤ hi, hi = mid - 1"
+node b1 "Family B: search ON the answer" at 1,2 color=amber sub="while lo < hi, hi = mid"
+node b2 "Needs feasible(x), monotone" at 1,3 sub="False ... False True ... True"
+q:B -> a:T
+q:B -> b:T
+a -> a1
+b -> b1 -> b2
 ```
 
 
@@ -221,22 +224,28 @@ compared to `target` alone tells you nothing. But it has a weaker, still
 useful structure: **cut it at any point, and at least one of the two
 resulting halves is a normal ascending sorted run.**
 
-```mermaid
+```arch
 %% caption: One half is always sorted. Decide which, ask whether the target lies inside it, and discard the other half.
-flowchart TD
-  M["mid = (lo + hi) // 2"] --> F{"a[mid] == target ?"}
-  F -->|yes| R["return mid"]:::ok
-  F -->|no| L{"left half sorted?<br/>a[lo] ≤ a[mid]"}
-  L -->|yes| L2{"target inside<br/>a[lo] .. a[mid] ?"}
-  L2 -->|yes| H1["hi = mid - 1"]
-  L2 -->|no| H2["lo = mid + 1"]
-  L -->|"no: right half is sorted"| R2{"target inside<br/>a[mid] .. a[hi] ?"}
-  R2 -->|yes| H3["lo = mid + 1"]
-  R2 -->|no| H4["hi = mid - 1"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x100
+node m "mid = (lo + hi) // 2" at 1,0 shape=pill
+node f "a[mid] ==\ntarget?" at 1,1 shape=diamond color=amber
+node r "return mid" at 2,1 color=green
+node l "Left half\nsorted?" at 1,2 shape=diamond color=amber sub="a[lo] ≤ a[mid]"
+node l2 "Target\ninside?" at 0,3 shape=diamond color=amber sub="a[lo] .. a[mid]"
+node r2 "Target\ninside?" at 2,3 shape=diamond color=amber sub="a[mid] .. a[hi]"
+node h1 "hi = mid - 1" at 0,4
+node h2 "lo = mid + 1" at 1,4
+node h3 "lo = mid + 1" at 2,4
+node h4 "hi = mid - 1" at 3,4
+m -> f
+f -> r : "yes"
+f -> l : "no"
+l:L -> l2:T : "yes"
+l:R -> r2:T : "no: right half is sorted"
+l2 -> h1 : "yes"
+l2:R -> h2:T : "no"
+r2 -> h3 : "yes"
+r2:R -> h4:T : "no"
 ```
 
 
@@ -461,17 +470,18 @@ Family A (search *on* the array) and Family B (search *on* the answer) cover the
 them in shapes worth naming — including the one template Part 1 does not show: the **rightmost True**. Every
 snippet was run against LeetCode's own examples while writing this section.
 
-```mermaid
+```arch
 %% caption: Three boundary templates. The only differences are which side keeps mid and which mid you compute — get the pairing wrong and the loop never ends.
-flowchart TD
-  Q(["Find a boundary in a monotone predicate"]) --> A{"Which boundary?"}
-  A -->|"leftmost True<br/>(smallest x that works)"| L["lo = 0, hi = n<br/>mid = (lo + hi) // 2  (LOWER mid)<br/>if ok(mid): hi = mid  else: lo = mid + 1"]:::ok
-  A -->|"rightmost True<br/>(largest x that works)"| R["lo = 0, hi = n<br/>mid = (lo + hi + 1) // 2  (UPPER mid)<br/>if ok(mid): lo = mid  else: hi = mid - 1"]:::hot
-  A -->|"exact match, or 'is it there?'"| E["lo = 0, hi = n - 1<br/>while lo <= hi<br/>mid ± 1 on both sides"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 250x140
+node q "Find a boundary in a monotone predicate" at 1,0 shape=pill
+node a "Which boundary?" at 1,1 shape=diamond color=amber
+node l "lo = 0, hi = n" at 0,2 color=green w=220 sub="mid = (lo + hi) // 2 (LOWER mid). If ok(mid): hi = mid, else: lo = mid + 1"
+node r "lo = 0, hi = n" at 1,2 color=amber w=220 sub="mid = (lo + hi + 1) // 2 (UPPER mid). If ok(mid): lo = mid, else: hi = mid - 1"
+node e "lo = 0, hi = n - 1" at 2,2 color=green w=220 sub="while lo <= hi, mid ± 1 on both sides"
+q -> a
+a:L -> l:T : "leftmost True (smallest x that works)"
+a:B -> r:T : "rightmost True (largest x that works)"
+a:R -> e:T : "exact match, or 'is it there?'"
 ```
 
 ### 6.1 Both edges of a run of duplicates (LC 34)
@@ -621,7 +631,7 @@ Twelve problems in three groups — Family A (search on the array: 001–005, 00
 |---|---|---|
 | [001 · Binary Search](PyDSA/05_binary_search/001_binary_search_solution.py) <br>LC 704 · Easy | Family A · exact match | Sorted, so comparing `a[mid]` with the target discards half; closed interval `[lo, hi]`. **Trap:** `while lo < hi` silently drops the last candidate; `hi = mid` instead of `mid - 1` loops forever. |
 | [002 · Search Insert Position](PyDSA/05_binary_search/002_search_insert_position_solution.py) <br>LC 35 · Easy | Leftmost True (lower bound) | "Where does target go?" is the smallest `i` with `a[i] >= target` — `bisect_left` — over the half-open range `[0, n]`. **Trap:** `hi = n - 1` makes "insert at the end" unreachable; `hi = mid - 1` throws away a `mid` that may be the answer. |
-| [003 · First Bad Version](PyDSA/05_binary_search/003_first_bad_version_solution.py) <br>LC 278 · Easy | Oracle, boolean | There is no array: `isBadVersion(v)` *is* the monotone predicate — leftmost True over `1..n`. **Trap:** `lo = 0` (the API is 1-indexed); `hi = mid - 1` when the call returns True. |
+| [003 · First Bad Version](PyDSA/05_binary_search/003_first_bad_version_solution.py) <br>LC 278 · Easy | Oracle, boolean | There is no array: `isBadVersion(v)` *is* the monotone predicate — leftmost True over `1..n`. **Trap:** `lo = 0` (the <abbr title="Application Programming Interface">API</abbr> is 1-indexed); `hi = mid - 1` when the call returns True. |
 | [004 · Guess Number Higher or Lower](PyDSA/05_binary_search/004_guess_number_higher_or_lower_solution.py) <br>LC 374 · Easy | Oracle, three-way | Collapse `guess` to a boolean: `f(mid) = guess(mid) <= 0`, then leftmost True. **Trap:** `< 0` instead of `<= 0` — an exact match must fold into "go left or stay", not "too low". |
 | [005 · Search a 2D Matrix](PyDSA/05_binary_search/005_search_a_2d_matrix_solution.py) <br>LC 74 · Medium | Virtual flat index | Rows chained end to start form one sorted sequence, so search `0 .. rows*cols - 1` and decode with `r, c = divmod(mid, cols)`. **Trap:** treating `mid` as a row or column; swapping `//` and `%` (transposes the matrix, fails only on non-square inputs). |
 | [006 · Koko Eating Bananas](PyDSA/05_binary_search/006_koko_eating_bananas_solution.py) <br>LC 875 · Medium | Family B · answer space | Search speeds `1 .. max(piles)`; `feasible(k)` sums `ceil(p / k)` and compares with `h`. **Trap:** binary-searching *indices* of `piles` (there is no sorted array to search); floor division instead of ceiling. |

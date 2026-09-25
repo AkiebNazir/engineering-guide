@@ -14,12 +14,12 @@ Designing them as one pipeline with one accuracy target would either make dashbo
 ## Estimates
 
 - **Event rate**: 1B/day ≈ 12K/s average, **~60K/s peak**.
-- **Raw events**: ~1 KB each (IDs, timestamps, user agent, IP, geo, placement) → 1 TB/day; 90 days hot ≈ 90 TB, older data in cold storage for audits.
+- **Raw events**: ~1 KB each (IDs, timestamps, user agent, <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>, geo, placement) → 1 TB/day; 90 days hot ≈ 90 TB, older data in cold storage for audits.
 - **Ingest and dedup state**: 60K/s × 1 KB = 60 MB/s at peak (0.5 Gbps), 180 MB/s across the log with 3× replication; at an assumed 10K/s per click server, 6 servers, **12 with 2× headroom**. A 1-hour dedup window at peak holds 60K × 3,600 = 216M `click_id`s × ~16 B ≈ **3.5 GB** of keyed state, spread across partitions.
 - **Aggregates**: at most 10M ads × 1,440 minutes = 14.4B rows/day, but only non-zero `(ad, minute)` rows are stored, and 1B clicks cap that at 1B. Assume ~5 clicks per non-zero row: 200M rows/day (2.3K upserts/s) × ~50 B = 10 GB/day, 0.9 TB for 90 days. So the OLAP store sees thousands of upserts a second, not 60K events a second. Hourly rollups by `(ad, country, device)` are smaller still.
 - **Budget pacing**: needs per-campaign spend within seconds, a much smaller keyspace. A campaign holding 5% of peak traffic receives 3,000 clicks/s, so a 5-second pacing interval can overshoot by 15,000 clicks (about $7.5K at an assumed $0.50 per click): that bound is why the interval is a business decision.
 
-## Event schema and API
+## Event schema and <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 ClickEvent {
@@ -37,21 +37,34 @@ Clicks are redirected through our click server (`/click?ad=…&sig=…`) which l
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: One immutable log feeds a fast streaming path for dashboards and pacing and a batch path that is authoritative for billing.
-flowchart LR
-    click([User click]) --> cs[Click servers<br/>log + redirect]
-    cs --> log[(Durable event log<br/>Kafka / Pub/Sub, partitioned by ad_id)]
-    log --> raw[(Raw event archive<br/>object storage, immutable)]
-    log --> stream[Stream aggregator<br/>Flink / Dataflow]
-    stream --> olap[(Real-time OLAP store<br/>per ad per minute)]
-    stream --> pace[Budget pacing counters]
-    pace --> adserve[Ad servers stop serving exhausted campaigns]
-    raw --> batch[Batch job: dedup + fraud + aggregate]
-    batch --> billing[(Billing aggregates)]
-    batch --> recon[Reconciliation report]
-    olap --> dash[Dashboards API]
-    billing --> dash
+grid 140x120
+node click "User click" at 1.5,0 icon=user shape=pill
+node cs "Click servers" at 1.5,1 icon=server sub="log + redirect"
+node log "Durable event log" at 1.5,2 icon=stream sub="Kafka / Pub/Sub, by ad_id"
+group sp "Streaming path: minutes" color=pink icon=speed
+node stream "Stream aggregator" at 1,3 in sp icon=apache-flink-icon sub="Flink / Dataflow"
+node pace "Budget pacing" at 0,4 in sp icon=counter sub="spend counters"
+node olap "Real-time OLAP" at 1,4 in sp icon=db sub="per ad per minute"
+node adserve "Ad servers" at 0,5 in sp icon=server sub="stop exhausted campaigns"
+group bp "Batch path: billing truth" color=green icon=archive
+node raw "Raw event archive" at 2,3 in bp icon=blob sub="object storage, immutable"
+node batch "Batch job" at 2,4 in bp icon=worker sub="dedup + fraud + aggregate"
+node recon "Reconciliation" at 3,4 in bp icon=doc sub="report"
+node billing "Billing aggregates" at 2,5 in bp icon=sql
+node dash "Dashboards API" at 1.5,6 icon=dashboard
+click -> cs -> log
+log -> stream
+log -> raw
+stream -> olap
+stream -> pace
+pace -> adserve
+raw -> batch
+batch -> billing
+batch -> recon
+olap -> dash
+billing -> dash
 ```
 
 ## Stream processing and windows
@@ -75,8 +88,8 @@ flowchart LR
 
 ## Fraud and invalid traffic
 
-- **Synchronous, cheap rules** at the click server: signature validation, known bot user agents, IP blocklists, rate limits per IP/device per ad.
-- **Streaming detection**: sliding-window counters per IP/device/publisher (count-min sketches for heavy hitters) flag abnormal click rates, click-to-impression ratios, and click bursts.
+- **Synchronous, cheap rules** at the click server: signature validation, known bot user agents, <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> blocklists, rate limits per <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/device per ad.
+- **Streaming detection**: sliding-window counters per <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/device/publisher (count-min sketches for heavy hitters) flag abnormal click rates, click-to-impression ratios, and click bursts.
 - **Batch models** (hours later) use richer features and can invalidate clicks retroactively; invalidated clicks are excluded from billing and advertisers see adjusted numbers.
 
 ## Batch reconciliation for billing
@@ -113,7 +126,7 @@ Trade-off to state: "Dashboards and pacing read from a streaming path that is fa
 2. **"What changes at 10× and 100×?"** At 10× there are 600K events/s at peak (600 MB/s), 10 TB/day of raw events (900 TB for 90 days, so tier to cold storage after about a week), 35 GB of dedup state and about 2B OLAP rows/day. What breaks first is hot keys (a viral ad on one partition, so salt it) and OLAP ingest and compaction. At 100× run regional pipelines and use approximate sketches (HyperLogLog for uniques) for dashboards, while billing stays exact and batch.
 3. **"What if dashboards must exactly match invoices in real time?"** That needs end-to-end exactly-once: a transactional sink committed with each checkpoint (two-phase commit, as Flink's transactional sinks do), no late data past the watermark, and deterministic processing. The price is latency of at least a checkpoint interval (about 10 s) plus commit, a failed commit stalling the job, and a much harder recovery story. I would push back and keep "preliminary" labels, but this is how to do it if the business insists.
 4. **"What does it cost?"** Storage is cheap: 90 TB raw at an assumed $0.023 per GB-month is about $2K a month, and Parquet at 5–8× compression brings it to a few hundred dollars. Compute is the OLAP cluster and batch: keep a `click_id` index (16 GB/day, 32 GB for a 48-hour window) instead of rescanning 48 TB of raw events each hour. I would track cost per billion events.
-5. **"How do you handle abuse?"** Click fraud is the core threat. Sign click URLs, make `click_id` a single-use nonce, bound timestamps, and reject impossible rates per IP, device and publisher in the stream. Richer batch models invalidate clicks retroactively, and every invalidation records the rule or model version so decisions are reproducible for audits and advertiser disputes.
+5. **"How do you handle abuse?"** Click fraud is the core threat. Sign click URLs, make `click_id` a single-use nonce, bound timestamps, and reject impossible rates per <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>, device and publisher in the stream. Richer batch models invalidate clicks retroactively, and every invalidation records the rule or model version so decisions are reproducible for audits and advertiser disputes.
 6. **"Why not increment a counter per ad per minute in a database?"** A viral ad puts 5K increments/s on one row, and retries double-count without a dedup key. The stream aggregates first, turning 60K events/s into a few thousand idempotent upserts. If the interviewer prefers streaming-only (Kappa), I accept it provided the raw log is retained (tiered storage), billing can be replayed deterministically, and the close period stays.
 7. **"A phone comes online after 6 hours. What happens?"** It is past the 1-hour allowed lateness, so the stream sends it to a side output and dashboards do not change. The hourly batch counts it in the event-time hour it belongs to, and billing includes it if it arrives within the 48-hour close period. After the close it goes to the next invoice as an adjustment.
 

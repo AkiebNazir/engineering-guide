@@ -3,7 +3,7 @@
 Welcome to Day 42. You have successfully classified images (ResNet) and drawn bounding boxes around objects (YOLO). 
 Today, we achieve the holy grail of Computer Vision: **Pixel-Perfect Segmentation**. 
 
-If you are building an AI to assist a surgeon in removing a brain tumor, a bounding box is not good enough. You must predict the exact biological shape of the tumor down to the single pixel.
+If you are building an <abbr title="Artificial Intelligence">AI</abbr> to assist a surgeon in removing a brain tumor, a bounding box is not good enough. You must predict the exact biological shape of the tumor down to the single pixel.
 
 ---
 
@@ -25,7 +25,7 @@ In 2015, researchers invented **U-Net** for medical imaging. It is shaped exactl
 
 ### 4. Transfer Learning (Don't Be a Hero)
 Never train a massive network from scratch. Google and Meta spent $10,000,000$ training ResNets on 14 million images. The early layers of their networks already know exactly what edges, circles, and textures look like!
-**Transfer Learning:** You download their ResNet. You chop off their final classification layer. You add your own Segmentation Decoder to it. You "Freeze" their weights so they don't change, and you only train your Decoder. You can train a world-class AI on just 500 images in 10 minutes!
+**Transfer Learning:** You download their ResNet. You chop off their final classification layer. You add your own Segmentation Decoder to it. You "Freeze" their weights so they don't change, and you only train your Decoder. You can train a world-class <abbr title="Artificial Intelligence">AI</abbr> on just 500 images in 10 minutes!
 
 ---
 

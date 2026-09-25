@@ -1,27 +1,27 @@
 ---
-title: "SOAP Theory"
-description: "Understanding SOAP and enterprise APIs: envelopes, WSDL, document/literal, faults, 1.1 vs 1.2, WS-Security, mustUnderstand, XML pitfalls, and how to wrap a legacy SOAP service, with Python and Go labs."
+title: "<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Theory"
+description: "Understanding <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> and enterprise APIs: envelopes, WSDL, document/literal, faults, 1.1 vs 1.2, WS-Security, mustUnderstand, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> pitfalls, and how to wrap a legacy <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> service, with Python and Go labs."
 ---
 
 # SOAP Theory
 
 <div data-viz="api-soap"></div>
 
-## What is SOAP?
-SOAP (Simple Object Access Protocol) is an older, highly standardized messaging protocol specification for exchanging structured information in the implementation of web services. Unlike REST, which can use JSON, plain text, or XML, SOAP **strictly relies on XML** for its message format.
+## What is <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>?
+<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> (Simple Object Access Protocol) is an older, highly standardized messaging protocol specification for exchanging structured information in the implementation of web services. Unlike <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, which can use <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, plain text, or <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>, <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> **strictly relies on <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>** for its message format.
 
-SOAP appeared around 1998-2000 (SOAP 1.1 was a W3C Note in 2000; **SOAP 1.2** became a W3C Recommendation in 2003) when enterprises needed a vendor-neutral way to call each other across platforms (Java, .NET, mainframes, ERP systems). It defined *everything*: the message format, the error format, the contract language (WSDL), security (WS-Security), reliability, and transactions. The name is now official history: the acronym was dropped in 1.2, because it is neither simple nor about objects.
+<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> appeared around 1998-2000 (<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.1 was a W3C Note in 2000; **<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.2** became a W3C Recommendation in 2003) when enterprises needed a vendor-neutral way to call each other across platforms (Java, .NET, mainframes, ERP systems). It defined *everything*: the message format, the error format, the contract language (WSDL), security (WS-Security), reliability, and transactions. The name is now official history: the acronym was dropped in 1.2, because it is neither simple nor about objects.
 
-> **Analogy:** A REST call is a postcard. A SOAP message is a formal registered letter: it goes in an official envelope (the `Envelope`), has a sender's stamp and instructions on the outside (the `Header`), the actual letter inside (the `Body`), and there is a strictly defined procedure for when the recipient must refuse it (a `Fault`). Everyone follows the same forms, which is why banks, insurers and governments still like it.
+> **Analogy:** A <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> call is a postcard. A <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> message is a formal registered letter: it goes in an official envelope (the `Envelope`), has a sender's stamp and instructions on the outside (the `Header`), the actual letter inside (the `Body`), and there is a strictly defined procedure for when the recipient must refuse it (a `Fault`). Everyone follows the same forms, which is why banks, insurers and governments still like it.
 
-> **Key idea:** SOAP is **contract-first and tool-driven**. You do not hand-write clients; you point a tool at the **WSDL** and it generates one. Strictness is the feature, and also the cost.
+> **Key idea:** <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> is **contract-first and tool-driven**. You do not hand-write clients; you point a tool at the **WSDL** and it generates one. Strictness is the feature, and also the cost.
 
-## Why do companies still use SOAP?
-1.  **WS-Security:** Enterprise-grade, built-in security features covering encryption and XML signatures, at the message level (not only the transport).
+## Why do companies still use <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>?
+1.  **WS-Security:** Enterprise-grade, built-in security features covering encryption and <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> signatures, at the message level (not only the transport).
 2.  **Transactions and reliability:** Standards exist for distributed transactions (WS-AtomicTransaction) and guaranteed delivery (WS-ReliableMessaging). They are rarely used in new systems, but they were part of the design.
 3.  **Strict Contracts:** If a client doesn't match the WSDL perfectly, it fails fast.
 4.  **Tooling and history:** Decades of tooling (Java JAX-WS, .NET WCF, SAP, Oracle, Salesforce legacy, banking and telecom back ends). Rewriting a working system to please fashion is rarely funded.
-5.  **Transport independence:** SOAP can travel over HTTP, but also SMTP, JMS, or MQ, which matters in some enterprise middleware.
+5.  **Transport independence:** <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> can travel over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, but also SMTP, JMS, or MQ, which matters in some enterprise middleware.
 
 Where you meet it today: banking core systems, payment and card networks, insurance, healthcare (HL7 v2/v3 wrappers), government e-services, telecom provisioning, SAP/Oracle/Salesforce legacy APIs, airline booking (older GDS).
 
@@ -40,7 +40,7 @@ sequenceDiagram
     SOAP-->>App: HTTP 200 OK<br/>(Contains XML Envelope with success/Fault)
 ```
 
-## Anatomy of a SOAP Message
+## Anatomy of a <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Message
 
 ```xml
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">   <!-- root: declares the SOAP version by NAMESPACE -->
@@ -56,7 +56,7 @@ sequenceDiagram
 </soap:Envelope>
 ```
 
-The HTTP wrapper (SOAP 1.1):
+The <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> wrapper (<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.1):
 
 ```http
 POST /bank HTTP/1.1
@@ -67,12 +67,12 @@ SOAPAction: "http://bank.example.com/ws/GetBalance"
 <soap:Envelope ...> ... </soap:Envelope>
 ```
 
-*   **Envelope** identifies the message and its SOAP version through the namespace.
+*   **Envelope** identifies the message and its <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> version through the namespace.
 *   **Header** is extensible: security, transaction context, routing, correlation ids. Each header block can be marked `mustUnderstand="1"` (below).
 *   **Body** carries exactly one payload: the request (named after the operation), the response, or a `Fault`.
-*   **One endpoint:** the URL does **not** identify the action. The first element in the Body (and/or `SOAPAction`) does. Contrast REST, where URL + method identify it.
+*   **One endpoint:** the URL does **not** identify the action. The first element in the Body (and/or `SOAPAction`) does. Contrast <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, where URL + method identify it.
 
-### XML namespaces: the number one source of bugs
+### <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> namespaces: the number one source of bugs
 
 `<a:balance>` in namespace X and `<b:balance>` in namespace Y are **different elements**, whatever the prefix. A parser that looks for `balance` without a namespace finds nothing.
 
@@ -86,14 +86,18 @@ Python lab 1 shows a document in the wrong namespace silently matching nothing, 
 
 ## WSDL: the Contract
 
-**WSDL** (Web Services Description Language) is an XML document that describes the whole service. Its five parts:
+**WSDL** (Web Services Description Language) is an <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> document that describes the whole service. Its five parts:
 
-```mermaid
-flowchart LR
-    T["types<br/>XML Schema: the shape of data"] --> M["message<br/>named payloads"]
-    M --> P["portType<br/>the operations (abstract WHAT)"]
-    P --> B["binding<br/>SOAP + HTTP + literal (HOW)"]
-    B --> S["service and port<br/>the URL (WHERE)"]
+```arch
+%% caption: A WSDL builds up from data shapes to a concrete URL: what, then how, then where.
+grid 260x80
+group wsdl "WSDL document" color=blue icon=doc
+node t "types" at 0,0 in wsdl shape=card icon=table sub="XML Schema: the shape of data"
+node m "message" at 0,1 in wsdl shape=card icon=message sub="named payloads"
+node p "portType" at 0,2 in wsdl shape=card icon=function sub="the operations (abstract WHAT)"
+node b "binding" at 0,3 in wsdl shape=card icon=link sub="SOAP + HTTP + literal (HOW)"
+node s "service and port" at 0,4 in wsdl shape=card icon=internet sub="the URL (WHERE)"
+t -> m -> p -> b -> s
 ```
 
 | Part | Answers | Example |
@@ -101,7 +105,7 @@ flowchart LR
 | `<types>` | What does the data look like? | `<xsd:element name="amount" type="xsd:decimal"/>` |
 | `<message>` | Which payloads exist? | `GetBalanceInput` -> element `GetBalance` |
 | `<portType>` | Which operations? (abstract interface) | `GetBalance`, `Transfer` |
-| `<binding>` | Which protocol details? | SOAP over HTTP, `style="document"`, `use="literal"`, `soapAction` |
+| `<binding>` | Which protocol details? | <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, `style="document"`, `use="literal"`, `soapAction` |
 | `<service>` | Where is it? | `soap:address location="https://bank/ws"` |
 
 Clients are **generated**: Java `wsimport`, .NET `svcutil` / Connected Services, Python `zeep`, Go `gowsdl`. A WSDL usually imports XSD schema files; keep them together when you archive a service.
@@ -116,9 +120,9 @@ WSDL 1.1 allows several style/use combinations. Three matter historically; only 
 | `rpc/literal` | `<GetBalance><accountId>..` (parts named after parameters) | Works, less common |
 | **`document/literal wrapped`** | One wrapper element named after the operation, children are the parameters | **The modern standard.** What both language tracks use. |
 
-## Faults: How SOAP Reports Errors
+## Faults: How <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Reports Errors
 
-**SOAP 1.1** (HTTP status is `500`):
+**<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.1** (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status is `500`):
 
 ```xml
 <soap:Fault>
@@ -130,7 +134,7 @@ WSDL 1.1 allows several style/use combinations. Three matter historically; only 
 </soap:Fault>
 ```
 
-**SOAP 1.2** restructures it and lets HTTP carry the blame (`400` for the sender's mistake, `500` for the receiver's):
+**<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.2** restructures it and lets <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> carry the blame (`400` for the sender's mistake, `500` for the receiver's):
 
 ```xml
 <soap:Fault>
@@ -144,26 +148,26 @@ Design rules:
 
 *   **Client/Sender vs Server/Receiver** is the retry decision: "you asked wrongly, do not retry" versus "we failed, retrying may help".
 *   Put **expected business errors** in `<detail>` as typed elements (`InsufficientFunds`) so clients can catch them by name (Python labs 2 and 3, Go lab 2).
-*   **Never leak internals** in `faultstring`: stack traces, SQL, hostnames (`ORA-00600 ... bank-db-03`). Log them; return a generic Server fault (Python lab 2, Go labs 2 and 5).
-*   Faults arrive as an HTTP error status **with an XML body**: read the body before you decide it is a transport error.
+*   **Never leak internals** in `faultstring`: stack traces, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, hostnames (`ORA-00600 ... bank-db-03`). Log them; return a generic Server fault (Python lab 2, Go labs 2 and 5).
+*   Faults arrive as an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> error status **with an <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> body**: read the body before you decide it is a transport error.
 
-## SOAP 1.1 vs 1.2
+## <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.1 vs 1.2
 
-| | SOAP 1.1 | SOAP 1.2 |
+| | <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.1 | <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.2 |
 | :--- | :--- | :--- |
 | Envelope namespace | `http://schemas.xmlsoap.org/soap/envelope/` | `http://www.w3.org/2003/05/soap-envelope` |
 | Content-Type | `text/xml; charset=utf-8` | `application/soap+xml; charset=utf-8; action="..."` |
-| Action | `SOAPAction` HTTP header | `action` parameter of Content-Type (no separate header) |
+| Action | `SOAPAction` <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> header | `action` parameter of Content-Type (no separate header) |
 | Fault | `faultcode` / `faultstring` / `detail` | `Code>Value` / `Reason>Text` / `Detail` |
 | Fault codes | Client, Server | Sender, Receiver |
-| HTTP status on fault | always 500 | 400 for Sender, 500 for Receiver |
+| <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status on fault | always 500 | 400 for Sender, 500 for Receiver |
 | Status | Widely deployed, W3C Note | W3C Recommendation, better defined |
 
 Python lab 5 builds a server that speaks both, answers in the version it was asked in, and a client-side fault parser that normalises both shapes.
 
 ## The Header Processing Model: `mustUnderstand`
 
-A concept REST has no equivalent for. Header blocks are extension points (security, transactions, routing). A sender can mark a block:
+A concept <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> has no equivalent for. Header blocks are extension points (security, transactions, routing). A sender can mark a block:
 
 ```xml
 <x:Transaction xmlns:x="urn:acme:tx" soap:mustUnderstand="1">tx-9</x:Transaction>
@@ -171,17 +175,17 @@ A concept REST has no equivalent for. Header blocks are extension points (securi
 
 *   `mustUnderstand="1"`: the receiver **must** process this block or **reject the whole message** with a `MustUnderstand` fault. It must not skip it silently.
 *   Without it: an unknown block is ignored. That is right for optional extras (an audit tag) and wrong for something like security or transaction context.
-*   `VersionMismatch`: if the envelope namespace is not one the receiver speaks, it answers with a `VersionMismatch` fault (in SOAP 1.2 format), listing the supported versions.
+*   `VersionMismatch`: if the envelope namespace is not one the receiver speaks, it answers with a `VersionMismatch` fault (in <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.2 format), listing the supported versions.
 
 Python lab 5 proves all three behaviours in both versions.
 
 ## The WS-* Family
 
-SOAP's real weight is the family of add-on specifications that ride in the Header:
+<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>'s real weight is the family of add-on specifications that ride in the Header:
 
 | Spec | Purpose | Reality check |
 | :--- | :--- | :--- |
-| **WS-Security** | Authentication tokens (UsernameToken, X.509, SAML), XML Signature, XML Encryption | Common in banking and government; the one you will actually meet |
+| **WS-Security** | Authentication tokens (UsernameToken, X.509, SAML), <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> Signature, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> Encryption | Common in banking and government; the one you will actually meet |
 | **WS-Addressing** | Message ids, `ReplyTo`, `RelatesTo`: async request/reply, routing | Used with async services and reliable messaging |
 | **WS-ReliableMessaging** | Ordered, exactly-once delivery with acknowledgements | Rare; queues (MQ, Kafka) usually replace it |
 | **WS-AtomicTransaction / WS-Coordination** | Two-phase commit across services | Rare and fragile; sagas replaced the idea |
@@ -206,27 +210,27 @@ SOAP's real weight is the family of add-on specifications that ride in the Heade
 *   The password is **never sent**, but the server needs a plaintext-equivalent to recompute the digest.
 *   **Freshness** (a `Created` window, about 5 minutes, tolerating a little clock skew) plus a **nonce cache** (reject reuse inside the window) stop replay. The window alone allows 5 minutes of replay; the nonce cache alone grows forever; you need both.
 *   **Verify in a fixed order** and return the **same generic fault** for every failure (unknown user, wrong password, stale, replay). Python lab 4 and Go lab 4 run 10 attack cases each; Python lab 4 also proves interoperability with the real `zeep` client, and Go lab 4 reproduces a digest produced by the Python track byte for byte.
-*   **The honest limit:** UsernameToken authenticates the sender but does **not** protect the body. A man-in-the-middle can edit the body and the token stays valid (Go lab 4 demonstrates it). Use **TLS on every hop**, and where messages cross intermediaries, **XML Signature** over `Body` and `Timestamp`.
+*   **The honest limit:** UsernameToken authenticates the sender but does **not** protect the body. A man-in-the-middle can edit the body and the token stays valid (Go lab 4 demonstrates it). Use **<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> on every hop**, and where messages cross intermediaries, **<abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> Signature** over `Body` and `Timestamp`.
 *   SHA-1 here is mandated by the profile. Prefer X.509 tokens / SAML / OAuth-bearing gateways when you have a choice.
 
-## SOAP vs REST
+## <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> vs <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>
 
-| | SOAP | REST |
+| | <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> |
 | :--- | :--- | :--- |
 | **Style** | Protocol with a strict spec | Architectural style |
-| **Format** | XML only | JSON, XML, anything |
+| **Format** | <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> only | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>, anything |
 | **Contract** | WSDL + XSD (mandatory, machine-readable, generates code) | OpenAPI (optional) |
 | **Endpoint model** | One URL, operation in the body | Many URLs, verbs + status codes |
-| **Transport** | HTTP, SMTP, JMS, ... | HTTP |
-| **Caching** | Effectively none (everything is POST) | HTTP caching for GET |
-| **Errors** | `Fault` element | HTTP status + body |
-| **Security** | WS-Security at message level, plus TLS | TLS + OAuth/JWT at transport level |
+| **Transport** | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, SMTP, JMS, ... | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> |
+| **Caching** | Effectively none (everything is POST) | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching for GET |
+| **Errors** | `Fault` element | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status + body |
+| **Security** | WS-Security at message level, plus <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> | <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> + OAuth/<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> at transport level |
 | **Statefulness** | Can be stateful (WS-* sessions) | Stateless by constraint |
-| **Payload size** | Verbose (often 5-10x JSON) | Compact |
+| **Payload size** | Verbose (often 5-10x <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>) | Compact |
 | **Browser friendliness** | Poor | Native |
 | **Best for** | Enterprise integration, formal contracts, message-level security | Public web and mobile APIs |
 
-## Consuming SOAP From Python and Go
+## Consuming <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> From Python and Go
 
 **Python: `zeep`** (Python labs 3 and 4)
 
@@ -245,7 +249,7 @@ except zeep.exceptions.Fault as fault:
     print(fault.code, fault.message, fault.detail)           # detail is a parsed lxml element
 ```
 
-**Go:** there is no SOAP in the standard library, but XML is first class. Two approaches:
+**Go:** there is no <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> in the standard library, but <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> is first class. Two approaches:
 
 *   **Hand-written structs** with `encoding/xml` (Go labs 1-3): fine for a handful of operations.
 *   **Generated clients** from a WSDL with `gowsdl` for large contracts.
@@ -260,80 +264,85 @@ type GetBalance struct {
 Practical rules for any language:
 
 *   **Set every timeout**: connect, read, and an overall deadline. Backends are slow.
-*   **Retry only idempotent operations** (`GetBalance` yes, `Transfer` no unless it accepts a request id). Retry `Server` faults and gateway HTML errors; **never** `Client` faults. Go lab 3 builds a client that does exactly this, including detecting a `200 OK` maintenance page that is not XML.
+*   **Retry only idempotent operations** (`GetBalance` yes, `Transfer` no unless it accepts a request id). Retry `Server` faults and gateway HTML errors; **never** `Client` faults. Go lab 3 builds a client that does exactly this, including detecting a `200 OK` maintenance page that is not <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>.
 *   **Redact** passwords, tokens and nonces from logs (Go lab 3).
 *   **Money as decimals**, never floats (`Decimal` in Python, `big.Rat` / a decimal library in Go).
-*   **Escape** values when building XML by hand; use struct marshalling where you can (Python lab 1 and Go lab 1 show an injection attempt staying data).
+*   **Escape** values when building <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> by hand; use struct marshalling where you can (Python lab 1 and Go lab 1 show an injection attempt staying data).
 
-## XML-Specific Security
+## <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>-Specific Security
 
 | Threat | What it is | Defence |
 | :--- | :--- | :--- |
-| **XXE** (XML External Entities) | A DOCTYPE defines an entity that reads a local file or makes a network request | Disable DTDs and external entities. Python: use `defusedxml`; lxml `resolve_entities=False`. Go's `encoding/xml` does not expand external entities. |
+| **XXE** (<abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> External Entities) | A DOCTYPE defines an entity that reads a local file or makes a network request | Disable DTDs and external entities. Python: use `defusedxml`; lxml `resolve_entities=False`. Go's `encoding/xml` does not expand external entities. |
 | **Billion laughs** | Nested entity expansion consumes memory | Disable entity expansion; limit input size (`http.MaxBytesReader`, `io.LimitReader`) |
-| **XML injection** | User data concatenated into XML breaks out of its element | Escape (`xml.sax.saxutils.escape`, `xml.EscapeText`) or marshal structs |
+| **<abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> injection** | User data concatenated into <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> breaks out of its element | Escape (`xml.sax.saxutils.escape`, `xml.EscapeText`) or marshal structs |
 | **Signature wrapping** | An attacker moves the signed element and inserts their own | Verify signatures with well-tested libraries, resolve elements by id after verification |
 | **Replay** | Captured message resent | Timestamp window + nonce cache (WS-Security labs) |
-| **Body tampering behind a token** | Token proves identity, not body | TLS everywhere, XML Signature |
-| **Large or deep documents** | CPU and memory | Body size limits, depth limits, timeouts |
+| **Body tampering behind a token** | Token proves identity, not body | <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> everywhere, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> Signature |
+| **Large or deep documents** | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> and memory | Body size limits, depth limits, timeouts |
 
-## Wrapping a Legacy SOAP Service (the Anti-Corruption Layer)
+## Wrapping a Legacy <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Service (the Anti-Corruption Layer)
 
-Most teams do not want SOAP spreading through their architecture. The standard answer is a **gateway** that owns the XML and exposes a clean API:
+Most teams do not want <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> spreading through their architecture. The standard answer is a **gateway** that owns the <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> and exposes a clean <abbr title="Application Programming Interface">API</abbr>:
 
-```mermaid
-flowchart LR
-    C[Modern clients<br/>JSON/REST or gRPC] --> G[Gateway / adapter]
-    G -->|"SOAP over TLS, WS-Security"| L[Legacy bank]
-    G --- W[(WSDL: operations,<br/>field types)]
-    G -. "timeouts, retries (idempotent only),<br/>circuit breaker, redacted logs" .- G
+```arch
+%% caption: The gateway owns the XML, so SOAP never spreads past it.
+node c "Modern clients" at 0,1 icon=client sub="JSON/REST or gRPC"
+node g "Gateway / adapter" at 1,1 icon=gateway
+node pol "Resilience" at 1,0 shape=card icon=shield sub="timeouts, retries (idempotent only), circuit breaker, redacted logs" w=230
+node w "WSDL" at 1,2 icon=doc sub="operations, field types"
+node l "Legacy bank" at 2,1 icon=server
+c -> g
+g -> l : "SOAP over TLS, WS-Security"
+g -- w
+g .. pol
 ```
 
-The gateway translates **requests** (JSON to XML), **responses** (XML to JSON, decimals kept as strings), and **errors**:
+The gateway translates **requests** (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> to <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>), **responses** (<abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> to <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, decimals kept as strings), and **errors**:
 
-| SOAP outcome | Gateway answer |
+| <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> outcome | Gateway answer |
 | :--- | :--- |
-| Success | `200` + JSON |
-| Fault `Client`/`Sender` | `422` + problem JSON with the typed `<detail>` |
+| Success | `200` + <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> |
+| Fault `Client`/`Sender` | `422` + problem <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> with the typed `<detail>` |
 | Fault `Server`/`Receiver` | `502` (generic message; never forward `ORA-00600 ... db-03`) |
 | Timeout | `504` |
 | Unreachable | `503` |
-| Bad JSON (missing/unknown field per the WSDL) | `400`, and the backend is never called |
+| Bad <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> (missing/unknown field per the WSDL) | `400`, and the backend is never called |
 
 Go lab 5 builds this **generically from the WSDL** at startup: it discovers the endpoint, the operations and every field with its XSD type, then translates any operation with no per-operation code, marks reads as retryable and writes as not, and exposes `GET /api/operations` describing itself.
 
-**Migration path:** run the gateway in front of the legacy service; move clients to the JSON API; build the replacement service behind the same JSON contract; switch the gateway's back end; retire SOAP.
+**Migration path:** run the gateway in front of the legacy service; move clients to the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> <abbr title="Application Programming Interface">API</abbr>; build the replacement service behind the same <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> contract; switch the gateway's back end; retire <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>.
 
 ## Testing and Debugging
 
 | Tool | Use |
 | :--- | :--- |
 | **SoapUI / ReadyAPI** | Load a WSDL, generate requests, build test suites and mocks |
-| **Postman** | Send raw XML with `Content-Type: text/xml` |
+| **Postman** | Send raw <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> with `Content-Type: text/xml` |
 | `curl -X POST -H 'Content-Type: text/xml' -H 'SOAPAction: "..."' --data @req.xml URL` | The plain approach |
 | `zeep` command: `python -m zeep URL?wsdl` | Prints all types and operations of a WSDL |
 | zeep `HistoryPlugin` / `create_message` | See the exact envelopes without sending (Python lab 3) |
-| Wireshark / mitmproxy | Inspect traffic (plain HTTP only; use a proxy for TLS) |
+| Wireshark / mitmproxy | Inspect traffic (plain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> only; use a proxy for <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>) |
 | A **mock server** in your test suite | As in every lab: start a local server on port `0`, assert on faults and retries |
 
 ## Common Pitfalls
 
-1.  **Ignoring XML namespaces**: elements silently not found.
-2.  **No timeouts**: SOAP backends hang and pin threads forever.
+1.  **Ignoring <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> namespaces**: elements silently not found.
+2.  **No timeouts**: <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> backends hang and pin threads forever.
 3.  **Retrying non-idempotent operations** (a duplicated `Transfer`).
-4.  **Concatenating user input into XML** (injection). Escape or marshal.
+4.  **Concatenating user input into <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>** (injection). Escape or marshal.
 5.  **Leaking backend errors** in `faultstring`.
 6.  **Using floats for money** (`xsd:decimal` needs an exact type).
 7.  **Trusting the WSDL's advertised address**: it often names an internal host; override the endpoint (Python lab 3).
-8.  **Parsing an HTML error page as SOAP**: check `Content-Type` first (Go lab 3).
+8.  **Parsing an HTML error page as <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>**: check `Content-Type` first (Go lab 3).
 9.  **Stack traces and different messages** for unknown user vs wrong password in security faults (user enumeration).
-10. **Allowing DTDs and entities** in your XML parser.
-11. **Treating UsernameToken as body protection.** Use TLS and, where needed, XML Signature.
-12. **Hand-building `SOAPAction` wrongly**: SOAP 1.1 expects a quoted value; SOAP 1.2 puts it in Content-Type.
+10. **Allowing DTDs and entities** in your <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> parser.
+11. **Treating UsernameToken as body protection.** Use <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> and, where needed, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> Signature.
+12. **Hand-building `SOAPAction` wrongly**: <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.1 expects a quoted value; <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.2 puts it in Content-Type.
 
 ## Check Yourself
 
-> ❓ **Question 1:** Your client posts a well-formed envelope and gets HTTP `500` with an XML body. Is it a transport failure?
+> ❓ **Question 1:** Your client posts a well-formed envelope and gets <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> `500` with an <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> body. Is it a transport failure?
 >
 > ❓ **Question 2:** `find("balance")` returns nothing although the response clearly contains `<balance>`. What is the most likely cause?
 >
@@ -345,11 +354,11 @@ Go lab 5 builds this **generically from the WSDL** at startup: it discovers the 
 
 **Answers**
 
-1.  No. In SOAP 1.1, a `Fault` is delivered with HTTP `500` and a valid envelope body. Always read and parse the body; check its `Content-Type` first, since a gateway may return `500` with HTML.
+1.  No. In <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> 1.1, a `Fault` is delivered with <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> `500` and a valid envelope body. Always read and parse the body; check its `Content-Type` first, since a gateway may return `500` with HTML.
 2.  A namespace mismatch: the tag is really `{http://...}balance`. Search with the namespace (`find("b:balance", NS)`), and assert required fields were found.
 3.  Not blindly: the transfer may already have happened. Retry only with an idempotency key / request id the service dedupes on (WS-Addressing `MessageID` or a business reference), or query the outcome first (`GetTransferStatus`). Idempotent reads may be retried freely.
 4.  The receiver must reject the whole message with a `MustUnderstand` fault. Silently ignoring a mandatory header (security, transaction context) would defeat its purpose.
-5.  No: a UsernameToken proves who built the token, not what the body says. Use TLS on every hop (removes the man-in-the-middle) and, when messages cross intermediaries, XML Signature over the Body and Timestamp.
+5.  No: a UsernameToken proves who built the token, not what the body says. Use <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> on every hop (removes the man-in-the-middle) and, when messages cross intermediaries, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> Signature over the Body and Timestamp.
 
 ## Hands-On Labs
 
@@ -359,19 +368,19 @@ Setup from the `API/` folder: `pip install -r requirements.txt` (`zeep` is neede
 
 | # | Python (`SOAP/labs/python/`) | You learn |
 | :---: | :--- | :--- |
-| 1 | `01_envelope_and_fault_by_hand.py` | Envelope, HTTP headers, namespaces, parsing a Fault, escaping (injection), all with the standard library |
-| 2 | `02_soap_server_and_wsdl.py` | A SOAP server that **generates its WSDL**, dispatch, schema-style validation, typed fault `<detail>`, Client vs Server faults |
+| 1 | `01_envelope_and_fault_by_hand.py` | Envelope, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> headers, namespaces, parsing a Fault, escaping (injection), all with the standard library |
+| 2 | `02_soap_server_and_wsdl.py` | A <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> server that **generates its WSDL**, dispatch, schema-style validation, typed fault `<detail>`, Client vs Server faults |
 | 3 | `03_zeep_client_from_wsdl.py` | A WSDL-driven client (`zeep`): generated types, structural validation, `HistoryPlugin`, faults as exceptions, timeouts, endpoint override |
 | 4 | `04_ws_security_username_token.py` | UsernameToken PasswordDigest, nonce cache, timestamp window, uniform faults; interoperates with zeep's real client |
-| 5 | `05_soap_1_1_vs_1_2_and_mustunderstand.py` | Both SOAP versions on one server, fault normalisation, `mustUnderstand`, `VersionMismatch` |
+| 5 | `05_soap_1_1_vs_1_2_and_mustunderstand.py` | Both <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> versions on one server, fault normalisation, `mustUnderstand`, `VersionMismatch` |
 
 | # | Go (`SOAP/labs/golang/`) | You learn |
 | :---: | :--- | :--- |
 | 1 | `01_envelope_encoding_xml` | `encoding/xml` structs with namespaces, faults as `error`, exact decimals with `big.Rat`, escaping, size limits |
 | 2 | `02_soap_server_net_http` | A generic typed-operation registry, token-based dispatch, faults with detail, `?wsdl`, 40-goroutine correctness test |
-| 3 | `03_client_timeouts_faults_retries` | Timeouts at three levels, four-way error classification, idempotency-aware retries, HTML-instead-of-XML detection, log redaction |
+| 3 | `03_client_timeouts_faults_retries` | Timeouts at three levels, four-way error classification, idempotency-aware retries, HTML-instead-of-<abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> detection, log redaction |
 | 4 | `04_ws_security_username_token` | Digest + Timestamp + nonce cache verification, a cross-language known-answer test, and a demonstration that the body is not protected |
-| 5 | `05_wsdl_driven_json_gateway` | Reading a WSDL at runtime and exposing any SOAP operation as JSON, fault-to-HTTP mapping, decimals as strings, self-describing API |
+| 5 | `05_wsdl_driven_json_gateway` | Reading a WSDL at runtime and exposing any <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> operation as <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, fault-to-<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> mapping, decimals as strings, self-describing <abbr title="Application Programming Interface">API</abbr> |
 
 ```bash
 python SOAP/labs/python/04_ws_security_username_token.py
@@ -381,14 +390,14 @@ go run ./SOAP/labs/golang/05_wsdl_driven_json_gateway
 ## Exercises
 
 1.  Add a `GetStatement` operation (returning a **list** of transactions) to Python lab 2's WSDL generator (a `maxOccurs="unbounded"` element) and read it with zeep in lab 3.
-2.  Make Python lab 4's server also require an HMAC of the Body keyed by a shared secret (a simplified stand-in for XML Signature) and show that the tampering attack from Go lab 4 now fails.
+2.  Make Python lab 4's server also require an HMAC of the Body keyed by a shared secret (a simplified stand-in for <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> Signature) and show that the tampering attack from Go lab 4 now fails.
 3.  Add `WS-Addressing` `MessageID` to Python lab 5 and use it as the idempotency key for a retried `Transfer`.
-4.  Extend Go lab 5 so responses containing repeated elements (lists) become JSON arrays, driven by `maxOccurs` in the WSDL.
+4.  Extend Go lab 5 so responses containing repeated elements (lists) become <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> arrays, driven by `maxOccurs` in the WSDL.
 5.  Point `python -m zeep <WSDL>` at a public WSDL (for example the classic NumberConversion service) and call an operation from a script.
 6.  Put Go lab 3's client in front of Python lab 2's server (`--serve`) and watch retries when you kill and restart it.
 
 ## Where To Go Next
 
-*   **`REST/`**: contrast the two models; the gateway in Go lab 5 is a mini REST API.
+*   **`REST/`**: contrast the two models; the gateway in Go lab 5 is a mini <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr>.
 *   **`gRPC/`**: the modern typed-contract, binary alternative for internal services.
-*   **`Fundamentals/03_cross_cutting_concerns.md`**: idempotency, retries and security checklists apply to SOAP unchanged.
+*   **`Fundamentals/03_cross_cutting_concerns.md`**: idempotency, retries and security checklists apply to <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> unchanged.

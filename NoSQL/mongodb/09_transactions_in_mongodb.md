@@ -4,6 +4,18 @@ Every single `updateOne`/`insertOne` call is already atomic **at the document le
 
 The lab environment for this module runs `mongo:7` as a **single-node replica set** (one member, `rs.initiate()`'d) specifically so this level's transaction code could be run for real rather than only described — a genuine single-primary replica set, just with a replication factor of one. Everything below is real output from that instance.
 
+```arch
+%% caption: Multi-document transactions allow MongoDB to safely update independent documents across a replica set or sharded cluster in a single atomic unit.
+node c "Client\n(Session Context)" at 0,1 icon=client color=blue
+group mdb "MongoDB Cluster (Multi-Doc Txn)" color=slate style=dashed
+node da "Doc A (Balance)" at 3,0 in mdb icon=doc color=green
+node db "Doc B (Balance)" at 3,2 in mdb icon=doc color=green
+
+c -> da : "1. update(A)"
+c -> db : "2. update(B)"
+c ==> da : "3. COMMIT"
+```
+
 ## The worked example: a funds transfer
 
 ```python
@@ -36,7 +48,7 @@ with client.start_session() as session:
 
 `with_transaction` is pymongo's recommended entry point over the lower-level `start_transaction()`/`commit_transaction()`/`abort_transaction()` calls — it retries the whole callback automatically on the specific transient errors MongoDB tells drivers are safe to retry (`TransientTransactionError`, `UnknownTransactionCommitResult`), which real transactions need because a replica set can have transient issues (a stepdown, a network blip) that a naive single-attempt transaction would surface as a hard failure for no good reason. Every operation inside the callback must pass `session=session` — that's what actually associates a write with the transaction; forgetting it silently runs that one operation *outside* the transaction instead of raising an error.
 
-**The same transfer, in Go**, using the Go driver's session/transaction API — `Session.WithTransaction` is the direct equivalent of pymongo's `with_transaction`, and every operation inside the callback takes the callback's own `context.Context` (`sc`, derived from the session) instead of a Python `session=` keyword argument — that context IS what associates the write with the transaction:
+**The same transfer, in Go**, using the Go driver's session/transaction <abbr title="Application Programming Interface">API</abbr> — `Session.WithTransaction` is the direct equivalent of pymongo's `with_transaction`, and every operation inside the callback takes the callback's own `context.Context` (`sc`, derived from the session) instead of a Python `session=` keyword argument — that context IS what associates the write with the transaction:
 
 ```go
 session, _ := client.StartSession()
@@ -201,7 +213,7 @@ Avoid transactions as your default tool for "make these two writes safe" — che
 
 - **Forgetting to pass `session=` to every operation inside the callback.** An operation without it silently executes outside the transaction — no error, just wrong behavior (a partial commit is now possible, which is the exact thing transactions exist to prevent).
 - **(Go) Using the outer `ctx` instead of the callback's own `sc context.Context` inside `WithTransaction`.** `sc` is what actually carries the session association forward to each operation — passing the enclosing `ctx` instead is Go's exact equivalent of Python's "forgot `session=`" mistake above: it compiles fine, runs fine, and silently executes that one call outside the transaction.
-- **Doing slow, non-database work (an HTTP call, a `sleep`, user interaction) inside a transaction callback.** Transactions hold locks and have a hard time limit; anything that isn't a fast database operation extends that window and increases the chance of hitting the transaction timeout or causing contention for unrelated operations touching the same documents.
+- **Doing slow, non-database work (an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> call, a `sleep`, user interaction) inside a transaction callback.** Transactions hold locks and have a hard time limit; anything that isn't a fast database operation extends that window and increases the chance of hitting the transaction timeout or causing contention for unrelated operations touching the same documents.
 - **Reaching for a transaction before checking whether embedding solves the problem for free**, as above — the single most common design mistake ported over from relational habits, where "wrap it in a transaction" is the correct default because tables can't embed related data into one row.
 - **Assuming a single-node test proves anything about production transaction latency.** As shown above: a single-node measurement can show *no* overhead precisely because majority write concern has nothing real to wait for — don't generalize this level's 0.96x to "transactions are free" on a real multi-node deployment.
 

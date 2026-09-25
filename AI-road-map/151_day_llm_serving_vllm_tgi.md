@@ -5,21 +5,21 @@ Welcome to Day 151!
 We are officially entering **Phase 6: Production LLMOps & System Design.** 
 Until now, we have relied on external APIs (like OpenAI) or simple local scripts (like `transformers.pipeline`) to run models. 
 
-If you are an AI Engineer at a modern startup, you cannot send sensitive proprietary data to OpenAI. You must host your own open-source models (like Llama-3). But if you try to use standard PyTorch `pipeline` to serve 10,000 concurrent users, your server will instantly crash with an Out-Of-Memory (OOM) error.
+If you are an <abbr title="Artificial Intelligence">AI</abbr> Engineer at a modern startup, you cannot send sensitive proprietary data to OpenAI. You must host your own open-source models (like Llama-3). But if you try to use standard PyTorch `pipeline` to serve 10,000 concurrent users, your server will instantly crash with an Out-Of-Memory (<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>) error.
 
-Today, we learn **Production LLM Serving**. We will learn the physics of memory-bound inference, and the revolutionary frameworks (vLLM, TGI) that make massive scale possible.
+Today, we learn **Production <abbr title="Large Language Model">LLM</abbr> Serving**. We will learn the physics of memory-bound inference, and the revolutionary frameworks (vLLM, TGI) that make massive scale possible.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Inference Bottleneck: Memory vs. Compute
-When an LLM generates text, there are two distinct phases:
-1. **Prefill Phase (Compute-Bound):** The LLM reads the user's prompt (e.g., 1,000 tokens) all at once. This is fast and maxes out the GPU's teraflops.
-2. **Decode Phase (Memory-Bound):** The LLM generates the answer token-by-token. For every single token generated, the GPU must fetch the *entire* model weights (e.g., 14GB for a 7B model) from GPU VRAM into the compute cores. This is incredibly slow and constrained by memory bandwidth, not compute power!
+When an <abbr title="Large Language Model">LLM</abbr> generates text, there are two distinct phases:
+1. **Prefill Phase (Compute-Bound):** The <abbr title="Large Language Model">LLM</abbr> reads the user's prompt (e.g., 1,000 tokens) all at once. This is fast and maxes out the GPU's teraflops.
+2. **Decode Phase (Memory-Bound):** The <abbr title="Large Language Model">LLM</abbr> generates the answer token-by-token. For every single token generated, the GPU must fetch the *entire* model weights (e.g., 14GB for a 7B model) from GPU VRAM into the compute cores. This is incredibly slow and constrained by memory bandwidth, not compute power!
 
 ### 2. The KV-Cache Problem
-During the Decode phase, the LLM must remember the context of all previous tokens. It stores this context in the **Key-Value (KV) Cache**.
+During the Decode phase, the <abbr title="Large Language Model">LLM</abbr> must remember the context of all previous tokens. It stores this context in the **Key-Value (KV) Cache**.
 If you use standard PyTorch, it pre-allocates a massive contiguous block of VRAM for every user's KV-Cache, guessing how long their generation will be. 
 *The result?* 60% to 80% of your $40,000 GPU's memory is completely wasted on empty space!
 
@@ -35,7 +35,7 @@ Standard batching forces all users to wait until the longest response finishes.
 ### 5. The Big Three Serving Engines
 1. **vLLM:** The open-source king. Best throughput, easiest to use, powered by PagedAttention.
 2. **TGI (Text Generation Inference):** Built by Hugging Face. Excellent integration with the HF Hub.
-3. **TensorRT-LLM:** Built by NVIDIA. The absolute fastest engine on Earth, but extremely difficult to compile and use.
+3. **TensorRT-<abbr title="Large Language Model">LLM</abbr>:** Built by NVIDIA. The absolute fastest engine on Earth, but extremely difficult to compile and use.
 
 ---
 
@@ -128,7 +128,7 @@ In production, you don't measure "Total Time". You measure three strict metrics:
 ## 🕒 HOUR 3: CHALLENGE & INTERVIEW PREP
 
 ### 🛠️ The Challenge
-Deploy vLLM as a true OpenAI-Compatible API Server. 
+Deploy vLLM as a true OpenAI-Compatible <abbr title="Application Programming Interface"><abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr></abbr> Server. 
 vLLM comes with a built-in FastAPI server that mimics OpenAI perfectly. 
 Your challenge: Run the following command in your terminal (if you have a GPU), and then point your Python `openai` client to `http://localhost:8000` instead of `https://api.openai.com`!
 
@@ -143,7 +143,7 @@ python -m vllm.entrypoints.openai.api_server --model meta-llama/Meta-Llama-3-8B-
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
-1. **The PyTorch Flaw:** Explicitly mention the KV-Cache. Explain that PyTorch pre-allocates contiguous memory for the cache, leading to severe memory fragmentation (80% waste), causing OOM crashes at even 10 concurrent users.
+1. **The PyTorch Flaw:** Explicitly mention the KV-Cache. Explain that PyTorch pre-allocates contiguous memory for the cache, leading to severe memory fragmentation (80% waste), causing <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> crashes at even 10 concurrent users.
 2. **The Software Layer:** Propose using **vLLM** or **TGI** specifically for **PagedAttention** (virtual memory blocks for KV-cache) and **Continuous Batching** (token-level request swapping).
 3. **The Hardware Layer:** A 70B model requires ~140GB of VRAM just for weights (in FP16). The candidate must state that a single 80GB A100 GPU cannot hold the model. They must propose using **Tensor Parallelism** across 2x A100 (80GB) or 4x A100 (40GB) GPUs.
 4. **The Scaling Layer:** To handle 10,000 users, one machine isn't enough. Propose a Kubernetes cluster with a Load Balancer routing requests to multiple physical nodes, each running an independent vLLM engine.

@@ -14,6 +14,17 @@ The rule: your database holds the *fact* that an object exists and its metadata;
 
 ## Direct/presigned upload flow
 
+
+```arch
+%% caption: By generating a presigned URL, the API server authorizes the upload without handling the large payload bytes itself.
+node client "Client" at 0,1 icon=client color=blue
+node api "API Server\n(Generates URL)" at 2,0 icon=server color=slate
+node obj "Object Storage\n(S3 / GCS)" at 2,2 icon=db color=green
+
+client -> api : "1. Request upload URL"
+api ..> client : "2. Signed URL"
+client ==> obj : "3. Direct PUT bytes"
+```
 Routing large file bytes through your application servers wastes their capacity on pass-through I/O and pushes bandwidth cost onto infrastructure that should be doing business logic. Let the client upload directly to object storage instead, authorized by a short-lived signed URL.
 
 ```mermaid
@@ -34,7 +45,7 @@ sequenceDiagram
     Worker->>DB: status PENDING → READY (or REJECTED)
 ```
 
-The API server never sees the file bytes — it only issues authorization. This is the same shape as the CDN/edge principle: keep large-byte traffic off the tier that runs your business logic.
+The <abbr title="Application Programming Interface">API</abbr> server never sees the file bytes — it only issues authorization. This is the same shape as the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>/edge principle: keep large-byte traffic off the tier that runs your business logic.
 
 ## Content validation after upload
 
@@ -93,7 +104,7 @@ For large files (video, large datasets), a single PUT is fragile — one network
 
 ## Delete propagation to derivatives
 
-Deleting an object is rarely just one object. A user photo might have a thumbnail, a few resized variants, and a CDN-cached copy. Deleting the source object without propagating to its derivatives leaves orphaned data (a compliance problem for user-requested deletion) and dangling references (a correctness problem — code that expects the thumbnail to exist). Track derivative relationships in the DB (a `parent_object_id` or similar), and make delete a workflow: mark source deleted → enqueue derivative cleanup → invalidate any CDN cache entries → confirm all derivatives gone before considering the delete complete. Treat "delete" the same way you'd treat any other multi-step operation with partial-failure risk — see the saga pattern in `12_application_resilience_patterns.md`.
+Deleting an object is rarely just one object. A user photo might have a thumbnail, a few resized variants, and a <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>-cached copy. Deleting the source object without propagating to its derivatives leaves orphaned data (a compliance problem for user-requested deletion) and dangling references (a correctness problem — code that expects the thumbnail to exist). Track derivative relationships in the DB (a `parent_object_id` or similar), and make delete a workflow: mark source deleted → enqueue derivative cleanup → invalidate any <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> cache entries → confirm all derivatives gone before considering the delete complete. Treat "delete" the same way you'd treat any other multi-step operation with partial-failure risk — see the saga pattern in `12_application_resilience_patterns.md`.
 
 ## Related building blocks
 

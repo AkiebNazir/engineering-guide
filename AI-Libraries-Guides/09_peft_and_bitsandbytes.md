@@ -6,8 +6,8 @@
 
 **What is it?**
 To fine-tune a massive Open-Source model like Llama-3-70B, you need two companion libraries alongside Hugging Face `transformers`:
-1. `bitsandbytes`: A library that compresses (Quantizes) massive AI models down to a fraction of their original size.
-2. `peft` (Parameter-Efficient Fine-Tuning): A library that implements **LoRA** (Low-Rank Adaptation), allowing you to train massive models without needing a $100,000 supercomputer.
+1. `bitsandbytes`: A library that compresses (Quantizes) massive <abbr title="Artificial Intelligence">AI</abbr> models down to a fraction of their original size.
+2. `peft` (Parameter-Efficient Fine-Tuning): A library that implements **<abbr title="Low-Rank Adaptation">LoRA</abbr>** (Low-Rank Adaptation), allowing you to train massive models without needing a $100,000 supercomputer.
 
 **Why do they exist?**
 A 70-Billion parameter model uses 140 Gigabytes of VRAM just to exist in 16-bit math. If you try to run `loss.backward()` (from Guide 05) to update all 70 billion weights simultaneously, the math requires roughly 400-600 Gigabytes of VRAM. It is mathematically impossible to do this on consumer hardware.
@@ -15,7 +15,7 @@ A 70-Billion parameter model uses 140 Gigabytes of VRAM just to exist in 16-bit 
 - `bitsandbytes` solves this by crunching the 16-bit numbers down into 4-bit numbers (Shrinking the 140GB model down to 35GB).
 - `peft` solves this by **freezing** all 70 billion weights so they cannot be updated. It then injects a tiny "Adapter" (about 100 Megabytes in size) into the model. During training, ONLY the tiny 100MB adapter is updated! 
 
-When combined, this is called **QLoRA** (Quantized Low-Rank Adaptation). It is the only way everyday engineers can fine-tune frontier models.
+When combined, this is called **<abbr title="Quantized Low-Rank Adaptation">QLoRA</abbr>** (Quantized Low-Rank Adaptation). It is the only way everyday engineers can fine-tune frontier models.
 
 ---
 
@@ -76,9 +76,9 @@ print(model.get_memory_footprint() / 1e9, "Gigabytes")
 
 ---
 
-## 4. Deep Dive: PEFT and the `LoraConfig`
+## 4. Deep Dive: <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr> and the `LoraConfig`
 
-Now the model is loaded in 4-bit, but it is completely frozen. We must use `peft` to inject the trainable LoRA adapter.
+Now the model is loaded in 4-bit, but it is completely frozen. We must use `peft` to inject the trainable <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter.
 
 ### Parameter Breakdown: `LoraConfig`
 - `r` (int - The "Rank"): The most important setting. Usually set between `8` and `64`.
@@ -147,16 +147,16 @@ final_merged_model = production_model.merge_and_unload()
 
 ## 6. MAANG Interview Scenarios
 
-### Scenario 1: Multi-Tenant Inference (The True Power of LoRA)
-*Interviewer:* "We are a massive SaaS company. 500 different enterprise clients want their own custom-trained LLM. If we deploy 500 separate Llama-3 models to our AWS cluster, we will go bankrupt paying for GPU instances. How do we solve this?"
+### Scenario 1: Multi-Tenant Inference (The True Power of <abbr title="Low-Rank Adaptation">LoRA</abbr>)
+*Interviewer:* "We are a massive <abbr title="Software as a Service - A software licensing and delivery model in which software is licensed on a subscription basis and is centrally hosted.">SaaS</abbr> company. 500 different enterprise clients want their own custom-trained <abbr title="Large Language Model">LLM</abbr>. If we deploy 500 separate Llama-3 models to our AWS cluster, we will go bankrupt paying for GPU instances. How do we solve this?"
 
-*Answer:* "We use Serverless LoRA inference (like vLLM or Lorax). Because the Base Model is completely frozen, we only need to load the massive Base Model into the GPU's VRAM *once*. For all 500 clients, we fine-tune a tiny 100MB LoRA adapter for them. 
-When Client A makes an API request, the server dynamically injects Client A's 100MB adapter into the GPU in roughly 5 milliseconds, runs the inference, and unloads it. A single GPU cluster can serve 500 custom models simultaneously, saving 99% on infrastructure costs."
+*Answer:* "We use Serverless <abbr title="Low-Rank Adaptation">LoRA</abbr> inference (like vLLM or Lorax). Because the Base Model is completely frozen, we only need to load the massive Base Model into the GPU's VRAM *once*. For all 500 clients, we fine-tune a tiny 100MB <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter for them. 
+When Client A makes an <abbr title="Application Programming Interface">API</abbr> request, the server dynamically injects Client A's 100MB adapter into the GPU in roughly 5 milliseconds, runs the inference, and unloads it. A single GPU cluster can serve 500 custom models simultaneously, saving 99% on infrastructure costs."
 
 ### Scenario 2: Catastrophic Forgetting
 *Interviewer:* "You fine-tuned a coding model purely on Python code. Now, when you ask it to speak French, it outputs gibberish. The base model used to know French! What happened?"
 
-*Answer:* "This is called **Catastrophic Forgetting**. During fine-tuning, the LoRA adapter drastically shifted the mathematical distribution of the model to prioritize Python syntax, destroying its internal representations of other languages. 
+*Answer:* "This is called **Catastrophic Forgetting**. During fine-tuning, the <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter drastically shifted the mathematical distribution of the model to prioritize Python syntax, destroying its internal representations of other languages. 
 To fix this, we must use **Replay / Mix-in Regularization**. During our Python fine-tuning, we must inject 10-20% of general-purpose conversational data (like French translations or general Wikipedia facts) into the training batches. This forces the adapter to learn Python *without* un-learning everything else."
 
 ---
@@ -168,9 +168,9 @@ If your loss is completely frozen and the model refuses to learn anything, your 
 *Fix:* Always follow the rule: `lora_alpha = 2 * r`.
 
 ### ⚠️ Pitfall 2: `ValueError: Unrecognized configuration class`
-When loading a saved PEFT model using the standard `AutoModel.from_pretrained()` command, Hugging Face will crash because it doesn't know how to handle the `adapter_config.json` file.
-*Fix:* You MUST use the `PeftModel.from_pretrained(base_model, adapter_path)` syntax to load a LoRA.
+When loading a saved <abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr> model using the standard `AutoModel.from_pretrained()` command, Hugging Face will crash because it doesn't know how to handle the `adapter_config.json` file.
+*Fix:* You MUST use the `PeftModel.from_pretrained(base_model, adapter_path)` syntax to load a <abbr title="Low-Rank Adaptation">LoRA</abbr>.
 
 ### ⚠️ Pitfall 3: Not targeting all linear modules
 In older tutorials, `target_modules` was often set to just `["q_proj", "v_proj"]` to save VRAM. Modern research (2024+) shows that if you do this, your model will heavily underperform on complex reasoning tasks. 
-*Fix:* If you have the VRAM, you should almost always set `target_modules="all-linear"`. This injects LoRA into every dense layer (including the MLPs), vastly improving the model's intelligence at the cost of slightly longer training times.
+*Fix:* If you have the VRAM, you should almost always set `target_modules="all-linear"`. This injects <abbr title="Low-Rank Adaptation">LoRA</abbr> into every dense layer (including the MLPs), vastly improving the model's intelligence at the cost of slightly longer training times.

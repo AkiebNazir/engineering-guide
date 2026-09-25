@@ -1,4 +1,4 @@
-# gRPC: Core Architecture & System Design
+# <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance RPC framework that can run in any environment.">gRPC</abbr>: Core Architecture & System Design
 
 ## Architectural Diagram & Visualization
 
@@ -21,64 +21,66 @@ sequenceDiagram
 ## 1. Core Architecture & System Design
 
 ### Deep Dive
-**gRPC** (gRPC Remote Procedure Calls) is a high-performance, open-source universal RPC framework developed by Google. Under the hood, it abstracts the complexities of network communication, making remote procedure calls look like local function calls.
-- **Transport Layer**: HTTP/2. This enables multiplexing (sending multiple requests concurrently over a single TCP connection), header compression (HPACK), and server push.
-- **Serialization**: Protocol Buffers (Protobuf). A binary serialization format that is smaller, faster, and more strongly typed than JSON or XML.
+**<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>** (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Remote Procedure Calls) is a high-performance, open-source universal <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework developed by Google. Under the hood, it abstracts the complexities of network communication, making remote procedure calls look like local function calls.
+- **Transport Layer**: <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2. This enables multiplexing (sending multiple requests concurrently over a single <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection), header compression (HPACK), and server push.
+- **Serialization**: Protocol Buffers (Protobuf). A binary serialization format that is smaller, faster, and more strongly typed than <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> or <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>.
 - **Request/Response Lifecycle**:
   1. **Stub Generation**: Protobuf definitions (`.proto` files) are compiled into client and server stubs for various languages.
   2. **Call Initiation**: The client invokes a method on the local stub.
   3. **Encoding**: The stub serializes the request parameters into a binary Protobuf format.
-  4. **Transmission**: The serialized payload is sent over HTTP/2 using DATA frames.
+  4. **Transmission**: The serialized payload is sent over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 using DATA frames.
   5. **Decoding**: The server stub deserializes the payload, executes the business logic, and sends the binary response back.
 
 ### Trade-offs
 **Pros:**
-- **High Performance & Payload Efficiency**: Binary serialization with Protobuf results in significantly smaller payloads compared to JSON, reducing bandwidth and CPU overhead.
-- **Multiplexing**: HTTP/2 allows concurrent RPC calls over a single persistent TCP connection, preventing head-of-line blocking.
+- **High Performance & Payload Efficiency**: Binary serialization with Protobuf results in significantly smaller payloads compared to <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, reducing bandwidth and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> overhead.
+- **Multiplexing**: <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 allows concurrent <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> calls over a single persistent <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection, preventing head-of-line blocking.
 - **Strict Contracts**: Protobuf enforces a strict schema, eliminating issues related to malformed payloads or unexpected data types.
 - **Polyglot Natively**: First-class code generation for Go, Python, Java, C++, Node.js, etc.
 - **Streaming Support**: Native support for Unary, Client-streaming, Server-streaming, and Bidirectional streaming.
 
 **Cons:**
-- **Browser Incompatibility**: Browsers don't fully support HTTP/2 trailing headers natively, requiring a proxy like `gRPC-Web` or Envoy to bridge the gap.
-- **Debugging Difficulty**: Binary payloads are not human-readable (unlike JSON). Requires specialized tools (e.g., `grpcurl`, Wireshark with Protobuf dissectors) for debugging.
-- **Steep Learning Curve**: Requires understanding Protobuf, HTTP/2 mechanics, and integrating code generation pipelines into CI/CD.
+- **Browser Incompatibility**: Browsers don't fully support <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 trailing headers natively, requiring a proxy like `gRPC-Web` or Envoy to bridge the gap.
+- **Debugging Difficulty**: Binary payloads are not human-readable (unlike <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>). Requires specialized tools (e.g., `grpcurl`, Wireshark with Protobuf dissectors) for debugging.
+- **Steep Learning Curve**: Requires understanding Protobuf, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 mechanics, and integrating code generation pipelines into <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>.
 
 ### System Design Fit
 **Optimal Scenarios:**
 - **Microservices (East-West Traffic)**: High-throughput, low-latency communication between internal backend services.
 - **Polyglot Architectures**: Systems where a Go service needs to talk to a Python service rapidly and efficiently.
 - **Real-Time Streaming**: Applications requiring persistent connections and real-time data flow (e.g., IoT telemetry, live financial feeds).
-- **Resource-Constrained Environments**: Mobile or IoT devices where bandwidth and CPU (for parsing JSON) are severely limited.
+- **Resource-Constrained Environments**: Mobile or IoT devices where bandwidth and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> (for parsing <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>) are severely limited.
 
 **Anti-Patterns:**
-- **Public-Facing Web APIs**: Standard REST or GraphQL is superior for external consumers who expect JSON and operate primarily in standard browsers.
-- **Simple CRUD Apps**: If the overhead of managing `.proto` files outweighs the performance benefits, stick to REST.
+- **Public-Facing Web APIs**: Standard <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> or GraphQL is superior for external consumers who expect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> and operate primarily in standard browsers.
+- **Simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> Apps**: If the overhead of managing `.proto` files outweighs the performance benefits, stick to <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>.
 
 ---
 
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph TD
-    subgraph Client_Node [Client Service - Python]
-        A[Client Application] -->|Method Call| B(gRPC Stub)
-        B -->|Serialize to Binary| C[HTTP/2 Client]
-    end
-
-    subgraph Network
-        C <-->|Multiplexed Binary Streams| D[HTTP/2 Server]
-    end
-
-    subgraph Server_Node [Target Service - Go]
-        D -->|Deserialize Binary| E(gRPC Stub)
-        E -->|Invoke Method| F[Server Implementation]
-    end
+```arch
+%% caption: A call on the client stub is serialized onto multiplexed HTTP/2 streams, then deserialized by the server stub and dispatched to the implementation.
+grid 160x100
+group Client_Node "Client Service - Python" icon=python color=amber
+node A "Client Application" at 0,0 in Client_Node icon=app
+node B "gRPC Stub" at 0,1 in Client_Node icon=grpc
+node C "HTTP/2 Client" at 0,2 in Client_Node icon=network
+group Network "Network" icon=network color=purple style=dashed
+node D "HTTP/2 Server" at 0,3 in Network icon=network
+group Server_Node "Target Service - Go" icon=go color=cyan
+node E "gRPC Stub" at 0,4 in Server_Node icon=grpc
+node F "Server Implementation" at 0,5 in Server_Node icon=server
+A -> B : "Method Call"
+B -> C : "Serialize to Binary"
+C <-> D : "Multiplexed Binary Streams"
+D -> E : "Deserialize Binary"
+E -> F : "Invoke Method"
 ```
 
 ### Animated Flow Visualization
-Save the block below as an HTML file (e.g. `grpc-anim.html`) or paste it into a browser to see how gRPC multiplexes traffic over HTTP/2.
+Save the block below as an HTML file (e.g. `grpc-anim.html`) or paste it into a browser to see how <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> multiplexes traffic over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2.
 
 ```html
 <!DOCTYPE html>
@@ -177,8 +179,8 @@ service MicroserviceSystem {
 
 ---
 
-### Use Case 1: Internal Service Authentication (Unary RPC)
-**System Design Fit:** An API Gateway (Python) validates a user JWT via an internal Auth Service (Go) before routing a request. Unary RPC is perfect for quick, 1-to-1 request-response lookups.
+### Use Case 1: Internal Service Authentication (Unary <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr>)
+**System Design Fit:** An <abbr title="Application Programming Interface">API</abbr> Gateway (Python) validates a user <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> via an internal Auth Service (Go) before routing a request. Unary <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> is perfect for quick, 1-to-1 request-response lookups.
 
 #### Golang (Server)
 ```go
@@ -249,7 +251,7 @@ if __name__ == '__main__':
 ---
 
 ### Use Case 2: Real-time Metric Aggregation (Client-Side Streaming)
-**System Design Fit:** Hundreds of Python workers streaming continuous CPU/Memory telemetry to a central Go monitoring service. Client streams avoid the overhead of establishing a new request for every single metric tick.
+**System Design Fit:** Hundreds of Python workers streaming continuous <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>/Memory telemetry to a central Go monitoring service. Client streams avoid the overhead of establishing a new request for every single metric tick.
 
 #### Golang (Server)
 ```go

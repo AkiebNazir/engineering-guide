@@ -56,8 +56,8 @@ chips narrow the DSA half of those results.
 
 ## Learning modules
 
-System Design, Software Design, Go Engineering, Py Engineering, AI Roadmap, AI Library
-Guides, Agentic AI, CS Fundamentals and Google Behavioral each get:
+System Design, Software Design, Go Engineering, Py Engineering, <abbr title="Artificial Intelligence">AI</abbr> Roadmap, <abbr title="Artificial Intelligence">AI</abbr> Library
+Guides, Agentic <abbr title="Artificial Intelligence">AI</abbr>, CS Fundamentals and Google Behavioral each get:
 
 | | |
 |---|---|
@@ -65,7 +65,7 @@ Guides, Agentic AI, CS Fundamentals and Google Behavioral each get:
 | **Sidebar row** | One row with its own progress; the contents are on its landing page, not in the rail. |
 | **Category rail** | A module with more than one group gets a sticky chip rail above the cards — every group with its done count, click to jump, and it marks the group you are scrolled into. |
 | **Landing page** | A drawing of the subject that shows your progress (the roadmap path is drawn as far as you've read), a Continue button, and grouped cards. |
-| **Reader** | On-this-page rail with scroll-spy, "Got it" check per section, highlights (select text), callout cards for 💡/⚠️/**Analogy:**/**Example:** blocks, highlighted code with copy, zoomable diagrams, reading position restored. |
+| **Reader** | On-this-page rail with scroll-spy, "Got it" check per section, highlights (select text), callout cards for 💡/⚠️/**Analogy:**/**Example:** blocks, highlighted code with copy, zoomable diagrams (architecture and flow diagrams are ` ```arch ` blocks drawn in AWS reference style; see [`ARCH_DIAGRAMS.md`](ARCH_DIAGRAMS.md)), reading position restored. |
 | **Page themes** | `Aa` menu: App / Sepia / Night, text size, line length, sans or serif. |
 | **Practice problems** | System design problems hide the reference design until you choose to open it. |
 
@@ -146,7 +146,7 @@ four review intervals. Same bar as `master_dsa_plan.md`.
 - **Offline:** the code editor and markdown renderer load from cdnjs. Without a
   connection the app still works — the editor falls back to a plain textarea.
 - **Theme:** the toggle cycles **system → light → dark**. `system` follows the
-  OS and flips live. The choice is mirrored to `localStorage` so a reload paints
+  <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> and flips live. The choice is mirrored to `localStorage` so a reload paints
   the right ground before first paint — no flash. The editor is a port of
   VS Code's own default themes; every syntax colour clears 4.5:1 against its
   ground in both modes, so nothing is a squint in either.

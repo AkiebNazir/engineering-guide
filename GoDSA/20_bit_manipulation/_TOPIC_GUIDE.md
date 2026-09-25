@@ -157,7 +157,7 @@ bits.Len64(x64)              // number of bits needed to represent x64
                               //   (i.e. 1 + floor(log2(x64)), 0 for x64==0)
 ```
 
-These compile to dedicated CPU instructions where the platform has them
+These compile to dedicated <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> instructions where the platform has them
 (`POPCNT`, `BSF`/`TZCNT`, `BSR`/`LZCNT` on amd64) — O(1) in practice, not a
 32-iteration software loop.
 
@@ -207,15 +207,13 @@ func isPowerOfTwo(x int) bool {
 }
 ```
 
-```mermaid
+```arch
 %% caption: n & (n-1) clears the lowest set bit. Repeat until n is 0 to count set bits, or test n & (n-1) == 0 for a power of two.
-flowchart LR
-  A["n = 1100"] --> B["n - 1 = 1011<br/>the lowest 1 became 0,<br/>the bits below it flipped"]
-  B --> C["n and (n - 1) = 1000<br/>lowest set bit cleared"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node a "n = 1100" at 0,0 color=blue
+node b "n - 1 = 1011" at 1,0 w=200 sub="the lowest 1 became 0, the bits below it flipped"
+node c "n & (n - 1) = 1000" at 2,0 color=green w=170 sub="lowest set bit cleared"
+a -> b -> c
 ```
 
 ### 4.2 `x & -x` — isolate the lowest set bit
@@ -233,9 +231,9 @@ is the mechanism a Fenwick tree (Topic 26) uses to find a node's parent/child
 range, and it's the same isolate-lowest-bit idea whether or not you invoke
 that name.
 
-### 4.3 XOR cancellation — Single Number (LC 136)
+### 4.3 <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> cancellation — Single Number (LC 136)
 
-XOR is commutative, associative, `a ^ a == 0`, and `a ^ 0 == a`. XOR every
+<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> is commutative, associative, `a ^ a == 0`, and `a ^ 0 == a`. <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> every
 element of a slice together and every value that appears in a pair cancels
 itself out, leaving only the one that appears alone:
 
@@ -250,10 +248,10 @@ func singleNumber(nums []int) int {
 ```
 
 O(n) time, O(1) space — strictly better than a `map[int]int` frequency count,
-and a favorite because it demonstrates you know XOR's algebraic properties
+and a favorite because it demonstrates you know <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>'s algebraic properties
 rather than reaching for a hash map by default.
 
-### 4.4 Bitmask enumeration — bridge to DP (Topics 16 / 17)
+### 4.4 Bitmask enumeration — bridge to <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (Topics 16 / 17)
 
 ```go
 n := len(items)
@@ -267,11 +265,11 @@ for mask := 0; mask < 1<<n; mask++ {
 ```
 
 Representing a subset of `n` items as the `n` low bits of an integer is the
-standard trick behind bitmask DP (traveling-salesman-style DP, "assign each
+standard trick behind bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (traveling-salesman-style <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, "assign each
 of n items to a bucket" problems). It only works because Go's fixed-width
 `int` gives you exactly `n` addressable bits without a general-purpose
 big-integer type getting in the way — and it caps out fast: `1<<n` overflows
-a 64-bit `int` once `n` exceeds 63, so bitmask DP is a technique for small `n`
+a 64-bit `int` once `n` exceeds 63, so bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> is a technique for small `n`
 (typically ≤ 20-ish given the `2^n` factor dominates runtime long before the
 overflow limit does).
 
@@ -296,13 +294,13 @@ overflow limit does).
 
 | Algorithm / Trick | Time | Space | Problem |
 |---|:--:|:--:|---|
-| XOR cancellation | O(n) | O(1) | LC 136 Single Number |
+| <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> cancellation | O(n) | O(1) | LC 136 Single Number |
 | Brian Kernighan popcount | O(popcount(x)) | O(1) | General bit-counting |
 | `x & (x-1)` power-of-two check | O(1) | O(1) | LC 231 Power of Two |
 | `x & -x` lowest-set-bit isolation | O(1) | O(1) | Fenwick tree indexing (Topic 26) |
-| DP via `x & (x-1)` recurrence | O(n) | O(n) | LC 338 Counting Bits |
+| <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> via `x & (x-1)` recurrence | O(n) | O(n) | LC 338 Counting Bits |
 | `math/bits` hardware popcount | O(1)* | O(1) | LC 191 Number of 1 Bits |
-| Bitmask subset enumeration | O(2^n · n) | O(1) extra | Bitmask DP, subset-sum variants |
+| Bitmask subset enumeration | O(2^n · n) | O(1) extra | Bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, subset-sum variants |
 
 \* one hardware instruction on supporting platforms; O(w) in the worst
 theoretical software-emulated case, where w is the word width
@@ -356,7 +354,7 @@ func popcountHW(x uint64) int {
 **Talk track while writing:** `countBits` is the one worth narrating slowly —
 say out loud that `i & (i-1)` is "i with its lowest set bit cleared," that
 this produces a value you've *already* computed `dp` for because it's smaller
-than `i`, and that the whole DP is just "one more bit than whatever's left
+than `i`, and that the whole <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> is just "one more bit than whatever's left
 after removing my lowest bit." That's the difference between reciting a trick
 and showing you understand why it's O(n).
 
@@ -370,21 +368,23 @@ is that **a fixed-width type wraps by itself** — so the "mask to 32 bits" ritu
 or moves to a different place (if you use the 64-bit `int`). All code below ran on Go 1.24.5 against LeetCode's own
 examples; timings are measurements from this machine.
 
-```mermaid
+```arch
 %% caption: A bitmask is a set of small integers. Add, remove, toggle and test are one operation each, and Go's &^ makes "remove" read naturally.
-flowchart LR
-  S["set {3, 5}<br/>mask = 0b101000"] --> A["add x:  mask |= 1 << x"]:::ok
-  S --> R["remove x:  mask &^= 1 << x"]:::hot
-  S --> T["toggle x:  mask ^= 1 << x"]:::ok
-  S --> Q["contains x:  mask>>x&1 == 1"]:::ok
-  S --> U["union |   intersection &   difference &^"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x70
+node s "set {3, 5}" at 0,2 color=blue sub="mask = 0b101000"
+node a "add x" at 1,0 color=green w=240 sub="mask |= 1 << x"
+node r "remove x" at 1,1 color=amber w=240 sub="mask &^= 1 << x"
+node t "toggle x" at 1,2 color=green w=240 sub="mask ^= 1 << x"
+node c "contains x" at 1,3 color=green w=240 sub="mask>>x&1 == 1"
+node u "set algebra" at 1,4 color=green w=240 sub="union |   intersection &   difference &^"
+s:R -> a:L
+s:R -> r:L
+s:R -> t:L
+s:R -> c:L
+s:R -> u:L
 ```
 
-### XOR and clear-the-lowest-bit: Single Number, Number of 1 Bits, Counting Bits, Missing Number
+### <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> and clear-the-lowest-bit: Single Number, Number of 1 Bits, Counting Bits, Missing Number
 
 ```go
 x := 0
@@ -450,7 +450,7 @@ Forgetting to mask the *carry* is the classic slip — the carry can still be wi
 
 ### Single Number II and III: per-position counts and a differing bit
 
-Triples do **not** cancel under XOR (`x ^ x ^ x == x`), so **count each bit position** across all numbers and keep the positions
+Triples do **not** cancel under <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> (`x ^ x ^ x == x`), so **count each bit position** across all numbers and keep the positions
 whose count is not a multiple of 3. Build the result in a `uint32` and reinterpret at the end — that cast is the sign fix-up:
 
 ```go
@@ -462,7 +462,7 @@ for b := 0; b < 32; b++ {
 return int32(res)                                     // [2 2 3 2] -> 3    [0 1 0 1 0 1 99] -> 99    negatives work too
 ```
 
-**Single Number III:** XOR everything to get `a ^ b`; isolate a bit where they differ with `diff & -diff`; partition the array
+**Single Number III:** <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> everything to get `a ^ b`; isolate a bit where they differ with `diff & -diff`; partition the array
 by that bit and fold each group into its **own** accumulator (folding both into one collapses back to `a ^ b`):
 
 ```go
@@ -528,9 +528,9 @@ Enumerating every submask of every mask costs `3ⁿ` in total, not `4ⁿ`. A bit
 
 | Follow-up | The answer |
 |---|---|
-| "No extra space / no arithmetic operators." | XOR for cancellation; XOR-and-carry for addition. |
+| "No extra space / no arithmetic operators." | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> for cancellation; <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-and-carry for addition. |
 | "Every number up to `n`." | `ans[i] = ans[i>>1] + i&1`. |
-| "Three of each except one." | Count bits per position mod 3; XOR alone cannot. |
+| "Three of each except one." | Count bits per position mod 3; <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> alone cannot. |
 | "Called many times?" | A 256-entry byte table, or `bits.Reverse32` / `OnesCount32` (single instructions). |
 | "32 vs 64 bits?" | State the width and use the matching fixed-width type. |
 | "Why is `n & (n-1)` correct?" | Subtracting 1 flips the lowest set bit and every bit below it; AND-ing with the original clears exactly that bit. |
@@ -541,18 +541,18 @@ Enumerating every submask of every mask costs `3ⁿ` in total, not `4ⁿ`. A bit
 <!-- problem-map:start -->
 ## Part 9 · Every Problem in This Topic, by Pattern
 
-Ten problems, five moves (XOR cancellation · clear/isolate the lowest set bit · per-position counting · shifting to a common prefix · carry-by-hand) — the Python guide's map in Go, where fixed-width types replace the masking. Each **Trap** is a mistake documented in that problem's solution file, plus Go-specific hazards. Topic 20's solutions are Python-first; the Go column is the plan you would write.
+Ten problems, five moves (<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> cancellation · clear/isolate the lowest set bit · per-position counting · shifting to a common prefix · carry-by-hand) — the Python guide's map in Go, where fixed-width types replace the masking. Each **Trap** is a mistake documented in that problem's solution file, plus Go-specific hazards. Topic 20's solutions are Python-first; the Go column is the plan you would write.
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Single Number](GoDSA/20_bit_manipulation/001_single_number/solution.go) <br>LC 136 · Easy | XOR cancellation | `x ^= n` over the slice. **Trap:** a `map[int]int` (breaks the O(1)-space constraint); believing only adjacent duplicates cancel. |
+| [001 · Single Number](GoDSA/20_bit_manipulation/001_single_number/solution.go) <br>LC 136 · Easy | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> cancellation | `x ^= n` over the slice. **Trap:** a `map[int]int` (breaks the O(1)-space constraint); believing only adjacent duplicates cancel. |
 | [002 · Number of 1 Bits](GoDSA/20_bit_manipulation/002_number_of_1_bits/solution.go) <br>LC 191 · Easy | Clear the lowest set bit | `bits.OnesCount32(n)`, or Kernighan's `for n != 0 { n &= n - 1; c++ }`. **Trap:** a fixed 32-iteration loop combined with `n & (n-1)`; reading the sign of an `int` mask. |
 | [003 · Counting Bits](GoDSA/20_bit_manipulation/003_counting_bits/solution.go) <br>LC 338 · Easy | Popcount from a smaller index | `ans[i] = ans[i>>1] + i&1` (`&` binds tighter than `+`). **Trap:** `make([]int, n)` instead of `n+1`. |
 | [004 · Reverse Bits](GoDSA/20_bit_manipulation/004_reverse_bits/solution.go) <br>LC 190 · Easy | Mirror each bit | `bits.Reverse32(n)`, or place bit `i` at `31-i`. **Trap:** placing it at `i`; using a signed type for the accumulator. |
-| [005 · Missing Number](GoDSA/20_bit_manipulation/005_missing_number/solution.go) <br>LC 268 · Easy | XOR with indices | Seed with `len(nums)`, then `x ^= i ^ v`. **Trap:** seeding 0; `len(nums)-1` in the Gauss-sum form. |
-| [006 · Sum of Two Integers](GoDSA/20_bit_manipulation/006_sum_of_two_integers/solution.go) <br>LC 371 · Medium | Addition = XOR + carry | `int32` with a `uint32` shift for the carry, or 64-bit `int` with explicit 32-bit masks. **Trap:** an unmasked carry in the 64-bit form; shifting a signed value into the sign bit. |
+| [005 · Missing Number](GoDSA/20_bit_manipulation/005_missing_number/solution.go) <br>LC 268 · Easy | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> with indices | Seed with `len(nums)`, then `x ^= i ^ v`. **Trap:** seeding 0; `len(nums)-1` in the Gauss-sum form. |
+| [006 · Sum of Two Integers](GoDSA/20_bit_manipulation/006_sum_of_two_integers/solution.go) <br>LC 371 · Medium | Addition = <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> + carry | `int32` with a `uint32` shift for the carry, or 64-bit `int` with explicit 32-bit masks. **Trap:** an unmasked carry in the 64-bit form; shifting a signed value into the sign bit. |
 | [007 · Reverse Integer](GoDSA/20_bit_manipulation/007_reverse_integer/solution.go) <br>LC 7 · Medium | Digit peel with an overflow check | `d := x % 10` (already signed), check `rev` against `MaxInt32/10` and `MinInt32/10` *before* multiplying. **Trap:** no check (a 64-bit `int` never overflows); the symmetric `abs(rev) > 2³¹`. |
-| [008 · Single Number II](GoDSA/20_bit_manipulation/008_single_number_ii/solution.go) <br>LC 137 · Medium | Count bits per position | Per-bit counts mod 3 into a `uint32`, then `int32(res)`. **Trap:** the XOR fold; skipping the reinterpretation cast (the sign fix-up). |
+| [008 · Single Number II](GoDSA/20_bit_manipulation/008_single_number_ii/solution.go) <br>LC 137 · Medium | Count bits per position | Per-bit counts mod 3 into a `uint32`, then `int32(res)`. **Trap:** the <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> fold; skipping the reinterpretation cast (the sign fix-up). |
 | [009 · Single Number III](GoDSA/20_bit_manipulation/009_single_number_iii/solution.go) <br>LC 260 · Medium | Split by a differing bit | `low := diff & -diff`; two separate accumulators. **Trap:** returning `[]int{diff, 0}`; one shared accumulator. |
 | [010 · Bitwise AND of Numbers Range](GoDSA/20_bit_manipulation/010_bitwise_and_of_numbers_range/solution.go) <br>LC 201 · Medium | Shift to the common prefix | Shift both endpoints right until equal; shift back. **Trap:** a brute-force loop; shifting one endpoint. |
 
@@ -568,9 +568,9 @@ Ten problems, five moves (XOR cancellation · clear/isolate the lowest set bit �
 - [ ] Know `math/bits`'s OnesCount / LeadingZeros / TrailingZeros / Len and when to prefer them
 - [ ] Derive why `x & (x-1)` clears the lowest set bit
 - [ ] Derive why `x & -x` isolates the lowest set bit (two's-complement negation)
-- [ ] Explain the XOR-cancellation argument for Single Number
+- [ ] Explain the <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-cancellation argument for Single Number
 - [ ] Write the `dp[i] = dp[i&(i-1)] + 1` Counting Bits recurrence from memory
-- [ ] Know why bitmask DP is only viable for small n (both `2^n` blowup and 64-bit overflow)
+- [ ] Know why bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> is only viable for small n (both `2^n` blowup and 64-bit overflow)
 - [ ] Use `int32` / `uint32` so the type wraps for you, and emulate 32 bits (with masks on the carry too) when given a 64-bit `int` <!--ca-->
 - [ ] Use `&^=` to clear bits, `mask>>x&1 == 1` to test, and enumerate submasks with `sub = (sub - 1) & m` <!--ca-->
 - [ ] State Go's shift rules: count `>=` width gives 0, a negative count panics, `>>` is arithmetic on signed types <!--ca-->

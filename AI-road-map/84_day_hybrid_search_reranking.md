@@ -4,7 +4,7 @@ Welcome to Day 84. In Day 83, we built a **Dense Retriever** (Semantic Search). 
 
 But Dense Retrieval has a fatal flaw: It is terrible at Exact Keyword Matching. If a user asks *"What is the warranty for part number AX-990-BZ?"*, a dense embedding might retrieve a document about *"Part number AX-990-CX"* because the two sentences are semantically identical.
 
-Today, we fix this. We will build the ultimate production RAG pipeline: **Hybrid Search with a Cross-Encoder Reranker**.
+Today, we fix this. We will build the ultimate production <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline: **Hybrid Search with a Cross-Encoder Reranker**.
 
 ---
 
@@ -27,7 +27,7 @@ We don't choose between Dense and Sparse. We run both!
    If a document is Rank #1 in Dense and Rank #1 in Sparse, it gets a massive RRF score and bubbles to the absolute top of the combined list!
 
 ### 3. Cross-Encoder Reranking
-We now have a combined list of 50 great documents. But we only want to send 3 to the LLM. 
+We now have a combined list of 50 great documents. But we only want to send 3 to the <abbr title="Large Language Model">LLM</abbr>. 
 The Bi-Encoder we used in Day 83 was fast, but stupid. It embedded the query and document separately.
 A **Cross-Encoder** is a massive BERT model that takes the Query AND the Document *simultaneously* as input: `[CLS] Query [SEP] Document [SEP]`. 
 Because both texts are in the Transformer at the same time, the Self-Attention mechanism allows the words in the question to directly interact with the words in the document!
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The $K=60$ Constant:** In the RRF formula, $60$ is a magic number empirically proven to work best. It prevents documents that rank #1 in one list and #100 in the other from completely dominating documents that consistently rank #5 in both lists.
-2. **The Pipeline Funnel:** 10M Documents $\xrightarrow{\text{FAISS/BM25}}$ Top 100 $\xrightarrow{\text{RRF}}$ Top 50 $\xrightarrow{\text{Cross-Encoder}}$ Top 3 $\xrightarrow{\text{LLM}}$. This perfectly balances speed and accuracy!
+2. **The Pipeline Funnel:** 10M Documents $\xrightarrow{\text{FAISS/BM25}}$ Top 100 $\xrightarrow{\text{RRF}}$ Top 50 $\xrightarrow{\text{Cross-Encoder}}$ Top 3 $\xrightarrow{\text{<abbr title="Large Language Model">LLM</abbr>}}$. This perfectly balances speed and accuracy!
 
 ---
 
@@ -141,7 +141,7 @@ You used a mock list. Now build the real BM25 algorithm.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design a RAG system for a major Legal Firm with 10 Million case documents. They have strict Access Control (Lawyer A cannot see Lawyer B's cases) and absolute zero-tolerance for hallucination. Discuss the retrieval pipeline, access-controlled indexing, and hallucination prevention."*
+*"Design a <abbr title="Retrieval-Augmented Generation">RAG</abbr> system for a major Legal Firm with 10 Million case documents. They have strict Access Control (Lawyer A cannot see Lawyer B's cases) and absolute zero-tolerance for hallucination. Discuss the retrieval pipeline, access-controlled indexing, and hallucination prevention."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -152,11 +152,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Retrieval Pipeline:**
    - Propose the Hybrid Search pipeline. BM25 is mandatory because lawyers search for exact legal statutes (e.g., "Section 14.b.2"). Combine with Dense retrieval via RRF, and use a Legal-specific Cross-Encoder to extract the Top 5 chunks.
 3. **Hallucination Prevention (Strict Grounding):**
-   - Explain that the LLM prompt must enforce citations. *"Answer using the context. Cite your sources using the [DocID]."* 
-   - Before returning the answer to the lawyer, run a secondary lightweight LLM (or regex pipeline) to explicitly verify that the generated quotes actually exist word-for-word in the retrieved chunk.
+   - Explain that the <abbr title="Large Language Model">LLM</abbr> prompt must enforce citations. *"Answer using the context. Cite your sources using the [DocID]."* 
+   - Before returning the answer to the lawyer, run a secondary lightweight <abbr title="Large Language Model">LLM</abbr> (or regex pipeline) to explicitly verify that the generated quotes actually exist word-for-word in the retrieved chunk.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-You have built the ultimate production RAG pipeline. But what if the user's question is so vague that even Hybrid Search fails?
-Tomorrow, in **Day 85**, we explore **Advanced RAG Patterns (HyDE, RAPTOR, and GraphRAG)**!
+You have built the ultimate production <abbr title="Retrieval-Augmented Generation">RAG</abbr> pipeline. But what if the user's question is so vague that even Hybrid Search fails?
+Tomorrow, in **Day 85**, we explore **Advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> Patterns (HyDE, RAPTOR, and GraphRAG)**!

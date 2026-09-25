@@ -7,15 +7,15 @@ XGBoost (eXtreme Gradient Boosting) is an optimized, highly scalable machine lea
 
 **Why does it exist?**
 If you have unstructured data (Images, Text, Audio), you use Deep Learning (Neural Networks).
-If you have structured tabular data (Excel sheets, SQL databases with numbers and categories), **XGBoost will almost always beat Neural Networks in both accuracy and training speed.** It has famously dominated Kaggle competitions for nearly a decade.
+If you have structured tabular data (Excel sheets, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> databases with numbers and categories), **XGBoost will almost always beat Neural Networks in both accuracy and training speed.** It has famously dominated Kaggle competitions for nearly a decade.
 
-While Scikit-Learn has its own `GradientBoostingClassifier`, XGBoost was built specifically for speed, utilizing parallel tree boosting, hardware optimization, and out-of-core computing to process datasets too large to fit in RAM.
+While Scikit-Learn has its own `GradientBoostingClassifier`, XGBoost was built specifically for speed, utilizing parallel tree boosting, hardware optimization, and out-of-core computing to process datasets too large to fit in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>.
 
 ---
 
 ## 2. Setup & Installation
 
-By default, XGBoost runs on the CPU. If you have an NVIDIA GPU, you should install the CUDA-enabled version for a massive speedup.
+By default, XGBoost runs on the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>. If you have an NVIDIA GPU, you should install the CUDA-enabled version for a massive speedup.
 
 ```bash
 # Standard CPU installation
@@ -46,12 +46,12 @@ Before writing code, you must understand the math. Both algorithms use multiple 
 
 ---
 
-## 4. The Native API vs. The Scikit-Learn Wrapper
+## 4. The Native <abbr title="Application Programming Interface">API</abbr> vs. The Scikit-Learn Wrapper
 
 XGBoost actually has two different ways to write code in Python.
 
 ### A. The Scikit-Learn Wrapper (For Beginners)
-XGBoost provides a class that perfectly mimics the Scikit-Learn `.fit()` and `.predict()` API we learned in Guide 03. This is great for putting XGBoost inside a Scikit-Learn `Pipeline`.
+XGBoost provides a class that perfectly mimics the Scikit-Learn `.fit()` and `.predict()` <abbr title="Application Programming Interface">API</abbr> we learned in Guide 03. This is great for putting XGBoost inside a Scikit-Learn `Pipeline`.
 
 ```python
 from xgboost import XGBClassifier
@@ -72,8 +72,8 @@ model.fit(X_train, y_train)
 preds = model.predict(X_test)
 ```
 
-### B. The Native API (For Pros)
-If you want maximum performance, early stopping, and advanced memory management, you use the Native API. It requires converting Pandas dataframes into a heavily optimized C++ object called a **DMatrix**.
+### B. The Native <abbr title="Application Programming Interface">API</abbr> (For Pros)
+If you want maximum performance, early stopping, and advanced memory management, you use the Native <abbr title="Application Programming Interface">API</abbr>. It requires converting Pandas dataframes into a heavily optimized C++ object called a **DMatrix**.
 
 ```python
 import xgboost as xgb
@@ -181,9 +181,9 @@ plt.show()
 *Answer:* "Scikit-Learn requires you to explicitly impute (fill) missing values using a `SimpleImputer`. XGBoost handles missing values natively under the hood. During training, at every node split, XGBoost dynamically learns which path to send `NaN` values down to minimize the loss function. It essentially treats 'Missing' as its own unique feature value."
 
 ### Scenario 2: Deep Learning vs Gradient Boosting
-*Interviewer:* "Why don't we just use a 100-layer PyTorch Neural Network for this SQL database instead of XGBoost?"
+*Interviewer:* "Why don't we just use a 100-layer PyTorch Neural Network for this <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database instead of XGBoost?"
 
-*Answer:* "Neural Networks excel at extracting spatial and sequential patterns from unstructured, homogeneous data (like pixels or text tokens). Tabular data is heterogeneous—column 1 is Age (0-100), column 2 is Salary (0-1M), column 3 is a Boolean. Neural networks struggle heavily with unscaled, heterogeneous data. Furthermore, XGBoost requires vastly less data to converge, trains exponentially faster on CPU, and provides out-of-the-box feature importance, which the compliance team requires."
+*Answer:* "Neural Networks excel at extracting spatial and sequential patterns from unstructured, homogeneous data (like pixels or text tokens). Tabular data is heterogeneous—column 1 is Age (0-100), column 2 is Salary (0-1M), column 3 is a Boolean. Neural networks struggle heavily with unscaled, heterogeneous data. Furthermore, XGBoost requires vastly less data to converge, trains exponentially faster on <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, and provides out-of-the-box feature importance, which the compliance team requires."
 
 ---
 
@@ -199,7 +199,7 @@ If you set `eta = 1.0`, the model learns too aggressively from the first few tre
 **The Fix:** The golden rule of Gradient Boosting is: *Decrease the Learning Rate, and Increase the Number of Trees.* A learning rate of `0.05` or `0.01` combined with 1,000 trees almost always yields a superior, robust model compared to `0.3` and 100 trees.
 
 ### ⚠️ Pitfall 3: Not Using GPU for Massive Data
-If your dataset has 10 million rows, CPU training will take hours.
+If your dataset has 10 million rows, <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> training will take hours.
 **The Fix:** If you have an NVIDIA GPU, change the `tree_method` parameter. The speedup is usually 10x to 50x.
 ```python
 params = {

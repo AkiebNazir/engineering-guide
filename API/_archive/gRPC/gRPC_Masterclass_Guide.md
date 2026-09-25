@@ -1,6 +1,6 @@
-# gRPC & Protobuf: The Complete Masterclass
+# <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance RPC framework that can run in any environment.">gRPC</abbr> & Protobuf: The Complete Masterclass
 
-To truly master gRPC, you must stop thinking in terms of "HTTP endpoints" and "JSON payloads," and start thinking in terms of **Strict Contracts**, **Binary Streams**, and **Remote Function Execution**. 
+To truly master <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, you must stop thinking in terms of "<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> endpoints" and "<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> payloads," and start thinking in terms of **Strict Contracts**, **Binary Streams**, and **Remote Function Execution**. 
 
 This guide will take you from zero to production-ready by building a real-world **E-Commerce Order Management System**.
 
@@ -8,17 +8,17 @@ This guide will take you from zero to production-ready by building a real-world 
 
 ## Part 1: The Core Philosophy
 
-### Why not REST?
-In REST, clients and servers communicate via JSON over HTTP/1.1. 
-1. **JSON is text-based**: It is slow to parse and heavy on the network. Sending the number `12345` takes 5 bytes in JSON, but only 1 or 2 bytes in binary.
-2. **HTTP/1.1 is sequential**: If you make 10 requests, they often queue up (head-of-line blocking).
-3. **No strict contract**: REST APIs rely on OpenAPI/Swagger for documentation, but at runtime, nothing stops a server from accidentally sending a string instead of an integer.
+### Why not <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>?
+In <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, clients and servers communicate via <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1. 
+1. **<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is text-based**: It is slow to parse and heavy on the network. Sending the number `12345` takes 5 bytes in <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, but only 1 or 2 bytes in binary.
+2. **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 is sequential**: If you make 10 requests, they often queue up (head-of-line blocking).
+3. **No strict contract**: <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs rely on OpenAPI/Swagger for documentation, but at runtime, nothing stops a server from accidentally sending a string instead of an integer.
 
-### The gRPC Paradigm
-gRPC solves this using **HTTP/2** and **Protocol Buffers (Protobuf)**.
-1. **HTTP/2**: Allows *multiplexing* (sending hundreds of concurrent requests over a single, persistent TCP connection) and *server streaming*.
+### The <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Paradigm
+<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> solves this using **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2** and **Protocol Buffers (Protobuf)**.
+1. **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2**: Allows *multiplexing* (sending hundreds of concurrent requests over a single, persistent <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection) and *server streaming*.
 2. **Protobuf**: A binary serialization format. It is blindingly fast and enforces a strict, unbreakable contract between client and server.
-3. **RPC (Remote Procedure Call)**: Instead of making a `POST /orders`, you literally call a function `CreateOrder(request)` in your code, and the gRPC framework handles the network complexity invisibly.
+3. **<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> (Remote Procedure Call)**: Instead of making a `POST /orders`, you literally call a function `CreateOrder(request)` in your code, and the <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> framework handles the network complexity invisibly.
 
 ---
 
@@ -115,8 +115,8 @@ type OrderServer struct {
 }
 ```
 
-### Step 2: Implementing Unary RPC (`CreateOrder`)
-Notice the `context.Context`. This is crucial in Go. If the client disconnects or times out, the context is cancelled, and we should stop processing to save CPU.
+### Step 2: Implementing Unary <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> (`CreateOrder`)
+Notice the `context.Context`. This is crucial in Go. If the client disconnects or times out, the context is cancelled, and we should stop processing to save <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.
 
 ```go
 func (s *OrderServer) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.CreateOrderResponse, error) {
@@ -178,7 +178,7 @@ func (s *OrderServer) TrackOrder(req *pb.TrackOrderRequest, stream pb.OrderManag
 }
 ```
 
-### Step 4: Bootstrapping the TCP Server
+### Step 4: Bootstrapping the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> Server
 ```go
 func main() {
 	// 1. Open a raw TCP socket
@@ -204,10 +204,10 @@ func main() {
 
 ## Part 4: The Client Implementation (Python)
 
-Let's consume this API from a Python microservice using modern `asyncio`.
+Let's consume this <abbr title="Application Programming Interface">API</abbr> from a Python microservice using modern `asyncio`.
 
 ### Step 1: Connecting (The Channel)
-A Channel represents the underlying HTTP/2 connection. We use `insecure_channel` for local dev, but in production, you use `secure_channel` with TLS certificates.
+A Channel represents the underlying <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 connection. We use `insecure_channel` for local dev, but in production, you use `secure_channel` with <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> certificates.
 
 ```python
 import asyncio
@@ -260,7 +260,7 @@ async def create_order_example(stub):
 ```
 
 ### Step 3: Consuming the Server Stream
-Because gRPC streams are native, Python treats them exactly like an `async generator`.
+Because <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> streams are native, Python treats them exactly like an `async generator`.
 
 ```python
 async def track_order_example(stub):
@@ -288,7 +288,7 @@ if __name__ == '__main__':
 
 To be a true master, you must understand what happens when things go wrong in production.
 
-### 1. Interceptors (The gRPC Middleware)
+### 1. Interceptors (The <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Middleware)
 You rarely put Authentication or Logging inside your handler functions. Instead, you use Interceptors.
 - An interceptor sits between the network and your function.
 - **Go Server Interceptor Example**:
@@ -312,9 +312,9 @@ You rarely put Authentication or Logging inside your handler functions. Instead,
 
 ### 2. Cascading Deadlines
 If Client A calls Microservice B (which takes 5s), and B calls Microservice C (which takes 4s), Client A will wait 9 seconds.
-If Client A sets a deadline of `timeout=3.0`, gRPC will automatically propagate this deadline across the network to B and C. If 3 seconds pass, gRPC will instantly kill the processing in B and C simultaneously, preventing resource exhaustion. Always pass `ctx` downward in Go!
+If Client A sets a deadline of `timeout=3.0`, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> will automatically propagate this deadline across the network to B and C. If 3 seconds pass, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> will instantly kill the processing in B and C simultaneously, preventing resource exhaustion. Always pass `ctx` downward in Go!
 
 ### 3. Load Balancing
-REST APIs use L7 load balancers (like AWS ALB or Nginx) easily because each request is a new connection.
-gRPC uses a **single persistent HTTP/2 connection**. If you put a standard L4 load balancer in front of 5 gRPC servers, all traffic from one client will stick to exactly one server forever. 
-**Master Solution**: You must use a gRPC-aware proxy (like Envoy or Linkerd) OR configure Client-Side Load Balancing (the Python client connects to all 5 IPs and round-robins requests internally).
+<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs use L7 load balancers (like AWS ALB or Nginx) easily because each request is a new connection.
+<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> uses a **single persistent <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 connection**. If you put a standard L4 load balancer in front of 5 <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> servers, all traffic from one client will stick to exactly one server forever. 
+**Master Solution**: You must use a <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-aware proxy (like Envoy or Linkerd) OR configure Client-Side Load Balancing (the Python client connects to all 5 IPs and round-robins requests internally).

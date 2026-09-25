@@ -33,13 +33,13 @@ behavior (e.g. `csv.writer`, `json.dump`, `shutil.copyfileobj`).
 | Default encoding is not fixed | Text mode without `encoding=` uses `locale.getpreferredencoding()`, which differs across machines — always pass `encoding=` explicitly for portable code. |
 | `buffering=0` only works in binary mode | Unbuffered text streams (`buffering=0` with mode `'r'`/`'w'`) raise `ValueError`; unbuffered is a binary-only concept. |
 | Custom `RawIOBase` subclasses aren't buffered | Wrap them in `io.BufferedReader`/`BufferedWriter` if callers expect efficient chunked I/O. |
-| `flush()` is not `fsync()` | `flush()` only pushes Python's/libc's buffers to the OS; the OS may still cache the write. Durability across a crash needs `os.fsync(fileobj.fileno())`. |
+| `flush()` is not `fsync()` | `flush()` only pushes Python's/libc's buffers to the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>; the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> may still cache the write. Durability across a crash needs `os.fsync(fileobj.fileno())`. |
 | Iterating a file object twice | A file iterator is exhausted after one pass; a second `for line in f` yields nothing unless you `seek(0)`. |
 
 ## What the 10 levels cover
 
 Level 1 opens a file with each mode character and shows what problem it solves.
-Level 2 covers the core read/write/readline API shared by real files and
+Level 2 covers the core read/write/readline <abbr title="Application Programming Interface">API</abbr> shared by real files and
 `StringIO`/`BytesIO`. Level 3 combines `seek()`/`tell()` and `whence` into a
 realistic "read the last N bytes" idiom. Level 4 triggers a real
 `UnicodeDecodeError` from a bad `encoding=`/`errors=` combination and shows the

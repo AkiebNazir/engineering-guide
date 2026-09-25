@@ -3,7 +3,7 @@
 Welcome to Day 64. The Multi-Head Attention mechanism is incredible. It allows words to bond with other words, routing context across a sentence perfectly. 
 But Attention is basically just a complex sorting mechanism. It doesn't actually "think". 
 
-The actual factual knowledge of the AI—the part that knows that Paris is the capital of France—is stored inside the **Position-wise Feed-Forward Network (FFN)**.
+The actual factual knowledge of the <abbr title="Artificial Intelligence">AI</abbr>—the part that knows that Paris is the capital of France—is stored inside the **Position-wise Feed-Forward Network (FFN)**.
 
 ---
 
@@ -21,13 +21,13 @@ Modern models (LLaMA, PaLM) use **SwiGLU** (Swish Gated Linear Unit).
 Instead of a standard FFN, SwiGLU creates TWO separate massive neural pathways.
 - Pathway A processes the data.
 - Pathway B acts as a **Gate**. It uses the Swish activation function to mathematically decide exactly *which* facts in Pathway A should be allowed to pass through, and which should be blocked!
-SwiGLU increases the parameter count, but results in a massive leap in AI reasoning capabilities.
+SwiGLU increases the parameter count, but results in a massive leap in <abbr title="Artificial Intelligence">AI</abbr> reasoning capabilities.
 
 ### 3. The Stability Crisis: Pre-Norm vs Post-Norm
 A Transformer is just an Attention block followed by an FFN block.
 To train a 100-layer Transformer without exploding gradients, we must use **Layer Normalization** and **Residual Connections** (from ResNet, Day 39).
 - **Post-Norm (2017):** The original paper did this: `Attention(x) -> Add Residual -> LayerNorm`. This is notoriously unstable. If you try to train a 100-layer Post-Norm model, it will crash instantly.
-- **Pre-Norm (Modern):** Today, every LLM does this: `LayerNorm(x) -> Attention -> Add Residual`. By normalizing the data *before* it enters the block, the Residual Connection remains completely untouched! This guarantees perfect mathematical stability for models up to 1000 layers deep!
+- **Pre-Norm (Modern):** Today, every <abbr title="Large Language Model">LLM</abbr> does this: `LayerNorm(x) -> Attention -> Add Residual`. By normalizing the data *before* it enters the block, the Residual Connection remains completely untouched! This guarantees perfect mathematical stability for models up to 1000 layers deep!
 
 ---
 

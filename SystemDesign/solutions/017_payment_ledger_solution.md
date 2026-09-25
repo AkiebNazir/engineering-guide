@@ -22,7 +22,7 @@ Assumptions beyond the question are labelled: peak is 3× the daily average; a t
 
 - **Rate.** Average = 20k ÷ 3 ≈ 6.7k transfers/s ≈ **576M transfers/day**. Journal lines: 20k × 2.5 = **50k lines/s at peak**, ~17k/s average, **1.44B lines/day**. So the journal is append-only and write-heavy; the design should never update or delete it.
 - **Journal size.** 1.44B × 200 B = 288 GB/day of lines, plus 576M × 150 B = 86 GB/day of transaction headers ≈ **375 GB/day ≈ 137 TB/year** raw, ~410 TB/year with three replicas. Retained indefinitely, that is ~1.4 PB raw after 10 years. So we need a time-partitioned journal with a hot tier (last ~90 days ≈ 34 TB) and older partitions moved to immutable columnar storage.
-- **Balance table.** 500M accounts × ~100 B × 1.2 (some accounts hold more than one currency) = **60 GB**, ~180 GB replicated. So balances are small enough to keep hot in memory or on fast SSD; the journal, not the balance table, is the large object.
+- **Balance table.** 500M accounts × ~100 B × 1.2 (some accounts hold more than one currency) = **60 GB**, ~180 GB replicated. So balances are small enough to keep hot in memory or on fast <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr>; the journal, not the balance table, is the large object.
 - **Shards.** A cross-shard transfer is two local transactions (one per leg), so 20k transfers/s = **40k leg-transactions/s**. At ~2,500 per shard that is a minimum of 16 shards. Take **64 shards**: 625 legs/s and ~780 lines/s per shard (25% utilisation, room for skew and failover), 7.8M accounts and ~5.9 GB/day of journal per shard. So we shard by account.
 - **How many transfers cross shards.** If the two accounts are effectively random, the chance both are on the same shard is 1/64, so **~98% of transfers are cross-shard**. Cross-shard is the common path, not the exception. So it must be designed to be cheap.
 - **Per-account limit.** A row locked for ~3 ms per update sustains at most 1 ÷ 0.003 ≈ **333 updates/s per account**. A fee or settlement account touched by every transfer would need 20,000/s: **60× over the limit**. A large merchant receiving 2,000 payments/s is 6× over. So hot accounts cannot be single rows.
@@ -90,6 +90,24 @@ POST /internal/settlement-events                { provider, provider_ref, amount
 
 ## Architecture and data flow
 
+```arch
+%% caption: The Transfer API coordinates a cross-shard transfer by writing to the source shard locally, then calling the destination shard.
+node client "Client" at 0,0 icon=client color=blue
+node api "Transfer API" at 2,0 icon=server color=slate
+group sA "Shard A (Source)" color=amber style=dashed
+node tblA "Accounts A" at 4,-1 in sA icon=db
+node clA "Clearing A->B" at 4,0 in sA icon=db
+group sB "Shard B (Destination)" color=green style=dashed
+node tblB "Accounts B" at 6,1 in sB icon=db
+node clB "Clearing B->A" at 6,2 in sB icon=db
+
+client -> api : "POST /transfers"
+api -> tblA : "1. debit\nsource"
+api -> clA : "1. credit\nclearing"
+api -> clB : "2. debit\nclearing"
+api -> tblB : "2. credit\ndest"
+```
+
 ```mermaid
 %% caption: A cross-shard transfer is two local double-entry transactions joined by inter-shard clearing accounts, so every step balances and a failed credit is undone by a reversing entry.
 sequenceDiagram
@@ -111,7 +129,7 @@ sequenceDiagram
     Note over B: if the destination rejects, A posts a reversing entry and the state becomes REVERSED
 ```
 
-**One write, end to end.** The client sends `POST /v1/transfers` with an idempotency key. The API routes to the source account's shard and runs a single local transaction: insert the `transfers` row (a unique-constraint violation means "already done", so read and return the stored result), lock the source balance row, check `available ≥ amount`, insert the debit and the clearing-credit entries, update the balance, and write an outbox row for the credit leg. After commit, the API calls the destination shard with `(transfer_id, leg = credit)`; that shard's inbox makes the call idempotent, posts the debit of the clearing account and the credit of the destination, and acknowledges. If the API crashes between the legs, the outbox relay finds transfers stuck in `DEBITED` for more than ~1 s and finishes them. The status flips to `COMPLETED`. If both accounts are on the same shard, none of this is needed: one local transaction posts both legs.
+**One write, end to end.** The client sends `POST /v1/transfers` with an idempotency key. The <abbr title="Application Programming Interface">API</abbr> routes to the source account's shard and runs a single local transaction: insert the `transfers` row (a unique-constraint violation means "already done", so read and return the stored result), lock the source balance row, check `available ≥ amount`, insert the debit and the clearing-credit entries, update the balance, and write an outbox row for the credit leg. After commit, the <abbr title="Application Programming Interface">API</abbr> calls the destination shard with `(transfer_id, leg = credit)`; that shard's inbox makes the call idempotent, posts the debit of the clearing account and the credit of the destination, and acknowledges. If the <abbr title="Application Programming Interface">API</abbr> crashes between the legs, the outbox relay finds transfers stuck in `DEBITED` for more than ~1 s and finishes them. The status flips to `COMPLETED`. If both accounts are on the same shard, none of this is needed: one local transaction posts both legs.
 
 **One read, end to end.** `GET /v1/accounts/{id}/balance` is a primary-key lookup on the account's shard primary, returning `posted`, `pending`, `available`, and the `entry_seq` it reflects. A statement pages entries by `entry_seq`. A balance *as of* time T is the `balance_after` of the last entry at or before T, so you can reconstruct any account's history from the journal alone.
 
@@ -243,8 +261,8 @@ Partition/shard by account id so that all postings touching one account can be s
 | Attempted double-spend via rapid parallel requests | Per-account transactional serialization plus idempotency key together prevent both duplicate posting and overdraft. |
 | Partial multi-account transfer failure (distributed) | Saga with compensating reversal entries; no account is left with a debit and no matching credit, because in-flight value sits in a clearing account until the credit leg lands or the debit is reversed. |
 | Shard primary fails mid-transfer | Synchronous replicas promote; the transfer row's state and the outbox are in the same replicated database, so the relay resumes from `DEBITED`. No committed leg is lost (RPO 0 within the region); in-flight requests time out and retry with the same key. |
-| Destination shard down | Legs queue in the outbox; the API returns `202 PENDING` after ~120 ms; the transfer completes on recovery. If a leg is stuck beyond its deadline, compensate rather than hold customer money in a clearing account. |
-| A hot account overwhelms its shard | Detect by per-account update rate; move it to bucketed mode and spread buckets across shards. Until then, the API sheds excess with 503 and `Retry-After` for that account only. |
+| Destination shard down | Legs queue in the outbox; the <abbr title="Application Programming Interface">API</abbr> returns `202 PENDING` after ~120 ms; the transfer completes on recovery. If a leg is stuck beyond its deadline, compensate rather than hold customer money in a clearing account. |
+| A hot account overwhelms its shard | Detect by per-account update rate; move it to bucketed mode and spread buckets across shards. Until then, the <abbr title="Application Programming Interface">API</abbr> sheds excess with 503 and `Retry-After` for that account only. |
 | Region loss | Async replication to a second region gives a recovery point of seconds; state it explicitly (see the multi-region follow-up). Fail over per shard by promoting the remote replica after fencing the old primary. |
 | Bad deploy of the transfer service | The journal is append-only and the invariant checks run continuously: canary on a slice of accounts, and stop on any invariant violation. A wrong posting is corrected by reversal, not rollback of data. |
 | Fraud, velocity abuse, or account takeover | Per-account and per-client rate limits, risk scoring before posting (declines are cheap; reversals are not), holds for suspicious transfers, and four-eyes approval for manual entries. |
@@ -260,7 +278,7 @@ Trade-off to state: "The journal is the source of truth and balance is just a fa
 ## Follow-ups the interviewer will ask
 
 1. **"How does this work across regions?"** Give each shard a home region and a synchronous-replicated quorum within it (across zones), so a zone loss has zero recovery point. Replicate asynchronously to a second region for disaster recovery with a recovery point of seconds, or pay a cross-region round trip (tens of ms, inside the 200 ms budget but a large share of it) for synchronous replication. A transfer between accounts homed in different regions is just a cross-shard saga with a longer hop, using inter-region clearing accounts.
-2. **"What changes at 10× and 100× scale?"** At 200k/s the design is 640 shards, and per-shard load is unchanged. Pairwise clearing accounts grow as S² (409k at 640 shards), so you move to hierarchical clearing. At 2M/s, hot-account handling and the directory become the main problems, and a per-cell ordered log or a purpose-built ledger database starts to beat a general SQL store per shard.
+2. **"What changes at 10× and 100× scale?"** At 200k/s the design is 640 shards, and per-shard load is unchanged. Pairwise clearing accounts grow as S² (409k at 640 shards), so you move to hierarchical clearing. At 2M/s, hot-account handling and the directory become the main problems, and a per-cell ordered log or a purpose-built ledger database starts to beat a general <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> store per shard.
 3. **"What if no observer may ever see half a transfer?"** Use two-phase commit for the cross-shard path, or co-locate the account pair on one shard, or read both accounts at a global snapshot timestamp (as in Spanner, Corbett et al., OSDI 2012). The costs are longer locks (about a third of the per-account ceiling), a coordinator that must be highly available, and worse hot-account behaviour. I would take that only if regulation demanded it.
 4. **"What dominates cost?"** Indefinite retention of the journal (~137 TB/year raw, ~410 TB/year replicated) and the hot-tier SSDs. Knobs: archive partitions after ~90 days to write-once columnar storage, compress, and keep only what queries need in the hot tier. Compute is modest (64 shards at ~25% utilisation).
 5. **"How do you defend against abuse?"** Per-client and per-account rate limits, velocity rules, risk scoring before posting, holds for suspicious transfers, signed requests with a bounded `request_ts` so replays fail closed, and separate roles and two approvers for manual adjustments. Reversals are cheap to write but expensive to explain, so decline early.
@@ -282,9 +300,9 @@ Trade-off to state: "The journal is the source of truth and balance is just a fa
 ## Going from L5 to L6
 
 - **Migration path.** Build the new ledger as a shadow of the legacy system (dual-write from the transfer events, no reads), diff balances daily until the invariants and parity hold, then cut over one cohort of accounts at a time with a rollback that replays from the journal.
-- **Cost model.** The bill is indefinite journal retention and hot-tier storage, then shard count. Model dollars per million transfers as the sum of storage over the retention curve, replicated SSD for the hot tier, and the compensation and reconciliation labour, and show the effect of the 90-day hot window.
+- **Cost model.** The bill is indefinite journal retention and hot-tier storage, then shard count. Model dollars per million transfers as the sum of storage over the retention curve, replicated <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> for the hot tier, and the compensation and reconciliation labour, and show the effect of the 90-day hot window.
 - **Ownership and blast radius.** Cells: independent groups of shards per region or per product line so a bad deploy or a hot merchant affects a slice. Separate the ledger core (posting, invariants) from products (holds, FX, statements, reporting) with different release cadence and on-call, and isolate manual-adjustment tooling with its own controls.
-- **Build versus buy.** A purpose-built ledger database or a mature SQL store with a thin ledger library is a real option; buy the storage engine and replication, build the domain model (accounts, clearing, holds, reversal) and the reconciliation, because they encode your product and your regulator's expectations. Evaluate any purpose-built engine on its idempotency, balance-constraint, and audit guarantees, not just its throughput.
+- **Build versus buy.** A purpose-built ledger database or a mature <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> store with a thin ledger library is a real option; buy the storage engine and replication, build the domain model (accounts, clearing, holds, reversal) and the reconciliation, because they encode your product and your regulator's expectations. Evaluate any purpose-built engine on its idempotency, balance-constraint, and audit guarantees, not just its throughput.
 - **Phased evolution.** One primary with synchronous replicas and the same-shard fast path first; then account sharding and the saga; then bucketed hot accounts; then hierarchical clearing and multi-region.
 - **What to measure first.** The share of volume touching the top 100 accounts, the cross-shard fraction, and lock-wait time per account. If the top account is 20% of traffic instead of 1%, the whole hot-account section moves from an optimisation to the core design.
 

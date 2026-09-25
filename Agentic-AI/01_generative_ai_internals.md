@@ -7,37 +7,44 @@
 
 ## 0. The Picture First — read this before the math
 
-> 💡 An LLM is a **very, very good autocomplete**. Give it some text, it guesses the next small
+> 💡 An <abbr title="Large Language Model">LLM</abbr> is a **very, very good autocomplete**. Give it some text, it guesses the next small
 > piece of text (a *token*), glues it on, and guesses again. Everything in this module —
 > attention, the KV cache, PagedAttention, sampling — exists to make that one guess **good**
 > and **fast**.
 
 ### 0.1 Where this module fits
 
-```mermaid
+```arch
 %% caption: The five modules build on each other. Every later module reuses the model explained here.
-flowchart LR
-    M1["M1 · Generative AI<br/>how the model generates"] --> M2["M2 · Agentic AI<br/>loops + tools around the model"]
-    M1 --> M3["M3 · RAG<br/>hand the model the right facts"]
-    M3 --> M4["M4 · Vector DBs<br/>find similar text fast"]
-    M3 --> M5["M5 · GraphRAG<br/>follow relationships"]
-    M2 -. "agents often call RAG as a tool" .-> M3
+node m1 "M1 · Generative AI" at 0,1 shape=card icon=llm sub="how the model generates"
+node m2 "M2 · Agentic AI" at 1,0 shape=card icon=agent sub="loops + tools around the model"
+node m3 "M3 · RAG" at 1,2 shape=card icon=search sub="hand the model the right facts"
+node m4 "M4 · Vector DBs" at 2,1.5 shape=card icon=vector sub="find similar text fast"
+node m5 "M5 · GraphRAG" at 2,2.5 shape=card icon=graph sub="follow relationships"
+m1 -> m2
+m1 -> m3
+m3 -> m4
+m3 -> m5
+m2 ..> m3 : "agents often call RAG as a tool"
 ```
 
 ### 0.2 One token at a time — a simple example
 
 Prompt: **"The cat sat on the"**
 
-```mermaid
+```arch
 %% caption: The generation loop. The model is called once per new token, and its output is fed straight back in as input.
-flowchart LR
-    A["Text so far<br/>'The cat sat on the'"] --> B["Tokenizer<br/>text → token IDs"]
-    B --> C["Embeddings<br/>IDs → vectors"]
-    C --> D["Transformer layers × N<br/>attention + MLP"]
-    D --> E["Logits<br/>one score per vocab word"]
-    E --> F["Sampling<br/>pick one token"]
-    F -->|"'mat'"| G["Append to the text"]
-    G -->|"repeat until END token"| A
+grid 160x160
+node a "Text so far" at 0,0 icon=doc sub="'The cat sat on the'"
+node b "Tokenizer" at 1,0 icon=text sub="text → token IDs"
+node c "Embeddings" at 2,0 icon=embed sub="IDs → vectors"
+node d "Transformer layers" at 3,0 icon=model sub="× N · attention + MLP"
+node e "Logits" at 3,1 icon=sigma sub="one score per vocab word"
+node f "Sampling" at 2,1 icon=filter sub="pick one token"
+node g "Append to the text" at 0,1 icon=edit
+a -> b -> c -> d -> e -> f
+f -> g : "'mat'"
+g -> a : "repeat until END token"
 ```
 
 | Step | What the model sees | Top guesses (illustrative) | Picked |
@@ -51,12 +58,18 @@ program around it does the gluing.
 
 ### 0.3 The three problems this module is really about
 
-```mermaid
+```arch
 %% caption: Each hard problem maps to the section that fixes it.
-flowchart LR
-    P1["① Attention is quadratic<br/>every token looks at every earlier token"] --> S1["§2.1 attention math<br/>+ FlashAttention"]
-    P2["② Re-doing old work<br/>for every new token"] --> S2["§2.3 KV cache"]
-    P3["③ The GPU waits on memory,<br/>not on math"] --> S3["§2.4 PagedAttention<br/>§3.3 speculative decoding"]
+grid 160x100
+node p1 "① Attention is quadratic" at 0,0 color=red sub="every token looks at every earlier token"
+node p2 "② Re-doing old work" at 0,1 color=red sub="for every new token"
+node p3 "③ The GPU waits on memory" at 0,2 color=red sub="not on math"
+node s1 "§2.1 attention math" at 1.5,0 shape=card icon=sigma sub="+ FlashAttention"
+node s2 "§2.3 KV cache" at 1.5,1 shape=card icon=cache
+node s3 "§2.4 PagedAttention" at 1.5,2 shape=card icon=memory sub="§3.3 speculative decoding"
+p1 -> s1
+p2 -> s2
+p3 -> s3
 ```
 
 ### 0.4 Mini-glossary
@@ -74,7 +87,7 @@ flowchart LR
 
 ## 1. Core Intuition & Mechanical Problem Statement
 
-An LLM at inference time is a **stateful, autoregressive function approximator** that
+An <abbr title="Large Language Model">LLM</abbr> at inference time is a **stateful, autoregressive function approximator** that
 repeatedly solves one mechanical problem: given a sequence of token embeddings, produce
 a probability distribution over the next token, then feed the sampled token back in.
 
@@ -178,12 +191,16 @@ Follow the token **cats** through the five steps:
 | 4 | softmax | [**0.25**, **0.50**, **0.25**] |
 | 5 | blend the V's with those weights | 0.25·[1,0] + 0.50·[0,1] + 0.25·[1,1] = **[0.50, 0.75]** |
 
-```mermaid
+```arch
 %% caption: How much of each token's content flows into the new vector for "cats".
-flowchart LR
-    I["I<br/>V = [1, 0]"] -- "25%" --> OUT["new 'cats' vector<br/>[0.50, 0.75]"]
-    L["love<br/>V = [0, 1]"] -- "50%" --> OUT
-    C["cats<br/>V = [1, 1]"] -- "25%" --> OUT
+grid 160x90
+node i "I" at 0,0 color=blue sub="V = [1, 0]"
+node l "love" at 0,1 color=blue sub="V = [0, 1]"
+node c "cats" at 0,2 color=blue sub="V = [1, 1]"
+node out "new 'cats' vector" at 1.5,1 color=teal sub="[0.50, 0.75]"
+i -> out : "25%"
+l -> out : "50%"
+c -> out : "25%"
 ```
 
 Do all three rows and you get the full attention-weight matrix. The causal mask is the 🚫 triangle:
@@ -312,13 +329,22 @@ With slope `m = 0.5` and four earlier tokens that all start with a raw score of 
 Nearby tokens win by default. A head with a tiny slope (say `m = 0.02`) barely penalises
 distance, so different heads naturally become "local" or "global" readers.
 
-```mermaid
+```arch
 %% caption: Where each scheme injects position into the transformer.
-flowchart LR
-    E["Token embedding"] --> PLUS(("+")) --> QK["Q, K, V projections"] --> ROT["rotate Q and K"] --> SC["scores = Q·K / √d"] --> BIAS["− m × distance"] --> SM["softmax"]
-    APE["APE: add p(i)"] -.-> PLUS
-    ROPE["RoPE: rotate by position"] -.-> ROT
-    ALIBI["ALiBi: linear penalty"] -.-> BIAS
+node ape "APE: add p(i)" at 1,0 shape=pill color=purple
+node rope "RoPE: rotate by position" at 3,0 shape=pill color=purple
+node e "Token embedding" at 0,1 icon=embed
+node plus "+" at 1,1 shape=circle color=slate
+node qk "Q, K, V projections" at 2,1 color=blue
+node rot "rotate Q and K" at 3,1 color=blue
+node sc "scores = Q·K / √d" at 3,2 color=blue
+node bias "− m × distance" at 2,2 color=blue
+node sm "softmax" at 1,2 color=blue
+node alibi "ALiBi: linear penalty" at 2,3 shape=pill color=purple
+e -> plus -> qk -> rot -> sc -> bias -> sm
+ape ..> plus
+rope ..> rot
+alibi ..> bias
 ```
 
 ### 2.3 KV Cache — the mechanism that makes autoregressive decoding tractable
@@ -423,7 +449,7 @@ fragmentation** as variable-length sequences finish and free memory in a way tha
 leaves unusable gaps between other sequences' contiguous buffers. Reported vLLM paper
 findings: 60–80% memory waste under naive contiguous allocation.
 
-**Mechanism**: PagedAttention borrows the OS virtual-memory paging idea. The KV cache
+**Mechanism**: PagedAttention borrows the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> virtual-memory paging idea. The KV cache
 for a sequence is split into fixed-size **blocks** (e.g. 16 tokens per block). A
 **block table** (per sequence, analogous to a page table) maps logical token positions
 to physical block addresses, which need not be contiguous in physical memory:
@@ -444,7 +470,7 @@ eliminating fragmentation. Benefits:
   sequences can reference the *same physical blocks* via their block tables (reference
   counted), only forking (copying) a block once a sequence actually diverges and writes
   to it — critical for prompt-prefix caching across concurrent requests.
-- **Preemption/swapping**: a sequence's block table can be evicted to CPU memory and
+- **Preemption/swapping**: a sequence's block table can be evicted to <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> memory and
   restored later without needing a contiguous GPU allocation on return.
 
 ---
@@ -462,34 +488,31 @@ wherever they're free, and gives each group a card listing its room numbers (the
 | Contiguous, sized for max length 2,048 | 2,048 | 100 | 1,948 (**95%**) |
 | Paged, 16 tokens per block | 7 blocks = 112 | 100 | 12 — never more than one partly-filled block |
 
-```mermaid
+```arch
 %% caption: Two requests. Their block tables point into one shared pool; the identical system prompt is stored once and shared.
-flowchart LR
-    subgraph ra["Request A · block table"]
-        A0["logical 0"]
-        A1["logical 1"]
-        A2["logical 2"]
-    end
-    subgraph rb["Request B · block table"]
-        B0["logical 0"]
-        B1["logical 1"]
-    end
-    subgraph pool["Physical GPU block pool — any free slot"]
-        P7["block 7<br/>shared system prompt<br/>ref count = 2"]
-        P2["block 2"]
-        P9["block 9"]
-        P4["block 4"]
-        P5["block 5 · free"]
-    end
-    A0 --> P7
-    B0 --> P7
-    A1 --> P2
-    A2 --> P9
-    B1 --> P4
+grid 120x110
+group ra "Request A · block table" color=blue icon=table
+node a0 "logical 0" at 0,0 in ra color=blue
+node a1 "logical 1" at 1,0 in ra color=blue
+node a2 "logical 2" at 2,0 in ra color=blue
+group rb "Request B · block table" color=purple icon=table
+node b0 "logical 0" at 3,0 in rb color=purple
+node b1 "logical 1" at 4,0 in rb color=purple
+group pool "Physical GPU block pool: any free slot" color=green icon=memory
+node p2 "block 2" at 1,1 in pool color=green
+node p9 "block 9" at 2,1 in pool color=green
+node p4 "block 4" at 4,1 in pool color=green
+node p7 "block 7" at 1.5,2 in pool color=amber sub="shared system prompt · ref count = 2"
+node p5 "block 5 · free" at 4,2 in pool color=slate
+a0:B -> p7:L
+b0:B -> p7:R
+a1 -> p2
+a2 -> p9
+b1 -> p4
 ```
 
 > 💡 This is exactly how an operating system's virtual memory works: page table → physical pages.
-> If you've learned paging in an OS course, you already understand vLLM.
+> If you've learned paging in an <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> course, you already understand vLLM.
 
 ---
 
@@ -497,29 +520,30 @@ flowchart LR
 
 ### 3.1 End-to-end request lifecycle
 
+```arch
+%% caption: One request's lifecycle: a single compute-bound prefill over the whole prompt, then a memory-bound decode step repeated for every generated token.
+group pf "PREFILL (compute-bound)" color=orange icon=cpu
+node pin "Input: prompt tokens" at 0,0 in pf shape=pill color=orange sub="[t0, t1, ..., tk]"
+group pfl "For each layer" in pf color=orange
+node pqkv "Q, K, V over all k tokens" at 0,1 in pfl color=orange sub="X @ Wq, X @ Wk, X @ Wv, all at once"
+node ps "Scores" at 0,2 in pfl color=orange sub="S = QKᵀ / √d_head (n × n, causal masked)"
+node pkv "Write KV cache" at 0,3 in pfl color=orange sub="KV cache[layer] ← K, V for all k tokens (one-time write)"
+node pout "Output: logits" at 0,4 in pf shape=pill color=orange sub="position k → sample token t_{k+1}"
+group dc "DECODE (memory-bandwidth-bound)" color=blue icon=memory
+node din "Input: single new token" at 1,0 in dc shape=pill color=blue sub="t_{k+1}"
+group dcl "For each layer" in dc color=blue
+node dqkv "q, k_new, v_new" at 1,1 in dcl color=blue sub="embed(t_{k+1}) @ Wq, Wk, Wv (1 × d_model)"
+node dkv "Append to KV cache" at 1,2 in dcl color=blue sub="KV cache[layer].append(k_new, v_new), paged block alloc"
+node ds "Scores vs. the cache" at 1,3 in dcl color=blue sub="S = q @ K_cacheᵀ / √d_head (1 × n_cached)"
+node dout "Blend values" at 1,4 in dcl color=blue sub="out = softmax(S) @ V_cache"
+node dnext "Output: logits" at 1,5 in dc shape=pill color=blue sub="sample next token → repeat per generated token"
+pin -> pqkv -> ps -> pkv -> pout
+pout:R -> din:L
+din -> dqkv -> dkv -> ds -> dout -> dnext
+dnext:R -> din:R : "repeat"
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│ PREFILL PHASE (compute-bound)                                            │
-│   Input: prompt tokens [t0, t1, ..., tk]                                 │
-│   For each layer:                                                        │
-│     Q,K,V = X @ Wq, X @ Wk, X @ Wv     over ALL k tokens at once         │
-│     S = QK^T / sqrt(d_head)  (n x n matrix, causal masked)               │
-│     KV cache[layer] <- K, V for all k tokens (one-time write)            │
-│   Output: logits for position k -> sample token t_{k+1}                  │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│ DECODE PHASE (memory-bandwidth-bound), repeated per generated token      │
-│   Input: single new token t_{k+1}                                        │
-│   For each layer:                                                        │
-│     q,k_new,v_new = embed(t_{k+1}) @ Wq, Wk, Wv     (1 x d_model)        │
-│     KV cache[layer].append(k_new, v_new)             (paged block alloc) │
-│     S = q @ KV_cache[layer].K^T / sqrt(d_head)       (1 x n_cached)      │
-│     out = softmax(S) @ KV_cache[layer].V                                 │
-│   Output: logits -> sample next token -> repeat                          │
-└──────────────────────────────────────────────────────────────────────────┘
-```
+
+<div class="lab" data-viz="flow-llm-inference"></div>
 
 ### 3.2 KV cache as a data structure
 
@@ -530,19 +554,15 @@ global free-block pool (a simple stack/queue of available physical block indices
 
 ### 3.3 Sampling pipeline (per decode step)
 
-```
-logits (vocab_size,)
-    │
-    ├─► divide by temperature T          logits' = logits / T
-    │
-    ├─► optional top-k mask               keep top k, others -> -inf
-    │
-    ├─► optional top-p (nucleus) mask     keep smallest prefix of sorted
-    │                                     probs whose cumsum >= p
-    │
-    ├─► softmax -> probability distribution
-    │
-    └─► sample (multinomial draw, or argmax if greedy)
+```arch
+%% caption: The sampling pipeline, run once per decode step.
+node lg "logits" at 0,0 shape=pill color=slate sub="(vocab_size,)"
+node t "÷ temperature T" at 1,0 color=blue sub="logits' = logits / T"
+node k "optional top-k mask" at 2,0 color=blue sub="keep top k, others → −inf"
+node p "optional top-p (nucleus) mask" at 2,1 color=blue sub="keep the smallest prefix of sorted probs whose cumsum ≥ p"
+node s "softmax" at 1,1 color=blue sub="→ probability distribution"
+node d "sample" at 0,1 color=green sub="multinomial draw, or argmax if greedy"
+lg -> t -> k -> p -> s -> d
 ```
 
 **Speculative decoding** changes this loop structurally: a small, cheap **draft model**
@@ -592,13 +612,15 @@ After filtering, the survivors are renormalised to sum to 1:
 Top-k always keeps exactly *k* tokens. Top-p keeps *however many it takes* — few when the model is
 confident, many when it's unsure. "moon" is removed either way.
 
-```mermaid
+```arch
 %% caption: The sampling pipeline from §3.3, with this example's numbers.
-flowchart LR
-    L["logits<br/>mat 3.0 · sofa 2.0 · floor 1.5<br/>roof 0.5 · moon −1.0"] --> T["÷ temperature"]
-    T --> K["top-k / top-p mask<br/>roof, moon → −∞"]
-    K --> S["softmax<br/>mat 0.63 · sofa 0.23 · floor 0.14"]
-    S --> D["random draw"] --> OUT["'mat'"]
+node l "logits" at 0,0 color=slate sub="mat 3.0 · sofa 2.0 · floor 1.5 · roof 0.5 · moon −1.0"
+node t "÷ temperature" at 1,0 color=blue
+node k "top-k / top-p mask" at 2,0 color=blue sub="roof, moon → −∞"
+node s "softmax" at 2,1 color=blue sub="mat 0.63 · sofa 0.23 · floor 0.14"
+node d "random draw" at 1,1 color=blue
+node out "'mat'" at 0,1 shape=pill color=green
+l -> t -> k -> s -> d -> out
 ```
 
 #### 🖼️ Speculative decoding — an intern drafts, the expert checks

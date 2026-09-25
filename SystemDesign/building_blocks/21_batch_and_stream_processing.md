@@ -8,24 +8,29 @@ Serving systems answer one request at a time. Data systems answer questions abou
 
 **MapReduce** (Google, 2004) made large-scale batch processing boring in the best way: you write a `map` function (record → key/value pairs) and a `reduce` function (key + all its values → output), and the framework handles partitioning, shuffling, sorting, retries, and stragglers across thousands of machines.
 
-```mermaid
+```arch
 %% caption: Counting clicks per ad. The shuffle moves every value for the same key to the same reducer.
-flowchart LR
-    subgraph input[Input splits]
-        s1[click log part 1]
-        s2[click log part 2]
-        s3[click log part 3]
-    end
-    s1 --> m1[map: emit ad_id, 1]
-    s2 --> m2[map: emit ad_id, 1]
-    s3 --> m3[map: emit ad_id, 1]
-    m1 --> sh{{shuffle + sort by ad_id}}
-    m2 --> sh
-    m3 --> sh
-    sh --> r1[reduce: sum for ads A–M]
-    sh --> r2[reduce: sum for ads N–Z]
-    r1 --> out[(counts per ad)]
-    r2 --> out
+group input "Input splits" color=slate icon=file
+node s1 "click log part 1" at 0,0 in input icon=logs
+node s2 "click log part 2" at 1,0 in input icon=logs
+node s3 "click log part 3" at 2,0 in input icon=logs
+node m1 "map" at 0,1 color=orange sub="emit ad_id, 1"
+node m2 "map" at 1,1 color=orange sub="emit ad_id, 1"
+node m3 "map" at 2,1 color=orange sub="emit ad_id, 1"
+node sh "shuffle + sort" at 1,2 color=amber icon=sort shape=card sub="by ad_id"
+node r1 "reduce: sum" at 0.5,3 color=purple sub="ads A–M"
+node r2 "reduce: sum" at 1.5,3 color=purple sub="ads N–Z"
+node out "counts per ad" at 1,4 icon=db
+s1 -> m1
+s2 -> m2
+s3 -> m3
+m1:B -> sh:T
+m2 -> sh
+m3:B -> sh:T
+sh:B -> r1:T
+sh:B -> r2:T
+r1:B -> out:T
+r2:B -> out:T
 ```
 
 Why it works: map tasks are embarrassingly parallel and restartable; outputs are written to a distributed file system so a failed task simply re-runs; and moving computation to where the data lives (data locality) avoids shipping terabytes over the network.
@@ -33,9 +38,9 @@ Why it works: map tasks are embarrassingly parallel and restartable; outputs are
 | Engine | What it improved | When to name it |
 |---|---|---|
 | MapReduce / Hadoop | The original model; disk between every stage. | Historical context, very large simple jobs. |
-| Spark | Keeps intermediate data in memory (RDDs/DataFrames), optimises whole pipelines, SQL interface. | Iterative jobs, ML feature pipelines, interactive analysis. |
+| Spark | Keeps intermediate data in memory (RDDs/DataFrames), optimises whole pipelines, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> interface. | Iterative jobs, <abbr title="Machine Learning">ML</abbr> feature pipelines, interactive analysis. |
 | Dataflow / Apache Beam | One programming model for batch *and* streaming, with windows and triggers. | "Same logic for backfill and real time." |
-| BigQuery / Dremel | Columnar storage plus massively parallel SQL over it; no cluster to manage. | Ad-hoc analytics over petabytes. |
+| BigQuery / Dremel | Columnar storage plus massively parallel <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> over it; no cluster to manage. | Ad-hoc analytics over petabytes. |
 
 Batch is the **source of correctness**: it reads complete, deduplicated data and can be re-run from raw logs when logic changes.
 

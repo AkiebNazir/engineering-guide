@@ -2,31 +2,31 @@
 
 Welcome to Day 164.
 
-In traditional software, when you push a code change to GitHub, an automated server (like GitHub Actions) runs a suite of Unit Tests. If the tests pass, it automatically deploys the code to production. This is Continuous Integration and Continuous Deployment (CI/CD).
+In traditional software, when you push a code change to GitHub, an automated server (like GitHub Actions) runs a suite of Unit Tests. If the tests pass, it automatically deploys the code to production. This is Continuous Integration and Continuous Deployment (<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>).
 But if you do this for Machine Learning, you will cause a disaster.
-In ML, code is only 1/3 of the equation. A model can fail because the *code* is wrong, the *data* is biased, or the *weights* degraded. 
+In <abbr title="Machine Learning">ML</abbr>, code is only 1/3 of the equation. A model can fail because the *code* is wrong, the *data* is biased, or the *weights* degraded. 
 
-Today, we learn **CI/CD for Machine Learning (CT/CD)**. We will learn how to test data, test models, and safely deploy them without terrifying the engineering team.
+Today, we learn **<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> for Machine Learning (CT/<abbr title="Continuous Deployment / Delivery. An approach in which software functionalities are delivered frequently and through automated deployments.">CD</abbr>)**. We will learn how to test data, test models, and safely deploy them without terrifying the engineering team.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The ML Testing Pyramid
-When you push an update to an ML codebase, the CI pipeline must run three distinct layers of tests before anyone is allowed to click "Merge":
+### 1. The <abbr title="Machine Learning">ML</abbr> Testing Pyramid
+When you push an update to an <abbr title="Machine Learning">ML</abbr> codebase, the <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> pipeline must run three distinct layers of tests before anyone is allowed to click "Merge":
 1. **Unit Tests (The Code):** Does the `clean_text()` function successfully strip emojis?
 2. **Data Tests (The Fuel):** Is the training data formatted correctly? Are there 50,000 null values that will silently ruin the matrix math?
 3. **Model Tests (The Brain):** Train a tiny mock model. Does it overfit on 10 examples? Does its accuracy exceed the 85% threshold? Does it pass a Bias check?
 
 ### 2. Continuous Training (CT)
-In traditional CI/CD, the artifact is a compiled binary. In ML, the artifact is a massive model file. 
+In traditional <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>, the artifact is a compiled binary. In <abbr title="Machine Learning">ML</abbr>, the artifact is a massive model file. 
 Because training takes 10 hours, you do not train the production model inside the GitHub Action runner. 
 Instead, the GitHub Action triggers an **Airflow/Dagster pipeline** (Continuous Training). Once the training pipeline finishes, *it* pushes the new model to the Model Registry (Staging).
 
 ### 3. Progressive Deployment Strategies
 You never swap a production model on a Friday at 5:00 PM and go home. You deploy it progressively to catch hidden regressions.
 
-- **Shadow Mode (Dark Launch):** The new model is deployed behind the API. It receives real user traffic and calculates predictions, but the predictions are *thrown away*. The user still sees the old model's answer. Engineers monitor the Shadow Model's logs to ensure it doesn't crash on edge cases.
+- **Shadow Mode (Dark Launch):** The new model is deployed behind the <abbr title="Application Programming Interface">API</abbr>. It receives real user traffic and calculates predictions, but the predictions are *thrown away*. The user still sees the old model's answer. Engineers monitor the Shadow Model's logs to ensure it doesn't crash on edge cases.
 - **Canary Deployment:** The router sends 95% of users to the Old Model, and 5% of users to the New Model (the "Canary"). If the 5% don't complain, you dial it up to 10%, 50%, and 100%.
 
 ### 4. Automated Rollback
@@ -36,10 +36,10 @@ If the New Model hits 100% rollout, and suddenly the Latency metric spikes to 5 
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a conceptual **GitHub Actions Workflow** (`.yml`) for an ML project, combined with a Python testing script that proves the model is safe to deploy!
+Let's build a conceptual **GitHub Actions Workflow** (`.yml`) for an <abbr title="Machine Learning">ML</abbr> project, combined with a Python testing script that proves the model is safe to deploy!
 
-### Step 1: The ML Test Suite (Python)
-This script runs automatically on the CI server. If any `assert` statement fails, the pipeline halts, and the GitHub Pull Request is blocked!
+### Step 1: The <abbr title="Machine Learning">ML</abbr> Test Suite (Python)
+This script runs automatically on the <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> server. If any `assert` statement fails, the pipeline halts, and the GitHub Pull Request is blocked!
 
 ```python
 # File: tests/test_model_pipeline.py
@@ -129,7 +129,7 @@ jobs:
 ```
 
 ### 🔍 Understanding the Enterprise Value
-With this CI/CD setup, an engineer cannot break production. 
+With this <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> setup, an engineer cannot break production. 
 If they accidentally delete a feature column in the code, the `test_data_schema` fails. If they tweak a hyperparameter that destroys accuracy, the `test_model_accuracy_threshold` fails. If they introduce a biased feature, the `test_model_bias` fails.
 Only mathematically proven, safe code is allowed to trigger the expensive GPU training pipeline.
 
@@ -139,22 +139,22 @@ Only mathematically proven, safe code is allowed to trigger the expensive GPU tr
 
 ### 🛠️ The Challenge
 Currently, the pipeline triggers a training run. Once training is complete, the model goes to the Registry.
-How do you safely deploy that model to the API gateway? 
-**Your Task:** Research the **Seldon Core** or **KServe** Kubernetes frameworks. Understand how they allow you to deploy a model as a container and configure a `Canary` rollout (e.g., sending 5% of HTTP traffic to the new container automatically).
+How do you safely deploy that model to the <abbr title="Application Programming Interface">API</abbr> gateway? 
+**Your Task:** Research the **Seldon Core** or **KServe** Kubernetes frameworks. Understand how they allow you to deploy a model as a container and configure a `Canary` rollout (e.g., sending 5% of <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> traffic to the new container automatically).
 
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your team deploys ML models 5 times per week. Last week, a new model deployment caused a 30% revenue drop. The monitoring system didn't catch it because the latency and HTTP codes were perfectly fine (the model was just making terrible recommendations). Design the deployment safety system to prevent this."*
+*"Your team deploys <abbr title="Machine Learning">ML</abbr> models 5 times per week. Last week, a new model deployment caused a 30% revenue drop. The monitoring system didn't catch it because the latency and <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> codes were perfectly fine (the model was just making terrible recommendations). Design the deployment safety system to prevent this."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
-1. **The Gap:** Acknowledge that offline CI/CD tests (accuracy, bias) are not enough to catch revenue-destroying bugs in production user behavior.
+1. **The Gap:** Acknowledge that offline <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> tests (accuracy, bias) are not enough to catch revenue-destroying bugs in production user behavior.
 2. **Shadow Mode Deployment:** Propose that every new model must run in Shadow Mode for 24 hours. If it crashes on weird production inputs, it is caught here without harming users.
 3. **Canary & A/B Testing:** Once Shadow Mode passes, the model is rolled out as a Canary to 5% of users. Crucially, the system must track **Business Metrics** (Click-Through Rate, Revenue per User) for that 5% cohort versus the 95% baseline cohort.
-4. **Automated Rollback:** If a statistical analysis shows the Canary cohort's revenue drops by more than 2% compared to the baseline, the API Gateway must instantly revert the 5% traffic back to the old model and trigger a severe PagerDuty alert.
+4. **Automated Rollback:** If a statistical analysis shows the Canary cohort's revenue drops by more than 2% compared to the baseline, the <abbr title="Application Programming Interface">API</abbr> Gateway must instantly revert the 5% traffic back to the old model and trigger a severe PagerDuty alert.
 
 ---
-**Task for the end of the day:** Review the concept of a "Shadow Deployment." It is the safest way to test AI in production.
+**Task for the end of the day:** Review the concept of a "Shadow Deployment." It is the safest way to test <abbr title="Artificial Intelligence">AI</abbr> in production.
 
-Tomorrow, in **Day 165**, we tackle the hardest problem in ML: **Data Versioning**. We will learn how to use DVC (Data Version Control) to track massive gigabytes of data exactly like Git tracks code!
+Tomorrow, in **Day 165**, we tackle the hardest problem in <abbr title="Machine Learning">ML</abbr>: **Data Versioning**. We will learn how to use <abbr title="Data Version Control">DVC</abbr> (Data Version Control) to track massive gigabytes of data exactly like Git tracks code!

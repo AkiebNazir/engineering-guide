@@ -6,24 +6,24 @@ You understand the underlying Linear Algebra. You can calculate Gradients. You c
 
 But in the real world, a brilliant XGBoost model sitting on your laptop in a Jupyter Notebook is utterly useless. It has to be deployed to a production server. It has to handle millions of requests a second. It has to be monitored so it doesn't crash the company. 
 
-Today, we put the Math aside and learn the Software Engineering of AI: **MLOps**.
+Today, we put the Math aside and learn the Software Engineering of <abbr title="Artificial Intelligence">AI</abbr>: **MLOps**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & MLOPS
 
-### 1. The ML System Design Pipeline
-An enterprise AI system consists of 6 distinct phases:
-1. **Data Ingestion:** Automatically pulling daily data from an SQL database.
+### 1. The <abbr title="Machine Learning">ML</abbr> System Design Pipeline
+An enterprise <abbr title="Artificial Intelligence">AI</abbr> system consists of 6 distinct phases:
+1. **Data Ingestion:** Automatically pulling daily data from an <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database.
 2. **Feature Engineering:** Your `Pipeline` from Day 29 (Scaling, Imputing, Encoding).
 3. **Model Training:** Tuning hyperparameters and running XGBoost.
 4. **Evaluation:** Checking the accuracy against a Test set.
-5. **Deployment:** Wrapping the model in an API (like FastAPI or Flask) so the website can talk to it.
+5. **Deployment:** Wrapping the model in an <abbr title="Application Programming Interface">API</abbr> (like FastAPI or Flask) so the website can talk to it.
 6. **Monitoring:** Watching the model in real-time to ensure it isn't hallucinating.
 
-### 2. DVC (Data Version Control)
+### 2. <abbr title="Data Version Control">DVC</abbr> (Data Version Control)
 You know how to use `Git` to track changes to your Python code. But what happens if an intern accidentally deletes half the rows in your 100GB training dataset? Git cannot track a 100GB CSV file; it will crash.
-**DVC (Data Version Control)** solves this. It runs alongside Git and tracks massive datasets. If your data is corrupted, you can type `dvc checkout` and instantly roll your 100GB database back to what it looked like yesterday.
+**<abbr title="Data Version Control">DVC</abbr> (Data Version Control)** solves this. It runs alongside Git and tracks massive datasets. If your data is corrupted, you can type `dvc checkout` and instantly roll your 100GB database back to what it looked like yesterday.
 
 ### 3. Experiment Tracking (MLflow)
 When trying to build the best model, you might run XGBoost 500 different times, changing `max_depth` and `learning_rate` slightly every time. You *will* forget which combination was the best.
@@ -31,10 +31,10 @@ When trying to build the best model, you might run XGBoost 500 different times, 
 
 ### 4. Reproducibility & Environment Locking
 Setting `random_state=42` is not enough to guarantee your model will behave the exact same way on a server. If your laptop runs `scikit-learn v1.2` and the server runs `v1.3`, the underlying C++ math libraries might be slightly different! 
-You must **Lock the Environment** using Docker or a strict `requirements.txt` file, ensuring the server perfectly matches your laptop.
+You must **Lock the Environment** using <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> or a strict `requirements.txt` file, ensuring the server perfectly matches your laptop.
 
 ### 5. Concept Drift (The Silent Killer)
-You deploy an AI that detects Credit Card Fraud with 99.9% accuracy. One year later, it starts failing. Why?
+You deploy an <abbr title="Artificial Intelligence">AI</abbr> that detects Credit Card Fraud with 99.9% accuracy. One year later, it starts failing. Why?
 **Concept Drift**. The mathematical patterns of the real world changed. Fraudsters invented a new scam. The model hasn't "broken"; reality has just drifted away from the data the model was trained on. 
 In MLOps, you must build a monitoring system that mathematically detects Concept Drift and automatically triggers a complete pipeline retraining on fresh data!
 
@@ -152,7 +152,7 @@ A "Strong Hire" candidate must articulate the following system architecture:
    - You cannot calculate "User's Average Spend over 30 Days" in real-time within 50ms. 
    - Explain that you will use a **Feature Store** (like Redis). A background job pre-calculates the 30-day averages overnight and stores them in memory. When a transaction hits, the model instantly queries Redis, grabbing the pre-calculated features in 1 millisecond.
 3. **Monitoring & Concept Drift:**
-   - Explain that fraudsters constantly change their tactics. You will implement a monitoring system (like Evidently AI) that mathematically compares the statistical distribution of today's transactions against the distribution of the original training data.
+   - Explain that fraudsters constantly change their tactics. You will implement a monitoring system (like Evidently <abbr title="Artificial Intelligence">AI</abbr>) that mathematically compares the statistical distribution of today's transactions against the distribution of the original training data.
    - If the distributions drift too far apart (Concept Drift detected), the system automatically triggers an MLflow pipeline to retrain the XGBoost model on the last 7 days of fresh data.
 
 ---

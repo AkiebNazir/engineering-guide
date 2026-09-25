@@ -23,22 +23,30 @@ Client ↔ Server   {cursor: {user, position, selection}}                   # ep
 Client → Server   {resync: last_revision}                                 # after reconnect
 ```
 
-`op_id` is unique per client so resends after a reconnect are idempotent. The REST API handles everything that is not real time: create, list, share, fetch history, export.
+`op_id` is unique per client so resends after a reconnect are idempotent. The <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> handles everything that is not real time: create, list, share, fetch history, export.
 
 ## Session servers and connections
 
-```mermaid
+```arch
 %% caption: All editors of one document connect to the same session server, which owns ordering for that document.
-flowchart LR
-    c1([Editor A]) <-->|WebSocket| gw[Connection gateways]
-    c2([Editor B]) <-->|WebSocket| gw
-    gw -->|route by doc_id| sess[Document session server<br/>in-memory doc + OT]
-    sess --> oplog[(Operation log<br/>append per doc)]
-    sess --> snap[(Snapshots)]
-    sess --> acl[(Permissions service)]
-    sess -.cursor + presence.-> gw
-    api[REST API] --> meta[(Document metadata)]
-    api --> snap
+node c1 "Editor A" at 0.5,0 icon=browser
+node c2 "Editor B" at 1.5,0 icon=browser
+node gw "Connection gateways" at 1,1 icon=gateway sub="hold WebSockets, auth"
+node api "REST API" at 3,1 icon=api sub="create, share, history"
+node sess "Session server" at 1,2 icon=server sub="in-memory doc + OT"
+node acl "Permissions service" at 1,3 icon=auth
+node oplog "Operation log" at 0,3 icon=db sub="append per doc"
+node snap "Snapshots" at 2,3 icon=blob
+node meta "Document metadata" at 3,3 icon=db
+c1 <-> gw : "WebSocket"
+c2 <-> gw : "WebSocket"
+gw -> sess : "route by doc_id"
+sess:R ..> gw:R : "cursor + presence"
+sess -> oplog
+sess -> snap
+sess -> acl
+api -> meta
+api -> snap
 ```
 
 - **Connection gateways** hold WebSockets and authenticate users; they are stateless beyond sockets.

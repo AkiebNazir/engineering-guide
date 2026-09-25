@@ -2,11 +2,11 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In Guide 11, we learned that standard LangChain (LCEL) is a **DAG (Directed Acyclic Graph)**. Data flows strictly from Left to Right. If you want an Agent to execute code, read the error message, and *loop back* to rewrite the code, standard LangChain crashes. **LangGraph** was built specifically to solve this. It replaces the old, broken `AgentExecutor` with a robust, cyclical graph architecture.
+*Why is this tool relevant?* In Guide 11, we learned that standard LangChain (LCEL) is a **<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> (Directed Acyclic Graph)**. Data flows strictly from Left to Right. If you want an Agent to execute code, read the error message, and *loop back* to rewrite the code, standard LangChain crashes. **LangGraph** was built specifically to solve this. It replaces the old, broken `AgentExecutor` with a robust, cyclical graph architecture.
 
 **What is it?**
 LangGraph is an extension of LangChain designed for building stateful, multi-actor applications. You model your application as a graph, where:
-- **Nodes** are Python functions (often calling an LLM or an API).
+- **Nodes** are Python functions (often calling an <abbr title="Large Language Model">LLM</abbr> or an <abbr title="Application Programming Interface">API</abbr>).
 - **Edges** control the flow (including loops).
 - **State** is a dictionary that gets passed around and updated by every Node.
 
@@ -28,7 +28,7 @@ print(f"LangGraph version: {langgraph.__version__}")
 
 ## 3. The "Hello World": Building a Stateful Graph
 
-Let's build a simple Agent. The user asks a question. Node 1 (The LLM) decides if it needs to search the web. If yes, it routes to Node 2 (The Search Tool). Node 2 updates the State with the search results and routes back to Node 1.
+Let's build a simple Agent. The user asks a question. Node 1 (The <abbr title="Large Language Model">LLM</abbr>) decides if it needs to search the web. If yes, it routes to Node 2 (The Search Tool). Node 2 updates the State with the search results and routes back to Node 1.
 
 ### A. Define the State
 The `State` is the memory of the graph. Every Node receives this dictionary, reads it, and returns updates to it.
@@ -150,7 +150,7 @@ response = app_with_memory.invoke(new_input, config=config)
 
 ## 5. Pro Level: Human-in-the-Loop (Interrupts)
 
-You built an Agent that can execute SQL queries and drop production databases. You *do not* want the Agent to run this automatically. You need **Human-in-the-Loop** approval.
+You built an Agent that can execute <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> queries and drop production databases. You *do not* want the Agent to run this automatically. You need **Human-in-the-Loop** approval.
 
 Because LangGraph saves the State after every node, you can explicitly tell it to pause execution right before a dangerous node.
 
@@ -176,11 +176,11 @@ app_safe.invoke(None, config=config)
 ## 6. MAANG Interview Scenarios
 
 ### Scenario 1: LangChain Agents vs LangGraph
-*Interviewer:* "We currently use LangChain's `create_openai_tools_agent()`. It works okay, but sometimes the agent gets stuck in an infinite loop of using the same broken tool over and over until it hits the API token limit and crashes. How does LangGraph solve this?"
+*Interviewer:* "We currently use LangChain's `create_openai_tools_agent()`. It works okay, but sometimes the agent gets stuck in an infinite loop of using the same broken tool over and over until it hits the <abbr title="Application Programming Interface">API</abbr> token limit and crashes. How does LangGraph solve this?"
 
-*Answer:* "Standard LangChain agents are black boxes. The LLM controls the entire loop internally, which means we cannot inject hard logic to stop it. In LangGraph, the loop is explicitly defined by our Edges. I would update the `State` dictionary to include a `tool_error_count` integer. Inside the Conditional Edge, I would write standard Python logic: `if state['tool_error_count'] > 3: return END`. This forcibly wrests control away from the hallucinating LLM and gracefully degrades the system, guaranteeing we never hit an infinite API loop."
+*Answer:* "Standard LangChain agents are black boxes. The <abbr title="Large Language Model">LLM</abbr> controls the entire loop internally, which means we cannot inject hard logic to stop it. In LangGraph, the loop is explicitly defined by our Edges. I would update the `State` dictionary to include a `tool_error_count` integer. Inside the Conditional Edge, I would write standard Python logic: `if state['tool_error_count'] > 3: return END`. This forcibly wrests control away from the hallucinating <abbr title="Large Language Model">LLM</abbr> and gracefully degrades the system, guaranteeing we never hit an infinite <abbr title="Application Programming Interface">API</abbr> loop."
 
 ### Scenario 2: Time-Travel Debugging
-*Interviewer:* "An agent executed a complex 10-step graph yesterday and ultimately generated a completely wrong answer. How do we debug what went wrong at step 4 without re-running the expensive LLM calls?"
+*Interviewer:* "An agent executed a complex 10-step graph yesterday and ultimately generated a completely wrong answer. How do we debug what went wrong at step 4 without re-running the expensive <abbr title="Large Language Model">LLM</abbr> calls?"
 
 *Answer:* "Because we compiled the LangGraph with a `checkpointer`, every single intermediate state was saved to the database. We can use the `app.get_state_history(config)` method to literally 'Time Travel' back to yesterday's execution. We can pull the exact `State` dictionary as it existed after step 4, inspect the variables, and even manually override the state and resume execution from step 4 to test a bug fix, saving massive amounts of compute."

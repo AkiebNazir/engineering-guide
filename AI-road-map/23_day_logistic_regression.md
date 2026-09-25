@@ -48,7 +48,7 @@ This raises `e` to the power of our scores, and then divides by the sum of all s
 
 ### 4. The Engineering Nightmare: The Log-Sum-Exp Trick
 Here is the problem: In a real-world Neural Network, a raw output score $z$ might be $1000$. 
-If you try to calculate $e^{1000}$ in Python, your computer's RAM will literally crash. The number is larger than the number of atoms in the universe. This is called **Numeric Overflow**, and it will return `NaN`.
+If you try to calculate $e^{1000}$ in Python, your computer's <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> will literally crash. The number is larger than the number of atoms in the universe. This is called **Numeric Overflow**, and it will return `NaN`.
 
 **The Log-Sum-Exp Hack:**
 We use a brilliant algebra trick. We find the absolute maximum value in our array (let's call it $c=1000$). We literally subtract $c$ from every single number *before* we do the exponent math!
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Log-Loss Derivative:** Look closely at the `error = predictions - y` line in the training loop. The complex calculus of the Log-Loss function, when multiplied by the complex calculus of the Sigmoid function, miraculously cancels out, leaving us with the simplest possible gradient: *(What you guessed) minus (The True Answer)*. This mathematical elegance is why Logistic Regression became the foundation of modern AI.
+1. **The Log-Loss Derivative:** Look closely at the `error = predictions - y` line in the training loop. The complex calculus of the Log-Loss function, when multiplied by the complex calculus of the Sigmoid function, miraculously cancels out, leaving us with the simplest possible gradient: *(What you guessed) minus (The True Answer)*. This mathematical elegance is why Logistic Regression became the foundation of modern <abbr title="Artificial Intelligence">AI</abbr>.
 2. **Epsilon Clipping:** In `binary_cross_entropy`, notice `np.clip(y_pred, epsilon, 1-epsilon)`. If the model guesses `1.0` (100% certainty) but the true answer is `0`, the log-loss equation tries to calculate `log(0)`, which is negative infinity! Adding Epsilon ($1e^{-15}$) is a mandatory software engineering safeguard.
 
 ---
@@ -181,7 +181,7 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Root Cause (Numeric Overflow):** 
-   - State clearly that the raw outputs (logits) of a neural network can be large positive numbers. Because Softmax requires calculating $e^{z_i}$, a raw score of $1000$ results in $e^{1000}$, which exceeds the physical RAM limit of standard `float32` (which caps around $e^{88}$). The computer registers this as infinity (`inf`), and when it tries to divide $\frac{\text{inf}}{\text{inf}}$, it throws a `NaN` (Not a Number) exception, crashing the entire network.
+   - State clearly that the raw outputs (logits) of a neural network can be large positive numbers. Because Softmax requires calculating $e^{z_i}$, a raw score of $1000$ results in $e^{1000}$, which exceeds the physical <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> limit of standard `float32` (which caps around $e^{88}$). The computer registers this as infinity (`inf`), and when it tries to divide $\frac{\text{inf}}{\text{inf}}$, it throws a `NaN` (Not a Number) exception, crashing the entire network.
 2. **The Mathematical Fix:**
    - Explain that we must find the maximum logit value ($c = \max(z)$) across the output vector.
    - We mathematically subtract $c$ from every single logit before exponentiation: $e^{z_i - c}$.

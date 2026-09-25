@@ -84,7 +84,7 @@ SELECT title, author FROM books LIMIT 2;
 ```
 
 `LIMIT n` caps how many rows come back. Without an `ORDER BY`, *which* rows you get
-when there are more than `n` is not guaranteed by the SQL standard — Postgres will
+when there are more than `n` is not guaranteed by the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> standard — Postgres will
 usually return them in physical storage order for a simple query like this one, but
 that's an implementation detail, not a contract. Level 04 combines `LIMIT` with
 `ORDER BY` to make "the first N rows" mean something specific and repeatable.

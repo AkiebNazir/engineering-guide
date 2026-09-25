@@ -23,7 +23,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope throughput per generator and bit-budget arithmetic.
-3. API contract (service call vs embedded library) and how callers obtain IDs.
+3. <abbr title="Application Programming Interface">API</abbr> contract (service call vs embedded library) and how callers obtain IDs.
 4. Baseline design and how uniqueness is guaranteed without a central counter.
 5. Handling clock drift, clocks moving backwards, and worker-ID assignment.
 6. Failure, operability, and observability plan.

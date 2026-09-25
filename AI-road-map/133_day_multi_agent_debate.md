@@ -5,7 +5,7 @@ Welcome to Day 133.
 Single Agents suffer from terrible confirmation bias. If an Agent accidentally hallucinates a fake fact on Step 1 of its plan, it will blindly defend and build upon that hallucination all the way to Step 10.
 How do humans solve confirmation bias in the real world? We debate. We bring in peer reviewers.
 
-Today, we apply Marvin Minsky's "Society of Mind" theory to AI. We will force multiple AI models to argue with each other until they converge on the mathematical truth!
+Today, we apply Marvin Minsky's "Society of Mind" theory to <abbr title="Artificial Intelligence">AI</abbr>. We will force multiple <abbr title="Artificial Intelligence">AI</abbr> models to argue with each other until they converge on the mathematical truth!
 
 ---
 
@@ -97,7 +97,7 @@ You want to build a Software Engineering team.
 **Your Task:**
 1. Conceptually define 3 Agents: `Architect`, `Developer`, and `Reviewer`.
 2. The User asks: *"Build a React component for a Login form."*
-3. **Step 1:** The `Architect` writes a JSON spec.
+3. **Step 1:** The `Architect` writes a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> spec.
 4. **Step 2:** The `Developer` reads the spec and writes the code.
 5. **Step 3:** The `Reviewer` reads the code. If the code is missing a Password field, the Reviewer sends a direct message *back* to the `Developer`. 
 6. They loop until the `Reviewer` approves the code. You have just designed an autonomous software agency!
@@ -125,4 +125,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 We can orchestrate teams of Agents. But up until now, YOU (the human developer) had to write all the Python Tools for them to use.
 What if the Agents could write their own tools?
 
-Tomorrow, in **Day 134**, we learn **LLM-As-Tool-Maker (LATM)**. We will teach Agents to write, test, and save custom Python tools on the fly!
+Tomorrow, in **Day 134**, we learn **<abbr title="Large Language Model">LLM</abbr>-As-Tool-Maker (LATM)**. We will teach Agents to write, test, and save custom Python tools on the fly!

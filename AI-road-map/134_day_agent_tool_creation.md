@@ -5,13 +5,13 @@ Welcome to Day 134.
 Up until now, YOU (the human developer) had to write the Python tools for the Agent. If the Agent needed to scrape a PDF, you had to write a `pdf_scraper` Python function. If it needed to calculate standard deviation, you had to write a `math_helper` function.
 What if the user asks for something you didn't anticipate? The Agent fails.
 
-Today, we achieve true autonomy. We learn **LLM-As-Tool-Maker (LATM)**. We will teach our Agents to identify a missing capability, write the Python code for a new tool on the fly, test it, and save it for future use!
+Today, we achieve true autonomy. We learn **<abbr title="Large Language Model">LLM</abbr>-As-Tool-Maker (LATM)**. We will teach our Agents to identify a missing capability, write the Python code for a new tool on the fly, test it, and save it for future use!
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. LLM-As-Tool-Maker (LATM)
+### 1. <abbr title="Large Language Model">LLM</abbr>-As-Tool-Maker (LATM)
 LATM is a framework with two distinct phases:
 1. **The Tool Making Phase:** The Agent attempts a task and realizes it lacks the correct tool. It acts as a Software Engineer, writes a raw Python function, writes a Unit Test, runs the test, and validates the tool works.
 2. **The Tool Using Phase:** The Agent acts as the End-User, successfully executing the dynamically generated function to solve the original task.
@@ -22,16 +22,16 @@ We save the Python code to a persistent **Tool Library** (a database).
 If a different Agent needs to parse a receipt tomorrow, it queries the Tool Library, dynamically loads the python code into memory, and uses it instantly without having to rewrite it!
 
 ### 3. The Danger (Security Sandboxing)
-Allowing an AI to write and execute raw Python code on your server is the most dangerous thing you can do in computer science. 
+Allowing an <abbr title="Artificial Intelligence">AI</abbr> to write and execute raw Python code on your server is the most dangerous thing you can do in computer science. 
 If the Agent hallucinates and writes `os.system("rm -rf /")`, it will delete your entire server. 
-You MUST execute dynamically generated tools inside a **Docker Sandbox**, a secure `gVisor` container, or a strict **WebAssembly (WASM)** environment with zero network access and strict timeout limits.
+You MUST execute dynamically generated tools inside a **<abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> Sandbox**, a secure `gVisor` container, or a strict **WebAssembly (WASM)** environment with zero network access and strict timeout limits.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
 Let's build a primitive LATM loop. The agent will realize it cannot count prime numbers, so it will write a custom Python function as a string, and we will use Python's `exec()` command to run it!
-*(⚠️ WARNING: This code uses `exec()`. Never run this on a production web server without a Docker sandbox!)*
+*(⚠️ WARNING: This code uses `exec()`. Never run this on a production web server without a <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> sandbox!)*
 
 Create a file named `agent_tool_creation.py`:
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **Dynamic Execution:** Notice how Python's `exec()` command takes a standard text string and turns it into executable machine logic. The LLM literally wrote a program that ran itself!
+1. **Dynamic Execution:** Notice how Python's `exec()` command takes a standard text string and turns it into executable machine logic. The <abbr title="Large Language Model">LLM</abbr> literally wrote a program that ran itself!
 2. **The Feedback Loop:** If the `exec()` block threw an exception (e.g., SyntaxError), our `except` block catches the traceback. In a real system, you would feed that traceback back to the `mock_tool_maker_llm` and say *"Your code crashed. Fix it."* (This is the Generator-Critic architecture from Day 132!).
 
 ---
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 If your agent creates 100 tools, how does a future agent know which one to use?
 **Your Task:**
 1. Conceptually design a Vector Database for the Tool Library.
-2. When the LLM generates a tool, you must also force it to generate a detailed Docstring (e.g., *"This tool takes a start and end integer and counts the prime numbers."*).
+2. When the <abbr title="Large Language Model">LLM</abbr> generates a tool, you must also force it to generate a detailed Docstring (e.g., *"This tool takes a start and end integer and counts the prime numbers."*).
 3. You embed that Docstring into the Vector DB.
 4. When a future Agent is asked to count primes, it searches the Vector DB, finds the matching Docstring, retrieves the Python code, and runs it!
 
@@ -141,11 +141,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Sandbox (Defense in Depth):** 
    - State that `exec()` is unacceptable. 
-   - Propose using a serverless environment (like AWS Lambda) or ephemeral Docker containers with networking disabled. The code can only perform math or local text manipulation; it cannot access the internet to exfiltrate data.
-2. **The CI/CD Workflow (Testing):**
-   - The LLM must generate Unit Tests alongside the Tool. The Sandbox runs the Unit Tests. Only if the tests pass is the Tool added to the Registry.
+   - Propose using a serverless environment (like AWS Lambda) or ephemeral <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> containers with networking disabled. The code can only perform math or local text manipulation; it cannot access the internet to exfiltrate data.
+2. **The <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> Workflow (Testing):**
+   - The <abbr title="Large Language Model">LLM</abbr> must generate Unit Tests alongside the Tool. The Sandbox runs the Unit Tests. Only if the tests pass is the Tool added to the Registry.
 3. **The Human Approval Gate (What NOT to Auto-Generate):**
-   - State clearly: *Agents should never auto-generate tools that mutate external state.* (e.g., executing SQL `DELETE`, sending Emails, or calling Stripe APIs). 
+   - State clearly: *Agents should never auto-generate tools that mutate external state.* (e.g., executing <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> `DELETE`, sending Emails, or calling Stripe APIs). 
    - If an Agent generates a tool that requires network access or database mutation, it must trigger a Human-in-the-Loop breakpoint, requiring a Senior Engineer to code-review the generated Python before it is allowed to execute.
 
 ---
@@ -154,4 +154,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 We have taught Agents to write code. 
 Now, it's time to build the ultimate software engineer. An agent that can read an entire GitHub repository, navigate the file tree, and fix bugs autonomously.
 
-Tomorrow, in **Day 135**, we learn about **SWE-Agent and AI-Powered Software Development**!
+Tomorrow, in **Day 135**, we learn about **SWE-Agent and <abbr title="Artificial Intelligence">AI</abbr>-Powered Software Development**!

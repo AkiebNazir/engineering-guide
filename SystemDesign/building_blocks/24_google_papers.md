@@ -1,6 +1,6 @@
 # The Papers Behind Google-Scale Systems
 
-You do not need to recite these papers in an interview. You do need the design *reasoning* in them: why GFS has a single master, why Bigtable is built on an LSM tree, why Spanner needs atomic clocks. Each summary below is the part worth carrying into a design discussion — the problem, the key decisions, the trade-offs, and where the idea shows up in today's systems.
+You do not need to recite these papers in an interview. You do need the design *reasoning* in them: why GFS has a single master, why Bigtable is built on an <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree, why Spanner needs atomic clocks. Each summary below is the part worth carrying into a design discussion — the problem, the key decisions, the trade-offs, and where the idea shows up in today's systems.
 
 > 💡 Read for the "why". When an interviewer asks you to justify a design choice, "this is the same trade-off GFS made: a single metadata master is simpler and fast enough because data never flows through it" is a strong answer.
 
@@ -16,7 +16,23 @@ You do not need to recite these papers in an interview. You do need the design *
 - Relaxed consistency: **atomic record append** with at-least-once semantics — applications tolerate duplicates and padding and use checksums and record IDs.
 - Operation log plus checkpoints for master recovery; shadow masters for read-only availability.
 
-**Trade-offs.** One master is simple and makes globally good placement decisions, but it limits the number of files (metadata must fit in RAM) and is a failover bottleneck. Its successor, Colossus, distributes the metadata into Bigtable. (Google Cloud's 2021 blog post "A peek behind Colossus" describes a metadata service made of many horizontally scalable curators that keep file metadata in Bigtable, with clients reading and writing data directly to the network-attached "D" disk servers and background custodians doing repair and rebalancing; it reports the Bigtable-backed metadata scaling over 100× beyond the largest GFS clusters.)
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
+
+**Trade-offs.** One master is simple and makes globally good placement decisions, but it limits the number of files (metadata must fit in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>) and is a failover bottleneck. Its successor, Colossus, distributes the metadata into Bigtable. (Google Cloud's 2021 blog post "A peek behind Colossus" describes a metadata service made of many horizontally scalable curators that keep file metadata in Bigtable, with clients reading and writing data directly to the network-attached "D" disk servers and background custodians doing repair and rebalancing; it reports the Bigtable-backed metadata scaling over 100× beyond the largest GFS clusters.)
 
 **Today.** HDFS copied the design; object stores and Colossus evolved it.
 
@@ -25,6 +41,22 @@ You do not need to recite these papers in an interview. You do need the design *
 **Problem.** Let ordinary engineers run computations over terabytes on thousands of machines without writing distributed systems code.
 
 **Key decisions.** A `map` and `reduce` programming model; the framework handles partitioning, shuffling, sorting, retries; re-executes failed tasks (workers are stateless, outputs go to GFS); schedules tasks near the data; launches **backup tasks** for stragglers, because the slowest few percent of tasks dominate job time.
+
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
 
 **Trade-offs.** Simple and robust, but disk-heavy between stages and awkward for iterative or interactive work — which is what Spark and Dataflow addressed. See [21_batch_and_stream_processing.md](21_batch_and_stream_processing.md).
 
@@ -36,9 +68,25 @@ You do not need to recite these papers in an interview. You do need the design *
 
 - Data model: a sparse, sorted, multi-dimensional map `(row key, column family:qualifier, timestamp) → value`.
 - Rows are sorted lexicographically and split into **tablets** (row ranges), the unit of distribution and load balancing. Row-key design therefore controls locality (e.g. reversed domain names keep a site's pages together).
-- Storage is an **LSM tree**: a commit log, an in-memory memtable, immutable SSTables in GFS, with minor and major compactions and per-SSTable **Bloom filters**.
+- Storage is an **<abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree**: a commit log, an in-memory memtable, immutable SSTables in GFS, with minor and major compactions and per-SSTable **Bloom filters**.
 - **Chubby** holds the master lock and bootstrap location; tablet servers can die and their tablets are reassigned.
 - Transactions only within a single row.
+
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
 
 **Trade-offs.** Very high write throughput and scalable scans, at the cost of no cross-row transactions and careful row-key design to avoid hotspots (sequential keys write to one tablet). Cloud Bigtable, HBase, and Cassandra's storage engine follow this model. See [20_specialized_data_structures.md](20_specialized_data_structures.md) and [25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md).
 
@@ -48,26 +96,74 @@ You do not need to recite these papers in an interview. You do need the design *
 
 **Key decisions.** A lock service rather than a consensus library, because a service is easier for teams to adopt correctly; a small Paxos-replicated cell of five replicas; **coarse-grained** locks held for hours; files and directories for small data; client sessions with **KeepAlive** and **lease** timeouts; **sequencers** (fencing tokens) so servers can reject stale lock holders; aggressive client-side caching with invalidations.
 
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
+
 **Trade-offs.** Not built for high throughput or fine-grained locks; outages of a cell affect everything that depends on it, so clients must handle "jeopardy" (lost session) gracefully. ZooKeeper and etcd fill the same role outside Google. See [19_consensus_and_coordination.md](19_consensus_and_coordination.md).
 
 ## Spanner (2012)
 
-**Problem.** A globally distributed database with SQL, strong consistency, and cross-region transactions — for applications (like Ads) that cannot tolerate eventual consistency.
+**Problem.** A globally distributed database with <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, strong consistency, and cross-region transactions — for applications (like Ads) that cannot tolerate eventual consistency.
 
 **Key decisions.**
 
 - Data is sharded into **splits**, each replicated across zones/regions by a **Paxos group** with a leader.
 - Cross-shard transactions use **two-phase commit** where every participant is a Paxos group, so participants are themselves fault tolerant.
-- **TrueTime**: an API returning an uncertainty interval `[earliest, latest]` backed by GPS and atomic clocks (typically a few milliseconds wide). A read-write transaction picks a commit timestamp and **waits out the uncertainty** before acknowledging, which guarantees that timestamp order equals real-time commit order — **external consistency**.
+- **TrueTime**: an <abbr title="Application Programming Interface">API</abbr> returning an uncertainty interval `[earliest, latest]` backed by GPS and atomic clocks (typically a few milliseconds wide). A read-write transaction picks a commit timestamp and **waits out the uncertainty** before acknowledging, which guarantees that timestamp order equals real-time commit order — **external consistency**.
 - Consequently, **lock-free snapshot reads** at any timestamp, from any sufficiently up-to-date replica.
+
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
 
 **Trade-offs.** Write latency includes the commit wait and cross-region Paxos round trips; the approach needs specialised time infrastructure (CockroachDB approximates it with hybrid logical clocks and a max-offset assumption). Cloud Spanner productised it.
 
 ## Dremel (2010)
 
-**Problem.** Interactive SQL over trillions of rows of nested data in seconds.
+**Problem.** Interactive <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> over trillions of rows of nested data in seconds.
 
 **Key decisions.** **Columnar storage for nested records** (repetition and definition levels encode structure per column), so a query reads only the columns it touches and compresses them well; a **multi-level serving tree** that fans a query out to thousands of leaf servers and aggregates partial results upward; tolerating a small fraction of slow leaves by returning results once most data is scanned.
+
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
 
 **Trade-offs.** Excellent for scans and aggregates, unsuited to point updates. It is the engine behind **BigQuery**; Parquet adopted its column encoding.
 
@@ -76,6 +172,22 @@ You do not need to recite these papers in an interview. You do need the design *
 **Problem.** Run hundreds of thousands of jobs — long-running services and batch — across many clusters with high utilisation and reliability.
 
 **Key decisions.** A declarative job spec; a Paxos-replicated **Borgmaster** and a scheduler that scores machines for feasibility and packing; mixing high-priority production and low-priority batch work on the same machines with **preemption**; resource reclamation (give batch the unused part of services' reservations); per-task isolation with containers; naming and health integrated with service discovery.
+
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
 
 **Trade-offs.** High utilisation (big cost savings) at the price of complex scheduling and noisy-neighbour management. **Kubernetes** is its open-source descendant (pods ≈ alloc, labels, controllers). See [16_platform_and_infra.md](16_platform_and_infra.md).
 
@@ -97,6 +209,22 @@ You do not need to recite these papers in an interview. You do need the design *
 **Problem.** A shopping-cart store that must *always* accept writes, even during failures and partitions.
 
 **Key decisions.** **Consistent hashing** with virtual nodes for partitioning; replication to the next `N` nodes on the ring; tunable **quorums** (`R`, `W`, `N`) with **sloppy quorums** and **hinted handoff** during failures; **vector clocks** to detect conflicting versions, with application-level reconciliation (merge the carts); **Merkle trees** for anti-entropy; **gossip** for membership.
+
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
 
 **Trade-offs.** Availability first; clients must handle conflicts and eventually consistent reads. Cassandra, Riak and DynamoDB's heritage. See [19_consensus_and_coordination.md](19_consensus_and_coordination.md).
 
@@ -123,9 +251,25 @@ You do not need to recite these papers in an interview. You do need the design *
 - **Latency-induced probation.** Temporarily take a machine that has become slow out of the serving set, keep sending it shadow requests, and return it when it recovers. Removing a slow machine can lower overall latency even though it reduces capacity.
 - Smaller supporting techniques: **canary requests** (send a fan-out to one or two leaves first so a query that crashes servers does not take down thousands), **good-enough results** (return once most shards have answered), prioritising interactive traffic over batch, splitting long requests into short ones to avoid head-of-line blocking, and throttling background work.
 
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
+
 **Trade-offs.** Hedging spends extra capacity to buy latency: if you hedge at the p95, roughly 5% of requests get a second copy, which is cheap only while the system is not overloaded. If slowness is caused by overload rather than by one bad machine, a hedge adds load to the thing that is already struggling, so hedges need a budget and must be paired with the limits in [28_overload_control_and_graceful_degradation.md](28_overload_control_and_graceful_degradation.md) and [12_application_resilience_patterns.md](12_application_resilience_patterns.md). Hedging is safe by default for reads; for writes it needs idempotency keys.
 
-**Today.** The techniques are standard options: gRPC's retry design includes a hedging policy, Envoy supports hedging on per-try timeouts, and Cassandra exposes a `speculative_retry` table setting.
+**Today.** The techniques are standard options: <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>'s retry design includes a hedging policy, Envoy supports hedging on per-try timeouts, and Cassandra exposes a `speculative_retry` table setting.
 
 **Use it in an interview.** Whenever a design fans a query out to `N` shards, compute `1 − (1 − p)^N` before claiming a p99 target, then say what you will do about it: fewer shards per query, hedged reads after the p95, and micro-partitions so hot shards can be split. See also [25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md).
 
@@ -137,15 +281,31 @@ You do not need to recite these papers in an interview. You do need the design *
 
 **Key decisions.**
 
-- Each virtual IP (VIP) is announced by all Maglev machines, and the upstream router spreads packets across them with **ECMP** (equal-cost multi-path). The load-balancing tier therefore scales out with no central coordinator.
+- Each virtual <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> (VIP) is announced by all Maglev machines, and the upstream router spreads packets across them with **ECMP** (equal-cost multi-path). The load-balancing tier therefore scales out with no central coordinator.
 - Each Maglev machine keeps a **connection-tracking table** keyed by the connection's five-tuple, so established connections stay on their backend. For a new connection it picks the backend from a **consistent-hashing lookup table**.
 - **Maglev hashing.** The lookup table has `M` entries, where `M` is a prime much larger than the number of backends `N`. Each backend has its own pseudo-random preference order over the table's slots, and backends take turns claiming their next unclaimed slot until every slot is filled. Lookup is then `table[hash(five-tuple) mod M]`, O(1). The paper's point is that this gives a near-equal share to every backend and limited disruption when the backend set changes.
 - Packets reach the backend encapsulated (GRE) and the backend replies directly to the client, so the response traffic does not pass through Maglev (**direct server return**).
 - Packet processing runs in user space, bypassing the kernel network stack, to reach high packet rates on ordinary hardware.
 
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
+
 **Trade-offs.** The lookup table exists because ECMP is not sticky: when the set of Maglev machines changes, the router may send later packets of a connection to a different machine that has no tracking entry, and hashing the same five-tuple into the same table usually lands on the same backend. "Usually" is the cost: tables can briefly disagree, and changes to the backend set can remap some flows, so a few connections may break. Compared with ring-based consistent hashing (see [25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md)), Maglev hashing favours even balance over minimal disruption. It is a layer-4 balancer: it sees connections, not requests, so request-level routing happens in a layer-7 tier behind it.
 
-**Today.** The paper says Maglev has served Google's traffic since 2008 and also provides network load balancing for Google Cloud Platform. Envoy ships a `MAGLEV` load-balancing policy that uses this table construction. For the whole path from DNS to backend see [13_scaling_and_load_balancing.md](13_scaling_and_load_balancing.md) and [02_networking.md](02_networking.md).
+**Today.** The paper says Maglev has served Google's traffic since 2008 and also provides network load balancing for Google Cloud Platform. Envoy ships a `MAGLEV` load-balancing policy that uses this table construction. For the whole path from <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> to backend see [13_scaling_and_load_balancing.md](13_scaling_and_load_balancing.md) and [02_networking.md](02_networking.md).
 
 **Use it in an interview.** When asked "how does the load balancer itself scale and stay up?", answer with ECMP across active balancers plus a consistent-hash table so any balancer picks the same backend for a flow, and say what breaks (a few flows) during changes.
 
@@ -157,10 +317,26 @@ You do not need to recite these papers in an interview. You do need the design *
 
 **Key decisions.**
 
-- A **trace** is a tree of **spans**. Each span carries a trace id, its own span id, its parent's id, a name and timestamps; RPC client and server sides each record their part of a span. **Annotations** (timestamped text or key-value pairs) let developers attach their own context to a span.
-- **Transparency through shared libraries.** Dapper instruments the common threading, control-flow and RPC libraries, so the trace context (trace id and span id) follows a request without application changes.
+- A **trace** is a tree of **spans**. Each span carries a trace id, its own span id, its parent's id, a name and timestamps; <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> client and server sides each record their part of a span. **Annotations** (timestamped text or key-value pairs) let developers attach their own context to a span.
+- **Transparency through shared libraries.** Dapper instruments the common threading, control-flow and <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> libraries, so the trace context (trace id and span id) follows a request without application changes.
 - **Sampling** keeps overhead low. The first production version sampled uniformly, averaging one trace in 1,024, which the paper found effective for high-throughput services because notable patterns recur often. Low-traffic services need higher rates, which led to **adaptive sampling** by a target number of sampled traces per unit time. A second sampling stage at collection hashes the trace id, so whole traces are kept or dropped, never single spans.
 - **Out-of-band collection.** Spans are written to local log files, pulled off the machines by daemons and collectors, and stored in Bigtable with one row per trace, so collection is never on the request path.
+
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
 
 **Trade-offs.** Sampling before the outcome is known means a rare slow or failing request is usually *not* in the sample, which is why later tracing systems (the OpenTelemetry Collector, for example) offer tail-based sampling that decides after seeing the whole trace, at the cost of buffering spans. Traces break wherever context is not propagated: queues, thread pools and hand-written async code need explicit instrumentation. Annotations can leak sensitive data if not controlled.
 
@@ -182,6 +358,22 @@ You do not need to recite these papers in an interview. You do need the design *
 - **A typed data model** with schemas for the entity being monitored and for the metric, including histogram ("distribution") values rather than only numbers.
 - **Availability over consistency.** The paper says Monarch readily trades consistency for availability and partition tolerance: a blocking, strongly consistent store would delay alerts. It drops delayed writes and returns partial data for queries if necessary, with mechanisms to indicate that data may be incomplete or inconsistent.
 
+```arch
+%% caption: The GFS Master holds metadata and directs clients, but actual file chunks flow directly between clients and Chunkservers.
+node c "Client" at 0,1 icon=client color=blue
+node m "Master\n(Metadata in RAM)" at 2,0 icon=cpu color=amber
+group cs "Chunkservers (Replicas)" color=slate style=dashed
+node r1 "Primary Chunkserver" at 3,2 in cs icon=server color=green
+node r2 "Secondary Chunkserver" at 5,1 in cs icon=server color=green
+node r3 "Secondary Chunkserver" at 5,3 in cs icon=server color=green
+
+c -> m : "1. Where is file/chunk?"
+m ..> c : "2. Primary is R1"
+c ==> r1 : "3. Push data to Primary"
+r1 ==> r2 : "4. Chain replicate"
+r1 ==> r3 : "4. Chain replicate"
+```
+
 **Trade-offs.** The paper keeps data in memory to isolate itself from failures of the persistent storage layer and to keep the alerting path low-dependency, despite the higher cost per byte; older data goes to a long-term repository. Zone-local storage keeps writes cheap and failures contained, but a global query has to touch every relevant zone and may return incomplete answers. A dashboard that is slightly wrong during a failure is acceptable for monitoring and unacceptable for a ledger.
 
 **Today.** Google documents Cloud Monitoring and its managed Prometheus service as running on Monarch. The same shape shows up outside Google as a per-region Prometheus plus a global query layer (Thanos, for example). See [15_observability_and_reliability.md](15_observability_and_reliability.md).
@@ -194,7 +386,7 @@ You do not need to recite these papers in an interview. You do need the design *
 |---|---|
 | GFS | Separate metadata from data; design for constant failure; relax consistency where apps can cope. |
 | MapReduce | Restartable tasks and data locality make huge jobs routine; stragglers matter. |
-| Bigtable | LSM tree + sorted row ranges; row-key design is performance design. |
+| Bigtable | <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree + sorted row ranges; row-key design is performance design. |
 | Chubby | A lock service with leases and sequencers; coarse-grained coordination only. |
 | Spanner | Paxos per shard + 2PC + TrueTime = global external consistency, paid for in commit latency. |
 | Dremel | Columnar + fan-out tree = interactive analytics at trillions of rows. |

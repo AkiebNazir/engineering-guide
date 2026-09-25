@@ -14,11 +14,11 @@ Practical engineering discipline, not patterns. This is the day-to-day judgment 
   /--------------\
 ```
 
-Most of the suite should be fast unit tests against isolated logic; a smaller layer of integration tests should check that components actually wire together (DB queries, HTTP contracts); a thin top layer of end-to-end tests should check that the full user-facing flow works.
+Most of the suite should be fast unit tests against isolated logic; a smaller layer of integration tests should check that components actually wire together (DB queries, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> contracts); a thin top layer of end-to-end tests should check that the full user-facing flow works.
 
-**Inverting it (the "ice cream cone"):** mostly e2e tests, few unit tests. Consequence: the suite is slow (minutes to hours instead of seconds), flaky (e2e tests depend on timing, network, shared environments), and a single logic bug requires spinning up the whole stack to even locate — feedback loops go from seconds to CI-run minutes, so engineers stop running tests locally before pushing.
+**Inverting it (the "ice cream cone"):** mostly e2e tests, few unit tests. Consequence: the suite is slow (minutes to hours instead of seconds), flaky (e2e tests depend on timing, network, shared environments), and a single logic bug requires spinning up the whole stack to even locate — feedback loops go from seconds to <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>-run minutes, so engineers stop running tests locally before pushing.
 
-## TDD
+## <abbr title="Test-Driven Development. A software development process relying on software requirements being converted to test cases before software is fully developed.">TDD</abbr>
 
 What it actually buys you is not "tests exist" — you can write tests after the fact and get that. Writing the test *first* forces you to design the interface from the caller's point of view before the implementation exists, which applies design pressure toward small, dependency-injected, testable units (naturally pushes toward DIP, [01](01_design_principles.md)) and toward functions with one clear job (SRP). A codebase written test-first tends to have narrower, more composable interfaces than one where tests were retrofitted onto an implementation that was never designed to be called in isolation.
 
@@ -45,7 +45,7 @@ Debt is a legitimate trade-off when it's taken on **consciously**: "we're shippi
 
 ## Clean naming and function-size heuristics
 
-- A function does one thing, at one level of abstraction (see SLA, [01](01_design_principles.md)) — if you need "and" to describe it (`validateAndSave`), it's two functions wearing one name.
+- A function does one thing, at one level of abstraction (see <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr>, [01](01_design_principles.md)) — if you need "and" to describe it (`validateAndSave`), it's two functions wearing one name.
 - Name for *what*, not *how*: `activeUsers()` not `filterListWhereStatusEqualsActive()`.
 - If a function needs a comment explaining a block within it, that block is usually a candidate to extract into a well-named function — the extraction *is* the comment.
 - Function length is a symptom, not the rule itself: a long function is suspicious because it's usually doing several unrelated things, not because line count has an inherent limit.
@@ -61,9 +61,9 @@ Debt is a legitimate trade-off when it's taken on **consciously**: "we're shippi
 
 ## Semantic versioning basics
 
-`MAJOR.MINOR.PATCH` for any public API/library:
+`MAJOR.MINOR.PATCH` for any public <abbr title="Application Programming Interface">API</abbr>/library:
 
-- **MAJOR** — incompatible/breaking API change.
+- **MAJOR** — incompatible/breaking <abbr title="Application Programming Interface">API</abbr> change.
 - **MINOR** — backward-compatible new functionality.
 - **PATCH** — backward-compatible bug fix.
 
@@ -71,5 +71,5 @@ A consumer pinning `^1.4.0` (or equivalent) is trusting that you will never ship
 
 ## Related
 
-- [01 — Design principles](01_design_principles.md) — SLA and DIP underpin naming/function-size heuristics and TDD's design pressure.
+- [01 — Design principles](01_design_principles.md) — <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr> and DIP underpin naming/function-size heuristics and <abbr title="Test-Driven Development. A software development process relying on software requirements being converted to test cases before software is fully developed.">TDD</abbr>'s design pressure.
 - [07 — Anti-patterns and code smells](07_anti_patterns_and_code_smells.md)

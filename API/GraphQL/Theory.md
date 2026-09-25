@@ -8,16 +8,16 @@ description: "Master GraphQL: schema (SDL), queries, mutations, subscriptions, v
 <div data-viz="api-graphql"></div>
 
 ## What is GraphQL?
-GraphQL is a query language for APIs that solves the over-fetching and under-fetching problems of REST. Clients send a query to a single endpoint (`/graphql`) explicitly defining the shape of the data they want.
+GraphQL is a query language for APIs that solves the over-fetching and under-fetching problems of <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>. Clients send a query to a single endpoint (`/graphql`) explicitly defining the shape of the data they want.
 
 It was built at Facebook (2012, open-sourced 2015) because the mobile news feed needed data from many sources in one round trip over slow networks. It is defined by a **specification**, not a library; Apollo, Strawberry, gqlgen, graphql-go, and others implement it.
 
-### REST vs GraphQL
-*   **Over-fetching (REST):** You hit `/users/1` and get back the user's name, email, address, phone number, and history, even though you only wanted to render their name on the UI.
-*   **Under-fetching (REST):** You want a user's name and their top 5 recent posts. You have to hit `/users/1` and then `/users/1/posts`, requiring multiple network roundtrips.
+### <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> vs GraphQL
+*   **Over-fetching (<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>):** You hit `/users/1` and get back the user's name, email, address, phone number, and history, even though you only wanted to render their name on the UI.
+*   **Under-fetching (<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>):** You want a user's name and their top 5 recent posts. You have to hit `/users/1` and then `/users/1/posts`, requiring multiple network roundtrips.
 *   **GraphQL Solution:** You send a single query to a single endpoint (`/graphql`), explicitly defining the shape of the data you want.
 
-> **Key idea:** In REST the **server** decides the shape of the response. In GraphQL the **client** decides. The server only decides what is *possible* (the schema).
+> **Key idea:** In <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> the **server** decides the shape of the response. In GraphQL the **client** decides. The server only decides what is *possible* (the schema).
 
 ## The Core Components
 1.  **Schema:** A strongly-typed definition of all possible data and operations.
@@ -128,7 +128,7 @@ query GetPost($id: ID!, $withAuthor: Boolean = true) {
 }
 ```
 
-Sent over HTTP as **one JSON body**:
+Sent over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> as **one <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> body**:
 
 ```http
 POST /graphql HTTP/1.1
@@ -183,7 +183,7 @@ subscription { postCreated { id title } }
 
 The client opens a WebSocket (the `graphql-transport-ws` protocol), and the server sends a message each time a post is created. See `WebSockets/`.
 
-### Introspection: the API describes itself
+### Introspection: the <abbr title="Application Programming Interface">API</abbr> describes itself
 
 ```graphql
 { __schema { types { name kind } } }
@@ -194,16 +194,23 @@ This powers GraphiQL/Playground, autocomplete, and client code generation. Disab
 
 ## How a Query Executes
 
-```mermaid
-flowchart TD
-    A[HTTP POST /graphql] --> B[Parse text into an AST]
-    B --> C[Validate against schema<br/>unknown field? wrong type?]
-    C -- invalid --> E1[Return errors, no resolver runs]
-    C -- valid --> D[Execute: walk the tree from the root]
-    D --> R1[Query.post resolver]
-    R1 --> R2[Post.author resolver]
-    R2 --> R3[User.name: default resolver reads the property]
-    R3 --> F[Assemble JSON in the shape of the query]
+```arch
+%% caption: A query is parsed and validated first; only a valid query walks the resolver tree.
+grid 220x80
+node a "HTTP POST /graphql" at 0,0 shape=pill color=slate
+node b "Parse" at 0,1 sub="text into an AST"
+node c "Validate against schema" at 0,2 color=amber sub="unknown field? wrong type?"
+node e1 "Return errors" at 1,2 color=red sub="no resolver runs"
+node d "Execute" at 0,3 sub="walk the tree from the root"
+group res "Resolvers" color=blue icon=tree
+node r1 "Query.post resolver" at 0,4 in res color=blue
+node r2 "Post.author resolver" at 0,5 in res color=blue
+node r3 "User.name" at 0,6 in res color=blue sub="default resolver reads the property"
+node f "Assemble JSON" at 0,7 shape=pill color=green sub="in the shape of the query"
+a -> b -> c
+c -> e1 : "invalid"
+c -> d : "valid"
+d -> r1 -> r2 -> r3 -> f
 ```
 
 A **resolver** has the signature `(parent, args, context, info)`. Each field of each type may have one. If you do not write one, the default resolver reads `parent.fieldName`. Only the fields the client asked for run, and that is where the efficiency comes from.
@@ -324,7 +331,7 @@ Result for three posts by two authors: **1 batched call** instead of 3. Python l
 
 > ⚠️ **The two DataLoader rules:** (1) the batch function must return results in the **same order and count** as the keys; (2) create loaders **per request**, never globally.
 
-## Errors: HTTP 200 Does Not Mean Success
+## Errors: <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> 200 Does Not Mean Success
 
 GraphQL responses always have a `data` and/or an `errors` key. Errors are **field-level and partial**.
 
@@ -341,15 +348,15 @@ GraphQL responses always have a `data` and/or an `errors` key. Errors are **fiel
 
 *   **Validation errors** (unknown field, wrong type) -> no `data`, request rejected before execution.
 *   **Resolver errors** -> partial `data` plus `errors` with the `path` of the failed field.
-*   Transport failures (auth, rate limits, malformed JSON) may still use `401` / `429` / `400`.
+*   Transport failures (auth, rate limits, malformed <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>) may still use `401` / `429` / `400`.
 *   Put a stable machine code in `extensions.code`; clients should not parse `message`.
 *   For expected business failures consider **result types** rather than errors: `union CreatePostResult = Post | ValidationError`.
 
-> ⚠️ Monitoring tip: because errors ride on `200`, ordinary HTTP error-rate dashboards see nothing. Track `errors` per operation name.
+> ⚠️ Monitoring tip: because errors ride on `200`, ordinary <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> error-rate dashboards see nothing. Track `errors` per operation name.
 
 ## Pagination: Connections
 
-The Relay convention, used by GitHub's API and many others:
+The Relay convention, used by GitHub's <abbr title="Application Programming Interface">API</abbr> and many others:
 
 ```graphql
 {
@@ -360,7 +367,7 @@ The Relay convention, used by GitHub's API and many others:
 }
 ```
 
-`edges` wrap each item with its cursor, `pageInfo` tells you whether to continue. Same cursor idea as REST (see `Fundamentals/03_cross_cutting_concerns.md`).
+`edges` wrap each item with its cursor, `pageInfo` tells you whether to continue. Same cursor idea as <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> (see `Fundamentals/03_cross_cutting_concerns.md`).
 
 ## Security and Performance
 
@@ -376,13 +383,13 @@ Because the client controls the query, a malicious or careless client can ask fo
 | **Complexity / cost analysis** | Assign a cost per field (`list x first`), reject above a budget |
 | **Pagination limits** | Require `first`, cap it at 100 |
 | **Timeouts** | Bound execution time |
-| **Persisted queries** | Clients send a hash of a pre-registered query; the server refuses unknown ones. Best defence for first-party apps, and enables GET + CDN caching |
+| **Persisted queries** | Clients send a hash of a pre-registered query; the server refuses unknown ones. Best defence for first-party apps, and enables GET + <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> caching |
 | **Auth in resolvers** | Authorise per field/object, not just per endpoint (BOLA applies here too) |
 | **Disable introspection** in production for private APIs | Reduces reconnaissance |
 
 ## Caching: The Trade-Off
 
-REST gets HTTP caching free because every resource has a URL and uses `GET`. GraphQL usually sends `POST /graphql`, so CDNs cannot cache by default. Options: persisted queries over `GET`, client-side normalised caches (Apollo, Relay cache by `__typename:id`), response caching per resolver, and `@cacheControl` hints.
+<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> gets <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching free because every resource has a URL and uses `GET`. GraphQL usually sends `POST /graphql`, so CDNs cannot cache by default. Options: persisted queries over `GET`, client-side normalised caches (Apollo, Relay cache by `__typename:id`), response caching per resolver, and `@cacheControl` hints.
 
 ## Schema Evolution Without Versions
 
@@ -392,12 +399,18 @@ REST gets HTTP caching free because every resource has a URL and uses `GET`. Gra
 
 ## Federation: One Graph, Many Teams
 
-```mermaid
-flowchart LR
-    C[Client] --> R[Router / Gateway<br/>supergraph]
-    R --> U[Users subgraph]
-    R --> P[Posts subgraph]
-    R --> I[Inventory subgraph]
+```arch
+%% caption: Federation: one router composes a supergraph from subgraphs owned by different teams.
+node c "Client" at 1,0 icon=client
+node r "Router / Gateway" at 1,1 icon=gateway sub="supergraph"
+group sg "Subgraphs" color=purple icon=graph
+node u "Users subgraph" at 0,2 in sg icon=graphql
+node p "Posts subgraph" at 1,2 in sg icon=graphql
+node i "Inventory subgraph" at 2,2 in sg icon=graphql
+c -> r
+r -> u
+r -> p
+r -> i
 ```
 
 Each team owns a **subgraph** that contributes types and fields; the router plans the query, calls the needed subgraphs, and merges results. Apollo Federation is the common standard. It is powerful but adds operational weight; do not start here.
@@ -422,10 +435,10 @@ sequenceDiagram
 
 | Use it when | Avoid it when |
 | :--- | :--- |
-| Many clients (web, iOS, Android, TV) need different slices of the same data | A simple CRUD API with one client |
-| Screens need nested data from several services | Public API where HTTP caching and simple `curl` access matter |
+| Many clients (web, iOS, Android, TV) need different slices of the same data | A simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> <abbr title="Application Programming Interface">API</abbr> with one client |
+| Screens need nested data from several services | Public <abbr title="Application Programming Interface">API</abbr> where <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching and simple `curl` access matter |
 | Frontend teams iterate faster than backend teams can ship endpoints | File uploads and streaming binary data are central |
-| You want a typed, self-documenting contract | Service-to-service calls between backends (prefer gRPC) |
+| You want a typed, self-documenting contract | Service-to-service calls between backends (prefer <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>) |
 
 ## Common Pitfalls
 
@@ -434,14 +447,14 @@ sequenceDiagram
 3.  **A global DataLoader** that caches across users.
 4.  **Exposing the database schema 1:1** as the GraphQL schema.
 5.  **Making everything non-null**, so one failure blanks large parts of the response.
-6.  **Treating mutations as CRUD** (`updateUser`) instead of intent (`changeEmail`, `suspendUser`).
+6.  **Treating mutations as <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr>** (`updateUser`) instead of intent (`changeEmail`, `suspendUser`).
 7.  **Ignoring auth inside resolvers.**
 
 ## Check Yourself
 
-> ❓ **Question 1:** A GraphQL request fails one field but returns HTTP 200. How does the client know, and why is this designed so?
+> ❓ **Question 1:** A GraphQL request fails one field but returns <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> 200. How does the client know, and why is this designed so?
 >
-> ❓ **Question 2:** 50 posts each ask for their author and your logs show 51 SQL queries. Diagnose it and fix it.
+> ❓ **Question 2:** 50 posts each ask for their author and your logs show 51 <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> queries. Diagnose it and fix it.
 >
 > ❓ **Question 3:** Why do query fields run in parallel but mutation fields run serially?
 >
@@ -465,16 +478,16 @@ Run from the `API/` folder (Python: `pip install -r requirements.txt` first).
 | 1 | `01_schema_queries_variables.py` | Schema as SDL, arguments, variables, aliases, fragments, `@include`, introspection, nullable vs non-null failures |
 | 2 | `02_mutations_and_input_validation.py` | Input types, unions for expected errors, serial execution of mutations |
 | 3 | `03_dataloader_n_plus_1.py` | 51 queries becoming 2, the two DataLoader rules, why a shared loader leaks stale data |
-| 4 | `04_auth_permissions_and_masking.py` | Context from HTTP headers, permission classes, field- and object-level rules (BOLA), error masking, disabling introspection |
+| 4 | `04_auth_permissions_and_masking.py` | Context from <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> headers, permission classes, field- and object-level rules (BOLA), error masking, disabling introspection |
 | 5 | `05_subscriptions_over_websocket.py` | Async-generator subscriptions, the `graphql-transport-ws` messages on the wire, cleanup on disconnect |
 
 | # | Go (`GraphQL/labs/golang/`) | You learn |
 | :---: | :--- | :--- |
 | 1 | `01_schema_and_resolvers` | graphql-go schema in code, `ResolveParams`, enums, `NonNull`, partial results |
-| 2 | `02_http_handler_and_variables` | The JSON request shape, `operationName`, status-code contract, safe `GET`, context into resolvers |
+| 2 | `02_http_handler_and_variables` | The <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> request shape, `operationName`, status-code contract, safe `GET`, context into resolvers |
 | 3 | `03_dataloader_batching` | A generic `Loader[K, V]` built from scratch using graphql-go thunks |
 | 4 | `04_relay_pagination` | Connections, opaque cursors, keyset stability, guard rails |
-| 5 | `05_depth_cost_limits_persisted_queries` | AST-based depth and cost limits, persisted queries and APQ |
+| 5 | `05_depth_cost_limits_persisted_queries` | <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr>-based depth and cost limits, persisted queries and APQ |
 
 ```bash
 python GraphQL/labs/python/03_dataloader_n_plus_1.py
@@ -487,7 +500,7 @@ go run ./GraphQL/labs/golang/05_depth_cost_limits_persisted_queries
 2.  Add a depth limit (see Go lab 5) to the Strawberry schema in Python lab 1 using `strawberry.extensions.QueryDepthLimiter`.
 3.  Add a `Post.comments` field to Python lab 3 and make it a second DataLoader (one-to-many: the batch function returns a *list* per key).
 4.  Take Go lab 2's handler and make it reject any query whose cost (Go lab 5) is over budget.
-5.  Wrap two REST endpoints of your choice behind a GraphQL schema (a "backend for frontend").
+5.  Wrap two <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> endpoints of your choice behind a GraphQL schema (a "backend for frontend").
 
 ## Where To Go Next
 

@@ -1,28 +1,28 @@
 # Day 51: Text Classification (TextCNN & Hierarchical Attention)
 
 Welcome to Day 51. Recurrent Neural Networks (RNNs) are fundamentally slow. Because they use a loop, they cannot read Word 2 until they finish processing Word 1. 
-If you are building a system that needs to classify 1,000,000 Tweets per hour as "Toxic" or "Safe", an RNN will bottleneck your servers. 
+If you are building a system that needs to classify 1,000,000 Tweets per hour as "Toxic" or "Safe", an <abbr title="Recurrent Neural Network">RNN</abbr> will bottleneck your servers. 
 
-Today, we abandon the loop. We adapt the Computer Vision CNN to read text!
+Today, we abandon the loop. We adapt the Computer Vision <abbr title="Convolutional Neural Network">CNN</abbr> to read text!
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. TextCNN (Convolutions for Text)
-In Computer Vision (Day 38), a CNN slides a $3 \times 3$ filter over a 2D image grid.
+In Computer Vision (Day 38), a <abbr title="Convolutional Neural Network">CNN</abbr> slides a $3 \times 3$ filter over a 2D image grid.
 Text is not a 2D grid. Text is a 1D sequence of words. 
 In **TextCNN**, we use a 1D Convolution (`nn.Conv1d`). We slide a window across the sentence. 
-- If our filter size is $3$, the CNN looks at 3 words at a time. It mathematically acts as an automatic **Trigram Detector**. It slides across the sentence looking for specific 3-word phrases like *"not very good"* or *"absolutely loved it"*.
+- If our filter size is $3$, the <abbr title="Convolutional Neural Network">CNN</abbr> looks at 3 words at a time. It mathematically acts as an automatic **Trigram Detector**. It slides across the sentence looking for specific 3-word phrases like *"not very good"* or *"absolutely loved it"*.
 - **The Speed:** Because Convolutions don't have loops, the GPU processes all 1,000 words in the document *simultaneously*!
 
 ### 2. Max-Over-Time Pooling
-After the CNN slides across the document, it produces a feature map showing *where* it found the phrase *"not very good"*.
+After the <abbr title="Convolutional Neural Network">CNN</abbr> slides across the document, it produces a feature map showing *where* it found the phrase *"not very good"*.
 But for Document Classification, we don't care *where* the phrase is. We only care *if* it exists!
 We apply **Max Pooling**. It collapses the entire feature map into a single number. It asks: *"Did this phrase appear anywhere in the document? Yes or No?"* This makes the model completely invariant to document length!
 
 ### 3. Hierarchical Attention Networks (HAN)
-If you need to classify a massive 50-page PDF, even a CNN struggles. 
+If you need to classify a massive 50-page PDF, even a <abbr title="Convolutional Neural Network">CNN</abbr> struggles. 
 In 2016, researchers invented the **HAN**, which reads a document exactly like a human does:
 1. **Word-Level Attention:** It reads the words in a single sentence. It uses Attention to find the single most important word (e.g., *"Terrible"*), and compresses the sentence into a vector.
 2. **Sentence-Level Attention:** It looks at all the compressed sentences in the document. It uses Attention again to find the single most important sentence (e.g., *"I will never buy this again."*), and compresses the entire document into a final vector for classification.
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Shape Transpose:** PyTorch's `nn.Conv1d` expects data in `[Batch, Channels, Length]`. Because embeddings output `[Batch, Length, Channels]`, you *must* use `transpose(1, 2)` before feeding it to the CNN, otherwise the math will crash.
+1. **The Shape Transpose:** PyTorch's `nn.Conv1d` expects data in `[Batch, Channels, Length]`. Because embeddings output `[Batch, Length, Channels]`, you *must* use `transpose(1, 2)` before feeding it to the <abbr title="Convolutional Neural Network">CNN</abbr>, otherwise the math will crash.
 2. **The Max Pooling Squeeze:** Notice `F.max_pool1d(...).squeeze(2)`. The pooling layer shrinks the sequence length down to exactly `1`. By squeezing out that final dimension, we are left with a flat vector of features that we can safely pass into the final `nn.Linear` classifier!
 
 ---

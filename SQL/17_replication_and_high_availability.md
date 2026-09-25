@@ -1,28 +1,28 @@
 # Replication and High Availability
 
 **Already covered elsewhere:** `SystemDesign/building_blocks/10_distributed_systems_theory.md`
-covers replication's role in CAP/consistency tradeoffs in the abstract, and
-`CSFundamentals/03_databases_deep_dive.md` §3 covers WAL internals. This level is the
+covers replication's role in <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>/consistency tradeoffs in the abstract, and
+`CSFundamentals/03_databases_deep_dive.md` §3 covers <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> internals. This level is the
 Postgres-specific mechanics — what actually ships between two instances, what
 "replication lag" measures, and what a real failover involves — proven with a live
 replica, not just diagrammed.
 
 ## The mental model
 
-Every write to Postgres is first recorded in the **write-ahead log (WAL)** — an
+Every write to Postgres is first recorded in the **write-ahead log (<abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>)** — an
 append-only record of every change, written and fsynced *before* the change is
-considered durable (this is the same WAL levels 09 and 15 already rely on for crash
-recovery). Replication is simply: **ship that same WAL to a second server, and have it
+considered durable (this is the same <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> levels 09 and 15 already rely on for crash
+recovery). Replication is simply: **ship that same <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> to a second server, and have it
 replay the same changes.** Two flavors matter, and interviewers routinely test whether
 you know which is which:
 
 | | **Physical (streaming) replication** | **Logical replication** |
 |---|---|---|
-| Ships | Raw WAL bytes — page-level changes | Decoded row-level changes (`INSERT`/`UPDATE`/`DELETE`) |
+| Ships | Raw <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> bytes — page-level changes | Decoded row-level changes (`INSERT`/`UPDATE`/`DELETE`) |
 | Replica is | An exact byte-for-byte copy of the whole cluster, read-only | A separate database that can have a different schema, extra indexes, or a subset of tables |
 | Granularity | Whole database cluster | Per-table, via `PUBLICATION`/`SUBSCRIPTION` |
 | Typical use | High availability, failover, read replicas | Selective sync, zero-downtime major-version upgrades, feeding a different system (e.g. a reporting warehouse) |
-| Postgres feature | `primary_conninfo`, WAL streaming, `pg_basebackup` | `CREATE PUBLICATION` / `CREATE SUBSCRIPTION` (built in since Postgres 10) |
+| Postgres feature | `primary_conninfo`, <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> streaming, `pg_basebackup` | `CREATE PUBLICATION` / `CREATE SUBSCRIPTION` (built in since Postgres 10) |
 
 Both are **asynchronous by default** in Postgres: the primary commits and returns to
 the client *before* confirming the replica received the change. That default is a
@@ -32,7 +32,7 @@ real, tunable tradeoff, covered below.
 
 This demo uses logical replication because it's runnable entirely inside the existing
 lab Postgres instance — a second database, not a second container — while still
-exercising the real WAL-shipping, replication-slot, and lag-measurement mechanics that
+exercising the real <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>-shipping, replication-slot, and lag-measurement mechanics that
 apply identically to physical streaming replication between two servers.
 
 Logical replication requires `wal_level = logical` (the default `replica` isn't
@@ -96,7 +96,7 @@ row visible on subscriber after 0.0260s
 **26 milliseconds** from commit on the primary to visible on the replica — this is
 what "asynchronous replication" concretely means: the `INSERT` on the primary returned
 immediately, and the replica caught up a few dozen milliseconds later. `pg_replication_slots`
-also exposes exactly how far behind a replica is, in bytes of un-replayed WAL:
+also exposes exactly how far behind a replica is, in bytes of un-replayed <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>:
 
 ```sql
 SELECT slot_name, active,
@@ -173,7 +173,7 @@ exact figure.
 
 The demo above is asynchronous, Postgres's default. Setting `synchronous_standby_names`
 on the primary makes a commit **wait** until at least one named replica confirms it
-received (or, depending on `synchronous_commit`, flushed/replayed) the WAL — trading
+received (or, depending on `synchronous_commit`, flushed/replayed) the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> — trading
 commit latency (every write now pays a network round trip to the replica) for a
 stronger guarantee: a promoted replica can never be missing a transaction the client
 was told succeeded. This is the same durability-vs-latency axis `SQL/09` explores for
@@ -181,6 +181,28 @@ isolation, one level up: async replication can lose the last few commits' worth 
 changes if the primary dies before they ship (a "durability gap" measured in the lag
 number above); synchronous replication closes that gap at the cost of every write now
 depending on the replica being reachable and healthy.
+
+```arch
+%% caption: Synchronous replication guarantees durability by waiting for the replica; Asynchronous returns immediately, risking recent writes if the primary dies.
+group async "Asynchronous (Default)" color=slate style=dashed
+node ca "Client" at 0,0 in async icon=client color=blue
+node pa "Primary DB" at 2,0 in async icon=db color=green
+node ra "Replica DB" at 2,2 in async icon=replica color=amber
+
+ca -> pa : "1. COMMIT"
+pa ..> ca : "2. OK (Fast)"
+pa ..> ra : "3. WAL async"
+
+group sync "Synchronous" color=slate style=dashed
+node cs "Client" at 4,0 in sync icon=client color=blue
+node ps "Primary DB" at 6,0 in sync icon=db color=green
+node rs "Replica DB" at 6,2 in sync icon=replica color=amber
+
+cs -> ps : "1. COMMIT"
+ps -> rs : "2. WAL sync"
+rs ..> ps : "3. ACK"
+ps ..> cs : "4. OK (Slower)"
+```
 
 ## Failover, honestly
 
@@ -195,14 +217,14 @@ an *operational* capability, built from these pieces:
    brain" — each accepting conflicting writes).
 2. **Promotion.** `pg_ctl promote` (or the equivalent in whatever orchestration layer
    is in front of it) turns a **read replica** into a writable primary. This is why
-   physical streaming replicas are read-only until promoted — a replica applying WAL
+   physical streaming replicas are read-only until promoted — a replica applying <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>
    from a primary cannot simultaneously accept independent writes of its own.
 3. **Reconfiguration.** Every client and every other replica needs to learn the new
-   primary's address — a connection-pooler/proxy layer (`pgbouncer`, a virtual IP, DNS,
+   primary's address — a connection-pooler/proxy layer (`pgbouncer`, a virtual <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>, <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>,
    or the orchestration tool itself) usually owns this so application code doesn't
    need to know a failover happened.
 4. **The old primary, if it comes back.** It doesn't automatically rejoin as a replica
-   of the new primary — it may have WAL the new primary never saw (if replication was
+   of the new primary — it may have <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> the new primary never saw (if replication was
    asynchronous and it died mid-lag), so it has to be explicitly resynced or rebuilt,
    never blindly restarted as a second writer.
 
@@ -211,6 +233,8 @@ automatic failover" are different claims** — the first is a database feature, 
 second is a piece of operational tooling (Patroni, repmgr, a managed cloud service)
 built on top of it. Saying "just add a replica" without naming what detects failure and
 performs promotion is an incomplete answer.
+
+<div class="lab" data-viz="flow-pg-ha"></div>
 
 ## Read replicas for read scaling — and the staleness they buy you
 
@@ -221,14 +245,14 @@ however many milliseconds replication lag currently is ("read your own writes"
 consistency is *not* automatic across primary/replica the way it is on a single
 connection to the primary). Real systems solve this by routing a user's own
 post-write reads back to the primary for a short window, or by tracking a
-causality token (the WAL LSN their write produced) and waiting for a replica to reach
+causality token (the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> LSN their write produced) and waiting for a replica to reach
 it before serving their read from it.
 
 ## Common mistakes
 
 - **Confusing physical and logical replication** — a physical replica cannot have a
   different schema or extra indexes from the primary (it's a byte-for-byte copy); a
-  logical replica can, because it replays decoded row changes, not WAL pages.
+  logical replica can, because it replays decoded row changes, not <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> pages.
 - **Assuming Postgres fails over on its own.** It doesn't — see "Failover, honestly"
   above. A bare `docker-compose` with a primary and a replica has no automatic
   promotion.

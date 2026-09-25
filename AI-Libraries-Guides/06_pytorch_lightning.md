@@ -113,7 +113,7 @@ You instantiate a `Trainer` object and pass your model into it. The Trainer hand
 - `max_epochs` (int): How many times the model will see the entire dataset.
   - *Effect of changing:* If `1`, it barely learns. If `1000`, it might memorize the data (overfit).
 - `accelerator` (string): What hardware to use (`'cpu'`, `'gpu'`, `'tpu'`, `'mps'` for Mac Apple Silicon, or `'auto'`).
-  - *Effect of changing:* If you set it to `'auto'`, Lightning automatically detects if you have an NVIDIA GPU, an Apple M-chip, or just a CPU, and configures the math perfectly without you changing any code.
+  - *Effect of changing:* If you set it to `'auto'`, Lightning automatically detects if you have an NVIDIA GPU, an Apple M-chip, or just a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, and configures the math perfectly without you changing any code.
 - `devices` (int or string): How many GPUs to use (`1`, `2`, or `'auto'`).
   - *Effect of changing:* If you rent a massive AWS server with 8 GPUs, you just change this from `1` to `8`. Lightning will automatically slice your data into 8 chunks, send it to all 8 GPUs simultaneously, train them in parallel, and average the math together. (Doing this in standard PyTorch takes 200 lines of complex math code).
 - `precision` (string): What bit-depth to use for the numbers (`'32-true'`, `'16-mixed'`).
@@ -187,12 +187,12 @@ trainer = pl.Trainer(callbacks=[early_stop_callback, checkpoint_callback])
 
 ## 6. MAANG Interview Scenarios
 
-### Scenario 1: Distributed Data Parallel (DDP) vs DataParallel (DP)
-*Interviewer:* "We just bought a server with 8 GPUs. Should we use PyTorch's `DataParallel` or Lightning's `DistributedDataParallel` strategy to train our massive LLM?"
+### Scenario 1: Distributed Data Parallel (DDP) vs DataParallel (<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>)
+*Interviewer:* "We just bought a server with 8 GPUs. Should we use PyTorch's `DataParallel` or Lightning's `DistributedDataParallel` strategy to train our massive <abbr title="Large Language Model">LLM</abbr>?"
 
-*Answer:* "We absolutely must use `DistributedDataParallel` (DDP). Standard `DataParallel` uses a single Python process and uses multi-threading to pass data to the 8 GPUs. Because of Python's Global Interpreter Lock (GIL), this creates a massive bottleneck on the CPU, and the GPUs end up sitting idle waiting for data. Lightning uses DDP by default when you specify `devices=8`. DDP spawns 8 completely separate, independent Python processes (one for each GPU) that communicate via network protocols, entirely bypassing the GIL bottleneck and achieving near-perfect linear scaling."
+*Answer:* "We absolutely must use `DistributedDataParallel` (DDP). Standard `DataParallel` uses a single Python process and uses multi-threading to pass data to the 8 GPUs. Because of Python's Global Interpreter Lock (<abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr>), this creates a massive bottleneck on the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, and the GPUs end up sitting idle waiting for data. Lightning uses DDP by default when you specify `devices=8`. DDP spawns 8 completely separate, independent Python processes (one for each GPU) that communicate via network protocols, entirely bypassing the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> bottleneck and achieving near-perfect linear scaling."
 
-### Scenario 2: Reproducibility in AI
+### Scenario 2: Reproducibility in <abbr title="Artificial Intelligence">AI</abbr>
 *Interviewer:* "A researcher trained a model on Tuesday that hit 98% accuracy. On Wednesday, they ran the exact same script on the exact same data, but it only hit 92% accuracy. Why did this happen, and how do we prevent it?"
 
 *Answer:* "Neural networks initialize their starting weights randomly, and data is shuffled randomly every epoch. Because they didn't seed the random number generators, the mathematical starting point changed completely between Tuesday and Wednesday. To prevent this in PyTorch Lightning, we add one line of code at the very top of our script: `pl.seed_everything(42)`. This instantly locks the random seeds for Python, NumPy, standard PyTorch, and CUDA simultaneously, guaranteeing bit-for-bit reproducibility across runs."

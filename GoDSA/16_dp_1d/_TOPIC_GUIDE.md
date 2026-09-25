@@ -41,26 +41,32 @@ func fib(n int, memo map[int]int) int {
 }
 ```
 
-```mermaid
+```arch
 %% caption: Naive recursion recomputes the same subproblems: f(3) twice, f(2) three times. Only n distinct states exist, so caching each one turns O(2^n) into O(n).
-flowchart TD
-  f5["f(5)"] --> f4["f(4)"]
-  f5 --> f3a["f(3)"]:::bad
-  f4 --> f3b["f(3)"]:::bad
-  f4 --> f2a["f(2)"]:::hot
-  f3a --> f2b["f(2)"]:::hot
-  f3a --> f1a["f(1)"]
-  f3b --> f2c["f(2)"]:::hot
-  f3b --> f1b["f(1)"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node f5 "f(5)" at 2,0 shape=circle color=blue
+node f4 "f(4)" at 1,1 shape=circle color=blue
+node f3a "f(3)" at 3,1 shape=circle color=red
+node f3b "f(3)" at 0.5,2 shape=circle color=red
+node f2a "f(2)" at 1.5,2 shape=circle color=amber
+node f2b "f(2)" at 2.5,2 shape=circle color=amber
+node f1a "f(1)" at 3.5,2 shape=circle color=blue
+node f2c "f(2)" at 0,3 shape=circle color=amber
+node f1b "f(1)" at 1,3 shape=circle color=blue
+f5 -> f4
+f5 -> f3a
+f4 -> f3b
+f4 -> f2a
+f3a -> f2b
+f3a -> f1a
+f3b -> f2c
+f3b -> f1b
 ```
 
 ### 1.2 Map cache vs. slice cache
 
-A `map[int]int` works for any key shape, but for DP the keys are almost always
+A `map[int]int` works for any key shape, but for <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> the keys are almost always
 **dense small integers** (0..n) — the exact situation where [topic 1's
 frequency-array-vs-map tradeoff](../01_arrays_hashing/_TOPIC_GUIDE.md) recurs.
 A slice cache skips hashing entirely:
@@ -86,9 +92,9 @@ func climb(n int, memo []int) int {
 | Cache | Lookup | Init cost | Use when |
 |---|:--:|---|---|
 | `map[int]int` | O(1) avg, hashing overhead | O(1) (empty map) | Sparse or non-integer keys |
-| `[]int` w/ sentinel | O(1), no hashing | O(n) to fill sentinel | Dense `0..n` integer keys — **the DP default** |
+| `[]int` w/ sentinel | O(1), no hashing | O(n) to fill sentinel | Dense `0..n` integer keys — **the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> default** |
 
-> ✅ **Default to a slice cache in 1D DP.** Your state is `dp[i]` where `i`
+> ✅ **Default to a slice cache in 1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>.** Your state is `dp[i]` where `i`
 > ranges densely over `0..n` — a map buys you nothing but hashing overhead.
 > Reach for a map only when the state is sparse or keyed by something that
 > isn't a small integer (e.g. a bitmask that's mostly unused, or a string).
@@ -114,7 +120,7 @@ for i := 2; i <= n; i++ {
 return dp[n]
 ```
 
-> ⚠️ **Off-by-one on the base cases is the #1 bug in tabulated DP.** `dp[0]`
+> ⚠️ **Off-by-one on the base cases is the #1 bug in tabulated <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>.** `dp[0]`
 > and `dp[1]` (or whatever the problem's true base cases are) must be seeded
 > *before* the loop starts, and the loop bound (`i <= n` vs `i < n`) must match
 > whether `dp` is sized `n` or `n+1`. Write the base case out explicitly and
@@ -134,7 +140,7 @@ one — a bug that produces a plausible-looking wrong answer, not a crash.
 
 ## Part 3 · Space Optimization — Rolling Variables
 
-Most 1D DP only ever looks back a constant number of steps. When that's true,
+Most 1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> only ever looks back a constant number of steps. When that's true,
 the `dp` slice itself is waste — O(n) space for information you only need a
 few integers of.
 
@@ -175,9 +181,9 @@ func rob(nums []int) int {
 
 ## Part 4 · Integer Overflow and Go's `%` Operator
 
-### 4.1 Overflow in counting DP
+### 4.1 Overflow in counting <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 
-DP problems that *count* paths, subsets, or ways-to-tile grow combinatorially.
+<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problems that *count* paths, subsets, or ways-to-tile grow combinatorially.
 Summing many `dp[i-k]` terms — or worse, multiplying — can silently wrap `int`
 exactly as [topic 1's Part 3](../01_arrays_hashing/_TOPIC_GUIDE.md) warned:
 
@@ -196,7 +202,7 @@ dp[i] = (dp[i-1] + dp[i-2]) % mod
 ### 4.2 Go's `%` keeps the dividend's sign — Python's doesn't
 
 This is a genuine, silent-breakage divergence when porting modular-arithmetic
-DP code from Python to Go:
+<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> code from Python to Go:
 
 ```go
 // Go:
@@ -215,7 +221,7 @@ result := (dp[i-1] - dp[i-k]) % mod          // ⚠️ can be negative in Go
 ```
 
 > ⚠️ **Always add `mod` back before taking `%` after a subtraction.** A
-> straight port of Python modular-DP code that relies on `%` normalizing to
+> straight port of Python modular-<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> code that relies on `%` normalizing to
 > `[0, mod)` will produce negative array indices or negative "counts" in Go —
 > and a negative index into a following `dp[result]` panics instead of failing
 > loudly with a wrong-but-plausible number, which is at least easier to catch.
@@ -224,7 +230,7 @@ result := (dp[i-1] - dp[i-k]) % mod          // ⚠️ can be negative in Go
 
 ## Part 5 · The Methodology — State, Transition, Base Case, Order
 
-Every 1D DP problem answers four questions, in this order:
+Every 1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem answers four questions, in this order:
 
 1. **State** — what does `dp[i]` mean, in one sentence? ("the minimum coins to
    make amount `i`", "the length of the longest increasing subsequence ending
@@ -243,7 +249,7 @@ depends only on smaller amounts).
 
 ### 5.2 Longest Increasing Subsequence — two complexity classes
 
-The natural DP is **O(n²)**: `dp[i]` = LIS ending at `i`, built by scanning all
+The natural <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> is **O(n²)**: `dp[i]` = <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> ending at `i`, built by scanning all
 `j < i` with `nums[j] < nums[i]`. There is a genuinely different **O(n log n)**
 algorithm (patience sorting): maintain a slice `tails` where `tails[k]` is the
 smallest possible tail of an increasing subsequence of length `k+1`, and use
@@ -262,7 +268,7 @@ of binary search showing up somewhere non-obvious.
 
 ## Part 6 · Complexity Table
 
-| Problem | Naive | DP | Space-optimized |
+| Problem | Naive | <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> | Space-optimized |
 |---|:--:|:--:|:--:|
 | Fibonacci / Climbing Stairs | O(2ⁿ) | O(n) time, O(n) space | O(n) time, **O(1)** space |
 | House Robber | O(2ⁿ) | O(n) time, O(n) space | O(n) time, **O(1)** space |
@@ -291,15 +297,15 @@ of binary search showing up somewhere non-obvious.
 |---|:--:|:--:|---|
 | Memoized recursion | O(n) | O(n) | LC 509 Fibonacci |
 | Bottom-up tabulation | O(n) | O(n) | LC 70 Climbing Stairs |
-| Rolling-variable DP | O(n) | **O(1)** | LC 198 House Robber |
+| Rolling-variable <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> | O(n) | **O(1)** | LC 198 House Robber |
 | Unbounded knapsack (coin change) | O(amount·coins) | O(amount) | LC 322 Coin Change |
-| O(n²) LIS | O(n²) | O(n) | LC 300 (baseline) |
+| O(n²) <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> | O(n²) | O(n) | LC 300 (baseline) |
 | Patience sorting + binary search | O(n log n) | O(n) | LC 300 (optimized) |
-| Interval/segment DP over a string | O(n²) | O(n) | LC 91 Decode Ways |
+| Interval/segment <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> over a string | O(n²) | O(n) | LC 91 Decode Ways |
 
 ---
 
-## Part 9 · Building Coin Change and LIS From Scratch
+## Part 9 · Building Coin Change and <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> From Scratch
 
 ```go
 package main
@@ -358,7 +364,7 @@ func lengthOfLIS(nums []int) int {
 **Talk track while writing:** in Coin Change, the sentinel guard
 (`dp[a-c] == math.MaxInt32`) must come *before* the `+1`, or the addition
 wraps into negative territory and looks like a valid (better!) answer — the
-same overflow discipline from Part 4. In LIS, `tails` is not the subsequence
+same overflow discipline from Part 4. In <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr>, `tails` is not the subsequence
 itself — overwriting `tails[idx]` discards information about *which* elements
 were chosen, which is fine because the problem only asks for the length; if it
 asked for the actual subsequence, reconstruction needs a separate parent-index
@@ -367,25 +373,29 @@ array.
 ---
 
 <!-- block:16_go_1_families -->
-## Part 10 · The Six 1D DP Families in Go — and the Line That Separates Look-Alikes
+## Part 10 · The Six 1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> Families in Go — and the Line That Separates Look-Alikes
 
 Parts 1–5 give the Go mechanics (slice memos, rolling variables, overflow, `%`). This Part is the catalogue of shapes with
 Go code. All snippets ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: The six 1D shapes. The wording of the question picks the family; the family fixes the loop order and the direction.
-flowchart TD
-  Q(["1D DP problem"]) --> A{"What varies?"}
-  A -->|"position i, FIXED look-back window"| L["Linear recurrence<br/>Fibonacci, Stairs, Tribonacci"]:::ok
-  A -->|"position i, take or skip"| T["Take-or-skip<br/>House Robber I and II"]:::ok
-  A -->|"a target VALUE, items reusable"| U["Unbounded knapsack: ascending<br/>Coin Change, Perfect Squares, Comb. Sum IV"]:::hot
-  A -->|"a target VALUE, each item once"| Z["0/1 knapsack: sums scanned DOWN<br/>Partition Equal Subset Sum"]:::hot
-  A -->|"best answer ENDING at i"| S["Sequence DP<br/>LIS, Word Break, Decode Ways, Max Product"]:::ok
-  A -->|"a centre or an interval"| P["Substring DP<br/>palindromes: expand or table"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "1D DP problem" at 0,1 shape=pill
+node a "What varies?" at 0,2 shape=diamond color=amber
+node l "Linear recurrence" at 1,0 color=green w=400 sub="position i, FIXED look-back window · Fibonacci, Stairs, Tribonacci"
+node t "Take-or-skip" at 1,1 color=green w=400 sub="position i, take or skip · House Robber I and II"
+node u "Unbounded knapsack: ascending" at 1,2 color=amber w=400 sub="a target VALUE, items reusable · Coin Change, Perfect Squares, Comb. Sum IV"
+node z "0/1 knapsack: sums scanned DOWN" at 1,3 color=amber w=400 sub="a target VALUE, each item once · Partition Equal Subset Sum"
+node s "Sequence DP" at 1,4 color=green w=400 sub="best answer ENDING at i · LIS, Word Break, Decode Ways, Max Product"
+node p "Substring DP" at 1,5 color=green w=400 sub="a centre or an interval · palindromes: expand or table"
+q -> a
+a:R -> l:L
+a:R -> t:L
+a:R -> u:L
+a:R -> z:L
+a:R -> s:L
+a:R -> p:L
 ```
 
 ### Take or skip — House Robber I and II
@@ -437,10 +447,10 @@ Items `[2]`, target `4`: downward → `false` (correct), upward → `true` (wron
 immediate `false`. The whole `dp` can also be **one big integer** with `bits.Or(bits, new(big.Int).Lsh(bits, uint(x)))` per
 item and `bits.Bit(target) == 1` at the end (`math/big`) — one shift processes every sum at once.
 
-### Sequence DP: LIS, Word Break, Decode Ways
+### Sequence <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr>, Word Break, Decode Ways
 
-**LIS in O(n log n)** — `tails[k]` is the smallest tail of any increasing subsequence of length `k + 1`. `slices.BinarySearch`
-returns the leftmost index with `tails[i] >= x`, which is exactly what a **strict** LIS needs:
+**<abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> in O(n log n)** — `tails[k]` is the smallest tail of any increasing subsequence of length `k + 1`. `slices.BinarySearch`
+returns the leftmost index with `tails[i] >= x`, which is exactly what a **strict** <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> needs:
 
 ```go
 i, _ := slices.BinarySearch(tails, x)               // strict LIS: leftmost >= x
@@ -449,7 +459,7 @@ if i == len(tails) { tails = append(tails, x) } else { tails[i] = x }
 ```
 
 `[10 9 2 5 3 7 101 18]` → 4; `[7 7 7 7]` → 1 strict, 4 non-decreasing. `tails` is not the subsequence — store an index per length and
-a `prev` array to reconstruct it. Using the non-strict search on a strict LIS lets equal values extend the tail.
+a `prev` array to reconstruct it. Using the non-strict search on a strict <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> lets equal values extend the tail.
 
 **Word Break** — a `map[string]struct{}` of words and a loop bounded by the longest word:
 
@@ -468,7 +478,7 @@ if s[i-1] != '0' { cur += prev1 }                                     // last ch
 if two := int(s[i-2]-'0')*10 + int(s[i-1]-'0'); two >= 10 && two <= 26 { cur += prev2 }
 ```
 
-### Substring DP and Maximum Product
+### Substring <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> and Maximum Product
 
 Palindromes have `2n − 1` centres (characters and gaps): expand outward — O(n²) time, **O(1) space** — and remember the *even*
 centres (`"cbbd"` → `"bb"`). Counting palindromic substrings counts every successful expansion, not the longest per centre.
@@ -488,7 +498,7 @@ for _, x := range nums[1:] {
 ### Reconstructing the answer
 
 Store the choice that produced each `dp[a]` and walk it back: coins `[1 2 5]`, amount 11 gives `[1 5 5]`. The same trick
-reconstructs an LIS, a decoding, a segmentation.
+reconstructs an <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr>, a decoding, a segmentation.
 
 ### Go traps in this topic
 
@@ -496,7 +506,7 @@ reconstructs an LIS, a decoding, a segmentation.
 |---|---|---|
 | `dp := make([]int, n)` sized one short | `dp[n]` panics (Python: an `IndexError` too, but `dp[-1]` wraps silently). | Size `n+1` when indices run `0..n`. |
 | Raw `math.MaxInt` as "unreachable", then `+ 1` | Wraps negative and wins every `min`. | `math.MaxInt / 2`, or guard before adding. |
-| `-7 % 3` in a modular DP | `-1` in Go, `2` in Python. | `(x % mod + mod) % mod`. |
+| `-7 % 3` in a modular <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> | `-1` in Go, `2` in Python. | `(x % mod + mod) % mod`. |
 | Coins-outer loop for *ordered* counts | Counts combinations — under-counts. | Target outer, items inner. |
 | Scanning sums upward in a 0/1 knapsack | Reuses an item. | `for s := target; s >= x; s--`. |
 | Memo sentinel `0` when `0` is a valid answer | Recomputes forever, or wrong. | `-1`, or a parallel `computed []bool`. |
@@ -520,7 +530,7 @@ reconstructs an LIS, a decoding, a segmentation.
 <!-- problem-map:start -->
 ## Part 11 · Every Problem in This Topic, by Pattern
 
-Seventeen problems, six families (linear recurrence · take-or-skip · unbounded knapsack · 0/1 knapsack · sequence DP · substring DP) — the Python guide's map in Go, with the Go-only traps. Topic 16's solutions are Python-first; the Go column is the plan you would write.
+Seventeen problems, six families (linear recurrence · take-or-skip · unbounded knapsack · 0/1 knapsack · sequence <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> · substring <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) — the Python guide's map in Go, with the Go-only traps. Topic 16's solutions are Python-first; the Go column is the plan you would write.
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
@@ -536,27 +546,27 @@ Seventeen problems, six families (linear recurrence · take-or-skip · unbounded
 | [010 · Coin Change](GoDSA/16_dp_1d/010_coin_change/solution.go) <br>LC 322 · Medium | Unbounded knapsack, minimise | `unreachable := math.MaxInt / 2`; `dp[0] = 0`. **Trap:** raw `math.MaxInt + 1` overflow; assuming greedy works. |
 | [011 · Maximum Product Subarray](GoDSA/16_dp_1d/011_maximum_product_subarray/solution.go) <br>LC 152 · Medium | Two rolling states | `hi, lo = max(x, a, b), min(x, a, b)` (three-argument builtins). **Trap:** a single running max. |
 | [012 · Word Break](GoDSA/16_dp_1d/012_word_break/solution.go) <br>LC 139 · Medium | Prefix segmentation | `map[string]struct{}` set, loop bounded by the longest word; free substring headers. **Trap:** a `[]string` scan per check. |
-| [013 · Longest Increasing Subsequence](GoDSA/16_dp_1d/013_longest_increasing_subsequence/solution.go) <br>LC 300 · Medium | LIS ending at `i` / patience sorting | `slices.BinarySearch(tails, x)` (strict) or `sort.Search` with `>` (non-decreasing). **Trap:** the wrong bound (equal values extend the tail); reading `tails` as the sequence. |
+| [013 · Longest Increasing Subsequence](GoDSA/16_dp_1d/013_longest_increasing_subsequence/solution.go) <br>LC 300 · Medium | <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> ending at `i` / patience sorting | `slices.BinarySearch(tails, x)` (strict) or `sort.Search` with `>` (non-decreasing). **Trap:** the wrong bound (equal values extend the tail); reading `tails` as the sequence. |
 | [014 · Partition Equal Subset Sum](GoDSA/16_dp_1d/014_partition_equal_subset_sum/solution.go) <br>LC 416 · Medium | 0/1 knapsack in 1D | `for s := target; s >= x; s--`; odd total → false. **Trap:** scanning upward (item reused). |
 | [015 · Combination Sum IV](GoDSA/16_dp_1d/015_combination_sum_iv/solution.go) <br>LC 377 · Medium | Unbounded knapsack, count sequences | Target outer, items inner. **Trap:** the coins-outer loop (counts combinations). |
 | [016 · Perfect Squares](GoDSA/16_dp_1d/016_perfect_squares/solution.go) <br>LC 279 · Medium | Unbounded knapsack over squares | `for j := 1; j*j <= i; j++` — integer loop, no `math.Sqrt`. **Trap:** a float square-root test. |
-| [017 · Russian Doll Envelopes](GoDSA/16_dp_1d/017_russian_doll_envelopes/solution.go) <br>LC 354 · Hard | Reduce 2D nesting to LIS | `slices.SortFunc`: width ascending, height **descending**; strict LIS of heights. **Trap:** ascending heights on equal widths; the non-strict search. |
+| [017 · Russian Doll Envelopes](GoDSA/16_dp_1d/017_russian_doll_envelopes/solution.go) <br>LC 354 · Hard | Reduce 2D nesting to <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> | `slices.SortFunc`: width ascending, height **descending**; strict <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> of heights. **Trap:** ascending heights on equal widths; the non-strict search. |
 
 ---
 <!-- problem-map:end -->
 
 ## Checklist Before Leaving This Topic
 
-- [ ] State the DP recurrence in one sentence before writing any code
+- [ ] State the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> recurrence in one sentence before writing any code
 - [ ] Explain why Go has no `lru_cache` and what you write instead
 - [ ] Justify slice-cache vs map-cache for a given problem's key shape
-- [ ] Show the space-optimized rolling-variable version of a Fibonacci-shaped DP
+- [ ] Show the space-optimized rolling-variable version of a Fibonacci-shaped <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 - [ ] Explain why iteration order matters and how it follows the transition
 - [ ] Know Go's `%` keeps the dividend's sign, and add `mod` before reducing a subtraction
-- [ ] Explain why the LIS `tails` array is not the actual subsequence
+- [ ] Explain why the <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> `tails` array is not the actual subsequence
 - [ ] Write Coin Change bottom-up in under 10 minutes, sentinel-safe
 - [ ] Use `unreachable := math.MaxInt / 2` so `dp[i-c] + 1` cannot overflow <!--ca-->
 - [ ] Pick the loop order for counting (coins outside = combinations, target outside = sequences) <!--ca-->
 - [ ] Scan a 0/1 knapsack downward, and give the `[2]`, target 4 counter-example <!--ca-->
-- [ ] Use `slices.BinarySearch` for strict LIS and `sort.Search` with `>` for non-decreasing <!--ca-->
+- [ ] Use `slices.BinarySearch` for strict <abbr title="Longest Increasing Subsequence. The problem of finding a subsequence of a given sequence in which the elements are in sorted order.">LIS</abbr> and `sort.Search` with `>` for non-decreasing <!--ca-->
 - [ ] Say why `nums[1:]` is free in Go (a view) and what that means for mutation <!--ca-->

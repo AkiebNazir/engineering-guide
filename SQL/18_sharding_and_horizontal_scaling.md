@@ -173,6 +173,25 @@ extensions like **Citus** turn declarative partitions into shards distributed ac
 multiple physical nodes, reusing the same `PARTITION BY`-style key concept — but
 plain, vanilla Postgres partitioning by itself never crosses a machine boundary.
 
+```arch
+%% caption: Partitioning splits a table within a single database instance; Sharding splits data across multiple independent database servers.
+group part "Partitioning (Single Node)" color=slate style=dashed
+node db1 "Database Server" at 0,0 in part icon=server color=blue
+node p1 "Table (Jan)" at -0.5,1 in part icon=table color=green
+node p2 "Table (Feb)" at 0.5,1 in part icon=table color=green
+
+db1 -> p1 : "local route"
+db1 -> p2 : "local route"
+
+group shard "Sharding (Multi-Node)" color=slate style=dashed
+node router "Router / Proxy" at 4,0 in shard icon=proxy color=blue
+node s1 "Server 1 (A-M)" at 3,1 in shard icon=server color=amber
+node s2 "Server 2 (N-Z)" at 5,1 in shard icon=server color=amber
+
+router -> s1 : "network route"
+router -> s2 : "network route"
+```
+
 ## Sharding strategies, and what breaks with each
 
 - **Range sharding** (shard by ID or date range, e.g. users 1–1M on shard A). Simple,

@@ -2,9 +2,9 @@
 
 Welcome to Day 122. 
 
-Today we are stripping away the high-level overviews and diving into the absolute depths of **LangChain**. LangChain is not just a wrapper for OpenAI; it is an incredibly dense, standardized ecosystem for building LLM applications. 
+Today we are stripping away the high-level overviews and diving into the absolute depths of **LangChain**. LangChain is not just a wrapper for OpenAI; it is an incredibly dense, standardized ecosystem for building <abbr title="Large Language Model">LLM</abbr> applications. 
 
-This guide is designed as an exhaustive reference. We will cover **Model I/O, LCEL Mastery, Advanced RAG Capabilities, Tools, and Memory**, complete with isolated code examples for every feature.
+This guide is designed as an exhaustive reference. We will cover **Model I/O, LCEL Mastery, Advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> Capabilities, Tools, and Memory**, complete with isolated code examples for every feature.
 
 ---
 
@@ -135,9 +135,9 @@ resilient_llm = openai_llm.with_fallbacks([anthropic_llm])
 
 ---
 
-## 📚 3. Advanced RAG (Retrieval-Augmented Generation)
+## 📚 3. Advanced <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval-Augmented Generation)
 
-Basic RAG fails in production. LangChain offers massive capabilities to fix it.
+Basic <abbr title="Retrieval-Augmented Generation">RAG</abbr> fails in production. LangChain offers massive capabilities to fix it.
 
 ### A. Document Loaders & Splitters
 ```python
@@ -185,7 +185,7 @@ parent_retriever = ParentDocumentRetriever(
 
 ## 🛠️ 4. Tools & Agents
 
-LangChain makes it incredibly easy to bind Python functions to LLMs using OpenAI's Function Calling API.
+LangChain makes it incredibly easy to bind Python functions to LLMs using OpenAI's Function Calling <abbr title="Application Programming Interface">API</abbr>.
 
 ### A. Defining Tools
 ```python

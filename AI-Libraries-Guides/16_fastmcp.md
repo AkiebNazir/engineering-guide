@@ -2,13 +2,13 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In 2023, every AI company built their own proprietary plugin system. If you built a "GitHub integration," you had to write one version for ChatGPT, a completely different version for Claude, and a third version for LangChain. It was a fragmented nightmare. In late 2024, Anthropic open-sourced **MCP (Model Context Protocol)**. It is essentially "USB-C for AI."
+*Why is this tool relevant?* In 2023, every <abbr title="Artificial Intelligence">AI</abbr> company built their own proprietary plugin system. If you built a "GitHub integration," you had to write one version for ChatGPT, a completely different version for Claude, and a third version for LangChain. It was a fragmented nightmare. In late 2024, Anthropic open-sourced **<abbr title="Model Context Protocol">MCP</abbr> (Model Context Protocol)**. It is essentially "USB-C for <abbr title="Artificial Intelligence">AI</abbr>."
 
 **What is it?**
-MCP is a universal, open-source standard for connecting AI models to data sources and tools. **FastMCP** is the fastest, most pythonic framework for building these MCP servers (heavily inspired by FastAPI).
+<abbr title="Model Context Protocol">MCP</abbr> is a universal, open-source standard for connecting <abbr title="Artificial Intelligence">AI</abbr> models to data sources and tools. **FastMCP** is the fastest, most pythonic framework for building these <abbr title="Model Context Protocol">MCP</abbr> servers (heavily inspired by FastAPI).
 
 **Why does it exist?**
-You build a FastMCP server once. Instantly, Claude Desktop, Cursor IDE, LangGraph, and custom OpenAI scripts can ALL connect to your server and use your tools without changing a single line of code. It standardizes AI integrations universally.
+You build a FastMCP server once. Instantly, Claude Desktop, Cursor <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr>, LangGraph, and custom OpenAI scripts can ALL connect to your server and use your tools without changing a single line of code. It standardizes <abbr title="Artificial Intelligence">AI</abbr> integrations universally.
 
 ---
 
@@ -30,7 +30,7 @@ print("FastMCP Initialized!")
 
 ## 3. The "Hello World": Prompts, Resources, and Tools
 
-An MCP server provides exactly three things to any LLM that connects to it:
+An <abbr title="Model Context Protocol">MCP</abbr> server provides exactly three things to any <abbr title="Large Language Model">LLM</abbr> that connects to it:
 1. **Prompts:** Reusable templates (like macros).
 2. **Resources:** Read-only data (like a file or a database table).
 3. **Tools:** Executable functions (like running code or updating a database).
@@ -38,7 +38,7 @@ An MCP server provides exactly three things to any LLM that connects to it:
 FastMCP uses Python decorators to make this incredibly simple.
 
 ### A. Defining a Tool (Execution)
-If an LLM connects to this server, it will automatically know it has the ability to fetch the weather. The docstring and type-hints are CRITICAL. FastMCP reads them and uses them to explain to the LLM exactly how to use the tool!
+If an <abbr title="Large Language Model">LLM</abbr> connects to this server, it will automatically know it has the ability to fetch the weather. The docstring and type-hints are CRITICAL. FastMCP reads them and uses them to explain to the <abbr title="Large Language Model">LLM</abbr> exactly how to use the tool!
 
 ```python
 from fastmcp import FastMCP
@@ -60,7 +60,7 @@ def get_weather(city: str) -> str:
 ```
 
 ### B. Defining a Resource (Read-Only Data)
-Resources use URI templates (like web URLs). They are perfect for exposing massive logs or database tables that the LLM can read.
+Resources use URI templates (like web URLs). They are perfect for exposing massive logs or database tables that the <abbr title="Large Language Model">LLM</abbr> can read.
 
 ```python
 # Exposes a specific server log file to the LLM
@@ -85,9 +85,9 @@ if __name__ == "__main__":
 
 ---
 
-## 4. Deep Dive: Connecting an LLM Client to FastMCP
+## 4. Deep Dive: Connecting an <abbr title="Large Language Model">LLM</abbr> Client to FastMCP
 
-Now that you have built the server (`server.py`), how does an LLM actually use it?
+Now that you have built the server (`server.py`), how does an <abbr title="Large Language Model">LLM</abbr> actually use it?
 If you use Claude Desktop, you just add one line to your `claude_desktop_config.json`:
 ```json
 {
@@ -99,10 +99,10 @@ If you use Claude Desktop, you just add one line to your `claude_desktop_config.
   }
 }
 ```
-That's it. When you open Claude Desktop, the AI instantly has a button allowing it to fetch the weather.
+That's it. When you open Claude Desktop, the <abbr title="Artificial Intelligence">AI</abbr> instantly has a button allowing it to fetch the weather.
 
 **Connecting via Code (LangChain):**
-If you want to use the MCP server inside a custom Python script, you use the MCP Client library.
+If you want to use the <abbr title="Model Context Protocol">MCP</abbr> server inside a custom Python script, you use the <abbr title="Model Context Protocol">MCP</abbr> Client library.
 
 ```python
 import asyncio
@@ -137,9 +137,9 @@ async def run_client():
 ## 5. Parameter Breakdown and Advanced Features
 
 ### Dependency Injection (Context)
-Often, a tool needs access to something the LLM shouldn't know about (like a raw database connection or API key). You inject this using the `Context` parameter.
+Often, a tool needs access to something the <abbr title="Large Language Model">LLM</abbr> shouldn't know about (like a raw database connection or <abbr title="Application Programming Interface">API</abbr> key). You inject this using the `Context` parameter.
 
-- *Effect:* The LLM sees the `city` parameter and knows it must provide a city. But FastMCP hides the `ctx` parameter from the LLM. It injects the context securely in the background.
+- *Effect:* The <abbr title="Large Language Model">LLM</abbr> sees the `city` parameter and knows it must provide a city. But FastMCP hides the `ctx` parameter from the <abbr title="Large Language Model">LLM</abbr>. It injects the context securely in the background.
 
 ```python
 from fastmcp import FastMCP, Context
@@ -164,14 +164,14 @@ def query_private_db(city: str, ctx: Context) -> str:
 
 ## 6. MAANG Interview Scenarios
 
-### Scenario 1: MCP vs REST APIs
-*Interviewer:* "We already have a REST API for our weather database. Why should we wrap it in a FastMCP server instead of just giving the LLM the OpenAPI/Swagger JSON spec?"
+### Scenario 1: <abbr title="Model Context Protocol">MCP</abbr> vs <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs
+*Interviewer:* "We already have a <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> for our weather database. Why should we wrap it in a FastMCP server instead of just giving the <abbr title="Large Language Model">LLM</abbr> the OpenAPI/Swagger <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> spec?"
 
-*Answer:* "While LLMs can read OpenAPI specs and generate HTTP requests, it is brittle. REST APIs are designed for computer-to-computer interaction, not LLM-to-computer interaction. MCP provides a standardized layer of indirection. 
-First, MCP supports **Resources** natively, allowing the LLM to subscribe to real-time data updates (like tailing a log file) which standard stateless REST cannot do easily. Second, MCP standardizes error handling; if an MCP tool fails, it returns the error directly to the LLM in a format it understands, allowing the LLM to autonomously self-correct and try again. Finally, by adopting MCP, our internal tooling becomes instantly compatible with any future vendor (Cursor, Anthropic, OpenAI) without rewriting custom REST integration logic."
+*Answer:* "While LLMs can read OpenAPI specs and generate <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> requests, it is brittle. <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs are designed for computer-to-computer interaction, not <abbr title="Large Language Model">LLM</abbr>-to-computer interaction. <abbr title="Model Context Protocol">MCP</abbr> provides a standardized layer of indirection. 
+First, <abbr title="Model Context Protocol">MCP</abbr> supports **Resources** natively, allowing the <abbr title="Large Language Model">LLM</abbr> to subscribe to real-time data updates (like tailing a log file) which standard stateless <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> cannot do easily. Second, <abbr title="Model Context Protocol">MCP</abbr> standardizes error handling; if an <abbr title="Model Context Protocol">MCP</abbr> tool fails, it returns the error directly to the <abbr title="Large Language Model">LLM</abbr> in a format it understands, allowing the <abbr title="Large Language Model">LLM</abbr> to autonomously self-correct and try again. Finally, by adopting <abbr title="Model Context Protocol">MCP</abbr>, our internal tooling becomes instantly compatible with any future vendor (Cursor, Anthropic, OpenAI) without rewriting custom <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> integration logic."
 
-### Scenario 2: Stdio vs SSE Transport
-*Interviewer:* "FastMCP defaults to running over `stdio` (Standard Input/Output). When would you choose to run it over `SSE` (Server-Sent Events) over HTTP instead?"
+### Scenario 2: Stdio vs <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> Transport
+*Interviewer:* "FastMCP defaults to running over `stdio` (Standard Input/Output). When would you choose to run it over `SSE` (Server-Sent Events) over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> instead?"
 
-*Answer:* "`stdio` is perfect for local, single-tenant use cases (like Cursor IDE connecting to a local script on my laptop). It's incredibly fast and requires no networking. 
-However, if we are deploying this tool for our enterprise cloud architecture, `stdio` fails because it relies on local processes. We must switch FastMCP to use `SSE` transport (`mcp.run(transport='sse')`). This runs the MCP server as a standard web server accessible via HTTP. This allows multiple remote LLM agents hosted on different AWS servers to all connect to our single, centralized MCP tool server simultaneously."
+*Answer:* "`stdio` is perfect for local, single-tenant use cases (like Cursor <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> connecting to a local script on my laptop). It's incredibly fast and requires no networking. 
+However, if we are deploying this tool for our enterprise cloud architecture, `stdio` fails because it relies on local processes. We must switch FastMCP to use `SSE` transport (`mcp.run(transport='sse')`). This runs the <abbr title="Model Context Protocol">MCP</abbr> server as a standard web server accessible via <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. This allows multiple remote <abbr title="Large Language Model">LLM</abbr> agents hosted on different AWS servers to all connect to our single, centralized <abbr title="Model Context Protocol">MCP</abbr> tool server simultaneously."

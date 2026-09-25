@@ -4,14 +4,14 @@ Welcome to Day 60. This is the grand finale of Phase 2.
 
 Over the last 60 days, we built CNNs to process pixels. We built RNNs to process language. We built GNNs to process webs. But the human brain does not process vision and language in isolated silos. When you look at an Apple, you simultaneously understand its visual shape and the linguistic word "Apple". 
 
-Today, we fuse Vision and NLP into a single, massive **Multi-Modal Architecture**. 
+Today, we fuse Vision and <abbr title="Natural Language Processing">NLP</abbr> into a single, massive **Multi-Modal Architecture**. 
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Multi-Modal Challenge
-Imagine you have a ResNet (CNN) processing an image of a Dog. It outputs a 512-dimensional vector.
+Imagine you have a ResNet (<abbr title="Convolutional Neural Network">CNN</abbr>) processing an image of a Dog. It outputs a 512-dimensional vector.
 You have a BiLSTM processing the text `"A picture of a dog"`. It outputs a 256-dimensional vector.
 You cannot mathematically compare these two vectors. They have different sizes, and they were trained in completely different coordinate spaces.
 
@@ -24,19 +24,19 @@ Both projection heads are designed to output exactly a **300-dimensional vector*
 ### 3. Contrastive Learning (The Math of CLIP)
 How do we train this massive dual-encoder system? Human labels are too expensive.
 OpenAI invented **CLIP** using a Self-Supervised trick called **Contrastive Learning**.
-1. You pass an image of a Dog through the CNN $\rightarrow$ Vector $I$.
-2. You pass the text *"A dog"* through the RNN $\rightarrow$ Vector $T$.
+1. You pass an image of a Dog through the <abbr title="Convolutional Neural Network">CNN</abbr> $\rightarrow$ Vector $I$.
+2. You pass the text *"A dog"* through the <abbr title="Recurrent Neural Network">RNN</abbr> $\rightarrow$ Vector $T$.
 3. You calculate the **Cosine Similarity** (the angle) between $I$ and $T$. 
 4. The Loss Function mathematically pulls $I$ and $T$ closer together (because they are a matching pair). 
 5. Simultaneously, it pushes the Dog Image vector far away from the *"A cat"* text vector (because they are a negative pair).
 
-By pulling matching pairs together and pushing mismatched pairs apart, the AI naturally learns what objects look like *purely by reading the internet*!
+By pulling matching pairs together and pushing mismatched pairs apart, the <abbr title="Artificial Intelligence">AI</abbr> naturally learns what objects look like *purely by reading the internet*!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Dual-Encoder Contrastive framework from scratch in PyTorch. We will use a mock CNN for vision, a mock LSTM for text, and write the famous InfoNCE (Contrastive) Loss!
+Let's build a Dual-Encoder Contrastive framework from scratch in PyTorch. We will use a mock <abbr title="Convolutional Neural Network">CNN</abbr> for vision, a mock <abbr title="Long Short-Term Memory">LSTM</abbr> for text, and write the famous InfoNCE (Contrastive) Loss!
 
 Create a file named `contrastive_multimodal.py`:
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Shared Dimension:** The Projection heads mathematically compress the different encoders into `shared_dim=300`. This is the absolute requirement for multi-modal AI.
+1. **The Shared Dimension:** The Projection heads mathematically compress the different encoders into `shared_dim=300`. This is the absolute requirement for multi-modal <abbr title="Artificial Intelligence">AI</abbr>.
 2. **The Diagonal Labels:** `torch.arange(batch_size)`. In a batch of 4, the correct matches are always `(0,0)`, `(1,1)`, `(2,2)`, and `(3,3)`. The Contrastive Loss cleverly uses standard Cross-Entropy, but treats the *batch index* as the correct class label! It is mathematically brilliant.
 
 ---
@@ -173,7 +173,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Mention using the **InfoNCE Contrastive Loss** with massive batch sizes (e.g., 32,000) because Contrastive Learning relies heavily on having a massive amount of "negative" examples in the batch to push apart.
 2. **The Serving Infrastructure:**
    - Explain that during production, you pre-compute the 300D vectors for all 1 Billion text descriptions and store them in a Vector Database. 
-   - When a user uploads an image, you only run the Vision CNN once to get the query vector.
+   - When a user uploads an image, you only run the Vision <abbr title="Convolutional Neural Network">CNN</abbr> once to get the query vector.
 3. **ANN Indexing (FAISS):**
    - Conclude that calculating Cosine Similarity against 1 Billion vectors sequentially takes way too long. You must use an **Approximate Nearest Neighbor (ANN)** index like FAISS or ScaNN to search the vector space in milliseconds.
 
@@ -183,6 +183,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
 # 🏆 PHASE 2 COMPLETED!
 Congratulations. You have completed Phase 2. You now possess a deep, mathematical mastery of CNNs, RNNs, Attention, Convolutions, VAEs, GANs, Diffusion Models, and Contrastive Learning. 
 
-Tomorrow, the real work begins. We enter **Phase 3: Transformers & Modern NLP**. We will abandon the RNN entirely, and we will build the core engine of ChatGPT completely from scratch. 
+Tomorrow, the real work begins. We enter **Phase 3: Transformers & Modern <abbr title="Natural Language Processing">NLP</abbr>**. We will abandon the <abbr title="Recurrent Neural Network">RNN</abbr> entirely, and we will build the core engine of ChatGPT completely from scratch. 
 
 Get ready for **Day 61: The "Attention Is All You Need" architecture!**

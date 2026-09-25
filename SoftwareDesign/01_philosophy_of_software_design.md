@@ -5,7 +5,7 @@
 > that there are no obvious deficiencies." — C. A. R. Hoare
 
 This file is about **how to think** when you write code, not a list of rules to memorize.
-Every rule you have ever heard (DRY, SOLID, "small functions", "comment your code") is a
+Every rule you have ever heard (<abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr>, <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr>, "small functions", "comment your code") is a
 tool for one goal: **keeping complexity under control.** Once you understand the goal, you
 can tell when a rule applies, when it doesn't, and when two rules disagree.
 
@@ -17,11 +17,11 @@ programming folded in where they sharpen the picture. Examples are in **Python a
 
 | Topic | Where |
 |---|---|
-| SOLID with before/after examples | `02_oop_and_domain_modeling.md` §12 |
+| <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> with before/after examples | `02_oop_and_domain_modeling.md` §12 |
 | Law of Demeter, composition over inheritance | `02_oop_and_domain_modeling.md` §9, §4 (all named principles are indexed in §17 below) |
 | Design patterns (GoF) | `04_design_patterns_in_practice.md` §1 (all 23 at a glance), §3–§18 |
 | Layered / hexagonal / clean architecture | `08_application_architecture_in_code.md` §2–§3 |
-| Testing pyramid, TDD, code review | `05_testability_refactoring_and_legacy_code.md` §1, §5, §10 |
+| Testing pyramid, <abbr title="Test-Driven Development. A software development process relying on software requirements being converted to test cases before software is fully developed.">TDD</abbr>, code review | `05_testability_refactoring_and_legacy_code.md` §1, §5, §10 |
 | Named anti-patterns (god object, shotgun surgery...) | `05_testability_refactoring_and_legacy_code.md` §6 |
 
 ---
@@ -210,7 +210,7 @@ type Reader interface {
 }
 ```
 
-One method. Files, network sockets, gzip streams, HTTP bodies, in-memory buffers, and
+One method. Files, network sockets, gzip streams, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> bodies, in-memory buffers, and
 encryption layers all implement it, and everything that consumes a `Reader`
 (`io.Copy`, `bufio.Scanner`, `json.NewDecoder`) works with all of them. Rob Pike's
 proverb: **"The bigger the interface, the weaker the abstraction."**
@@ -438,7 +438,7 @@ Three layers, one idea. Each pass-through adds an interface without adding funct
 This is the signature of **architecture chosen by template** ("every feature must have a
 controller, service, and repository") rather than by need.
 
-It's fine *if the layers eventually diverge* — the controller does HTTP concerns, the
+It's fine *if the layers eventually diverge* — the controller does <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> concerns, the
 service enforces business rules, the repository maps rows. It's not fine as ceremony.
 
 **Fixes:** let the upper layer call the lower one directly; merge the layers; or push real
@@ -533,8 +533,8 @@ No error case exists.
 
 ### Technique 2: mask exceptions at a low level
 
-Handle the error inside the module so callers never see it. TCP retransmits lost packets;
-the application sees a reliable stream. A retrying HTTP client retries a transient 503;
+Handle the error inside the module so callers never see it. <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> retransmits lost packets;
+the application sees a reliable stream. A retrying <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> client retries a transient 503;
 the caller sees success or a final failure.
 
 ### Technique 3: aggregate exceptions
@@ -676,7 +676,7 @@ func ParseEmail(raw string) (Email, error) {
 }
 ```
 
-**Validate at the edges** (HTTP handlers, file readers, CLI args). Once data is inside
+**Validate at the edges** (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> handlers, file readers, <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> args). Once data is inside
 the core, trust the types.
 
 ### Primitive obsession
@@ -974,7 +974,7 @@ Be consistent in:
 change it, change it everywhere.
 
 Tools enforce the cheap parts so humans can focus on the expensive parts: `gofmt` and
-`go vet`, `ruff format` / `ruff check`, type checkers (`mypy`, `pyright`), linters in CI.
+`go vet`, `ruff format` / `ruff check`, type checkers (`mypy`, `pyright`), linters in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.
 
 ### Obvious code
 
@@ -1011,7 +1011,7 @@ return non_empty or None
 
 ## 14 · Duplication and abstraction
 
-### DRY is about knowledge, not text
+### <abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr> is about knowledge, not text
 
 "Don't Repeat Yourself" (from *The Pragmatic Programmer*) is defined as: **every piece of
 knowledge must have a single, unambiguous, authoritative representation.** It is about
@@ -1058,7 +1058,7 @@ of a guessed one.
 lines couples your build, your upgrades, and your security surface to someone else's
 decisions. Copy the ten lines.
 
-### YAGNI and speculative generality
+### <abbr title="You Aren't Gonna Need It - A principle of extreme programming that states a programmer should not add functionality until deemed necessary.">YAGNI</abbr> and speculative generality
 
 Designing for requirements you imagine you'll have is the mirror-image failure of
 tactical programming. Abstract base classes with one implementation, plugin systems with
@@ -1132,7 +1132,7 @@ def process(data, flag=False, flag2=False):
 | 1 | Name `process` / `data` / `res` / `x` says nothing. | §11 |
 | 2 | Two boolean flags → really 4 functions in one. | §10 |
 | 3 | Magic numbers `1`, `2`, `1.2`, `0.5`. | §11, §13 |
-| 4 | Raw dicts with string keys: typos fail at runtime, no IDE help. | §8 |
+| 4 | Raw dicts with string keys: typos fail at runtime, no <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> help. | §8 |
 | 5 | Logging (an effect) mixed into a calculation. | §9 |
 | 6 | Money as `float`. | §8 |
 | 7 | Filtering `amt > 0` duplicated per branch. | §14 |
@@ -1280,9 +1280,9 @@ difference between a senior engineer and someone who has memorized a list.
 
 | Tension | Resolve by asking |
 |---|---|
-| **DRY vs. low coupling** | Is this the same *knowledge*, or the same *text*? Only merge shared knowledge. |
+| **<abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr> vs. low coupling** | Is this the same *knowledge*, or the same *text*? Only merge shared knowledge. |
 | **Small functions vs. deep modules** | Can each piece be understood alone? If not, keep it together. |
-| **General-purpose vs. YAGNI** | Generalize the *interface* (cheap); don't build *machinery* for imagined cases (expensive). |
+| **General-purpose vs. <abbr title="You Aren't Gonna Need It - A principle of extreme programming that states a programmer should not add functionality until deemed necessary.">YAGNI</abbr>** | Generalize the *interface* (cheap); don't build *machinery* for imagined cases (expensive). |
 | **Flexibility (config) vs. simplicity** | Can the caller pick a better value than the module can? Usually no → default it. |
 | **Defensive errors vs. defining errors away** | Does the caller have something useful to do with the error? |
 | **Abstraction vs. obviousness** | Does the layer provide a *different* abstraction, or just forward? |
@@ -1299,19 +1299,19 @@ complexity, and each is worked in full somewhere in this track — this table is
 
 | Principle | The rule | The failure it prevents | Where |
 |---|---|---|---|
-| **DRY** | Every piece of *knowledge* has one authoritative home | A bug fixed in one of N copies while the others keep it | §14 |
-| **KISS** | Prefer the simplest design that meets the actual requirement | Cleverness only its author can safely change: bus-factor risk, slow onboarding | §13 |
-| **YAGNI** | Don't build for a requirement you don't have yet | Speculative knobs, plugin points, and layers that must still be maintained and explained | §14 |
+| **<abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr>** | Every piece of *knowledge* has one authoritative home | A bug fixed in one of N copies while the others keep it | §14 |
+| **<abbr title="Keep It Simple, Stupid - A design principle noting that most systems work best if they are kept simple rather than made complicated.">KISS</abbr>** | Prefer the simplest design that meets the actual requirement | Cleverness only its author can safely change: bus-factor risk, slow onboarding | §13 |
+| **<abbr title="You Aren't Gonna Need It - A principle of extreme programming that states a programmer should not add functionality until deemed necessary.">YAGNI</abbr>** | Don't build for a requirement you don't have yet | Speculative knobs, plugin points, and layers that must still be maintained and explained | §14 |
 | **Separation of concerns** | Each part addresses one concern (I/O, rules, presentation) | Rule bugs that only show up with a particular UI or database, because the layers were never independent | §9; `08` §1, §3 |
 | **Single level of abstraction** | A function's body reads at one conceptual level | Readers context-switching between "what" and "how" line by line | §10 |
 | **Encapsulation / information hiding** | Expose behaviour, hide representation | Callers depending on internals that can then never change | §4; `02` §3 |
 | **Law of Demeter** | Talk to your immediate collaborators, not through them | `a.b().c().d()` chains that break when something deep inside moves | `02` §9 |
 | **Composition over inheritance** | Assemble behaviour from small parts | Fragile base classes, diamonds, N×M class explosions | `02` §4 |
-| **Least astonishment** | An API behaves as its name and shape suggest | A `save()` that also sends an email; callers stop reading docs and guess | `03` §9 |
+| **Least astonishment** | An <abbr title="Application Programming Interface">API</abbr> behaves as its name and shape suggest | A `save()` that also sends an email; callers stop reading docs and guess | `03` §9 |
 | **Postel's law** | Liberal in what you accept, conservative in what you send | Producers and consumers that break on harmless variation — but over-applied it silently accepts corrupt input, so pair it with validation and versioning | `03` §7; `09` §4 |
 | **Fail fast vs. defensive** | Fail fast on programmer errors and broken internal invariants, near the source; be defensive with untrusted external input | Corrupt state surfacing far from its cause (too defensive) or a system brittle to any input variance (too strict) | `06` §10–§11; `12` §1 |
 | **Immutability by default** | Make values unchangeable after construction; make mutation explicit | Action at a distance and races on shared mutable state | `07` §6; `02` §7 |
-| **SOLID** | SRP, OCP, LSP, ISP, DIP | See the table in `02` §12 | `02` §12 |
+| **<abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr>** | SRP, OCP, LSP, ISP, DIP | See the table in `02` §12 | `02` §12 |
 
 ### On performance specifically
 
@@ -1380,7 +1380,7 @@ alongside correctness and complexity analysis. Cheap, visible wins:
 ### In a system design interview
 
 - **Design it twice** (§15) *is* the interview: present two options, compare, choose.
-- **Deep modules** at service level: a small, stable API hiding a lot of complexity.
+- **Deep modules** at service level: a small, stable <abbr title="Application Programming Interface">API</abbr> hiding a lot of complexity.
 - **Information hiding:** "Clients don't know which database we use; the storage service
   owns that decision so we can change it."
 - **Pull complexity downward:** the rate limiter is a shared component, not something
@@ -1399,7 +1399,7 @@ existence. That framing signals senior thinking far more than naming a pattern d
   obvious code — a reader's first guess is right."
 - *"How do you reduce complexity?"* → the two causes (dependencies, obscurity) and a
   technique against each.
-- *"DRY — always?"* → knowledge vs. text; wrong abstraction; rule of three.
+- *"<abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr> — always?"* → knowledge vs. text; wrong abstraction; rule of three.
 - *"Small functions — always?"* → split when independently understandable; depth beats
   size.
 
@@ -1446,8 +1446,8 @@ Before you open a PR (or say "done" in an interview), run through this:
 | John Ousterhout — *A Philosophy of Software Design* (2nd ed.) | The source of most of this file. Short. Read it twice. |
 | Robert C. Martin — *Clean Code* | Naming, functions, and formatting advice. Read critically: some advice (very small functions) is contested — see Ousterhout's chapter comparing the two. |
 | Martin Fowler — *Refactoring* (2nd ed.) | The catalog of smells and the mechanical, safe steps to fix each. |
-| Hunt & Thomas — *The Pragmatic Programmer* | The original DRY, orthogonality, tracer bullets, broken windows. |
-| Sandi Metz — "The Wrong Abstraction" (blog post) | The definitive essay on when *not* to be DRY. |
+| Hunt & Thomas — *The Pragmatic Programmer* | The original <abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr>, orthogonality, tracer bullets, broken windows. |
+| Sandi Metz — "The Wrong Abstraction" (blog post) | The definitive essay on when *not* to be <abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr>. |
 | Alexis King — "Parse, don't validate" (blog post) | §8 in depth. |
 | Gary Bernhardt — "Boundaries" (talk) | Functional core, imperative shell (§9). |
 | Rob Pike — "Go Proverbs" (talk) | Short, sharp design heuristics, most of which apply beyond Go. |

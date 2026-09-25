@@ -65,9 +65,9 @@ class VideoConversionFacade:
 | Variant | Purpose | Example |
 |---|---|---|
 | Virtual proxy | Defer expensive construction until first use. | Lazy-load a large image only when it's actually rendered. |
-| Remote proxy | Represent an object living in another process/machine. | gRPC client stub standing in for the remote service. |
+| Remote proxy | Represent an object living in another process/machine. | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> client stub standing in for the remote service. |
 | Protection proxy | Enforce access control before delegating. | Wrapper that checks permissions before calling the real file handle. |
-| Caching proxy | Serve repeated calls from a cache instead of the real object. | HTTP caching reverse proxy in front of an origin service. |
+| Caching proxy | Serve repeated calls from a cache instead of the real object. | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching reverse proxy in front of an origin service. |
 
 ```python
 class ProtectionProxy(FileHandle):

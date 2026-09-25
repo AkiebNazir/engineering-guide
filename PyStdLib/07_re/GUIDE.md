@@ -11,7 +11,7 @@ transforming strings that follow a shape rather than a fixed value.
 
 - **Fixed substring** ("does this contain `'error'`?") → plain `str.find`/`in`, not
   `re`. A regex engine is overkill and slower for a literal match.
-- **Structured, well-known formats** (JSON, URLs, dates) → use the dedicated parser
+- **Structured, well-known formats** (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, URLs, dates) → use the dedicated parser
   (`json`, `urllib.parse`, `datetime.strptime`) instead of hand-rolling a regex —
   see `API/REST/labs/python/01_crud_stdlib.py` for `json` doing exactly this job.
   Regexes for things like validating emails or URLs are notoriously incomplete.

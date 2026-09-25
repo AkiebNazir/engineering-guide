@@ -3,7 +3,7 @@
 Welcome to Day 128. 
 
 We have learned how to build Agents using LangChain and LangGraph. LangGraph is incredibly powerful, but it is low-level. You have to manually write every node, every state vector, and every routing edge.
-What if you just want to hire a team of AI employees, give them a project, and tell them to work together? 
+What if you just want to hire a team of <abbr title="Artificial Intelligence">AI</abbr> employees, give them a project, and tell them to work together? 
 
 Today, we learn **CrewAI**, a high-level framework that treats Agents like human employees, Tasks like Jira tickets, and Orchestrates them as a company (a Crew).
 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Backstory is Critical:** The `backstory` parameter is not just flavor text. It is injected into the LLM's system prompt. Telling the Writer they "work for Wired Magazine" forces the LLM's weights to output a specific journalistic tone without you having to write a massive prompt template.
+1. **The Backstory is Critical:** The `backstory` parameter is not just flavor text. It is injected into the <abbr title="Large Language Model">LLM</abbr>'s system prompt. Telling the Writer they "work for Wired Magazine" forces the <abbr title="Large Language Model">LLM</abbr>'s weights to output a specific journalistic tone without you having to write a massive prompt template.
 2. **Context Passing:** In a Sequential process, CrewAI automatically takes the output string of `research_task` and seamlessly injects it into the prompt of `writing_task`. You do not have to manage the memory variables yourself!
 
 ---
@@ -165,6 +165,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-We can orchestrate Agents. But right now, our Agents are isolated. They have no memory of past executions, and they can't access our MCP servers.
+We can orchestrate Agents. But right now, our Agents are isolated. They have no memory of past executions, and they can't access our <abbr title="Model Context Protocol">MCP</abbr> servers.
 
-Tomorrow, in **Day 129**, we learn **CrewAI Advanced: Custom Tools, Memory, and MCP Integration**!
+Tomorrow, in **Day 129**, we learn **CrewAI Advanced: Custom Tools, Memory, and <abbr title="Model Context Protocol">MCP</abbr> Integration**!

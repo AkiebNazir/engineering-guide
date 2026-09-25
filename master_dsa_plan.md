@@ -53,7 +53,7 @@ You're doing both languages. To make that fit in 325 hours instead of 500:
 
 - **Python is your interview language.** It gets every problem. Write it the way you'd write it live.
 - **Go is mandatory** where manual pointer and memory work *is* the lesson: linked lists, trees, tries, union-find, and the from-scratch builds. These are marked `⬜` in the Go column.
-- **Go is optional** where the Go version teaches syntax rather than algorithms — most DP, sliding window, and hashing problems. These are marked `—`. Do them if you have slack in the week; drop them without guilt if you don't.
+- **Go is optional** where the Go version teaches syntax rather than algorithms — most <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, sliding window, and hashing problems. These are marked `—`. Do them if you have slack in the week; drop them without guilt if you don't.
 
 ---
 
@@ -69,7 +69,7 @@ Snapshot taken 7 September 2026, read from the actual source files.
 
 **What you already have going for you:** your `subsets` and `permutations` solutions are clean, idiomatic, and correctly handle the copy-on-append trap (`subset[:]` in Python, `copy()` in Go). Your recursive `reverseList` correctly nulls `head.next` to avoid the cycle. That's a real foundation — recursion and backtracking are where most people stall out, and you're past it.
 
-**What's missing and matters:** binary search (a top-5 interview pattern, absent from the old plan entirely), graphs, DP, heaps, and intervals. That's the bulk of the next 13 weeks.
+**What's missing and matters:** binary search (a top-5 interview pattern, absent from the old plan entirely), graphs, <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, heaps, and intervals. That's the bulk of the next 13 weeks.
 
 ---
 
@@ -81,12 +81,12 @@ Snapshot taken 7 September 2026, read from the actual source files.
 | **2** | Sep 14–20 | Arrays & Hashing · Two Pointers | 13 | |
 | **3** | Sep 21–27 | Sliding Window · Prefix Sums | 12 | |
 | **4** | Sep 28–Oct 4 | **Binary Search** · Stacks & Monotonic Stack | 14 | Phase 1 complete |
-| **5** | Oct 5–11 | Linked Lists *(both languages)* | 11 | LRU Cache from scratch |
-| **6** | Oct 12–18 | Trees I: traversals, DFS/BFS | 12 | 📐 **System design starts** |
-| **7** | Oct 19–25 | Trees II: BST, construction · Tries | 12 | Phase 2 complete |
+| **5** | Oct 5–11 | Linked Lists *(both languages)* | 11 | <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache from scratch |
+| **6** | Oct 12–18 | Trees I: traversals, <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | 12 | 📐 **System design starts** |
+| **7** | Oct 19–25 | Trees II: <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, construction · Tries | 12 | Phase 2 complete |
 | **8** | Oct 26–Nov 1 | Heaps · Intervals · Greedy | 14 | Min-heap from scratch |
 | **9** | Nov 2–8 | Graphs I: grids, topological sort | 12 | |
-| **10** | Nov 9–15 | Graphs II: Union-Find, Dijkstra, MST · Bits | 13 | 🎤 **Behavioral starts** |
+| **10** | Nov 9–15 | Graphs II: Union-Find, Dijkstra, <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> · Bits | 13 | 🎤 **Behavioral starts** |
 | **11** | Nov 16–22 | 1D Dynamic Programming | 12 | 🧪 **Mocks begin (2/wk)** |
 | **12** | Nov 23–29 | 2D Dynamic Programming · Math & Geometry | 13 | Phase 4 complete |
 | **13** | Nov 30–Dec 6 | Remediation · Full-loop simulation | — | **Interview ready** |
@@ -125,21 +125,21 @@ The single highest-leverage page in this document. Interviews are won in the fir
 | "merge k sorted things" | **Heap** or divide & conquer | O(N log k) |
 | "all combinations / permutations / subsets" | **Backtracking** | O(2ⁿ) / O(n!) |
 | "place items subject to constraints" (N-Queens, Sudoku) | **Backtracking + pruning** | exponential, pruned |
-| "shortest path, unweighted" | **BFS** | O(V+E) |
+| "shortest path, unweighted" | **<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>** | O(V+E) |
 | "shortest path, weighted, non-negative" | **Dijkstra** | O(E log V) |
 | "shortest path, negative weights / ≤k hops" | **Bellman-Ford** | O(V·E) |
-| "prerequisites" / "build order" / "can this be ordered?" | **Topological sort** (Kahn's or DFS) | O(V+E) |
-| "are these connected?" / "count the groups" | **Union-Find** or DFS flood fill | ~O(α(n)) |
-| "connect everything at minimum cost" | **MST** (Prim / Kruskal) | O(E log V) |
+| "prerequisites" / "build order" / "can this be ordered?" | **Topological sort** (Kahn's or <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>) | O(V+E) |
+| "are these connected?" / "count the groups" | **Union-Find** or <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> flood fill | ~O(α(n)) |
+| "connect everything at minimum cost" | **<abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr>** (Prim / Kruskal) | O(E log V) |
 | "count the ways" / "can I reach X?" / "min cost to…" | **Dynamic programming** | varies |
-| "longest/shortest subsequence between two strings" | **2D DP** | O(m·n) |
-| "make change" / "fill a knapsack" | **DP** (unbounded / 0-1 knapsack) | O(n·target) |
+| "longest/shortest subsequence between two strings" | **2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>** | O(m·n) |
+| "make change" / "fill a knapsack" | **<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>** (unbounded / 0-1 knapsack) | O(n·target) |
 | "prefix" / "autocomplete" / "starts with" | **Trie** | O(len) |
 | "overlapping ranges" / "meeting rooms" | **Sort by start, sweep** | O(n log n) |
 | "cycle in a linked list" / "find the duplicate" | **Fast & slow pointers** (Floyd) | O(n), O(1) space |
 | "in-place, O(1) extra space" required | Two pointers, in-place swaps, bit tricks | |
-| "count with no extra space" / "appears once" | **XOR / bit manipulation** | O(n) |
-| "tree, but the answer needs info from both children" | **Post-order DFS returning a tuple** | O(n) |
+| "count with no extra space" / "appears once" | **<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> / bit manipulation** | O(n) |
+| "tree, but the answer needs info from both children" | **Post-order <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> returning a tuple** | O(n) |
 
 ### Reading the constraints
 
@@ -148,9 +148,9 @@ The `n` in the constraints tells you the intended complexity before you've thoug
 | n up to | You can afford | Which means |
 |---|---|---|
 | 10–12 | O(n!) | Permutations, brute-force backtracking |
-| 15–22 | O(2ⁿ) | Subsets, bitmask DP |
+| 15–22 | O(2ⁿ) | Subsets, bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> |
 | 100 | O(n³) | Triple loop, Floyd-Warshall |
-| 1,000–5,000 | O(n²) | Double loop, most 2D DP |
+| 1,000–5,000 | O(n²) | Double loop, most 2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> |
 | 10⁵–10⁶ | O(n log n) | Sort, heap, binary search |
 | 10⁷–10⁸ | O(n) | Single pass, two pointers |
 | 10⁹+ | O(log n) or O(1) | Binary search, math |
@@ -276,7 +276,7 @@ The pattern the old plan was missing entirely. Master the **boundary** form (`lo
 
 #### Linked Lists — Week 5 · *both languages mandatory*
 
-Go is required across this entire section. Manual pointer manipulation without a GC-shaped safety net is the whole lesson, and it's what makes the tree section click later.
+Go is required across this entire section. Manual pointer manipulation without a <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>-shaped safety net is the whole lesson, and it's what makes the tree section click later.
 
 | Status | Problem | Diff | Py | Go | Key idea |
 |:--:|---|:--:|:--:|:--:|---|
@@ -289,11 +289,11 @@ Go is required across this entire section. Manual pointer manipulation without a
 | `[ ]` | Add Two Numbers | Med | ⬜ | ⬜ | Carry propagation |
 | `[ ]` | Copy List with Random Pointer | Med | ⬜ | ⬜ | Two-pass with an old→new map |
 | `[ ]` | Find the Duplicate Number | Med | ⬜ | — | Floyd's cycle detection on an array |
-| `[ ]` | **LRU Cache** 👑 | Med | ⬜ | ⬜ | Hash map + doubly linked list |
+| `[ ]` | **<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache** 👑 | Med | ⬜ | ⬜ | Hash map + doubly linked list |
 | `[ ]` | Merge k Sorted Lists | Hard | ⬜ | — | Heap, or pairwise merge |
 | `[ ]` | Reverse Nodes in k-Group | Hard | ⬜ | ⬜ | The pointer-discipline final boss |
 
-#### Binary Trees I: Traversal & DFS — Week 6
+#### Binary Trees I: Traversal & <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> — Week 6
 
 | Status | Problem | Diff | Py | Go | Key idea |
 |:--:|---|:--:|:--:|:--:|---|
@@ -305,18 +305,18 @@ Go is required across this entire section. Manual pointer manipulation without a
 | `[ ]` | Balanced Binary Tree | Easy | ⬜ | — | Return `(height, isBalanced)` together |
 | `[ ]` | Diameter of Binary Tree | Easy | ⬜ | ⬜ | Return height, track best via side effect |
 | `[ ]` | Path Sum | Easy | ⬜ | — | Carry remaining target down |
-| `[ ]` | Binary Tree Level Order Traversal | Med | ⬜ | ⬜ | **BFS with level-sized batches** |
-| `[ ]` | Binary Tree Right Side View | Med | ⬜ | — | Last node of each BFS level |
+| `[ ]` | Binary Tree Level Order Traversal | Med | ⬜ | ⬜ | **<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> with level-sized batches** |
+| `[ ]` | Binary Tree Right Side View | Med | ⬜ | — | Last node of each <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> level |
 | `[ ]` | Count Good Nodes in Binary Tree | Med | ⬜ | — | Pass max-so-far down |
-| `[ ]` | Lowest Common Ancestor of a BST | Med | ⬜ | ⬜ | Walk down using BST ordering |
+| `[ ]` | Lowest Common Ancestor of a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> | Med | ⬜ | ⬜ | Walk down using <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> ordering |
 
-#### Binary Trees II: BST & Construction — Week 7
+#### Binary Trees II: <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> & Construction — Week 7
 
 | Status | Problem | Diff | Py | Go | Key idea |
 |:--:|---|:--:|:--:|:--:|---|
 | `[ ]` | Validate Binary Search Tree | Med | ⬜ | ⬜ | Pass down `(min, max)` bounds |
-| `[ ]` | Kth Smallest Element in a BST | Med | ⬜ | ⬜ | In-order traversal is sorted |
-| `[ ]` | Delete Node in a BST | Med | ⬜ | ⬜ | Replace with in-order successor |
+| `[ ]` | Kth Smallest Element in a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> | Med | ⬜ | ⬜ | In-order traversal is sorted |
+| `[ ]` | Delete Node in a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> | Med | ⬜ | ⬜ | Replace with in-order successor |
 | `[ ]` | Lowest Common Ancestor of a Binary Tree | Med | ⬜ | — | Post-order, first node seeing both |
 | `[ ]` | Construct Binary Tree from Preorder & Inorder | Med | ⬜ | — | Preorder gives root, inorder gives split |
 | `[ ]` | Flatten Binary Tree to Linked List | Med | ⬜ | ⬜ | Reverse post-order rewiring |
@@ -332,7 +332,7 @@ Go is required across this entire section. Manual pointer manipulation without a
 | `[ ]` | Replace Words | Med | ⬜ | — | Walk the trie, stop at first root |
 | `[ ]` | **Word Search II** 👑 | Hard | ⬜ | — | Trie + grid backtracking (Week 1 pays off) |
 
-🔨 **From scratch this phase:** LRU cache, trie, BST insert/delete.
+🔨 **From scratch this phase:** <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache, trie, <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> insert/delete.
 
 ---
 
@@ -344,26 +344,26 @@ Go is required across this entire section. Manual pointer manipulation without a
 |:--:|---|:--:|:--:|:--:|---|
 | `[ ]` | Number of Islands | Med | ⬜ | ⬜ | Flood fill, count launches |
 | `[ ]` | Max Area of Island | Med | ⬜ | — | Flood fill returning a size |
-| `[ ]` | Clone Graph | Med | ⬜ | ⬜ | DFS + old→new map |
-| `[ ]` | Islands and Treasure (Walls and Gates) | Med | ⬜ | — | **Multi-source BFS** |
-| `[ ]` | Rotting Oranges | Med | ⬜ | — | Multi-source BFS, count levels as time |
-| `[ ]` | Pacific Atlantic Water Flow | Med | ⬜ | — | Reverse the flow, DFS from both borders |
+| `[ ]` | Clone Graph | Med | ⬜ | ⬜ | <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> + old→new map |
+| `[ ]` | Islands and Treasure (Walls and Gates) | Med | ⬜ | — | **Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>** |
+| `[ ]` | Rotting Oranges | Med | ⬜ | — | Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, count levels as time |
+| `[ ]` | Pacific Atlantic Water Flow | Med | ⬜ | — | Reverse the flow, <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> from both borders |
 | `[ ]` | Surrounded Regions | Med | ⬜ | — | Mark from the border, flip the rest |
-| `[ ]` | Number of Connected Components | Med | ⬜ | ⬜ | DFS count, or Union-Find |
+| `[ ]` | Number of Connected Components | Med | ⬜ | ⬜ | <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> count, or Union-Find |
 | `[ ]` | Graph Valid Tree | Med | ⬜ | — | Connected ∧ `edges == n−1` |
-| `[ ]` | Course Schedule | Med | ⬜ | ⬜ | **Cycle detection** (3-color DFS) |
+| `[ ]` | Course Schedule | Med | ⬜ | ⬜ | **Cycle detection** (3-color <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>) |
 | `[ ]` | Course Schedule II | Med | ⬜ | ⬜ | **Topological sort** (Kahn's) |
-| `[ ]` | **Word Ladder** 👑 | Hard | ⬜ | — | BFS over an implicit graph |
+| `[ ]` | **Word Ladder** 👑 | Hard | ⬜ | — | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> over an implicit graph |
 
 #### Graphs II: Weighted & Union-Find — Week 10
 
 | Status | Problem | Diff | Py | Go | Key idea |
 |:--:|---|:--:|:--:|:--:|---|
 | `[ ]` | Redundant Connection | Med | ⬜ | ⬜ | **Union-Find** — first edge that closes a cycle |
-| `[ ]` | Min Cost to Connect All Points | Med | ⬜ | ⬜ | **MST** — Prim's with a heap |
+| `[ ]` | Min Cost to Connect All Points | Med | ⬜ | ⬜ | **<abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr>** — Prim's with a heap |
 | `[ ]` | Network Delay Time | Med | ⬜ | ⬜ | **Dijkstra** |
 | `[ ]` | Cheapest Flights Within K Stops | Med | ⬜ | — | **Bellman-Ford** (k+1 relaxations) |
-| `[ ]` | Swim in Rising Water | Hard | ⬜ | — | Dijkstra on max-edge, or binary search + BFS |
+| `[ ]` | Swim in Rising Water | Hard | ⬜ | — | Dijkstra on max-edge, or binary search + <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> |
 | `[ ]` | Reconstruct Itinerary | Hard | ⬜ | — | Hierholzer's (Eulerian path) |
 | `[ ]` | **Alien Dictionary** 👑 | Hard | ⬜ | — | Build the graph, then topo sort |
 
@@ -371,12 +371,12 @@ Go is required across this entire section. Manual pointer manipulation without a
 
 | Status | Problem | Diff | Py | Go | Key idea |
 |:--:|---|:--:|:--:|:--:|---|
-| `[ ]` | Single Number | Easy | ⬜ | — | XOR cancels pairs |
+| `[ ]` | Single Number | Easy | ⬜ | — | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> cancels pairs |
 | `[ ]` | Number of 1 Bits | Easy | ⬜ | — | `n & (n−1)` clears the lowest set bit |
 | `[ ]` | Counting Bits | Easy | ⬜ | — | `dp[i] = dp[i>>1] + (i&1)` |
 | `[ ]` | Reverse Bits | Easy | ⬜ | — | Shift out, shift in |
-| `[ ]` | Missing Number | Easy | ⬜ | — | XOR all indices and values |
-| `[ ]` | Sum of Two Integers | Med | ⬜ | — | XOR = sum, AND<<1 = carry |
+| `[ ]` | Missing Number | Easy | ⬜ | — | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> all indices and values |
+| `[ ]` | Sum of Two Integers | Med | ⬜ | — | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> = sum, AND<<1 = carry |
 
 🔨 **From scratch this phase:** union-find with path compression + union by rank.
 

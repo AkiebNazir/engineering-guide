@@ -1,13 +1,13 @@
 # Retrieval-Augmented Generation (RAG) — Deep Dive
 
-## 1. The problem RAG solves
+## 1. The problem <abbr title="Retrieval-Augmented Generation">RAG</abbr> solves
 
 LLMs have two structural weaknesses:
 - **Knowledge cutoff** — anything that happened, or was written, after training has no representation in the model's weights.
 - **No access to private data** — your company's docs, tickets, contracts, or codebase were never in the training set.
 - **Hallucination under uncertainty** — when the model doesn't know something, it tends to generate a fluent, plausible-sounding answer rather than say "I don't know."
 
-RAG addresses all three by giving the model **retrieved, sourced text** at inference time, so it answers from evidence rather than from memory alone.
+<abbr title="Retrieval-Augmented Generation">RAG</abbr> addresses all three by giving the model **retrieved, sourced text** at inference time, so it answers from evidence rather than from memory alone.
 
 There are two phases: an offline **indexing phase** (done once, updated periodically) and an online **query phase** (done per user request). Below, every step of both.
 
@@ -21,7 +21,7 @@ Before you can chunk anything, you have to extract clean text from source format
 
 - **PDFs** — text extraction can scramble reading order in multi-column layouts, drop table structure, or merge headers into body text. Tools like `unstructured`, `PyMuPDF`, or vision-based extraction (rendering pages as images and using a multimodal model) handle this with varying fidelity.
 - **HTML** — need to strip nav bars, ads, and boilerplate while preserving semantic structure (headings, lists, tables).
-- **Tables** — flattening a table into plain text loses row/column relationships; some pipelines convert tables to markdown or JSON to preserve structure.
+- **Tables** — flattening a table into plain text loses row/column relationships; some pipelines convert tables to markdown or <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> to preserve structure.
 
 Garbage extraction here poisons every later stage — no amount of clever chunking or reranking fixes text that was already scrambled on the way in.
 
@@ -60,13 +60,13 @@ Like fixed-size, but with a large overlap ratio (e.g., 50%+), so nearly every id
 - *Pros*: minimizes the "split right through the important sentence" failure mode.
 - *Cons*: multiplies storage and retrieval redundancy — you're indexing much more text for the same source content.
 
-**g) Agentic / LLM-based chunking**
-Have an LLM read the document and propose chunk boundaries directly, based on genuine topical or argumentative structure (this is close to how a human would summarize a document into sections).
+**g) Agentic / <abbr title="Large Language Model">LLM</abbr>-based chunking**
+Have an <abbr title="Large Language Model">LLM</abbr> read the document and propose chunk boundaries directly, based on genuine topical or argumentative structure (this is close to how a human would summarize a document into sections).
 - *Pros*: highest conceptual quality, adapts to any document type.
 - *Cons*: slow and costly to run over a large corpus; usually reserved for high-value or frequently-queried documents.
 
 **h) Parent-child / hierarchical chunking**
-Index small chunks for precise retrieval matching, but when a small chunk is retrieved, return its larger "parent" chunk (or the full section/document) to the LLM for generation. This decouples *what you search over* from *what you feed the model*.
+Index small chunks for precise retrieval matching, but when a small chunk is retrieved, return its larger "parent" chunk (or the full section/document) to the <abbr title="Large Language Model">LLM</abbr> for generation. This decouples *what you search over* from *what you feed the model*.
 - *Pros*: gets the best of both — precise retrieval, rich context for generation.
 - *Cons*: more moving pieces, needs a mapping between child and parent chunks maintained in your store.
 
@@ -88,7 +88,7 @@ The embeddings go into a vector database (Pinecone, Weaviate, Qdrant, pgvector, 
 
 - **HNSW (Hierarchical Navigable Small World)** — builds a multi-layer graph of vectors; search hops through layers from coarse to fine. Very fast query time, higher memory use. Most common default today.
 - **IVF (Inverted File Index)** — clusters vectors into buckets (via k-means), and search only scans the most relevant buckets. Lower memory, needs a training step.
-- **Product Quantization (PQ)** — compresses vectors to reduce memory footprint, often combined with IVF (IVF-PQ), at some cost to precision.
+- **Product Quantization (<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>)** — compresses vectors to reduce memory footprint, often combined with IVF (IVF-<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>), at some cost to precision.
 
 Similarity is measured via **cosine similarity**, **dot product**, or **Euclidean (L2) distance** — cosine and normalized dot product are most common for text embeddings since they're insensitive to vector magnitude.
 
@@ -100,8 +100,8 @@ Similarity is measured via **cosine similarity**, **dot product**, or **Euclidea
 
 The raw user question is embedded the same way as the chunks. But raw user questions are often poor search queries — short, ambiguous, or phrased very differently from how the answer is written in the source docs. Common fixes:
 
-- **Query rewriting** — an LLM call reformulates the question into a clearer, more searchable form before embedding.
-- **HyDE (Hypothetical Document Embeddings)** — instead of embedding the question directly, ask an LLM to write a *hypothetical answer* to the question, and embed that instead. Answers tend to be linguistically closer to the source documents than questions are, which can improve match quality.
+- **Query rewriting** — an <abbr title="Large Language Model">LLM</abbr> call reformulates the question into a clearer, more searchable form before embedding.
+- **HyDE (Hypothetical Document Embeddings)** — instead of embedding the question directly, ask an <abbr title="Large Language Model">LLM</abbr> to write a *hypothetical answer* to the question, and embed that instead. Answers tend to be linguistically closer to the source documents than questions are, which can improve match quality.
 - **Multi-query expansion** — generate several rephrasings of the question, retrieve for each, and merge/deduplicate the results — widens the net against phrasing mismatch.
 - **Decomposition** — break a complex, multi-part question into sub-questions, retrieve separately for each, and combine.
 
@@ -119,9 +119,9 @@ Vector search is fast but approximate — it's optimized to *shortlist* candidat
 
 1. Retrieve a wider candidate set cheaply (e.g., top 20–50) via vector/hybrid search.
 2. Pass each candidate, paired with the query, through a **cross-encoder** reranking model (e.g., Cohere Rerank, a BGE reranker) that scores relevance far more accurately — because it looks at the query and chunk *together*, rather than comparing two independently-computed vectors.
-3. Keep only the top 3–5 reranked chunks to actually send to the LLM.
+3. Keep only the top 3–5 reranked chunks to actually send to the <abbr title="Large Language Model">LLM</abbr>.
 
-This step alone is one of the highest-leverage additions to a basic RAG system — it catches the frequent cases where "vector-similar" isn't the same as "actually answers this question."
+This step alone is one of the highest-leverage additions to a basic <abbr title="Retrieval-Augmented Generation">RAG</abbr> system — it catches the frequent cases where "vector-similar" isn't the same as "actually answers this question."
 
 ### 3.4 Prompt construction (augmentation)
 
@@ -135,19 +135,19 @@ Context window management matters here: cramming in too many chunks dilutes atte
 
 ### 3.5 Generation
 
-The LLM produces the final answer, grounded in the supplied context rather than parametric memory alone. Techniques to strengthen grounding:
+The <abbr title="Large Language Model">LLM</abbr> produces the final answer, grounded in the supplied context rather than parametric memory alone. Techniques to strengthen grounding:
 
 - Explicit instruction to quote or cite the source chunk for each claim.
 - Asking the model to output "insufficient information" rather than guessing, when the retrieved context doesn't cover the question.
-- Post-hoc **faithfulness checking** — a secondary pass (sometimes another LLM call) verifying that each claim in the generated answer is actually supported by the retrieved chunks.
+- Post-hoc **faithfulness checking** — a secondary pass (sometimes another <abbr title="Large Language Model">LLM</abbr> call) verifying that each claim in the generated answer is actually supported by the retrieved chunks.
 
 ---
 
 ## 4. Advanced patterns worth knowing
 
-- **Agentic RAG** — instead of a fixed retrieve-then-generate pipeline, an LLM agent decides *whether* to retrieve, *what* to search for, and whether to retrieve again based on what it got back (multi-hop retrieval for questions that need several pieces of evidence chained together).
+- **Agentic <abbr title="Retrieval-Augmented Generation">RAG</abbr>** — instead of a fixed retrieve-then-generate pipeline, an <abbr title="Large Language Model">LLM</abbr> agent decides *whether* to retrieve, *what* to search for, and whether to retrieve again based on what it got back (multi-hop retrieval for questions that need several pieces of evidence chained together).
 - **GraphRAG** — build a knowledge graph from the corpus (entities and relationships) alongside the vector index, so retrieval can traverse relationships ("who reports to whom," "which components depend on which") that pure similarity search misses.
-- **Self-RAG / corrective RAG** — the model critiques its own retrieved context and can trigger a re-retrieval or query rewrite if the first pass looks insufficient.
+- **Self-<abbr title="Retrieval-Augmented Generation">RAG</abbr> / corrective <abbr title="Retrieval-Augmented Generation">RAG</abbr>** — the model critiques its own retrieved context and can trigger a re-retrieval or query rewrite if the first pass looks insufficient.
 
 ---
 
@@ -159,15 +159,15 @@ The LLM produces the final answer, grounded in the supplied context rather than 
 - **Over-stuffed context** — dumping too many chunks into the prompt dilutes the model's attention and can *increase* hallucination rather than reduce it.
 - **No "I don't know" path** — if the system prompt doesn't explicitly permit the model to say the context is insufficient, it will often still generate a confident-sounding guess.
 
-## 6. Evaluating a RAG system
+## 6. Evaluating a <abbr title="Retrieval-Augmented Generation">RAG</abbr> system
 
 Two layers get measured separately:
 - **Retrieval quality** — did we fetch the right chunks? Measured via precision/recall@k, or human-labeled relevance judgments.
-- **Generation quality** — given the retrieved chunks, did the model produce a faithful, relevant answer? Measured via **faithfulness** (is every claim supported by the context?) and **answer relevance** (does it actually address the question?). Frameworks like RAGAS automate these with LLM-as-judge scoring.
+- **Generation quality** — given the retrieved chunks, did the model produce a faithful, relevant answer? Measured via **faithfulness** (is every claim supported by the context?) and **answer relevance** (does it actually address the question?). Frameworks like RAGAS automate these with <abbr title="Large Language Model">LLM</abbr>-as-judge scoring.
 
-## 7. RAG vs. fine-tuning (when to use which)
+## 7. <abbr title="Retrieval-Augmented Generation">RAG</abbr> vs. fine-tuning (when to use which)
 
-| | RAG | Fine-tuning |
+| | <abbr title="Retrieval-Augmented Generation">RAG</abbr> | Fine-tuning |
 |---|---|---|
 | Best for | Injecting facts/knowledge | Changing style, tone, format, task behavior |
 | Update cost | Cheap — re-index documents | Expensive — retrain or re-tune |
@@ -175,4 +175,4 @@ Two layers get measured separately:
 | Transparency | Can cite sources | Opaque — no traceable source |
 | Failure mode | Retrieval miss → no answer or hallucination | Overfits, forgets, or subtly drifts |
 
-They're not mutually exclusive — many production systems fine-tune a model to be better at *using* retrieved context (following citation format, refusing when context is insufficient) while still relying on RAG for the actual facts.
+They're not mutually exclusive — many production systems fine-tune a model to be better at *using* retrieved context (following citation format, refusing when context is insufficient) while still relying on <abbr title="Retrieval-Augmented Generation">RAG</abbr> for the actual facts.

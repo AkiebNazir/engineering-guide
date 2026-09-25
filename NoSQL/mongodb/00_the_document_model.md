@@ -1,6 +1,6 @@
 # The Document Model
 
-MongoDB stores data as **documents** — ordered sets of key/value pairs, structurally like a JSON object — grouped into **collections**. A collection is loosely the analogue of a SQL table, and a document is loosely the analogue of a row, but the shape underneath is different enough that the analogy breaks if you lean on it too hard, so treat it as an orientation aid, not a rulebook.
+MongoDB stores data as **documents** — ordered sets of key/value pairs, structurally like a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object — grouped into **collections**. A collection is loosely the analogue of a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> table, and a document is loosely the analogue of a row, but the shape underneath is different enough that the analogy breaks if you lean on it too hard, so treat it as an orientation aid, not a rulebook.
 
 ```javascript
 // mongosh
@@ -39,7 +39,7 @@ One document holds a string, a float, an array, a boolean, a date, a nested sub-
 - A **document** is the unit of storage — everything above, from `_id` down to `qty`, is one document.
 - A **collection** (`db.products`) is a named group of documents, roughly comparable to a table, but with no requirement that its documents share a shape.
 - A **database** (`lab_00_document_model` above) is a group of collections, physically its own set of files on disk.
-- On the wire and on disk, documents are **BSON** ("Binary JSON") — not literal JSON text. BSON adds types JSON doesn't have (dates, `ObjectId`, distinct `int32`/`int64`/`double`/`decimal128` numeric types, binary blobs) and is length-prefixed for fast field skipping, which is why `typeof qty` printed `number` in JavaScript but the type MongoDB actually stored was a real 32-bit integer, not a float — mongosh's driver hides the BSON/JS type gap by default. This matters most for numbers: `NumberInt(120)` and `120.0` look identical printed back, but they're different wire types, and an aggregation like `$sum` or a schema validator (see level 08) can behave differently depending on which one is actually stored. When it matters, check with `db.products.find().hint(...)` mongosh tricks or, more simply, in a language driver where the type comes back as a real distinct object (Python's `bson` module surfaces `Int64` vs `int` vs `float` explicitly).
+- On the wire and on disk, documents are **BSON** ("Binary <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>") — not literal <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> text. BSON adds types <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> doesn't have (dates, `ObjectId`, distinct `int32`/`int64`/`double`/`decimal128` numeric types, binary blobs) and is length-prefixed for fast field skipping, which is why `typeof qty` printed `number` in JavaScript but the type MongoDB actually stored was a real 32-bit integer, not a float — mongosh's driver hides the BSON/JS type gap by default. This matters most for numbers: `NumberInt(120)` and `120.0` look identical printed back, but they're different wire types, and an aggregation like `$sum` or a schema validator (see level 08) can behave differently depending on which one is actually stored. When it matters, check with `db.products.find().hint(...)` mongosh tricks or, more simply, in a language driver where the type comes back as a real distinct object (Python's `bson` module surfaces `Int64` vs `int` vs `float` explicitly).
 
 ## "Schemaless" is the wrong word
 
@@ -62,7 +62,7 @@ The flip side, covered honestly across this module rather than glossed over: no 
 
 ## Compared to the relational model
 
-You already know SQL from the `SQL/` module, so here's the map rather than a re-derivation of relational concepts:
+You already know <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> from the `SQL/` module, so here's the map rather than a re-derivation of relational concepts:
 
 | Relational | MongoDB | Where it actually diverges |
 |---|---|---|
@@ -73,11 +73,11 @@ You already know SQL from the `SQL/` module, so here's the map rather than a re-
 | Primary key | `_id` field | Every document gets one automatically if you don't supply it (level 01). |
 | `JOIN` | `$lookup`, or embedding | MongoDB's default answer to "related data" is to embed it in one document, not to normalize and join (levels 04, 06). |
 | Foreign key constraint | Nothing built in | Referential integrity across documents is the application's job unless you enforce it in code. |
-| Schema (`CREATE TABLE`) | Optional JSON Schema validator | Enforced only if you opt in, and only at write time, not retroactively. |
+| Schema (`CREATE TABLE`) | Optional <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema validator | Enforced only if you opt in, and only at write time, not retroactively. |
 | Multi-row transaction | Multi-document transaction | Supported since 4.0 on replica sets, but positioned as an escape hatch, not the default tool — see level 09. |
 
 The one-sentence version: a relational database starts from "normalize, then join when you need related data back together"; MongoDB starts from "store the aggregate your application actually reads together, in one document, and reach for joins or transactions only when embedding stops making sense." Level 04 is where that decision gets made concretely, with a worked example.
 
 ## What's ahead in this ladder
 
-Levels 01–03 build fluency with the basics (connecting, CRUD, query operators). Level 04 is the pivotal schema-design skill. Levels 05–08 cover performance and structure (indexes, aggregation, update operators, validation). Levels 09–10 cover the distributed-systems side (transactions, replication, write/read concern). Level 11 ties it into a small production-shaped service module.
+Levels 01–03 build fluency with the basics (connecting, <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr>, query operators). Level 04 is the pivotal schema-design skill. Levels 05–08 cover performance and structure (indexes, aggregation, update operators, validation). Levels 09–10 cover the distributed-systems side (transactions, replication, write/read concern). Level 11 ties it into a small production-shaped service module.

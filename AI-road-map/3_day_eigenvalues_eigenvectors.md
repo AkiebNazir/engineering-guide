@@ -2,7 +2,7 @@
 
 Welcome to Day 3. Today we tackle one of the most notoriously intimidating, yet beautiful and crucial topics in all of Machine Learning: **Eigendecomposition**. 
 
-If Day 2 taught us that matrices are *transformations* (actions that stretch, rotate, and squish space), today we learn how to find the hidden "bones" or "skeleton" of those transformations. If you want to understand Principal Component Analysis (PCA), how Google Search was invented (PageRank), or how recommendation algorithms compress user data (SVD), you must master eigenvectors.
+If Day 2 taught us that matrices are *transformations* (actions that stretch, rotate, and squish space), today we learn how to find the hidden "bones" or "skeleton" of those transformations. If you want to understand Principal Component Analysis (PCA), how Google Search was invented (PageRank), or how recommendation algorithms compress user data (<abbr title="Singular Value Decomposition">SVD</abbr>), you must master eigenvectors.
 
 Let's break it down using deep intuition and real-world analogies.
 
@@ -33,7 +33,7 @@ $$ A\mathbf{v} = \lambda\mathbf{v} $$
 > Right side ($\lambda\mathbf{v}$): Can we write $\begin{bmatrix} 2 \\ 0 \end{bmatrix}$ as a single number times our original vector $\begin{bmatrix} 1 \\ 0 \end{bmatrix}$? Yes! $2 \times \begin{bmatrix} 1 \\ 0 \end{bmatrix}$.
 > Therefore, $\mathbf{v} = [1, 0]$ IS an eigenvector, and its eigenvalue is $\lambda = 2$.
 > 
-> **AI Context (Feature Extraction):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Feature Extraction):** 
 > If $A$ is a Covariance Matrix of housing data (Size vs Price), the eigenvector with the largest eigenvalue represents the most dominant pattern in the data (e.g., "Bigger houses cost more"). This is the mathematical core of **Principal Component Analysis (PCA)**, which reduces massive datasets down to their most important features.
 > **Analogy:** Imagine a complex corporate hierarchy (Matrix A) trying to process a specific type of task (Vector $\mathbf{v}$). If the task is an "eigen-task", the complex corporate bureaucracy handles it as efficiently as a single person ($\lambda$) just doing the work directly. 
 
@@ -60,8 +60,8 @@ This equation is called the **Characteristic Polynomial** *(an algebraic equatio
 > Step 3: Factor the polynomial. $(\lambda - 3)(\lambda - 1) = 0$.
 > Result: The eigenvalues are $\lambda = 3$ and $\lambda = 1$.
 > 
-> **AI Context (Computational Bottleneck):** 
-> Finding roots of polynomials for a 2x2 matrix is easy. But in AI, our matrices (like LLM weights) are $10,000 \times 10,000$. Finding the roots of a 10,000-degree polynomial is computationally impossible. This is why in production AI, we NEVER compute determinants. We use iterative approximation algorithms like **Power Iteration** or **Lanczos** to find the largest eigenvalues!
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Computational Bottleneck):** 
+> Finding roots of polynomials for a 2x2 matrix is easy. But in <abbr title="Artificial Intelligence">AI</abbr>, our matrices (like <abbr title="Large Language Model">LLM</abbr> weights) are $10,000 \times 10,000$. Finding the roots of a 10,000-degree polynomial is computationally impossible. This is why in production <abbr title="Artificial Intelligence">AI</abbr>, we NEVER compute determinants. We use iterative approximation algorithms like **Power Iteration** or **Lanczos** to find the largest eigenvalues!
 
 ### 3. The Spectral Theorem (The Magic of Symmetric Matrices)
 In Machine Learning, we almost always deal with **Symmetric Matrices**. A symmetric matrix is one that equals its transpose ($A = A^T$, *meaning it acts like a perfect mirror across its diagonal*). The most famous example is a **Covariance Matrix**, which measures how different features in your dataset vary together *(e.g., if square footage goes up, does house price go up?)*.
@@ -80,7 +80,7 @@ A symmetric matrix is **Positive Definite** *(a property meaning the mathematica
 > **Enterprise Context (Deep Learning Optimization):**
 > In calculus, the second derivative tells you the curvature of a function. In high-dimensional neural networks, the equivalent of the second derivative is a massive matrix called the **Hessian Matrix**. 
 > If the Hessian matrix at a certain point is Positive Definite (all positive eigenvalues), it means the loss landscape curves upwards in *every single direction*. Geometrically, you are at the bottom of a perfect bowl. 
-> Why does this matter? If your optimizer (like Adam or SGD) reaches a point where the Hessian is positive definite, you have mathematically proven you are at a **local minimum**. If it has negative eigenvalues, you are on a saddle point, and the optimizer needs to keep sliding down!
+> Why does this matter? If your optimizer (like Adam or <abbr title="Stochastic Gradient Descent">SGD</abbr>) reaches a point where the Hessian is positive definite, you have mathematically proven you are at a **local minimum**. If it has negative eigenvalues, you are on a saddle point, and the optimizer needs to keep sliding down!
 
 ---
 
@@ -246,4 +246,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - The sparse matrix-vector multiplication ($M \mathbf{v}$) can be trivially distributed across thousands of commodity servers. This exact problem is what prompted Google to invent the **MapReduce** framework!
 
 ---
-**Task for the end of the day:** Commit your code to Git. Review the `eigenvectors_pca.png` image until the connection between data variance and eigenvectors intuitively clicks in your brain. Tomorrow, we finish the linear algebra gauntlet with Singular Value Decomposition (SVD)!
+**Task for the end of the day:** Commit your code to Git. Review the `eigenvectors_pca.png` image until the connection between data variance and eigenvectors intuitively clicks in your brain. Tomorrow, we finish the linear algebra gauntlet with Singular Value Decomposition (<abbr title="Singular Value Decomposition">SVD</abbr>)!

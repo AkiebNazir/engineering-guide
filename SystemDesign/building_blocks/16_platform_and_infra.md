@@ -1,18 +1,18 @@
 # Platform and Infrastructure
 
-This file covers the userspace-visible packaging and orchestration layer: containers, Kubernetes, service mesh, eBPF, and delivery tooling. It sits directly on top of the OS-level primitives (processes, cgroups, namespaces) covered in `01_operating_systems.md` — read that first if the process/kernel mechanics underneath containers are unclear; this file does not repeat that detail.
+This file covers the userspace-visible packaging and orchestration layer: containers, Kubernetes, service mesh, eBPF, and delivery tooling. It sits directly on top of the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>-level primitives (processes, cgroups, namespaces) covered in `01_operating_systems.md` — read that first if the process/kernel mechanics underneath containers are unclear; this file does not repeat that detail.
 
 ## Containers vs VMs
 
-| | VM | Container |
+| | <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> | Container |
 |---|---|---|
-| Isolation unit | Full guest OS + kernel per VM. | Process(es) sharing the host kernel, isolated via namespaces/cgroups. |
+| Isolation unit | Full guest <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> + kernel per <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr>. | Process(es) sharing the host kernel, isolated via namespaces/cgroups. |
 | Startup time | Seconds to minutes (boots a kernel). | Milliseconds to seconds (starts a process). |
-| Density | Fewer per host (each carries a full OS). | Many per host (shared kernel overhead only). |
+| Density | Fewer per host (each carries a full <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>). | Many per host (shared kernel overhead only). |
 | Isolation strength | Stronger — separate kernel. | Weaker by default — shared kernel is a shared attack surface. |
-| What it packages | An entire machine. | A process and its dependencies (the exact bytes it needs to run, not a whole OS). |
+| What it packages | An entire machine. | A process and its dependencies (the exact bytes it needs to run, not a whole <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>). |
 
-A container is not a VM and not a security boundary by itself — it is dependency packaging plus OS-level isolation primitives. Do not treat "it's containerized" as equivalent to "it's sandboxed against a hostile workload"; that guarantee needs additional controls (gVisor/Kata-style stronger isolation, seccomp profiles, non-root users, read-only filesystems) on top of the base container.
+A container is not a <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> and not a security boundary by itself — it is dependency packaging plus <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>-level isolation primitives. Do not treat "it's containerized" as equivalent to "it's sandboxed against a hostile workload"; that guarantee needs additional controls (gVisor/Kata-style stronger isolation, seccomp profiles, non-root users, read-only filesystems) on top of the base container.
 
 ## Kubernetes core concepts
 
@@ -21,12 +21,12 @@ A container is not a VM and not a security boundary by itself — it is dependen
 | Pod | Smallest deployable unit — one or more tightly-coupled containers that must be scheduled, scaled, and networked together. |
 | Deployment | Declarative rollout and self-healing for stateless replicas — desired replica count is continuously reconciled. |
 | StatefulSet | Stable network identity and stable storage per replica, for workloads that aren't interchangeable (a DB node, not a stateless web server). |
-| Service | A stable virtual IP/DNS name that load-balances across a changing set of pod IPs — pods come and go, the Service address doesn't. |
-| Ingress / Gateway | External HTTP(S) routing into the cluster, with host/path rules, without a load balancer per service. |
+| Service | A stable virtual <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> name that load-balances across a changing set of pod IPs — pods come and go, the Service address doesn't. |
+| Ingress / Gateway | External <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>(S) routing into the cluster, with host/path rules, without a load balancer per service. |
 | ConfigMap / Secret | Externalizes configuration from the container image so the same image runs in every environment; Secret still needs real access control — it is not encryption by default. |
 | Namespace | Logical partition of a cluster for multi-team/multi-env isolation of names and RBAC scope. |
-| Requests/limits | Tells the scheduler how much CPU/memory a pod needs (request) and caps what it can consume (limit) — prevents one workload from starving others on a shared node. |
-| HPA (Horizontal Pod Autoscaler) | Adjusts replica count from a metric (CPU, custom queue-depth metric) instead of a human watching a dashboard. |
+| Requests/limits | Tells the scheduler how much <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>/memory a pod needs (request) and caps what it can consume (limit) — prevents one workload from starving others on a shared node. |
+| HPA (Horizontal Pod Autoscaler) | Adjusts replica count from a metric (<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, custom queue-depth metric) instead of a human watching a dashboard. |
 | Liveness/readiness/startup probes | Distinguishes "restart this container" (liveness) from "stop sending it traffic but don't restart it" (readiness) from "still starting, don't do either yet" (startup) — conflating these causes either premature traffic or unnecessary restarts. |
 
 ## When Kubernetes is actually justified
@@ -35,12 +35,21 @@ Kubernetes is a good answer when an organization already has multiple teams, mul
 
 ## Service mesh
 
-A service mesh adds a uniform layer of service-to-service traffic policy, mutual TLS, retries/timeouts at the network layer, and telemetry — implemented via sidecar proxies (or increasingly, node-level/eBPF-based dataplanes) rather than per-service library code.
+A service mesh adds a uniform layer of service-to-service traffic policy, mutual <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>, retries/timeouts at the network layer, and telemetry — implemented via sidecar proxies (or increasingly, node-level/eBPF-based dataplanes) rather than per-service library code.
 
-```text
-service A ── proxy ⇄ proxy ── service B
-             (mTLS, retry/timeout
-              policy, telemetry)
+```arch
+%% caption: A service mesh moves network concerns (mTLS, retries, telemetry) out of application code and into an adjacent sidecar proxy.
+group podA "Pod A" color=blue style=dashed
+node svcA "Service A" at 0,0 in podA icon=app
+node prxA "Sidecar Proxy" at 0,1 in podA icon=internet color=slate
+
+group podB "Pod B" color=green style=dashed
+node svcB "Service B" at 2,0 in podB icon=app
+node prxB "Sidecar Proxy" at 2,1 in podB icon=internet color=slate
+
+svcA -> prxA : "localhost"
+prxA <-> prxB : "mTLS + Retries"
+prxB -> svcB : "localhost"
 ```
 
 What it buys: consistent security and traffic controls applied at the infra layer instead of reimplemented in every service's application code, across languages.

@@ -17,7 +17,7 @@ is raised here to "design a schema for it," which is closer to what's actually a
 ## The mental model
 
 A wide-column store looks like a table with rows and columns, but the resemblance to
-SQL stops there:
+<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> stops there:
 
 - **Partitioning is a first-class, explicit part of the data model**, not an
   infrastructure decision layered on afterward (contrast `SQL/18`, where sharding is
@@ -33,10 +33,10 @@ SQL stops there:
   "normalize by default." This is a deliberate, load-bearing design choice: at the
   scale these systems target (many terabytes, sustained massive write throughput), a
   cross-partition join would defeat the entire point of partitioning.
-- **Writes are append-heavy and LSM-tree-backed** (Cassandra, HBase, and DynamoDB's
+- **Writes are append-heavy and <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr>-tree-backed** (Cassandra, HBase, and DynamoDB's
   underlying engine all use log-structured merge trees) — the same write-optimized
   structure `CSFundamentals/03_databases_deep_dive.md` already covers for B-tree vs.
-  LSM tradeoffs, at the storage-engine level. Writes are cheap (append to an in-memory
+  <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tradeoffs, at the storage-engine level. Writes are cheap (append to an in-memory
   structure, flush to disk in sorted runs); reads may need to check multiple on-disk
   runs, which background **compaction** merges down over time.
 
@@ -51,11 +51,11 @@ SQL stops there:
 | **Tunable consistency** | Reads default to **eventually consistent** (cheaper, may read stale data just after a write) with an opt-in to **strongly consistent** reads (pricier, always reflects the latest successful write, unavailable across regions) |
 | **RCU/WCU or on-demand capacity** | Provisioned or on-demand throughput units — the pricing/capacity model directly reflects the "no joins, pay per access pattern" design, unlike a relational database's single compute tier serving arbitrary queries |
 
-## Single-table design — the pattern that surprises people coming from SQL
+## Single-table design — the pattern that surprises people coming from <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
 
 The idiomatic DynamoDB pattern is to put **multiple, differently-shaped entity types
 into one table**, distinguished by a deliberately generic key naming convention, so
-that one query against one partition can answer what SQL would need a join for.
+that one query against one partition can answer what <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> would need a join for.
 A worked example — an e-commerce system's customer and their orders:
 
 ```text
@@ -103,7 +103,7 @@ instead of a dynamically-typed language.
 One query — `PK = CUSTOMER#123`, no sort-key condition — returns the customer's
 profile *and* every one of their orders in a single request to a single partition, in
 sort-key (and therefore chronological, given the `ORDER#<date>` key) order. This is
-the direct DynamoDB-native answer to the SQL question "show me this customer and their
+the direct DynamoDB-native answer to the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> question "show me this customer and their
 order history," which in Postgres would be a join across two normalized tables
 (`SQL/16`). The tradeoff is explicit: this table can answer *this specific access
 pattern* extremely well and cannot easily answer a pattern it wasn't designed for

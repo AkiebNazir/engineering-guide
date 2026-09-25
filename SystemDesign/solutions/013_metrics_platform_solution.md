@@ -121,24 +121,35 @@ sequenceDiagram
     end
 ```
 
-```mermaid
+```arch
 %% caption: Writes go through stateless distributors to zone-replicated ingesters and then to object storage, while dashboards and alert rules read through separate query pools.
-flowchart LR
-    agents([Agents and SDKs]) --> lb[Load balancer]
-    lb --> dist[Distributors<br/>auth, validate, limits]
-    dist -->|RF 3, quorum 2| ing[(Ingesters x42<br/>WAL and head, 3 zones)]
-    ing -->|cut 2 h block| obj[(Object store<br/>blocks per tenant)]
-    obj --> comp[Compactor<br/>merge, dedup, downsample]
-    comp --> obj
-    obj --> sg[Store-gateways<br/>index and chunk cache]
-    dash([Dashboards]) --> qf[Query frontend<br/>split, cache, fair queue]
-    qf --> qr[Queriers]
-    qr --> ing
-    qr --> sg
-    ruler[Rulers<br/>rule groups] --> rq[Rule query pool]
-    rq --> ing
-    ruler --> am[Alertmanager cluster]
-    am --> notify([Pager and chat])
+node agents "Agents and SDKs" at 0,0 icon=app
+node dash "Dashboards" at 2,0 icon=dashboard
+node notify "Pager and chat" at 3,0 icon=notify
+node lb "Load balancer" at 0,1 icon=lb
+node qf "Query frontend" at 2,1 icon=gateway sub="split, cache, fair queue"
+node am "Alertmanager cluster" at 3,1 icon=alert
+node dist "Distributors" at 0,2 icon=service sub="auth, validate, limits"
+node qr "Queriers" at 2,2 icon=search
+node ruler "Rulers" at 3,2 icon=scheduler sub="rule groups"
+node ing "Ingesters x42" at 1,3 icon=db sub="WAL and head, 3 zones"
+node rq "Rule query pool" at 3,3 icon=search
+node comp "Compactor" at 0,4 icon=worker sub="merge, dedup, downsample"
+node obj "Object store" at 1,4 icon=blob sub="blocks per tenant"
+node sg "Store-gateways" at 2,4 icon=cache sub="index and chunk cache"
+agents -> lb -> dist
+dist:B -> ing:L : "RF 3, quorum 2"
+ing -> obj : "cut 2 h block"
+obj:L -> comp:R
+comp:B -> obj:B
+obj -> sg
+dash -> qf -> qr
+qr:B -> ing:T
+qr -> sg
+ruler -> rq
+rq -> ing
+ruler -> am
+am -> notify
 ```
 
 Partitioning ingest and storage by tenant + time + series is what makes both the cardinality guard and horizontal scaling possible: cardinality accounting only has to reason about one tenant's series count at a time, and compaction/downsampling jobs operate independently per time-partition without cross-tenant coordination. The hard decision is enforcing the cardinality guard *at ingest*, before the sample is written anywhere, rather than detecting and cleaning up cardinality explosions after the fact — this trades a small amount of extra validation latency on every write for preventing a single tenant's mistake from ever reaching durable storage and degrading shared query performance. Retention and downsampling policy is the second explicit trade: this design keeps full resolution only for a bounded recent window and openly loses precision on older data, trading storage cost for dashboard/alert responsiveness on the data that actually gets queried.
@@ -161,17 +172,29 @@ Backpressure is explicit: distributors hold a bounded in-flight budget (bytes) p
 
 ## TSDB internals: head, WAL, blocks, and the label index
 
-```mermaid
+```arch
 %% caption: A sample lives in the WAL and head for about two hours, then becomes an immutable block whose index maps label pairs to sorted series lists.
-flowchart LR
-    w[Sample batch] --> wal[(WAL on local SSD<br/>append only)]
-    w --> head[In-memory head<br/>series map and open chunks]
-    head -->|chunk full at about 120 samples| mm[Memory-mapped chunk files]
-    head -->|every 2 h cut block| blk[Immutable block<br/>chunks, index, meta]
-    blk --> up[Upload to object store]
-    q["Query: job=api, status=~5xx"] --> pi[Postings index<br/>label pair to sorted series IDs]
-    pi -->|intersect lists| ids[Matching series IDs]
-    ids --> ch[Fetch and decode chunks]
+grid 180x120
+group wp "Write path" color=blue icon=edit
+node w "Sample batch" at 1,0 in wp shape=pill
+node wal "WAL on local SSD" at 0,0 in wp icon=disk sub="append only"
+node head "In-memory head" at 1,1 in wp icon=memory sub="series map and open chunks"
+node mm "Memory-mapped chunk files" at 0,2 in wp icon=file
+node blk "Immutable block" at 1,2 in wp icon=layers sub="chunks, index, meta"
+node up "Upload to object store" at 1,3 in wp icon=blob
+group rp "Query path" color=green icon=search
+node q "Query" at 2,0 in rp shape=pill sub="job=api, status=~5xx"
+node pi "Postings index" at 2,1 in rp icon=index sub="label pair to sorted series IDs"
+node ids "Matching series IDs" at 2,2 in rp icon=id
+node ch "Fetch and decode chunks" at 2,3 in rp icon=file
+w:L -> wal:R
+w -> head
+head:L -> mm:T : "chunk full at about 120 samples"
+head -> blk : "every 2 h cut block"
+blk -> up
+q -> pi
+pi -> ids : "intersect lists"
+ids -> ch
 ```
 
 - **WAL.** Every accepted batch is appended sequentially to a write-ahead log on local SSD before it is acked, so a restart can rebuild the head. Prometheus documents WAL files in 128 MB segments, with the current block held in memory and protected by the WAL. Cost: replay time on restart grows with the series count; checkpointing the WAL keeps it to minutes for ~5M series per ingester (to be measured).
@@ -231,14 +254,14 @@ The DDSketch paper (Masson, Rim, Lee, VLDB 2019) gives a relative-error guarante
 
 ## Cardinality limits and tenant isolation
 
-Cardinality is the platform's central risk. The arithmetic: a counter with 10 label combinations plus a `user_id` label with 1M distinct values is up to 10M series × 3 KB × 3 replicas = **90 GB of RAM** — 13% of the whole fleet's 675 GB from one tenant's one mistake.
+Cardinality is the platform's central risk. The arithmetic: a counter with 10 label combinations plus a `user_id` label with 1M distinct values is up to 10M series × 3 KB × 3 replicas = **90 GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>** — 13% of the whole fleet's 675 GB from one tenant's one mistake.
 
 **Layers, cheapest first:**
 
-1. **Label schema validation at the distributor.** Max 30 label names, label value ≤ 2 KB, denylist of obvious offenders (`user_id`, `request_id`, `session_id`, raw IP) per tenant policy. Rejects a whole class of mistakes without any state.
+1. **Label schema validation at the distributor.** Max 30 label names, label value ≤ 2 KB, denylist of obvious offenders (`user_id`, `request_id`, `session_id`, raw <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>) per tenant policy. Rejects a whole class of mistakes without any state.
 2. **Active-series quota per tenant, enforced at ingest.** Default 100,000, raised on request. Each ingester enforces a *local* share of the global limit — `limit × RF ÷ shard_size` (100,000 × 3 ÷ 6 = 50,000 per ingester) — so there is no cross-node coordination on the hot path (the same "global limit divided across ingesters" approach Mimir documents). Cost: hash skew can reject slightly early or late; acceptable because the limit is a guardrail, not an invoice.
 3. **New-series creation-rate limit.** Active series can stay flat while *churn* (pods with random names, per-deploy labels) creates unbounded total series and bloats every block's index. Cap creation at, say, 10× the active limit per hour.
-4. **Sample-rate token bucket per tenant.** A tenant sending 100× its normal volume is limited to its allocation before it takes ingester CPU.
+4. **Sample-rate token bucket per tenant.** A tenant sending 100× its normal volume is limited to its allocation before it takes ingester <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.
 5. **Visible rejection.** Over-limit series get a 400 naming the reason and counted in `discarded_samples_total{reason,tenant}`; samples for existing series continue to be accepted. Alerts fire to the tenant at 80% of the quota, before the cap; `GET /v1/cardinality/label_names` shows which label exploded.
 6. **Per-tenant query limits** (max series and samples per query, concurrency, timeout) with fair-queue scheduling across tenants.
 
@@ -284,26 +307,26 @@ sequenceDiagram
 
 ## Capacity and storage
 
-Sizing follows from the estimates: ~42 ingesters (14 per zone × 3 zones, 32 GB, local SSD for the WAL) hold ~16 GB of head each; ~20 distributors (stateless, sized by the 100 MB/s wire rate and validation CPU); ~300 cores of queriers for dashboards (assume 2,000 concurrent users × 20 panels refreshing every 30 s ≈ 1,330 queries/s × 0.115 core-s ≈ 154 cores, doubled for headroom); ~100 ruler cores; store-gateways sized by index-header memory, not by data volume; compactors are batch jobs that must keep up with 0.86 TB/day of native blocks plus rollup output (tens of MB/s, far below what one node can do — they are limited by object-store listing and by the ~40K small per-tenant blocks cut every 2 h before merging (assuming an average shard size of 4 ingesters × 10,000 tenants)). Object storage holds ≈ 175 TB. The WAL/ingest path must be partitioned by tenant/time so ingest workers scale horizontally without contention, and compaction must run as an independent background process per partition so it never blocks the ingest hot path.
+Sizing follows from the estimates: ~42 ingesters (14 per zone × 3 zones, 32 GB, local <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> for the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>) hold ~16 GB of head each; ~20 distributors (stateless, sized by the 100 MB/s wire rate and validation <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>); ~300 cores of queriers for dashboards (assume 2,000 concurrent users × 20 panels refreshing every 30 s ≈ 1,330 queries/s × 0.115 core-s ≈ 154 cores, doubled for headroom); ~100 ruler cores; store-gateways sized by index-header memory, not by data volume; compactors are batch jobs that must keep up with 0.86 TB/day of native blocks plus rollup output (tens of MB/s, far below what one node can do — they are limited by object-store listing and by the ~40K small per-tenant blocks cut every 2 h before merging (assuming an average shard size of 4 ingesters × 10,000 tenants)). Object storage holds ≈ 175 TB. The <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>/ingest path must be partitioned by tenant/time so ingest workers scale horizontally without contention, and compaction must run as an independent background process per partition so it never blocks the ingest hot path.
 
 The old-tier idea "1-hour rollups for a year" is deliberately *not* used: the question requires 1-minute resolution for the full 13 months, and the plan above is sized for that (168 TB). A coarser tier is a cost lever to propose (5-minute after 30 days ≈ 4× smaller), not a default.
 
-Do not let labels like `user_id`, `request_id`, `session_id`, or raw IP be attached to a metric — cardinality is the platform's central capacity risk, and a single such label can turn a metric with tens of series into one with millions; enforce this with both a cardinality quota and, where possible, schema-level label-key validation. Do not treat this store as an audit-grade billing record — samples can be validly dropped under backpressure or rejected for quota reasons, and downsampling destroys point-in-time exactness; if a caller needs exact per-event billing truth, that belongs in a separate durable event log, not the metrics platform.
+Do not let labels like `user_id`, `request_id`, `session_id`, or raw <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> be attached to a metric — cardinality is the platform's central capacity risk, and a single such label can turn a metric with tens of series into one with millions; enforce this with both a cardinality quota and, where possible, schema-level label-key validation. Do not treat this store as an audit-grade billing record — samples can be validly dropped under backpressure or rejected for quota reasons, and downsampling destroys point-in-time exactness; if a caller needs exact per-event billing truth, that belongs in a separate durable event log, not the metrics platform.
 
 ## Failure and abuse behavior
 
 | Case | Correct behavior |
 |---|---|
 | Tenant attaches high-cardinality label (user_id) | Cardinality quota rejects new series beyond the tenant's cap with a visible error/counter, rather than silently accepting and letting series count balloon. |
-| Ingest backlog builds during a traffic spike | Buffer/batch in the WAL up to a bounded depth; beyond that, shed load by rejecting new samples with a clear signal rather than growing an unbounded queue that risks OOM. Agents buffer locally and retry 429/503 with jitter. |
+| Ingest backlog builds during a traffic spike | Buffer/batch in the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> up to a bounded depth; beyond that, shed load by rejecting new samples with a clear signal rather than growing an unbounded queue that risks <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>. Agents buffer locally and retry 429/503 with jitter. |
 | Compaction/downsampling falls behind | Recent high-res data remains queryable; older-tier queries may see a documented staleness gap until compaction catches up — surfaced via a lag metric, not hidden. Native blocks are deleted only after the rollup block is verified. |
 | Query requests an unbounded time range across millions of series | Query engine enforces range and result-cardinality limits, returning a clear "narrow your query" error rather than attempting the scan and degrading shared query capacity. |
 | Alert rule evaluation lags behind real time | Alert delay is tracked explicitly; a lagging evaluator should alert on itself (meta-monitoring) since a silent alerting delay is worse than a missing dashboard panel. |
 | Duplicate/retried sample from a flaky agent | Timestamp + series identity is the natural dedupe key; a retried identical sample at the same timestamp is idempotent to reapply, not double-counted as two separate events. |
-| One ingester crashes (or OOMs on a poison tenant) | Quorum 2 of 3 continues; only that tenant's shard is exposed; the node restarts and replays its WAL (minutes), and the distributor skips it meanwhile. |
+| One ingester crashes (or OOMs on a poison tenant) | Quorum 2 of 3 continues; only that tenant's shard is exposed; the node restarts and replays its <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> (minutes), and the distributor skips it meanwhile. |
 | One zone lost | Every series still has 2 replicas, so writes run at 2-of-2 with no further failure tolerance until the zone returns; alert and query pools in the surviving zones continue. |
-| Whole region lost | Not covered by the single-region design: blocks replicate asynchronously to another region, so RPO is the un-uploaded head (~2 h) unless WAL shipping is added; see the multi-region follow-up. |
-| Object store unavailable | Ingesters keep the head and WAL and retry uploads (local disk sized for several hours of blocks); queries for data older than ~2 h fail or degrade to cache; alerts (head-only) are unaffected. |
+| Whole region lost | Not covered by the single-region design: blocks replicate asynchronously to another region, so RPO is the un-uploaded head (~2 h) unless <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> shipping is added; see the multi-region follow-up. |
+| Object store unavailable | Ingesters keep the head and <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> and retry uploads (local disk sized for several hours of blocks); queries for data older than ~2 h fail or degrade to cache; alerts (head-only) are unaffected. |
 | Bad deploy | Roll out one zone at a time, ingesters last, with the canary comparing reject rate and p99 append latency; queriers and rulers roll out separately from ingesters; rule-file changes are validated (syntax and estimated series touched) before activation. |
 
 ## Observability and interview close
@@ -321,29 +344,29 @@ Trade-off to state: "I keep native resolution for 7 days and 1-minute aggregates
 1. **"How do you do multi-region?"** Keep each region a full, independent stack that stores its own tenants' data, and query globally by fanning out to each region and merging partial aggregates (pushing `sum by` down to the regions), which is the shape described for Google's Monarch (regional in-memory zones with global queries, VLDB 2020). Alerts are evaluated in the region where the data lives so a WAN partition cannot delay them. Replicate blocks asynchronously for DR; accept RPO ≈ the un-uploaded head.
 2. **"What changes at 10× and 100×?"** At 50M samples/s the head is ~6.75 TB across replicas (750M series × 3 KB × 3), and the index per 2-hour block is 75 GB — one ring becomes too big to operate. Move to *cells*: each cell is a complete 5M/s stack, a router maps tenant → cell, and a huge tenant may be split across cells by metric namespace. At 100× the ingest path is likely worth moving to a log ([26](../building_blocks/26_distributed_log_internals.md)) so cells can be rebuilt by replay.
 3. **"Can you make it exact — no lost samples?"** Only for a subset: switch that tenant to synchronous quorum with fsync per batch (higher latency, lower throughput), disable drops under backpressure (reject instead), and reconcile against a durable event log. Billing-grade counts should come from the event log, and metrics stay approximate.
-4. **"What does it cost, and what would you cut first?"** Storage ≈ $4K/month for 175 TB, ingester RAM for 75M series × 3 replicas, and query CPU dominate. The first lever is cardinality (chargeback at ~9 KB RAM and 2.3 MB storage per series), then coarser rollups for old data (4× on the long tier), then dropping unqueried metrics (usage-based retention).
+4. **"What does it cost, and what would you cut first?"** Storage ≈ $4K/month for 175 TB, ingester <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> for 75M series × 3 replicas, and query <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> dominate. The first lever is cardinality (chargeback at ~9 KB <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and 2.3 MB storage per series), then coarser rollups for old data (4× on the long tier), then dropping unqueried metrics (usage-based retention).
 5. **"How do you defend against abuse?"** Layered limits: label schema, active series, series churn, sample rate, per-query limits, fair queues, and shuffle sharding so the remainder of the blast radius is confined to a small subset of nodes ([28 — overload control](../building_blocks/28_overload_control_and_graceful_degradation.md), [25 — hot keys](../building_blocks/25_partitioning_and_hot_keys.md)).
-6. **"Why not just use Elasticsearch, Cassandra or a SQL database?"** A sample is 16 B raw but ~2 B in a purpose-built chunk; a per-row store spends 10–100× more bytes and disk I/O per sample and cannot do delta-of-delta compression across a series. You would use a general store only for the control plane. Build-vs-buy: run an open-source TSDB (Mimir, Thanos, VictoriaMetrics) or buy a hosted one unless you have a reason not to.
+6. **"Why not just use Elasticsearch, Cassandra or a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database?"** A sample is 16 B raw but ~2 B in a purpose-built chunk; a per-row store spends 10–100× more bytes and disk I/O per sample and cannot do delta-of-delta compression across a series. You would use a general store only for the control plane. Build-vs-buy: run an open-source TSDB (Mimir, Thanos, VictoriaMetrics) or buy a hosted one unless you have a reason not to.
 7. **"What if I told you 1% percentile error is unacceptable?"** Then for those metrics use finer-grained buckets (α = 0.1% needs ~10× more buckets) or store exact events for those flows via the logging platform ([014](014_logging_platform_solution.md)); cardinality cost rises accordingly, and I would say so.
-8. **"What if the interviewer disagrees with enforcing cardinality at ingest and prefers accept-then-clean?"** Concede the operational point (never dropping a sample is friendlier), but hold the distinction: accept-then-clean puts the explosion in RAM and in every block's index before anyone reacts, and the first symptom is other tenants' slow queries. I would offer a compromise: accept into a *quarantine* series budget per tenant that is isolated from the shared head, so the tenant's data is kept but cannot hurt others.
+8. **"What if the interviewer disagrees with enforcing cardinality at ingest and prefers accept-then-clean?"** Concede the operational point (never dropping a sample is friendlier), but hold the distinction: accept-then-clean puts the explosion in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and in every block's index before anyone reacts, and the first symptom is other tenants' slow queries. I would offer a compromise: accept into a *quarantine* series budget per tenant that is isolated from the shared head, so the tenant's data is kept but cannot hurt others.
 
 ## Common mistakes
 
-1. **Treating samples/s as the sizing number.** The estimate then says "80 MB/s, easy" and misses that 75M active series need ~675 GB of RAM. Size on series first, samples second.
+1. **Treating samples/s as the sizing number.** The estimate then says "80 MB/s, easy" and misses that 75M active series need ~675 GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. Size on series first, samples second.
 2. **Averaging percentiles.** p99s from 500 pods cannot be averaged. Use mergeable histograms/sketches and say why.
 3. **Downsampling to the last point only.** A minute average hides a 30-second spike, and a `rate()` over decimated counters breaks at resets. Store min/max/sum/count for gauges and a reset-aware value for counters.
 4. **Evaluating alerts at 60 s and claiming a 30 s lag.** The tick alone can add 60 s. Do the budget arithmetic (5 + 15 + 5 + 5) and state the rule interval the contract covers.
-5. **Detecting cardinality after the fact.** By the time a dashboard is slow the series are in RAM and every block's index. Enforce at ingest, reject visibly, and give tenants a cardinality report.
+5. **Detecting cardinality after the fact.** By the time a dashboard is slow the series are in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and every block's index. Enforce at ingest, reject visibly, and give tenants a cardinality report.
 6. **One shared query pool for dashboards and alerts.** A dashboard stampede delays paging. Separate the rule path and read the head directly.
-7. **Unbounded queues.** "Buffer everything" turns a traffic spike into an OOM. Bounded queues, explicit 429/503, and agent-side buffering keep failure local.
+7. **Unbounded queues.** "Buffer everything" turns a traffic spike into an <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>. Bounded queues, explicit 429/503, and agent-side buffering keep failure local.
 8. **Ignoring what happens to the old data.** Saying "1-minute for 13 months" without noting it is 97% of storage, or that the rollup is the *only* copy after 7 days, so a buggy downsampler destroys history. Verify before deleting native blocks.
 
 ## Going from L5 to L6
 
 - **Migration and rollout.** Onboard tenants gradually: shadow-write to the new platform, compare query results against the old one, and move dashboards before alerts; start every tenant with a conservative series limit and raise it with data.
-- **Cost model.** Present cost per active series (≈ 9 KB RAM, ≈ 2.3 MB of storage over 13 months) and price tenants by series and retention; make cardinality a product feature (self-service report and quota-request flow) rather than a support ticket.
-- **Ownership and blast radius.** Cells (5M samples/s each), shuffle-sharded ingesters/queriers/rulers, and a separate ruler path mean any single failure costs a small slice of tenants; one team owns the agents and schema, another the storage tier, and the SLO for alert lag is owned end to end.
-- **Build vs buy.** Adopt an existing open-source engine (Mimir/Thanos/VictoriaMetrics) and put differentiation in tenancy, quotas and the alert SLO, unless scale or cost make a custom store worth its operational load.
+- **Cost model.** Present cost per active series (≈ 9 KB <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, ≈ 2.3 MB of storage over 13 months) and price tenants by series and retention; make cardinality a product feature (self-service report and quota-request flow) rather than a support ticket.
+- **Ownership and blast radius.** Cells (5M samples/s each), shuffle-sharded ingesters/queriers/rulers, and a separate ruler path mean any single failure costs a small slice of tenants; one team owns the agents and schema, another the storage tier, and the <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> for alert lag is owned end to end.
+- **Build vs buy.** Adopt an existing open-source engine (Mimir/Thanos/VictoriaMetrics) and put differentiation in tenancy, quotas and the alert <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>, unless scale or cost make a custom store worth its operational load.
 - **Phased evolution.** Phase 1: single-region replicated ingesters + object store + rules; phase 2: results cache, query sharding, native histograms; phase 3: log-first ingest and cells; phase 4: multi-region query federation.
 - **What I would measure first.** Real bytes/sample and head bytes/series on production data (my 2 B and 3 KB are assumptions), the series-per-tenant distribution (to validate the skew and overcommit), and the share of dashboards that actually query beyond 7 days.
 

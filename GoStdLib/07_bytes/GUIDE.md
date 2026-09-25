@@ -33,7 +33,7 @@ growable byte buffer that satisfies `io.Writer`/`io.Reader`.
 | `[]byte`↔`string` conversion copies | `string(b)` and `[]byte(s)` both copy the underlying bytes (the compiler only skips the copy in a few narrow, provably-safe cases like `m[string(b)]` lookups). Converting in a hot loop is a measurable cost — see level 6. |
 | `Buffer` zero value is ready to use | `var buf bytes.Buffer` needs no constructor; `new(bytes.Buffer)` and `bytes.Buffer{}` all work identically. Don't reach for `bytes.NewBuffer(nil)` out of habit. |
 | Reading a `Buffer`/`Reader` past the end returns `io.EOF` | Not a special "empty" error type — the same sentinel every other `io.Reader` uses. Check with `errors.Is(err, io.EOF)`. |
-| `bytes.Split` on an empty separator splits every UTF-8 rune | `bytes.Split(b, nil)` (or `[]byte{}`) splits after each rune, which surprises people expecting an error or a no-op. |
+| `bytes.Split` on an empty separator splits every <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 rune | `bytes.Split(b, nil)` (or `[]byte{}`) splits after each rune, which surprises people expecting an error or a no-op. |
 | `Reset()` keeps capacity | `buf.Reset()` sets length to 0 but keeps the allocated backing array — reuse it in loops instead of allocating a new `Buffer`, but remember this is exactly what makes the aliasing gotcha above dangerous. |
 
 ## What the 10 levels cover

@@ -2,9 +2,9 @@
 
 Welcome to Day 71. For an entire decade, Convolutional Neural Networks (CNNs like ResNet) were the undisputed kings of Computer Vision. 
 
-But in 2020, researchers at Google asked a crazy question: *What if we just threw the CNN in the garbage, treated an image exactly like a sentence of words, and fed it into a Transformer Encoder?*
+But in 2020, researchers at Google asked a crazy question: *What if we just threw the <abbr title="Convolutional Neural Network">CNN</abbr> in the garbage, treated an image exactly like a sentence of words, and fed it into a Transformer Encoder?*
 
-The result was the **Vision Transformer (ViT)**. It destroyed the state-of-the-art and unified the fields of NLP and Vision forever.
+The result was the **Vision Transformer (ViT)**. It destroyed the state-of-the-art and unified the fields of <abbr title="Natural Language Processing">NLP</abbr> and Vision forever.
 
 ---
 
@@ -33,7 +33,7 @@ Once we have the 196 embeddings, we do exactly what we did with BERT on Day 65!
 Why didn't we do this earlier? Because of **Inductive Bias**.
 CNNs have a strong inductive bias: The math of a convolutional filter inherently assumes that pixels physically next to each other are related. 
 ViT has **NO** inductive bias. It doesn't know that Patch 1 and Patch 2 are next to each other. It has to figure it out from scratch. 
-Because of this, if you train ViT on a small dataset (like 50,000 images), it fails completely. But if you train it on 300 Million images, its lack of assumptions allows it to learn deeper, more complex relationships than a CNN ever could!
+Because of this, if you train ViT on a small dataset (like 50,000 images), it fails completely. But if you train it on 300 Million images, its lack of assumptions allows it to learn deeper, more complex relationships than a <abbr title="Convolutional Neural Network">CNN</abbr> ever could!
 
 ---
 
@@ -125,7 +125,7 @@ ViT is the backbone of CLIP (Day 60).
 **Your Task:**
 1. Imagine you have a database of 1 Million product images. 
 2. Mentally design a script that passes all 1M images through CLIP's ViT Encoder, yielding 1M embeddings of size 512.
-3. Save these embeddings to a Vector Database using `FAISS` (Facebook AI Similarity Search).
+3. Save these embeddings to a Vector Database using `FAISS` (Facebook <abbr title="Artificial Intelligence">AI</abbr> Similarity Search).
 4. When a user types *"Red running shoes"*, pass that text through CLIP's Text Encoder.
 5. Do a simple dot-product similarity search between the text embedding and the 1M image embeddings in FAISS to instantly retrieve the visual products!
 
@@ -143,11 +143,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - State that running 100M images through a ViT/CLIP model live is impossible. Embeddings must be generated offline in a batch data pipeline (Spark/Airflow) using heavy GPU clusters and saved to a database.
 2. **Indexing (The FAISS bottleneck):**
    - Explain that calculating exact Cosine Similarity for 100M vectors takes seconds. You MUST use **ANN (Approximate Nearest Neighbors)**. 
-   - Propose using FAISS with **IVF-PQ (Inverted File Index with Product Quantization)**. IVF clusters the vectors into Voronoi cells so you only search a fraction of the DB. PQ mathematically compresses the 512D floats into 8-bit integers, drastically reducing RAM usage.
+   - Propose using FAISS with **IVF-<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr> (Inverted File Index with Product Quantization)**. IVF clusters the vectors into Voronoi cells so you only search a fraction of the DB. <abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr> mathematically compresses the 512D floats into 8-bit integers, drastically reducing <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> usage.
 3. **Serving Architecture (Live):**
-   - Detail the live workflow: User uploads an image $\rightarrow$ API Gateway $\rightarrow$ GPU Inference Service (generates 1 ViT embedding) $\rightarrow$ FAISS index (retrieves Top 100 IDs) $\rightarrow$ Metadata DB (Postgres/Redis) to fetch product prices and URLs $\rightarrow$ Return to user.
+   - Detail the live workflow: User uploads an image $\rightarrow$ <abbr title="Application Programming Interface">API</abbr> Gateway $\rightarrow$ GPU Inference Service (generates 1 ViT embedding) $\rightarrow$ FAISS index (retrieves Top 100 IDs) $\rightarrow$ Metadata DB (Postgres/Redis) to fetch product prices and URLs $\rightarrow$ Return to user.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have united Vision and NLP!
+**Task for the end of the day:** Commit your code to Git. You have united Vision and <abbr title="Natural Language Processing">NLP</abbr>!
 
 Tomorrow, in **Day 72**, we tackle the biggest hardware bottleneck in Deep Learning. We will learn how **Flash Attention** tricks the GPU memory hierarchy to make Transformers run 3x faster!

@@ -68,7 +68,7 @@ class SinglePerceptron:
         # Step Function: If > 0 return 1, else 0
         return (summation > 0).astype(int)
 
-print("--- SINGLE PERCEPTRON (XOR TEST) ---")
+print("--- SINGLE PERCEPTRON (<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> TEST) ---")
 model_1 = SinglePerceptron()
 print("Predictions:", model_1.forward(X).flatten())
 print("True Answer:", y_xor.flatten())
@@ -98,7 +98,7 @@ class TwoLayerMLP:
         final_sum = np.dot(hidden_out, self.W2) + self.b2
         return sigmoid(final_sum)
 
-print("--- TWO-LAYER MLP (XOR TEST) ---")
+print("--- TWO-LAYER MLP (<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> TEST) ---")
 # Note: I am skipping the training loop (Backpropagation) until Day 33.
 # Let's manually set the weights to the mathematical perfect solution for XOR!
 model_2 = TwoLayerMLP()
@@ -126,7 +126,7 @@ In the MLP code above, I used a `sigmoid()` function inside the Hidden Layer ins
 **Your Task:**
 1. Copy the MLP code.
 2. Remove the `sigmoid()` call in the hidden layer, so it just becomes `hidden_out = hidden_sum`.
-3. Run the code. Notice that the MLP **FAILS** the XOR test!
+3. Run the code. Notice that the MLP **FAILS** the <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> test!
 4. **Why?** If you don't use an "Activation Function" to bend the line, stacking 100 straight lines just equals 1 single straight line. ($2x \cdot 3x = 6x$, which is still a straight line). You must introduce a curve! Tomorrow (Day 32), we learn exactly how to do this.
 
 ### 🎤 MAANG Technical Interview Prep
@@ -134,7 +134,7 @@ In the MLP code above, I used a `sigmoid()` function inside the Hidden Layer ins
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"The Universal Approximation Theorem guarantees that a Neural Network with a single hidden layer can perfectly map any dataset. However, in practice, we never use massive 1-layer networks. Furthermore, even if the theorem guarantees a perfect solution exists, why doesn't that guarantee that our AI will actually find it during training?"*
+*"The Universal Approximation Theorem guarantees that a Neural Network with a single hidden layer can perfectly map any dataset. However, in practice, we never use massive 1-layer networks. Furthermore, even if the theorem guarantees a perfect solution exists, why doesn't that guarantee that our <abbr title="Artificial Intelligence">AI</abbr> will actually find it during training?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the difference between **Representation** and **Optimization**:
@@ -145,7 +145,7 @@ A "Strong Hire" candidate must articulate the difference between **Representatio
 2. **Optimization (The Flaw):**
    - Explain that just because the perfect mathematical weights *exist*, doesn't mean Gradient Descent can *find* them!
    - The "Loss Landscape" of a massive 1-layer network is incredibly non-convex (it looks like a mountain range with thousands of deep valleys).
-   - Conclude that Gradient Descent is highly likely to get stuck in a "Local Minimum" (a bad valley) forever. Optimization is the true bottleneck of AI, not Representation.
+   - Conclude that Gradient Descent is highly likely to get stuck in a "Local Minimum" (a bad valley) forever. Optimization is the true bottleneck of <abbr title="Artificial Intelligence">AI</abbr>, not Representation.
 
 ---
 **Task for the end of the day:** Commit your code to Git. You have built a digital brain. 

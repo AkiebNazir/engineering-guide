@@ -39,7 +39,7 @@ def create_notifier(channel: str) -> Notifier:
     raise ValueError(channel)
 ```
 
-**When it's overkill:** if there's only one concrete implementation and no credible near-term second one, a factory function around a single constructor is an indirection layer with no payoff — just call `EmailNotifier()` directly (YAGNI).
+**When it's overkill:** if there's only one concrete implementation and no credible near-term second one, a factory function around a single constructor is an indirection layer with no payoff — just call `EmailNotifier()` directly (<abbr title="You Aren't Gonna Need It - A principle of extreme programming that states a programmer should not add functionality until deemed necessary.">YAGNI</abbr>).
 
 ## Abstract Factory
 

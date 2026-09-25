@@ -1,6 +1,6 @@
 # Day 76: Knowledge Distillation & Model Compression
 
-Welcome to Day 76. You have built a 70-Billion parameter LLaMA model. It is a certified genius. But your product manager tells you it needs to run offline on an iPhone with only 4GB of RAM.
+Welcome to Day 76. You have built a 70-Billion parameter LLaMA model. It is a certified genius. But your product manager tells you it needs to run offline on an iPhone with only 4GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>.
 
 A 70B model requires 140 Gigabytes of VRAM. It physically cannot fit on a phone. You must train a tiny 1-Billion parameter model instead. But tiny models are inherently stupid. 
 
@@ -132,7 +132,7 @@ Matching the final output logits is great, but we can go deeper.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You need to deploy a model on edge devices with a strict 100MB RAM limit. Your best model is currently 1.2GB. Design the complete model compression strategy using distillation, pruning, and quantization. What is the expected quality-size trade-off curve?"*
+*"You need to deploy a model on edge devices with a strict 100MB <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> limit. Your best model is currently 1.2GB. Design the complete model compression strategy using distillation, pruning, and quantization. What is the expected quality-size trade-off curve?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -150,4 +150,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 Congratulations. You have completed the next 10 days. You have scaled from basic architecture to massive Pre-training pipelines, and finally down to Edge Deployment compression! 
 
-In the next chunk, we will dive into **Parameter-Efficient Fine-Tuning (PEFT), LoRA, RLHF, and AI Agents!**
+In the next chunk, we will dive into **Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>), <abbr title="Low-Rank Adaptation">LoRA</abbr>, <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>, and <abbr title="Artificial Intelligence">AI</abbr> Agents!**

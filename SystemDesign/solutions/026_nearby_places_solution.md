@@ -8,10 +8,10 @@ A read-dominated service (50K searches/s vs ~12 writes/s) where place data can b
 
 - **Place records**: 200M × ~2 KB of core fields (name, lat/lng, categories, rating, hours) ≈ 400 GB; photos and reviews live elsewhere (object storage and a review service).
 - **Geo index**: per place, a cell ID (8 bytes) + place ID (8 bytes) + a few ranking fields (~32 bytes) ≈ 50 bytes × 200M ≈ **10 GB** — the whole world's index fits in memory on one server, so sharding is for throughput and locality, not size.
-- **Reads**: 50K QPS peak. If one index server handles ~5K QPS, ~10 servers plus replicas per region; regional deployment keeps latency low.
+- **Reads**: 50K <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> peak. If one index server handles ~5K <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, ~10 servers plus replicas per region; regional deployment keeps latency low.
 - **Writes**: 1M updates/day ≈ 12/s — trivial; an asynchronous pipeline is fine.
 
-## API and data model
+## <abbr title="Application Programming Interface">API</abbr> and data model
 
 ```text
 GET /v1/places/search?lat=37.78&lng=-122.41&radius_m=2000&category=coffee&open_now=true&page_token=…
@@ -45,19 +45,35 @@ This avoids the geohash boundary problem (the covering naturally includes neighb
 
 ## Architecture and flows
 
-```mermaid
+```arch
 %% caption: Writes flow asynchronously into in-memory geo indexes; searches never touch the source-of-truth database.
-flowchart LR
-    owner([Business owner]) --> api[Places API] --> db[(Place store<br/>sharded by place_id)]
-    db -->|CDC events| indexer[Geo indexer]
-    indexer --> idx1[Search servers<br/>region A: in-memory S2 index]
-    indexer --> idx2[Search servers<br/>region B]
-    user([User]) --> edge[Edge / CDN cache<br/>by rounded area + filters]
-    edge --> gw[Search gateway]
-    gw --> idx1
-    gw --> rank[Ranking]
-    gw --> hours[Open-now + personalization]
-    user --> details[Place details API] --> cache[(Detail cache)] --> db
+node user "User" at 1,0 icon=mobile
+node owner "Business owner" at 3,0 icon=user
+group search "Search path" color=blue icon=search
+node edge "Edge / CDN cache" at 1,1 in search icon=cdn sub="rounded area + filters"
+node rank "Ranking" at 0,2 in search icon=sort
+node gw "Search gateway" at 1,2 in search icon=gateway
+node hours "Open-now + personalization" at 0,3 in search icon=time
+group det "Place details" color=teal icon=doc
+node details "Place details API" at 2,1 in det icon=api
+node cache "Detail cache" at 2,2 in det icon=cache
+group write "Write path" color=green icon=edit
+node api "Places API" at 3,1 in write icon=api
+node db "Place store" at 3,2 in write icon=db sub="sharded by place_id"
+node indexer "Geo indexer" at 3,3 in write icon=worker
+group idx "In-memory S2 index" color=purple icon=map
+node idx1 "Search servers" at 2,4 in idx icon=server sub="region A"
+node idx2 "Search servers" at 3,4 in idx icon=server sub="region B"
+user -> edge -> gw
+user:R -> details:T
+details -> cache -> db
+owner -> api -> db
+db ..> indexer : "CDC events"
+indexer ..> idx1
+indexer ..> idx2
+gw -> idx1:L
+gw -> rank
+gw -> hours
 ```
 
 - **Write path**: validate and moderate the update, write to the place store, emit a change event; the geo indexer updates the in-memory index on search servers (and a periodic full rebuild corrects drift). Freshness: seconds to minutes.
@@ -74,7 +90,7 @@ Nearby searches are highly repetitive: many people search "coffee" near the same
 
 ## Map pins and zoom levels
 
-At low zoom, showing 50,000 pins is useless and slow. Precompute **clusters per tile per zoom level** (count of places per cell, representative top places) in the same pipeline, and serve them as vector tiles through a CDN. The client fetches tiles for the visible viewport and requests detailed search results only at high zoom.
+At low zoom, showing 50,000 pins is useless and slow. Precompute **clusters per tile per zoom level** (count of places per cell, representative top places) in the same pipeline, and serve them as vector tiles through a <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>. The client fetches tiles for the visible viewport and requests detailed search results only at high zoom.
 
 ## Failure behaviour
 
@@ -95,11 +111,11 @@ Trade-off to state: "Because places rarely move, I rebuild and update a read-opt
 ## Follow-ups the interviewer will ask
 
 1. **"How does this work across regions?"** The whole index is 10 GB, so every serving region can hold a full copy, which is simpler than the regional-plus-neighbours layout above and makes a region outage a pure latency event. Owner writes go to one home region (12 writes/s), and change events replicate asynchronously to every region's indexer, so a new place appears everywhere within seconds to minutes. A partition only delays that propagation; search keeps answering from local memory.
-2. **"What changes at 10× and 100×?"** At 10× (2B places, 500K QPS) the index is 100 GB, still one box, and the search tier is about 100 servers, or about 30 with a 70% cache hit rate (assumed). At 100× (20B places, 5M QPS) the index is 1 TB, so I shard by S2 cell prefix with more replicas for dense metros, and the edge cache with location rounding stops being an optimisation and becomes the design. What breaks first is the dense-metro cache-miss storm, not memory.
+2. **"What changes at 10× and 100×?"** At 10× (2B places, 500K <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>) the index is 100 GB, still one box, and the search tier is about 100 servers, or about 30 with a 70% cache hit rate (assumed). At 100× (20B places, 5M <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>) the index is 1 TB, so I shard by S2 cell prefix with more replicas for dense metros, and the edge cache with location rounding stops being an optimisation and becomes the design. What breaks first is the dense-metro cache-miss storm, not memory.
 3. **"What if a closure or takedown must disappear immediately?"** The 1–5 minute cache TTL and the async index are too slow. Push tombstones (place ID, version) to every search server within seconds and filter them at serving time, and purge affected cache entries by surrogate key (place or cell). The owner's own view reads the source-of-truth store, so read-your-writes holds for them without changing the derived index.
-4. **"What does it cost?"** The index servers are almost free: 3 servers' worth of traffic at a 70% cache hit rate, or 10 servers before caching, plus replicas across a few regions. Egress dominates: 50K QPS × ~5 KB (assumed) = 250 MB/s = 2 Gbps, about 650 TB a month at a sustained peak, so payload trimming, compression and the CDN hit rate matter more than CPU. The place store is 400 GB times its replicas, and photos and reviews are priced separately.
-5. **"How do you handle abuse?"** Scrapers sweep a grid of small searches to copy the database, so rate-limit per key and IP, cap page depth and result count, and detect sweep patterns. Listing spam and fake places go through moderation and large-move validation. Normalise and cap filter values so odd parameters cannot poison the cache or force full scans.
-6. **"Why a custom S2 index rather than PostGIS or Elasticsearch?"** A managed geo store is a fine start: with 12 writes/s and 200M places, PostGIS or Elasticsearch geo queries meet the need and ship sooner. I chose an in-memory S2 array because 10 GB fits in RAM and gives predictable p99 and control of dense-area scan caps. H3 hexagons are a reasonable alternative, with more uniform neighbour distances but only approximately nested cells. I would say which I would pick first: the managed store, then move when the p99 in dense metros forces it.
+4. **"What does it cost?"** The index servers are almost free: 3 servers' worth of traffic at a 70% cache hit rate, or 10 servers before caching, plus replicas across a few regions. Egress dominates: 50K <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> × ~5 KB (assumed) = 250 MB/s = 2 Gbps, about 650 TB a month at a sustained peak, so payload trimming, compression and the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> hit rate matter more than <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>. The place store is 400 GB times its replicas, and photos and reviews are priced separately.
+5. **"How do you handle abuse?"** Scrapers sweep a grid of small searches to copy the database, so rate-limit per key and <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>, cap page depth and result count, and detect sweep patterns. Listing spam and fake places go through moderation and large-move validation. Normalise and cap filter values so odd parameters cannot poison the cache or force full scans.
+6. **"Why a custom S2 index rather than PostGIS or Elasticsearch?"** A managed geo store is a fine start: with 12 writes/s and 200M places, PostGIS or Elasticsearch geo queries meet the need and ship sooner. I chose an in-memory S2 array because 10 GB fits in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and gives predictable p99 and control of dense-area scan caps. H3 hexagons are a reasonable alternative, with more uniform neighbour distances but only approximately nested cells. I would say which I would pick first: the managed store, then move when the p99 in dense metros forces it.
 7. **"How do you keep p99 under 200 ms in Manhattan?"** A 2 km radius holds about 20,000 places, and scanning them at an assumed 50 ns each is 1 ms, so scanning is not the cost. Ranking is: cap candidates per cell by static score, apply a cheap score first, and run the full ranker (open-now, personalisation) only on the top ~200. If the cap truncates, shrink the radius or page by cell.
 
 ## Common mistakes
@@ -107,7 +123,7 @@ Trade-off to state: "Because places rarely move, I rebuild and update a read-opt
 1. **A lat/lng bounding-box query on a relational B-tree.** It scans a whole latitude strip. Use a cell index (S2, geohash, quadtree).
 2. **Geohash lookup of only the user's cell.** Places just across a cell edge are missed. Query the covering or the 8 neighbours too.
 3. **Searching the source-of-truth database.** Read load and writes then couple. Serve from a derived in-memory index and cache, and let the store handle only writes and details.
-4. **Ranking every candidate in a dense area.** 20,000 candidates per query multiplies CPU. Cap per cell by static score and use a two-stage ranker.
+4. **Ranking every candidate in a dense area.** 20,000 candidates per query multiplies <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>. Cap per cell by static score and use a two-stage ranker.
 5. **Caching on exact coordinates.** The hit rate is near zero. Round the location to a cell and radius bucket, and let the client re-sort by exact distance.
 6. **Hashing the search index by `place_id`.** Every query then fans out to all shards. Shard the index geographically and the store by id.
 7. **Doing spherical math by hand.** Longitude wrap-around at the antimeridian and pole cases break naive distance filters. Use a library covering algorithm.
@@ -115,9 +131,9 @@ Trade-off to state: "Because places rarely move, I rebuild and update a read-opt
 ## Going from L5 to L6
 
 - **Migration and rollout.** The index is derived, so change it by rebuilding beside the old one: build from the store plus change-event replay, compare counts and sampled query recall against the live index, then shift regions one at a time. Changing the S2 level is a dual-index migration, never an in-place edit.
-- **Cost model.** Memory and CPU are small, so egress, the CDN and the place store's replicas set the bill; cache hit rate is the main lever. Report cost per 1,000 searches.
+- **Cost model.** Memory and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> are small, so egress, the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> and the place store's replicas set the bill; cache hit rate is the main lever. Report cost per 1,000 searches.
 - **Ownership and blast radius.** Place data, search serving and ranking are separate owners joined by the change-event contract. A bad index build is confined to the region being rolled, and moderation stays a separate gate on writes.
-- **Build versus buy.** Start on a managed geo database or search engine and buy the CDN and map tiles; build the in-memory S2 tier only when dense-city p99 or cost forces it.
+- **Build versus buy.** Start on a managed geo database or search engine and buy the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> and map tiles; build the in-memory S2 tier only when dense-city p99 or cost forces it.
 - **Phased evolution and what to measure first.** Ship radius search on a managed store, then add the cache and the in-memory index, then tiles and clusters. Measure first: candidates scanned per query in the top 20 metros, cache hit rate by cell, and write-to-searchable latency.
 
 ## Build exercise

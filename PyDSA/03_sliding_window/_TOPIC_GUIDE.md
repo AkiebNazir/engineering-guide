@@ -46,19 +46,19 @@ O(1) on leave, you do not have a sliding window.** (§1.6 is what to do then.)
 
 The template *looks* quadratic:
 
-```mermaid
+```arch
 %% caption: r only moves right and l only moves right, so every index enters and leaves the window at most once: 2n steps in total.
-flowchart TD
-  A["for r in range(n)"] --> B["add s[r] to the window"]
-  B --> C{"window still valid?"}
-  C -->|"no"| D["remove s[l], l += 1"]:::hot
-  D --> C
-  C -->|"yes"| E["update the best answer"]:::ok
-  E --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x100
+node a "for r in range(n)" at 1,0 shape=pill
+node b "Add s[r] to the window" at 1,1
+node c "Window still valid?" at 1,2 shape=diamond color=amber
+node d "Remove s[l], l += 1" at 2,2 color=amber
+node e "Update the best answer" at 0,2 color=green
+a -> b -> c
+c:R -> d:L : "no"
+d:B -> c:B
+c:L -> e:R : "yes"
+e:T -> a:L
 ```
 
 
@@ -363,20 +363,24 @@ one for max, one for min), LC 1696.
 Before writing a line, answer these in order. They determine the shape
 completely:
 
-```mermaid
+```arch
 %% caption: Which window shape to reach for.
-flowchart TD
-  Q(["What is being asked?"]) --> A{"Window size k given?"}
-  A -->|yes| FA["Shape A: fixed window<br/>add one on the right, drop one on the left"]:::ok
-  A -->|no| B{"What is optimised?"}
-  B -->|"longest valid"| FB["Shape B: shrink while INVALID"]:::ok
-  B -->|"shortest valid"| FC["Shape C: shrink while still VALID"]:::ok
-  B -->|"count subarrays"| FE["Shape E: atMost(k) minus atMost(k-1)"]:::ok
-  B -->|"max or min of the window"| FF["Shape F: monotonic deque"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 300x90
+node q "What is being asked?" at 0,0 shape=pill
+node a "Window size k given?" at 0,1 shape=diamond color=amber
+node fa "Shape A: fixed window" at 1,1 color=green w=230 sub="add one on the right, drop one on the left"
+node b "What is optimised?" at 0,3 shape=diamond color=amber
+node fb "Shape B" at 1,2 color=green sub="shrink while INVALID"
+node fc "Shape C" at 1,3 color=green sub="shrink while still VALID"
+node fe "Shape E" at 1,4 color=green sub="atMost(k) minus atMost(k-1)"
+node ff "Shape F" at 0,4 color=green sub="monotonic deque"
+q -> a
+a -> fa : "yes"
+a -> b : "no"
+b:R -> fb:L : "longest valid"
+b:R -> fc:L : "shortest valid"
+b:R -> fe:L : "count subarrays"
+b -> ff : "window max or min"
 ```
 
 
@@ -573,7 +577,7 @@ Know the neighbours, because interviewers probe the boundary:
 | Symptom | Right tool | Why not a window |
 |---|---|---|
 | Values may be **negative**, aggregate is a sum | **prefix sums + hash map** (topic 04), or prefix + monotonic deque | growing can shrink the sum; `l += 1` discards live answers |
-| Subsequence, not subarray (elements need not be adjacent) | DP (topics 16/17) | a window is contiguous by definition |
+| Subsequence, not subarray (elements need not be adjacent) | <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (topics 16/17) | a window is contiguous by definition |
 | Array is **sorted** and you want a pair | converging two pointers (topic 02) | `l` and `r` move toward each other, not both right |
 | You need the k-th largest across the window | heap (topic 12) or two heaps | deque gives you the max only |
 | "Any subarray with sum exactly S", negatives allowed | prefix sum + hash map | LC 560 — the classic non-window lookalike |
@@ -709,7 +713,7 @@ Fifteen problems, six window shapes (A fixed · B longest · C shortest · D nev
 | [003 · Maximum Number of Vowels in a Substring of Given Length](PyDSA/03_sliding_window/003_maximum_number_of_vowels_in_a_substring_solution.py) <br>LC 1456 · Medium | Shape A · predicate count | The same fixed window with the aggregate swapped from a sum to *a count of elements satisfying a predicate* (vowels). **Trap:** recounting the window each step (`s[i:i+k].count(...)`); building the vowel set inside the loop. |
 | [004 · Contains Duplicate II](PyDSA/03_sliding_window/004_contains_duplicate_ii_solution.py) <br>LC 219 · Easy | Shape A · over a set | A window of the previous `k` values held in a *set*; one membership test per element. **Trap:** evicting `nums[r-k]` instead of `nums[r-k-1]` (off by one — `[1,2,3,1]`, `k=3` returns False); testing *after* inserting (always True). |
 | [005 · Longest Substring Without Repeating Characters](PyDSA/03_sliding_window/005_longest_substring_without_repeating_characters_solution.py) <br>LC 3 · Medium | Shape B · longest | Expand `r`; when the incoming character is already inside, shrink from the left until it is not. Jumping `l` past the last occurrence is the optimisation. **Trap:** an unguarded `l = last[ch] + 1` (needs `max(l, …)` — `"abba"` returns 3); `r - l` instead of `r - l + 1`. |
-| [006 · Max Consecutive Ones III](PyDSA/03_sliding_window/006_max_consecutive_ones_iii_solution.py) <br>LC 1004 · Medium | Shape B/D · "at most k bad" | Reframe first: "flip at most k zeros" *is* "longest subarray containing at most k zeros" — the flipping is a red herring. **Trap:** trying to decide *which* zeros to flip (greedy or DP); `r - l` instead of `r - l + 1`. |
+| [006 · Max Consecutive Ones III](PyDSA/03_sliding_window/006_max_consecutive_ones_iii_solution.py) <br>LC 1004 · Medium | Shape B/D · "at most k bad" | Reframe first: "flip at most k zeros" *is* "longest subarray containing at most k zeros" — the flipping is a red herring. **Trap:** trying to decide *which* zeros to flip (greedy or <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>); `r - l` instead of `r - l + 1`. |
 | [007 · Longest Repeating Character Replacement](PyDSA/03_sliding_window/007_longest_repeating_character_replacement_solution.py) <br>LC 424 · Medium | Shape D · never shrinks | Window valid iff `(r-l+1) - max_freq <= k`; track the max frequency as a *count*, and let the window only grow or slide by one. **Trap:** tracking the letter's identity instead of its count; returning `len(s) - l` after a `while` that recomputes an honest max (`"AABABBA"` → 3, not 4). |
 | [008 · Minimum Size Subarray Sum](PyDSA/03_sliding_window/008_minimum_size_subarray_sum_solution.py) <br>LC 209 · Medium | Shape C · shortest | Grow on the right; *while the window is still valid*, record its length and shrink from the left. **Trap:** `best = 0` (the `min` never moves off it) instead of `inf`; returning `inf` when nothing qualifies (the answer is 0). Only valid for non-negative numbers. |
 | [009 · Fruit Into Baskets](PyDSA/03_sliding_window/009_fruit_into_baskets_solution.py) <br>LC 904 · Medium | Shape B · ≤ 2 distinct | Strip the story: the longest subarray with at most two distinct values (LC 340 with K = 2). **Trap:** forgetting `del count[x]` when a count hits zero, so `len(count)` never falls (infinite shrink); `defaultdict(int)` inserting phantom keys on a stray read — use `Counter`. |

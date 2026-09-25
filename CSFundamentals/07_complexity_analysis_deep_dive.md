@@ -1,6 +1,72 @@
-# L5 Deep Dive: Complexity Analysis — Big-O, Recursion, Amortization, and Reading Constraints
+# Complexity Analysis — Big-O, Recursion, Amortization, and Reading Constraints
 
-Google interviewers expect you to state time AND space complexity **before being asked**, including recursion stack space and hidden costs like slicing. This file covers the reasoning, not just the table: how to derive the bound, how to handle recursion (recursion trees and the master theorem), amortized analysis, and how to use the input constraints to predict the intended algorithm.
+This is the vocabulary every other file in this module uses to talk about
+"fast" and "slow" — start here if you're new to CS fundamentals in general, even
+before the other nine files. This file starts with what Big-O actually measures and
+why it matters, then goes as deep as Google interviewers expect: they expect you to
+state time AND space complexity **before being asked**, including recursion stack
+space and hidden costs like slicing. This file covers the reasoning, not just the
+table: how to derive the bound, how to handle recursion (recursion trees and the
+master theorem), amortized analysis, and how to use the input constraints to predict
+the intended algorithm.
+
+## Foundations — Start Here If You're New to Complexity Analysis
+
+**The question Big-O answers.** If your input has `n` items, how does the amount of
+*work* grow as `n` grows? Not "how many seconds does it take" (that depends on the
+machine) — but "if I double the input, does the work double, quadruple, or barely
+change?" Big-O answers that question by naming a *shape of growth*, ignoring
+machine-specific constants.
+
+**Two worked examples, side by side.**
+
+```python
+# Example A — O(n): work grows in a straight line with n
+def contains(nums, target):
+    for x in nums:            # runs at most n times
+        if x == target:
+            return True
+    return False
+# Double the list -> roughly double the worst-case work. That's O(n): "linear."
+
+# Example B — O(n^2): work grows with the SQUARE of n
+def has_duplicate_pair(nums):
+    for i in range(len(nums)):        # n times
+        for j in range(len(nums)):    # n times, for EACH i
+            if i != j and nums[i] == nums[j]:
+                return True
+    return False
+# Double the list -> roughly QUADRUPLE the worst-case work (2n x 2n = 4 x n x n).
+# That's O(n^2): "quadratic" — the nested loop is why.
+```
+
+**Why `O(1)` and `O(log n)` barely grow at all.** `O(1)` ("constant") means the work
+doesn't depend on `n` — looking up one hash-map key, say. `O(log n)` ("logarithmic")
+means the work grows *very* slowly: binary search on a billion items takes about 30
+steps, not a billion — every step throws away half of what's left. Going from
+"fastest to describe" to "slowest": `O(1) < O(log n) < O(n) < O(n log n) < O(n²) <
+O(2ⁿ) < O(n!)`. That ordering is the single most useful fact in this file — it's
+what lets you say "an `O(n log n)` sort beats an `O(n²)` approach on a large input"
+without measuring anything.
+
+**Why "drop the constants" is allowed, and why it's still worth caring about
+constants in practice.** `O(2n)` and `O(n)` are both called `O(n)` — Big-O describes
+the *shape* of growth, not the exact operation count, because for large enough `n`
+the shape is what dominates. But real interview answers still say things like "this
+is O(n) but with a lot of work per element" when it matters — the rest of this file
+(§1's rules of thumb) makes that precise instead of hand-wavy.
+
+**Time vs. space.** Everything above measures *time* (how much work). The exact same
+notation measures *space* (how much extra memory an algorithm uses beyond its
+input) — a hash-map-based solution might be `O(n)` time and `O(n)` space, while a
+two-pointer solution on the same problem might be `O(n)` time and `O(1)` space. §7
+covers space complexity precisely, including a detail beginners usually miss:
+recursion itself uses space (each pending call takes memory until it returns).
+
+With that foundation — what Big-O measures, why the ordering above holds, and that
+time and space are measured the same way — the rest of this file is the precise,
+interview-depth version: deriving bounds from code, handling recursion, amortized
+analysis, and reading a problem's constraints to predict the intended algorithm.
 
 ## 1. What Big-O Actually Says
 
@@ -68,6 +134,22 @@ Total work is O(n + n) = O(n) because the inner loop's work is bounded across th
 
 **Time = (number of calls) × (work per call, excluding recursive calls).** Draw the tree: branching factor b, depth d, work per node w.
 
+```arch
+%% caption: A naive Fibonacci recursion tree branches exponentially; time complexity is the total number of nodes, while space is just the maximum depth (the call stack).
+route straight
+grid 90x60
+node f5 "f(5)" at 3,0 shape=circle color=blue
+node f4 "f(4)" at 1.5,1 shape=circle color=blue
+node f3a "f(3)" at 4.5,1 shape=circle color=blue
+node f3b "f(3)" at 0.5,2 shape=circle color=blue
+node f2a "f(2)" at 2.5,2 shape=circle color=blue
+
+f5 -- f4
+f5 -- f3a
+f4 -- f3b
+f4 -- f2a
+```
+
 ```text
 fib(n) naive:            fib(5)
                        /        \
@@ -83,7 +165,7 @@ fib(n) naive:            fib(5)
 | Linear recursion f(n-1) | n | O(1) | O(n) | O(n) |
 | Binary tree traversal | n nodes | O(1) | O(n) | O(h): O(log n) balanced, O(n) skewed |
 | Naive Fibonacci | ~φ^n | O(1) | O(φ^n) | O(n) |
-| Memoized DP with S states | S | O(transitions) | O(S × transitions) | O(S) cache + O(depth) stack |
+| Memoized <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> with S states | S | O(transitions) | O(S × transitions) | O(S) cache + O(depth) stack |
 | Subsets (include/exclude) | 2^n leaves | O(n) to copy each subset | O(n · 2^n) | O(n) |
 | Permutations | n! leaves | O(n) copy | O(n · n!) | O(n) |
 | N-Queens / sudoku backtracking | exponential, pruned | — | state the unpruned bound, mention pruning | O(n) |

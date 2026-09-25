@@ -33,7 +33,7 @@ that boundary to survive real-world messy fields, not just the happy path.
 
 ## What the 10 levels cover
 
-Levels 1-2 build the everyday API: a full write-then-read round trip through
+Levels 1-2 build the everyday <abbr title="Application Programming Interface">API</abbr>: a full write-then-read round trip through
 a real file, then the Reader/Writer fields (`Comment`, `TrimLeadingSpace`,
 `FieldsPerRecord`, `UseCRLF`) that cover most real configurations. Level 3
 writes the manual `Read()`-until-`io.EOF` streaming loop by hand, the shape

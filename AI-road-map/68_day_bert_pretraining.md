@@ -2,7 +2,7 @@
 
 Welcome to Day 68. Yesterday, we built the final piece of the Transformer architecture. But architecture is just math. A Transformer without data is just a random number generator.
 
-To make an AI intelligent, you must train it on a massive corpus of text (like the entire internet). But the internet doesn't come with human labels. How do you train a Neural Network using Cross-Entropy Loss if you don't have a label? 
+To make an <abbr title="Artificial Intelligence">AI</abbr> intelligent, you must train it on a massive corpus of text (like the entire internet). But the internet doesn't come with human labels. How do you train a Neural Network using Cross-Entropy Loss if you don't have a label? 
 Today, we learn the genius of **Self-Supervised Learning**.
 
 ---
@@ -10,7 +10,7 @@ Today, we learn the genius of **Self-Supervised Learning**.
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Pre-train / Fine-tune Paradigm Shift
-Before 2018, if you wanted an AI to classify Medical Documents, you had to hire doctors to label 100,000 documents, and then train an LSTM from scratch. It took months and cost millions.
+Before 2018, if you wanted an <abbr title="Artificial Intelligence">AI</abbr> to classify Medical Documents, you had to hire doctors to label 100,000 documents, and then train an <abbr title="Long Short-Term Memory">LSTM</abbr> from scratch. It took months and cost millions.
 BERT changed the world by splitting training into two phases:
 1. **Pre-training:** Google trained BERT on all of Wikipedia and thousands of books. This cost millions of dollars and took weeks on massive GPU clusters. The model learned facts, logic, and grammar.
 2. **Fine-tuning:** You download Google's pre-trained BERT for free. You train it on your MacBook for 1 hour using only 500 labeled Medical Documents. Because BERT already knows English, it instantly adapts to the medical domain and achieves state-of-the-art accuracy!
@@ -27,11 +27,11 @@ Because BERT is bidirectional, the first `[MASK]` looks forward at *"chased"* an
 By playing this "fill-in-the-blank" game on 3 Billion words, BERT accidentally learned the entire structure of the human language!
 
 ### 3. The 80-10-10 Rule
-If the AI only ever sees `[MASK]` tokens during Pre-training, it will crash during Fine-tuning because real users don't type `[MASK]` in their sentences!
+If the <abbr title="Artificial Intelligence">AI</abbr> only ever sees `[MASK]` tokens during Pre-training, it will crash during Fine-tuning because real users don't type `[MASK]` in their sentences!
 To fix this, Google applied a strict rule to the 15% of words chosen for corruption:
 - **80% of the time:** Replace with `[MASK]`.
-- **10% of the time:** Replace with a completely random word (e.g., *"The apple chased the cat"*). This forces the AI to constantly double-check if a word makes logical sense!
-- **10% of the time:** Leave the word exactly as it is. This proves to the AI that sometimes the input is already perfectly correct.
+- **10% of the time:** Replace with a completely random word (e.g., *"The apple chased the cat"*). This forces the <abbr title="Artificial Intelligence">AI</abbr> to constantly double-check if a word makes logical sense!
+- **10% of the time:** Leave the word exactly as it is. This proves to the <abbr title="Artificial Intelligence">AI</abbr> that sometimes the input is already perfectly correct.
 
 ### 4. Next Sentence Prediction (NSP)
 Google also trained BERT on a second task simultaneously. They gave BERT two sentences (A and B), and asked: *"Does B logically follow A?"*
@@ -140,13 +140,13 @@ You understand the math. Now use the industry standard library.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"BERT revolutionized NLP, but it has severe limitations compared to modern LLMs. Explain the pre-train/fine-tune paradigm shift. Why was bidirectional context a breakthrough, but ultimately why did the industry abandon BERT in favor of few-shot prompting with GPT?"*
+*"BERT revolutionized <abbr title="Natural Language Processing">NLP</abbr>, but it has severe limitations compared to modern LLMs. Explain the pre-train/fine-tune paradigm shift. Why was bidirectional context a breakthrough, but ultimately why did the industry abandon BERT in favor of few-shot prompting with GPT?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Paradigm Shift:** 
-   - State that BERT shifted NLP from "training task-specific architectures from scratch" to "transfer learning from massive foundation models."
+   - State that BERT shifted <abbr title="Natural Language Processing">NLP</abbr> from "training task-specific architectures from scratch" to "transfer learning from massive foundation models."
 2. **The Bidirectional Breakthrough:**
    - Explain that by using Masked Language Modeling instead of autoregressive prediction, BERT could look both forwards and backwards, achieving unprecedented contextual understanding (making it state-of-the-art for NER, sentiment, and classification).
 3. **The Limitation (Why GPT won):**
@@ -156,4 +156,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. You have mastered the most famous Encoder model in history.
 
-Tomorrow, in **Day 69**, we look at the model that won the AI wars: **GPT**. We will learn about Autoregressive generation, the math behind decoding strategies, and the famous **Chinchilla Scaling Laws**!
+Tomorrow, in **Day 69**, we look at the model that won the <abbr title="Artificial Intelligence">AI</abbr> wars: **GPT**. We will learn about Autoregressive generation, the math behind decoding strategies, and the famous **Chinchilla Scaling Laws**!

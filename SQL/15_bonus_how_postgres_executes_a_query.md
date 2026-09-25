@@ -1,33 +1,41 @@
 # Bonus: How Postgres Executes a Query
 
-> **This level is optional.** It doesn't teach any new SQL or any new API — it
+> **This level is optional.** It doesn't teach any new <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> or any new <abbr title="Application Programming Interface">API</abbr> — it
 > connects the fifteen levels before it into one mental picture of what actually
 > happens, end to end, inside Postgres, between you sending a query string and
 > getting rows back. Read levels 00-14 first; this is the "so that's how all of that
 > was actually happening" level.
 
 **Already covered elsewhere, in more depth:** `CSFundamentals/03_databases_deep_dive.md`
-covers storage engines, B-trees, and MVCC internals; `SystemDesign/building_blocks/06_database_internals.md`
-covers the WAL, partitioning, and replication in a system-design framing. This level
+covers storage engines, B-trees, and <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> internals; `SystemDesign/building_blocks/06_database_internals.md`
+covers the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>, partitioning, and replication in a system-design framing. This level
 doesn't re-derive either — it's the connective tissue between the four stages a
 single query passes through, pointing to those two files for the deep dive on
-storage/durability/MVCC specifically.
+storage/durability/<abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> specifically.
 
 ## The four stages
 
-```mermaid
-flowchart LR
-    Q["SQL text\nSELECT * FROM accounts_big\nWHERE email = '...'"] --> P[Parser]
-    P -->|parse tree| R[Rewriter]
-    R -->|rewritten query| PL["Planner / Optimizer"]
-    PL -->|chosen plan| E[Executor]
-    E -->|reads/writes| S["Storage\n(heap pages, indexes, WAL)"]
-    E --> OUT[Rows returned to client]
+```arch
+%% caption: A query passes through parser, rewriter, planner and executor; only the executor touches storage.
+grid 230x100
+node q "SQL text" at 0,0 shape=card icon=code sub="SELECT * FROM accounts_big WHERE email = '...'"
+node p "Parser" at 0,1 icon=code
+node r "Rewriter" at 0,2 icon=edit
+node pl "Planner / Optimizer" at 0,3 icon=speed
+node e "Executor" at 0,4 icon=process
+node s "Storage" at 0,5 shape=card icon=disk sub="heap pages, indexes, WAL"
+node out "Rows returned to client" at 1,4 icon=table
+q -> p
+p -> r : "parse tree"
+r -> pl : "rewritten query"
+pl -> e : "chosen plan"
+e -> s : "reads/writes"
+e -> out
 ```
 
 ### 1. Parser
 
-Turns the SQL text into a **parse tree** — a structured representation of what you
+Turns the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> text into a **parse tree** — a structured representation of what you
 asked for, purely syntactic. This stage catches syntax errors (`SELCT` instead of
 `SELECT`) and resolves table/column names against the catalog, but it has no opinion
 yet about *how* to execute anything.
@@ -78,7 +86,7 @@ hash-build step that must consume all its input before producing any output).
 
 **Go: the executor's node tree isn't just a human-readable string — it's structured
 data you can consume.** `EXPLAIN (ANALYZE, FORMAT JSON)` returns the exact same plan
-tree as a JSON document instead of the indented text every other level's demos use —
+tree as a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> document instead of the indented text every other level's demos use —
 genuinely useful for a service that wants to programmatically watch for a specific
 query regressing to a sequential scan, rather than a human reading `EXPLAIN` output by
 eye:
@@ -125,9 +133,11 @@ Where the executor's requests actually land: heap pages (the table's row data) a
 index pages (B-trees, by default — level 10), read through Postgres's buffer cache,
 with every write also going through the write-ahead log first for durability. This
 is the layer `CSFundamentals/03_databases_deep_dive.md` and
-`SystemDesign/building_blocks/06_database_internals.md` cover in real depth — WAL
-mechanics, MVCC's `xmin`/`xmax` row versioning, page layout, vacuum — none of which
+`SystemDesign/building_blocks/06_database_internals.md` cover in real depth — <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>
+mechanics, <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr>'s `xmin`/`xmax` row versioning, page layout, vacuum — none of which
 this level re-explains.
+
+<div class="lab" data-viz="flow-pg-query"></div>
 
 ## Connecting it to what you already ran
 
@@ -137,7 +147,7 @@ Every level in this module exercised this pipeline without naming it:
   `ForeignKeyViolation`) are checked by the executor as it attempts to write a row,
   before the write is allowed to reach storage.
 - Level 09's `SELECT ... FOR UPDATE` and `SerializationFailure` are the executor
-  interacting with Postgres's lock manager and MVCC snapshot machinery mid-execution.
+  interacting with Postgres's lock manager and <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> snapshot machinery mid-execution.
 - Level 10's `EXPLAIN ANALYZE` output *is* a direct, literal printout of the
   planner's chosen node tree plus the executor's real measured timings per node.
 - Level 12's `ALTER TABLE` locking behavior is a storage-layer fact (whether the

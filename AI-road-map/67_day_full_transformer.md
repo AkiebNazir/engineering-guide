@@ -24,9 +24,9 @@ Because the Decoder's Query perfectly matches the Encoder's Key, the Decoder mat
 
 ### 3. Label Smoothing (Regularization)
 When training the Decoder, we use Cross-Entropy Loss to force it to predict the correct French word. 
-If the target word is *"chien"*, standard one-hot encoding tells the AI: *"Be 100% confident it is 'chien', and 0% confident it is anything else."*
-This causes the AI to become incredibly overconfident, leading to massive overfitting. 
-**Label Smoothing** is a mathematical trick. We tell the AI: *"Be 90% confident it is 'chien', and spread the remaining 10% evenly across the other 50,000 words in the dictionary."* This prevents the gradients from exploding and makes the AI much more robust!
+If the target word is *"chien"*, standard one-hot encoding tells the <abbr title="Artificial Intelligence">AI</abbr>: *"Be 100% confident it is 'chien', and 0% confident it is anything else."*
+This causes the <abbr title="Artificial Intelligence">AI</abbr> to become incredibly overconfident, leading to massive overfitting. 
+**Label Smoothing** is a mathematical trick. We tell the <abbr title="Artificial Intelligence">AI</abbr>: *"Be 90% confident it is 'chien', and spread the remaining 10% evenly across the other 50,000 words in the dictionary."* This prevents the gradients from exploding and makes the <abbr title="Artificial Intelligence">AI</abbr> much more robust!
 
 ### 4. Weight Tying
 Word Embeddings are massive. An embedding matrix for 50,000 words at 512 dimensions requires 25 Million parameters.
@@ -201,4 +201,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-Tomorrow, in **Day 68**, we ask a massive question: How do you train an AI on 1 Trillion words if you don't have human labels? We will learn the genius of **Masked Language Modeling (MLM)** and the Pre-training paradigm!
+Tomorrow, in **Day 68**, we ask a massive question: How do you train an <abbr title="Artificial Intelligence">AI</abbr> on 1 Trillion words if you don't have human labels? We will learn the genius of **Masked Language Modeling (MLM)** and the Pre-training paradigm!

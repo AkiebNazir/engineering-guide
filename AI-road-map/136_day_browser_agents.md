@@ -10,16 +10,16 @@ Today, we learn how to build **Browser Agents**. We will give our LLMs eyes, han
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The Observation Space (How the AI "Sees")
-When an AI opens a webpage, it cannot just "look" at it like a human. It needs data. How do we feed the page to the LLM?
-- **The Raw DOM (HTML):** We can extract the HTML. *Problem:* Modern websites have massive CSS/JS payloads. Passing the raw HTML of Amazon.com to an LLM will cost $5.00 in tokens per page load!
+### 1. The Observation Space (How the <abbr title="Artificial Intelligence">AI</abbr> "Sees")
+When an <abbr title="Artificial Intelligence">AI</abbr> opens a webpage, it cannot just "look" at it like a human. It needs data. How do we feed the page to the <abbr title="Large Language Model">LLM</abbr>?
+- **The Raw DOM (HTML):** We can extract the HTML. *Problem:* Modern websites have massive CSS/JS payloads. Passing the raw HTML of Amazon.com to an <abbr title="Large Language Model">LLM</abbr> will cost $5.00 in tokens per page load!
 - **The Accessibility Tree:** We strip away the visual fluff and only pass the elements designed for screen readers (Headers, Buttons, Links, Inputs). This shrinks the context by $90\%$.
-- **Vision (Screenshots):** We use a Multi-Modal LLM (like GPT-4o or Claude 3.5 Sonnet). The script takes a screenshot of the browser and sends the actual image to the LLM!
+- **Vision (Screenshots):** We use a Multi-Modal <abbr title="Large Language Model">LLM</abbr> (like GPT-4o or Claude 3.5 Sonnet). The script takes a screenshot of the browser and sends the actual image to the <abbr title="Large Language Model">LLM</abbr>!
 
 ### 2. Set-of-Marks Prompting (SOM)
-If the LLM looks at a screenshot and says *"Click the Login button"*, how does the Python script know *where* to click? The script doesn't know coordinates.
+If the <abbr title="Large Language Model">LLM</abbr> looks at a screenshot and says *"Click the Login button"*, how does the Python script know *where* to click? The script doesn't know coordinates.
 **Set-of-Marks (SOM):** The Python script uses a library like Playwright to find all clickable elements. It then draws a little red box with a number (e.g., `[12]`) over every button *before* taking the screenshot. 
-The LLM looks at the image and outputs: `Action: Click element 12`. Playwright maps ID 12 to the exact X/Y coordinate and clicks it!
+The <abbr title="Large Language Model">LLM</abbr> looks at the image and outputs: `Action: Click element 12`. Playwright maps ID 12 to the exact X/Y coordinate and clicks it!
 
 ### 3. The Action Space
 A standard Browser Agent uses 4 primary tools:
@@ -35,7 +35,7 @@ The standard benchmark for Browser Agents. It drops the Agent into a massive, of
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a conceptual Browser Agent using the Set-of-Marks methodology! We will mock the Playwright execution to see how the LLM maps visual IDs to physical clicks.
+Let's build a conceptual Browser Agent using the Set-of-Marks methodology! We will mock the Playwright execution to see how the <abbr title="Large Language Model">LLM</abbr> maps visual IDs to physical clicks.
 
 Create a file named `browser_agent.py`:
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The ID Abstraction:** The LLM does not need to know CSS Selectors, XPath, or exact pixels. By abstracting the UI into a numbered list of interactive elements, the LLM only has to output a single integer. The Python backend handles the complex physical translation.
+1. **The ID Abstraction:** The <abbr title="Large Language Model">LLM</abbr> does not need to know CSS Selectors, XPath, or exact pixels. By abstracting the UI into a numbered list of interactive elements, the <abbr title="Large Language Model">LLM</abbr> only has to output a single integer. The Python backend handles the complex physical translation.
 2. **State Management:** The web is dynamic. After the Agent clicked "Sign In" (Element 2), the page state completely changed. The system had to generate a brand new set of IDs (Elements 4, 5, 6) for the new screen.
 
 ---
@@ -152,7 +152,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Handling Dynamic Content (The Wait Loop):** 
    - State that LLMs are too fast. If they try to click a button before the React component mounts, the script crashes. 
-   - Propose an ACI that automatically waits for network idle and DOM stability before passing the screenshot to the LLM. 
+   - Propose an ACI that automatically waits for network idle and DOM stability before passing the screenshot to the <abbr title="Large Language Model">LLM</abbr>. 
 2. **Reliability (Self-Healing):**
    - Web UIs change frequently (A/B testing, redesigns). Standard Selenium tests break instantly. 
    - Emphasize that the Browser Agent is "Self-Healing". Because it uses Vision to find the "Checkout" button, it doesn't care if the CSS class changed from `btn-blue` to `btn-red` or if it moved to the left side of the screen.

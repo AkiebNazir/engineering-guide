@@ -3,28 +3,28 @@
 Welcome to Day 170.
 
 This is the final day of the MLOps curriculum. We are ending with the most serious topic in Artificial Intelligence.
-If your API crashes, you lose revenue for an hour. If your AI model is found to be racially biased while approving mortgages, your company makes the front page of the New York Times, faces massive class-action lawsuits, and the EU fines you 6% of your global revenue.
+If your <abbr title="Application Programming Interface">API</abbr> crashes, you lose revenue for an hour. If your <abbr title="Artificial Intelligence">AI</abbr> model is found to be racially biased while approving mortgages, your company makes the front page of the New York Times, faces massive class-action lawsuits, and the EU fines you 6% of your global revenue.
 
-Today, we learn **AI Governance**. We will learn about the EU AI Act, PII redacting, and how to mathematically prove that your model is fair and unbiased.
+Today, we learn **<abbr title="Artificial Intelligence">AI</abbr> Governance**. We will learn about the EU <abbr title="Artificial Intelligence">AI</abbr> Act, PII redacting, and how to mathematically prove that your model is fair and unbiased.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The EU AI Act & Risk Tiers
-In 2024, the European Union passed the AI Act. It categorizes AI into four risk tiers:
-- **Unacceptable Risk:** (Banned). e.g., AI for social scoring or subliminal manipulation.
-- **High Risk:** e.g., AI used in hiring (resume screening), law enforcement, or medical devices. If you build these, you must log every decision, maintain flawless data lineage (Day 165), and submit to government audits.
-- **Limited Risk:** e.g., AI Chatbots. You simply must clearly disclose to the user that they are talking to an AI.
-- **Minimal Risk:** e.g., AI spam filters. No regulation.
+### 1. The EU <abbr title="Artificial Intelligence">AI</abbr> Act & Risk Tiers
+In 2024, the European Union passed the <abbr title="Artificial Intelligence">AI</abbr> Act. It categorizes <abbr title="Artificial Intelligence">AI</abbr> into four risk tiers:
+- **Unacceptable Risk:** (Banned). e.g., <abbr title="Artificial Intelligence">AI</abbr> for social scoring or subliminal manipulation.
+- **High Risk:** e.g., <abbr title="Artificial Intelligence">AI</abbr> used in hiring (resume screening), law enforcement, or medical devices. If you build these, you must log every decision, maintain flawless data lineage (Day 165), and submit to government audits.
+- **Limited Risk:** e.g., <abbr title="Artificial Intelligence">AI</abbr> Chatbots. You simply must clearly disclose to the user that they are talking to an <abbr title="Artificial Intelligence">AI</abbr>.
+- **Minimal Risk:** e.g., <abbr title="Artificial Intelligence">AI</abbr> spam filters. No regulation.
 
 ### 2. PII (Personally Identifiable Information)
-If an employee asks an internal HR bot, "Summarize the medical leave policy for John Doe, SSN 123-45-678," and that prompt hits the OpenAI API, your company just violated HIPAA and GDPR.
-You must implement a **PII Redaction Layer** in your API Gateway. It intercepts the prompt, uses a fast local NLP model (like Microsoft Presidio) to replace the data (`[PERSON_NAME], [SSN]`), sends the redacted prompt to OpenAI, and then re-injects the real data into the response before showing the user.
+If an employee asks an internal HR bot, "Summarize the medical leave policy for John Doe, SSN 123-45-678," and that prompt hits the OpenAI <abbr title="Application Programming Interface">API</abbr>, your company just violated HIPAA and GDPR.
+You must implement a **PII Redaction Layer** in your <abbr title="Application Programming Interface">API</abbr> Gateway. It intercepts the prompt, uses a fast local <abbr title="Natural Language Processing">NLP</abbr> model (like Microsoft Presidio) to replace the data (`[PERSON_NAME], [SSN]`), sends the redacted prompt to OpenAI, and then re-injects the real data into the response before showing the user.
 
 ### 3. Measuring Bias (Fairness Metrics)
-Bias in AI usually stems from historically biased training data. If historically, men were approved for loans more often than women, the AI will learn that `Gender=Male` is a positive feature.
-Even if you drop the "Gender" column from your dataset, the AI will use **Proxy Variables**. It will realize that people who subscribe to "GQ Magazine" are usually men, and use that to discriminate anyway.
+Bias in <abbr title="Artificial Intelligence">AI</abbr> usually stems from historically biased training data. If historically, men were approved for loans more often than women, the <abbr title="Artificial Intelligence">AI</abbr> will learn that `Gender=Male` is a positive feature.
+Even if you drop the "Gender" column from your dataset, the <abbr title="Artificial Intelligence">AI</abbr> will use **Proxy Variables**. It will realize that people who subscribe to "GQ Magazine" are usually men, and use that to discriminate anyway.
 - **Disparate Impact:** A mathematical ratio. If the loan approval rate for women is less than 80% of the approval rate for men, the model is legally considered biased (The "Four-Fifths Rule").
 - **Equal Opportunity:** The True Positive Rate must be equal across demographics. (Qualified women should be approved at the exact same rate as qualified men).
 
@@ -36,12 +36,12 @@ Tools like **SHAP (SHapley Additive exPlanations)** use game theory to calculate
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build two crucial Governance components: A PII Redactor for an LLM Gateway, and a Disparate Impact calculator for a Machine Learning model.
+Let's build two crucial Governance components: A PII Redactor for an <abbr title="Large Language Model">LLM</abbr> Gateway, and a Disparate Impact calculator for a Machine Learning model.
 
 *(Note: To run the PII section, you need `pip install presidio-analyzer presidio-anonymizer`)*
 
 ### 1. The PII Redaction Gateway
-We will simulate an API Gateway that scrubs sensitive data before it ever touches a cloud LLM.
+We will simulate an <abbr title="Application Programming Interface">API</abbr> Gateway that scrubs sensitive data before it ever touches a cloud <abbr title="Large Language Model">LLM</abbr>.
 
 ```python
 import re
@@ -135,7 +135,7 @@ def run_bias_audit():
 ```
 
 ### 🔍 Understanding the Enterprise Value
-If an ML engineer tries to merge the credit card model into the `main` branch, the CI/CD pipeline (Day 164) will automatically run this `calculate_disparate_impact` script. Because the ratio is `0.25` (which is severely below the legal `0.80` threshold), the CI/CD pipeline will glow red, block the deployment, and save the company from a massive lawsuit!
+If an <abbr title="Machine Learning">ML</abbr> engineer tries to merge the credit card model into the `main` branch, the <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline (Day 164) will automatically run this `calculate_disparate_impact` script. Because the ratio is `0.25` (which is severely below the legal `0.80` threshold), the <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline will glow red, block the deployment, and save the company from a massive lawsuit!
 
 ---
 
@@ -148,18 +148,18 @@ The Disparate Impact calculation is a blunt instrument. Sometimes, the unprivile
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your team is building an LLM-powered resume screening tool to automatically filter applicants. As the Lead AI Engineer, design the architecture ensuring it complies with the EU AI Act and standard ethical guidelines."*
+*"Your team is building an <abbr title="Large Language Model">LLM</abbr>-powered resume screening tool to automatically filter applicants. As the Lead <abbr title="Artificial Intelligence">AI</abbr> Engineer, design the architecture ensuring it complies with the EU <abbr title="Artificial Intelligence">AI</abbr> Act and standard ethical guidelines."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
-1. **Risk Categorization:** Acknowledge immediately that this is a "High Risk" system under the EU AI Act because it impacts employment.
-2. **Data Lineage & Opt-Out:** Explain that you will use DVC to maintain perfect data lineage. Applicants must be given explicit consent to be evaluated by AI, and must have a button to "Opt-out and request human review."
-3. **PII Stripping:** Before the resume hits the LLM, the system must strip Names, Addresses, Graduation Dates (to prevent Ageism), and Club Affiliations (to prevent racial/gender proxy bias).
-4. **Continuous Auditing:** Design a Shadow Pipeline where 10% of resumes rejected by the AI are manually reviewed by a human HR rep to calculate the False Negative rate. The CI/CD pipeline must run Disparate Impact audits across gender and race before any model update is deployed.
+1. **Risk Categorization:** Acknowledge immediately that this is a "High Risk" system under the EU <abbr title="Artificial Intelligence">AI</abbr> Act because it impacts employment.
+2. **Data Lineage & Opt-Out:** Explain that you will use <abbr title="Data Version Control">DVC</abbr> to maintain perfect data lineage. Applicants must be given explicit consent to be evaluated by <abbr title="Artificial Intelligence">AI</abbr>, and must have a button to "Opt-out and request human review."
+3. **PII Stripping:** Before the resume hits the <abbr title="Large Language Model">LLM</abbr>, the system must strip Names, Addresses, Graduation Dates (to prevent Ageism), and Club Affiliations (to prevent racial/gender proxy bias).
+4. **Continuous Auditing:** Design a Shadow Pipeline where 10% of resumes rejected by the <abbr title="Artificial Intelligence">AI</abbr> are manually reviewed by a human HR rep to calculate the False Negative rate. The <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline must run Disparate Impact audits across gender and race before any model update is deployed.
 
 ---
-**Task for the end of the day:** Read the executive summary of the **EU AI Act**. It is defining the future of global software engineering.
+**Task for the end of the day:** Read the executive summary of the **EU <abbr title="Artificial Intelligence">AI</abbr> Act**. It is defining the future of global software engineering.
 
-**🎉 Congratulations!** You have officially completed the MLOps curriculum. You know how to build, scale, monitor, and govern AI at the enterprise level. 
+**🎉 Congratulations!** You have officially completed the MLOps curriculum. You know how to build, scale, monitor, and govern <abbr title="Artificial Intelligence">AI</abbr> at the enterprise level. 
 
-Tomorrow, in **Day 171**, we begin the Grand Finale of this roadmap: **MAANG System Design**. We will combine everything we've learned over 170 days to architect massive AI systems on whiteboards!
+Tomorrow, in **Day 171**, we begin the Grand Finale of this roadmap: **MAANG System Design**. We will combine everything we've learned over 170 days to architect massive <abbr title="Artificial Intelligence">AI</abbr> systems on whiteboards!

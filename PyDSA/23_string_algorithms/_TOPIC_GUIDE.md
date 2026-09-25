@@ -18,7 +18,7 @@
 
 ## Part 0 · The eight problems and their tricks
 
-**KMP's failure function as a "how much do I already know" cache** (001
+**<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s failure function as a "how much do I already know" cache** (001
 Find the Index of the First Occurrence in a String): the naive substring
 search re-checks characters it has already seen, throwing away
 information on every mismatch. The `lps` ("longest proper prefix that is
@@ -29,24 +29,28 @@ most reused piece of machinery in the whole topic: 002 and 006 both call
 the exact same `_build_lps` helper on a DIFFERENT constructed string to
 answer a completely different question.
 
-```mermaid
+```arch
 %% caption: KMP: on a mismatch the pattern index falls back through the lps table while the text index never moves backwards, so the scan is O(n + m).
-flowchart TD
-  A["compare text[i] with pattern[j]"] --> B{"equal?"}
-  B -->|yes| C["i += 1, j += 1"]
-  C --> D{"j == len(pattern) ?"}
-  D -->|yes| E["match ends at i<br/>j = lps[j - 1]"]:::ok
-  D -->|no| A
-  E --> A
-  B -->|no| F{"j #gt; 0 ?"}
-  F -->|yes| G["j = lps[j - 1]<br/>fall back, i does NOT move"]:::hot
-  F -->|no| H["i += 1"]
-  G --> A
-  H --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node A "compare text[i] with pattern[j]" at 0,0 w=220
+node B "equal?" at 0,1 shape=diamond color=amber
+node C "i += 1, j += 1" at 0,2
+node D "j == len(pattern) ?" at 0,3 shape=diamond color=amber
+node E "match ends at i" at 0,4 color=green sub="j = lps[j - 1]"
+node F "j > 0 ?" at 1,1 shape=diamond color=amber
+node G "j = lps[j - 1]" at 1,2 color=amber w=170 sub="fall back, i does NOT move"
+node H "i += 1" at 2,1
+A -> B
+B -> C : "yes"
+C -> D
+D -> E : "yes"
+D:L -> A:L : "no"
+E:L -> A:L
+B:R -> F:L : "no"
+F -> G : "yes"
+F -> H : "no"
+G:R -> A:R
+H:T -> A:R
 ```
 
 
@@ -85,13 +89,13 @@ plus one, to cover a boundary-straddling match), then just test those
 two. The "algorithm" is really a length-arithmetic proof that collapses
 an apparently unbounded search into two lookups.
 
-**KMP's failure function applied to a CONSTRUCTED string, not a literal
+**<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s failure function applied to a CONSTRUCTED string, not a literal
 needle/haystack pair** (006 Shortest Palindrome): build `t = s + '#' +
 reverse(s)` (the `'#'` separator prevents any cross-boundary spurious
 match) and read `lps[-1]` off of `t` — it turns out to be exactly the
 length of `s`'s longest palindromic PREFIX. Once you know that length,
 the answer is a direct O(n) construction: mirror everything after the
-palindromic prefix and prepend it. The deep lesson: KMP's failure
+palindromic prefix and prepend it. The deep lesson: <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s failure
 function is a general tool for extracting "how much of this constructed
 string overlaps with itself," not a substring-search-specific trick.
 
@@ -126,7 +130,7 @@ implementation cost — directly foreshadowed by topic 13's trie material.
 This topic really has TWO core tools, reused across all eight problems
 in different combinations:
 
-**1. The KMP failure function (`lps` array).** Built once over some
+**1. The <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> failure function (`lps` array).** Built once over some
 string in O(n), it answers "for every prefix of this string, what's the
 longest proper prefix that's also a suffix?" That single array answers
 three DIFFERENT-looking questions depending on what string you build it
@@ -152,19 +156,18 @@ regimes, and knowing which one you're in matters:
      real substrings before trusting it. This is the exact same
      probabilistic-filter-then-verify discipline as a Bloom filter.
 
-```mermaid
+```arch
 %% caption: A rolling hash updates the window's hash in O(1). A hash match must still be verified, because collisions are possible.
-flowchart LR
-  A["hash of the window<br/>s[i .. i+m-1]"] --> B["remove the leading char:<br/>subtract s[i] * base^(m-1)"]
-  B --> C["shift: multiply by base"]
-  C --> D["add the new trailing char<br/>s[i+m]"]
-  D --> E{"hash equals the pattern's hash?"}
-  E -->|yes| F["verify by direct comparison"]:::hot
-  E -->|no| A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x100
+node A "hash of the window" at 0,0 sub="s[i .. i+m-1]"
+node B "remove the leading char" at 1,0 sub="subtract s[i] * base^(m-1)"
+node C "shift: multiply by base" at 2,0
+node D "add the new trailing char" at 2,1 sub="s[i+m]"
+node E "hash equals the pattern's hash?" at 1,1 shape=diamond color=amber
+node F "verify by direct comparison" at 1,2 color=amber
+A -> B -> C -> D -> E
+E -> F : "yes"
+E:L -> A:B : "no"
 ```
 
 
@@ -174,7 +177,7 @@ strings (no hashing algorithm needed, since Python dicts already hash
 strings exactly) combined with a straightforward two-pointer palindrome
 check. They're included in this topic because they're still fundamentally
 about STRING STRUCTURE (periodicity, numeric grammar, self-similarity,
-reversal), not because they use KMP or Rabin-Karp specifically.
+reversal), not because they use <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> or Rabin-Karp specifically.
 
 ---
 
@@ -182,12 +185,12 @@ reversal), not because they use KMP or Rabin-Karp specifically.
 
 | # | Problem | Difficulty | Core trick |
 |---|---|---|---|
-| 001 | Find the Index of the First Occurrence in a String | Easy | KMP failure function, O(n+m) substring search |
+| 001 | Find the Index of the First Occurrence in a String | Easy | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> failure function, O(n+m) substring search |
 | 002 | Repeated Substring Pattern | Easy | `len(s) - lps[-1]` = smallest period |
 | 003 | String to Integer (atoi) | Medium | careful 4-phase state-machine parsing |
 | 004 | Repeated DNA Sequences | Medium | 2-bit perfect rolling hash over a 4-letter alphabet |
 | 005 | Repeated String Match | Medium | bound the answer to 2 candidate repeat counts |
-| 006 | Shortest Palindrome | Hard | KMP `lps` on `s + '#' + reverse(s)` |
+| 006 | Shortest Palindrome | Hard | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> `lps` on `s + '#' + reverse(s)` |
 | 007 | Longest Duplicate Substring | Hard | binary search on length + Rabin-Karp + verification |
 | 008 | Palindrome Pairs | Hard | reverse-and-lookup via hashmap, avoids all-pairs O(n²) |
 
@@ -195,7 +198,7 @@ reversal), not because they use KMP or Rabin-Karp specifically.
 
 ## Part 3 · Cross-references worth remembering
 
-- **001 ↔ 002 ↔ 006**: all three build and read a KMP `lps` array; the
+- **001 ↔ 002 ↔ 006**: all three build and read a <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> `lps` array; the
   only thing that changes is WHAT string you build it over and how you
   interpret the resulting array. Once `_build_lps` is written once, it's
   a two-line reuse for the other two.
@@ -238,7 +241,7 @@ reversal), not because they use KMP or Rabin-Karp specifically.
 
 Unlike topic 21 (Math & Geometry), where each problem was a
 self-contained trick, this topic has real internal structure: two tools
-(KMP failure function, rolling hash) get reused and recombined across
+(<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> failure function, rolling hash) get reused and recombined across
 five of the eight problems. The genuinely hard part isn't memorizing
 either tool in isolation — it's recognizing, given a new string problem,
 WHICH tool applies, and inside the rolling-hash tool, whether you're in
@@ -254,22 +257,35 @@ not hypothetical.
 ## Part 5 · The Search Toolkit — Prefix Function, Z-Function, Find-All, Periods and Borders
 
 Parts 0–4 tell you *which* trick each problem uses. This Part is the machinery itself, written out and measured: the two
-linear-time "self-overlap" tables (the KMP prefix function and the Z-function), how to list *every* match, and what the
+linear-time "self-overlap" tables (the <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> prefix function and the Z-function), how to list *every* match, and what the
 tables say about periods and borders. Every function below was checked against brute force on 3,000 random binary strings.
 
-```mermaid
+```arch
 %% caption: Pick the string tool from the question being asked, not from the problem's title.
-flowchart TD
-  Q(["A string problem"]) --> A{"What is being compared?"}
-  A -->|"one pattern inside one text"| B["str.find in production;<br/>prefix function or Z-function to write it yourself"]:::ok
-  A -->|"a string against itself<br/>(period, border, repetition)"| C["prefix function: n - lps[-1] is the smallest period"]:::ok
-  A -->|"many equal-length windows, or a<br/>'longest length such that' question"| D["rolling hash + binary search on the length,<br/>verify every hash match"]:::hot
-  A -->|"palindromes"| E["expand around centres O(n^2);<br/>Manacher O(n); prefix function on s + # + reverse(s)"]:::ok
-  A -->|"many patterns at once"| F["trie / Aho-Corasick"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x80
+node Q "A string problem" at 0,1 shape=pill
+node A "What is being compared?" at 0,2 shape=diamond color=amber
+node qb "one pattern inside one text" at 1,0 shape=pill w=200
+node qc "a string against itself (period, border, repetition)" at 1,1 shape=pill w=200
+node qd "many equal-length windows, or a 'longest length such that' question" at 1,2 shape=pill w=200
+node qe "palindromes" at 1,3 shape=pill w=200
+node qf "many patterns at once" at 1,4 shape=pill w=200
+node B "str.find in production" at 2,0 color=green w=260 sub="prefix function or Z-function to write it yourself"
+node C "prefix function" at 2,1 color=green w=260 sub="n - lps[-1] is the smallest period"
+node D "rolling hash + binary search on the length" at 2,2 color=amber w=260 sub="verify every hash match"
+node E "expand around centres O(n^2)" at 2,3 color=green w=260 sub="Manacher O(n); prefix function on s + # + reverse(s)"
+node F "trie / Aho-Corasick" at 2,4 color=amber w=260
+Q -> A
+A:R -> qb:L
+A:R -> qc:L
+A:R -> qd:L
+A:R -> qe:L
+A:R -> qf:L
+qb -> B
+qc -> C
+qd -> D
+qe -> E
+qf -> F
 ```
 
 ### 5.1 The prefix function (the `lps` array) and why it is linear
@@ -349,7 +365,7 @@ separator `'\x00'` matters for the same reason it does in Problem 006: without i
 
 ### 5.5 In practice: `str.find` against the algorithms you write
 
-| Case (CPython 3.13, best of a few runs) | Naive | KMP (pure Python) | `str.find` |
+| Case (CPython 3.13, best of a few runs) | Naive | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> (pure Python) | `str.find` |
 |---|--:|--:|--:|
 | worst case, `n = 10,000`, `m = 200` (`'a'…` against `'a'…ab`) | 50.5 ms | 0.56 ms | 0.004 ms |
 | `n = 10⁶` `'a'`s, `m = 1,000` (`'a'*999 + 'b'`) | — | 73 ms | 0.28 ms |
@@ -358,7 +374,7 @@ On an adversarial needle — `'a'*(m/2) + 'b' + 'a'*(m/2 − 1)` against a text 
 matches at every window — `str.find` took 0.9 ms for `m = 100`, 0.8 ms for `m = 1,000`, 0.8 ms for `m = 10,000`, 1.0 ms
 for `m = 100,000` and 1.8 ms for `m = 400,000`: essentially flat in `m`. (CPython's search uses a skip-based scan for short needles and, since
 3.10, the linear-time Two-Way algorithm for long ones.) So in production code use `find`, `in`, `startswith` and `count`;
-write KMP or Z when the *table* is the point — periods, borders, palindromic prefixes — or when an interviewer forbids the
+write <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> or Z when the *table* is the point — periods, borders, palindromic prefixes — or when an interviewer forbids the
 built-in (Problem 001).
 
 ### 5.6 Follow-ups the interviewer reaches for
@@ -366,11 +382,11 @@ built-in (Problem 001).
 | Follow-up | The answer |
 |---|---|
 | "Find *all* occurrences, overlapping too." | Keep scanning after a full match with `k = pi[k - 1]`. |
-| "Many patterns against one text." | Aho–Corasick: a trie of the patterns plus KMP-style failure links, O(text + total pattern length + matches). |
+| "Many patterns against one text." | Aho–Corasick: a trie of the patterns plus <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>-style failure links, O(text + total pattern length + matches). |
 | "The same needle against millions of texts." | Build `pi` once and reuse it. |
 | "Is `t` a rotation of `s`?" | `len(s) == len(t) and t in s + s`. |
 | "Smallest string to append/prepend to make a palindrome?" | The prefix function on `s + sep + reverse(s)` — Problem 006. |
-| "Count the distinct substrings / longest repeated substring." | Suffix array + LCP (the palindromes-and-suffixes Part below). |
+| "Count the distinct substrings / longest repeated substring." | Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> (the palindromes-and-suffixes Part below). |
 
 ---
 <!-- /block:23_py_1_search -->
@@ -489,7 +505,7 @@ Four letters need 2 bits, so a 10-mer is a 20-bit integer — a bijection, no mo
 <!-- /block:23_py_2_hashing -->
 
 <!-- block:23_py_3_palindromes -->
-## Part 7 · Palindromes and Suffix Structures — Manacher, Suffix Array with LCP, Palindrome Pairs
+## Part 7 · Palindromes and Suffix Structures — Manacher, Suffix Array with <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr>, Palindrome Pairs
 
 Problems 006 and 008 are about palindromes; the topic's opening question — "what is the longest substring that occurs twice" — is
 the doorway to suffix structures. All code here was checked against brute force on thousands of random strings.
@@ -558,10 +574,10 @@ Matched brute force on 2,000 random word lists (including the empty string). The
 a palindrome check and a slice), so O(n · L²) overall — the "trie of reversed words" version reaches the problem's stated
 bound at real implementation cost.
 
-### 7.4 Suffix array + LCP: repeated substrings without hashing
+### 7.4 Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr>: repeated substrings without hashing
 
-A **suffix array** lists the start indices of all suffixes in sorted order; the **LCP array** stores the longest common prefix of
-each adjacent pair. The longest substring occurring at least twice is the maximum LCP value — no hash, so no collisions:
+A **suffix array** lists the start indices of all suffixes in sorted order; the **<abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> array** stores the longest common prefix of
+each adjacent pair. The longest substring occurring at least twice is the maximum <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> value — no hash, so no collisions:
 
 ```python
 def suffix_array(s):
@@ -596,7 +612,7 @@ also answers "how many distinct substrings" (`n(n+1)/2 − Σ lcp`) and pattern 
 |---|---|---|
 | Trie | O(total length) | prefix queries, many-word lookups (topic 13) |
 | Aho–Corasick | O(total pattern length) | all occurrences of many patterns in one pass |
-| Suffix array + LCP | O(n log n) – O(n) | longest repeated substring, distinct substrings, LCP of any two suffixes |
+| Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> | O(n log n) – O(n) | longest repeated substring, distinct substrings, <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> of any two suffixes |
 | Suffix automaton | O(n) | distinct-substring counts, occurrence counts, shortest non-occurring string |
 
 ---
@@ -642,7 +658,7 @@ until normalised (`unicodedata.normalize('NFC', …)`). `len('🇮🇳')` is 2 (
 wrong letter. For case-insensitive comparison use `casefold()`, not `lower()`. Interview problems almost always promise lowercase ASCII;
 say that assumption aloud, and note what changes if it does not hold (grapheme clusters need a library, not slicing).
 
-### 8.4 Small API traps
+### 8.4 Small <abbr title="Application Programming Interface">API</abbr> traps
 
 - `str.count` counts **non-overlapping** matches: `'aaaa'.count('aa')` is `2`, not `3`.
 - `lstrip`/`rstrip`/`strip` take a **set of characters**, not a prefix: `'oops'.lstrip('op')` is `'s'`; use
@@ -661,7 +677,7 @@ Eight problems, five moves (the prefix function reused three ways · exact keys 
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Find the Index of the First Occurrence in a String](PyDSA/23_string_algorithms/001_find_the_index_of_the_first_occurrence_in_a_string_solution.py) <br>LC 28 · Easy | KMP substring search | Build `lps` over the needle; scan the haystack with `i` that never moves back, falling back with `j = lps[j-1]`. Match start is `i - j`. **Trap:** moving `i` backwards; advancing `i` in the fallback branch; returning `i` instead of `i - j`; an empty needle with no guard. |
+| [001 · Find the Index of the First Occurrence in a String](PyDSA/23_string_algorithms/001_find_the_index_of_the_first_occurrence_in_a_string_solution.py) <br>LC 28 · Easy | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> substring search | Build `lps` over the needle; scan the haystack with `i` that never moves back, falling back with `j = lps[j-1]`. Match start is `i - j`. **Trap:** moving `i` backwards; advancing `i` in the fallback branch; returning `i` instead of `i - j`; an empty needle with no guard. |
 | [002 · Repeated Substring Pattern](PyDSA/23_string_algorithms/002_repeated_substring_pattern_solution.py) <br>LC 459 · Easy | Period from the prefix function | `p = len(s) - lps[-1]`; a repetition iff `p != len(s)` and `len(s) % p == 0`. **Trap:** dropping the `lps[-1] != 0` guard (every string then "repeats"); treating `lps[-1]` itself as the period; in the `(s+s)[1:-1]` trick, trimming only one end. |
 | [003 · String to Integer (atoi)](PyDSA/23_string_algorithms/003_string_to_integer_atoi_solution.py) <br>LC 8 · Medium | A four-phase parser | Skip spaces → one optional sign → digits → clamp the *signed* result. **Trap:** skipping whitespace after the sign; a second sign or a sign after digits; treating `.` as part of the number; multiplying by 10 before the overflow check in a fixed-width language; `isdigit()` accepting `'²'`. |
 | [004 · Repeated DNA Sequences](PyDSA/23_string_algorithms/004_repeated_dna_sequences_solution.py) <br>LC 187 · Medium | An exact 2-bit code | `h = ((h << 2) \| code) & mask` gives a 20-bit integer for a 10-mer: a perfect hash. Report a window the *second* time it is seen. **Trap:** no mask (old bits corrupt later windows); reporting on the first sighting; reaching for a modular hash that can only add false positives. |
@@ -677,10 +693,10 @@ Eight problems, five moves (the prefix function reused three ways · exact keys 
 ## Checklist Before Leaving This Topic <!--ca-->
 
 - [ ] Write the prefix function and the Z-function, and say why each is O(n) despite the nested loop <!--ca-->
-- [ ] List every (overlapping) match with KMP, and say why `str.count` returns fewer <!--ca-->
+- [ ] List every (overlapping) match with <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>, and say why `str.count` returns fewer <!--ca-->
 - [ ] Distinguish "has period `p`" from "is a repetition" (`n % p == 0` and `p != n`) <!--ca-->
 - [ ] Quote the collision math: `n²/2m`, 3 observed collisions for 10⁵ strings mod `10⁹+7`, none mod `2⁶¹−1` <!--ca-->
 - [ ] Explain why a `mod 2⁶⁴` polynomial hash is breakable (Thue–Morse) and why the base must be random <!--ca-->
-- [ ] Write Manacher's algorithm, and Kasai's LCP for the longest repeated substring <!--ca-->
+- [ ] Write Manacher's algorithm, and Kasai's <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> for the longest repeated substring <!--ca-->
 - [ ] Write Palindrome Pairs with both guards (`k != i`, `j != len(w)`) and say what each prevents <!--ca-->
 - [ ] Reject `isdigit()`, `int()` and non-ASCII digits in a hand-written `atoi`, and name the Unicode traps (`len`, normalisation, `casefold`) <!--ca-->

@@ -5,8 +5,8 @@ Welcome to Day 158.
 When you are hacking on a weekend project, you write your prompt directly inside your `app.py` file. 
 If you do this in an enterprise, you will cause a production outage.
 
-What happens when OpenAI releases GPT-4o-mini? You swap the API endpoint. But suddenly, your carefully crafted prompt (which worked perfectly for GPT-4) causes the new model to hallucinate. 
-If your prompt is hardcoded in the backend, you have to push a code change, rebuild the Docker container, and redeploy the entire application just to change a sentence!
+What happens when OpenAI releases GPT-4o-mini? You swap the <abbr title="Application Programming Interface">API</abbr> endpoint. But suddenly, your carefully crafted prompt (which worked perfectly for GPT-4) causes the new model to hallucinate. 
+If your prompt is hardcoded in the backend, you have to push a code change, rebuild the <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container, and redeploy the entire application just to change a sentence!
 
 Today, we learn **Production Prompt Management** and **Automated Prompt Optimization** using DSPy.
 
@@ -16,8 +16,8 @@ Today, we learn **Production Prompt Management** and **Automated Prompt Optimiza
 
 ### 1. Prompt-as-Code vs Prompt Registries
 In production, Prompts are treated as independent software artifacts.
-- **Option A (Prompt-as-Code):** Prompts live in a dedicated `prompts/` folder in Git. They undergo Code Review and CI/CD testing.
-- **Option B (Prompt Registry):** Prompts live in an external database (like LangSmith or a headless CMS). The backend fetches `system_prompt_v2.4` via an API call. If a prompt breaks in production, a non-technical Product Manager can log into a dashboard, fix the typo, and instantly push `v2.5` live without touching the backend code.
+- **Option A (Prompt-as-Code):** Prompts live in a dedicated `prompts/` folder in Git. They undergo Code Review and <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> testing.
+- **Option B (Prompt Registry):** Prompts live in an external database (like LangSmith or a headless CMS). The backend fetches `system_prompt_v2.4` via an <abbr title="Application Programming Interface">API</abbr> call. If a prompt breaks in production, a non-technical Product Manager can log into a dashboard, fix the typo, and instantly push `v2.5` live without touching the backend code.
 
 ### 2. The A/B Testing Mandate
 You should never guess if a prompt is "better." 
@@ -34,7 +34,7 @@ Instead of manually tweaking a prompt, you:
 3. Provide a Metric (e.g., `Exact Match`).
 4. Run the **DSPy Teleprompter (Optimizer)**. 
 
-DSPy will use an LLM to automatically generate 50 different prompt variations, test them all against your dataset, find the one that gets the highest score, and "compile" it into a highly optimized, bizarre-looking prompt that outperforms anything a human could write.
+DSPy will use an <abbr title="Large Language Model">LLM</abbr> to automatically generate 50 different prompt variations, test them all against your dataset, find the one that gets the highest score, and "compile" it into a highly optimized, bizarre-looking prompt that outperforms anything a human could write.
 
 ---
 
@@ -128,8 +128,8 @@ If you swap `gpt-3.5` for `Llama-3`, the old prompt might break. With DSPy, you 
 ## 🕒 HOUR 3: CHALLENGE & INTERVIEW PREP
 
 ### 🛠️ The Challenge
-Currently, our DSPy metric uses `exact_match`. This means if the LLM outputs "Paris." instead of "Paris", it scores a 0/100, which is too strict.
-**Your Task:** Write a custom DSPy metric function. Instead of string matching, it should use a secondary LLM (an "LLM-as-a-Judge") to read the prediction and the ground truth, and return a True/False if they are semantically equivalent. Pass this new metric to the `BootstrapFewShot` optimizer.
+Currently, our DSPy metric uses `exact_match`. This means if the <abbr title="Large Language Model">LLM</abbr> outputs "Paris." instead of "Paris", it scores a 0/100, which is too strict.
+**Your Task:** Write a custom DSPy metric function. Instead of string matching, it should use a secondary <abbr title="Large Language Model">LLM</abbr> (an "<abbr title="Large Language Model">LLM</abbr>-as-a-Judge") to read the prediction and the ground truth, and return a True/False if they are semantically equivalent. Pass this new metric to the `BootstrapFewShot` optimizer.
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -140,10 +140,10 @@ Currently, our DSPy metric uses `exact_match`. This means if the LLM outputs "Pa
 A "Strong Hire" candidate must articulate:
 1. **Decoupling:** Immediately strip all hardcoded prompts from the application code. Move them to a centralized **Prompt Registry** (like LangSmith or a managed Git repo).
 2. **Evaluation Datasets:** For every single prompt in the company, there must be a Golden Dataset (e.g., 50 inputs and perfect outputs).
-3. **CI/CD for Prompts:** Before upgrading the central model, trigger a CI/CD pipeline. The pipeline runs all 200 prompts against their Golden Datasets using the new model. It generates a massive regression report showing exactly which prompts degraded.
-4. **Automated Remediation:** For the prompts that failed, run them through a **DSPy Optimizer pipeline**. Pass the Golden Dataset to DSPy and let it automatically re-compile the prompt for the new model until it passes the CI/CD threshold.
+3. **<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> for Prompts:** Before upgrading the central model, trigger a <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline. The pipeline runs all 200 prompts against their Golden Datasets using the new model. It generates a massive regression report showing exactly which prompts degraded.
+4. **Automated Remediation:** For the prompts that failed, run them through a **DSPy Optimizer pipeline**. Pass the Golden Dataset to DSPy and let it automatically re-compile the prompt for the new model until it passes the <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> threshold.
 
 ---
 **Task for the end of the day:** Skim the official DSPy documentation. It represents a paradigm shift from "Prompt Engineering" to "Prompt Programming".
 
-Tomorrow, in **Day 159**, we tackle **Evaluation in Production**. How do you know if your LLM is failing when you have 100,000 real users? We will learn LLM-as-a-Judge, Prometheus, and Grafana!
+Tomorrow, in **Day 159**, we tackle **Evaluation in Production**. How do you know if your <abbr title="Large Language Model">LLM</abbr> is failing when you have 100,000 real users? We will learn <abbr title="Large Language Model">LLM</abbr>-as-a-Judge, Prometheus, and Grafana!

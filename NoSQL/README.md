@@ -1,15 +1,15 @@
 # NoSQL — Document and Key-Value Stores, Hands-On
 
-This module teaches NoSQL databases the same way `SQL/` teaches PostgreSQL: hands-on,
+This module teaches <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> databases the same way `SQL/` teaches PostgreSQL: hands-on,
 against real local databases, with every claim that can be measured (a timing number, a
 row count, an actual command's output) measured on this machine and reported honestly —
 never asserted from memory. It uses **MongoDB** for the document model and **Redis** for
 the key-value/cache model. Every hands-on level's client-code demos are shown in **both
 Python and Go**, side by side.
 
-## The NoSQL landscape, briefly
+## The <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> landscape, briefly
 
-"NoSQL" isn't one thing — it's everything that isn't the relational model in `SQL/`,
+"<abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr>" isn't one thing — it's everything that isn't the relational model in `SQL/`,
 and the four families below solve genuinely different problems. This module goes deep
 on the first two, because between them they cover the concepts a working engineer needs
 most; the other two are worth being able to recognize and place, even without a
@@ -17,8 +17,8 @@ dedicated module here.
 
 | Family | Shape | What it's for | Examples |
 |---|---|---|---|
-| **Key-value** | An opaque value behind a key, usually in RAM | Sub-millisecond lookups, caching, sessions, counters, queues | **Redis**, Memcached, DynamoDB (as a KV store) |
-| **Document** | Schema-flexible, nested JSON-like documents | Data whose shape varies or nests naturally, fast iteration without a rigid schema | **MongoDB**, Couchbase, Elasticsearch (as a document store) |
+| **Key-value** | An opaque value behind a key, usually in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> | Sub-millisecond lookups, caching, sessions, counters, queues | **Redis**, Memcached, DynamoDB (as a KV store) |
+| **Document** | Schema-flexible, nested <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-like documents | Data whose shape varies or nests naturally, fast iteration without a rigid schema | **MongoDB**, Couchbase, Elasticsearch (as a document store) |
 | **Wide-column** | Rows with a huge, sparse, per-row-variable set of columns, partitioned for horizontal scale | Massive write-heavy workloads spread across many machines (time series, event logs) | Cassandra, HBase, Bigtable |
 | **Graph** | Nodes and edges, queried by traversal | Data that's fundamentally about relationships — social graphs, fraud rings, recommendation paths | Neo4j, Amazon Neptune |
 
@@ -97,7 +97,7 @@ storage engine's core mental model, build up through its native operations, then
 the back half on the patterns and production concerns (indexing/caching, atomicity,
 locking/concurrency, scaling the read path, durability, and a capstone client) that
 actually show up in interviews and in real systems. A third, non-hands-on `concepts/`
-set closes the module with wide-column/DynamoDB design, the cross-cutting SQL-vs-NoSQL
+set closes the module with wide-column/DynamoDB design, the cross-cutting <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>-vs-<abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr>
 decision framework, and an interview playbook.
 
 ### MongoDB — the document model (`mongodb/`)
@@ -138,8 +138,8 @@ decision frameworks, and the interview questions this module actually gets asked
 | # | Level | What you'll be able to do |
 |---|---|---|
 | 00 | [Wide-Column and DynamoDB-Style Databases](concepts/00_wide_column_and_dynamodb_style_databases.md) | Design a single-table DynamoDB schema; state Cassandra's `R + W > N` consistency formula |
-| 01 | [Choosing a Database, and CAP Theorem Applied](concepts/01_choosing_a_database_and_cap_theorem.md) | Pick between SQL/Mongo/Redis/wide-column by access pattern; name the concrete consistency knob in each real system |
-| 02 | [Interview Playbook](concepts/02_interview_playbook.md) | The concrete NoSQL data-modeling and conceptual questions this ladder gets asked as, answered precisely |
+| 01 | [Choosing a Database, and CAP Theorem Applied](concepts/01_choosing_a_database_and_cap_theorem.md) | Pick between <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>/Mongo/Redis/wide-column by access pattern; name the concrete consistency knob in each real system |
+| 02 | [Interview Playbook](concepts/02_interview_playbook.md) | The concrete <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> data-modeling and conceptual questions this ladder gets asked as, answered precisely |
 
 ## How to use this module
 
@@ -157,7 +157,7 @@ decision frameworks, and the interview questions this module actually gets asked
 
 | Track | Relationship |
 |---|---|
-| **SQL** | The relational counterpart — same hands-on approach, PostgreSQL instead of Mongo/Redis |
-| **CS Fundamentals** | `03_databases_deep_dive.md` covers the underlying storage-engine theory (B-trees, LSM trees, replication, consistency models) this module makes concrete |
-| **System Design** | `building_blocks/` covers when a system's requirements point toward a given NoSQL family, including wide-column and graph stores not covered hands-on here |
+| **<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>** | The relational counterpart — same hands-on approach, PostgreSQL instead of Mongo/Redis |
+| **CS Fundamentals** | `03_databases_deep_dive.md` covers the underlying storage-engine theory (B-trees, <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> trees, replication, consistency models) this module makes concrete |
+| **System Design** | `building_blocks/` covers when a system's requirements point toward a given <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> family, including wide-column and graph stores not covered hands-on here |
 | **Software Design** | `09_data_design_and_schema_evolution.md` covers schema evolution patterns that apply directly to MongoDB's flexible-schema documents |

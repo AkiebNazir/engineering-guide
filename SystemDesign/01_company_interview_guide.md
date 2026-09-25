@@ -34,7 +34,7 @@ Start from the [45-minute timeline](00_google_l5_playbook.md) and compress. Thes
 | Phase | Google (45) | Meta (35) | Netflix (50, fluid) | Amazon (37) |
 |---|---|---|---|---|
 | Requirements and scope | 5 | 4 | 4 | 5, customer first |
-| Estimates + API | 5 | 4 | 3 | 4 |
+| Estimates + <abbr title="Application Programming Interface">API</abbr> | 5 | 4 | 3 | 4 |
 | Data model | 5 | 4 | 3 | 4 |
 | Baseline, one write, one read | 10 | 6 | 8 | 7 |
 | Deep dives (two) | 13 | 13 | 20 | 12 |
@@ -52,7 +52,7 @@ Give extra time to deep dives and operations, not to more boxes. If time is shor
 | | L5 | Owns the system end to end and drives; two unprompted deep dives; failure raised early. |
 | | L6 | Reframes the problem, phases the design (launch, 10×, multi-region), quantifies cost. See [Going from L5 to L6](00_google_l5_playbook.md). |
 | Meta | E4 | Solid design with some guidance. Some E4 loops are coding-heavy with a lighter design round. |
-| | E5 | Independent end to end: product judgment, scale, caching, ranking, a clean API. |
+| | E5 | Independent end to end: product judgment, scale, caching, ranking, a clean <abbr title="Application Programming Interface">API</abbr>. |
 | | E6 | Cross-team scope, ambiguity handled, org-level trade-offs. |
 | Netflix | Senior | Independent judgment, real operating experience, resilience by default. |
 | | Staff | Sets direction across teams, argues what *not* to build. |
@@ -80,7 +80,7 @@ Confirm the level first: a design that is excellent for L4 or SDE II is too narr
 
 ## Meta
 
-**Commonly reported.** Loops often distinguish a *product-flavored* design ("design a news feed", "design Messenger") from an *infrastructure-flavored* one. The window is short and the pace brisk, so an early, crisp API and data model help.
+**Commonly reported.** Loops often distinguish a *product-flavored* design ("design a news feed", "design Messenger") from an *infrastructure-flavored* one. The window is short and the pace brisk, so an early, crisp <abbr title="Application Programming Interface">API</abbr> and data model help.
 
 **Problem families → this module.** Feed and graph: 007, 032, 039. Messaging and media: 006, 005, 033, 004. Discovery: 009, 026, 028. Caching and experimentation: 018, 037. Ads counting: 027.
 
@@ -100,7 +100,7 @@ Confirm the level first: a design that is excellent for L4 or SDE II is too narr
 **Depth areas commonly probed.**
 - **Operating at scale**: overload, degradation, deploy safety ([28](building_blocks/28_overload_control_and_graceful_degradation.md), [12](building_blocks/12_application_resilience_patterns.md)).
 - **Resilience and chaos**: designs that assume dependencies fail; Netflix has published on failure injection (Chaos Monkey, the Simian Army) since about 2011.
-- **Streaming and CDN**: adaptive bitrate, manifests, Open Connect appliances placed inside ISP networks ([29](building_blocks/29_cdn_and_streaming_media.md)).
+- **Streaming and <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>**: adaptive bitrate, manifests, Open Connect appliances placed inside ISP networks ([29](building_blocks/29_cdn_and_streaming_media.md)).
 - **Data pipelines and experimentation**: [21](building_blocks/21_batch_and_stream_processing.md), [31](building_blocks/31_ranking_recommendation_and_experimentation.md).
 - **Judgment**: the cost of complexity; what you would not build.
 
@@ -143,7 +143,7 @@ Planning assumption: one problem is a 45-minute timed attempt plus about 30 minu
 | Signal | Google | Meta | Netflix | Amazon |
 |---|---|---|---|---|
 | Scoping | You propose scope and confirm it | You tie scope to user behavior fast | You ask what the real constraint is | You start from the customer's promise |
-| Numbers | Few, decisive, rounded | Enough to size caches and fan-out | Enough to reason about cost and headroom | Cost per request as well as QPS |
+| Numbers | Few, decisive, rounded | Enough to size caches and fan-out | Enough to reason about cost and headroom | Cost per request as well as <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> |
 | Trade-offs | Committed, four-part | Committed, pragmatic, shippable first | Committed, with the operating cost named | Committed, with cost and blast radius |
 | Depth | Scale, tail, consistency | Ranking, caches, graph | Failure, streaming, experiments | Operations, isolation, idempotency |
 | Failure | Raised unprompted, with an RPO | Degrade the product, not the page | Assumed, injected, tested | Alarms, rollback, runbook |

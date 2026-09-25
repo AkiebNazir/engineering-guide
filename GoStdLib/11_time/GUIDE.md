@@ -8,7 +8,7 @@ something took, need a deadline, or need to wait without busy-looping.
 
 ## When to reach for it vs alternatives already in this repo
 
-- Cancelling work when a deadline passes across goroutines/API boundaries →
+- Cancelling work when a deadline passes across goroutines/<abbr title="Application Programming Interface">API</abbr> boundaries →
   `context.WithTimeout` (out of scope here - already deep-dived in
   GoEngineering topic 32) uses `time.Duration` underneath, but the
   cancellation *tree* is a `context` concern, not a `time` one.
@@ -34,7 +34,7 @@ something took, need a deadline, or need to wait without busy-looping.
 
 ## What the 10 levels cover
 
-Levels 1-2 build the everyday API: `time.Now()`, `Duration` arithmetic,
+Levels 1-2 build the everyday <abbr title="Application Programming Interface">API</abbr>: `time.Now()`, `Duration` arithmetic,
 `Add`/`Sub`, `Before`/`After`/`Equal`, `time.Date`, and `Since`/`Until`/
 `Truncate`/`Round`. Level 3 combines the "stopwatch" timing idiom with
 `time.After` inside a `select` as a timeout. Level 4 triggers a real

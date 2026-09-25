@@ -3,7 +3,7 @@
 This level is deliberately narrow: **what write concern and read preference actually do in MongoDB, specifically** — not general replication/consensus theory, which is already covered well elsewhere in this repo. For the general theory, see:
 
 - [`SystemDesign/building_blocks/06_database_internals.md`](../../SystemDesign/building_blocks/06_database_internals.md) — "Replication modes" and "Consensus" sections: leader-follower vs. multi-leader vs. leaderless, the quorum formula `W + R > N`, Raft/Paxos.
-- [`SystemDesign/building_blocks/10_distributed_systems_theory.md`](../../SystemDesign/building_blocks/10_distributed_systems_theory.md) — CAP theorem and PACELC: the general C-vs-A tradeoff during a partition, and the latency-vs-consistency tradeoff in the normal case.
+- [`SystemDesign/building_blocks/10_distributed_systems_theory.md`](../../SystemDesign/building_blocks/10_distributed_systems_theory.md) — <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> theorem and PACELC: the general C-vs-A tradeoff during a partition, and the latency-vs-consistency tradeoff in the normal case.
 
 MongoDB's replica set is a concrete instance of the "leader-follower" pattern from that first file: **one primary** accepts all writes, **secondaries** replicate the primary's oplog (operation log) asynchronously by default, and if the primary becomes unreachable, the remaining members hold an election (built on a Raft-like consensus protocol) to promote a new primary automatically — typically within a handful of seconds.
 
@@ -16,17 +16,18 @@ The `mongo:7` instance backing this module is a **single-node replica set** — 
 
 ## Replica sets, conceptually
 
-```mermaid
-flowchart LR
-    subgraph rs["Replica set rs0"]
-        P["PRIMARY<br/>accepts all writes"]
-        S1["SECONDARY<br/>replicates oplog"]
-        S2["SECONDARY<br/>replicates oplog"]
-    end
-    client["Client / driver"] -->|writes, and reads by default| P
-    P -->|oplog stream| S1
-    P -->|oplog stream| S2
-    client -.->|reads, only with a<br/>non-primary read preference| S1
+```arch
+%% caption: The primary takes every write and streams its oplog to the secondaries; a client reads from a secondary only when its read preference allows it.
+grid 210x120
+node client "Client / driver" at 0,1 icon=client
+group rs "Replica set rs0" color=green icon=db
+node p "PRIMARY" at 1,1 in rs icon=db sub="accepts all writes"
+node s1 "SECONDARY" at 2,0 in rs icon=replica sub="replicates oplog"
+node s2 "SECONDARY" at 2,2 in rs icon=replica sub="replicates oplog"
+client -> p : "writes, and reads by default"
+p -> s1 : "oplog stream"
+p -> s2 : "oplog stream"
+client:T ..> s1:L : "reads, only with a non-primary read preference"
 ```
 
 The real `rs.config()` from this lab's single-node set:
@@ -139,6 +140,8 @@ Two things worth internalizing from this real result:
 
 1. MongoDB is smart enough to reject an **unsatisfiable** write concern immediately (`UnsatisfiableWriteConcern`, in under a millisecond here) rather than making the client wait out the full `wtimeout` for something it already knows can never happen — it only actually times out (`WTimeoutError`) when the requested concern is *theoretically* satisfiable but doesn't get satisfied in time (e.g. `w: 2` on a 3-node set where a secondary happens to be down or lagging).
 2. **The write itself still happened.** `who=w2` is genuinely present in the collection — write concern governs *acknowledgment*, not whether the write is applied. The primary always applies the write to its own data immediately; `w` only controls how long the driver waits, and how many other nodes must confirm, before telling your code "done." A rejected/timed-out write concern is not a rolled-back write — this is a common and consequential misunderstanding to carry into an incident: an "error" from a write-concern timeout does not by itself mean the data didn't change.
+
+<div class="lab" data-viz="flow-mongo-wc"></div>
 
 ## Read preference: which node answers a read
 

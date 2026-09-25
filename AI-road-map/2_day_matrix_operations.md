@@ -32,7 +32,7 @@ Here, $A$ grabs the vector $\mathbf{x}$ and moves it to a new location $\mathbf{
 > Result $\mathbf{y} = \begin{bmatrix} 6 \\ 4 \end{bmatrix}$.
 > We successfully stretched the point from $X=3$ to $X=6$.
 > 
-> **AI Context (Forward Pass):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Forward Pass):** 
 > In a neural network layer, $\mathbf{x}$ is the input data (e.g., an image embedding of size 512), $A$ is the weight matrix (size $1024 \times 512$), and $\mathbf{y}$ is the output vector (size 1024). The network "learns" by adjusting the values in the matrix $A$ until it finds the perfect transformation that maps inputs to the correct output shapes.
 
 ### 3. Matrix Multiplication: Composition of Actions
@@ -56,15 +56,15 @@ Standard matrix multiplication for two $n \times n$ matrices requires 3 nested l
 > **Enterprise Context:** When training a Large Language Model like GPT-4, 99% of the computational time is spent doing $O(n^3)$ matrix multiplications. This is why GPUs are required—they have thousands of cores that can do these calculations in parallel. Researchers invented algorithms like Strassen's algorithm which drops the complexity to $O(n^{2.807})$, but on modern hardware, highly optimized tiled algorithms (like cuBLAS) running standard $O(n^3)$ on GPUs are usually faster due to hardware architecture.
 
 ### 4. Core Matrix Properties
-To understand linear algebra in AI, you need to know these descriptors of a matrix:
+To understand linear algebra in <abbr title="Artificial Intelligence">AI</abbr>, you need to know these descriptors of a matrix:
 
 - **Transpose ($A^T$):** Flipping a matrix over its diagonal *(turning all its rows into columns and columns into rows)*. Essential for making matrix shapes align during backpropagation.
-- **Trace ($\text{tr}(A)$):** The sum of the elements on the main diagonal *(from top-left to bottom-right)*. In AI, the trace of a covariance matrix tells you the total variance (total "information") in your dataset.
+- **Trace ($\text{tr}(A)$):** The sum of the elements on the main diagonal *(from top-left to bottom-right)*. In <abbr title="Artificial Intelligence">AI</abbr>, the trace of a covariance matrix tells you the total variance (total "information") in your dataset.
 - **Determinant ($\det(A)$):** A single number representing the factor by which the matrix expands or shrinks the overall volume of space. 
   - If $\det(A) = 0$, the matrix squishes the entire space into a lower dimension (e.g., squishing a 3D cube flat onto a 2D piece of paper). This means information is permanently lost.
 - **Rank:** The number of dimensions in the output space after the transformation. If a $3 \times 3$ matrix squishes space into a flat 2D plane, its rank is 2. 
   - **Rank-Nullity Theorem:** Input Dimensions = Rank (Dimensions kept) + Nullity *(the number of dimensions that get completely flattened or erased to zero)*.
-  - *Application:* "Low-Rank Adaptation" (LoRA), the most popular way to fine-tune LLMs, relies on the assumption that even though a neural network's weight matrix is massive (e.g., $4096 \times 4096$), the *actual* useful transformation it performs has a very low rank (it can be represented by a much smaller matrix without losing information).
+  - *Application:* "Low-Rank Adaptation" (<abbr title="Low-Rank Adaptation">LoRA</abbr>), the most popular way to fine-tune LLMs, relies on the assumption that even though a neural network's weight matrix is massive (e.g., $4096 \times 4096$), the *actual* useful transformation it performs has a very low rank (it can be represented by a much smaller matrix without losing information).
 
 ---
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
 ### Key Takeaways from Code:
 1. **The `@` Operator:** In modern Python/NumPy, use `@` for matrix multiplication instead of `np.dot()`. It handles multi-dimensional broadcasting much better.
 2. **Batch Processing:** Notice how `matrix @ points_matrix` transforms 100 points simultaneously. This is exactly how deep learning batches work. You don't process one image at a time; you put 128 images into a matrix and multiply them all by the weights at once.
-3. **The Power of BLAS:** Your pure Python triple loop is incredibly slow. NumPy delegates to BLAS (Basic Linear Algebra Subprograms) written in C/Fortran which uses CPU vectorization (SIMD) to do operations in parallel.
+3. **The Power of BLAS:** Your pure Python triple loop is incredibly slow. NumPy delegates to BLAS (Basic Linear Algebra Subprograms) written in C/Fortran which uses <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> vectorization (SIMD) to do operations in parallel.
 
 ---
 
@@ -224,7 +224,7 @@ A "Strong Hire" candidate must articulate the following points clearly across th
 
 1. **Algorithmic / Software Optimization:**
    - Mention replacing sequential processing with **Batched Matrix-Matrix Multiplication (GEMM)**. Instead of doing $1$ million Matrix-Vector multiplications, group the 1 million vectors into a large matrix, and do one massive Matrix-Matrix multiplication.
-   - Mention using highly optimized libraries like Intel MKL, OpenBLAS (for CPU) or cuBLAS (for GPU).
+   - Mention using highly optimized libraries like Intel MKL, OpenBLAS (for <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>) or cuBLAS (for GPU).
 2. **Data Representation (Sparsity & Precision):**
    - If the matrices are mostly zeros (e.g., user-item interaction matrices), use **Sparse Matrix formats** (CSR/CSC) to skip multiplying zeros entirely.
    - Suggest **Quantization** *(the process of rounding highly precise 32-bit decimals into smaller, rougher 8-bit integers)*. Converting floats (FP32) to (INT8) doubles or quadruples memory bandwidth and computation speed with minimal accuracy loss.
@@ -233,4 +233,4 @@ A "Strong Hire" candidate must articulate the following points clearly across th
    - Mention memory bandwidth bottlenecks: HBM (High Bandwidth Memory) on modern GPUs is critical because fetching the weights from memory often takes longer than the multiplication itself (the system becomes memory-bound, not compute-bound).
 
 ---
-**Task for the end of the day:** Commit your code to Git. Understanding matrix composition is the exact mechanism that allows Neural Networks to learn complex mappings. Tomorrow, we dissect the matrix with Eigenvectors and SVD!
+**Task for the end of the day:** Commit your code to Git. Understanding matrix composition is the exact mechanism that allows Neural Networks to learn complex mappings. Tomorrow, we dissect the matrix with Eigenvectors and <abbr title="Singular Value Decomposition">SVD</abbr>!

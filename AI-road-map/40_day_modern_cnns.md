@@ -19,20 +19,20 @@ A standard convolution looks at the Spatial dimensions ($3 \times 3$) AND the Co
 In 2017, Google introduced **MobileNet**. They realized that looking at Space (Height/Width) and Depth (Color/Features) at the exact same time was mathematically redundant. They split the convolution into two completely separate steps:
 1. **Depthwise Convolution:** Use a $3 \times 3$ filter on *each channel completely separately*. (Space only).
 2. **Pointwise Convolution:** Use a $1 \times 1$ filter to look at all the channels at a single pixel and mix them together. (Depth only).
-**The Result:** Doing these two steps back-to-back achieves the exact same visual result, but uses **~90% less parameters and RAM!**
+**The Result:** Doing these two steps back-to-back achieves the exact same visual result, but uses **~90% less parameters and <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>!**
 
 ### 3. EfficientNet: The Compound Scaling Formula
 Before 2019, if engineers wanted to improve a model, they guessed. They either made it **Deeper** (more layers), **Wider** (more channels), or increased the **Resolution** (larger image size).
 **The Problem:** If you just make a network infinitely deep, but the image is only $32 \times 32$ pixels, the deep layers have no details left to look at! The math yields diminishing returns.
 **EfficientNet** solved this. They created a mathematical formula called **Compound Scaling**. It dictates exactly how to scale Width, Depth, and Resolution simultaneously (e.g., $\alpha=1.2, \beta=1.1, \gamma=1.15$). This created a family of networks (B0 to B7) that achieved State-of-the-Art accuracy while being 10x smaller than their competitors.
 
-### 4. ConvNeXt: Modernizing the CNN
+### 4. ConvNeXt: Modernizing the <abbr title="Convolutional Neural Network">CNN</abbr>
 In 2020, Vision Transformers (ViTs) started beating CNNs. Researchers asked: *"Are Transformers actually better, or did we just stop updating CNNs?"*
 They built **ConvNeXt**. They took a standard ResNet and modernized it using Transformer tricks:
 - They swapped `BatchNorm` for `LayerNorm`.
 - They swapped `ReLU` for `GELU`.
 - They increased the tiny $3 \times 3$ kernel to a massive $7 \times 7$ kernel.
-The result? ConvNeXt completely beat Vision Transformers in both speed and accuracy, proving the CNN is not dead!
+The result? ConvNeXt completely beat Vision Transformers in both speed and accuracy, proving the <abbr title="Convolutional Neural Network">CNN</abbr> is not dead!
 
 ---
 
@@ -138,7 +138,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **EfficientNet:**
    - Explain that EfficientNet provides the absolute best Accuracy-per-FLOP. If throughput (Latency) and server costs are the primary concern, EfficientNet is the best choice. It works excellently on small and medium datasets.
 3. **ConvNeXt:**
-   - Conclude that ConvNeXt bridges the gap. It provides the throughput and small-data stability of a CNN, but utilizes the massive kernel sizes of a Transformer, allowing it to compete with ViTs on massive datasets.
+   - Conclude that ConvNeXt bridges the gap. It provides the throughput and small-data stability of a <abbr title="Convolutional Neural Network">CNN</abbr>, but utilizes the massive kernel sizes of a Transformer, allowing it to compete with ViTs on massive datasets.
 
 ---
 **Task for the end of the day:** Commit your code to Git. You have optimized the brain for mobile deployment.

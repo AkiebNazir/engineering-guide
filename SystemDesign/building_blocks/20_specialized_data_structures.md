@@ -6,14 +6,14 @@ General-purpose databases answer "give me the row with this key" very well. Many
 
 | Question | Structure | Gives up | Used in |
 |---|---|---|---|
-| Is X definitely not in the set? | Bloom filter | Occasional false "maybe yes" | LSM-tree reads, crawler URL dedup, CDN cache filters |
+| Is X definitely not in the set? | Bloom filter | Occasional false "maybe yes" | <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr>-tree reads, crawler URL dedup, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> cache filters |
 | How many distinct items? | HyperLogLog | ~1–2% error | Unique visitors, distinct search queries |
 | How often has X occurred? | Count-min sketch | Overcounts, never undercounts | Heavy hitters, top-K trending, rate limiting at scale |
 | What is nearby? | Geohash, quadtree, S2 cells | Boundary handling, cell-size tuning | Maps, ride dispatch, delivery |
 | Which documents contain these terms? | Inverted index | Write cost, index size | Web search, log search, product search |
 | Who is in the top N / what is my rank? | Sorted set (skip list) | Memory; sharding makes global rank hard | Leaderboards, priority queues, delayed jobs |
 | Have two replicas diverged, and where? | Merkle tree | Maintenance on every write | Anti-entropy, Git, certificate transparency |
-| Write-optimised key-value storage | LSM tree (memtable + SSTables) | Read and space amplification, compaction | Bigtable, Cassandra, RocksDB |
+| Write-optimised key-value storage | <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree (memtable + SSTables) | Read and space amplification, compaction | Bigtable, Cassandra, RocksDB |
 
 ## Bloom filters
 
@@ -25,7 +25,7 @@ A Bloom filter is a bit array of `m` bits and `k` hash functions. To insert an i
 
 Where it earns its place:
 
-1. **LSM-tree reads** — each SSTable carries a Bloom filter so a lookup skips files that cannot contain the key (Bigtable, Cassandra, RocksDB).
+1. **<abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr>-tree reads** — each SSTable carries a Bloom filter so a lookup skips files that cannot contain the key (Bigtable, Cassandra, RocksDB).
 2. **Web crawler** — "have I already queued this URL?" across billions of URLs without a giant hash set; an occasional false positive just skips a page.
 3. **Avoiding expensive lookups** — check a local filter before a network call to a cache or database for keys that mostly do not exist.
 
@@ -54,6 +54,19 @@ Latitude and longitude are two dimensions; B-trees index one. The trick is to ma
 
 For moving objects (drivers updating every few seconds) the usual design is: an in-memory index per region keyed by cell ID, drivers re-indexed on each update, and queries that scan the rider's cell plus neighbours at a precision where each cell holds a manageable number of drivers.
 
+```arch
+%% caption: Geohashing converts 2D coordinates into a 1D string where a shared prefix implies spatial proximity, allowing B-tree range queries.
+node latlon "Point (Lat, Lon)" at 0,1 icon=internet color=blue
+node hash "Geohash (e.g. 9q8yy)" at 2,1 icon=code color=amber
+group db "Standard B-Tree DB" color=slate style=dashed
+node prefix "Prefix Range Query\n(WHERE hash LIKE '9q8%')" at 4,0 in db icon=search color=green
+node pts "Points in bounding box" at 4,2 in db icon=db color=green
+
+latlon -> hash : "encode\n(interleave bits)"
+hash -> prefix : "query\nneighborhood"
+prefix -> pts : "returns"
+```
+
 ## Inverted indexes and ranking
 
 An inverted index maps each **term** to a **posting list**: the sorted document IDs containing it, often with positions and term frequencies. A query `"distributed cache"` intersects the posting lists for both terms (sorted lists intersect in linear time, and skip pointers make it faster).
@@ -78,15 +91,15 @@ A sorted set keeps members ordered by score with `O(log n)` insert, update, and 
 
 A Merkle tree hashes data blocks at the leaves and hashes pairs of children up to a single root. Two copies of a dataset are identical if their roots match; if not, comparing children finds the differing blocks in `O(log n)` hash comparisons. Uses: replica anti-entropy in Dynamo-style stores ([19_consensus_and_coordination.md](19_consensus_and_coordination.md)), Git objects, blockchains, and verifiable logs.
 
-## LSM trees and SSTables
+## <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> trees and SSTables
 
 A **log-structured merge tree** turns random writes into sequential ones: writes go to a write-ahead log and an in-memory sorted **memtable**; when it fills, it is flushed to an immutable sorted file (**SSTable**). Background **compaction** merges SSTables, dropping overwritten and deleted values.
 
-| | LSM tree | B-tree |
+| | <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree | B-tree |
 |---|---|---|
 | Writes | Sequential appends; very high throughput | In-place page updates; random I/O |
 | Reads | May check several files (Bloom filters help) | One root-to-leaf path |
-| Write amplification | Compaction rewrites data several times | Page splits, full-page WAL writes |
+| Write amplification | Compaction rewrites data several times | Page splits, full-page <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> writes |
 | Space | Temporary duplicates until compaction | Fragmentation in partially full pages |
 | Good fit | Write-heavy, time series, logs, wide-column (Bigtable, Cassandra) | Read-heavy OLTP with many updates (PostgreSQL, MySQL) |
 

@@ -9,12 +9,12 @@
 ## Estimates
 
 - **Sorted-set memory**: Redis sorted-set entries cost roughly 60–100 bytes each (member ID, score, skip-list and hash overhead). 100M players × ~80 bytes ≈ **8 GB** for one season board — large for a single in-memory instance, and regional plus friend boards multiply it.
-- **Writes**: 5K/s (20K/s bursts) `ZINCRBY`/`ZADD` — trivial for one Redis node (100K+ ops/s), so the bottleneck is memory and blast radius, not CPU.
+- **Writes**: 5K/s (20K/s bursts) `ZINCRBY`/`ZADD` — trivial for one Redis node (100K+ ops/s), so the bottleneck is memory and blast radius, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.
 - **Reads**: 50K/s; the top 100 is the same for everyone and caches perfectly; "my rank" is per player.
 - **Hot keys in the hybrid design**: each update costs 2 histogram increments (old bucket down, new bucket up), so the 20K/s burst puts 40K ops/s on one histogram key, while the 16 shards see only ~1,250 writes/s each. That is inside one Redis thread's ~100K ops/s but it is the tightest spot in the design, so split the histogram across a few keys by bucket range.
 - **Scale check**: 20M DAU × ~5 matches = 100M results/day ≈ 1.2K/s average, consistent with the 5K/s peak (4.3×). At an assumed 200 B per result that is 20 GB/day, about 7 TB/year in the score DB, which is the growing cost; the sorted sets are the small one.
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/matches/{match_id}/result      {player_id, score_delta, ...}   # from game servers, signed; idempotent by match_id
@@ -42,19 +42,32 @@ Up to tens of millions of players on one well-provisioned node, this alone is a 
 
 ## Write path and durability
 
-```mermaid
+```arch
 %% caption: The database is the source of truth; the sorted sets are a fast, rebuildable ranking projection.
-flowchart LR
-    gs[Game servers] -->|signed match result| api[Score service]
-    api --> db[(Score DB<br/>match results, player totals)]
-    db -->|outbox / CDC| upd[Leaderboard updaters]
-    upd --> z1[(Sorted-set shards)]
-    upd --> topk[(Global top-1000 set)]
-    upd --> hist[(Score histogram<br/>per board)]
-    client([Players]) --> read[Leaderboard API] --> cache[(Top-100 cache)]
-    read --> z1
-    read --> topk
-    read --> hist
+group wp "Write path" color=green icon=edit
+node gs "Game servers" at 0,0 in wp icon=server
+node api "Score service" at 0,1 in wp icon=service sub="validate, idempotent"
+node db "Score DB" at 0,2 in wp icon=db sub="match results, player totals"
+node upd "Leaderboard updaters" at 0,3 in wp icon=worker
+group rp "Read path" color=blue icon=search
+node client "Players" at 2,0 in rp icon=users
+node cache "Top-100 cache" at 3,1 in rp icon=cache
+node read "Leaderboard API" at 2,1 in rp icon=api
+group rd "Redis ranking projection" color=red icon=redis
+node z1 "Sorted-set shards" at 1,3 in rd icon=redis
+node topk "Global top-1000 set" at 2,3 in rd icon=sort
+node hist "Score histogram" at 3,3 in rd icon=metrics sub="per board"
+gs -> api : "signed match result"
+api -> db
+db ..> upd : "outbox / CDC"
+upd -> z1
+upd:B -> topk:B
+upd:B -> hist:B
+client -> read
+read -> cache
+read -> z1
+read -> topk
+read -> hist
 ```
 
 1. Game servers submit signed match results; the score service validates them (anti-cheat rules: plausible score for match duration, server-authoritative results only) and writes to the database idempotently by `match_id`.
@@ -75,7 +88,7 @@ At 100M players and several boards, one node holds too much in one failure domai
 
 - **Global top set**: a single sorted set holding only the top ~1,000 scores (updaters add a player when their score beats the set's minimum and trim the rest). Top 100 and exact ranks for top players come from here.
 - **Player shards**: all players in N hash-partitioned sorted sets (e.g. 16 shards of ~6M each) for exact score and neighbour queries within a shard and for rebuilding.
-- **Score histogram**: per board, a count of players per score bucket (e.g. 10,000 buckets), updated on every score change (decrement old bucket, increment new). A player's global rank ≈ number of players in higher buckets + interpolated position within their bucket. `O(buckets)` memory (10,000 × 8 B = 80 KB). Use equi-depth boundaries taken from the nightly score quantiles (fixed-width buckets over a skewed distribution can put millions of players in one bucket): each bucket then holds about 10K players and the worst-case error is half a bucket, about 5,000 ranks, which is 0.4% at rank 1.2M. The read path does not scan buckets: each API instance caches the cumulative counts (80 KB) refreshed every second and binary-searches them, so a rank read is `O(log buckets)` and the histogram key sees one refresh per instance per second, not 50K reads/s.
+- **Score histogram**: per board, a count of players per score bucket (e.g. 10,000 buckets), updated on every score change (decrement old bucket, increment new). A player's global rank ≈ number of players in higher buckets + interpolated position within their bucket. `O(buckets)` memory (10,000 × 8 B = 80 KB). Use equi-depth boundaries taken from the nightly score quantiles (fixed-width buckets over a skewed distribution can put millions of players in one bucket): each bucket then holds about 10K players and the worst-case error is half a bucket, about 5,000 ranks, which is 0.4% at rank 1.2M. The read path does not scan buckets: each <abbr title="Application Programming Interface">API</abbr> instance caches the cumulative counts (80 KB) refreshed every second and binary-searches them, so a rank read is `O(log buckets)` and the histogram key sees one refresh per instance per second, not 50K reads/s.
 
 Rank read for a player: if their score ≥ top set minimum → exact rank from the top set; else → histogram estimate, flagged `rank_is_approx`.
 

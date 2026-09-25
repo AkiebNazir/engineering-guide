@@ -28,22 +28,36 @@ Server-sent events suit this one-directional stream; the client cancels by closi
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Cheap checks and context assembly happen before the GPU; the model tier only sees trimmed, permission-checked context.
-flowchart LR
-    ui([Mail client]) -->|SSE| gw[AI gateway<br/>auth · quotas · rate limits]
-    gw --> orch[Assistant orchestrator]
-    orch --> policy[Org policy + consent]
-    orch --> ret[Mailbox retrieval<br/>per-user index, ACL-filtered]
-    orch --> guard_in[Input guard<br/>injection + abuse classifiers]
-    orch --> router[Model router]
-    router --> small[Small model pool]
-    router --> large[Large model pool]
-    small --> guard_out[Output guard<br/>policy + PII checks]
-    large --> guard_out
-    guard_out --> gw
-    orch --> cache[(Response + prefix cache)]
-    orch --> logs[(Usage, eval samples, cost)]
+node ui "Mail client" at 1,0 icon=email shape=pill
+node guard_out "Output guard" at 0,1 icon=shield sub="policy + PII checks"
+node gw "AI gateway" at 1,1 icon=gateway sub="auth, quotas, rate limits"
+node orch "Orchestrator" at 1,2 icon=workflow sub="template, cache, citations"
+node router "Model router" at 1,3 icon=sitemap
+group gpu "Model tier: GPUs" color=teal icon=llm
+node small "Small model pool" at 0,3 in gpu icon=model
+node large "Large model pool" at 0,4 in gpu icon=llm
+group pre "Checks + context" color=blue icon=shield
+node guard_in "Input guard" at 2,0 in pre icon=shield sub="injection + abuse"
+node policy "Org policy + consent" at 2,1 in pre icon=auth
+node ret "Mailbox retrieval" at 2,2 in pre icon=search sub="per-user, ACL-filtered"
+group st "Stores" color=slate icon=db
+node cache "Response + prefix cache" at 2,3 in st icon=cache
+node logs "Usage, eval, cost" at 2,4 in st icon=logs sub="eval samples"
+ui -> gw : "<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>"
+gw -> orch
+orch:R -> guard_in:L
+orch:R -> policy:L
+orch -> ret
+orch:R -> cache:L
+orch:R -> logs:L
+orch -> router
+router -> small
+router:B -> large:R
+small -> guard_out
+large:L -> guard_out:L
+guard_out -> gw
 ```
 
 1. **AI gateway**: authenticates, checks the org/admin enablement flag, enforces quotas and rate limits, opens the stream.
@@ -112,7 +126,7 @@ Trade-off to state: "I route most traffic to a small model and trim context aggr
 
 1. **Sizing only output tokens.** Prefill is about half the GPU bill, and KV-cache memory caps the batch. Size both.
 2. **Serving one request at a time, or with static batches.** GPUs idle while sequences finish. Use continuous batching with paged KV cache.
-3. **Not cancelling generation when the client disconnects.** The GPU keeps decoding for nobody. Propagate the SSE close to the scheduler.
+3. **Not cancelling generation when the client disconnects.** The GPU keeps decoding for nobody. Propagate the <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> close to the scheduler.
 4. **Stuffing whole threads or mailboxes into the prompt.** Cost and injection surface both grow. Retrieve a few messages and trim quotes and signatures.
 5. **Enforcing permissions only in the index, or after generation.** A revoked or unauthorised message can already be in the prompt. Check the source of truth before assembly.
 6. **A semantic response cache shared across users.** A near-match can return another user's private answer. Cache per user and thread version only.
@@ -123,8 +137,8 @@ Trade-off to state: "I route most traffic to a small model and trim context aggr
 - **Migration and rollout.** Roll by capability and cohort: summarise first (lowest risk), then drafting, then free-form ask, with per-org enable flags for staged enterprise rollout. Keep two model versions live so a regression is a routing change, and pin model and prompt versions together.
 - **Cost model.** Report cost per 1,000 requests and per user per month (about $0.12 and $0.02 under the assumptions above), and rank the levers: routing, prefix cache, trimming, quantisation, off-peak precompute.
 - **Ownership and blast radius.** Serving, orchestration and prompts, safety guards, and retrieval belong to different owners. A bad prompt affects only its template cohort, and per-tenant concurrency caps stop one large tenant starving the shared pools (the same idea as the noisy-neighbour layers in [the multi-tenant gateway](021_multi_tenant_api_gateway_solution.md)). See also [ML and LLM systems](../building_blocks/23_ml_and_llm_systems.md).
-- **Build versus buy.** Start on a hosted model API to learn the real token distribution, and self-host GPUs only when volume makes it cheaper (at hundreds of GPUs, not tens). Build the orchestrator, ACL-aware retrieval and guards, since they depend on mail data and policy.
-- **Phased evolution and what to measure first.** Ship summarise on a hosted API, then add routing and prefix caching, then self-hosting. Measure first: the prompt-length distribution (a 3,000-token average can hide a 20K-token tail), the quality gap between small and large on real tasks, the prefix-cache hit potential, and the task mix.
+- **Build versus buy.** Start on a hosted model <abbr title="Application Programming Interface">API</abbr> to learn the real token distribution, and self-host GPUs only when volume makes it cheaper (at hundreds of GPUs, not tens). Build the orchestrator, ACL-aware retrieval and guards, since they depend on mail data and policy.
+- **Phased evolution and what to measure first.** Ship summarise on a hosted <abbr title="Application Programming Interface">API</abbr>, then add routing and prefix caching, then self-hosting. Measure first: the prompt-length distribution (a 3,000-token average can hide a 20K-token tail), the quality gap between small and large on real tasks, the prefix-cache hit potential, and the task mix.
 
 ## Build exercise
 

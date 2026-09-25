@@ -3,7 +3,7 @@
 Welcome to Day 149.
 
 If you build a traditional web app and the database is down, the app crashes. You show the user a 500 error.
-But if you build an AI Agent, failure modes are much more complex. What if the LLM API times out? What if a Web Scraper tool hits a CAPTCHA? What if the agent gets stuck in an infinite `while` loop, bleeding your wallet dry?
+But if you build an <abbr title="Artificial Intelligence">AI</abbr> Agent, failure modes are much more complex. What if the <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> times out? What if a Web Scraper tool hits a CAPTCHA? What if the agent gets stuck in an infinite `while` loop, bleeding your wallet dry?
 
 Today, we learn **Resilience Engineering for Agents**. We will build systems that catch catastrophic failures, attempt intelligent recovery, and gracefully degrade their features so the user never experiences a hard crash.
 
@@ -12,22 +12,22 @@ Today, we learn **Resilience Engineering for Agents**. We will build systems tha
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The 5 Modes of Agent Failure
-1. **API Timeouts:** OpenAI/Anthropic APIs go down frequently.
-2. **Context Length Overflow:** A RAG agent pulls too many documents and exceeds the 128k token limit, crashing the generation.
+1. **<abbr title="Application Programming Interface">API</abbr> Timeouts:** OpenAI/Anthropic APIs go down frequently.
+2. **Context Length Overflow:** A <abbr title="Retrieval-Augmented Generation">RAG</abbr> agent pulls too many documents and exceeds the 128k token limit, crashing the generation.
 3. **Tool Execution Crashes:** The agent tries to execute `PythonREPL("1/0")` and throws a `ZeroDivisionError`.
 4. **Infinite Loops:** The agent tries to fix a bug, the test fails, it tries again, fails again... repeating forever.
 5. **Budget Exhaustion:** The agent spends $10 on a single task without solving it.
 
 ### 2. The Circuit Breaker Pattern
 *Analogy:* If an electrical wire gets too hot, a physical switch "breaks" the circuit to prevent a fire.
-In software, if your agent's `WeatherTool` relies on an external API that goes down, the agent might retry calling it 50 times, wasting LLM tokens and time. 
-A **Circuit Breaker** tracks failures. If the `WeatherTool` fails 3 times in a row, the breaker "trips" (opens). For the next 5 minutes, any attempt to call the `WeatherTool` instantly returns `"Service Unavailable"`, saving the LLM from wasting tokens on broken tools.
+In software, if your agent's `WeatherTool` relies on an external <abbr title="Application Programming Interface">API</abbr> that goes down, the agent might retry calling it 50 times, wasting <abbr title="Large Language Model">LLM</abbr> tokens and time. 
+A **Circuit Breaker** tracks failures. If the `WeatherTool` fails 3 times in a row, the breaker "trips" (opens). For the next 5 minutes, any attempt to call the `WeatherTool` instantly returns `"Service Unavailable"`, saving the <abbr title="Large Language Model">LLM</abbr> from wasting tokens on broken tools.
 
 ### 3. Graceful Degradation
 If a primary system fails, the app shouldn't crash; it should fall back to a "lesser" but functional state.
 - **Model Degradation:** If `gpt-4o` (Primary) fails $\rightarrow$ Fallback to `claude-3-haiku` (Backup) $\rightarrow$ Fallback to local `Llama-3-8B` (Failsafe).
-- **Architecture Degradation:** If the massive Plan-and-Execute agent graph crashes $\rightarrow$ Fallback to a simple ReAct agent $\rightarrow$ Fallback to a single zero-shot LLM prompt.
-- **Tool Degradation:** If the Web Search tool fails $\rightarrow$ Fallback to using parametric memory (the LLM's internal weights).
+- **Architecture Degradation:** If the massive Plan-and-Execute agent graph crashes $\rightarrow$ Fallback to a simple ReAct agent $\rightarrow$ Fallback to a single zero-shot <abbr title="Large Language Model">LLM</abbr> prompt.
+- **Tool Degradation:** If the Web Search tool fails $\rightarrow$ Fallback to using parametric memory (the <abbr title="Large Language Model">LLM</abbr>'s internal weights).
 
 ### 4. The Dead Letter Queue (DLQ)
 If an agent task completely fails (e.g., all retries exhausted), you don't just drop the task. You push it to a **Dead Letter Queue**. This is a special database table where failed tasks sit. A human engineer can review the DLQ, fix the bug in the agent's code, and click "Replay" to push the task back into the main queue!
@@ -36,7 +36,7 @@ If an agent task completely fails (e.g., all retries exhausted), you don't just 
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a resilient LangChain/LangGraph workflow that implements Exponential Backoff, API Fallbacks, and Tool Circuit Breaking.
+Let's build a resilient LangChain/LangGraph workflow that implements Exponential Backoff, <abbr title="Application Programming Interface">API</abbr> Fallbacks, and Tool Circuit Breaking.
 
 *(Note: To run this code, you would need `pip install langchain langchain-openai langchain-anthropic tenacity`)*
 
@@ -154,7 +154,7 @@ def run_resilience_demo():
 In this architecture:
 1. **Model Fallback:** If OpenAI crashes, Anthropic takes over.
 2. **Tenacity Retries:** If a network glitch happens, the code waits exponentially (1s, 2s, 4s) before trying again, preventing server spam.
-3. **Circuit Breaker:** If the database is truly offline, we stop retrying. The tool returns a graceful string to the LLM: `"ERROR: Tool unavailable"`. The LLM reads this and can gracefully tell the user: *"I'm sorry, I cannot access the database right now."*
+3. **Circuit Breaker:** If the database is truly offline, we stop retrying. The tool returns a graceful string to the <abbr title="Large Language Model">LLM</abbr>: `"ERROR: Tool unavailable"`. The <abbr title="Large Language Model">LLM</abbr> reads this and can gracefully tell the user: *"I'm sorry, I cannot access the database right now."*
 
 ---
 
@@ -162,22 +162,22 @@ In this architecture:
 
 ### 🛠️ The Challenge
 Build a LangGraph infinite loop detector. 
-Add a `loop_count` to your `AgentState`. In your router function, if `loop_count > 10`, force the graph to route to a custom `GracefulDegradationNode` that apologizes to the user and ends the graph, preventing infinite LLM token consumption.
+Add a `loop_count` to your `AgentState`. In your router function, if `loop_count > 10`, force the graph to route to a custom `GracefulDegradationNode` that apologizes to the user and ends the graph, preventing infinite <abbr title="Large Language Model">LLM</abbr> token consumption.
 
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your production agent system had a 2-hour outage because the OpenAI API rate limit was hit. Design the resilience architecture to prevent this from ever taking the system offline again."*
+*"Your production agent system had a 2-hour outage because the OpenAI <abbr title="Application Programming Interface">API</abbr> rate limit was hit. Design the resilience architecture to prevent this from ever taking the system offline again."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Multi-Provider Failover:** LCEL `.with_fallbacks()` routing from GPT-4 to Claude 3 to Gemini.
 2. **Local Fallback:** If all external providers go down, route to an on-premise `vLLM` server hosting Llama-3-70B.
-3. **Queue Backpressure:** Do not accept HTTP requests if the Redis queue exceeds 10,000 tasks. Return `503 Service Unavailable` immediately.
+3. **Queue Backpressure:** Do not accept <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> requests if the Redis queue exceeds 10,000 tasks. Return `503 Service Unavailable` immediately.
 4. **Token Rate Limiting (Token Bucket):** Throttle the agent workers locally so they never actually hit the OpenAI rate limit. 
-5. **Graceful Degradation of Features:** If the LLM is down, disable the "Chat" feature in the frontend, but keep the core application functional.
+5. **Graceful Degradation of Features:** If the <abbr title="Large Language Model">LLM</abbr> is down, disable the "Chat" feature in the frontend, but keep the core application functional.
 
 ---
-**Task for the end of the day:** Review the `tenacity` Python library. It is essential for all network-bound ML code.
+**Task for the end of the day:** Review the `tenacity` Python library. It is essential for all network-bound <abbr title="Machine Learning">ML</abbr> code.
 
 Tomorrow, in **Day 150**, we reach the **Phase 5 Capstone**. We will combine everything—Orchestration, Subgraphs, Scalable Queues, and Failure Recovery—into the ultimate Production Multi-Agent System!

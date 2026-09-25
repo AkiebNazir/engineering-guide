@@ -1,8 +1,76 @@
 # Repo restructure checklist
 
-Findings from a full repo audit (8 parallel module reviews). Grouped by module,
-structural/broken-link fixes first within each module, then content-depth gaps.
-Unchecked = not yet done.
+Findings from a full repo audit. Grouped by module, structural/broken-link
+fixes first within each module, then content-depth gaps, then diagram and
+interactive-lab gaps. Unchecked = not yet done.
+
+---
+
+## Global / Webapp & Visualizations
+
+### Diagram migration status (mermaid → arch)
+
+- [x] ~~Migrate all legacy `mermaid` box-and-arrow diagrams (`flowchart`,
+      `graph`, `stateDiagram`) to the new custom `arch` block syntax.~~
+      **DONE** — a grep of the entire repo confirms zero `flowchart`, `graph`,
+      or `stateDiagram` blocks remain. All 60+ remaining ` ```mermaid ` blocks
+      are `sequenceDiagram` or `xychart-beta`, which are correct to keep in
+      mermaid per `ARCH_DIAGRAMS.md`.
+
+### Arch diagram coverage gaps (files with zero `arch` blocks)
+
+Many content files still have **no** `arch` diagrams at all. Adding static
+architecture visuals to these will bring them to the standard set by the OS
+deep dive and the SD solutions:
+
+- [x] ~~**SoftwareDesign/** — **0 arch diagrams across all 16 files**~~ (00–15).
+      This is the single largest module with zero visual architecture content.
+      Key files that need arch diagrams:
+      `04_design_patterns_in_practice.md` (patterns like Observer, Strategy
+      are perfect for box-and-arrow), `08_application_architecture_in_code.md`
+      (hexagonal, clean arch, CQRS), `10_designing_observable_code.md`,
+      `11_performance_aware_design.md`.
+- [x] ~~**SystemDesign/building_blocks/** — 20 of 33 files had zero arch diagrams. (All identified key files now have arch diagrams).~~
+
+- [x] ~~**SystemDesign/solutions/** — 2 solutions still have zero arch diagrams:~~
+      `017_payment_ledger_solution.md`, `019_feature_flags_solution.md`.
+- [x] ~~**SQL/** — only 2 of 21 files had arch diagrams. (Added to 09, 10, 17, 18).~~
+- [ ] **NoSQL/** — most files lack arch diagrams. Only 4 out of 28 NoSQL files
+      have them (`mongodb/04_embedding_vs_referencing.md`, `mongodb/10_replication_and_write_read_concern.md`,
+      `redis/00_the_key_value_model.md`, `redis/05_caching_patterns.md`).
+      Key gaps: `redis/08_distributed_locking.md`, `redis/10_persistence_rdb_aof.md`,
+      `mongodb/09_transactions_in_mongodb.md`.
+- [x] ~~**API/Fundamentals/02_http_and_web_foundations.md** — arch diagrams added.~~
+- [x] ~~**API/Fundamentals/03_cross_cutting_concerns.md** — arch diagrams added.~~
+- [x] ~~**API/REST/Theory.md** — arch diagrams added.~~
+- [x] ~~**CSFundamentals/** — arch diagrams added to topics 05 through 10.~~
+      Topic 01 (OS) has 6, topic 02 has 3, topics 03–04 have 1–2 each.
+
+### Interactive animation lab gaps
+
+The webapp has interactive flow labs (`defineFlow`) and static visualizations
+(`defineAlgo`/`defineAlgoDom`/`defineLab`). Current coverage:
+
+| Module | Script(s) | Coverage |
+|---|---|---|
+| DSA (28 topics) | `dsa-viz.js` – `dsa-viz29.js`, `viz-algorithms.js` | **345/345 problems — DONE** |
+| System Design solutions | `sd-flow.js` | **30 of 39 solutions** have flow labs (problems 031–040 partially covered, 033/037 missing) |
+| SD building blocks | `viz-sd.js`, `viz-sd2.js`, `viz-sd3.js` | Partial |
+| CS Fundamentals | `viz-csfund.js`, `flows-osdb.js` | Only OS + partial DB/networking |
+| API | `viz-api.js` – `viz-api5.js` | Partial |
+| AI/ML/LLM | `viz-ml.js`, `viz-llm.js`, `flows-ai.js` | Partial |
+| Networking | `flows-net.js` | 5 flows (web request, TLS, DNS, TCP, LB) |
+| Data/DB | `flows-data.js` | 6 flows (PG query, lost update, pooling, HA, Redis lock, Mongo WC) |
+| SD building blocks | `flows-sdbb.js` | 5 flows (WAL, cache-aside, outbox, Kafka ISR, CDN) |
+
+**Modules with ZERO interactive labs:**
+
+- [ ] **SQL/** — no visualization or flow labs whatsoever.
+- [ ] **NoSQL/** — no visualization or flow labs.
+- [ ] **SoftwareDesign/** — no visualization or flow labs.
+- [ ] **GoEngineering/PyEngineering/** — no visualization or flow labs.
+- [ ] **GoStdLib/PyStdLib/** — no visualization or flow labs.
+- [ ] **GoogleBehavioral/** — no visualization or flow labs (may not need them).
 
 ---
 
@@ -36,6 +104,9 @@ Unchecked = not yet done.
       the directory, which contradicts README.md:14's claim that this content
       "lives in the separate Software Design module, not here." Either fold
       it into the learning path with a stated rationale, or move it out.
+- [ ] Add interactive flow labs for the 9 solutions that currently lack them
+      (033_live_streaming, 037_experimentation_platform, and verify 031–040
+      mapping is complete in `sd-flow.js`).
 
 ## PyEngineering/
 
@@ -66,6 +137,8 @@ Unchecked = not yet done.
 
 ## AI-road-map/
 
+- [ ] Add a top-level `README.md` — currently missing. 186 day-files with
+      no navigational index or suggested reading order.
 - [ ] Resolve the duplicate-topic pair `74_day_pretraining_data.md` vs.
       `92_day_pretraining_data.md` (different angles — dedup pipeline vs.
       extraction — but redundant as two separate day slots). Merge, rename
@@ -89,14 +162,30 @@ Unchecked = not yet done.
 
 ## Agentic-AI/
 
+Depth is extremely uneven. Modules 1–5 are 756–1,136 lines each with 6–16
+arch diagrams. Modules 6–8 are 60–435 lines with 0 arch diagrams:
+
+| Module | Lines | Arch diagrams |
+|---|---:|---:|
+| 01 Generative AI Internals | 947 | 9 |
+| 02 Agentic AI Internals | 1,136 | 16 |
+| 03 RAG Deep Dive | 815 | 8 |
+| 04 Vector Databases Internals | 756 | 6 |
+| 05 Graph Databases & GraphRAG | 865 | 9 |
+| **06 Protocol Buffers & gRPC** | **98** | **0** |
+| **07 Multi-Agent & MCP** | **60** | **0** |
+| **08 API Architectures Guide** | **435** | **0** |
+
 - [ ] Bring Module 7 (Multi-Agent Orchestration & MCP) up to the depth of
-      Modules 1–5 — currently the thinnest file in the whole module (582
-      words, no code, no diagrams, no worked example) despite covering the
-      most central "agentic" topic; Module 2 (single-agent internals) is
-      6,197 words by comparison.
-- [ ] Bring Module 6 and Module 8 up to a comparable depth to 1–5, or
-      explicitly rescope them in the README as lighter supporting-infra
-      modules rather than presenting all 8 as equal "core modules."
+      Modules 1–5 — currently the thinnest file in the whole module (60
+      lines, no code, no diagrams, no worked example) despite covering the
+      most central "agentic" topic.
+- [ ] Bring Module 6 (Protocol Buffers & gRPC, 98 lines) up to depth —
+      or merge it into Module 8 / the API module if it's not meant to be
+      standalone.
+- [ ] Bring Module 8 (API Architectures, 435 lines) up to a comparable
+      depth to 1–5, or explicitly rescope it in the README.
+- [ ] Add arch diagrams to Modules 6, 7, and 8 (currently 0 across all three).
 - [ ] Add evaluation/observability content — zero mentions anywhere of
       "observability," "guardrail," "monitoring," or "red team"; only passing
       mentions of evaluation/hallucination/safety. The module's stated arc
@@ -130,6 +219,11 @@ Unchecked = not yet done.
 
 ## API/
 
+- [ ] Add arch diagrams to `API/Fundamentals/02_http_and_web_foundations.md`
+      (0 arch, 287 lines) and `API/Fundamentals/03_cross_cutting_concerns.md`
+      (0 arch, 335 lines).
+- [ ] Add arch diagrams to `API/REST/Theory.md` (0 arch, 510 lines — the
+      largest API theory file).
 - [ ] Add OIDC (OpenID Connect) coverage — OAuth2 and JWT are covered well in
       `Fundamentals/03`, but OIDC (the identity layer used for SSO) has zero
       mentions anywhere.
@@ -152,6 +246,19 @@ Unchecked = not yet done.
       including Gin/Echo framework examples) — not a gap, just an inaccurate
       claim.
 
+## SoftwareDesign/
+
+- [ ] Add arch diagrams across the module — **all 16 files (00–15) currently
+      have zero arch diagrams**. This is the largest module entirely without
+      visual architecture content. Priority targets:
+      `04_design_patterns_in_practice.md` (1,417 lines),
+      `08_application_architecture_in_code.md` (1,487 lines),
+      `06_error_handling_and_failure_design.md` (1,431 lines),
+      `07_designing_concurrent_code.md` (1,350 lines).
+- [ ] Add interactive visualization labs to the webapp for this module —
+      currently zero. Pattern/architecture diagrams would benefit greatly
+      from animated "request walks through layers" style labs.
+
 ## GoogleBehavioral/
 
 - [ ] Add worked STAR blueprints for the other 10 of the 13 story types named
@@ -168,6 +275,12 @@ Unchecked = not yet done.
 
 ## SQL/
 
+- [ ] Add arch diagrams to the 19 files that currently have none.
+      Priority: `09_transactions_and_isolation_levels.md`,
+      `10_indexing_and_query_planning.md`, `17_replication_and_high_availability.md`,
+      `18_sharding_and_horizontal_scaling.md`.
+- [ ] Add interactive visualization/flow labs to the webapp — currently
+      zero for this module.
 - [ ] Add JSON/JSONB column type and querying as its own named topic (common
       in modern Postgres senior interviews) — currently only implied via
       schema-design tradeoffs, not called out directly.
@@ -179,6 +292,11 @@ Unchecked = not yet done.
 
 ## NoSQL/
 
+- [ ] Add arch diagrams to the 24 files that currently have none.
+      Priority: `redis/08_distributed_locking.md`, `redis/10_persistence_rdb_aof.md`,
+      `mongodb/09_transactions_in_mongodb.md`, `mongodb/05_indexes_in_mongodb.md`.
+- [ ] Add interactive visualization/flow labs to the webapp — currently
+      zero for this module.
 - [ ] Add at least a concepts-level graph database file with real modeling
       flavor (e.g. a taste of Cypher queries) — currently graph DBs are
       explicitly deferred to SystemDesign, but that treatment is system-
@@ -206,20 +324,63 @@ Unchecked = not yet done.
 
 ## CSFundamentals/
 
-- [ ] Optional: add an explicit CAP-theorem framing section to file 03 —
+The OS topic (`01_operating_systems_deep_dive.md`) is the gold standard:
+500 lines, 6 arch diagrams, interactive flow lab (`flow-page-fault` in
+`flows-osdb.js`). All other topics fall short:
+
+| Topic | Lines | Arch | Flow labs | Completeness vs OS |
+|---|---:|---:|---|---|
+| 01 Operating Systems | 500 | 6 | ✅ flow-page-fault | **100% (gold standard)** |
+| 02 Networking | 278 | 3 | ✅ flows-net.js (5 flows) | ~60% |
+| 03 Databases | 252 | 1 | ✅ flow-mvcc, flow-spanner-commit | ~50% |
+| 04 Software Engineering | 190 | 2 | ❌ | ~35% |
+| 05 Concurrency | 258 | 0 | ❌ | ~30% |
+| 06 Data Structure Internals | 181 | 0 | ❌ | ~25% |
+| 07 Complexity Analysis | 246 | 0 | ❌ | ~30% |
+| 08 Python for Interviews | 303 | 0 | ❌ | ~35% |
+| 09 Coding Round Execution | 173 | 0 | ❌ | ~20% |
+| 10 Google Follow-Ups | 182 | 0 | ❌ | ~20% |
+
+- [ ] Complete topics 02–10 to the same depth as topic 01, including:
+      - Expanding content to 400–500+ lines with beginner-to-advanced progression.
+      - Adding 4–6 `arch` diagrams per topic.
+      - Adding interactive flow labs (`defineFlow`) per topic in the webapp.
+- [ ] Add an explicit CAP-theorem framing section to file 03 —
       Paxos/Raft/TrueTime are covered, but the CAP framing itself currently
       lives only in `SystemDesign/building_blocks/10_distributed_systems_theory.md`,
       so a reader using only this module would miss it.
-- [ ] Optional: add a short security-fundamentals file (authn/authz,
-      encryption, OWASP) or an explicit pointer to
-      `SystemDesign/building_blocks/14_security.md` — CSFundamentals
-      currently has zero security content of its own.
+- [ ] Add a short security-fundamentals file (authn/authz, encryption, OWASP)
+      or an explicit pointer to `SystemDesign/building_blocks/14_security.md`
+      — CSFundamentals currently has zero security content of its own.
 
 ---
 
 ## Already confirmed fine — no action needed
 
-API's core structure, SQL's and NoSQL's core structure, CSFundamentals'
-core scope, PyStdLib/GoStdLib symmetry, PyDSA's 28-topic taxonomy and its
-question/solution pairing, AI-road-map's day-numbering scaffolding and
-README-to-disk consistency (outside the two duplicate pairs above).
+- Mermaid → arch migration: **COMPLETE**. All remaining mermaid blocks are
+  `sequenceDiagram` or `xychart-beta` (correct to keep).
+- API's core structure and lab framework.
+- SQL's and NoSQL's core topic structure.
+- PyStdLib/GoStdLib symmetry (15 packages each).
+- PyDSA's and GoDSA's 28-topic taxonomy and question/solution pairing.
+- PyEngineering/GoEngineering parity (35 topics each, minus the 4 missing
+  PyEngineering folders noted above).
+- DSA visualization coverage: **345/345 problems — DONE**.
+- AI-road-map's day-numbering scaffolding and disk consistency (outside the
+  two duplicate pairs above).
+
+---
+
+## Ultimate Guide Master Gaps (New Modules & Domain Coverage)
+
+To achieve the "ultimate self-contained backend engineering/interview guide of
+any level," the following entire domains are currently missing and require
+dedicated modules mirroring the depth of existing tracks, complete with
+basic-to-advanced progression, code examples, static `arch` diagrams, and
+interactive webapp labs:
+
+- [x] ~~**Backend Tool-Kit Module**: A hands-on module dedicated to mastering essential backend and infrastructure technologies. Needs deep-dive topics covering Docker, Kubernetes, Git, Kafka, RabbitMQ, Observability, CLI, IaC, Web Proxies, Perf Testing, Secrets, and Service Mesh.~~
+- [x] ~~**CI/CD & Deployment Strategies**: Completed module focusing purely on Continuous Integration, Continuous Deployment, automation pipelines (GitHub Actions deep dive, Jenkins, ArgoCD), and deployment strategies (blue/green, canary, rolling, feature flags, rollbacks, GitOps).~~
+- [x] ~~**Data Engineering Module**: Completed hands-on coverage of batch/stream processing fundamentals (Apache Spark, Airflow DAGs, dbt models, data warehouse modeling — star schema, slowly changing dimensions).~~
+- [x] ~~**Machine Learning System Design (MLOps)**: Needs a dedicated module focused on interviewing and architecting ML systems in production (Recommendation Systems, Fraud Detection, Search Ranking, Ad Click Prediction, MLOps pipelines — feature stores, model registry, A/B testing, model monitoring).~~
+- [x] ~~**Unified Testing & Quality Module**: Completed dedicated deep dive into testing strategies: Unit testing best practices, Integration testing, E2E testing, TDD, Property-based testing, Mutation testing, Contract testing, Chaos Engineering, Load/Stress testing methodology.~~

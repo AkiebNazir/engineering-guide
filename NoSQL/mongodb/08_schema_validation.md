@@ -4,7 +4,7 @@ Level 00 called flexible schema a genuine design tool, but also flagged the cost
 
 ## Defining a validator
 
-Validators are attached to a collection at creation time (or added later with `collMod`), written as a **JSON Schema** wrapped in `$jsonSchema`:
+Validators are attached to a collection at creation time (or added later with `collMod`), written as a **<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema** wrapped in `$jsonSchema`:
 
 ```python
 schema = {
@@ -33,7 +33,7 @@ schema = {
 db.create_collection("accounts", validator=schema, validationLevel="strict", validationAction="error")
 ```
 
-This says: every document in `accounts` must have `email`, `balance`, and `status`; `email` must be a string matching a basic email shape; `balance` must be a non-negative number; `status` must be one of three fixed strings. Nothing else is constrained — a document could still carry any additional field the schema doesn't mention, because JSON Schema's default is to allow unlisted properties unless you explicitly set `additionalProperties: false`.
+This says: every document in `accounts` must have `email`, `balance`, and `status`; `email` must be a string matching a basic email shape; `balance` must be a non-negative number; `status` must be one of three fixed strings. Nothing else is constrained — a document could still carry any additional field the schema doesn't mention, because <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema's default is to allow unlisted properties unless you explicitly set `additionalProperties: false`.
 
 ## What gets rejected, and how
 
@@ -192,4 +192,4 @@ Don't reach for it as a default on every collection — the entire value proposi
 - **Validating a type too loosely.** `"balance": {"bsonType": ["double", "int"]}` above intentionally accepts both BSON numeric types, because a naive `bsonType: "double"` alone would reject a perfectly valid integer `50` inserted from a language driver that sends whole numbers as `int32`/`int64` — a very common false rejection if you don't test with a real driver, not just `mongosh` literals.
 - **Assuming the validator is retroactive.** Attaching a validator to a collection does **not** check documents already in it — only future writes. Existing bad data stays exactly as it is until something writes to it again.
 
-Level 09 moves to the other structural safety net MongoDB offers: multi-document ACID transactions — what they cost, and, just as importantly, when embedding (level 04) means you never needed one in the first place.
+Level 09 moves to the other structural safety net MongoDB offers: multi-document <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> transactions — what they cost, and, just as importantly, when embedding (level 04) means you never needed one in the first place.

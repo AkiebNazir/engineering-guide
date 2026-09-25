@@ -1,10 +1,10 @@
 # REST API: The Complete Masterclass
 
-To truly master REST (Representational State Transfer), you must move beyond basic `GET` and `POST` commands and embrace HTTP semantics, Idempotency, and Resource-Oriented Design.
+To truly master <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> (Representational State Transfer), you must move beyond basic `GET` and `POST` commands and embrace <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> semantics, Idempotency, and Resource-Oriented Design.
 
 ## Part 1: The Core Philosophy (Resource-Oriented Design)
 
-REST is not a protocol; it is an architectural style built tightly around HTTP. 
+<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> is not a protocol; it is an architectural style built tightly around <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. 
 The biggest mistake engineers make is thinking in terms of **actions** (verbs) instead of **entities** (nouns).
 
 **Anti-Pattern (Action-Based):**
@@ -17,13 +17,13 @@ The biggest mistake engineers make is thinking in terms of **actions** (verbs) i
 `GET /users` (Get all users)
 `PATCH /users/5` (Update user 5)
 
-The URL identifies the **Resource**, and the HTTP Method provides the **Action**.
+The URL identifies the **Resource**, and the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Method provides the **Action**.
 
 ---
 
-## Part 2: HTTP Methods, Idempotency, and Safety
+## Part 2: <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Methods, Idempotency, and Safety
 
-Understanding how HTTP methods behave in a distributed system is critical for preventing data corruption.
+Understanding how <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> methods behave in a distributed system is critical for preventing data corruption.
 
 1. **Safe Methods**: Do not modify data. Can be cached freely.
    - `GET`: Retrieve a resource.
@@ -39,9 +39,9 @@ Understanding how HTTP methods behave in a distributed system is critical for pr
 
 ---
 
-## Part 3: Building a Real-World Project (Task API)
+## Part 3: Building a Real-World Project (Task <abbr title="Application Programming Interface">API</abbr>)
 
-Let's look at how a Senior Engineer structures a REST API in Go.
+Let's look at how a Senior Engineer structures a <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> in Go.
 
 ### Go Implementation (Standard Library)
 ```go
@@ -118,11 +118,11 @@ func singleTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 ## Part 4: Production Mastery & Advanced Concepts
 
-### 1. HTTP Status Codes (The Vocabulary of REST)
-Do not return `200 OK` for errors with a JSON body `{"error": true}`. Use standard HTTP codes so load balancers, proxies, and clients can react automatically.
+### 1. <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Status Codes (The Vocabulary of <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>)
+Do not return `200 OK` for errors with a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> body `{"error": true}`. Use standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> codes so load balancers, proxies, and clients can react automatically.
 - **201 Created**: Successful `POST`.
 - **204 No Content**: Successful `DELETE` or empty `PUT`.
-- **400 Bad Request**: The client sent malformed JSON or failed validation.
+- **400 Bad Request**: The client sent malformed <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> or failed validation.
 - **401 Unauthorized**: Missing or invalid Auth Token.
 - **403 Forbidden**: Token is valid, but user lacks permissions.
 - **404 Not Found**: Resource doesn't exist.
@@ -132,17 +132,17 @@ Do not return `200 OK` for errors with a JSON body `{"error": true}`. Use standa
 
 ### 2. Pagination (Offset vs. Cursor)
 Never return `GET /users` with 10,000 records.
-- **Offset Pagination**: `?limit=10&offset=20`. Simple to implement with SQL (`LIMIT 10 OFFSET 20`). **Problem**: Terrible performance on large tables, and prone to skipping records if data is inserted during pagination.
+- **Offset Pagination**: `?limit=10&offset=20`. Simple to implement with <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> (`LIMIT 10 OFFSET 20`). **Problem**: Terrible performance on large tables, and prone to skipping records if data is inserted during pagination.
 - **Cursor Pagination**: `?limit=10&after=cursor_xyz`. **Master approach**. The cursor is usually an encoded timestamp or ID. `WHERE id > cursor LIMIT 10`. O(1) performance and stable.
 
 ### 3. Caching (ETag & Cache-Control)
-A true REST API leverages the web's caching infrastructure.
+A true <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> leverages the web's caching infrastructure.
 - The server sends a `GET` response with an `ETag: "v1.0"` (a hash of the data).
 - The client stores it. On the next request, the client sends `If-None-Match: "v1.0"`.
-- The server checks the DB. If the data hasn't changed, the server returns **304 Not Modified** with an *empty body*. This saves massive bandwidth and JSON parsing time!
+- The server checks the DB. If the data hasn't changed, the server returns **304 Not Modified** with an *empty body*. This saves massive bandwidth and <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> parsing time!
 
 ### 4. HATEOAS (Hypermedia as the Engine of Application State)
-The highest level of REST maturity (Richardson Maturity Model Level 3). 
+The highest level of <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> maturity (Richardson Maturity Model Level 3). 
 A resource includes hyperlinks to state transitions, allowing the client to dynamically discover what actions it can take.
 ```json
 {

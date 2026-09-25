@@ -1,7 +1,7 @@
 # Topic 06 · Stack — Python Deep Dive
 
 > A stack answers one structural question extremely well: *"what is the most
-> recently opened thing I have not yet closed?"* That is LIFO discipline, and
+> recently opened thing I have not yet closed?"* That is <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> discipline, and
 > it shows up in three disguises in this folder: **matching/nesting**
 > (parentheses, generated parentheses), **deferred evaluation** (a running
 > computation whose most recent partial result you may need to undo or
@@ -13,29 +13,33 @@
 
 ## Part 1 · The Mechanism
 
-### 1.0 LIFO, and why it is the right structure for nesting
+### 1.0 <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr>, and why it is the right structure for nesting
 
 A stack supports exactly two O(1) operations: `push` (add to the top) and
 `pop` (remove from the top). No random access, no peeking below the top
 without popping through everything above it.
 
-```mermaid
+```arch
 %% caption: Bracket matching: the most recently opened bracket is always the next one that must close.
-flowchart TD
-  A["read next char c"] --> B{"opening bracket?"}
-  B -->|yes| C["push c"]
-  B -->|no| D{"stack empty, or top<br/>does not match c ?"}
-  D -->|yes| E["invalid"]:::bad
-  D -->|no| F["pop"]
-  C --> A
-  F --> A
-  A -->|"end of input"| G{"stack empty?"}
-  G -->|yes| H["valid"]:::ok
-  G -->|no| E
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x100
+node a "Read next char c" at 1,0 shape=pill
+node b "Opening bracket?" at 1,1 shape=diamond color=amber
+node c "push c" at 0,1
+node d "Stack empty, or top does not match c?" at 1,2 shape=diamond color=amber
+node f "pop" at 0,2
+node e "invalid" at 1,3 color=red
+node g "Stack empty?" at 2,1 shape=diamond color=amber
+node h "valid" at 2,2 color=green
+a -> b
+b -> c : "yes"
+b -> d : "no"
+d -> e : "yes"
+d -> f : "no"
+c:T -> a:L
+f:L -> a:L
+a:R -> g:T : "end of input"
+g -> h : "yes"
+g:R -> e:R : "no"
 ```
 
 
@@ -96,18 +100,18 @@ strictly decreasing) order from bottom to top, by refusing to push
 anything that would break that order — instead, it pops everything that
 would be out of order first.
 
-```mermaid
+```arch
 %% caption: Next-greater-element: the stack stays in decreasing order, and each pop is the moment an element finds its answer. Every element is pushed once and popped once.
-flowchart TD
-  A["next element x"] --> B{"stack not empty and<br/>top is smaller than x ?"}
-  B -->|yes| C["pop the top:<br/>its next greater element is x"]:::hot
-  C --> B
-  B -->|no| D["push x"]
-  D --> A
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x100
+node a "Next element x" at 1,0 shape=pill
+node b "Stack not empty and top is smaller than x?" at 1,1 shape=diamond color=amber
+node c "Pop the top" at 2,1 color=amber sub="its next greater element is x"
+node d "push x" at 0,1
+a -> b
+b -> c : "yes"
+c:B -> b:B
+b -> d : "no"
+d:T -> a:L
 ```
 
 
@@ -347,21 +351,26 @@ this quality bar.
 
 ## Part 4 · Pattern Decision Tree
 
-```mermaid
+```arch
 %% caption: Which stack pattern fits.
-flowchart TD
-  Q(["Stack problem?"]) --> A{"Matching or nesting?<br/>(brackets, tags, decode string)"}
-  A -->|yes| A1["Plain stack:<br/>push openers, pop on closers"]:::ok
-  A -->|no| B{"Next greater or smaller,<br/>span, histogram area?"}
-  B -->|yes| B1["Monotonic stack"]:::ok
-  B -->|no| C{"Min or max in O(1)<br/>at any moment?"}
-  C -->|yes| C1["Stack of (value, running min)"]:::ok
-  C -->|no| D{"Evaluate an expression?"}
-  D -->|yes| D1["Operand stack<br/>(plus an operator stack)"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 290x100
+node q "Stack problem?" at 0,0 shape=pill
+node a "Matching or nesting?" at 0,1 shape=diamond color=amber sub="brackets, tags, decode string"
+node a1 "Plain stack" at 1,1 color=green sub="push openers, pop on closers"
+node b "Next greater or smaller, span, histogram area?" at 0,2 shape=diamond color=amber
+node b1 "Monotonic stack" at 1,2 color=green
+node c "Min or max in O(1) at any moment?" at 0,3 shape=diamond color=amber
+node c1 "Stack of (value, running min)" at 1,3 color=green
+node d "Evaluate an expression?" at 0,4 shape=diamond color=amber
+node d1 "Operand stack" at 1,4 color=green sub="plus an operator stack"
+q -> a
+a -> a1 : "yes"
+a -> b : "no"
+b -> b1 : "yes"
+b -> c : "no"
+c -> c1 : "yes"
+c -> d : "no"
+d -> d1 : "yes"
 ```
 
 
@@ -615,7 +624,7 @@ Fourteen problems, five moves (matching · deferred evaluation · monotonic stac
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Valid Parentheses](PyDSA/06_stack/001_valid_parentheses_solution.py) <br>LC 20 · Easy | Matching stack | A close bracket is valid only if it matches the most recent still-open one — LIFO. Push opens; on each close, check the top and pop. **Trap:** comparing bracket *counts* instead of order (`"([)]"`); reading `stack[-1]` on an empty stack. |
+| [001 · Valid Parentheses](PyDSA/06_stack/001_valid_parentheses_solution.py) <br>LC 20 · Easy | Matching stack | A close bracket is valid only if it matches the most recent still-open one — <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr>. Push opens; on each close, check the top and pop. **Trap:** comparing bracket *counts* instead of order (`"([)]"`); reading `stack[-1]` on an empty stack. |
 | [002 · Baseball Game](PyDSA/06_stack/002_baseball_game_solution.py) <br>LC 682 · Easy | Deferred evaluation | Every record depends on the top one or two entries, and `C` is literally "undo the last push". **Trap:** `+` as "pop two, push sum" (deletes two real scores) instead of *peek* two and push a third; `D` doubling in place instead of pushing a new score. |
 | [003 · Next Greater Element I](PyDSA/06_stack/003_next_greater_element_i_solution.py) <br>LC 496 · Easy | Monotonic stack | "Next greater" is a property of `nums2` alone: compute it once with one pass, then look each query up. **Trap:** re-scanning `nums2` per query; `<= x` vs `< x` (harmless here only because the values are distinct). |
 | [004 · Min Stack](PyDSA/06_stack/004_min_stack_solution.py) <br>LC 155 · Medium | Auxiliary parallel stack | Keep a second stack holding the running minimum *at each depth*, pushed and popped in lockstep. **Trap:** pushing to `min_stack` only on a new minimum (the stacks desync after a pop); popping one stack but not the other. |
@@ -660,7 +669,7 @@ Fourteen problems, five moves (matching · deferred evaluation · monotonic stac
 - [ ] Fill in the four-directions table (next/previous × greater/smaller) from memory, including the pop comparison <!--ca-->
 - [ ] Handle a circular array with a `2n` loop that pushes only in the first pass <!--ca-->
 - [ ] Write Decode String or Basic Calculator with a context stack <!--ca-->
-- [ ] Convert a recursive DFS into an explicit stack, and say why CPython's 1000-frame limit forces it <!--ca-->
+- [ ] Convert a recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> into an explicit stack, and say why CPython's 1000-frame limit forces it <!--ca-->
 
 ---
 

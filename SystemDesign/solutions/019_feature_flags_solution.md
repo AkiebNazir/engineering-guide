@@ -67,19 +67,19 @@ POST /sdk/eval                  { context } → { flags:{key:{value, variation, 
 
 ## Architecture and data flow
 
-```text
-engineer ──change flag rule/rollout──► control plane (RBAC, versioned, audited)
-                        │ validate + version bump + audit event (one transaction)
-                        ▼
-           snapshot builder ──► regional relays (in-memory snapshot + SSE fan-out + ETag polling, persisted to disk)
-                        │
-SDK (per service) ──stream/poll──► local cache: last snapshot + received_at (also persisted to disk)
-                        │
-request ──► SDK.evaluate(flag, context, default)
-                        │ hash/rule match against LOCAL snapshot only
-                        │ if snapshot stale beyond threshold ──► apply flag's safe default
-                        ▼
-                     decision (no network call on this path)
+```arch
+%% caption: Feature flag evaluation happens entirely locally in the SDK, using rules distributed from the Control Plane via Relays.
+node eng "Engineer" at 0,0 icon=user color=blue
+node cp "Control Plane\n(Validation, RBAC, DB)" at 2,0 icon=server color=slate
+node relay "Regional Relays\n(SSE Fan-out / Polling)" at 4,0 icon=internet color=amber
+group svc "Application Service" color=green style=dashed
+node sdk "Feature Flag SDK\n(Local Rule Cache)" at 4,2 in svc icon=code
+node eval "evaluate(context)\n-> decision" at 2,2 in svc icon=function
+
+eng -> cp : "update\nrule"
+cp -> relay : "push\nsnapshot"
+relay ..> sdk : "stream/poll\nrules"
+sdk -> eval : "local\ndecision"
 ```
 
 ```mermaid
@@ -158,49 +158,49 @@ Every result carries a `reason` (`OFF`, `PREREQ_FAILED`, `TARGET`, `RULE#3`, `FA
 
 ## Exposure and evaluation logging
 
-Per-evaluation logging costs 10 TB/day, so SDKs aggregate **summary counters** (per flag, variation, version) and flush every 60 s (4 MB/s across the fleet). **Exposure events** (who saw which variation, needed to analyze an experiment) are emitted only for flags marked `experiment`, deduped per `(flag, user)` per flush window and sampled if needed: ~375 GB/day at 5% of evaluations. Events are batched with retry and a bounded in-memory queue; dropping them under pressure is acceptable, blocking the request path is not. Private attributes are redacted in the SDK. For assignment, analysis and guardrails see [31 — ranking, recommendation, and experimentation](../building_blocks/31_ranking_recommendation_and_experimentation.md) and [037](037_experimentation_platform_solution.md).
+Per-evaluation logging costs 10 TB/day, so SDKs aggregate **summary counters** (per flag, variation, version) and flush every 60 s (4 MB/s across the fleet). **Exposure events** (who saw which variation, needed to analyze an experiment) are emitted only for flags marked `experiment`, deduped per `(flag, user)` per flush window and sampled if needed: ~375 GB/day at 5% of evaluations. Events are batched with retry and a bounded in-memory queue; dropping them under pressure is acceptable, blocking the request path is not. Private attributes are redacted in the <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>. For assignment, analysis and guardrails see [31 — ranking, recommendation, and experimentation](../building_blocks/31_ranking_recommendation_and_experimentation.md) and [037](037_experimentation_platform_solution.md).
 
 ## Capacity and storage
 
-Evaluation is sub-microsecond in-process logic against an in-memory map, which rules out any remote lookup on the hot path; the control plane serves change-rate traffic (~0.01 writes/s) plus snapshot generation and fan-out, sized for writes and distribution, not per-request reads. Snapshots are segmented by project and environment, so an SDK never holds or diffs the whole organization's flag set.
+Evaluation is sub-microsecond in-process logic against an in-memory map, which rules out any remote lookup on the hot path; the control plane serves change-rate traffic (~0.01 writes/s) plus snapshot generation and fan-out, sized for writes and distribution, not per-request reads. Snapshots are segmented by project and environment, so an <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> never holds or diffs the whole organization's flag set.
 
-Do not add a remote lookup to every request "just for flags that need very fresh values"; a genuinely live flag is a targeted low-QPS admin path. Do not let flags live forever.
+Do not add a remote lookup to every request "just for flags that need very fresh values"; a genuinely live flag is a targeted low-<abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> admin path. Do not let flags live forever.
 
 ## Failure and abuse behavior
 
 | Case | Correct behavior |
 |---|---|
 | Control plane unreachable | SDKs and relays keep serving the last good snapshot; distribution outage does not stop request handling. |
-| Relay down or stream drops | SDK reconnects to a second relay with jittered backoff, polls every 5 s meanwhile; kill switch still meets ~6 s. |
-| Snapshot older than `max_stale` | Per-flag `stale_policy` applied explicitly; staleness exposed in SDK health metrics. |
-| SDK just started, no snapshot | Load disk copy, else compiled-in defaults; never block startup on the control plane. |
-| Malformed or invalid flag pushed | Control plane validates on write; SDK validates on receipt and keeps the last good snapshot instead of crashing. |
+| Relay down or stream drops | <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> reconnects to a second relay with jittered backoff, polls every 5 s meanwhile; kill switch still meets ~6 s. |
+| Snapshot older than `max_stale` | Per-flag `stale_policy` applied explicitly; staleness exposed in <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> health metrics. |
+| <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> just started, no snapshot | Load disk copy, else compiled-in defaults; never block startup on the control plane. |
+| Malformed or invalid flag pushed | Control plane validates on write; <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> validates on receipt and keeps the last good snapshot instead of crashing. |
 | Rollout percentage change flip-flops users | Deterministic hash on a stable key keeps users in or out as percentage rises. |
 | Unauthorized change attempt | RBAC rejects it; attempts and applied changes are audited. |
 | Bad flag change causes an incident (the most common flag failure) | `kill` propagates in seconds; staged rollout, dry-run and metric-linked auto-rollback; the audit log pins the change and author in one query. |
 | Zone or region loss | Relays run in every region and SDKs list two; the control plane fails over to a replica region, and the 1-hour stale window covers the failover. |
-| Bad SDK release (evaluation bug) | Shared conformance vectors gate releases; SDK-version telemetry in events lets relays or ops pin a minimum version; SDK errors return defaults, never throw. |
+| Bad <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> release (evaluation bug) | Shared conformance vectors gate releases; <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>-version telemetry in events lets relays or ops pin a minimum version; <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> errors return defaults, never throw. |
 | Reconnect storm after relay restart | Full-jitter backoff (1 s base, 30 s cap); 5K clients × 15 KB = 75 MB, absorbed. |
-| Leaked server SDK key | Rotate the key, alert on unexpected source IPs; client-side IDs expose only evaluated values, never rules. |
+| Leaked server <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> key | Rotate the key, alert on unexpected source IPs; client-side IDs expose only evaluated values, never rules. |
 | Flag never expires, rules pile up | Ownership and expiry metadata feed the stale-flag report and a review process. |
 
 ## Observability and interview close
 
-Measure propagation latency from control-plane commit to SDK-applied (p50/p99, from a version-stamped heartbeat flag), the share of SDKs fresh within 10 s, snapshot-age distribution, `stream_connected` ratio, stale-fallback count, evaluation error rate and latency (near zero), flags past expiry, and event drop rate. **The one paging alert**: kill-switch propagation p99 above 10 s, or fewer than 99% of SDKs within 10 s of the latest version. Fallback-rate and expiry counts are ticket-level.
+Measure propagation latency from control-plane commit to <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>-applied (p50/p99, from a version-stamped heartbeat flag), the share of SDKs fresh within 10 s, snapshot-age distribution, `stream_connected` ratio, stale-fallback count, evaluation error rate and latency (near zero), flags past expiry, and event drop rate. **The one paging alert**: kill-switch propagation p99 above 10 s, or fewer than 99% of SDKs within 10 s of the latest version. Fallback-rate and expiry counts are ticket-level.
 
 Interview close: "Flag evaluation has to be local and synchronous with zero network calls, because it sits on every single request — so the real system is the control plane plus distribution pipeline that keeps SDKs' cached snapshots fresh and tells them how stale they are. Kill-switch defaults are defined per flag at authoring time so a control-plane outage degrades to a known-safe behavior instead of an undefined one."
 
-**Trade-off to state:** local evaluation from an eventually consistent snapshot gives sub-millisecond, outage-proof decisions at the cost of a bounded window (about 1–6 s here) in which different SDK instances disagree; I accept it because flags are not transactions, and any flag that must flip atomically is handled by a staged, versioned rollout instead.
+**Trade-off to state:** local evaluation from an eventually consistent snapshot gives sub-millisecond, outage-proof decisions at the cost of a bounded window (about 1–6 s here) in which different <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> instances disagree; I accept it because flags are not transactions, and any flag that must flip atomically is handled by a staged, versioned rollout instead.
 
 ## Follow-ups the interviewer will ask
 
 1. **"How do you do multi-region?"** One writable control-plane region with a replica elsewhere, relays in every region, and SDKs bound to the nearest two. Relays fan out from whichever control plane is up, and the ≥ 1 h stale window covers a control-plane failover ([27](../building_blocks/27_multi_region_and_global_traffic.md)). Kill switch latency is one relay hop, in-region.
-2. **"What changes at 10× and 100×?"** Evaluations at 500B/day still cost ~6 cores fleet-wide, since evaluation is local. What scales is SDK instances (1M → ~200 relays at 5K streams each, or a relay hierarchy), event volume (sampling and aggregation must tighten, 3.75 TB/day of exposures becomes an experiment-only pipeline) and snapshot size (segment by service, delta-only updates). At 100× (5T/day) evaluation is ~58 cores, still trivial; the event pipeline is what must be redesigned (counters plus sampled exposures).
+2. **"What changes at 10× and 100×?"** Evaluations at 500B/day still cost ~6 cores fleet-wide, since evaluation is local. What scales is <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> instances (1M → ~200 relays at 5K streams each, or a relay hierarchy), event volume (sampling and aggregation must tighten, 3.75 TB/day of exposures becomes an experiment-only pipeline) and snapshot size (segment by service, delta-only updates). At 100× (5T/day) evaluation is ~58 cores, still trivial; the event pipeline is what must be redesigned (counters plus sampled exposures).
 3. **"Can you make all instances flip at the same instant?"** No; distribution is asynchronous. For consistency-sensitive changes (schema migrations) use a versioned, staged flag (dual-write → dual-read → cut over) and a convergence view ("99.9% of instances at version ≥ N") before advancing. Only if it must be transactional does the decision belong in a central authority in the request path.
-4. **"What does it cost and what do you cut first?"** SDK CPU ~0.6 core fleet-wide (negligible); the costs are relays, egress (~0.75 GB/day of config) and events (375 GB/day of exposures, ~11 TB or ~$260/month at 30-day retention and $23/TB-month; processing costs more). Cut exposure sampling first. Build vs buy: LaunchDarkly, Unleash or an OpenFeature-compatible service unless audit or tenancy demands custom.
+4. **"What does it cost and what do you cut first?"** <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> ~0.6 core fleet-wide (negligible); the costs are relays, egress (~0.75 GB/day of config) and events (375 GB/day of exposures, ~11 TB or ~$260/month at 30-day retention and $23/TB-month; processing costs more). Cut exposure sampling first. Build vs buy: LaunchDarkly, Unleash or an OpenFeature-compatible service unless audit or tenancy demands custom.
 5. **"How do you defend against abuse?"** RBAC with environment-scoped roles, approvals on prod, rate limits on flag writes, hashed and rotatable keys, no rules shipped to browsers, private-attribute redaction, validation limits (rule count, prerequisite depth, payload size).
-6. **"What if the interviewer says just use etcd or Consul watches for flags?"** They are fine as a control-plane store or a small internal deployment, but 100K SDK watchers on a strongly consistent quorum store make its availability the flag system's availability, and consensus buys nothing for a config that tolerates seconds of skew. Keep the store behind the builder and distribute through relays.
-7. **"What if a client-side (browser or mobile) SDK needs flags?"** It cannot hold rules (they leak segments and internal logic and would be large), so evaluate at a relay or edge with `POST /sdk/eval`, return only values, cache them per session and refresh by stream. That is the one place a network call is part of evaluation, made once per session, not per check.
+6. **"What if the interviewer says just use etcd or Consul watches for flags?"** They are fine as a control-plane store or a small internal deployment, but 100K <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> watchers on a strongly consistent quorum store make its availability the flag system's availability, and consensus buys nothing for a config that tolerates seconds of skew. Keep the store behind the builder and distribute through relays.
+7. **"What if a client-side (browser or mobile) <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> needs flags?"** It cannot hold rules (they leak segments and internal logic and would be large), so evaluate at a relay or edge with `POST /sdk/eval`, return only values, cache them per session and refresh by stream. That is the one place a network call is part of evaluation, made once per session, not per check.
 
 ## Common mistakes
 
@@ -208,17 +208,17 @@ Interview close: "Flag evaluation has to be local and synchronous with zero netw
 2. **Rehashing randomly when the percentage changes.** Users flip in and out. Hash `(flagKey, salt, userKey)` deterministically and compare to a threshold.
 3. **Sharing one hash across flags.** The same users are always first, correlating rollouts and experiments; include the flag key and salt.
 4. **No stale policy.** "Serve last forever" hides a dead pipeline; "fail everything to default" turns an outage into an incident. Use a per-flag policy and expose snapshot age.
-5. **Treating kill switches like ordinary flags.** They need highest precedence, a narrow permission with no approval delay, an SLO, and a tested path.
+5. **Treating kill switches like ordinary flags.** They need highest precedence, a narrow permission with no approval delay, an <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>, and a tested path.
 6. **Ignoring flag debt.** Without owners and expiry, flags become permanent untested branches; remove code before the flag.
 7. **Polling without ETag or jitter.** 100K synchronized full-body polls are a self-inflicted DDoS; use conditional requests, jitter and relays.
 
 ## Going from L5 to L6
 
-- **Migration and rollout.** Adopt per team: wrap an existing config in the SDK interface first, run the new evaluator in shadow (log disagreements), then flip; dual-run old and new SDKs and compare decisions.
-- **Cost model.** Cost scales with SDK instances (relay streams) and exposure events, not with evaluations; report cost per 1,000 instances and per experiment.
-- **Ownership and blast radius.** A platform team owns control plane, relays and SDKs; service teams own their flags and expiry. Environment- and project-scoped snapshots, staged flag delivery and the `kill` path limit blast radius; a bad SDK release is the one global risk, so canary SDKs.
-- **Build vs buy.** Prefer an established service or an OpenFeature-compatible OSS server; build only for compliance, tenancy or cost, and keep the SDK behind the OpenFeature interface to avoid lock-in.
-- **Phased evolution.** Phase 1: control plane, ETag polling, SDK with disk cache. Phase 2: relays and SSE. Phase 3: experiments, guarded rollouts and auto-rollback. Phase 4: edge evaluation for client-side SDKs.
+- **Migration and rollout.** Adopt per team: wrap an existing config in the <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> interface first, run the new evaluator in shadow (log disagreements), then flip; dual-run old and new SDKs and compare decisions.
+- **Cost model.** Cost scales with <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> instances (relay streams) and exposure events, not with evaluations; report cost per 1,000 instances and per experiment.
+- **Ownership and blast radius.** A platform team owns control plane, relays and SDKs; service teams own their flags and expiry. Environment- and project-scoped snapshots, staged flag delivery and the `kill` path limit blast radius; a bad <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> release is the one global risk, so canary SDKs.
+- **Build vs buy.** Prefer an established service or an OpenFeature-compatible OSS server; build only for compliance, tenancy or cost, and keep the <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> behind the OpenFeature interface to avoid lock-in.
+- **Phased evolution.** Phase 1: control plane, ETag polling, <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> with disk cache. Phase 2: relays and <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>. Phase 3: experiments, guarded rollouts and auto-rollback. Phase 4: edge evaluation for client-side SDKs.
 - **What I would measure first.** Real flags per service (drives snapshot size), instance counts (relay sizing), change rate and the share of incidents that begin with a flag change, since those set the priority of dry-run and auto-rollback.
 
 ## Build exercise

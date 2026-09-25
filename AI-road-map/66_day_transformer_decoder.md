@@ -24,7 +24,7 @@ We want to feed the entire 1,000 words into the GPU simultaneously and predict a
 **The Fatal Flaw:** The Transformer Self-Attention matrix processes everything simultaneously. If you feed it the entire sentence `"The dog barked loudly"`, and ask it to predict the word after `"The"`, the Attention mechanism will just *look at the next word* in the input vector and cheat! It will achieve 100% accuracy with zero intelligence. 
 
 ### 3. The Fix: Causal Masking
-We must physically blind the AI. We create a **Causal Mask**.
+We must physically blind the <abbr title="Artificial Intelligence">AI</abbr>. We create a **Causal Mask**.
 It is a 2D matrix where the top-right triangle is filled with Negative Infinity ($-\infty$), and the bottom-left is filled with Zeros.
 We literally add this Mask to the $Q \cdot K^T$ Attention grid *before* the Softmax!
 
@@ -33,7 +33,7 @@ We literally add this Mask to the $Q \cdot K^T$ Attention grid *before* the Soft
 - **Row 4 (Word 4):** `[0, 0, 0, 0]`. Word 4 can look at the entire past!
 
 When the Softmax encounters $-\infty$, it turns it into exactly $0.0\%$. 
-We have mathematically prevented the AI from seeing into the future!
+We have mathematically prevented the <abbr title="Artificial Intelligence">AI</abbr> from seeing into the future!
 
 ### 4. Encoder vs Decoder
 - **Encoder (BERT):** Uses standard Self-Attention. Perfect bidirectional context.
@@ -43,7 +43,7 @@ We have mathematically prevented the AI from seeing into the future!
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build the Causal Mask and the Transformer Decoder in PyTorch. You will see exactly how we mathematically blind the AI during parallel training!
+Let's build the Causal Mask and the Transformer Decoder in PyTorch. You will see exactly how we mathematically blind the <abbr title="Artificial Intelligence">AI</abbr> during parallel training!
 
 Create a file named `transformer_decoder.py`:
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 [1, 1, 1, 0]
 [1, 1, 1, 1]
 ```
-2. **`masked_fill`:** This is computationally brilliant. It finds every `0` in the mask and instantly replaces the corresponding Attention Score with `-1e9`. When you run Softmax, $e^{-1000000000} = 0.0$. The AI cannot cheat!
+2. **`masked_fill`:** This is computationally brilliant. It finds every `0` in the mask and instantly replaces the corresponding Attention Score with `-1e9`. When you run Softmax, $e^{-1000000000} = 0.0$. The <abbr title="Artificial Intelligence">AI</abbr> cannot cheat!
 
 ---
 
@@ -169,9 +169,9 @@ You have built the training mechanism. Now build the Generation loop.
 1. Start with a prompt: `[45]` (The token ID for "The").
 2. Pass it through the Decoder. Grab the final output vector. 
 3. Pass it through an `nn.Linear` classifier to predict the next word over the 50,000 word vocabulary.
-4. Assume the AI predicts `[89]` ("dog").
+4. Assume the <abbr title="Artificial Intelligence">AI</abbr> predicts `[89]` ("dog").
 5. Append `[89]` to the input. The new input is `[45, 89]`.
-6. Run the entire thing again! Loop this 100 times until the AI generates the special `<EOS>` (End of Sentence) token!
+6. Run the entire thing again! Loop this 100 times until the <abbr title="Artificial Intelligence">AI</abbr> generates the special `<EOS>` (End of Sentence) token!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -190,7 +190,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - When word 101 arrives, you ONLY calculate $Q, K, V$ for the single new word. You append the new $K$ and $V$ to the cache, and calculate Attention using the single new $Q$ against the cached $K$. This reduces the compute complexity per step from $O(N^2)$ to $O(N)$!
 3. **The Memory Cost Formula:**
    - Conclude with the memory formula: $2 \text{ (K and V)} \times N \text{ (Seq Len)} \times L \text{ (Layers)} \times D \text{ (Dimension)} \times 2 \text{ (FP16 Bytes)}$. 
-   - Note that as sequence length $N$ grows, the KV-Cache memory grows linearly, eventually becoming the absolute bottleneck of LLM deployment.
+   - Note that as sequence length $N$ grows, the KV-Cache memory grows linearly, eventually becoming the absolute bottleneck of <abbr title="Large Language Model">LLM</abbr> deployment.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

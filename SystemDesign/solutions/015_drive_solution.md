@@ -20,7 +20,7 @@ The core split is: **object storage holds immutable, content-addressed bytes (ch
 
 - **Corpus**: 2B files × 4 MB = **8 PB logical**, or 40 files and 160 MB per active user on average (the mean hides a heavy tail: most files are tiny, a few are gigabytes). So bytes live in an object-storage-class system; metadata is a few terabytes (below).
 - **Versions and storage**: assume 30% of files are edited, 5 extra versions each, and each edit changes ~10% of the file's chunks: 2B × 0.3 × 5 = 3B extra versions, adding 3B × 0.4 MB ≈ **1.2 PB** because unchanged chunks are shared, for **~9.2 PB logical**. Assume cross-file deduplication removes another 20% (assumption; measure it): **~7.4 PB unique**. With erasure coding at 1.5× overhead that is **~11 PB raw**; three-way replication would need ~22 PB. So chunk-level versions, deduplication, and erasure coding are cost decisions worth about 11 PB of disks, and we keep ~10% hot and tier the rest.
-- **The literal peak**: 200k × 4 MB = **800 GB/s = 6.4 Tbps**. Since dedup and delta mean only a fraction *r* of the bytes are new, the planning point is **r = 10%: 80 GB/s ≈ 640 Gbps** (r = 1% would be 8 GB/s, r = 100% is the literal figure). Spread over 20 ingest regions that is ~4 GB/s (32 Gbps) each, and at ~0.4 GB/s of sustained ingest per storage node (assumption) about **200 storage nodes**. Verifying every chunk's hash at ~1.5 GB/s per core (assumption) is ~53 cores at full load, ~160 at a third. So ingest is bandwidth- and disk-bound, not CPU-bound. Because a peak lasts minutes, we add **priority lanes** (small interactive files ahead of bulk imports) and `429 Retry-After` backpressure rather than provisioning for every bulk import to finish in seconds.
+- **The literal peak**: 200k × 4 MB = **800 GB/s = 6.4 Tbps**. Since dedup and delta mean only a fraction *r* of the bytes are new, the planning point is **r = 10%: 80 GB/s ≈ 640 Gbps** (r = 1% would be 8 GB/s, r = 100% is the literal figure). Spread over 20 ingest regions that is ~4 GB/s (32 Gbps) each, and at ~0.4 GB/s of sustained ingest per storage node (assumption) about **200 storage nodes**. Verifying every chunk's hash at ~1.5 GB/s per core (assumption) is ~53 cores at full load, ~160 at a third. So ingest is bandwidth- and disk-bound, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound. Because a peak lasts minutes, we add **priority lanes** (small interactive files ahead of bulk imports) and `429 Retry-After` backpressure rather than provisioning for every bulk import to finish in seconds.
 - **Commit path (control plane)**: treat all 200k/s as version commits at the worst case. Each commit writes ~4 rows (version, file pointer update, journal entry, quota) = **800k row writes/s**. Over 256 metadata shards that is ~780 commits/s and ~3.1k row writes/s per shard. A single namespace serializes its commits on one row (like any hot row, ~1.5 ms each, so ~670/s), which is fine for a personal namespace and not for an org-wide shared folder with thousands of uploaders. So metadata shards by namespace, per-user commit rates are capped, and hot shared namespaces get batched commits.
 - **Metadata volume**: 2B file rows × ~1 KB = 2 TB; (2B + 3B) version rows × ~300 B = 1.5 TB; per-version chunk lists ~0.7 TB flat (much less with the shared manifest pages below); a journal of 100M commits/day (assumption) × ~200 B = 20 GB/day, 1.8 TB over 90 days. About **6 TB, ~18 TB replicated**. So sharding is for throughput, not for size.
 - **Chunk index**: 7.4 PB unique ÷ ~1 MB average chunk ≈ **7.4B chunks** × 44 B (32 B hash plus location) ≈ **0.32 TB**, sharded by hash prefix. At a 256 KB average it would be 29B chunks and 1.3 TB; at a 4 MB fixed block, 1.8B and 0.08 TB. So the index fits in a sharded key-value store with room to spare at 1 MB, and the chunk size is a trade-off between index size and delta efficiency, not a capacity wall.
@@ -31,15 +31,15 @@ The core split is: **object storage holds immutable, content-addressed bytes (ch
 
 | Mechanism | Behavior | Choose it when | Main weakness |
 |---|---|---|---|
-| Object storage per version | Every saved edit writes a brand-new immutable object; nothing is overwritten. | Always, for file bytes. | Storage cost grows without a version GC/retention policy. |
-| Content-addressed chunks with version manifests | A file version is an ordered list of chunk hashes; chunks are stored once by hash and shared by every version and file that contains them. | Editable files where most of a new version is unchanged, and any fleet where duplicates are common. | Needs chunk-level GC, a hash-verification step, and a scoped dedup policy (see the privacy side channel below). |
+| Object storage per version | Every saved edit writes a brand-new immutable object; nothing is overwritten. | Always, for file bytes. | Storage cost grows without a version <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>/retention policy. |
+| Content-addressed chunks with version manifests | A file version is an ordered list of chunk hashes; chunks are stored once by hash and shared by every version and file that contains them. | Editable files where most of a new version is unchanged, and any fleet where duplicates are common. | Needs chunk-level <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, a hash-verification step, and a scoped dedup policy (see the privacy side channel below). |
 | Relational metadata (current pointer, folder, ACL) | Transactional row per file: current version id, parent folder id, owner, ACL, trash flag. | Always, for anything that must be atomically consistent. | Cannot hold GB-scale content itself. |
 | Change cursor / event log | Monotonic per-namespace sequence number bumped on every metadata mutation. | Powering device sync and search indexing. | Needs careful compaction so old cursors remain resolvable. |
 | Resumable direct upload | Client uploads straight to object storage via a signed URL, chunk by chunk, with resume from the still-missing chunks. | Any file above a few MB. | Requires a separate "commit" step so storage isn't a silent source of truth before metadata exists. |
 | Outbox on metadata commit | Metadata transaction writes an outbox row atomically with the version/folder change (here, the journal entry doubles as the outbox). | Driving sync feed, search indexing, antivirus scanning. | Adds a relay worker and at-least-once delivery to reason about. |
 | Relation-tuple authorization graph | Permissions stored as `object#relation@subject` tuples with inheritance through folders and groups. | Sharing with individuals, groups, and folders at scale. | Deep nesting and cache invalidation; needs consistency tokens to avoid the "new enemy" problem. |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 POST /v1/uploads                                  # begin, or resume, an upload session
@@ -130,17 +130,17 @@ sequenceDiagram
     Dev2->>Store: GET only chunks missing locally
 ```
 
-The hard decision is where the upload "commits." Bytes land in object storage before metadata says the file exists — this trades a window where storage holds an orphan chunk for the ability to resume huge uploads without holding open a database transaction for minutes. The metadata transaction, not the chunk PUT, is the source of truth for existence; a chunk referenced by no committed version is garbage, not a file. Direct upload reduces API-server bandwidth (bytes never transit the app tier) but concentrates authorization at two points: the metadata commit and the issuance of signed URLs, which must be scoped to exactly the chunks a caller may write or read, and short-lived, so they cannot be replayed to overwrite or fetch unrelated content.
+The hard decision is where the upload "commits." Bytes land in object storage before metadata says the file exists — this trades a window where storage holds an orphan chunk for the ability to resume huge uploads without holding open a database transaction for minutes. The metadata transaction, not the chunk PUT, is the source of truth for existence; a chunk referenced by no committed version is garbage, not a file. Direct upload reduces <abbr title="Application Programming Interface">API</abbr>-server bandwidth (bytes never transit the app tier) but concentrates authorization at two points: the metadata commit and the issuance of signed URLs, which must be scoped to exactly the chunks a caller may write or read, and short-lived, so they cannot be replayed to overwrite or fetch unrelated content.
 
-**One write, end to end.** The client chunks the file, hashes each chunk, and calls `POST /uploads` with the hash list. The API asks the chunk index which hashes are missing *in the caller's scope*, and returns signed PUT URLs for those only, so an unchanged 5 GB file costs one round trip and zero bytes. The client uploads missing chunks in parallel (4–8 at a time); the storage tier recomputes each SHA-256 and rejects a mismatch. `commit` runs one transaction on the namespace shard: verify every chunk is present, CAS `files.current_version_id` from `base_version_id` to the new version, insert the `versions` row, allocate `seq` from the namespace row, append the `journal` row, and update quota, all together. A retried commit with the same token returns the same version. A relay publishes the journal row to notifications, search indexing, and antivirus scanning.
+**One write, end to end.** The client chunks the file, hashes each chunk, and calls `POST /uploads` with the hash list. The <abbr title="Application Programming Interface">API</abbr> asks the chunk index which hashes are missing *in the caller's scope*, and returns signed PUT URLs for those only, so an unchanged 5 GB file costs one round trip and zero bytes. The client uploads missing chunks in parallel (4–8 at a time); the storage tier recomputes each SHA-256 and rejects a mismatch. `commit` runs one transaction on the namespace shard: verify every chunk is present, <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> `files.current_version_id` from `base_version_id` to the new version, insert the `versions` row, allocate `seq` from the namespace row, append the `journal` row, and update quota, all together. A retried commit with the same token returns the same version. A relay publishes the journal row to notifications, search indexing, and antivirus scanning.
 
-**One read, end to end.** Device B is poked with `(ns_id, seq)`, calls `GET /changes?cursor=C`, and applies entries in `seq` order. For each new version it diffs the manifest against its local chunk cache and calls `GET content` for the missing chunks only. The API checks the ACL at that moment, then issues short-lived signed GET URLs for exactly the chunks listed in that manifest. Chunk keys are content hashes, so they are shareable across files, but a hash is never sufficient to fetch anything: URLs are issued only for chunks in a manifest the caller may read.
+**One read, end to end.** Device B is poked with `(ns_id, seq)`, calls `GET /changes?cursor=C`, and applies entries in `seq` order. For each new version it diffs the manifest against its local chunk cache and calls `GET content` for the missing chunks only. The <abbr title="Application Programming Interface">API</abbr> checks the ACL at that moment, then issues short-lived signed GET URLs for exactly the chunks listed in that manifest. Chunk keys are content hashes, so they are shareable across files, but a hash is never sufficient to fetch anything: URLs are issued only for chunks in a manifest the caller may read.
 
 ## Capacity and storage
 
 The derivation is in Estimates; the decisions it forces are these. About 7.4 PB of unique chunks is object-storage-tier scale — this is not a database concern; object storage is chosen precisely because it scales past any single database's row-blob limits, and erasure coding at ~1.5× halves the disk bill against triple replication. Metadata is the scaling constraint that matters for query latency: folder listing and sync must be indexed per namespace, not a table scan filtered by owner. At 200k commits/s in the worst case, the finalize-metadata transaction is the hot path — keep it to a small number of row writes plus the journal append, not a cascading recomputation of folder size or shared-with counts inline (those are asynchronous projections built from the journal).
 
-Shard metadata by **namespace id**, so one user's folder tree and change cursor live on one partition and a folder listing or a sync-cursor read is single-shard. A shared folder is its own namespace; a personal tree that mounts shared folders reads several namespaces. A cross-namespace move (from a personal tree into a shared folder) is rare and is a two-step saga (add in the target, tombstone in the source, both idempotent). Do not implement "list changes since cursor" as an unindexed scan over the global version table — the per-namespace journal is the ordered log a device cursor walks forward from. Do not treat the object key as capability-bearing: a leaked or predictable key must not grant read access without a metadata/ACL check, because keys can leak through logs, CDN caches, or forwarded links; for content-addressed keys that is even more important, since anyone who knows a file's hash could otherwise ask for it.
+Shard metadata by **namespace id**, so one user's folder tree and change cursor live on one partition and a folder listing or a sync-cursor read is single-shard. A shared folder is its own namespace; a personal tree that mounts shared folders reads several namespaces. A cross-namespace move (from a personal tree into a shared folder) is rare and is a two-step saga (add in the target, tombstone in the source, both idempotent). Do not implement "list changes since cursor" as an unindexed scan over the global version table — the per-namespace journal is the ordered log a device cursor walks forward from. Do not treat the object key as capability-bearing: a leaked or predictable key must not grant read access without a metadata/ACL check, because keys can leak through logs, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> caches, or forwarded links; for content-addressed keys that is even more important, since anyone who knows a file's hash could otherwise ask for it.
 
 Tier storage by access: ~10% of bytes are recent and hot on the fast tier; the rest moves to a cold class after 90 days without access (assumption). Chunk garbage collection and version pruning free physical bytes only after the 30-day trash window and the version-retention rules below.
 
@@ -152,7 +152,7 @@ Tier storage by access: ~10% of bytes are recent and hot on the fast tier; the r
 |---|---|---|---|
 | Whole-file objects | One object per version | Simplest | Every edit re-sends everything; no resume; no dedup; version storage is O(versions × size) |
 | **Fixed-size blocks** (for example 4 MiB) | Cut at multiples of the block size | O(1) boundary math, trivially fast, a stable resume unit, and an overwrite in place changes one block | The **boundary-shift problem**: inserting a few bytes near the start moves every later boundary, so every later block hashes differently and is re-uploaded |
-| **Content-defined chunking (CDC)** | Slide a rolling hash over the bytes and cut where the hash matches a mask, within min and max sizes | Boundaries follow content, so an insertion changes only the chunks around it; strong dedup across versions and files | CPU on the client (battery), variable chunk sizes, more metadata than big fixed blocks; parameters must be identical everywhere for dedup to work |
+| **Content-defined chunking (CDC)** | Slide a rolling hash over the bytes and cut where the hash matches a mask, within min and max sizes | Boundaries follow content, so an insertion changes only the chunks around it; strong dedup across versions and files | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> on the client (battery), variable chunk sizes, more metadata than big fixed blocks; parameters must be identical everywhere for dedup to work |
 
 Two published anchors: content-defined chunking with Rabin fingerprints for bandwidth-saving file sync was described in the Low-Bandwidth Network File System (LBFS, SOSP 2001), and FastCDC (USENIX ATC 2016) reports a Gear-hash-based variant that is several times faster than Rabin-based chunking with nearly the same deduplication ratio. Dropbox has publicly described 4 MB blocks identified by SHA-256 hashes (its engineering blog and the Magic Pocket write-up, circa 2014–2016), which is the fixed-block end of this spectrum.
 
@@ -166,7 +166,7 @@ Two published anchors: content-defined chunking with Rabin fingerprints for band
 | **1 MB** | 7.4B | 0.32 TB | 5,120 | ≤ ~2 MB |
 | 4 MB (fixed) | 1.8B | 0.08 TB | 1,280 | up to ~4–8 MB |
 
-**Decision.** Use CDC with a FastCDC-style Gear rolling hash: minimum 256 KB, **average 1 MB**, maximum 4 MB, for files above ~8 MB; smaller files are a single chunk. For types where edits rewrite everything or content is already compressed (video, images, most archives) the client uses fixed 4 MiB blocks and skips the CPU cost. The client records a `chunker_id` (algorithm and parameters) in the manifest, and the policy can evolve without re-chunking old data: new versions use the new chunker, and old chunks stay valid. This trades client CPU and more metadata than a fixed 4 MB scheme for delta uploads that are ~50× smaller on insert-heavy edits and for higher dedup; the cost is acceptable because CDC is only run on files large enough to matter and the index is 0.32 TB. Dedup only works if every client chunks the same way, so the `chunker_id` is part of the contract and a change of parameters is a versioned rollout.
+**Decision.** Use CDC with a FastCDC-style Gear rolling hash: minimum 256 KB, **average 1 MB**, maximum 4 MB, for files above ~8 MB; smaller files are a single chunk. For types where edits rewrite everything or content is already compressed (video, images, most archives) the client uses fixed 4 MiB blocks and skips the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cost. The client records a `chunker_id` (algorithm and parameters) in the manifest, and the policy can evolve without re-chunking old data: new versions use the new chunker, and old chunks stay valid. This trades client <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> and more metadata than a fixed 4 MB scheme for delta uploads that are ~50× smaller on insert-heavy edits and for higher dedup; the cost is acceptable because CDC is only run on files large enough to matter and the index is 0.32 TB. Dedup only works if every client chunks the same way, so the `chunker_id` is part of the contract and a change of parameters is a versioned rollout.
 
 ## Block-level dedup and its privacy side channel
 
@@ -189,15 +189,23 @@ Two published anchors: content-defined chunking with Rabin fingerprints for band
 
 A version is the ordered list of its chunk hashes plus their lengths. Storing that list flat costs 5,120 × 32 B = **164 KB for a 5 GiB file at 1 MiB chunks**, and 100 versions of it would be 16 MB, almost all of it repeated. A hash tree fixes that.
 
-```mermaid
+```arch
 %% caption: A manifest is a tree of content-addressed nodes, so a new version of a large file writes only the nodes on the path to the changed chunks and shares every other node with older versions.
-flowchart TD
-    root["Version manifest root<br/>manifest_hash = version content id"] --> p1["Page 1<br/>up to 64 chunk entries"]
-    root --> p2["Page 2"]
-    root --> pn["Page N (unchanged, shared with v41)"]
-    p1 --> c1["chunk hash + len"]
-    p1 --> c2["chunk hash + len"]
-    p2 --> c3["chunk hash + len (edited in v42)"]
+route straight
+grid 230x80
+node root "Version manifest root" at 0,1.5 color=blue sub="manifest_hash = version content id"
+node p1 "Page 1" at 1,0.5 color=blue sub="up to 64 chunk entries"
+node p2 "Page 2" at 1,2 color=blue
+node pn "Page N" at 1,3 color=slate sub="unchanged, shared with v41"
+node c1 "chunk hash + len" at 2,0 shape=box color=green
+node c2 "chunk hash + len" at 2,1 shape=box color=green
+node c3 "chunk hash + len" at 2,2 shape=box color=amber sub="edited in v42"
+root -> p1
+root -> p2
+root -> pn
+p1 -> c1
+p1 -> c2
+p2 -> c3
 ```
 
 - **Structure.** Chunk hashes are grouped 64 per page, pages are hashed, and pages are grouped again until one root remains; `manifest_hash` is that root and doubles as the version's **content id**. A 5 GiB file is 5,120 leaf entries, 80 pages, 2 inner nodes, and 1 root (three levels at fan-out 64). Small files (up to 64 chunks) inline their manifest in the version row.
@@ -216,17 +224,23 @@ flowchart TD
 
 **Notifications are pokes, not data.**
 
-```mermaid
+```arch
 %% caption: The journal is the truth and the push path is only a hint, so losing a notification delays a device by one poll interval and never loses a change.
-flowchart LR
-    commit[Commit txn<br/>version plus journal row] --> relay[Journal relay]
-    relay --> topic[(Pub-sub topic per namespace)]
-    topic --> gw[Gateway per subscriber group]
-    gw --> ws[Device WebSocket]
-    ws --> pull[GET changes since cursor]
-    pull --> journal[(Journal)]
-    timer[Safety poll every 5 min, jittered] --> pull
-    reconnect[Reconnect] --> pull
+node commit "Commit txn" at 0,0 icon=db sub="version plus journal row"
+group push "Push path (hint)" color=pink icon=notify style=dashed
+node relay "Journal relay" at 0,1 in push icon=sync
+node topic "Pub-sub topic" at 0,2 in push icon=topic sub="per namespace"
+node gw "Gateway" at 0,3 in push icon=gateway sub="per subscriber group"
+node ws "Device WebSocket" at 0,4 in push icon=websocket
+node timer "Safety poll" at 1,3 icon=timer sub="every 5 min, jittered"
+node pull "GET changes since cursor" at 1,4 icon=api
+node reconnect "Reconnect" at 2,4 icon=connection
+node journal "Journal" at 1,5 icon=db
+commit -> relay -> topic -> gw -> ws
+ws -> pull
+pull -> journal
+timer -> pull
+reconnect -> pull
 ```
 
 The relay publishes `(ns_id, seq)` per namespace, coalesced up to ~1 s. Each gateway subscribes to the namespaces its connected devices use, so a commit in a shared folder with 100k members sends one message per gateway (at most ~375), and each gateway fans out locally. A lost or duplicated poke is harmless: the device compares `seq` with its cursor and pulls. Reconnects, a 5-minute safety poll (125k requests/s across the fleet), and app foregrounding also pull, so the push path is an optimisation for latency, never a correctness dependency. Long-polling is the fallback transport for networks that block WebSockets.
@@ -278,20 +292,20 @@ Sharing is a graph, not a column. Model permissions as **relation tuples** (`fol
 | Malicious or oversized upload | Enforce quota and the 5 GiB cap at begin and at commit; run asynchronous antivirus and content scanning from the journal before a file is exposed to other grantees when policy requires it. Scan results are cached by `manifest_hash`, so identical content is scanned once. |
 | Corrupt or forged chunk | Storage recomputes hashes on ingest (rejects mismatch) and the client verifies on download; bit rot is repaired from erasure-coded stripes. |
 | Metadata shard down | Namespaces on that shard reject writes (their reads may serve from a replica); the other 255/256 are unaffected. Devices retry with backoff and resume from their cursors. |
-| Notification tier down | Devices fall back to polling their cursors (tighten the interval to ~30 s during the outage); the sync SLO degrades, correctness does not. |
+| Notification tier down | Devices fall back to polling their cursors (tighten the interval to ~30 s during the outage); the sync <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> degrades, correctness does not. |
 | Hot shared namespace (thousands of uploaders) | Per-namespace commit rate is bounded by its row lock (~670/s); batch commits into one transaction, cap per-user rates, and if needed split a giant shared drive into sub-namespaces. |
 | Region failure | Metadata replicates synchronously across three zones and asynchronously to a second region; chunks are erasure-coded across zones and copied to the second region. On failover the epoch increments; a device whose cursor is ahead of the server's history gets `410 reset` and re-uploads local changes it has not seen acknowledged. Expect seconds of lost commits, never silent divergence. |
-| Bad deploy (server or **client**) | Roll out by shard behind SLO guards and a kill switch. A client bug that re-uploads everything or mass-deletes is the most likely cause of a 200k/s spike: per-user rate limits, the mass-delete guard, and dedup (a re-upload of unchanged files is a metadata-only no-op) contain it. |
-| Storage abuse (illegal content, quota gaming, using the service as a CDN) | Per-account quota on logical bytes, egress limits and per-link download throttles, content scanning, and takedown by `manifest_hash` (which also covers every duplicate). |
+| Bad deploy (server or **client**) | Roll out by shard behind <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> guards and a kill switch. A client bug that re-uploads everything or mass-deletes is the most likely cause of a 200k/s spike: per-user rate limits, the mass-delete guard, and dedup (a re-upload of unchanged files is a metadata-only no-op) contain it. |
+| Storage abuse (illegal content, quota gaming, using the service as a <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>) | Per-account quota on logical bytes, egress limits and per-link download throttles, content scanning, and takedown by `manifest_hash` (which also covers every duplicate). |
 | Enumerating hashes to probe the store | Scoped index answers, per-user probe limits, and constant-time responses; see the dedup section. |
 
 ## Observability and interview close
 
-Measure **sync propagation latency** (commit time to applied-on-another-device) p50/p99 for small files, notification lag, journal relay lag per shard, commit latency p99, chunk PUT error and hash-mismatch rate, dedup hit rate per scope, orphan-chunk bytes and GC lag, conflict-copy rate per 1,000 commits, ACL check p99 and denial rate, cursor-reset rate, upload-resume success rate, and bytes stored per logical byte. The one paging alert is **small-file sync propagation p99 above 10 s** (the stated SLO burning); ticket-level signals are journal lag on any shard, GC falling behind orphan growth, and a spike in ACL denials (a possible authorization bug or scraping).
+Measure **sync propagation latency** (commit time to applied-on-another-device) p50/p99 for small files, notification lag, journal relay lag per shard, commit latency p99, chunk PUT error and hash-mismatch rate, dedup hit rate per scope, orphan-chunk bytes and <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> lag, conflict-copy rate per 1,000 commits, ACL check p99 and denial rate, cursor-reset rate, upload-resume success rate, and bytes stored per logical byte. The one paging alert is **small-file sync propagation p99 above 10 s** (the stated <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> burning); ticket-level signals are journal lag on any shard, <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> falling behind orphan growth, and a spike in ACL denials (a possible authorization bug or scraping).
 
 Interview close: "I split immutable, content-addressed chunks from transactional metadata because content and consistency scale differently. The change cursor and outbox are what let offline devices sync deterministically and what let me turn a metadata write into fan-out to search and antivirus without doing it inline. Conflicting offline edits become a new version plus a conflict copy, never a silent overwrite, because losing a user's edit is worse than asking them to merge."
 
-Trade-off to state: "I chunk with content-defined boundaries and deduplicate per scope on the client-visible path and globally underneath, so edits and copies cost little and there is no has-chunk oracle, at the cost of client CPU, a stateful chunk index, and re-sent bytes for cross-tenant duplicates; the cost is acceptable because the index is 0.32 TB and the leak would be an incident."
+Trade-off to state: "I chunk with content-defined boundaries and deduplicate per scope on the client-visible path and globally underneath, so edits and copies cost little and there is no has-chunk oracle, at the cost of client <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, a stateful chunk index, and re-sent bytes for cross-tenant duplicates; the cost is acceptable because the index is 0.32 TB and the leak would be an incident."
 
 ## Follow-ups the interviewer will ask
 

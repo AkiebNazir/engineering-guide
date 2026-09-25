@@ -12,8 +12,8 @@ The utilisation math is in [12](12_application_resilience_patterns.md): Little's
 
 | Server policy | What happens (derived) | Goodput |
 |---|---|---|
-| Unbounded FIFO | Queue grows 500/s, so a request arriving at second `t` waits `500t / 1,000 = 0.5t` s. It is useful only if the wait is ≤ 0.9 s, so after `t = 1.8 s` every reply is for a client that left. | 1,000 rps, then **0** at 100% busy |
-| FIFO, drop expired at dequeue | Expired requests cost almost nothing, but every served request waited ≈ 0.9 s. | ≈ 1,000 rps, all at the deadline edge |
+| Unbounded <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> | Queue grows 500/s, so a request arriving at second `t` waits `500t / 1,000 = 0.5t` s. It is useful only if the wait is ≤ 0.9 s, so after `t = 1.8 s` every reply is for a client that left. | 1,000 rps, then **0** at 100% busy |
+| <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>, drop expired at dequeue | Expired requests cost almost nothing, but every served request waited ≈ 0.9 s. | ≈ 1,000 rps, all at the deadline edge |
 | Bounded queue of 100 | Wait ≤ `100 / 1,000 = 0.1 s`. The other 500 rps (33%) are rejected in microseconds. | 1,000 rps at ≈ 0.2 s |
 
 So: overload control has one job, to spend capacity only on work whose result will be used and refuse the rest before it costs anything. **Decision rule:** never put an unbounded queue in front of a bounded resource.
@@ -23,34 +23,34 @@ So: overload control has one job, to spend capacity only on work whose result wi
 | Layer | Sees | Use it for |
 |---|---|---|
 | Client-side throttle | Its own accept/reject history | Stopping a fleet hammering a struggling backend. The SRE book (ch. 21, "Handling Overload") rejects locally with probability `max(0, (requests − K × accepts) / (requests + 1))`, `K = 2`: no throttling above a 50% accept ratio, about 50% local rejection at 25%. |
-| Edge / gateway / LB | Tenant, endpoint, priority header | Cheapest rejection (before auth and body parsing): quotas, criticality classes, blunt mass shedding |
+| Edge / gateway / <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> | Tenant, endpoint, priority header | Cheapest rejection (before auth and body parsing): quotas, criticality classes, blunt mass shedding |
 | Server entry | True in-flight count and latency | Protecting the process from any source of load (next section) |
 | Dependency call site | Dependency health | Skipping optional calls (breaker, brownout) |
 
-**What to shed.** By *criticality*: the SRE book describes four classes (CRITICAL_PLUS, CRITICAL, SHEDDABLE_PLUS, SHEDDABLE) carried in RPC metadata so downstream services honour upstream intent. By *cost*: scan-heavy and high-fan-out requests first. By *fairness*: per-tenant limits. By *sunk work*: a request rejected after four hops wasted them, so reject at the first hop that can.
+**What to shed.** By *criticality*: the SRE book describes four classes (CRITICAL_PLUS, CRITICAL, SHEDDABLE_PLUS, SHEDDABLE) carried in <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> metadata so downstream services honour upstream intent. By *cost*: scan-heavy and high-fan-out requests first. By *fairness*: per-tenant limits. By *sunk work*: a request rejected after four hops wasted them, so reject at the first hop that can.
 
-**Rejection must be cheap.** Say serving costs 1 CPU unit and rejecting 0.1. With budget `C` and offered load `X`, accepted `a` satisfies `a + 0.1(X − a) = C`, so `a = (C − 0.1X) / 0.9`: `0.78C` of goodput at 3× overload, `0.56C` at 5×, **zero** at 10×, where the server spends everything saying no. So excess beyond a few × must be dropped at the LB or edge. **Decision rule:** reject at the cheapest layer that can choose, label every request with a criticality, keep rejection under ~5% of serving cost, and return `Retry-After` plus a "do not retry at this layer" signal.
+**Rejection must be cheap.** Say serving costs 1 <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> unit and rejecting 0.1. With budget `C` and offered load `X`, accepted `a` satisfies `a + 0.1(X − a) = C`, so `a = (C − 0.1X) / 0.9`: `0.78C` of goodput at 3× overload, `0.56C` at 5×, **zero** at 10×, where the server spends everything saying no. So excess beyond a few × must be dropped at the <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> or edge. **Decision rule:** reject at the cheapest layer that can choose, label every request with a criticality, keep rejection under ~5% of serving cost, and return `Retry-After` plus a "do not retry at this layer" signal.
 
 ## Adaptive concurrency limits
 
-A fixed rate limit needs you to know capacity, which shifts with every deploy, noisy neighbour and dependency slowdown. Limit **concurrency** and let the server measure: Little's Law ties it to what saturates, `limit ≈ throughput × no-load latency` (1,000 rps × 0.1 s ≈ 100 in flight), and requests over the limit are rejected at once. Netflix's open-source `concurrency-limits` library and its 2018 tech-blog post "Performance Under Load" frame this as TCP congestion control for RPC: the limit is the congestion window, latency or drops are the signal.
+A fixed rate limit needs you to know capacity, which shifts with every deploy, noisy neighbour and dependency slowdown. Limit **concurrency** and let the server measure: Little's Law ties it to what saturates, `limit ≈ throughput × no-load latency` (1,000 rps × 0.1 s ≈ 100 in flight), and requests over the limit are rejected at once. Netflix's open-source `concurrency-limits` library and its 2018 tech-blog post "Performance Under Load" frame this as <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> congestion control for <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr>: the limit is the congestion window, latency or drops are the signal.
 
 | Limiter | Rule | Reacts to | Weakness |
 |---|---|---|---|
 | Static | Fixed, from a load test | Nothing | Stale after any change |
-| AIMD | +1 per window while calls stay under a latency threshold, ×0.9 on drop or timeout (like TCP Reno) | Loss, timeouts | Reacts after damage, saw-tooth |
-| Gradient / Vegas-style | `limit ← limit × (RTT_noload / RTT_now) + queue allowance`, smoothed | Rising delay, before failures | Noisy latency (GC, mixed-cost calls) makes it jitter |
+| AIMD | +1 per window while calls stay under a latency threshold, ×0.9 on drop or timeout (like <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> Reno) | Loss, timeouts | Reacts after damage, saw-tooth |
+| Gradient / Vegas-style | `limit ← limit × (RTT_noload / RTT_now) + queue allowance`, smoothed | Rising delay, before failures | Noisy latency (<abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, mixed-cost calls) makes it jitter |
 
 When latency triples the gradient is 0.33 and the limit shrinks in a few windows *before* requests fail, which fits "slower, not down", the usual failure. Use one limiter per endpoint or cost class. **Decision rule:** a delay-based adaptive limit at server entry, plus a static bulkhead per dependency behind it.
 
 ## Queues, disciplines and deadlines
 
-Under overload FIFO serves the oldest requests, the likeliest already abandoned. Facebook's "Fail at Scale" (Maurer, ACM Queue, 2015) describes **adaptive LIFO** (FIFO normally, LIFO once a queue builds) and controlled delay. CoDel (Nichols and Jacobson, ACM Queue, 2012) drops on *sojourn time* rather than length: bursts are absorbed, but a queue that never drains below a target delay over an interval is cut. The SRE book (ch. 22, "Addressing Cascading Failures") covers the same bounded-queue ideas.
+Under overload <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> serves the oldest requests, the likeliest already abandoned. Facebook's "Fail at Scale" (Maurer, ACM Queue, 2015) describes **adaptive <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr>** (<abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> normally, <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> once a queue builds) and controlled delay. CoDel (Nichols and Jacobson, ACM Queue, 2012) drops on *sojourn time* rather than length: bursts are absorbed, but a queue that never drains below a target delay over an interval is cut. The SRE book (ch. 22, "Addressing Cascading Failures") covers the same bounded-queue ideas.
 
 | Discipline | Serves under overload | Gains | Costs |
 |---|---|---|---|
-| Bounded FIFO | Oldest first | Simple, fair | Old requests die in the queue |
-| Adaptive LIFO | Newest once a queue builds | Fair when healthy, useful when not | Two modes to test, old work needs a timeout |
+| Bounded <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> | Oldest first | Simple, fair | Old requests die in the queue |
+| Adaptive <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> | Newest once a queue builds | Fair when healthy, useful when not | Two modes to test, old work needs a timeout |
 | CoDel-style | Drops by wait time | No length tuning | Needs a per-request timestamp |
 | Priority queue | Critical first | Protects the critical path | Sheddable starves, so reserve a floor |
 
@@ -60,7 +60,7 @@ Under overload FIFO serves the oldest requests, the likeliest already abandoned.
 
 Retries multiply across layers. A gateway calls A, A calls B, B calls a database, each layer making 3 attempts (one try plus 2 retries). If the database is failing, one user request becomes `3 × 3 × 3 = 27` database calls, and with 3 *retries* (4 attempts) per layer it is `4³ = 64`, landing on the layer that can least afford it. Backoff and jitter ([12](12_application_resilience_patterns.md), AWS Builders' Library "Timeouts, retries, and backoff with jitter") spread retries but do not cap them. **Budgets** cap them:
 
-- **Per-request cap** of a few attempts, plus a **per-client budget**: retry only while retries stay under ~10% of requests. gRPC's retry throttling (gRFC A6) is a token bucket where retries cost a token and successes refill 0.1. At 10% per layer the worst case is `1.1³ ≈ 1.33×`, not 27×.
+- **Per-request cap** of a few attempts, plus a **per-client budget**: retry only while retries stay under ~10% of requests. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>'s retry throttling (gRFC A6) is a token bucket where retries cost a token and successes refill 0.1. At 10% per layer the worst case is `1.1³ ≈ 1.33×`, not 27×.
 - **Retry at one layer**, the one directly above the failing dependency, and pass "do not retry" upward (SRE book, ch. 21 and 22).
 
 **Decision rule:** retries are a resource with a budget, owned by exactly one layer.
@@ -83,14 +83,16 @@ The breaker protects the caller from the callee, shedding protects the callee fr
 
 ## Graceful degradation
 
-```mermaid
+```arch
 %% caption: Degrade in order of least user-visible loss first, and make every rung a switch you can flip per request class.
-flowchart TD
-    r0["Rung 0: full experience"] --> r1["Rung 1: serve stale or cached result"]
-    r1 --> r2["Rung 2: drop optional features - recs, badges, counts"]
-    r2 --> r3["Rung 3: lower fidelity - fewer candidates, cheaper model, lower bitrate"]
-    r3 --> r4["Rung 4: static fallback - popular list, generic page"]
-    r4 --> r5["Rung 5: reject by priority, then fail fast"]
+grid 160x95
+node r0 "Rung 0: full experience" at 0,0 color=green w=300
+node r1 "Rung 1: serve stale" at 0,1 color=teal sub="or cached result" w=300
+node r2 "Rung 2: drop optional features" at 0,2 color=blue sub="recs, badges, counts" w=300
+node r3 "Rung 3: lower fidelity" at 0,3 color=amber sub="fewer candidates, cheaper model, lower bitrate" w=300
+node r4 "Rung 4: static fallback" at 0,4 color=orange sub="popular list, generic page" w=300
+node r5 "Rung 5: reject by priority" at 0,5 color=red sub="then fail fast" w=300
+r0 -> r1 -> r2 -> r3 -> r4 -> r5
 ```
 
 | Product | Concrete rungs (design patterns, not any company's internals) |
@@ -114,15 +116,19 @@ flowchart TD
 
 Bronson, Aghayev, Charapko and Zhu, "Metastable Failures in Distributed Systems" (HotOS 2021), define failures where a **trigger** (a spike, a cache flush, a slow dependency, a deploy) pushes the system into a bad state and a **sustaining effect** keeps it there after the trigger is gone. The system can be below its normal capacity and still not recover, because the bad state is stable and load must fall far below the trigger level (hysteresis).
 
-```mermaid
+```arch
 %% caption: The trigger starts the loop, but the sustaining effect keeps it running after the trigger is removed, so removing the cause does not restore service.
-flowchart TD
-    t["Trigger: spike, cache flush, slow dependency, deploy"] --> o["Latency rises, requests time out"]
-    o --> a["Sustaining effects: retries, cold-cache misses, work on dead requests"]
-    a --> h["Effective load on the bottleneck rises"]
-    h --> o
-    t -. "trigger removed" .-> x["Still broken: load stays above the recovery threshold"]
-    o --> x
+node t "Trigger" at 0,0 shape=pill color=amber sub="spike, cache flush, slow dependency, deploy"
+group loop "Sustaining loop" color=red icon=sync
+node o "Latency rises" at 0,1 in loop color=red sub="requests time out"
+node a "Sustaining effects" at 0,2 in loop color=red sub="retries, cold-cache misses, work on dead requests"
+node h "Effective load rises" at 0,3 in loop color=red sub="on the bottleneck"
+node x "Still broken" at 1.3,1 color=slate sub="load stays above the recovery threshold"
+t -> o
+o -> a -> h
+h:L -> o:L
+t:R ..> x:T : "trigger removed"
+o -> x
 ```
 
 Worked cold-cache loop (assumptions ours): 15,000 rps front load, 90% hit ratio, database capacity 2,000 rps. Healthy database load is `15,000 × 0.1 = 1,500 rps` (75%). A flush sends 15,000 rps at it (7.5×). It slows, requests time out, and the cache cannot refill because the reads that would refill it fail. To recover at a 0% hit ratio and 70% database utilisation, admitted load must be `0.7 × 2,000 = 1,400 rps`, 9% of normal, so you shed about **91%** until the cache warms. So: shed to the *recovery* level, not the safe level.
@@ -131,7 +137,7 @@ Worked cold-cache loop (assumptions ours): 15,000 rps front load, 90% hit ratio,
 
 ## After the storm: herds, ramp-up and autoscaling limits
 
-When the dependency recovers, every client retries at once and every cache is cold, so recovery can knock it over again. Use jittered backoff, admit traffic on a ramp (5%, 20%, 50%, 100% at fixed intervals while watching latency), warm caches before taking traffic, use LB slow-start weights and warm-up readiness gates (SRE book ch. 22 covers slow start and cold caching).
+When the dependency recovers, every client retries at once and every cache is cold, so recovery can knock it over again. Use jittered backoff, admit traffic on a ramp (5%, 20%, 50%, 100% at fixed intervals while watching latency), warm caches before taking traffic, use <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> slow-start weights and warm-up readiness gates (SRE book ch. 22 covers slow start and cold caching).
 
 Autoscaling is not an overload defence. New instances take tens of seconds to minutes ([13](13_scaling_and_load_balancing.md)), cold ones can fail health checks and flap, and more front-end capacity in front of a *slow dependency* only adds concurrent calls to the thing that is failing. Scale on queue delay or in-flight count, cap the maximum, and let shedding hold the line meanwhile.
 
@@ -141,11 +147,11 @@ Chaos engineering runs experiments on a live system to build confidence in it ("
 
 ## Worked scenario: a dependency gets 3× slower
 
-Assumptions (ours): service A has 20 instances × 50 threads = 1,000 threads. A request spends 10 ms in A and 40 ms waiting on dependency D, so 50 ms and capacity `1,000 / 0.05 = 20,000 rps`. Load is 12,000 rps, ρ = 0.6. D becomes 3× slower (120 ms). A request now holds a thread for 130 ms, capacity falls to `1,000 / 0.13 ≈ 7,700 rps`, and Little's Law says `12,000 × 0.13 = 1,560` threads are needed: ρ = 1.56 with no CPU or traffic change. A slow dependency is an overload on you. The excess is `12,000 − 7,700 = 4,300 rps` (36%).
+Assumptions (ours): service A has 20 instances × 50 threads = 1,000 threads. A request spends 10 ms in A and 40 ms waiting on dependency D, so 50 ms and capacity `1,000 / 0.05 = 20,000 rps`. Load is 12,000 rps, ρ = 0.6. D becomes 3× slower (120 ms). A request now holds a thread for 130 ms, capacity falls to `1,000 / 0.13 ≈ 7,700 rps`, and Little's Law says `12,000 × 0.13 = 1,560` threads are needed: ρ = 1.56 with no <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> or traffic change. A slow dependency is an overload on you. The excess is `12,000 − 7,700 = 4,300 rps` (36%).
 
 | Defences stacked (top to bottom) | Outcome at A | Load on D |
 |---|---|---|
-| None: unbounded FIFO, 1 s client timeout, retries | Queue grows 4,300/s, goodput hits 0 after ≈ 1.6 s (queue ≈ 6,700), retries push offered load toward 36,000 rps | Every admitted request, plus A's retries at up to 3× |
+| None: unbounded <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>, 1 s client timeout, retries | Queue grows 4,300/s, goodput hits 0 after ≈ 1.6 s (queue ≈ 6,700), retries push offered load toward 36,000 rps | Every admitted request, plus A's retries at up to 3× |
 | + deadlines, drop expired at dequeue | Goodput ≈ 7,700 rps (64%), p99 ≈ 1 s | Unchanged |
 | + concurrency limit (≈ 1,000 = 7,700 × 0.13 s), bounded queue | 4,300 rps rejected in microseconds, p99 ≈ 150 ms | ≤ 7,700 rps |
 | + criticality: 5,000 of the 12,000 rps is sheddable | All 7,000 rps of critical traffic served, sheddable gets the spare 700 | Unchanged |

@@ -6,7 +6,7 @@ Yesterday, you ran 50 experiments in MLflow. Experiment 42 had the highest accur
 Do you download `model_42.pkl`, email it to the backend team, and say "Here's the new model, please deploy it?"
 Absolutely not. 
 
-Today, we learn about the **Model Registry**. We will learn how to formally package, version, and promote AI models through strict lifecycle stages (Staging $\rightarrow$ Production) exactly like standard software engineering.
+Today, we learn about the **Model Registry**. We will learn how to formally package, version, and promote <abbr title="Artificial Intelligence">AI</abbr> models through strict lifecycle stages (Staging $\rightarrow$ Production) exactly like standard software engineering.
 
 ---
 
@@ -18,7 +18,7 @@ Today, we learn about the **Model Registry**. We will learn how to formally pack
 A Model Registry acts as a centralized database for your company's production-ready models. It provides:
 - **Version Control:** `Fraud_Model_v1`, `Fraud_Model_v2`.
 - **Lifecycle Stages:** A model can be tagged as `None`, `Staging`, `Production`, or `Archived`.
-- **Access Control:** A Junior ML Engineer can push a model to `Staging`, but only the Lead Engineer can click the button to promote it to `Production`.
+- **Access Control:** A Junior <abbr title="Machine Learning">ML</abbr> Engineer can push a model to `Staging`, but only the Lead Engineer can click the button to promote it to `Production`.
 
 ### 2. Semantic Versioning for Models
 In standard software, v1.2.3 means `Major.Minor.Patch`. 
@@ -35,7 +35,7 @@ When a model is in the Registry, it must have **Lineage**. You must be able to c
 If a model breaks in production, lineage allows you to pinpoint the exact line of code or row of bad data that caused the corruption.
 
 ### 4. Model Cards
-A **Model Card** is the "Nutritional Label" for your AI. It is a strict documentation standard created by Margaret Mitchell (Google). It formally states:
+A **Model Card** is the "Nutritional Label" for your <abbr title="Artificial Intelligence">AI</abbr>. It is a strict documentation standard created by Margaret Mitchell (Google). It formally states:
 - **Intended Use:** (e.g., "This model predicts churn for US customers.")
 - **Out of Scope Use:** (e.g., "Do not use this for EU customers.")
 - **Bias & Limitations:** (e.g., "This model has a 12% higher false-positive rate for users under 25.")
@@ -44,7 +44,7 @@ A **Model Card** is the "Nutritional Label" for your AI. It is a strict document
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's use Python and the **MLflow Model Registry** API to take an experiment, register it as a formal versioned model, and programmatically promote it to Production!
+Let's use Python and the **MLflow Model Registry** <abbr title="Application Programming Interface">API</abbr> to take an experiment, register it as a formal versioned model, and programmatically promote it to Production!
 
 *(Note: To run this, you need `pip install mlflow` and an active MLflow tracking server running on port 5000)*
 
@@ -118,7 +118,7 @@ def run_simulation():
 ### 🔍 Understanding the Enterprise Value
 Because we used the MLflow Registry, the Backend Engineering team no longer needs to hardcode paths or download files!
 Their FastAPI application simply calls `mlflow.pyfunc.load_model("models:/Enterprise_Churn_Predictor/Production")`.
-Whenever you transition a new version to Production, the API automatically pulls the new weights without changing a single line of backend code.
+Whenever you transition a new version to Production, the <abbr title="Application Programming Interface">API</abbr> automatically pulls the new weights without changing a single line of backend code.
 
 ---
 
@@ -136,11 +136,11 @@ Modify the script so that before transitioning to Production, the code fetches t
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Central Truth:** A centralized Registry (like AWS SageMaker Model Registry) acts as the single source of truth.
-2. **Deployment Triggers:** When an ML Engineer clicks "Approve for Production" in the Registry UI, it triggers an AWS EventBridge webhook. This webhook fires a GitHub Actions pipeline that builds a new Docker container with the new model weights baked in.
-3. **Rollback Procedures:** Because previous versions are marked as `Archived` in the registry (never deleted), a rollback is as simple as clicking the previous version and changing its tag back to `Production`. The webhook refires and automatically reverts the Docker containers.
+2. **Deployment Triggers:** When an <abbr title="Machine Learning">ML</abbr> Engineer clicks "Approve for Production" in the Registry UI, it triggers an AWS EventBridge webhook. This webhook fires a GitHub Actions pipeline that builds a new <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container with the new model weights baked in.
+3. **Rollback Procedures:** Because previous versions are marked as `Archived` in the registry (never deleted), a rollback is as simple as clicking the previous version and changing its tag back to `Production`. The webhook refires and automatically reverts the <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> containers.
 4. **Compliance (Model Cards):** For highly regulated industries (Finance/Health), the Registry must enforce hard constraints. A model *cannot* be transitioned to Staging unless all 5 fields of the Model Card are filled out and an automated Fairness/Bias audit report is attached as an artifact.
 
 ---
 **Task for the end of the day:** Read a real-world Model Card (like the official Llama-3 Model Card on GitHub). See how obsessively detailed they are about bias and limitations.
 
-Tomorrow, in **Day 164**, we take this further. We will learn **CI/CD for ML (Continuous Integration / Continuous Deployment)**. How do we test a model automatically when we push code to GitHub?
+Tomorrow, in **Day 164**, we take this further. We will learn **<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> for <abbr title="Machine Learning">ML</abbr> (Continuous Integration / Continuous Deployment)**. How do we test a model automatically when we push code to GitHub?

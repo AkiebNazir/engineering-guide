@@ -6,7 +6,7 @@ If Module 2 taught us how a single Agent works (Reasoning, Tool Use, Memory), th
 
 ## 1. Multi-Agent Orchestration
 
-A single LLM agent often fails when given a massive, multi-step objective. The context window gets cluttered, the reasoning diverges, and error rates skyrocket. 
+A single <abbr title="Large Language Model">LLM</abbr> agent often fails when given a massive, multi-step objective. The context window gets cluttered, the reasoning diverges, and error rates skyrocket. 
 
 **Multi-Agent Orchestration** solves this by breaking the objective into specialized agents.
 
@@ -23,31 +23,33 @@ When multiple agents collaborate, they need a "Shared State" (like a shared whit
 
 ## 2. The Tooling Bottleneck
 
-In standard Agentic AI, if you want your agent to talk to your company's SQL database, you have to write custom Python code to define the tool, handle the API keys, and parse the SQL.
+In standard Agentic <abbr title="Artificial Intelligence">AI</abbr>, if you want your agent to talk to your company's <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database, you have to write custom Python code to define the tool, handle the <abbr title="Application Programming Interface">API</abbr> keys, and parse the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>.
 
-If you have 10 different agent frameworks (CrewAI, AutoGen, LangChain) and 50 different data sources (GitHub, Slack, SQL, Jira), you have an N x M integration nightmare.
+If you have 10 different agent frameworks (CrewAI, AutoGen, LangChain) and 50 different data sources (GitHub, Slack, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, Jira), you have an N x M integration nightmare.
 
 ---
 
-## 3. Model Context Protocol (MCP)
+## 3. Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>)
 
-**MCP (Model Context Protocol)** is an open standard introduced by Anthropic to solve the tooling bottleneck. It is to AI Agents what USB-C is to electronics.
+**<abbr title="Model Context Protocol">MCP</abbr> (Model Context Protocol)** is an open standard introduced by Anthropic to solve the tooling bottleneck. It is to <abbr title="Artificial Intelligence">AI</abbr> Agents what USB-C is to electronics.
 
 ### How it Works
-Instead of giving an Agent direct access to a database, you build an **MCP Server**.
-1. **The MCP Server**: A lightweight server (often running locally) that connects securely to your enterprise database. It exposes standard "Tools" and "Resources".
-2. **The MCP Client**: Your Agent (whether it's Claude Desktop, a LangChain script, or a custom Swarm) connects to the MCP Server.
+Instead of giving an Agent direct access to a database, you build an **<abbr title="Model Context Protocol">MCP</abbr> Server**.
+1. **The <abbr title="Model Context Protocol">MCP</abbr> Server**: A lightweight server (often running locally) that connects securely to your enterprise database. It exposes standard "Tools" and "Resources".
+2. **The <abbr title="Model Context Protocol">MCP</abbr> Client**: Your Agent (whether it's Claude Desktop, a LangChain script, or a custom Swarm) connects to the <abbr title="Model Context Protocol">MCP</abbr> Server.
 
-Because both speak the MCP protocol, the Agent instantly knows exactly what tools the server offers and how to use them, without any custom integration code.
+Because both speak the <abbr title="Model Context Protocol">MCP</abbr> protocol, the Agent instantly knows exactly what tools the server offers and how to use them, without any custom integration code.
 
-### MCP in Enterprise Security (Zero-Trust)
-In your `04_enterprise_ai_infrastructure` project, MCP acts as an air-gap. 
-- The external LLM never sees your database credentials. 
-- The LLM asks the MCP Client to execute a tool.
-- The MCP Client talks to the MCP Server.
-- The MCP Server runs the query and returns the context.
+### <abbr title="Model Context Protocol">MCP</abbr> in Enterprise Security (Zero-Trust)
+In your `04_enterprise_ai_infrastructure` project, <abbr title="Model Context Protocol">MCP</abbr> acts as an air-gap. 
+- The external <abbr title="Large Language Model">LLM</abbr> never sees your database credentials. 
+- The <abbr title="Large Language Model">LLM</abbr> asks the <abbr title="Model Context Protocol">MCP</abbr> Client to execute a tool.
+- The <abbr title="Model Context Protocol">MCP</abbr> Client talks to the <abbr title="Model Context Protocol">MCP</abbr> Server.
+- The <abbr title="Model Context Protocol">MCP</abbr> Server runs the query and returns the context.
 
-### The 3 Primitives of MCP
+<div class="lab" data-viz="flow-mcp"></div>
+
+### The 3 Primitives of <abbr title="Model Context Protocol">MCP</abbr>
 1. **Resources**: Static data the agent can read (e.g., a specific log file or a Notion page).
 2. **Tools**: Functions the agent can execute (e.g., `query_employee_db()`).
 3. **Prompts**: Reusable prompt templates the server provides to the client.
@@ -55,4 +57,4 @@ In your `04_enterprise_ai_infrastructure` project, MCP acts as an air-gap.
 ---
 
 ## Summary
-To build enterprise-grade AI, you don't just build one massive prompt. You build **Swarm architectures** to divide cognitive load, and you build **MCP Servers** to safely and standardly connect those agents to your proprietary data.
+To build enterprise-grade <abbr title="Artificial Intelligence">AI</abbr>, you don't just build one massive prompt. You build **Swarm architectures** to divide cognitive load, and you build **<abbr title="Model Context Protocol">MCP</abbr> Servers** to safely and standardly connect those agents to your proprietary data.

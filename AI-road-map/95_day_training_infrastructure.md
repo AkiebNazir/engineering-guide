@@ -12,7 +12,7 @@ Today, we master GPU Networking and Asynchronous Checkpointing.
 
 ### 1. Network Topology (NVLink vs InfiniBand)
 When shattering models across 256 GPUs, the network is the bottleneck.
-- **Intra-Node (Inside the box):** A standard AI server has 8 GPUs. They are physically wired together using **NVLink** (or NVSwitch). This connection is incredibly fast (~600 GB/s).
+- **Intra-Node (Inside the box):** A standard <abbr title="Artificial Intelligence">AI</abbr> server has 8 GPUs. They are physically wired together using **NVLink** (or NVSwitch). This connection is incredibly fast (~600 GB/s).
 - **Inter-Node (Between boxes):** To connect Server 1 to Server 2, you use networking cables (InfiniBand or Ethernet RoCE). This is much slower (~50 GB/s).
 *Rule of thumb: You must design your parallelism so that the heaviest network traffic (like Tensor Parallelism) stays strictly inside the NVLink boundary!*
 
@@ -27,7 +27,7 @@ NVIDIA solved this with **NCCL** (NVIDIA Collective Communications Library). It 
 ### 3. Asynchronous Checkpointing
 If GPU #47 dies on Day 14, the entire training run crashes. You must constantly save the model weights (Checkpointing) so you can resume.
 - **The Problem:** Saving a 140GB model to an AWS S3 bucket takes 5 minutes. If you pause training to save it, 24,000 GPUs sit idle for 5 minutes. You just wasted $1,000 of compute to save a file.
-- **The Solution:** Asynchronous Checkpointing. The GPU instantly copies the weights into the cheap CPU System RAM (takes 2 seconds). The GPU immediately resumes training the next batch! Meanwhile, a background Python Thread slowly uploads the CPU RAM data to S3 over the next 5 minutes without interrupting the GPUs!
+- **The Solution:** Asynchronous Checkpointing. The GPU instantly copies the weights into the cheap <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> System <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> (takes 2 seconds). The GPU immediately resumes training the next batch! Meanwhile, a background Python Thread slowly uploads the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> data to S3 over the next 5 minutes without interrupting the GPUs!
 
 ---
 
@@ -168,4 +168,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 We now know how to pre-train a massive foundation model from scratch. 
 But what if you are just a developer who wants to fine-tune LLaMA to act like a specific persona? You don't have 256 GPUs. You have one RTX 4090.
 
-Tomorrow, in **Day 96**, we master **Parameter-Efficient Fine-Tuning (PEFT) and Adapter Layers**!
+Tomorrow, in **Day 96**, we master **Parameter-Efficient Fine-Tuning (<abbr title="Parameter-Efficient Fine-Tuning">PEFT</abbr>) and Adapter Layers**!

@@ -99,7 +99,7 @@ const MODULES = {
   csfund: {
     hash: 'cs-fundamentals', nav: 'navCSFundamentals', name: 'CS Fundamentals', noun: 'deep dives', motif: 'csfund',
     list: '/api/cs-fundamentals', doc: '/api/cs-fundamentals-doc',
-    tagline: 'Operating systems, networking, databases, and software architecture — the L5 deep dives that separate senior engineers from everyone else.',
+    tagline: 'Operating systems, networking, databases, and software architecture — from first-principles foundations to the deep-dive precision a senior interview expects.',
     group: () => 'Deep Dives',
     label: it => `${+it.num}`,
     kicker: it => `Deep Dive ${+it.num}`,
@@ -1343,7 +1343,7 @@ function highlightCode(code, lang) {
 }
 
 async function renderCode(root) {
-  const blocks = $$('pre > code', root).filter(c => !c.classList.contains('language-mermaid') && !c.closest('.code'));
+  const blocks = $$('pre > code', root).filter(c => !c.classList.contains('language-mermaid') && !c.classList.contains('language-arch') && !c.closest('.code'));
   if (!blocks.length) return;
   const langs = [];
   for (const code of blocks) {
@@ -1376,11 +1376,15 @@ async function renderCodeFile(body, d, lang) {
 }
 
 /* ----------------------------------------------------------- diagrams -- */
+function diagramIsDark(el) {
+  return !!(el.closest('.reader[data-paper="night"]') ||
+    (!el.closest('.reader[data-paper="sepia"]') && document.documentElement.dataset.theme === 'dark'));
+}
+
 function mermaidVars(el) {
   const cs = getComputedStyle(el);
   const v = (name, fb) => { const x = cs.getPropertyValue(name).trim(); return /^#[0-9a-f]{6}$/i.test(x) ? x : fb; };
-  const dark = el.closest('.reader[data-paper="night"]') ||
-    (!el.closest('.reader[data-paper="sepia"]') && document.documentElement.dataset.theme === 'dark');
+  const dark = diagramIsDark(el);
   const bg = v('--surface', dark ? '#11151d' : '#ffffff'), box = v('--surface-2', dark ? '#171c26' : '#f1f4f8');
   const text = v('--text', dark ? '#e9edf5' : '#0f141c'), dim = v('--text-dim', dark ? '#9ba6b9' : '#4c5566');
   const line = v('--border-strong', dark ? '#36415a' : '#b5bfcf'), accent = v('--accent', dark ? '#e5ab4f' : '#96650d');
@@ -1398,11 +1402,41 @@ function mermaidVars(el) {
   };
 }
 
+/* ```arch blocks: architecture diagrams drawn by arch-diagram.js from an
+   explicit grid (see webapp/ARCH_DIAGRAMS.md). Local, no CDN: the icon
+   bodies come from /arch-icons.json, fetched once on first use. */
+let archIcons = null;
+function ensureArchIcons() {
+  if (!archIcons) archIcons = fetch('/arch-icons.json').then(r => (r.ok ? r.json() : {})).catch(() => { archIcons = null; return {}; });
+  return archIcons;
+}
+const diagramChrome = fig => `<button type="button" class="diagram-zoom" aria-label="Expand diagram"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>Expand</button>
+        ${fig.dataset.caption ? `<figcaption>${esc(fig.dataset.caption)}</figcaption>` : ''}`;
+
+async function renderArchBlocks(root, figs) {
+  if (!figs.length) return;
+  if (typeof ArchDiagram === 'undefined') {
+    figs.forEach(f => { f.innerHTML = emptyMsg('Diagram unavailable', 'arch-diagram.js did not load. Reload the page.'); });
+    return;
+  }
+  const icons = await ensureArchIcons();
+  let i = 0;
+  for (const fig of figs) {
+    try {
+      const { svg, width } = ArchDiagram.render(fig.dataset.src, { dark: diagramIsDark(fig), icons, idPrefix: `ad${Date.now().toString(36)}${i++}` });
+      fig.innerHTML = `<div class="diagram-canvas">${svg}</div>${diagramChrome(fig)}`;
+      fig.style.setProperty('--nat', `${Math.round(width)}px`);
+    } catch (e) {
+      fig.innerHTML = emptyMsg('This diagram has a syntax error', esc(String(e.message || e)));
+    }
+  }
+}
+
 async function renderMermaidBlocks(root) {
-  const codes = $$('pre > code.language-mermaid', root);
+  const codes = $$('pre > code.language-mermaid, pre > code.language-arch', root);
   const existing = $$('.diagram[data-src]', root);
   if (!codes.length && !existing.length) return;
-  const targets = existing.slice();
+  const all = existing.slice();
   for (const code of codes) {
     let src = code.textContent, caption = '';
     const cap = src.match(/^\s*%%\s*caption:\s*(.+)$/m);
@@ -1411,9 +1445,13 @@ async function renderMermaidBlocks(root) {
     fig.className = 'diagram';
     fig.dataset.src = src;
     fig.dataset.caption = caption;
+    if (code.classList.contains('language-arch')) fig.dataset.kind = 'arch';
     code.parentElement.replaceWith(fig);
-    targets.push(fig);
+    all.push(fig);
   }
+  const targets = all.filter(f => f.dataset.kind !== 'arch');
+  await renderArchBlocks(root, all.filter(f => f.dataset.kind === 'arch'));
+  if (!targets.length) return;
   if (!await ensureMermaid()) {
     targets.forEach(f => { f.innerHTML = emptyMsg('Diagram unavailable', 'The diagram library did not load. Reconnect to the internet, then reload the page.'); });
     mermaidLoad = null;
@@ -1427,9 +1465,7 @@ async function renderMermaidBlocks(root) {
   for (const fig of targets) {
     try {
       const { svg } = await mermaid.render(`mmd-${Date.now()}-${i++}`, fig.dataset.src);
-      fig.innerHTML = `<div class="diagram-canvas">${svg}</div>
-        <button type="button" class="diagram-zoom" aria-label="Expand diagram"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>Expand</button>
-        ${fig.dataset.caption ? `<figcaption>${esc(fig.dataset.caption)}</figcaption>` : ''}`;
+      fig.innerHTML = `<div class="diagram-canvas">${svg}</div>${diagramChrome(fig)}`;
       const vb = $('.diagram-canvas svg', fig)?.viewBox?.baseVal;      // natural size, for .reader[data-mod] CSS
       if (vb && vb.width) fig.style.setProperty('--nat', `${Math.round(vb.width)}px`);
     } catch (e) {

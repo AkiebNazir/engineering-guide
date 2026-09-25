@@ -4,7 +4,7 @@ Welcome to Day 108.
 
 Imagine you take `LLaMA-3-8B-Base` and fine-tune it on Medical Text. You spend \$5,000 on GPU compute.
 Your colleague takes the exact same base model and fine-tunes it on Python Coding. They spend \$5,000.
-Your startup now wants an AI that knows *both* Medicine and Coding. Do you have to mix the datasets together and spend \$10,000 to retrain a new model from scratch?
+Your startup now wants an <abbr title="Artificial Intelligence">AI</abbr> that knows *both* Medicine and Coding. Do you have to mix the datasets together and spend \$10,000 to retrain a new model from scratch?
 
 No. Today, we learn the dark magic of **Model Merging**. We will literally mathematically merge the weights of the two neural networks together, combining their intelligence for $0.00!
 
@@ -135,7 +135,7 @@ The `MergeKit` library allows you to merge models without writing python code; y
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Model merging allows us to combine models without retraining. However, when does it fail, and what are the catastrophic interference limits? Finally, what are the IP/licensing implications of merging models from different companies?"*
+*"Model merging allows us to combine models without retraining. However, when does it fail, and what are the catastrophic interference limits? Finally, what are the <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/licensing implications of merging models from different companies?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -144,12 +144,12 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - State that you cannot merge LLaMA with Mistral. Model merging strictly requires that all models share the exact same original *Base Architecture and Base Weights*.
 2. **Catastrophic Interference Limits:**
    - Explain that if you merge 2 models, Linear/SLERP interpolation works fine. If you merge 10 models, the mathematical space becomes too saturated. The updates destroy each other. You must use TIES or DARE to aggressively prune/drop weights before summing them.
-3. **Licensing/IP Implications:**
-   - Explain that merging a permissively licensed model (Apache 2.0) with a restrictively licensed model (e.g., Llama-3 Community License) "taints" the weights. The resulting merged model inherits the most restrictive license of its parents. You cannot launder IP through mathematical averaging!
+3. **Licensing/<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> Implications:**
+   - Explain that merging a permissively licensed model (Apache 2.0) with a restrictively licensed model (e.g., Llama-3 Community License) "taints" the weights. The resulting merged model inherits the most restrictive license of its parents. You cannot launder <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> through mathematical averaging!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
 Model merging is amazing, but it has limits. If you need the model to learn 100,000 pages of highly specialized medical literature, you cannot just SFT or Merge it. 
 
-Tomorrow, in **Day 109**, we learn **Continued Pre-Training (CPT) and Domain Adaptation**. We will inject raw, massive knowledge directly into the brain of the LLM!
+Tomorrow, in **Day 109**, we learn **Continued Pre-Training (CPT) and Domain Adaptation**. We will inject raw, massive knowledge directly into the brain of the <abbr title="Large Language Model">LLM</abbr>!

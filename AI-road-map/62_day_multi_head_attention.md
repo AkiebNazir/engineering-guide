@@ -33,7 +33,7 @@ Re-calculating the Keys and Values for 1000 words on every single step is imposs
 
 ### 4. Grouped Query Attention (GQA)
 To fix the VRAM crisis, researchers invented optimizations for the KV-Cache.
-- **MQA (Multi-Query Attention):** We keep the 8 Query heads, but we force them to share a SINGLE Key head and a SINGLE Value head! This drops memory usage by 87%, but slightly hurts AI quality.
+- **MQA (Multi-Query Attention):** We keep the 8 Query heads, but we force them to share a SINGLE Key head and a SINGLE Value head! This drops memory usage by 87%, but slightly hurts <abbr title="Artificial Intelligence">AI</abbr> quality.
 - **GQA (Grouped Query Attention):** The golden middle ground used in **LLaMA 2 & 3**. We have 8 Query heads, but we group them into pairs. Heads 1 & 2 share Key/Value A. Heads 3 & 4 share Key/Value B. 
 GQA drops memory usage by 50% with almost zero degradation in intelligence!
 
@@ -161,7 +161,7 @@ Modify the code to support LLaMA's GQA!
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"A 70-Billion parameter LLM is deployed to production. Using standard MHA, calculate the exact VRAM cost of the KV-Cache for a single request with a sequence length of 4096. How much VRAM does GQA save?"*
+*"A 70-Billion parameter <abbr title="Large Language Model">LLM</abbr> is deployed to production. Using standard MHA, calculate the exact VRAM cost of the KV-Cache for a single request with a sequence length of 4096. How much VRAM does GQA save?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -178,6 +178,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Conclude that GQA reduces the KV-Cache from 10.7 GB down to just **1.3 GB per user**, allowing the server to handle 8x more concurrent customers on the exact same GPU hardware!
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have mastered the most complex matrix transformations in AI.
+**Task for the end of the day:** Commit your code to Git. You have mastered the most complex matrix transformations in <abbr title="Artificial Intelligence">AI</abbr>.
 
 Tomorrow, in **Day 63**, we solve a fatal physical flaw in the Transformer. Attention matrices don't know the difference between the 1st word and the 100th word. We will fix this using **Positional Encodings and RoPE!**

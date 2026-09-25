@@ -1,29 +1,29 @@
 # WebSockets: The Complete Masterclass
 
-To master WebSockets, you must understand how they bridge the gap between the stateless, request-driven HTTP world, and the stateful, persistent TCP networking world.
+To master WebSockets, you must understand how they bridge the gap between the stateless, request-driven <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> world, and the stateful, persistent <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> networking world.
 
-## Part 1: The Core Philosophy (Why not HTTP?)
+## Part 1: The Core Philosophy (Why not <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>?)
 
-HTTP is a stateless, half-duplex protocol. The client asks, the server answers. The server **cannot** push data to the client unprompted.
+<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> is a stateless, half-duplex protocol. The client asks, the server answers. The server **cannot** push data to the client unprompted.
 
 Before WebSockets, engineers used terrible hacks:
 1. **Short Polling**: Client runs `setInterval` and does an AJAX `GET /updates` every 1 second. (Massive server load, mostly empty responses).
-2. **Long Polling**: Client makes a `GET` request. The server holds the TCP connection open indefinitely until it has data, sends it, and closes the connection. The client immediately reconnects. (High overhead establishing TCP connections).
+2. **Long Polling**: Client makes a `GET` request. The server holds the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection open indefinitely until it has data, sends it, and closes the connection. The client immediately reconnects. (High overhead establishing <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connections).
 
 ### The WebSocket Paradigm
 WebSockets provide a **full-duplex, persistent connection**.
 - Client and Server can send data to each other simultaneously at any time.
-- Zero HTTP header overhead per message (saving hundreds of bytes).
+- Zero <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> header overhead per message (saving hundreds of bytes).
 - Sub-millisecond latency.
 
 ---
 
 ## Part 2: The Handshake & Framing (Under the Hood)
 
-WebSockets actually start their life as a standard HTTP/1.1 request!
+WebSockets actually start their life as a standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 request!
 
 **1. The Client Handshake Request:**
-The browser sends a standard HTTP GET request with specific upgrade headers.
+The browser sends a standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> GET request with specific upgrade headers.
 ```http
 GET /chat HTTP/1.1
 Host: server.example.com
@@ -43,12 +43,12 @@ Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
 ```
 
 **3. The Protocol Shift:**
-At this exact moment, HTTP vanishes. The underlying TCP socket is kept alive, and both sides switch to talking via the **WebSocket Framing Protocol**.
+At this exact moment, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> vanishes. The underlying <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> socket is kept alive, and both sides switch to talking via the **WebSocket Framing Protocol**.
 
 Data is now sent in "Frames". A frame contains:
 - **FIN Bit**: Is this the final fragment of the message?
 - **OpCode**: Is this Text (0x1), Binary (0x2), Close (0x8), Ping (0x9), or Pong (0xA)?
-- **Masking Key**: Data from client to server is XOR masked to prevent proxy cache poisoning.
+- **Masking Key**: Data from client to server is <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> masked to prevent proxy cache poisoning.
 - **Payload Data**: The actual bytes.
 
 ---
@@ -58,8 +58,8 @@ Data is now sent in "Frames". A frame contains:
 Writing a `ws.send()` loop is easy. Running WebSockets in production for millions of users is notoriously difficult.
 
 ### 1. The Stateful Server Problem
-REST APIs are stateless; any load balancer can route request #1 to Server A, and request #2 to Server B.
-WebSockets are **Stateful**. A connection is tied to a specific server's memory (RAM) and a specific OS file descriptor.
+<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs are stateless; any load balancer can route request #1 to Server A, and request #2 to Server B.
+WebSockets are **Stateful**. A connection is tied to a specific server's memory (<abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>) and a specific <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> file descriptor.
 
 If User Alice connects to Server A, and User Bob connects to Server B, how do they chat? Server A doesn't know about Bob!
 
@@ -71,15 +71,15 @@ You must introduce a message broker (Redis Pub/Sub, Kafka, or RabbitMQ).
 4. Server B receives the message from Redis and pushes it down the WebSocket to Bob.
 
 ### 2. Connection Health (Ping / Pong)
-TCP connections can silently drop (e.g., a mobile user drives into a tunnel). The OS might not notify the server that the socket is dead. You end up with "zombie connections" consuming RAM and file descriptors (Goroutines in Go).
+<abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connections can silently drop (e.g., a mobile user drives into a tunnel). The <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> might not notify the server that the socket is dead. You end up with "zombie connections" consuming <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and file descriptors (Goroutines in Go).
 
 **Master Solution: Heartbeats**
 The Server must proactively send a `Ping` (OpCode 0x9) frame every ~30 seconds.
 The WebSocket protocol dictates that the Client must respond automatically with a `Pong` (OpCode 0xA).
-If the server doesn't receive a Pong within the timeout, it forcibly closes the TCP socket and frees the memory.
+If the server doesn't receive a Pong within the timeout, it forcibly closes the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> socket and frees the memory.
 
 ### 3. Load Balancer Configuration
-Standard HTTP Load Balancers (like AWS ALB or NGINX) will aggressively kill idle connections after 60 seconds. 
+Standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Load Balancers (like AWS ALB or NGINX) will aggressively kill idle connections after 60 seconds. 
 If you run WebSockets, you must explicitly configure your Load Balancer's **Idle Timeout** to be longer than your Ping/Pong interval (e.g., 3600 seconds).
 
 ---

@@ -1,6 +1,6 @@
 # Topic 17 · Dynamic Programming (2D) — Go Deep Dive
 
-> A 2D DP table looks like one clean allocation. In Go it's actually N+1 separate
+> A 2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table looks like one clean allocation. In Go it's actually N+1 separate
 > allocations wearing a trench coat — one slice-of-slices header, plus one
 > backing array per row. Get the allocation loop wrong and every row silently
 > becomes the same row. This is the document that stops that bug, and teaches
@@ -61,7 +61,7 @@ fmt.Println(dp[1][0])    // 1 — "row 1" changed because it IS row 0
 
 This is the exact same aliasing family as topic 1's sub-slice bug (§1.2) and
 topic 9's backtracking-append bug — the recurring Go lesson: **a slice
-assignment copies the header, never the data.** In 2D DP it shows up as row 0
+assignment copies the header, never the data.** In 2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> it shows up as row 0
 and row 1 mysteriously reporting identical values.
 
 > ✅ **The fix is always the per-row loop from §1.1.** If you ever see `dp[i] =
@@ -76,7 +76,7 @@ cache-friendly *within* a row (that backing array is contiguous) but every row
 transition is a pointer dereference to a potentially distant address.
 
 Contrast with a **flattened 1D array**, extending topic 4's 2D-prefix-sum
-discussion to DP tables:
+discussion to <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> tables:
 
 ```go
 data := make([]int, rows*cols)
@@ -88,7 +88,7 @@ One allocation, fully contiguous, no pointer-chasing between rows — genuinely
 faster on large grids or in a hot loop evaluated many times (e.g. inside a
 larger search). It reads less naturally as `dp[i][j]`, so:
 
-**The cache-line math, made concrete.** A CPU cache line is typically 64
+**The cache-line math, made concrete.** A <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache line is typically 64
 bytes. An `int` in Go's flattened `[]int` is 8 bytes (on a 64-bit
 platform), so **one cache line holds 8 consecutive `int`s**. Row-major
 traversal (`for i { for j { ... dp[i*cols+j] ... } }`) on the flattened
@@ -127,7 +127,7 @@ why the recommendation below is "don't bother by default."
 
 ## Part 2 · The (m+1)×(n+1) Offset Trick
 
-Nearly every 2D string-DP problem (LCS, Edit Distance, Interleaving String)
+Nearly every 2D string-<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem (<abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr>, Edit Distance, Interleaving String)
 sizes its table `(m+1) × (n+1)` instead of `m × n`. Row 0 and column 0
 represent the **empty prefix** of each string:
 
@@ -147,17 +147,17 @@ transition to avoid indexing `dp[i-1][...]` at `i = 0` (a negative index —
 Python's negative indexing does). The offset turns "index -1 means empty
 string" into "index 0 means empty string," which is a real, valid index.
 
-> ⚠️ **This is the single biggest source of off-by-one bugs in 2D DP.** When a
+> ⚠️ **This is the single biggest source of off-by-one bugs in 2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>.** When a
 > transition reads `dp[i-1][j-1]`, ask: *if `i` and `j` are actual string
 > indices (0-based), what does `i-1` mean when `i=0`?* With the +1 offset, `i`
-> in the DP table represents "the first `i` characters," so `i=0` cleanly means
+> in the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table represents "the first `i` characters," so `i=0` cleanly means
 > "zero characters," and `dp[i-1]` is always in bounds for `i ≥ 1`.
 
 ---
 
 ## Part 3 · Space Optimization — O(rows·cols) → O(cols)
 
-Most 2D DP transitions only ever look at the **current row** and the
+Most 2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> transitions only ever look at the **current row** and the
 **immediately previous row** (`dp[i-1][j]`, `dp[i][j-1]`, `dp[i-1][j-1]`).
 That means you never need to keep more than two rows alive.
 
@@ -206,7 +206,7 @@ for i := 0; i < n; i++ {
 > **unbounded** knapsack (each item reusable any number of times), because by
 > the time you reach a larger `w`, `dp[w-weights[i]]` has already been updated
 > to include item `i`. This is the most common silent-wrong-answer bug in
-> knapsack DP, and it produces no crash — just a subtly wrong number.
+> knapsack <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, and it produces no crash — just a subtly wrong number.
 
 ---
 
@@ -248,21 +248,21 @@ if weights[i-1] <= w {
 
 Collapsing this to 1D (§3.2) only works because `dp[i][*]` only ever reads
 from row `i-1` — verify that property before attempting the collapse on any
-new DP you write.
+new <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> you write.
 
-```mermaid
+```arch
 %% caption: The LCS recurrence. Edit distance uses the same three neighbours, with min and +1 instead.
-flowchart TD
-  A["cell (i, j): compare a[i-1] with b[j-1]"] --> B{"equal?"}
-  B -->|yes| C["dp[i][j] = dp[i-1][j-1] + 1"]:::ok
-  B -->|no| D["dp[i][j] = max(dp[i-1][j], dp[i][j-1])"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 170x80
+node a "cell (i, j)" at 0.5,0 sub="compare a[i-1] with b[j-1]"
+node b "equal?" at 0.5,1 shape=diamond color=amber
+node c "dp[i][j] = dp[i-1][j-1] + 1" at 0,2 color=green w=210
+node d "dp[i][j] = max(dp[i-1][j], dp[i][j-1])" at 1,2 w=260
+a -> b
+b -> c : "yes"
+b -> d : "no"
 ```
 
-### 4.3 LCS / Edit Distance — the two-string diagonal
+### 4.3 <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> / Edit Distance — the two-string diagonal
 
 ```go
 if s1[i-1] == s2[j-1] {
@@ -300,7 +300,7 @@ but the (m+1)×(n+1) offset and the diagonal-lookup shape are identical.
 | Negative indexing | `dp[-1]` silently wraps to the last row | `dp[-1]` is a **compile error** (constant) or **runtime panic** (variable) — no wraparound |
 | Memory contiguity | `list` of `list`s — pointers to heap objects either way | `[][]int` — non-contiguous rows; a flattened `[]int` is fully contiguous |
 | Swapping rolling rows | `prev, curr = curr, prev` — rebinds two names | `prev, curr = curr, prev` — swaps two slice **headers**, O(1), identical idiom |
-| Tabulation default | Lists are dynamic; easy to `append` a new DP row | Must `make` the exact size upfront — no implicit growth mid-loop |
+| Tabulation default | Lists are dynamic; easy to `append` a new <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> row | Must `make` the exact size upfront — no implicit growth mid-loop |
 
 ---
 
@@ -390,7 +390,7 @@ reads row `i-1`, which is the license to collapse to two rolling slices.
 
 ---
 
-## Part 9 · Bitmask DP — a fifth shape, for "which SUBSET have I used"
+## Part 9 · Bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> — a fifth shape, for "which SUBSET have I used"
 
 None of Parts 1–8's shapes fit a problem where the state is "which of up
 to ~20 elements have I already used/visited" — the subset count is
@@ -488,7 +488,7 @@ clamps back to a genuine subset. Total work across every mask's subset
 enumeration is `O(3^n)` (each bit independently: absent from mask,
 present in mask but absent from submask, or present in both — three
 choices per bit) — worth having cold as the point this technique stops
-being practical (`3^20 ≈ 3.5*10^9`), well before plain bitmask DP's
+being practical (`3^20 ≈ 3.5*10^9`), well before plain bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>'s
 `2^n` ceiling.
 
 ### 9.4 Go-specific: `math/bits` over hand-rolled popcount
@@ -512,24 +512,29 @@ wants the bit-trick explained.
 <!-- block:17_go_1_problems -->
 ## Part 10 · The Eighteen Problems in Go, Shape by Shape
 
-Parts 1–9 give the Go mechanics (allocating grids, the `(m+1)×(n+1)` offset, rolling rows, bitmask DP). This Part is
+Parts 1–9 give the Go mechanics (allocating grids, the `(m+1)×(n+1)` offset, rolling rows, bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>). This Part is
 the catalogue of problems with Go code, grouped by shape. All snippets ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: Choosing the 2D shape. What the two indices range over decides the table, its fill order and whether it can be rolled.
-flowchart TD
-  Q(["A 2D DP problem"]) --> A{"What are the two indices?"}
-  A -->|"a row and a column of a GRID"| G["grid DP<br/>Unique Paths, Min Path Sum, Maximal Square"]:::ok
-  A -->|"a position in EACH of two strings"| S["two-string DP<br/>LCS, Edit Distance, Interleaving, Regex"]:::ok
-  A -->|"a day and a STATE"| M["state machine<br/>Stock with Cooldown"]:::ok
-  A -->|"an item count and a SUM"| K["knapsack, rolled to 1D<br/>Coin Change II (up), Target Sum (down)"]:::hot
-  A -->|"a range [l, r]"| I["interval DP, fill by LENGTH<br/>Burst Balloons, Palindromic Subsequence"]:::hot
-  A -->|"a node and a SET of nodes"| B["bitmask / state-space BFS<br/>Visiting All Nodes"]:::ok
-  A -->|"a digit position and a TIGHT flag"| D["digit DP<br/>Count Special Integers"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 200x80
+node q "A 2D DP problem" at 0,2 shape=pill
+node a "What are the two indices?" at 0,3 shape=diamond color=amber
+node g "Grid DP" at 1,0 color=green w=400 sub="a row and a column of a GRID · Unique Paths, Min Path Sum, Maximal Square"
+node s "Two-string DP" at 1,1 color=green w=400 sub="a position in EACH of two strings · LCS, Edit Distance, Interleaving, Regex"
+node m "State machine" at 1,2 color=green w=400 sub="a day and a STATE · Stock with Cooldown"
+node k "Knapsack, rolled to 1D" at 1,3 color=amber w=400 sub="an item count and a SUM · Coin Change II (up), Target Sum (down)"
+node i "Interval DP, fill by LENGTH" at 1,4 color=amber w=400 sub="a range [l, r] · Burst Balloons, Palindromic Subsequence"
+node b "Bitmask / state-space BFS" at 1,5 color=green w=400 sub="a node and a SET of nodes · Visiting All Nodes"
+node d "Digit DP" at 1,6 color=green w=400 sub="a digit position and a TIGHT flag · Count Special Integers"
+q -> a
+a:R -> g:L
+a:R -> s:L
+a:R -> m:L
+a:R -> k:L
+a:R -> i:L
+a:R -> b:L
+a:R -> d:L
 ```
 
 ### Grid shapes: Unique Paths I/II, Minimum Path Sum, Maximal Square
@@ -556,10 +561,10 @@ if m[i-1][j-1] == '1' { dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
 return side * side                                     // the LeetCode grid -> 4
 ```
 
-### Two-string shapes: LCS, Edit Distance, Interleaving, Distinct Subsequences, Regex
+### Two-string shapes: <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr>, Edit Distance, Interleaving, Distinct Subsequences, Regex
 
 `dp[i][j]` indexes **prefix lengths** (so `0` is the empty prefix), which means the characters being compared are
-`a[i-1]` and `b[j-1]` — comparing `a[i]` with `b[j]` is the classic off-by-one. LCS, with reconstruction by walking back
+`a[i-1]` and `b[j-1]` — comparing `a[i]` with `b[j]` is the classic off-by-one. <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr>, with reconstruction by walking back
 from the corner:
 
 ```go
@@ -620,9 +625,9 @@ for _, x := range nums { for s := want; s >= x; s-- { dp[s] += dp[s-x] } }      
 Guard `(total + target)` odd and `|target| > total` before computing `want` — otherwise you size a negative or fractional
 array. Looping amounts outermost in Coin Change II counts *sequences*; scanning up in Target Sum reuses a number.
 
-### Memoised DFS on a grid: Longest Increasing Path
+### Memoised <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> on a grid: Longest Increasing Path
 
-Neither row-by-row nor column-by-column is a valid order, so memoise a DFS. The path is **strictly** increasing, so it can
+Neither row-by-row nor column-by-column is a valid order, so memoise a <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>. The path is **strictly** increasing, so it can
 never revisit a cell — no `visited` set is needed (adding one only invites bugs). `0` is a safe "not computed" sentinel
 because every real answer is at least 1:
 
@@ -632,7 +637,7 @@ if m[nr][nc] > m[r][c] { best = max(best, 1+dfs(nr, nc)) }         // '>' not '>
 
 `[[9 9 4] [6 6 8] [2 1 1]]` → 4 and `[[3 4 5] [3 2 6] [2 2 1]]` → 4.
 
-### Interval DP: Burst Balloons and Longest Palindromic Subsequence
+### Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: Burst Balloons and Longest Palindromic Subsequence
 
 Fill by **increasing length** and try every split. Burst Balloons thinks about the balloon burst **last** in `(l, r)` — so
 the two sides are independent — and pads the array with a virtual `1` at each end:
@@ -650,7 +655,7 @@ fills `i` **descending** (`dp[i+1][j-1]` must already exist): `dp[i][j] = dp[i+1
 `max(dp[i+1][j], dp[i][j-1])`, `dp[i][i] = 1`. Ascending `i` reads cells not yet computed; solving the *substring* problem
 gives 3 instead of 4 on `"bbbab"`.
 
-### State-space BFS: Shortest Path Visiting All Nodes
+### State-space <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: Shortest Path Visiting All Nodes
 
 The search runs over **states** `(node, mask)`, not nodes — revisiting a node is fine, revisiting a *state* never helps — and
 starts from **every** node at once (the walk may begin anywhere):
@@ -663,7 +668,7 @@ if !seen[nb][nm] { seen[nb][nm] = true; q = append(q, st{nb, nm, cur.d + 1}) }  
 
 Keying `seen` by node alone fails the first example; starting only at node 0 misses shorter walks. Both examples → 4.
 
-### Digit DP: Numbers At Most N Given Digit Set, Count Special Integers
+### Digit <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: Numbers At Most N Given Digit Set, Count Special Integers
 
 Build numbers from the most significant digit while a **`tight`** flag says "the prefix still equals `n`'s prefix". For the
 digit-set problem, count *shorter* lengths (`D^L`, all below `n`), then walk `n` counting smaller-digit choices per
@@ -696,7 +701,7 @@ type key struct { pos, mask int; tight, started bool }          // comparable st
 | Rolling one row and overwriting the diagonal | The diagonal `dp[i-1][j-1]` is gone. | Save `prev := dp[j]` before the write. |
 | `math.MinInt` / `math.MaxInt` as `-inf` / `+inf` | `+ p` wraps. | `math.MinInt / 2`. |
 | `math.Pow` for integer powers | A `float64` — precision loss for large results. | An integer loop (or `1 << k` for base 2). |
-| Recursing 10⁶ deep for a memo DFS | Fatal `stack overflow` (1 GB), unrecoverable. | Iterate in a dependency order, or cap the depth. |
+| Recursing 10⁶ deep for a memo <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> | Fatal `stack overflow` (1 GB), unrecoverable. | Iterate in a dependency order, or cap the depth. |
 
 ### Follow-ups the interviewer reaches for
 
@@ -704,10 +709,10 @@ type key struct { pos, mask int; tight, started bool }          // comparable st
 |---|---|
 | "Return the path / subsequence." | Keep the full table and walk back from the corner. |
 | "Reduce the space." | Rolling rows — only when you need the value, not the path. |
-| "Huge strings." | Hirschberg's divide-and-conquer recovers an LCS in linear space. |
+| "Huge strings." | Hirschberg's divide-and-conquer recovers an <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> in linear space. |
 | "Weighted operations?" | Per-operation costs in the `min`. |
-| "Why O(n³)?" | Interval DP: O(n²) states × an O(n) split. |
-| "Parallelise?" | Anti-diagonals of an LCS/edit table are independent — a wavefront. |
+| "Why O(n³)?" | Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: O(n²) states × an O(n) split. |
+| "Parallelise?" | Anti-diagonals of an <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr>/edit table are independent — a wavefront. |
 
 ---
 <!-- /block:17_go_1_problems -->
@@ -723,20 +728,20 @@ Eighteen problems, six shapes (grid position · two strings · day × state · k
 | [002 · Unique Paths II](GoDSA/17_dp_2d/002_unique_paths_ii/solution.go) <br>LC 63 · Medium | Grid with an obstacle override | Seed `row[0]` from the *start cell*; an obstacle sets `row[j] = 0`. **Trap:** the "first row is all 1s" assumption; ignoring a blocked start. |
 | [003 · Minimum Path Sum](GoDSA/17_dp_2d/003_minimum_path_sum/solution.go) <br>LC 64 · Medium | Grid: min of two, plus own cost | `g[i][j] + min(dp[j], dp[j-1])`; the first row/column are cumulative. **Trap:** summing predecessors; copying the first row/column. |
 | [004 · Maximal Square](GoDSA/17_dp_2d/004_maximal_square/solution.go) <br>LC 221 · Medium | Grid: side of the square ending here | `(R+1) × (C+1)` offset table; `1 + min(up, left, diag)`. **Trap:** `max`; dropping the diagonal; returning the side, not `side * side`. |
-| [005 · Longest Common Subsequence](GoDSA/17_dp_2d/005_longest_common_subsequence/solution.go) <br>LC 1143 · Medium | Two strings: LCS | Prefix-length table; compare `a[i-1]`, `b[j-1]`; walk back for the string. **Trap:** `a[i]` vs `b[j]`; substring vs subsequence. |
+| [005 · Longest Common Subsequence](GoDSA/17_dp_2d/005_longest_common_subsequence/solution.go) <br>LC 1143 · Medium | Two strings: <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> | Prefix-length table; compare `a[i-1]`, `b[j-1]`; walk back for the string. **Trap:** `a[i]` vs `b[j]`; substring vs subsequence. |
 | [006 · Best Time to Buy and Sell Stock with Cooldown](GoDSA/17_dp_2d/006_best_time_to_buy_and_sell_stock_with_cooldown/solution.go) <br>LC 309 · Medium | Day × state machine | `held, sold, rest = max(held, rest-p), held+p, max(rest, sold)`. **Trap:** buying from `sold`; `math.MinInt` overflow on `held + p`. |
 | [007 · Coin Change II](GoDSA/17_dp_2d/007_coin_change_ii/solution.go) <br>LC 518 · Medium | Unbounded knapsack, combinations | Coins outermost, `for a := c; a <= amount; a++`. **Trap:** amounts outermost (sequences); scanning downward (0/1). |
 | [008 · Target Sum](GoDSA/17_dp_2d/008_target_sum/solution.go) <br>LC 494 · Medium | 0/1 knapsack via a reframe | `want := (total+target)/2`; `for s := want; s >= x; s--`; guard odd/`\|target\| > total`. **Trap:** scanning upward; a negative array size. |
 | [009 · Interleaving String](GoDSA/17_dp_2d/009_interleaving_string/solution.go) <br>LC 97 · Medium | Two strings, interleaving | One `dp []bool` row; `k` is always `i+j`; `\|\|` between the two sources. **Trap:** a third dimension; `&&`. |
 | [010 · Edit Distance](GoDSA/17_dp_2d/010_edit_distance/solution.go) <br>LC 72 · Medium | Two strings, edit distance | Match → diagonal (no `+1`); else `1 + min(...)`. **Trap:** `+1` on a match; overwriting the diagonal in the rolling row. |
-| [011 · Longest Increasing Path in a Matrix](GoDSA/17_dp_2d/011_longest_increasing_path_in_a_matrix/solution.go) <br>LC 329 · Hard | Memoised DFS on a grid | `memo[r][c]` with `0` as "not computed"; `>` only. **Trap:** `>=`; a `visited` set. |
+| [011 · Longest Increasing Path in a Matrix](GoDSA/17_dp_2d/011_longest_increasing_path_in_a_matrix/solution.go) <br>LC 329 · Hard | Memoised <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> on a grid | `memo[r][c]` with `0` as "not computed"; `>` only. **Trap:** `>=`; a `visited` set. |
 | [012 · Distinct Subsequences](GoDSA/17_dp_2d/012_distinct_subsequences/solution.go) <br>LC 115 · Hard | Two strings, counting | `dp[j] += dp[j-1]` on a match, `j` downward in the rolled row. **Trap:** `max`; scanning `j` upward (uses this row's value). |
-| [013 · Burst Balloons](GoDSA/17_dp_2d/013_burst_balloons/solution.go) <br>LC 312 · Hard | Interval DP: the *last* balloon | Pad with `1`s; fill by length; `k` is the last burst. **Trap:** the *first*-burst view; no padding. |
+| [013 · Burst Balloons](GoDSA/17_dp_2d/013_burst_balloons/solution.go) <br>LC 312 · Hard | Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: the *last* balloon | Pad with `1`s; fill by length; `k` is the last burst. **Trap:** the *first*-burst view; no padding. |
 | [014 · Regular Expression Matching](GoDSA/17_dp_2d/014_regular_expression_matching/solution.go) <br>LC 10 · Hard | Two strings, pattern-driven | `*` → `dp[i][j-2]` or (`dp[i-1][j]` if the previous element matches). **Trap:** no zero branch; `dp[i-1][j-2]`. |
-| [015 · Longest Palindromic Subsequence](GoDSA/17_dp_2d/015_longest_palindromic_subsequence/solution.go) <br>LC 516 · Medium | Interval DP on a string | `i` **descending**; `dp[i][i] = 1`; `+2` on matching ends. **Trap:** ascending `i`; the substring problem. |
-| [016 · Shortest Path Visiting All Nodes](GoDSA/17_dp_2d/016_shortest_path_visiting_all_nodes/solution.go) <br>LC 847 · Hard | BFS over `(node, mask)` | `seen[node][mask]`, seeded from every node. **Trap:** `seen` by node alone; one source. |
-| [017 · Numbers At Most N Given Digit Set](GoDSA/17_dp_2d/017_numbers_at_most_n_given_digit_set/solution.go) <br>LC 902 · Hard | Digit DP: shorter, then same length | `D^L` per shorter length; walk `n` with a smaller-digit count; `+1`. **Trap:** forgetting `n` itself or the shorter lengths; `math.Pow` precision. |
-| [018 · Count Special Integers](GoDSA/17_dp_2d/018_count_special_integers/solution.go) <br>LC 2376 · Hard | Digit DP with a used-digit mask | `map[key]int` with a comparable struct key `(pos, mask, tight, started)`. **Trap:** no `started` flag (`100` → 72); `0` as the first digit. |
+| [015 · Longest Palindromic Subsequence](GoDSA/17_dp_2d/015_longest_palindromic_subsequence/solution.go) <br>LC 516 · Medium | Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> on a string | `i` **descending**; `dp[i][i] = 1`; `+2` on matching ends. **Trap:** ascending `i`; the substring problem. |
+| [016 · Shortest Path Visiting All Nodes](GoDSA/17_dp_2d/016_shortest_path_visiting_all_nodes/solution.go) <br>LC 847 · Hard | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> over `(node, mask)` | `seen[node][mask]`, seeded from every node. **Trap:** `seen` by node alone; one source. |
+| [017 · Numbers At Most N Given Digit Set](GoDSA/17_dp_2d/017_numbers_at_most_n_given_digit_set/solution.go) <br>LC 902 · Hard | Digit <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: shorter, then same length | `D^L` per shorter length; walk `n` with a smaller-digit count; `+1`. **Trap:** forgetting `n` itself or the shorter lengths; `math.Pow` precision. |
+| [018 · Count Special Integers](GoDSA/17_dp_2d/018_count_special_integers/solution.go) <br>LC 2376 · Hard | Digit <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> with a used-digit mask | `map[key]int` with a comparable struct key `(pos, mask, tight, started)`. **Trap:** no `started` flag (`100` → 72); `0` as the first digit. |
 
 ---
 <!-- problem-map:end -->
@@ -748,12 +753,12 @@ Eighteen problems, six shapes (grid position · two strings · day × state · k
 - [ ] Use the `(m+1)×(n+1)` offset trick and explain what index 0 represents
 - [ ] Collapse O(m·n) space to O(n) with two rolling slices when row `i` only reads row `i-1`
 - [ ] Know why 0/1 knapsack's inner loop must iterate `w` downward, and what breaks if it doesn't
-- [ ] Write Edit Distance or LCS both as a full table and as the space-optimized rolling version
-- [ ] Verify a Python DP port doesn't rely on negative-index wraparound (`dp[-1]`) — Go panics instead
-- [ ] Recognize `n ≤ ~20` as the bitmask-DP tell and state Held-Karp's O(2^n · n^2) bound
+- [ ] Write Edit Distance or <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> both as a full table and as the space-optimized rolling version
+- [ ] Verify a Python <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> port doesn't rely on negative-index wraparound (`dp[-1]`) — Go panics instead
+- [ ] Recognize `n ≤ ~20` as the bitmask-<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> tell and state Held-Karp's O(2^n · n^2) bound
 - [ ] Write the `(sub-1)&mask` submask-enumeration loop and state its O(3^n) total cost
 - [ ] State prefix-length indexing aloud and compare `a[i-1]` with `b[j-1]` <!--ca-->
-- [ ] Roll a grid DP into one row (`row[j] += row[j-1]`) and explain what each side holds <!--ca-->
+- [ ] Roll a grid <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> into one row (`row[j] += row[j-1]`) and explain what each side holds <!--ca-->
 - [ ] Scan a knapsack up (unbounded) or down (0/1) and say why, with the Coin Change II / Target Sum contrast <!--ca-->
-- [ ] Fill an interval DP by length (or `i` descending) and pad Burst Balloons <!--ca-->
-- [ ] Use a comparable struct as a memo key for digit DP, with the `started` flag <!--ca-->
+- [ ] Fill an interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> by length (or `i` descending) and pad Burst Balloons <!--ca-->
+- [ ] Use a comparable struct as a memo key for digit <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, with the `started` flag <!--ca-->

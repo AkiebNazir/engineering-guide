@@ -2,7 +2,7 @@
 
 ## Goal and contract
 
-A multi-tenant reverse-proxy cache with about 500 POPs: right bytes from a nearby healthy POP, rare origin contact, purge in seconds, TLS at the edge.
+A multi-tenant reverse-proxy cache with about 500 POPs: right bytes from a nearby healthy POP, rare origin contact, purge in seconds, <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> at the edge.
 
 - **Tenant isolation is an invariant.** Cache key and certificate are scoped to the zone. `private`, `no-store` and `Set-Cookie` responses are never shared.
 - **Freshness is bounded, not perfect.** Purge p99 is 5 s, and correctness never depends on it: content that must change atomically uses immutable versioned URLs ([29](../building_blocks/29_cdn_and_streaming_media.md)).
@@ -18,13 +18,13 @@ The one hard decision is what gives when these conflict: keep the request path l
 | Edge fleet (assumed) | 50 tier-A POPs carry 55% (550 Gbps each), 150 tier-B 35% (117), 300 tier-C 10% (17). Server: 100 Gbps NIC at 70% = 70 Gbps, 100 TB flash. Size at 1.5× peak: A ceil(825/70) = 12, B 3, C floor of 2 | **1,650 servers**, 115 Tbps usable. Tier C is sized by redundancy: 36% of servers for 10% of traffic, **5.5× the cost per Gbps** of tier A (8.3 vs 45.8 Gbps per server). Plus 200 regional servers (20 × 10, sized by the tail they hold, not the 72 that bandwidth needs). |
 | Hierarchy | Edge byte hit 90%, regional catches 80% of the rest, shield 50%: 50 × 0.1 × 0.2 × 0.5 | 5 → 1 → **0.5 Tbps** to origins (1%). Requests: 12.5M × 0.08 = 1.0M → 200K → **100K rps**. |
 | Placement in a POP | Zipf s = 1 over 10B objects of 300 KB, hit = H(k)/H(N), H(n) ≈ ln n + 0.577. Independent caches: 333M objects → 85.6%. Hashed over 12 servers: 4B objects → 96.1% | **3.7× more fills** (14.4% vs 3.9% miss) without hashing. Traffic-weighted the model gives 93.3%, a ceiling that leaves 3 points for churn and large objects. |
-| Flash writes | 5 Tbps of fills = 625 GB/s ÷ 1,650 = 379 MB/s = 33 TB/day per 100 TB device | **0.33 drive-writes/day** unfiltered: admit selectively. RAM index: 333M objects × 64 B = 21 GB per server. |
+| Flash writes | 5 Tbps of fills = 625 GB/s ÷ 1,650 = 379 MB/s = 33 TB/day per 100 TB device | **0.33 drive-writes/day** unfiltered: admit selectively. <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> index: 333M objects × 64 B = 21 GB per server. |
 | Purge | 2,000/s (assumed) × 300 B × 500 POPs = 2.4 Gbps. Latency: commit 50 + relay hops 100 + 100 + fan-out 20 + apply 10 = 280 ms | Bandwidth is trivial, delivery is the problem. 4.7 s of slack under the 5 s p99 pays for batching, retries and catch-up. |
-| TLS | 12.5M rps ÷ 10 per connection = 1.25M connections/s, half resumed → 625K handshakes/s × 0.15 ms = **94 cores**. Bulk: 6.25 TB/s ÷ 2 GB/s per core = 3,100 cores | Terminate TLS on the cache servers (4.4 cores per server). |
+| <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> | 12.5M rps ÷ 10 per connection = 1.25M connections/s, half resumed → 625K handshakes/s × 0.15 ms = **94 cores**. Bulk: 6.25 TB/s ÷ 2 GB/s per core = 3,100 cores | Terminate <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> on the cache servers (4.4 cores per server). |
 | Certificates | 5M hostnames, 80% managed, 4 KB each = 20 GB. CA/Browser Forum SC-081v3 (2025): maximum validity 200 days from Mar 2026, 100 from Mar 2027, 47 from Mar 2029. Renew at 2/3 | 4M ÷ 31 days = **128K renewals/day** at 47 days. Automate, and load by SNI. |
 | DDoS | 2 Tbps ÷ 500 POPs = 4 Gbps each. A 20 Tbps attack at 10× skew: 400 Gbps at one POP vs 200 Gbps (2 × 100) at tier C | Small POPs need edge filtering and spill (fleet spare 65 Tbps). |
 
-## API
+## <abbr title="Application Programming Interface">API</abbr>
 
 ```text
 PUT  /v1/zones/{zone}/config    {base_version, rules:[{match, ttl, key, swr, sie}]}
@@ -43,39 +43,45 @@ GET /img/a.jpg → 200 Cache-Status: EdgeCDN; fwd=stale; fwd-status=503   # stal
 
 | Entity | Key → fields | Source of truth, partition |
 |---|---|---|
-| `Zone` | `zone_id` → hostnames, origin pool, rules, `config_version` | Config DB, consensus-replicated over 3 regions, by `zone_id` (rare writes, linearizable CAS). Per-cell `Snapshot` is derived. |
+| `Zone` | `zone_id` → hostnames, origin pool, rules, `config_version` | Config DB, consensus-replicated over 3 regions, by `zone_id` (rare writes, linearizable <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr>). Per-cell `Snapshot` is derived. |
 | `Cert` | hostname → chain, KMS-wrapped key, `not_after` | Key service, by hostname hash |
 | `PurgeLog` | `seq` → zone, selector | One append-only log, so a POP tracks one `applied_seq` (2,000/s is trivial) |
 | Edge object | `key128` → full key, `purge_seq_at_fill`, TTL, SWR, SIE, tags ≤ 16, ETag, slice map | Derived from the origin. Owner by rendezvous hash. |
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: The request path touches only POP-local state, and config, certificates and purges flow one way from the control plane, so a POP keeps serving from its last snapshot if that flow stops.
-flowchart LR
-    U["Client"] -->|"anycast or DNS-mapped IP"| L4["L4 balancer<br/>flow hash"]
-    subgraph POP["Edge POP: 2 to 12 servers"]
-        L4 --> S1["Server A<br/>TLS, HTTP, cache"]
-        L4 --> S2["Server B<br/>owner of this key"]
-        S1 <-->|"peer fetch from owner"| S2
-    end
-    S2 -->|"miss, collapsed"| R["Regional parent"]
-    R -->|"miss, collapsed"| SH["Origin shield<br/>one per origin"]
-    SH -->|"pooled HTTP/2"| O[("Customer origin")]
-    CP["Control plane<br/>config, certs, purge log, mapping"] -.->|"snapshots, purge stream, certs by SNI"| S1
-    S1 -.->|"counters and logs"| CP
+node U "Client" at 1,0 icon=client
+node L4 "L4 balancer" at 1,1 icon=lb sub="flow hash"
+group POP "Edge POP: 2 to 12 servers" icon=edge color=purple
+node S1 "Server A" at 0,2 in POP icon=server sub="TLS, HTTP, cache"
+node S2 "Server B" at 2,2 in POP icon=server sub="owner of this key"
+node R "Regional parent" at 2,3 icon=cache
+node SH "Origin shield" at 2,4 icon=shield sub="one per origin"
+node O "Customer origin" at 2,5 icon=db
+node CP "Control plane" at 0,4 icon=scheduler sub="config, certs, purge log, mapping"
+U -> L4 : "anycast or DNS-mapped IP"
+L4:L -> S1:T
+L4:R -> S2:T
+S1:R <-> S2:L : "peer fetch from owner"
+S2 -> R : "miss, collapsed"
+R -> SH : "miss, collapsed"
+SH -> O : "pooled HTTP/2"
+CP:L ..> S1:L : "snapshots, purge stream, certs by SNI"
+S1:B ..> CP:T : "counters and logs"
 ```
 
-**Read.** DNS or anycast lands the client on a POP and the L4 balancer picks any server by flow hash (Maglev, NSDI 2016). The server completes TLS from its RAM certificate cache, builds the key from the zone snapshot and checks its RAM index. A fresh, un-purged hit goes out with `sendfile`, and a local miss goes to the key's owner over the POP LAN. An owner miss joins or starts one collapsed fetch up the regional parent, shield and origin, and the response streams to every waiter while written to disk. **Write.** Config and purges are validated, committed, then pushed down a relay tree (deep dive 4).
+**Read.** <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> or anycast lands the client on a POP and the L4 balancer picks any server by flow hash (Maglev, NSDI 2016). The server completes <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> from its <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> certificate cache, builds the key from the zone snapshot and checks its <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> index. A fresh, un-purged hit goes out with `sendfile`, and a local miss goes to the key's owner over the POP LAN. An owner miss joins or starts one collapsed fetch up the regional parent, shield and origin, and the response streams to every waiter while written to disk. **Write.** Config and purges are validated, committed, then pushed down a relay tree (deep dive 4).
 
 ## Deep dive 1: Steering and DDoS
 
-Mechanics are in [27](../building_blocks/27_multi_region_and_global_traffic.md). The CDN-specific choice is between two.
+Mechanics are in [27](../building_blocks/27_multi_region_and_global_traffic.md). The <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>-specific choice is between two.
 
-- **DNS mapping** (Akamai-style, Nygren et al., 2010) gives load-aware answers and per-POP capacity control, but the resolver is not the client (ECS, RFC 7871, helps) and a 30 s TTL plus 3 × 5 s checks is **45 s** to drain.
-- **Anycast** (Cloudflare publicly describes it) spreads attacks over all POPs with no TTL, but BGP ignores capacity, so shedding is by prepend or withdraw, and flaps break long TCP flows.
+- **<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> mapping** (Akamai-style, Nygren et al., 2010) gives load-aware answers and per-POP capacity control, but the resolver is not the client (ECS, RFC 7871, helps) and a 30 s TTL plus 3 × 5 s checks is **45 s** to drain.
+- **Anycast** (Cloudflare publicly describes it) spreads attacks over all POPs with no TTL, but BGP ignores capacity, so shedding is by prepend or withdraw, and flaps break long <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> flows.
 
-**Decision:** anycast for authoritative DNS and the web/API pool, DNS mapping for the few hundred zones that carry most bytes. That gives DDoS spreading and per-POP load control where each matters, at the cost of two steering systems, acceptable because the mapper only handles the head and freezes its last map if it fails.
+**Decision:** anycast for authoritative <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> and the web/<abbr title="Application Programming Interface">API</abbr> pool, <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> mapping for the few hundred zones that carry most bytes. That gives DDoS spreading and per-POP load control where each matters, at the cost of two steering systems, acceptable because the mapper only handles the head and freezes its last map if it fails.
 
 **DDoS layers.** Spread by anycast. Drop L3/L4 floods in the NIC driver (XDP/eBPF, SYN cookies) before the kernel stack. The cache absorbs cacheable floods and per-zone rate limits handle the rest. Cache-busting (`?x=random`) bypasses the cache, so unknown parameters on static paths leave the key and each origin has a fetch cap. A flood beyond a small POP's 200 Gbps means spilling legitimate traffic to neighbours and scrubbing upstream.
 
@@ -89,7 +95,7 @@ Mechanics are in [27](../building_blocks/27_multi_region_and_global_traffic.md).
 
 **Decision:** one owner per key by rendezvous hashing, so losing one of `N` servers moves only `1/N` of keys. Any server accepts the connection, so hits have no L7 hop. That gives 3.7× less fill traffic for the cost of a peer-fetch protocol.
 
-**Hot objects.** A live segment with 100K viewers in a POP at 5 Mbps is **500 Gbps** for one object against 70 Gbps per server, so at least 8 servers must hold it. Above a threshold (assume 5,000 rps) the owner marks the peer response `hot` and each peer keeps a RAM copy for 10 s. Bounded-load hashing (Mirrokni et al., 2016) is the safety net.
+**Hot objects.** A live segment with 100K viewers in a POP at 5 Mbps is **500 Gbps** for one object against 70 Gbps per server, so at least 8 servers must hold it. Above a threshold (assume 5,000 rps) the owner marks the peer response `hot` and each peer keeps a <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> copy for 10 s. Bounded-load hashing (Mirrokni et al., 2016) is the safety net.
 
 **Admission.** Maggs and Sitaraman (SIGCOMM CCR, 2015) report roughly three-quarters of objects on typical Akamai servers were requested once, and writing them wastes endurance. **Cache on second hit:** a rotating pair of Bloom filters holds the last hour of keys, 7,600 rps per server × 3,600 s = 27M keys × 9.6 bits ≈ **33 MB**. A key reaches flash only if already in the filter, and small objects bypass it. An object with exactly two requests misses twice, which is acceptable because every singleton saves a write. AdaptSize (NSDI 2017) is the size-aware refinement.
 
@@ -141,27 +147,27 @@ sequenceDiagram
 
 **The in-flight race.** A fetch that started before a purge can finish after it and re-cache old bytes. Use sequence numbers, not clocks: a fill records the applied purge sequence at start, and if a later matching purge exists on completion it serves the waiters without storing.
 
-**Delivery and SLO.** Relays keep 24 h of log (2,000/s × 86,400 × 300 B = 52 GB). A POP offline longer enters **purge-safe mode**: every object is revalidated with `If-None-Match` until it catches up. Measure with purge canaries (purge a synthetic object each minute, probe every POP, alarm on p99). **Purge-all** at a 92% hit ratio is a **12.5×** origin surge, so it is soft by default: a 304 of about 500 B replaces a 500 KB refetch (1,000× fewer bytes), under per-origin caps.
+**Delivery and <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>.** Relays keep 24 h of log (2,000/s × 86,400 × 300 B = 52 GB). A POP offline longer enters **purge-safe mode**: every object is revalidated with `If-None-Match` until it catches up. Measure with purge canaries (purge a synthetic object each minute, probe every POP, alarm on p99). **Purge-all** at a 92% hit ratio is a **12.5×** origin surge, so it is soft by default: a 304 of about 500 B replaces a 500 KB refetch (1,000× fewer bytes), under per-origin caps.
 
-## Deep dive 5: TLS and certificate management
+## Deep dive 5: <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> and certificate management
 
-Keys on every disk are simplest, but one compromised server exposes them all. Keyless signing (Cloudflare's Keyless SSL, 2014) keeps the key with its owner at +1 RTT per full handshake and a new dependency. Envelope-encrypted keys loaded by SNI into RAM only give a small blast radius and lazy loading, at a 5 to 20 ms fetch on the first handshake per SNI per server.
+Keys on every disk are simplest, but one compromised server exposes them all. Keyless signing (Cloudflare's Keyless <abbr title="Secure Sockets Layer - The predecessor to TLS, a cryptographic protocol providing communications security over a network.">SSL</abbr>, 2014) keeps the key with its owner at +1 RTT per full handshake and a new dependency. Envelope-encrypted keys loaded by SNI into <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> only give a small blast radius and lazy loading, at a 5 to 20 ms fetch on the first handshake per SNI per server.
 
-**Decision:** the third, with keys KMS-wrapped. A server fetches `(cert, key)` over mTLS on an SNI miss and evicts LRU. The top 1% of hostnames is 50K × 4 KB = 200 MB per server, and the last-known cert survives a control-plane outage. Compliance tenants get keyless.
+**Decision:** the third, with keys KMS-wrapped. A server fetches `(cert, key)` over mTLS on an SNI miss and evicts <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>. The top 1% of hostnames is 50K × 4 KB = 200 MB per server, and the last-known cert survives a control-plane outage. Compliance tenants get keyless.
 
-**Issuance.** An ACME (RFC 8555) service answers HTTP-01 at the edge, uses DNS-01 for wildcards, keeps two CAs and renews at 2/3 lifetime, which at 47 days leaves **16 days** of retries (alert under 14 days left). Sessions use TLS 1.3 resumption (RFC 8446) with per-POP ticket keys rotated every 12 h and held in RAM, since a leaked key breaks forward secrecy for the sessions it covers. 0-RTT is for idempotent methods only, because it can be replayed.
+**Issuance.** An ACME (RFC 8555) service answers <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>-01 at the edge, uses <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>-01 for wildcards, keeps two CAs and renews at 2/3 lifetime, which at 47 days leaves **16 days** of retries (alert under 14 days left). Sessions use <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.3 resumption (RFC 8446) with per-POP ticket keys rotated every 12 h and held in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, since a leaked key breaks forward secrecy for the sessions it covers. 0-RTT is for idempotent methods only, because it can be replayed.
 
 ## Control plane, data plane, and rollout
 
-Data plane: L4, TLS, cache. Control plane: config, certificates, purge log, mapping, telemetry. **Config path:** edit → validate (schema, rule-complexity lint, dry run on sampled traffic) → signed snapshot per cell → a tier-C canary POP for 30 s, 1% of POPs for 60 s, 10% for 60 s, then 100%, about 3 minutes, with automatic rollback on error, CPU or TTFB regression. Emergencies skip stages with a second approver (under 60 s). Two public post-mortems are the lesson: Cloudflare, 2 July 2019 (a WAF rule pushed globally at once exhausted CPU) and Fastly, 8 June 2021 (a valid customer config hit a latent bug).
+Data plane: L4, <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>, cache. Control plane: config, certificates, purge log, mapping, telemetry. **Config path:** edit → validate (schema, rule-complexity lint, dry run on sampled traffic) → signed snapshot per cell → a tier-C canary POP for 30 s, 1% of POPs for 60 s, 10% for 60 s, then 100%, about 3 minutes, with automatic rollback on error, <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> or TTFB regression. Emergencies skip stages with a second approver (under 60 s). Two public post-mortems are the lesson: Cloudflare, 2 July 2019 (a WAF rule pushed globally at once exhausted <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>) and Fastly, 8 June 2021 (a valid customer config hit a latent bug).
 
-**Fail-static:** servers persist the last-known-good snapshot and certs and boot from disk. **The repair path must not depend on what is broken:** snapshots travel through the CDN hierarchy with an object-store fallback. The config DB runs consensus across 3 regions ([19](../building_blocks/19_consensus_and_coordination.md)).
+**Fail-static:** servers persist the last-known-good snapshot and certs and boot from disk. **The repair path must not depend on what is broken:** snapshots travel through the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> hierarchy with an object-store fallback. The config DB runs consensus across 3 regions ([19](../building_blocks/19_consensus_and_coordination.md)).
 
 ## ISP-embedded caches
 
 Per Netflix Open Connect's public partner documentation (openconnect.netflix.com) and APNIC's 2018 overview: Netflix supplies appliances that ISPs install in their networks (or at internet exchanges), with the ISP providing space, power and connectivity. Appliances fill off-peak, and a cloud control plane steers each client to a ranked list of appliances using the BGP prefixes they learn from the ISP. The cheapest byte never crosses a paid link.
 
-For a **multi-tenant** CDN (my reasoning) the catch is keys: Open Connect is single-tenant, while many tenants' private keys on ISP-hosted hardware are a much larger risk. Embed only for tenants who accept it or use keyless, and only where demand justifies a box (I would assume above about 20 Gbps per site).
+For a **multi-tenant** <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> (my reasoning) the catch is keys: Open Connect is single-tenant, while many tenants' private keys on ISP-hosted hardware are a much larger risk. Embed only for tenants who accept it or use keyless, and only where demand justifies a box (I would assume above about 20 Gbps per site).
 
 ## Edge logging and billing pipeline
 
@@ -182,18 +188,18 @@ Raw logs are 7.8M mean rps × 86,400 × 500 B = **337 TB/day**, so none is backh
 
 ## Observability and interview close
 
-SLIs: cacheable-request success, edge request and byte hit ratio, hit TTFB p99, purge p99 from canaries, config propagation time, minimum certificate days-to-expiry, origin error rate per shield, POP port utilisation. **The one paging alert:** fast burn of the 99.99% cacheable-success SLO at any tier-A POP or globally. Purge and config lag open tickets.
+SLIs: cacheable-request success, edge request and byte hit ratio, hit TTFB p99, purge p99 from canaries, config propagation time, minimum certificate days-to-expiry, origin error rate per shield, POP port utilisation. **The one paging alert:** fast burn of the 99.99% cacheable-success <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> at any tier-A POP or globally. Purge and config lag open tickets.
 
 Trade-off to state: "I keep the data plane autonomous and only eventually consistent with the control plane, so a POP serves what it last knew instead of stopping. That costs a bounded window in which a purge has not reached a partitioned POP, acceptable because the alternative turns a control-plane outage into a global one. Tenants needing 'purged means purged' get a fail-closed lease."
 
 ## Follow-ups the interviewer will ask
 
-1. **"How do you do multi-region?"** A CDN is multi-region by construction, so the question is the control plane. Config and cert stores are consensus-replicated across 3 regions with a leader (rare writes, so a 150 ms commit is fine), purges are accepted anywhere, POPs pull from the nearest of three, and losing a region never touches serving.
+1. **"How do you do multi-region?"** A <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> is multi-region by construction, so the question is the control plane. Config and cert stores are consensus-replicated across 3 regions with a leader (rare writes, so a 150 ms commit is fine), purges are accepted anywhere, POPs pull from the nearest of three, and losing a region never touches serving.
 2. **"What changes at 10× and 100×?"** At 500 Tbps bandwidth alone needs 500 × 1.5 ÷ 0.07 = 10,700 servers, about 16,500 with redundancy floors. Bytes outgrow POP count, so ports, power and index memory bind first, while purge and config volume scale with tenants, and at 100× the hot set must live inside ISPs.
-3. **"Make purge strongly consistent."** Give each POP a 30 s lease renewed by heartbeat. The purge API succeeds when every live-lease POP has acked or its lease expired, and a POP without a lease stops serving purge-critical zones. Worst-case purge latency is the lease and a partitioned POP loses availability for those tenants, so it is paid.
+3. **"Make purge strongly consistent."** Give each POP a 30 s lease renewed by heartbeat. The purge <abbr title="Application Programming Interface">API</abbr> succeeds when every live-lease POP has acked or its lease expired, and a POP without a lease stops serving purge-critical zones. Worst-case purge latency is the lease and a partitioned POP loses availability for those tenants, so it is paid.
 4. **"What dominates cost?"** Bandwidth. One point of edge byte hit ratio is 0.5 Tbps = 500,000 Mbps, about $100K/month at an assumed $0.20 per Mbps-month if it all rode paid transit, so peering and embedded caches beat tuning. Then flash, then the tier-C tail (5.5× cost per Gbps).
 5. **"How do you handle abuse?"** Cache-busting (normalised keys, per-origin caps), open-proxy and reflection use (verified hostnames only, private-range and cloud-metadata origins rejected), free-tier abuse (quotas, takedown via the purge path), request smuggling (strict parsing) and slow requests (timeouts).
-6. **"Just use anycast for everything."** For web and API traffic I agree, since it is simpler and better against DDoS. I would keep DNS mapping only for the media head. Without it I lose per-POP load control and shed by prepending or splitting prefixes.
+6. **"Just use anycast for everything."** For web and <abbr title="Application Programming Interface">API</abbr> traffic I agree, since it is simpler and better against DDoS. I would keep <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> mapping only for the media head. Without it I lose per-POP load control and shed by prepending or splitting prefixes.
 
 ## Common mistakes
 
@@ -207,7 +213,7 @@ Trade-off to state: "I keep the data plane autonomous and only eventually consis
 
 ## Going from L5 to L6
 
-- **Rollout path.** Shadow tenants, then a weighted DNS cutover. Phase it: v1 is 30 POPs, a flat cache, one shield and versioned URLs, v2 adds the hierarchy and purge log, v3 adds mapping and embedded caches.
+- **Rollout path.** Shadow tenants, then a weighted <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> cutover. Phase it: v1 is 30 POPs, a flat cache, one shield and versioned URLs, v2 adds the hierarchy and purge log, v3 adds mapping and embedded caches.
 - **Cost model and build versus buy.** Cost per delivered TB by POP tier, the value of a hit-ratio point, peering versus transit. Buy until volume justifies peering and hardware.
 - **Blast radius.** Snapshots per cell, tenants shuffle-sharded over servers, separate control-plane and data-plane teams and SLOs.
 - **Measure first.** Hit ratio and one-hit-wonder share per tenant, purge canary p99, origin fetches per shield.

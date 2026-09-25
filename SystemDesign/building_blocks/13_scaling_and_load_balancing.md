@@ -8,14 +8,33 @@
 | Least connections/requests | Sends to the instance with the fewest active requests. | Variable request duration (some requests take far longer than others). | Needs accurate, low-latency live connection-count state from every instance — stale state defeats the point. |
 | Weighted (round robin or least-connections) | Like the base algorithm, but instances get traffic proportional to a configured weight. | Heterogeneous hardware/capacity in the same pool. | Weights are usually set once and go stale as real capacity or instance health changes. |
 | Consistent hash | Routes by a hash of a key (user ID, cache key) onto a ring of nodes. | Session affinity, cache locality — same key keeps hitting the same node so its cache stays warm. | A popular key creates a genuinely hot node — hashing doesn't fix skewed key popularity, only key-to-node mapping. |
-| Power of two choices | Sample two random instances, send to whichever reports less load. | Large pools where full least-connections state is too expensive to track globally. | Only as good as the load metric sampled — a cheap-but-misleading metric (e.g. raw CPU) picks the wrong instance. |
+| Power of two choices | Sample two random instances, send to whichever reports less load. | Large pools where full least-connections state is too expensive to track globally. | Only as good as the load metric sampled — a cheap-but-misleading metric (e.g. raw <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>) picks the wrong instance. |
 
 Round robin and weighted round robin are stateless and cheap — a reasonable default until you have evidence request costs are uneven enough to justify least-connections' extra bookkeeping. Reach for consistent hashing specifically when locality (cache/session affinity) matters more than perfectly even load; reach for power-of-two-choices when the pool is too large for tracking exact per-instance load cheaply, which is most large fleets.
 
-Everything here balances across instances *inside one region*. Choosing which region serves a user, and shifting traffic between regions when one degrades, is a different problem with different levers (geo-aware DNS, anycast, capacity and failover planning) and is covered in [27_multi_region_and_global_traffic.md](27_multi_region_and_global_traffic.md).
+Everything here balances across instances *inside one region*. Choosing which region serves a user, and shifting traffic between regions when one degrades, is a different problem with different levers (geo-aware <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>, anycast, capacity and failover planning) and is covered in [27_multi_region_and_global_traffic.md](27_multi_region_and_global_traffic.md).
 
 ## Horizontal vs. vertical scaling
 
+
+```arch
+%% caption: Vertical scaling hits a hardware ceiling; horizontal scaling requires a load balancer and stateless instances.
+group vert "Vertical Scaling (Scale Up)" color=blue
+node v1 "Small Server\n(2 Cores)" at 0,0 in vert icon=server
+node v2 "Big Server\n(32 Cores)" at 0,2 in vert icon=cpu
+
+v1 ==> v2 : "replace with\nbigger box"
+
+group horiz "Horizontal Scaling (Scale Out)" color=green
+node lb "Load Balancer" at 3,1 in horiz icon=internet
+node h1 "Instance 1" at 5,0 in horiz icon=server
+node h2 "Instance 2" at 5,1 in horiz icon=server
+node h3 "Instance 3" at 5,2 in horiz icon=server
+
+lb -> h1
+lb -> h2
+lb -> h3
+```
 ```text
 Vertical scaling:              Horizontal scaling:
 ┌────────────────┐             ┌────┐ ┌────┐ ┌────┐ ┌────┐
@@ -38,12 +57,12 @@ Default to horizontal scaling for the application tier (it's stateless by constr
 
 ## What to autoscale on
 
-Average CPU alone is a bad autoscaling signal because CPU can look moderate while requests are actually piling up waiting on I/O (a DB call, a downstream dependency) rather than computing — the service can be visibly failing users (growing queues, rising latency) with CPU sitting at 40%. Autoscale on signals that actually correlate with saturation:
+Average <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> alone is a bad autoscaling signal because <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> can look moderate while requests are actually piling up waiting on I/O (a DB call, a downstream dependency) rather than computing — the service can be visibly failing users (growing queues, rising latency) with <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> sitting at 40%. Autoscale on signals that actually correlate with saturation:
 
 - **Queue depth / queue age:** how much work is waiting and how long the oldest item has waited — a direct measurement of "falling behind."
 - **Concurrent in-flight requests:** rising concurrency at roughly flat throughput means requests are taking longer to finish, i.e. the system is saturating.
 - **Pending work / backlog size:** for worker fleets, the actual count of unclaimed jobs.
-- **CPU + latency together**, if CPU is used at all — never CPU in isolation.
+- **<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> + latency together**, if <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> is used at all — never <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> in isolation.
 
 ## Scale-out lag and headroom
 
@@ -56,7 +75,7 @@ capacity ──────────╱───────    ← new insta
           gap = requests degraded/dropped during scale-out lag
 ```
 
-Mitigate with **headroom** (run below the point where the queueing-theory cliff hits — see `12_application_resilience_patterns.md`'s Little's Law section), predictive/scheduled scaling for known traffic patterns, and a fast-scaling policy that reacts to leading indicators (queue growth rate) rather than lagging ones (CPU already pegged).
+Mitigate with **headroom** (run below the point where the queueing-theory cliff hits — see `12_application_resilience_patterns.md`'s Little's Law section), predictive/scheduled scaling for known traffic patterns, and a fast-scaling policy that reacts to leading indicators (queue growth rate) rather than lagging ones (<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> already pegged).
 
 ## Admission control before collapse
 

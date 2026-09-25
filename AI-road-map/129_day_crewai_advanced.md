@@ -2,20 +2,20 @@
 
 Welcome to Day 129. Yesterday, we built a Crew. But our agents were isolated; they couldn't search the web or query a database.
 
-Today we supercharge our Agents. We will give them **Custom Tools**, connect them to **MCP Servers**, and grant the entire Crew **Long-Term Memory** so they learn from past executions!
+Today we supercharge our Agents. We will give them **Custom Tools**, connect them to **<abbr title="Model Context Protocol">MCP</abbr> Servers**, and grant the entire Crew **Long-Term Memory** so they learn from past executions!
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. Custom Tool Creation & Pydantic
-You can give CrewAI agents any Python function. But if the function takes multiple arguments (like `date` and `user_id`), the LLM will often hallucinate the format.
+You can give CrewAI agents any Python function. But if the function takes multiple arguments (like `date` and `user_id`), the <abbr title="Large Language Model">LLM</abbr> will often hallucinate the format.
 To fix this, we use the `@tool` decorator combined with **Pydantic Models**. 
-By strictly defining the Input Schema with Pydantic, the LLM is mathematically constrained (via Structured Decoding from Day 112) to only output valid arguments!
+By strictly defining the Input Schema with Pydantic, the <abbr title="Large Language Model">LLM</abbr> is mathematically constrained (via Structured Decoding from Day 112) to only output valid arguments!
 
-### 2. CrewAI + MCP Integration
-Writing custom API integrations for Jira, Slack, and Postgres is tedious. 
-Because CrewAI supports the **Model Context Protocol (MCP)**, you can simply point your Crew to an MCP Server URL. CrewAI dynamically downloads all the Server's tools and instantly equips your Agents with them. Zero integration code required!
+### 2. CrewAI + <abbr title="Model Context Protocol">MCP</abbr> Integration
+Writing custom <abbr title="Application Programming Interface">API</abbr> integrations for Jira, Slack, and Postgres is tedious. 
+Because CrewAI supports the **Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>)**, you can simply point your Crew to an <abbr title="Model Context Protocol">MCP</abbr> Server URL. CrewAI dynamically downloads all the Server's tools and instantly equips your Agents with them. Zero integration code required!
 
 ### 3. Agent Memory Systems
 Standard LLMs suffer from "amnesia"—they forget everything the moment the script stops. CrewAI introduces three types of persistent memory:
@@ -100,8 +100,8 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **Pydantic is Mandatory:** If you do not use Pydantic, the LLM might output `{"id": 884910}` instead of `{"customer_id": "884910"}`. The python function would crash. Pydantic ensures the LLM's output perfectly matches your backend requirements.
-2. **Memory Persistence:** Because Long-Term memory is enabled, if we run this exact same script tomorrow with the same customer ID, the Agent might skip the tool call entirely and just answer from Memory! This saves massive amounts of API tokens.
+1. **Pydantic is Mandatory:** If you do not use Pydantic, the <abbr title="Large Language Model">LLM</abbr> might output `{"id": 884910}` instead of `{"customer_id": "884910"}`. The python function would crash. Pydantic ensures the <abbr title="Large Language Model">LLM</abbr>'s output perfectly matches your backend requirements.
+2. **Memory Persistence:** Because Long-Term memory is enabled, if we run this exact same script tomorrow with the same customer ID, the Agent might skip the tool call entirely and just answer from Memory! This saves massive amounts of <abbr title="Application Programming Interface">API</abbr> tokens.
 
 ---
 
@@ -114,7 +114,7 @@ Sometimes, one Crew is not enough. You need multiple Crews talking to each other
 2. Conceptually map out a Customer Onboarding Flow:
    - **Crew 1 (Research):** Verify the company information on the web.
    - **Crew 2 (Compliance):** Takes output of Crew 1, checks it against financial regulations.
-   - **Crew 3 (Setup):** Takes output of Crew 2, uses an MCP server to create their account in Postgres.
+   - **Crew 3 (Setup):** Takes output of Crew 2, uses an <abbr title="Model Context Protocol">MCP</abbr> server to create their account in Postgres.
 3. How does State flow between these three entirely separate organizations?
 
 ### 🎤 MAANG Technical Interview Prep
@@ -129,9 +129,9 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Throughput Problem (Concurrency):** 
    - State that $10,000 \times 3$ minutes $= 30,000$ minutes (500 hours) of compute. This cannot be run linearly.
-   - Propose an async worker pool architecture using Celery or AWS SQS. You must deploy the Crew on a Kubernetes cluster and run 50 Crews concurrently to hit the daily SLA.
+   - Propose an async worker pool architecture using Celery or AWS SQS. You must deploy the Crew on a Kubernetes cluster and run 50 Crews concurrently to hit the daily <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr>.
 2. **The Cost Problem ($50k/day):**
-   - Propose **Model Routing**. Not all 5 agents need GPT-4o. The basic "Data Entry" agent should be swapped to a highly quantized open-source model (like Llama-3 8B) running locally, reducing the API cost of that agent to near $\$0$.
+   - Propose **Model Routing**. Not all 5 agents need GPT-4o. The basic "Data Entry" agent should be swapped to a highly quantized open-source model (like Llama-3 8B) running locally, reducing the <abbr title="Application Programming Interface">API</abbr> cost of that agent to near $\$0$.
 3. **Semantic Caching:**
    - Propose deploying Redis with Vector Search. If Customer B is identical to Customer A, the system should catch the semantic similarity at the Gateway level and instantly return yesterday's Crew result, skipping the 3-minute execution entirely!
 
@@ -139,6 +139,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
 **Task for the end of the day:** Commit your code to Git. 
 
 We can build complex, memory-enabled Crews. But how do we know they actually work? 
-Standard Unit Testing fails on AI because LLMs are non-deterministic. If you run a Crew 10 times, you get 10 different outputs. 
+Standard Unit Testing fails on <abbr title="Artificial Intelligence">AI</abbr> because LLMs are non-deterministic. If you run a Crew 10 times, you get 10 different outputs. 
 
 Tomorrow, in **Day 130**, we learn the dark art of **Agent Evaluation & Testing**!

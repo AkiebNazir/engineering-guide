@@ -138,7 +138,7 @@ modules that are easy to use correctly and hard to use incorrectly.
 
 A **class** is a way of bundling data with **the only code allowed to change that data
 in ways that matter.** That's the whole idea — not inheritance, not polymorphism, not
-any of the words from a textbook chapter titled "OOP." Those are tools a class can use;
+any of the words from a textbook chapter titled "<abbr title="Object-Oriented Programming - A programming paradigm based on the concept of 'objects', which can contain data and code.">OOP</abbr>." Those are tools a class can use;
 they are not what a class *is for*.
 
 Here's a bank balance with no class at all — just a dictionary anyone can touch:

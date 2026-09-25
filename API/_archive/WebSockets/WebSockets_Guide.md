@@ -23,26 +23,26 @@ sequenceDiagram
 ## 1. Core Architecture & System Design
 
 ### Deep Dive
-**WebSockets** provide a full-duplex, bidirectional communication channel over a single, long-lived TCP connection. Unlike HTTP request-response polling, WebSockets allow servers to push data to clients instantly.
-- **Transport Layer**: TCP. The connection starts as a standard HTTP/1.1 request containing an `Upgrade: websocket` header. If the server supports it, it responds with an HTTP 101 Switching Protocols status, and the connection transitions from HTTP to a persistent raw TCP socket.
-- **Framing Protocol**: WebSockets use a lightweight framing mechanism (defined in RFC 6455) to distinguish message boundaries. It supports Text (UTF-8) and Binary frames.
+**WebSockets** provide a full-duplex, bidirectional communication channel over a single, long-lived <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection. Unlike <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request-response polling, WebSockets allow servers to push data to clients instantly.
+- **Transport Layer**: <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>. The connection starts as a standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 request containing an `Upgrade: websocket` header. If the server supports it, it responds with an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> 101 Switching Protocols status, and the connection transitions from <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> to a persistent raw <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> socket.
+- **Framing Protocol**: WebSockets use a lightweight framing mechanism (defined in RFC 6455) to distinguish message boundaries. It supports Text (<abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8) and Binary frames.
 - **Request/Response Lifecycle**:
-  1. **Handshake**: Client sends HTTP GET with `Upgrade` headers. Server replies with `101 Switching Protocols`.
-  2. **Open Connection**: The TCP socket remains open. No more HTTP headers are sent, reducing overhead drastically.
+  1. **Handshake**: Client sends <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> GET with `Upgrade` headers. Server replies with `101 Switching Protocols`.
+  2. **Open Connection**: The <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> socket remains open. No more <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> headers are sent, reducing overhead drastically.
   3. **Bidirectional Transmission**: Both client and server can send frames at any time, independently of one another.
   4. **Ping/Pong**: Control frames are used to keep the connection alive and detect dropped peers (Heartbeats).
-  5. **Closure**: Either side sends a Close frame, and the TCP connection is cleanly terminated.
+  5. **Closure**: Either side sends a Close frame, and the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection is cleanly terminated.
 
 ### Trade-offs
 **Pros:**
 - **True Real-Time**: Sub-millisecond latency for pushing data from server to client.
-- **Low Overhead**: Once established, frames have only 2-10 bytes of overhead, compared to hundreds of bytes of HTTP headers per request.
+- **Low Overhead**: Once established, frames have only 2-10 bytes of overhead, compared to hundreds of bytes of <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> headers per request.
 - **Native Browser Support**: Supported universally by all modern web browsers without polyfills or plugins.
 - **Bidirectional**: Client and server can blast data to each other simultaneously without waiting for a request.
 
 **Cons:**
-- **Stateful Connections**: Servers must hold millions of open TCP sockets in memory. Scaling requires specialized load balancing (sticky sessions or Pub/Sub backplanes like Redis).
-- **No Built-in Multiplexing**: Unlike HTTP/2 (gRPC), all data on a WebSocket goes over a single pipe. You have to implement your own message routing/multiplexing if you want different "channels".
+- **Stateful Connections**: Servers must hold millions of open <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> sockets in memory. Scaling requires specialized load balancing (sticky sessions or Pub/Sub backplanes like Redis).
+- **No Built-in Multiplexing**: Unlike <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>), all data on a WebSocket goes over a single pipe. You have to implement your own message routing/multiplexing if you want different "channels".
 - **Proxy/Firewall Issues**: Aggressive corporate firewalls or misconfigured load balancers might drop long-lived idle connections.
 
 ### System Design Fit
@@ -53,31 +53,33 @@ sequenceDiagram
 - **Browser-Based Multiplayer Games**: Sending fast, frequent coordinate updates.
 
 **Anti-Patterns:**
-- **Static Content Delivery**: Fetching images, CSS, or standard JSON API payloads.
-- **One-off Actions**: Form submissions or occasional state updates (use REST).
-- **Service-to-Service (Backend)**: If both ends are backend servers, gRPC or raw TCP is often more efficient than WebSocket framing.
+- **Static Content Delivery**: Fetching images, CSS, or standard <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> <abbr title="Application Programming Interface">API</abbr> payloads.
+- **One-off Actions**: Form submissions or occasional state updates (use <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>).
+- **Service-to-Service (Backend)**: If both ends are backend servers, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> or raw <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> is often more efficient than WebSocket framing.
 
 ---
 
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph TD
-    subgraph Browser [Web Client]
-        A[JavaScript App] -->|ws:// or wss://| B(WebSocket API)
-    end
-
-    subgraph Load_Balancer [API Gateway / LB]
-        B -->|HTTP Upgrade / TCP Connection| C[NGINX/HAProxy]
-    end
-
-    subgraph Backend_Cluster
-        C <-->|Persistent TCP| D[Go Server Node 1]
-        C <-->|Persistent TCP| E[Go Server Node 2]
-        D <-->|Pub/Sub Message Bus| F[(Redis / Kafka)]
-        E <-->|Pub/Sub Message Bus| F
-    end
+```arch
+%% caption: The browser upgrades to a persistent connection through the load balancer, and server nodes share messages over a pub/sub bus.
+grid 160x140
+group Browser "Web Client" icon=browser color=slate
+node A "JavaScript App" at 1,0 in Browser icon=code
+node B "WebSocket API" at 1,1 in Browser icon=websocket
+group Load_Balancer "API Gateway / LB" icon=lb color=purple
+node C "NGINX/HAProxy" at 1,2 in Load_Balancer icon=nginx
+group Backend_Cluster "Backend Cluster" icon=server color=orange
+node D "Go Server Node 1" at 0,3 in Backend_Cluster icon=go
+node E "Go Server Node 2" at 2,3 in Backend_Cluster icon=go
+node F "Redis / Kafka" at 1,4 in Backend_Cluster icon=stream
+A -> B : "ws:// or wss://"
+B -> C : "HTTP Upgrade /\nTCP Connection"
+C:L <-> D:T : "Persistent TCP"
+C:R <-> E:T : "Persistent TCP"
+D:B <-> F:L : "Pub/Sub Message Bus"
+E:B <-> F:R : "Pub/Sub Message Bus"
 ```
 
 ### Animated Flow Visualization
@@ -328,8 +330,8 @@ async def crypto_ticker(websocket: WebSocket):
 
 ---
 
-### Use Case 3: Live Collaborative Document Cursor Sync (Binary/JSON Payloads)
-**System Design Fit:** Syncing mouse cursors in a collaborative app like Figma. Since updates are extremely frequent (60fps), WebSockets avoid HTTP overhead.
+### Use Case 3: Live Collaborative Document Cursor Sync (Binary/<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Payloads)
+**System Design Fit:** Syncing mouse cursors in a collaborative app like Figma. Since updates are extremely frequent (60fps), WebSockets avoid <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> overhead.
 
 #### Golang (Client/Server interaction simulation)
 ```go
@@ -389,7 +391,7 @@ async def sync_cursor():
 ---
 
 ### Use Case 4: Heartbeat & Connection Health Checking
-**System Design Fit:** Mobile clients traversing bad networks (tunnels, elevators). The server must detect dead TCP connections gracefully to free up memory (goroutines/tasks).
+**System Design Fit:** Mobile clients traversing bad networks (tunnels, elevators). The server must detect dead <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connections gracefully to free up memory (goroutines/tasks).
 
 #### Golang (Server side strict heartbeating)
 ```go
@@ -452,7 +454,7 @@ async def resilient_client():
 ---
 
 ### Use Case 5: Authenticated WebSocket Setup (Token passed in protocol or params)
-**System Design Fit:** Since WebSockets cannot pass custom HTTP headers easily from browser APIs, authentication is usually done via a query parameter or the first message sent over the wire.
+**System Design Fit:** Since WebSockets cannot pass custom <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> headers easily from browser APIs, authentication is usually done via a query parameter or the first message sent over the wire.
 
 #### Golang (Server validating query param token)
 ```go

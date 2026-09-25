@@ -18,8 +18,8 @@ the exact LeetCode title as `title:`** so it auto-matches without touching solut
 
 Every DSA problem now has an exact, problem-specific "Watch it run" animation (not a generic
 topic fallback). This session went from 157/345 missing to 0/345 missing across 13 topics (12
-Heap, 13 Trie, 10 Trees, 11 BST, 14 Graphs, 15 Advanced Graphs, 26 Segment Tree & Fenwick, 05
-Binary Search, 16 DP 1D, 23 String Algorithms, 24 Matrix, 25 Design, 28 Recursion Mastery); 27
+Heap, 13 Trie, 10 Trees, 11 <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, 14 Graphs, 15 Advanced Graphs, 26 Segment Tree & Fenwick, 05
+Binary Search, 16 <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> 1D, 23 String Algorithms, 24 Matrix, 25 Design, 28 Recursion Mastery); 27
 Classic Algorithms turned out to already be done pre-session (see correction note near the
 bottom of this file). Re-run the gap report (below) before starting any NEW visualization work
 to confirm this is still true — it's a point-in-time snapshot, not a guarantee against future
@@ -42,8 +42,8 @@ regressions.
 | 13 Trie | 7/7 | done — `dsa-viz17.js` |
 | 14 Graphs | 18/18 | done — `dsa-viz20.js` |
 | 15 Advanced Graphs | 15/15 | done — `dsa-viz21.js` |
-| 16 DP (1D) | 17/17 | done — `dsa-viz24.js` |
-| 17 DP (2D) | 18/18 | done |
+| 16 <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (1D) | 17/17 | done — `dsa-viz24.js` |
+| 17 <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (2D) | 18/18 | done |
 | 18 Greedy | 10/10 | done |
 | 19 Intervals | 11/11 | done |
 | 20 Bit Manipulation | 10/10 | done |
@@ -66,7 +66,7 @@ regressions.
 6. ~~15 Advanced Graphs (13)~~ — **done**, `webapp/static/dsa-viz21.js`
 7. ~~26 Segment Tree & Fenwick (5)~~ — **done**, `webapp/static/dsa-viz22.js`
 8. ~~05 Binary Search (8 remaining)~~ — **done**, `webapp/static/dsa-viz23.js`
-9. ~~16 DP 1D (14)~~ — **done**, `webapp/static/dsa-viz24.js`
+9. ~~16 <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> 1D (14)~~ — **done**, `webapp/static/dsa-viz24.js`
 10. ~~23 String Algorithms (7)~~ — **done**, `webapp/static/dsa-viz25.js`
 11. ~~24 Matrix (7)~~ — **done**, `webapp/static/dsa-viz26.js`
 12. ~~25 Design (13)~~ — **done**, `webapp/static/dsa-viz27.js`
@@ -96,15 +96,15 @@ tree-recursion problems (011, 012, 013, 014, 015, 017, 018, 019, 021, 025) plus 
 array/range problem (020, not tree-shaped — reuses the group-1/2 call-stack tracer instead) and
 3 hard string-backtracking problems (022, 023, 024, DOM engine, also reusing the call-stack
 tracer). New canvas helper: `avDrawForest(ctx, c, P, trees, {curIdx})`, for problems whose
-answer is a LIST of trees (012 Unique BST II, 015 All Possible Full Binary Trees) — lays out up
+answer is a LIST of trees (012 Unique <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> II, 015 All Possible Full Binary Trees) — lays out up
 to 5 completed trees as side-by-side thumbnails via `avDrawBinaryIn`, growing as the recursion
-completes each one. 011 (Unique BST count) and the pre-existing "Recursion tree vs
+completes each one. 011 (Unique <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> count) and the pre-existing "Recursion tree vs
 memoisation" fib spec share the same memoized-call-tree-with-memo-table shape; 011's draw
 function was modeled directly on that existing spec rather than invented fresh.
 **One real algorithmic bug found and fixed** (caught only by cross-checking against an
 independent from-scratch re-implementation of the real Python solution's exact split logic, not
-just "does it run" — see the LFU Cache lesson noted under topic 25 above, which applied again
-here): Split BST's "node.val > target" branch attached the wrong half of the recursive result to
+just "does it run" — see the <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache lesson noted under topic 25 above, which applied again
+here): Split <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>'s "node.val > target" branch attached the wrong half of the recursive result to
 the reconstructed node's left child — `greater[0].left` was set from `smallerSub` instead of
 `greaterSub` (a copy-paste-style variable mix-up from writing the symmetric branch first).
 Symptom: for input `4,2,6,1,3,5,7` split at target `2`, the "greater" (>2) result tree
@@ -116,41 +116,41 @@ recurs in binary-search-style "which half" code), write out which named variable
 slot explicitly and check it against a manual trace of the real algorithm — the two branches
 looking almost identical is exactly what makes a swapped variable easy to write and easy to miss
 on a read-through.** All other new specs in this closing batch were cross-checked against
-independent from-scratch computations of their default inputs and matched: Unique BST count(5) =
-42 (Catalan number), Unique BST II / All Possible Full Binary Trees both produced exactly 5
+independent from-scratch computations of their default inputs and matched: Unique <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> count(5) =
+42 (Catalan number), Unique <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> II / All Possible Full Binary Trees both produced exactly 5
 completed trees for their n=3 / n=7 inputs (Catalan(3) = 5 either way), Sum Root to Leaf Numbers
-= 1026 (traced by hand against `avTreeFromLevel`'s actual BFS child-assignment order — an easy
+= 1026 (traced by hand against `avTreeFromLevel`'s actual <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> child-assignment order — an easy
 place to get the tree shape wrong when eyeballing a level-order list), House Robber III = 9,
-Distribute Coins = 2 moves, LCA of Deepest Leaves = node value 2, Binary Tree Cameras = 1,
+Distribute Coins = 2 moves, <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> of Deepest Leaves = node value 2, Binary Tree Cameras = 1,
 Special Binary String("11011000") = "11100100", Scramble String("great","rgeat") = true,
 Expression Add Operators("123", 6) = {"1+2+3","1*2*3"}, Minimum Cost Tree From Leaf
-Values([6,2,4]) = 32. Frame counts for the enumeration-heavy problems (Unique BST/BST II, All
+Values([6,2,4]) = 32. Frame counts for the enumeration-heavy problems (Unique <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>/<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> II, All
 Possible Full Binary Trees, memoized-fib) run 42-73 — higher than most other specs in this
 codebase but not runaway, and inherent to the problem (they enumerate a genuinely
 combinatorial number of cases even for tiny n); every other spec in this batch stayed in the
 usual 7-24 frame range.
 
 **Note on topic 25 (Design, `dsa-viz27.js`):** all 13 done as `defineAlgoDom`, using the
-operation-sequence input pattern established by Design Twitter/BST Iterator/Time Based
+operation-sequence input pattern established by Design Twitter/<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Iterator/Time Based
 Key-Value Store — every problem here is a stateful class, so the animation shows its real
 internal data structure across a sequence of calls. New shared helper: `dllChainHTML(items,
-{label, cls, headTag, tailTag})`, a generalization of the LRU cache spec's dummy-head/dummy-tail
-doubly-linked-chain rendering (used by Design Linked List; LFU Cache uses per-frequency chains
+{label, cls, headTag, tailTag})`, a generalization of the <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache spec's dummy-head/dummy-tail
+doubly-linked-chain rendering (used by Design Linked List; <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache uses per-frequency chains
 built from the same box style directly). `hqPush`/`hqClone`/`heapTreeHTML` from `dsa-viz16.js`
 were reused as-is for Stock Price Fluctuation's twin lazy-deletion heaps — no new heap code
 needed, it's the exact same `heapq` usage pattern.
 One real algorithmic bug found and fixed **before** this file was ever committed (caught by
-cross-checking LFU Cache's classic LeetCode example against a from-scratch Python simulation of
+cross-checking <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache's classic LeetCode example against a from-scratch Python simulation of
 the real solution, not just "does it run"): the first draft tracked each key's frequency in a
 plain `Map<key, freq>` and reconstructed per-frequency buckets by filtering that map's iteration
 order — but `Map.set()` on an *existing* key does not move it in iteration order, so this could
 never correctly reflect "most/least recently bumped within a frequency," which is exactly what
-LFU's tie-breaking needs. Symptom: wrong eviction choice, silently returning the wrong `get()`
+<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>'s tie-breaking needs. Symptom: wrong eviction choice, silently returning the wrong `get()`
 value two calls later (`[1,-1,3,1,-1,4]` instead of the correct `[1,-1,3,-1,3,4]` on the
 canonical cap=2 example) — a bug that `node --check` and a "does it throw" execution check both
 miss completely, since it produces a plausible-looking wrong answer, not a crash. Fixed by
 maintaining explicit `Map<freq, Array<key>>` buckets with real `unshift`/`splice`/`pop`
-(front = MRU, back = LRU), mirroring the real solution's `_DLList.push_front`/`pop_back`
+(front = MRU, back = <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>), mirroring the real solution's `_DLList.push_front`/`pop_back`
 exactly. **Lesson for topic 28 (Recursion Mastery) and any future stateful-class or
 multi-structure spec: execution-without-error is not enough verification for anything with
 non-trivial internal state ordering — hand-trace or independently re-simulate the real
@@ -168,14 +168,14 @@ topic 10's `avDrawBinaryIn` two-tree trick, same idea applied to plain grids ins
 Rotate Image and Game of Life final answers were cross-checked against known-correct results
 (rotate([[1,2,3],[4,5,6],[7,8,9]]) and the classic LC289 example) and matched exactly. The
 existing "Spiral order" spec was checked for the `renderDOM`-without-`type:'dom'` bug class
-found in three earlier batches (Advanced Graphs, DP 1D) — not present here, it's a pure canvas
+found in three earlier batches (Advanced Graphs, <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> 1D) — not present here, it's a pure canvas
 spec with no `renderDOM`/`type` mismatch.
 
 **Note on topic 23 (String Algorithms, `dsa-viz25.js`):** all 7 done as `defineAlgoDom` (DOM
-engine), not canvas — even the 3 that reuse the KMP failure-function trick (Repeated Substring
+engine), not canvas — even the 3 that reuse the <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> failure-function trick (Repeated Substring
 Pattern, Shortest Palindrome share a new local helper `saBuildLpsTraced(pat, emit)`; Longest
 Duplicate Substring is unrelated, binary-search-on-length + Rabin-Karp). This differs from the
-pre-existing "KMP: never re-read the text" spec (seq 001, canvas engine, `dsa-viz3.js`) — both
+pre-existing "<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>: never re-read the text" spec (seq 001, canvas engine, `dsa-viz3.js`) — both
 engines can show the same failure-table concept equally well; picked DOM here for consistency
 with this file's other 4 specs and to reuse `dpBox`/`dpStrip`/`dpPanel`/`dpWrap` (`dsa-viz24.js`)
 and `chipRow` (`dsa-viz16.js`) directly rather than the canvas `AV.row`/`AV.ptr` primitives.
@@ -196,10 +196,10 @@ just "it runs without throwing."
 No `renderDOM`-without-`type:'dom'` bug found in the topic's 1 pre-existing spec (already
 correctly typed as canvas with `run`/`draw`, no mismatch).
 
-**Note on topic 16 (DP 1D, `dsa-viz24.js`):** plain DOM-engine array-strip visualizations
+**Note on topic 16 (<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> 1D, `dsa-viz24.js`):** plain DOM-engine array-strip visualizations
 throughout (no new shared helper file needed beyond this file's own local `dpBox`/`dpStrip`/
 `dpPanel`/`dpWrap`, a small generalization of the existing array-node/node-index pattern) —
-1D DP rarely needs anything more than an array/table strip with the current cell and its
+1D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> rarely needs anything more than an array/table strip with the current cell and its
 recurrence-dependency cells highlighted. Matched each spec to what the *real* solution
 actually does, which varies more than the topic name suggests: Longest Palindromic Substring
 and Palindromic Substrings both use expand-around-center (not a 2D dp table); Longest
@@ -310,19 +310,19 @@ edgeFn return `{fill, stroke, color, label}`/`{stroke, width}`). Plus `ggPanel(t
 and `ggParseGrid(s, {max})` for the common "comma-separated equal-length digit rows" input
 format. These cover every grid- and graph-shaped DOM problem — reuse them for topic 15
 (Advanced Graphs) rather than rebuilding grid/graph rendering again. One real bug this batch
-caught only by actually executing every spec (not just `node --check`): a BFS-by-level
+caught only by actually executing every spec (not just `node --check`): a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>-by-level
 problem (Open the Lock) that snapshots one state per node popped can produce 800+ frames on
 a plausible input, since the frontier grows multiplicatively — fixed by snapshotting once per
-BFS *level* instead of once per popped node. **Apply the same per-level (not per-node)
-snapshotting rule to any BFS/multi-source-BFS spec in topic 15 or 26** where the frontier
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> *level* instead of once per popped node. **Apply the same per-level (not per-node)
+snapshotting rule to any <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/multi-source-<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> spec in topic 15 or 26** where the frontier
 could grow large, or run the same "execute every spec, check the frame count is sane" check
 this batch used.
 
-**Note on topic 11 (BST, `dsa-viz19.js`):** reused `avTreeFromLevel`/`avLayoutBinary`/
-`avDrawBinary`/`avParts`/`avNums`/`avNum` as-is, no new helpers needed — BST problems are
+**Note on topic 11 (<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, `dsa-viz19.js`):** reused `avTreeFromLevel`/`avLayoutBinary`/
+`avDrawBinary`/`avParts`/`avNums`/`avNum` as-is, no new helpers needed — <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> problems are
 plain binary trees, the only difference is the ordering invariant driving the algorithm.
 One real bug caught only by actually executing `draw()` per frame (not just `node --check`):
-"Convert Sorted Array to BST" grows the tree from nothing, so its first frame(s) have an
+"Convert Sorted Array to <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>" grows the tree from nothing, so its first frame(s) have an
 empty `nodes` array — calling `avLayoutBinary`/`avDrawBinary` on an empty array crashes
 (`avLayoutBinary` defaults to `root=0` and dereferences `nodes[0]` unconditionally). Fixed by
 guarding `draw()` with `if (f.nodes.length) { ... } else { draw an "(empty so far)" placeholder }`.
@@ -348,7 +348,7 @@ edge, label, hidden}`) — no need to build a new one, just call these. `dsa-viz
 small addition, `avDrawBinaryIn(ctx, P, region, nodes, lay, style, opts)`, which translates
 the canvas and calls `avDrawBinary` with a narrower fake `c.w` so two trees can sit side by
 side in one canvas (used for Same Tree, Subtree of Another Tree, Serialize/Deserialize) —
-reuse this for topic 11 (BST) if any of its 9 need two trees at once, and generally prefer
+reuse this for topic 11 (<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>) if any of its 9 need two trees at once, and generally prefer
 `avTreeFromLevel`/`avLayoutBinary`/`avDrawBinary`/`avDrawBinaryIn` over `charTrieLayout`/
 `charTrieDraw` for anything that's a plain binary tree (not char/bit-keyed like a trie).
 
@@ -416,7 +416,7 @@ because it worked for heaps.
 // once already this session.
 ```
 
-**CORRECTION (found while doing topic 11/BST):** the very first gap report built this
+**CORRECTION (found while doing topic 11/<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>):** the very first gap report built this
 session missed `webapp/static/viz-algorithms.js` — a pre-existing, unrelated-looking file
 (not named `dsa-viz*`) that fully implements all 9 problems of topic `27_algorithms` via
 `defineAlgoDom(ALGOS_ALGORITHMS, ...)` where `const ALGOS_ALGORITHMS = '27_algorithms'`. It

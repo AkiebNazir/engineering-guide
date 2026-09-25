@@ -38,7 +38,7 @@ Bit-budget arithmetic (checked with python):
 
 The alternative that keeps the classic 10/12 layout is the **ID service** below: a pool of about 100 generator processes (5 DCs × 20) serves all 10,000 servers, because one generator can issue 4 M/s and 1 M/s is the whole system's peak. Batches of 1,000 IDs mean about 1,000 RPCs/s system-wide. The trade is one extra network hop (amortised across a batch) and a service to operate, versus a library with no hop but a worker-ID lease per process.
 
-Generation algorithm (per generator, single-threaded or with a lock/atomic CAS):
+Generation algorithm (per generator, single-threaded or with a lock/atomic <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr>):
 
 ```text
 now = currentMillis() - EPOCH
@@ -58,7 +58,7 @@ To avoid leaking volume (sequence numbers resetting to 0 every millisecond revea
 
 ## Clock skew and worker IDs
 
-**Clocks moving backwards.** NTP can step a clock backwards, and a VM can resume with a stale clock. If the generator issued IDs for millisecond *T* and the clock now reads *T − 5*, generating more IDs could duplicate earlier ones (same timestamp, same worker, sequence restarting).
+**Clocks moving backwards.** NTP can step a clock backwards, and a <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> can resume with a stale clock. If the generator issued IDs for millisecond *T* and the clock now reads *T − 5*, generating more IDs could duplicate earlier ones (same timestamp, same worker, sequence restarting).
 
 - Small regressions (a few ms): block until the clock passes `lastTs`.
 - Large regressions (e.g. > 1 s): refuse to generate, raise an alert, and mark the instance unhealthy so the load balancer drains it.
@@ -78,21 +78,24 @@ The coordination service is on the startup path only, never on the per-ID path �
 
 ## Architecture
 
-```mermaid
+```arch
 %% caption: Coordination happens once per process (worker-ID lease); every ID is generated locally with no network hop.
-flowchart LR
-    subgraph dc1[Datacenter 1]
-        app1[App server + ID library] -->|lease worker 17| coord1[(etcd / ZooKeeper)]
-        app2[App server + ID library] -->|lease worker 18| coord1
-    end
-    subgraph dc2[Datacenter 2]
-        app3[App server + ID library] -->|lease worker 3| coord2[(etcd / ZooKeeper)]
-    end
-    app1 --> db[(Databases: BIGINT primary keys)]
-    app3 --> db
+group dc1 "Datacenter 1" icon=region color=blue
+node coord1 "etcd / ZooKeeper" at 0.5,0 in dc1 icon=etcd
+node app1 "App server" at 0,1 in dc1 icon=server sub="+ ID library"
+node app2 "App server" at 1,1 in dc1 icon=server sub="+ ID library"
+group dc2 "Datacenter 2" icon=region color=blue
+node coord2 "etcd / ZooKeeper" at 2.5,0 in dc2 icon=etcd
+node app3 "App server" at 2.5,1 in dc2 icon=server sub="+ ID library"
+node db "Databases" at 1.75,2 icon=db sub="BIGINT primary keys"
+app1:T -> coord1:L : "lease worker 17"
+app2:T -> coord1:R : "lease worker 18"
+app3 -> coord2 : "lease worker 3"
+app1 -> db
+app3 -> db
 ```
 
-**Library vs service.** An embedded library gives the lowest latency and no new failure point, but every language needs an implementation and every process needs a worker ID. A small **ID service** (a pool of generators behind gRPC, clients fetching batches of, say, 1,000 IDs at a time) centralises correctness and worker management; batching keeps the network cost per ID tiny. Large companies use both: a library in core services, a service for everything else.
+**Library vs service.** An embedded library gives the lowest latency and no new failure point, but every language needs an implementation and every process needs a worker ID. A small **ID service** (a pool of generators behind <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, clients fetching batches of, say, 1,000 IDs at a time) centralises correctness and worker management; batching keeps the network cost per ID tiny. Large companies use both: a library in core services, a service for everything else.
 
 ## Failure modes
 
@@ -117,7 +120,7 @@ At 100× traffic (100 M IDs/s) the layout still has about 42× aggregate headroo
 1. **"How does this work across regions, and what happens in a partition?"** The datacenter bits make cross-region uniqueness a static property: each DC leases worker IDs from its own coordination cluster, so a partition between DCs stops nothing. What degrades is ordering: IDs from two DCs are ordered only to within their clock offset, so I would assume a 50 ms bound (an assumption to measure), alert when any host exceeds it, and tell consumers not to infer causality from ID order across DCs.
 2. **"What changes at 10× and 100×?"** At 10× or 100× IDs per second nothing changes: the layout has about 420× and 42× aggregate headroom. The limit that binds first is fleet size. At 100,000 servers (20,000 per DC) I would need 15 worker bits, and 1 + 41 + 3 + 15 + 4 = 64 leaves 4 sequence bits, or 16 IDs/ms per worker, only 1.6× over the 10 IDs/ms burst. At that point I would stop embedding and move to the ID service pool, which decouples worker count from fleet size.
 3. **"Your clock goes backwards during a leap-second event. What happens?"** A step correction can rewind the clock by up to 1 s, so the rollback guard fires. Blocking that long breaks the 1 ms p99, so for regressions up to about 1 s I keep issuing from `lastTs` and let sequence overflow advance it one millisecond per 128 IDs (borrowing from the future). The wall clock catches up because even a 10,000/s burst advances logical time only 78 ms per second. Past a borrow cap, refuse and drain the host. Better still, prevent it: use a smeared time source (a 24-hour smear is about 11.6 ppm) and never let NTP step production hosts.
-4. **"How do you migrate from 32-bit IDs?"** Use expand and contract: add a `BIGINT` column, dual-write, backfill in batches, switch reads, then drop the old column. Old rows keep their small IDs (below 2³¹, about 2.1 billion) and new Snowflake IDs are far above that, so the two ranges cannot collide. The dangerous part is every client, log parser and cache key that stores IDs as an `int32` or a JavaScript number (safe only to 2⁵³). Inventory those first and ship IDs as strings in JSON.
+4. **"How do you migrate from 32-bit IDs?"** Use expand and contract: add a `BIGINT` column, dual-write, backfill in batches, switch reads, then drop the old column. Old rows keep their small IDs (below 2³¹, about 2.1 billion) and new Snowflake IDs are far above that, so the two ranges cannot collide. The dangerous part is every client, log parser and cache key that stores IDs as an `int32` or a JavaScript number (safe only to 2⁵³). Inventory those first and ship IDs as strings in <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
 5. **"What if IDs must be strictly increasing across the whole system?"** That needs every ID to pass through a single serialisation point, meaning a consensus-replicated sequencer (or Spanner-style commit timestamps with commit-wait, as in the 2012 Spanner paper). At 1 M/s you would need group commit, and every caller pays a cross-datacenter round trip, breaking the 1 ms p99 and the partition-availability requirement. If the real need is "order per entity" (a conversation, an account), use a per-key version or a hybrid logical clock and keep the global IDs k-sortable.
 6. **"What does it cost?"** Generation is nearly free: assuming about 50 ns per ID, 1 M/s is 0.05 of one core system-wide. Leases are 10,000 servers ÷ 10 s = 1,000 renewals/s, or 200/s per datacenter, trivial for a 3- or 5-node etcd cluster. The real costs are on-call for clocks and leases, and storage: a 128-bit key adds 8 bytes per row per index, about 690 GB/day at 1 M inserts/s (assuming every ID becomes a row).
 7. **"How do you handle abuse and enumeration?"** Time-ordered IDs are guessable, so authorisation must never depend on an ID being secret; check ownership on every read. To hide volume, randomise the starting sequence per millisecond, or expose only a keyed 64-bit permutation of the ID at the edge (which gives up public sortability). On the ID-service path, apply per-client quotas.
@@ -126,8 +129,8 @@ At 100× traffic (100 M IDs/s) the layout still has about 42× aggregate headroo
 ## Common mistakes
 
 1. **Sizing worker bits from the classic 10-bit diagram.** 1,024 identities cannot cover 10,000 embedded servers. Count the fleet first (10,000 needs 14 bits), then either re-split the bits or move to a pooled ID service.
-2. **Sending 64-bit IDs as JSON numbers.** A 2026 ID with a 2020 epoch is about 8.9 × 10¹⁷, roughly 99× larger than 2⁵³, so JavaScript clients silently round it and two different IDs compare equal. Serialise as strings in every external API.
-3. **Trusting the wall clock without a monotonic guard.** An NTP step or VM resume reuses (timestamp, worker, sequence) triples and creates duplicates, which show up weeks later as primary-key violations or, worse, silent overwrites. Track `lastTs`, and decide up front between wait, borrow and refuse.
+2. **Sending 64-bit IDs as <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> numbers.** A 2026 ID with a 2020 epoch is about 8.9 × 10¹⁷, roughly 99× larger than 2⁵³, so JavaScript clients silently round it and two different IDs compare equal. Serialise as strings in every external <abbr title="Application Programming Interface">API</abbr>.
+3. **Trusting the wall clock without a monotonic guard.** An NTP step or <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> resume reuses (timestamp, worker, sequence) triples and creates duplicates, which show up weeks later as primary-key violations or, worse, silent overwrites. Track `lastTs`, and decide up front between wait, borrow and refuse.
 4. **Assigning worker IDs from hostnames or config files.** Cloned images and autoscaling produce two live processes with the same ID. Use a lease from a coordination service, and check the lease's remaining validity against a monotonic clock before every batch, because a garbage-collection pause longer than the TTL lets a stale process keep generating after the ID has been re-leased.
 5. **Choosing a 1970 epoch.** 41 bits from 1970 run out in about 2039; from 2020 they last to about 2089. The epoch is a one-way door, so pick it at launch and write it down.
 6. **Resetting the sequence to 0 every millisecond, then sharding on `id % N`.** A lightly loaded generator issues mostly `seq = 0`, so the low bits are nearly constant and one shard gets the traffic. Randomise the sequence start, or shard on a hash of the ID.
@@ -144,7 +147,7 @@ At 100× traffic (100 M IDs/s) the layout still has about 42× aggregate headroo
 
 ## Build exercise
 
-Implement the generator in your language with a lock-free CAS loop. Test: 8 threads × 1 million IDs with zero duplicates; simulated clock rollback of 5 ms (waits) and 5 s (refuses); two generators accidentally given the same worker ID (show the collision, then prevent it with a lease).
+Implement the generator in your language with a lock-free <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> loop. Test: 8 threads × 1 million IDs with zero duplicates; simulated clock rollback of 5 ms (waits) and 5 s (refuses); two generators accidentally given the same worker ID (show the collision, then prevent it with a lease).
 
 Named assertions:
 
@@ -153,4 +156,4 @@ Named assertions:
 - `test_clock_rollback_5ms_waits`: inject a clock that steps back 5 ms; assert no duplicate and that the call returns within the guard bound.
 - `test_clock_rollback_5s_refuses`: assert the generator raises and the health check flips to unhealthy.
 - `test_duplicate_worker_id_blocked_by_lease`: start two generators requesting the same worker ID; assert the second is refused or waits out the TTL.
-- `test_json_ids_are_strings`: assert the API serialises an ID above 2⁵³ as a string and that a round trip through a float-based parser is never used.
+- `test_json_ids_are_strings`: assert the <abbr title="Application Programming Interface">API</abbr> serialises an ID above 2⁵³ as a string and that a round trip through a float-based parser is never used.

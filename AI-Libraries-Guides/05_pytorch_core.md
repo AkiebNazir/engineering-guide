@@ -4,11 +4,11 @@
 
 **What is it?**
 PyTorch is a framework for building Deep Neural Networks. It provides two main superpowers:
-1. **GPU-Accelerated Tensors:** It is exactly like NumPy, but it can run matrix math on an NVIDIA GPU (which is 100x faster than a CPU).
+1. **GPU-Accelerated Tensors:** It is exactly like NumPy, but it can run matrix math on an NVIDIA GPU (which is 100x faster than a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>).
 2. **Autograd (Automatic Differentiation):** If you write a complex mathematical equation, PyTorch automatically calculates the calculus derivatives (gradients) for you. You do not need to know calculus to train a neural network.
 
 **Why does it exist?**
-Before PyTorch, frameworks like TensorFlow 1.0 required you to build a static "Graph" before running any code, which made debugging a nightmare. PyTorch introduced **Dynamic Computation Graphs**. You write PyTorch exactly like you write normal Python. If you want to put a `print()` statement in the middle of your neural network, you can. It became the undisputed standard for AI research and is now the engine behind almost every modern LLM.
+Before PyTorch, frameworks like TensorFlow 1.0 required you to build a static "Graph" before running any code, which made debugging a nightmare. PyTorch introduced **Dynamic Computation Graphs**. You write PyTorch exactly like you write normal Python. If you want to put a `print()` statement in the middle of your neural network, you can. It became the undisputed standard for <abbr title="Artificial Intelligence">AI</abbr> research and is now the engine behind almost every modern <abbr title="Large Language Model">LLM</abbr>.
 
 ---
 
@@ -43,7 +43,7 @@ A Tensor is just a multi-dimensional matrix.
 - `dtype`: The data type. 
   - *Effect of change:* Default is `torch.float32` (4 bytes per number). If you change this to `torch.float16` (Half Precision), your model will use exactly 50% less VRAM and train twice as fast, but it might suffer from numerical instability (numbers rounding to zero).
 - `device`: Where the memory physically lives (`'cpu'` or `'cuda'`).
-  - *Effect of change:* If you try to multiply a CPU tensor by a CUDA tensor, PyTorch will instantly crash. They must live on the same hardware.
+  - *Effect of change:* If you try to multiply a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> tensor by a CUDA tensor, PyTorch will instantly crash. They must live on the same hardware.
 - `requires_grad`: Boolean. 
   - *Effect of change:* If `True`, PyTorch starts tracking every mathematical operation performed on this tensor so it can calculate the calculus derivative later. If `False` (default), it acts just like a NumPy array to save memory.
 
@@ -96,7 +96,7 @@ Every neural network in PyTorch must inherit from `torch.nn.Module`. You must de
 2. `forward`: Define how the data flows through those layers.
 
 ### Deep Dive on `nn.Linear(in_features, out_features, bias)`
-This is the foundational building block of AI (also called a Dense or Fully Connected layer). It applies a linear transformation: $y = xA^T + b$.
+This is the foundational building block of <abbr title="Artificial Intelligence">AI</abbr> (also called a Dense or Fully Connected layer). It applies a linear transformation: $y = xA^T + b$.
 - `in_features` (int): The number of inputs coming in. 
   - *Effect:* If your image has 784 pixels, this MUST be 784. If it's 783, it will crash.
 - `out_features` (int): The number of outputs (neurons).
@@ -143,7 +143,7 @@ The Optimizer is the algorithm that actually updates the weights using the gradi
 
 ### Method Breakdown: `torch.optim.Adam(params, lr, weight_decay)`
 - `params`: What variables is this optimizer allowed to change? (Usually `model.parameters()`).
-- `lr` (Learning Rate - float): The most important parameter in AI. It dictates how large of a "step" the optimizer takes down the loss landscape.
+- `lr` (Learning Rate - float): The most important parameter in <abbr title="Artificial Intelligence">AI</abbr>. It dictates how large of a "step" the optimizer takes down the loss landscape.
   - *Effect of increasing too high (e.g., 0.1):* The model takes massive steps. It will likely overshoot the valley (the minimum loss) and bounce around the walls of the canyon forever. The loss will explode to `NaN`.
   - *Effect of decreasing too low (e.g., 0.0000001):* The model takes microscopic steps. It will take 5 weeks to train, or it might get permanently stuck in a shallow "local minimum" ditch. The sweet spot is usually `1e-3` to `3e-4`.
 - `weight_decay` (L2 Regularization - float): Default is `0`.
@@ -176,7 +176,7 @@ loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
 
 ## 8. The Holy Grail: The Standard PyTorch Training Loop
 
-Every single AI model on Earth, from a 2-layer toy model to the massive 70-Billion parameter Llama-3, uses this exact same 5-step loop. Memorize this.
+Every single <abbr title="Artificial Intelligence">AI</abbr> model on Earth, from a 2-layer toy model to the massive 70-Billion parameter Llama-3, uses this exact same 5-step loop. Memorize this.
 
 ```python
 # 1. Create dummy data (Batch of 32 samples, each with 10 features)
@@ -216,7 +216,7 @@ for epoch in range(epochs):
 
 ### Deep Dive: `with torch.no_grad():`
 When you deploy a model to production (Inference), you are not training it. You do not need to calculate gradients.
-- *Effect of NOT using this in production:* PyTorch will quietly build a massive computational graph in memory for every prediction you make. Within 5 minutes, your server will crash with an Out Of Memory (OOM) error.
+- *Effect of NOT using this in production:* PyTorch will quietly build a massive computational graph in memory for every prediction you make. Within 5 minutes, your server will crash with an Out Of Memory (<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>) error.
 - *Effect of using this:* It completely disables the Autograd engine. Memory consumption drops by 50%, and inference speed increases by 20%.
 
 ```python

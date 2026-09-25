@@ -22,7 +22,7 @@ To turn Common Crawl into a dataset like **RedPajama** or **FineWeb**, you must 
 
 ### 3. The Deduplication Problem (MinHash)
 The internet is full of duplicates. The WordPress footer *"Proudly powered by WordPress"* exists on 100 Million websites.
-If you train an LLM on 100 Million identical sentences, the LLM will overfit. It will literally memorize the string and spit it out randomly.
+If you train an <abbr title="Large Language Model">LLM</abbr> on 100 Million identical sentences, the <abbr title="Large Language Model">LLM</abbr> will overfit. It will literally memorize the string and spit it out randomly.
 **The Solution: MinHash & Jaccard Similarity.**
 Exact string matching ($O(N^2)$) would take years for petabytes of data. 
 MinHash mathematically hashes every document into a tiny "Signature" vector. It then compares the signatures to calculate the Approximate Jaccard Similarity. It can find documents that are $95\%$ identical in milliseconds, allowing you to delete the 99 Million duplicate footers!
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Scale Problem:** The Python `set()` is perfect for 100 documents. But if you have 10 Billion documents, the `unique_docs` set will consume Terabytes of RAM and crash the server. This is why Databricks/Spark and advanced algorithms like MinHash LSH (Locality-Sensitive Hashing) are mandatory.
+1. **The Scale Problem:** The Python `set()` is perfect for 100 documents. But if you have 10 Billion documents, the `unique_docs` set will consume Terabytes of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and crash the server. This is why Databricks/Spark and advanced algorithms like MinHash LSH (Locality-Sensitive Hashing) are mandatory.
 2. **The "Copyright" Problem:** Notice how Document #1 and Document #3 both survived deduplication. Even though the core text ("Rome was founded...") is identical, the presence of the word "Copyright 2024" in Doc 3 made the strings officially different! Exact deduplication fails here. Only Fuzzy Deduplication (MinHash) catches this!
 
 ---
@@ -138,12 +138,12 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Pipeline Scale:** 
-   - State that you cannot run this on a single machine. You must use Apache Spark or Ray clusters to distribute the MinHash LSH and Quality Filtering logic across hundreds of CPU nodes.
+   - State that you cannot run this on a single machine. You must use Apache Spark or Ray clusters to distribute the MinHash LSH and Quality Filtering logic across hundreds of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> nodes.
 2. **PII Scrubbing:**
-   - Explain that LLMs memorize data. If a Social Security Number is in the dataset, the LLM might output it during a chat. You must use regex pipelines (like Microsoft's Presidio) to mask `[PHONE_NUMBER]` or `[EMAIL]` during the extraction phase.
+   - Explain that LLMs memorize data. If a Social Security Number is in the dataset, the <abbr title="Large Language Model">LLM</abbr> might output it during a chat. You must use regex pipelines (like Microsoft's Presidio) to mask `[PHONE_NUMBER]` or `[EMAIL]` during the extraction phase.
 3. **Decontamination (The Holy Grail):**
    - Decontamination means ensuring your test sets (like the GSM8k math benchmark or the Bar Exam questions) are **NOT** in your training data! 
-   - If the LLM reads the Bar Exam during training, it will get a 100% on the test, but it didn't actually learn law—it just memorized the answer key (Data Leakage). You must run strict N-Gram deduplication against all known public benchmarks *before* training begins!
+   - If the <abbr title="Large Language Model">LLM</abbr> reads the Bar Exam during training, it will get a 100% on the test, but it didn't actually learn law—it just memorized the answer key (Data Leakage). You must run strict N-Gram deduplication against all known public benchmarks *before* training begins!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

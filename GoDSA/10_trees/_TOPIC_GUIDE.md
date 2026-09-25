@@ -22,7 +22,7 @@ type TreeNode struct {
 ```
 
 Compare this to topic 1's array: `[]int{1,2,3,4,5}` is **one** contiguous
-block — walking it strides through memory the CPU has already prefetched.
+block — walking it strides through memory the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> has already prefetched.
 A tree built with `&TreeNode{...}` is `n` **independent heap allocations**,
 each wherever the allocator happened to put it. `node.Left` is a genuine
 pointer dereference, likely a cache miss, on every step down.
@@ -107,7 +107,7 @@ starts at 2 KB and grows by copy-and-double (by default up to 1 GB on 64-bit, tu
 `debug.SetMaxStack`) — so a balanced tree of any realistic size (`depth ≈
 log₂ n`) will never come close to the limit. The danger is a **degenerate,
 effectively-linked-list-shaped tree**: a tree built by inserting already-sorted
-data into a naive BST, or an adversarial test case, can have depth `n`. At
+data into a naive <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, or an adversarial test case, can have depth `n`. At
 that point recursive inorder traversal is `n` stack frames deep, and while
 Go will grow the stack rather than silently corrupt memory (unlike a fixed
 C thread stack), it can still exhaust the configured maximum and crash the
@@ -143,7 +143,7 @@ func inorderIterative(root *TreeNode) []int {
 > is wrong for any work that must happen bottom-up; the honest version is in the
 > "Shapes beyond the twenty" part below.
 
-### 2.3 BFS / level-order: the slice-as-queue, and why the leak doesn't matter here
+### 2.3 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> / level-order: the slice-as-queue, and why the leak doesn't matter here
 
 ```go
 func levelOrder(root *TreeNode) [][]int {
@@ -174,9 +174,9 @@ func levelOrder(root *TreeNode) [][]int {
 
 Topic 7 (queues) flags `queue = queue[1:]` as a memory-retention gotcha for
 **long-lived, high-churn** queues: the backing array's earlier elements stay
-referenced (can't be GC'd) until the whole slice is discarded, and repeated
+referenced (can't be <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>'d) until the whole slice is discarded, and repeated
 `[1:]` slicing without ever reallocating means old capacity keeps trailing
-along. For a single BFS pass over a tree, the queue's lifetime is the
+along. For a single <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> pass over a tree, the queue's lifetime is the
 traversal itself and its peak size is bounded by the tree's width — it's
 discarded in full the moment `levelOrder` returns, so the "leak" never
 outlives the function call. Don't reach for `container/list` here just to
@@ -186,7 +186,7 @@ problem.
 > ⚡ **Level-order space is O(n) worst case**, not O(h). A perfect binary
 > tree's last level holds `⌈n/2⌉` nodes, so the queue's peak size is
 > proportional to the tree's *width*, which can be much larger than its
-> depth. Contrast with recursive DFS, whose space is O(h) — the two
+> depth. Contrast with recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, whose space is O(h) — the two
 > traversal families have genuinely different space profiles, and picking
 > the wrong one for a memory-constrained problem is a real mistake, not
 > pedantry.
@@ -263,7 +263,7 @@ func lowestCommonAncestor(root, p, q *TreeNode) *TreeNode {
 
 Pointer identity (`root == p`) is a valid, cheap comparison in Go for
 `*TreeNode` — you're comparing addresses, exactly like Python's `is`.
-(This is specifically a *general tree* LCA — the BST topic has a much
+(This is specifically a *general tree* <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> — the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> topic has a much
 cheaper O(h) version that exploits ordering instead of searching both
 subtrees.)
 
@@ -297,11 +297,11 @@ fan-out changes from a fixed 2 to `len(node.Children)`.
 
 | Operation | Time | Space | Note |
 |---|:--:|:--:|---|
-| Recursive DFS (any order) | O(n) | O(h) | h = height; O(log n) balanced, **O(n)** skewed |
-| Iterative DFS (explicit stack) | O(n) | O(h) | Same space bound, no call-stack risk |
-| BFS / level-order | O(n) | **O(w)** | w = max width, up to `⌈n/2⌉` — can exceed O(h) |
+| Recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (any order) | O(n) | O(h) | h = height; O(log n) balanced, **O(n)** skewed |
+| Iterative <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (explicit stack) | O(n) | O(h) | Same space bound, no call-stack risk |
+| <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> / level-order | O(n) | **O(w)** | w = max width, up to `⌈n/2⌉` — can exceed O(h) |
 | Diameter / height (postorder) | O(n) | O(h) | Single pass, closure-captured max |
-| LCA (general tree) | O(n) | O(h) | Worst case visits every node |
+| <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> (general tree) | O(n) | O(h) | Worst case visits every node |
 | Serialize / deserialize | O(n) | O(n) | Output string + reconstruction structures |
 
 ---
@@ -310,7 +310,7 @@ fan-out changes from a fixed 2 to `len(node.Children)`.
 
 | | Python | Go |
 |---|---|---|
-| Node representation | Class with `self.left`/`self.right`, GC'd objects | `struct` with `*TreeNode` fields, GC'd allocations |
+| Node representation | Class with `self.left`/`self.right`, <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>'d objects | `struct` with `*TreeNode` fields, <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>'d allocations |
 | Empty-subtree check | `if node is None` | `if node == nil` |
 | Missing null-safety | `AttributeError` on `None.attr` (catchable) | **Panic** on nil deref — crashes the whole program unless something up the stack calls `recover` |
 | Deep recursion limit | `sys.setrecursionlimit` (~1000 default, hard fixed cap) | Growable goroutine stack, default up to 1GB — much harder to hit, not impossible |
@@ -325,15 +325,15 @@ fan-out changes from a fixed 2 to `len(node.Children)`.
 
 | Algorithm | Time | Space | Problem |
 |---|:--:|:--:|---|
-| Recursive DFS (pre/in/post-order) | O(n) | O(h) | LC 94, 144, 145 |
-| Iterative DFS with explicit stack | O(n) | O(h) | LC 94 (iterative variant) |
-| BFS level-order | O(n) | O(w) | LC 102 Binary Tree Level Order Traversal |
+| Recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (pre/in/post-order) | O(n) | O(h) | LC 94, 144, 145 |
+| Iterative <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> with explicit stack | O(n) | O(h) | LC 94 (iterative variant) |
+| <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> level-order | O(n) | O(w) | LC 102 Binary Tree Level Order Traversal |
 | Postorder height/depth | O(n) | O(h) | LC 104 Maximum Depth of Binary Tree |
 | Closure-captured running max | O(n) | O(h) | LC 543 Diameter of Binary Tree |
 | Bottom-up balance check | O(n) | O(h) | LC 110 Balanced Binary Tree |
 | Mirror comparison (two-pointer recursion) | O(n) | O(h) | LC 100, 101 |
 | Path-sum accumulation | O(n) | O(h) | LC 112, 113 |
-| Recursive split-point LCA | O(n) | O(h) | LC 236 Lowest Common Ancestor |
+| Recursive split-point <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> | O(n) | O(h) | LC 236 Lowest Common Ancestor |
 | Preorder + null-sentinel (de)serialization | O(n) | O(n) | LC 297 Serialize/Deserialize Binary Tree |
 | N-ary fan-out recursion | O(n) | O(h) | LC 559 Max Depth of N-ary Tree |
 
@@ -427,20 +427,24 @@ Every tree problem is one recursion; what differs is **which direction the infor
 *up*. If a node needs something from its *ancestors* (a running sum, the maximum on the path, a bound), it must arrive
 through a **parameter**. All code below ran on Go 1.24.5 against LeetCode's own examples.
 
-```mermaid
+```arch
 %% caption: The design decision for every tree recursion. Ask what the node needs to know, and from where.
-flowchart TD
-  Q(["What does a node need to decide its answer?"]) --> A{"Something from its ANCESTORS?<br/>(remaining sum, path max, a bound)"}
-  A -->|"yes"| D["carry it DOWN as a parameter<br/>Path Sum, Good Nodes, Validate BST"]:::hot
-  A -->|"no"| B{"Something from its DESCENDANTS?<br/>(height, size, a found flag)"}
-  B -->|"yes"| U["RETURN it UP<br/>Depth, Balanced, LCA"]:::ok
-  B -->|"no"| L["a per-node local decision<br/>Invert, Same Tree"]:::ok
-  U --> S{"Also need a SECOND answer<br/>(diameter, max path sum)?"}
-  S -->|"yes"| M["record it in a captured variable<br/>OR return (a, b) — Go's multiple returns"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 210x90
+node q "What does a node need to decide its answer?" at 0,0 shape=pill w=240
+node a "From its ANCESTORS?" at 0,1 shape=diamond color=amber sub="remaining sum, path max, a bound"
+node d "Carry it DOWN as a parameter" at 1,1 color=amber w=240 sub="Path Sum, Good Nodes, Validate BST"
+node b "From its DESCENDANTS?" at 0,2 shape=diamond color=amber sub="height, size, a found flag"
+node l "A per-node local decision" at 1,2 color=green w=240 sub="Invert, Same Tree"
+node u "RETURN it UP" at 0,3 color=green w=200 sub="Depth, Balanced, LCA"
+node s "Also need a SECOND answer?" at 0,4 shape=diamond color=amber sub="diameter, max path sum"
+node m "Record it in a captured variable" at 1,4 color=amber w=240 sub="OR return (a, b): Go's multiple returns"
+q -> a
+a -> d : "yes"
+a -> b : "no"
+b -> u : "yes"
+b -> l : "no"
+u -> s
+s -> m : "yes"
 ```
 
 ### Down via a parameter: Path Sum and Good Nodes
@@ -460,7 +464,7 @@ Path Sum passes `remaining` down and tests it **at leaves only**, after subtract
 Comparing with the *parent* instead of the path maximum (Good Nodes) answers a different question — and agrees with the
 right answer on LeetCode's first example.
 
-### Up via a return: Min Depth (the one-child catch), Balanced, LCA
+### Up via a return: Min Depth (the one-child catch), Balanced, <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr>
 
 ```go
 func minDepth(n *TreeNode) int {
@@ -539,7 +543,7 @@ Never mix edge-count and node-count conventions for `height(nil)`; pick one and 
 
 ### Right Side View: a level property, not a pointer property
 
-Following `.Right` from the root fails `[1 2 3 4]`. The answer is *the last node of each level*. Either BFS, or DFS
+Following `.Right` from the root fails `[1 2 3 4]`. The answer is *the last node of each level*. Either <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, or <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>
 **right-first**, recording only the **first arrival** at each depth:
 
 ```go
@@ -557,24 +561,30 @@ dfs = func(n *TreeNode, depth int) {
 <!-- block:10_go_2_shapes -->
 ## Part 9 · Shapes Beyond the Twenty in Go
 
-```mermaid
+```arch
 %% caption: Which traversal? The order you need decides the tool; the space you can spend decides recursion, an explicit stack, or Morris.
-flowchart TD
-  Q(["Traverse a tree"]) --> A{"By level, or depth first?"}
-  A -->|"by level / nearest first"| B["BFS with a queue<br/>space O(width)"]:::ok
-  A -->|"depth first"| C{"When is the node visited?"}
-  C -->|"before its children"| PRE["preorder<br/>copy, serialize, path from root"]:::ok
-  C -->|"between the children"| INO["inorder<br/>a BST comes out sorted"]:::ok
-  C -->|"after its children"| POST["postorder<br/>heights, sizes, delete, evaluate"]:::ok
-  PRE --> S{"Space budget?"}
-  INO --> S
-  POST --> S
-  S -->|"O(h) is fine"| REC["recursion or explicit stack"]:::ok
-  S -->|"O(1) required"| MOR["Morris (inorder / preorder)"]:::hot
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 190x90
+node q "Traverse a tree" at 1,0 shape=pill
+node a "By level, or depth first?" at 1,1 shape=diamond color=amber
+node b "BFS with a queue" at 2,1 color=green w=200 sub="by level / nearest first · space O(width)"
+node c "When is the node visited?" at 1,2 shape=diamond color=amber
+node pre "Preorder" at 0,3 color=green sub="copy, serialize, path from root"
+node ino "Inorder" at 1,3 color=green sub="a BST comes out sorted"
+node post "Postorder" at 2,3 color=green sub="heights, sizes, delete, evaluate"
+node s "Space budget?" at 1,4 shape=diamond color=amber
+node rec "Recursion or explicit stack" at 0,5 color=green
+node mor "Morris" at 2,5 color=amber sub="inorder / preorder"
+q -> a
+a -> b : "by level"
+a -> c : "depth first"
+c -> pre : "before its children"
+c -> ino : "between the children"
+c -> post : "after its children"
+pre -> s
+ino -> s
+post -> s
+s -> rec : "O(h) is fine"
+s -> mor : "O(1) required"
 ```
 
 ### Morris traversal — inorder in O(1) extra space
@@ -629,7 +639,7 @@ dfs = func(n *TreeNode, running int) {
 }                                                     // [10 5 -3 3 2 _ 11 3 -2 _ 1], 8 -> 3
 ```
 
-### Tree DP with named results (House Robber III)
+### Tree <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> with named results (House Robber III)
 
 Return a pair — *best if I take this node*, *best if I skip it* — and let the parent combine. Named results document
 the pair:
@@ -712,7 +722,7 @@ return 1 + countNodes(root.Left) + countNodes(root.Right)     // [1 2 3 4 5 6] -
 ### Distance K (LC 863): the tree as an undirected graph
 
 A binary tree stores only downward edges. Add the upward ones with a **`map[*TreeNode]*TreeNode`** (pointers are identity
-keys) and BFS from the target for exactly `k` levels — with a `visited` set, because target → child → parent walks
+keys) and <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from the target for exactly `k` levels — with a `visited` set, because target → child → parent walks
 straight back to target:
 
 ```go
@@ -769,13 +779,13 @@ Twenty problems, six moves (traversal orders · postorder aggregates · two-tree
 | [011 · Path Sum](GoDSA/10_trees/011_path_sum/solution.go) <br>LC 112 · Easy | Down via a parameter | Pass `remaining` down; test at leaves after subtracting. **Trap:** testing at any node; testing before subtracting. |
 | [012 · Symmetric Tree](GoDSA/10_trees/012_symmetric_tree/solution.go) <br>LC 101 · Easy | Crossed two-tree recursion | `mirror(a.Left, b.Right) && mirror(a.Right, b.Left)`. **Trap:** reusing `isSameTree` (same-side pairing). |
 | [013 · Binary Tree Level Order Traversal](GoDSA/10_trees/013_binary_tree_level_order_traversal/solution.go) <br>LC 102 · Medium | Level-size loop | `for size := len(q); size > 0; size--` freezes the level. **Trap:** an inner `for len(q) > 0` (levels merge); re-reading `len(q)` in the loop condition. |
-| [014 · Binary Tree Right Side View](GoDSA/10_trees/014_binary_tree_right_side_view/solution.go) <br>LC 199 · Medium | Last node per level | DFS right-first appending on **first arrival** per depth (`depth == len(res)`). **Trap:** following `.Right` from the root; left-first DFS. |
+| [014 · Binary Tree Right Side View](GoDSA/10_trees/014_binary_tree_right_side_view/solution.go) <br>LC 199 · Medium | Last node per level | <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> right-first appending on **first arrival** per depth (`depth == len(res)`). **Trap:** following `.Right` from the root; left-first <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>. |
 | [015 · Count Good Nodes in Binary Tree](GoDSA/10_trees/015_count_good_nodes_in_binary_tree/solution.go) <br>LC 1448 · Medium | Max-so-far down the path | `goodNodes(n, best)` with `>=`; seed with `math.MinInt`. **Trap:** `>`; comparing with the parent. |
 | [016 · Construct Binary Tree from Preorder and Inorder Traversal](GoDSA/10_trees/016_construct_binary_tree_from_preorder_and_inorder_traversal/solution.go) <br>LC 105 · Medium | Split by the root | Sub-slices are free headers: `pre[1:k+1]`, `in[:k]`; an `idx` map for O(1) root lookup. **Trap:** `pre[1:k]`; using an absolute index inside a window. |
 | [017 · Lowest Common Ancestor of a Binary Tree](GoDSA/10_trees/017_lowest_common_ancestor_of_a_binary_tree/solution.go) <br>LC 236 · Medium | Overloaded return value | Return the node if it is `p`, `q`, or the split point; pointer `==` is identity. **Trap:** only handling different subtrees; comparing values. |
 | [018 · Binary Tree Maximum Path Sum](GoDSA/10_trees/018_binary_tree_maximum_path_sum/solution.go) <br>LC 124 · Hard | Gain vs through-value | Record `n.Val+l+r`, return `n.Val+max(l, r)`, clamp gains with `max(x, 0)`; seed `best` with `math.MinInt`. **Trap:** returning the through-value; seeding `best` with `0` (an all-negative tree returns 0). |
 | [019 · Serialize and Deserialize Binary Tree](GoDSA/10_trees/019_serialize_and_deserialize_binary_tree/solution.go) <br>LC 297 · Hard | Preorder with null markers | `strings.Builder` writes `#,`; decode with a closure over a shared cursor. **Trap:** no markers; a trailing comma producing an empty final token in `strings.Split`. |
-| [020 · All Nodes Distance K in Binary Tree](GoDSA/10_trees/020_all_nodes_distance_k_in_binary_tree/solution.go) <br>LC 863 · Medium | Tree as an undirected graph | `parent := map[*TreeNode]*TreeNode`, BFS with a `visited` set for `k` levels. **Trap:** no `visited`; a node copied by value is a different map key. |
+| [020 · All Nodes Distance K in Binary Tree](GoDSA/10_trees/020_all_nodes_distance_k_in_binary_tree/solution.go) <br>LC 863 · Medium | Tree as an undirected graph | `parent := map[*TreeNode]*TreeNode`, <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> with a `visited` set for `k` levels. **Trap:** no `visited`; a node copied by value is a different map key. |
 
 ---
 <!-- problem-map:end -->
@@ -785,10 +795,10 @@ Twenty problems, six moves (traversal orders · postorder aggregates · two-tree
 - [ ] Explain why a pointer-linked tree has worse cache locality than a slice, and where an array-backed tree avoids it
 - [ ] Write inorder traversal both recursively and iteratively with an explicit stack
 - [ ] State precisely when recursive traversal risks Go's stack limit (skewed trees), and why balanced trees never approach it
-- [ ] Explain why BFS space is O(width) while DFS space is O(height) — and that these can differ enormously
+- [ ] Explain why <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> space is O(width) while <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> space is O(height) — and that these can differ enormously
 - [ ] Use a closure over a captured variable to return a "side answer" from recursion (diameter pattern)
 - [ ] Explain why `var f func(...)` must be pre-declared before a self-referencing closure literal
-- [ ] Write LCA via the split-point recursion pattern
+- [ ] Write <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> via the split-point recursion pattern
 - [ ] Explain why preorder + null markers is enough to reconstruct a tree, and inorder alone is not
 - [ ] Implement serialize/deserialize with `strings.Builder` and a shared cursor closure in under 15 minutes
 - [ ] Say for any tree problem whether information flows *down* (parameter) or *up* (return), and where a second answer lives <!--ca-->

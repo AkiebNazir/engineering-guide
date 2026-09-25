@@ -34,7 +34,7 @@ case.
 
 ## What the 10 levels cover
 
-Levels 1-2 build the everyday API: the primitive convenience wrappers
+Levels 1-2 build the everyday <abbr title="Application Programming Interface">API</abbr>: the primitive convenience wrappers
 (`sort.Ints`/`Strings`/`Float64s`), then `sort.Slice`/`SliceStable`/`Sort`/
 `Reverse`/`IsSorted` together. Level 3 is the multi-key comparator idiom
 (primary key, then a secondary tiebreak). Level 4 triggers sort's one real

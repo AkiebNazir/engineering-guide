@@ -1,9 +1,9 @@
 # Day 38: The Convolution Operation (Math & Intuition)
 
 Welcome to Phase 2, Week 6: **Computer Vision**. 
-If you take a $224 \times 224$ image, flatten it into a single line of 50,176 pixels, and feed it into a standard Neural Network (MLP), you instantly destroy the entire structure of the image. The AI has no idea that the pixels making up the top of a dog's ear are physically connected to the pixels making up the bottom of the ear. 
+If you take a $224 \times 224$ image, flatten it into a single line of 50,176 pixels, and feed it into a standard Neural Network (MLP), you instantly destroy the entire structure of the image. The <abbr title="Artificial Intelligence">AI</abbr> has no idea that the pixels making up the top of a dog's ear are physically connected to the pixels making up the bottom of the ear. 
 
-To give AI the gift of sight, we must preserve the 2D grid. We do this using **Convolutions**.
+To give <abbr title="Artificial Intelligence">AI</abbr> the gift of sight, we must preserve the 2D grid. We do this using **Convolutions**.
 
 ---
 
@@ -18,7 +18,7 @@ Imagine standing in a pitch-black room holding a tiny $3 \times 3$ pixel flashli
 ### 2. Parameter Sharing & Translation Equivariance
 Why are Convolutions so powerful? 
 If a standard MLP learns what a "Dog Eye" looks like in the top-left corner of an image, and you show it a dog in the bottom-right corner, it completely fails. It has to re-learn what an eye looks like for every single pixel coordinate!
-A Convolutional Neural Network (CNN) solves this via **Parameter Sharing**. The $3 \times 3$ "Eye Detector" filter has the *exact same weights* as it slides across the entire image. If it finds an eye in the top left, it uses the exact same math to find an eye in the bottom right. This is called **Translation Equivariance** (the ability to detect objects regardless of where they are).
+A Convolutional Neural Network (<abbr title="Convolutional Neural Network">CNN</abbr>) solves this via **Parameter Sharing**. The $3 \times 3$ "Eye Detector" filter has the *exact same weights* as it slides across the entire image. If it finds an eye in the top left, it uses the exact same math to find an eye in the bottom right. This is called **Translation Equivariance** (the ability to detect objects regardless of where they are).
 
 ### 3. Stride, Padding, and the Output Formula
 - **Stride:** How many pixels the flashlight jumps. If Stride = 2, the flashlight jumps 2 pixels at a time. This shrinks the final output image by half.
@@ -31,7 +31,7 @@ A Convolutional Neural Network (CNN) solves this via **Parameter Sharing**. The 
 Mathematically sliding a $3 \times 3$ window using `for` loops is horribly slow. GPUs hate `for` loops; they love massive, flat Matrix Multiplications.
 **im2col (Image to Column)** is a genius memory trick. It takes the image, extracts every single $3 \times 3$ overlapping window, flattens them, and stacks them side-by-side into one massive matrix. 
 Now, the GPU can calculate the entire convolution in a single, instantaneous Matrix Multiplication! 
-*(The downside? Because the $3 \times 3$ windows overlap, you are duplicating pixels in RAM. It uses a massive amount of memory to achieve this speed).*
+*(The downside? Because the $3 \times 3$ windows overlap, you are duplicating pixels in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. It uses a massive amount of memory to achieve this speed).*
 
 ---
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Sobel Filter:** Look closely at the `kernel` tensor. The left side is `-1`, `-2`, `-1`. The right side is `1`, `2`, `1`. The middle is `0`. If you slide this over a solid black wall, the math cancels out to `0`. But if you slide it over a line where Black turns into White, the math results in a massive number! This is exactly how the AI "sees" edges.
+1. **The Sobel Filter:** Look closely at the `kernel` tensor. The left side is `-1`, `-2`, `-1`. The right side is `1`, `2`, `1`. The middle is `0`. If you slide this over a solid black wall, the math cancels out to `0`. But if you slide it over a line where Black turns into White, the math results in a massive number! This is exactly how the <abbr title="Artificial Intelligence">AI</abbr> "sees" edges.
 2. **PyTorch Tensor Shapes:** Notice how we had to reshape the image to `(1, 1, 100, 100)` before passing it to `F.conv2d`. PyTorch Convolutions strictly require 4 dimensions: `[Batch Size, Color Channels, Height, Width]`.
 
 ---
@@ -144,6 +144,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - The trade-off is sacrificing massive amounts of VRAM (Memory) in exchange for blistering computational Speed.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You have successfully implemented the "Eyes" of the AI.
+**Task for the end of the day:** Commit your code to Git. You have successfully implemented the "Eyes" of the <abbr title="Artificial Intelligence">AI</abbr>.
 
 Tomorrow, in **Day 39**, we learn how to stack these Convolutions to build the Architectures that changed the world: **LeNet, VGG, and ResNet!**

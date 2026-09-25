@@ -67,7 +67,7 @@ violation of one of them:
 Python has **no tail-call optimization** — unlike Scheme or Erlang, a
 recursive call that is the very last thing a function does still gets a
 full new stack frame, not a jump. This is deliberate upstream (Guido has
-said TCO would make tracebacks misleading) and it means "just make it
+said <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr> would make tracebacks misleading) and it means "just make it
 tail-recursive" is not a real optimization technique in Python the way it
 is in other languages — the fix for deep recursion in Python is almost
 always "rewrite as a loop," not "restructure the recursion."
@@ -110,26 +110,41 @@ by hand, not just "does it terminate."
 
 ## Part 2 · Three call shapes, three cost models
 
-```mermaid
+```arch
 %% caption: Linear: depth n, one path. Branching with overlap: exponential unless memoized. Divide and conquer: the halves are disjoint, the depth is log n, and there is nothing to memoize.
-flowchart TD
-  L0["Linear: f(n) calls f(n-1)"]:::hot --> l1["f(4)"] --> l2["f(3)"] --> l3["f(2)"]
-  T0["Branching: f(n-1) and f(n-2)"]:::hot --> t1["f(4)"]
-  t1 --> t2["f(3)"]
-  t1 --> t3["f(2)"]
-  t2 --> t4["f(2)"]
-  t2 --> t5["f(1)"]
-  D0["Divide and conquer: two halves"]:::hot --> d1["n"]
-  d1 --> d2["n/2"]
-  d1 --> d3["n/2"]
-  d2 --> d4["n/4"]
-  d2 --> d5["n/4"]
-  d3 --> d6["n/4"]
-  d3 --> d7["n/4"]
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x85
+node L0 "Linear" at 0,0 color=amber sub="f(n) calls f(n-1)" w=150
+node l1 "f(4)" at 2,0 shape=circle color=blue
+node l2 "f(3)" at 3,0 shape=circle color=blue
+node l3 "f(2)" at 4,0 shape=circle color=blue
+node T0 "Branching" at 0,1 color=amber sub="f(n-1) and f(n-2)" w=150
+node t1 "f(4)" at 3,1 shape=circle color=blue
+node t2 "f(3)" at 2,2 shape=circle color=blue
+node t3 "f(2)" at 4,2 shape=circle color=red
+node t4 "f(2)" at 1.5,3 shape=circle color=red
+node t5 "f(1)" at 2.5,3 shape=circle color=blue
+node D0 "Divide and conquer" at 0,4 color=amber sub="two halves" w=150
+node d1 "n" at 3.5,4 shape=circle color=green
+node d2 "n/2" at 2.5,5 shape=circle color=green
+node d3 "n/2" at 4.5,5 shape=circle color=green
+node d4 "n/4" at 2,6 shape=circle color=green
+node d5 "n/4" at 3,6 shape=circle color=green
+node d6 "n/4" at 4,6 shape=circle color=green
+node d7 "n/4" at 5,6 shape=circle color=green
+L0 -> l1 -> l2 -> l3
+T0 -> t1
+t1 -> t2
+t1 -> t3
+t2 -> t4
+t2 -> t5
+D0 -> d1
+d1 -> d2
+d1 -> d3
+d2 -> d4
+d2 -> d5
+d3 -> d6
+d3 -> d7
 ```
 
 
@@ -210,20 +225,20 @@ the cache key actually is (important the moment the "input" is more than
 one plain hashable argument, e.g. `(node, remaining_budget)`). This
 folder introduces memoization gently (`Unique Binary Search Trees`,
 problem 011) specifically so topics 16/17 (1D/2D Dynamic Programming)
-aren't the first time you've seen the pattern — DP *is* memoized
+aren't the first time you've seen the pattern — <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> *is* memoized
 recursion (or its bottom-up mirror image), nothing more mystical than
 that.
 
-```mermaid
+```arch
 %% caption: Memoize only when the same arguments really are called more than once.
-flowchart TD
-  Q(["Recursive solution"]) --> A{"Same arguments called<br/>more than once?"}
-  A -->|yes| B["Memoize: cache keyed by the arguments<br/>functools.cache"]:::ok
-  A -->|no| C["Do not memoize<br/>(disjoint subproblems, the cache never hits)"]:::dim
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 230x105
+node Q "Recursive solution" at 0.5,0 shape=pill
+node A "Same arguments called more than once?" at 0.5,1 shape=diamond color=amber
+node B "Memoize" at 0,2 color=green sub="cache keyed by the arguments, functools.cache" w=210
+node C "Do not memoize" at 1,2 color=slate sub="disjoint subproblems, the cache never hits" w=210
+Q -> A
+A -> B : "yes"
+A -> C : "no"
 ```
 
 
@@ -263,7 +278,7 @@ enters the picture.
 | 014 | 337 | House Robber III | First "return a pair going up" problem — each call reports two numbers, not one |
 | 015 | 894 | All Possible Full Binary Trees | Structure-building recursion over a SPLIT (left size + right size), memoized |
 | 016 | 372 | Super Pow | Divide & conquer recursion (Part 2) meets modular arithmetic |
-| 017 | 776 | Split BST | Recursion that returns TWO structures (a pair of trees) from one call |
+| 017 | 776 | Split <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> | Recursion that returns TWO structures (a pair of trees) from one call |
 | 018 | 979 | Distribute Coins in Binary Tree | Return-value doubles as a side-channel: each call reports a "flow" its parent must account for globally |
 | 019 | 1123 | Lowest Common Ancestor of Deepest Leaves | Return a (node, depth) pair — the combine step must compare depths across subtrees |
 | 020 | 1130 | Minimum Cost Tree From Leaf Values | Divide & conquer over every possible SPLIT POINT of a range — exponential unless memoized/greedy-reduced |
@@ -295,20 +310,24 @@ that starts with a recursive solution.
 
 Parts 0–7 give the model. This Part puts numbers on it (CPython 3.13, best of several runs) and lists the recurrence and cost of every problem in the ladder, so "what does this recursion cost?" always has a checked answer.
 
-```mermaid
+```arch
 %% caption: A RecursionError has four fixes, in order of preference: shrink the depth by construction, iterate with an explicit stack, memoise so fewer distinct calls happen, and only then raise the limit.
-flowchart TD
-  Q(["RecursionError, or depth that could be large"]) --> A{"Can each call halve the input?"}
-  A -->|"yes"| B["recurse on n // 2: depth log n (binary exponentiation, divide and conquer)"]:::ok
-  A -->|"no"| C{"Is it a linear chain or a tree walk?"}
-  C -->|"yes"| D["iterate: a loop, or an explicit stack of (node, state)"]:::ok
-  C -->|"no, branching"| E{"Same arguments repeated?"}
-  E -->|"yes"| F["memoise: fewer calls, and often less depth"]:::hot
-  E -->|"no"| G["setrecursionlimit as a last resort; it costs memory"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 290x105
+node Q "RecursionError, or depth that could be large" at 0,0 shape=pill w=260
+node A "Can each call halve the input?" at 0,1 shape=diamond color=amber
+node B "recurse on n // 2: depth log n" at 1,1 color=green sub="binary exponentiation, divide and conquer" w=260
+node C "Is it a linear chain or a tree walk?" at 0,2 shape=diamond color=amber
+node D "iterate" at 1,2 color=green sub="a loop, or an explicit stack of (node, state)" w=260
+node E "Same arguments repeated?" at 0,3 shape=diamond color=amber
+node F "memoise" at 1,3 color=amber sub="fewer calls, and often less depth" w=260
+node G "setrecursionlimit as a last resort" at 0,4 color=red sub="it costs memory" w=260
+Q -> A
+A -> B : "yes"
+A -> C : "no"
+C -> D : "yes"
+C -> E : "no, branching"
+E -> F : "yes"
+E -> G : "no"
 ```
 
 ### 8.1 The stack limit, measured
@@ -354,7 +373,7 @@ zero for every even `n`. Problems 012 and 015 must *return the trees* (so the ou
   runs feasible — the fourth documented trap. Both the no-swap pairing (`a[:i]`↔`b[:i]`) and the swap pairing (`a[:i]`↔`b[-i:]`) must be tried.
 - **024 Expression Add Operators.** Enumerating every expression for `"123456789"` (digits joined or separated by one of three operators) makes **87,382** recursive calls. The trick that makes `*` correct in a left-to-right recursion is to carry the *last signed term*: on `*`, undo it and re-apply it multiplied — `value − last + last·cur`, new `last = last·cur`. Multiplying the running value instead (ignoring
   precedence) finds `2*3+2` for `"232"` target 8 but **misses `2+3*2`**. Every operand needs the leading-zero guard, not just the first.
-- **020 Minimum Cost Tree From Leaf Values.** The interval DP `dp[i][j] = min over k of dp[i][k] + dp[k+1][j] + max(i..k)·max(k+1..j)` is O(n³); a monotonic stack does it in O(n). They agreed on 1,000 random arrays; at `n = 150` the DP took **46 ms** and the stack **0.02 ms**. The examples `[6, 2, 4]` → 32 and `[4, 11]` → 44 hold for both.
+- **020 Minimum Cost Tree From Leaf Values.** The interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> `dp[i][j] = min over k of dp[i][k] + dp[k+1][j] + max(i..k)·max(k+1..j)` is O(n³); a monotonic stack does it in O(n). They agreed on 1,000 random arrays; at `n = 150` the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> took **46 ms** and the stack **0.02 ms**. The examples `[6, 2, 4]` → 32 and `[4, 11]` → 44 hold for both.
 - **016 Super Pow.** `a^[b₁…b_k] = (a^[b₁…b_{k−1}])¹⁰ · a^{b_k}` reduces `mod 1337` at every step and recurses on the *last* digit; with up to 2,000 digits the recursion needs a raised limit or a loop over the digits — the fourth documented trap.
 
 ### 8.6 Two recursion bugs worth seeing run
@@ -391,7 +410,7 @@ It returned 1,200 for the skewed tree where the recursive version raised `Recurs
 |---|---|
 | "What is the space complexity?" | The maximum depth of the recursion (the call stack), plus any memo table or output. |
 | "It overflows on a skewed tree." | An explicit stack, or Morris traversal for O(1) space (topic 10). |
-| "Can you make it tail-recursive?" | Not usefully in Python (no TCO); make it a loop. |
+| "Can you make it tail-recursive?" | Not usefully in Python (no <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr>); make it a loop. |
 | "Count without generating." | A memoised count on the size (011) instead of building the trees (012). |
 | "Why is the memo keyed on `(i, j)`?" | Those are all the state the subproblem depends on; anything else in the key defeats the cache. |
 
@@ -406,7 +425,7 @@ Twenty-five problems, each one notch harder — from a single base case to a thr
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
 | [001 · Number of Steps to Reduce a Number to Zero](PyDSA/28_recursion_backtracking/001_number_of_steps_to_reduce_a_number_to_zero_solution.py) <br>LC 1342 · Easy | One call, one base case | `steps(n) = 0` at `n == 0`, else `1 + steps(n // 2 if even else n - 1)`; depth ≤ 2·log₂ n. **Trap:** forgetting the `+ 1`; `n / 2` (a float); always subtracting 1 (ignoring the even rule). |
-| [002 · Reverse String](PyDSA/28_recursion_backtracking/002_reverse_string_solution.py) <br>LC 344 · Easy | Two-pointer recursion | Swap `s[lo]`, `s[hi]`, recurse on `(lo + 1, hi - 1)`, base `lo >= hi`. **Trap:** `lo == hi` (pointers cross on even lengths); returning a reversed copy instead of mutating; slicing instead of passing bounds; depth n/2 in a language with no TCO. |
+| [002 · Reverse String](PyDSA/28_recursion_backtracking/002_reverse_string_solution.py) <br>LC 344 · Easy | Two-pointer recursion | Swap `s[lo]`, `s[hi]`, recurse on `(lo + 1, hi - 1)`, base `lo >= hi`. **Trap:** `lo == hi` (pointers cross on even lengths); returning a reversed copy instead of mutating; slicing instead of passing bounds; depth n/2 in a language with no <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr>. |
 | [003 · Add Digits](PyDSA/28_recursion_backtracking/003_add_digits_solution.py) <br>LC 258 · Easy | Recurse on a derived value | Sum the digits and recurse on the sum; or the digital root `1 + (n - 1) % 9`. **Trap:** `n % 9` (returns 0 for multiples of 9); missing the `n == 0` case in the formula; mixing string and arithmetic digit extraction. |
 | [004 · Power of Two](PyDSA/28_recursion_backtracking/004_power_of_two_solution.py) <br>LC 231 · Easy | Recurse by halving | `n == 1` → true; odd or `n <= 0` → false; else recurse on `n // 2`. **Trap:** testing `n % 2` before `n <= 0` (infinite recursion on 0); no `n == 1` base case; the bit trick without `n > 0`; ignoring negatives. |
 | [005 · Power of Three](PyDSA/28_recursion_backtracking/005_power_of_three_solution.py) <br>LC 326 · Easy | The same in base 3 | Divide while `n % 3 == 0`; no bit trick exists; or `3**19 % n == 0` with `n > 0`. **Trap:** `n % 3` before `n <= 0`; expecting a bitmask; the trick without the `n > 0` guard; the wrong largest exponent. |
@@ -427,7 +446,7 @@ Twenty-five problems, each one notch harder — from a single base case to a thr
 | [020 · Minimum Cost Tree From Leaf Values](PyDSA/28_recursion_backtracking/020_minimum_cost_tree_from_leaf_values_solution.py) <br>LC 1130 · Medium | Split-point recursion or a monotonic stack | `dp[i][j]` over every split (O(n³)); or pop the smaller neighbour with a stack (O(n)). **Trap:** no memo on `(lo, hi)`; re-slicing `max` per split; adding the leaf values themselves; no `inf` sentinel. |
 | [021 · Recover a Tree From Preorder Traversal](PyDSA/28_recursion_backtracking/021_recover_a_tree_from_preorder_traversal_solution.py) <br>LC 1028 · Hard | A shared cursor | Read dashes → depth, then the number; attach to the stack entry at `depth - 1`. **Trap:** mixing the dash and digit loops; `stack[:depth]` copies; `not parent.left` instead of `is None`; assuming the root is `stack[0]`. |
 | [022 · Special Binary String](PyDSA/28_recursion_backtracking/022_special_binary_string_solution.py) <br>LC 761 · Hard | Decompose into balanced blocks | Split by running balance; recurse on each block's interior; sort descending; join. **Trap:** ascending order; not recursing inside; splitting on a character instead of the balance; assuming length decides order. |
-| [023 · Scramble String](PyDSA/28_recursion_backtracking/023_scramble_string_solution.py) <br>LC 87 · Hard | Split point × swap-or-not | `go(i, j, n)`: try every split with both pairings; prune by character multiset; memoise. **Trap:** only one pairing; memoising as if it were one fixed-pair substring DP; skipping the multiset prune; the complementary halves reversed. |
+| [023 · Scramble String](PyDSA/28_recursion_backtracking/023_scramble_string_solution.py) <br>LC 87 · Hard | Split point × swap-or-not | `go(i, j, n)`: try every split with both pairings; prune by character multiset; memoise. **Trap:** only one pairing; memoising as if it were one fixed-pair substring <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>; skipping the multiset prune; the complementary halves reversed. |
 | [024 · Expression Add Operators](PyDSA/28_recursion_backtracking/024_expression_add_operators_solution.py) <br>LC 282 · Hard | Backtracking with a carried term | `go(i, path, value, last)`; on `*`: `value - last + last * cur`. **Trap:** no leading-zero guard (or only on the first operand); an unsigned `last`; rebuilding the path at the leaf; multiplying the running value (misses `2+3*2`). |
 | [025 · Binary Tree Cameras](PyDSA/28_recursion_backtracking/025_binary_tree_cameras_solution.py) <br>LC 968 · Hard | A three-state post-order return | 0 = not covered, 1 = camera, 2 = covered; `None` is state 2; any child 0 → place a camera. **Trap:** `None` as state 0; checking "child 2" before "child 0"; a camera on every leaf; forgetting the root check. |
 

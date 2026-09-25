@@ -10,7 +10,7 @@ actually produces (a dropped connection, a `SerializationFailure` from level 09)
 and parameterized queries everywhere (level 11) — non-negotiable, not a nice-to-have
 for a "later" pass.
 
-This level builds a small `TaskStore` CRUD service that does all of this, and proves
+This level builds a small `TaskStore` <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> service that does all of this, and proves
 each behavior actually works by running it.
 
 ## The service

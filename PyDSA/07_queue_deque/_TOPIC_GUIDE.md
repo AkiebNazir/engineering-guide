@@ -1,15 +1,15 @@
 # Topic 07 · Queue / Deque — Python Deep Dive
 
-> A queue answers *"who has been waiting longest?"* — FIFO, first in first out.
+> A queue answers *"who has been waiting longest?"* — <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>, first in first out.
 > A deque generalises it to *"let me push and pop from either end, both O(1)."*
-> This topic sits directly after 06 · Stack (LIFO) on purpose: the two
+> This topic sits directly after 06 · Stack (<abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr>) on purpose: the two
 > disciplines are constantly confused under pressure, and half of this guide's
 > value is drilling the contrast until reaching for the wrong one becomes
 > impossible.
 
 ---
 
-## Part 1 · FIFO vs LIFO — the contrast topic 06 set up
+## Part 1 · <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> vs <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> — the contrast topic 06 set up
 
 ### 1.0 Two disciplines, one interface shape
 
@@ -46,10 +46,10 @@ next — the one I just added, or the one that's been waiting longest?"* Stack
 
 ### 1.1 Where each shows up as a sub-mechanism
 
-- **Stack**: DFS (explicit stack or recursion's call stack), balanced
+- **Stack**: <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (explicit stack or recursion's call stack), balanced
   brackets, "next greater element" (topic 06's monotonic stack), undo
   history, expression evaluation.
-- **Queue**: BFS (level-order traversal — this is THE reason queues matter
+- **Queue**: <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (level-order traversal — this is THE reason queues matter
   for interviews; every shortest-path-in-unweighted-graph problem is a queue
   underneath), rate limiters / sliding time windows (003 here), task
   scheduling, producer-consumer buffering, and — the deque generalisation —
@@ -57,7 +57,7 @@ next — the one I just added, or the one that's been waiting longest?"* Stack
   here, and LC 239 from topic 03).
 
 If a problem says "shortest path" or "level by level" or "minimum number of
-steps," think queue/BFS before anything else, the way "next greater/smaller"
+steps," think queue/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> before anything else, the way "next greater/smaller"
 should trigger a monotonic stack.
 
 ---
@@ -66,20 +66,20 @@ should trigger a monotonic stack.
 
 ### 2.0 Two stacks make a queue (001, LC 232) — the amortized argument
 
-A stack only gives you LIFO access, but two of them, cooperating, can
-simulate FIFO. The idea: use one stack to receive new elements (`in_stack`),
-and a second to serve them out in reversed — i.e. FIFO — order (`out_stack`).
+A stack only gives you <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> access, but two of them, cooperating, can
+simulate <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>. The idea: use one stack to receive new elements (`in_stack`),
+and a second to serve them out in reversed — i.e. <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> — order (`out_stack`).
 
-```mermaid
+```arch
 %% caption: Every element moves from the in-stack to the out-stack at most once, so dequeue is O(1) amortized.
-flowchart LR
-  P["enqueue x"] --> IN["in-stack"]
-  IN -->|"out-stack empty?<br/>move ALL over, reversing order"| OUT["out-stack"]:::hot
-  OUT --> POP["dequeue or peek:<br/>top of the out-stack"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 140x100
+node p "enqueue x" at 0,0 shape=pill
+node in "in-stack" at 1,0
+node out "out-stack" at 3,0 color=amber
+node pop "Dequeue or peek" at 4,0 color=green sub="top of the out-stack"
+p -> in
+in -> out : "out-stack empty? move ALL over, reversing order"
+out -> pop
 ```
 
 
@@ -137,8 +137,8 @@ live.
 
 ### 2.1 Two queues make a stack (002, LC 225) — the mirror trick
 
-The mirror problem needs the opposite: simulate LIFO (most-recently-added
-comes out first) using only FIFO primitives. Python's `collections.deque`
+The mirror problem needs the opposite: simulate <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> (most-recently-added
+comes out first) using only <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> primitives. Python's `collections.deque`
 gives O(1) `popleft`, so "two queues" is usually written as one queue plus a
 rotation trick — push a new element, then rotate the queue so the new
 element is at the front:
@@ -198,16 +198,20 @@ A **circular buffer** (ring buffer) is a fixed-size array plus two indices,
 `head` (next slot to dequeue from) and `tail` (next slot to enqueue into),
 both wrapping around with modulo when they hit the array's end:
 
-```mermaid
+```arch
 %% caption: Indices wrap with (i + 1) % capacity, so nothing is ever shifted: O(1) enqueue and dequeue, unlike list.pop(0).
-flowchart LR
-  s0["slot 0"] --> s1["slot 1"] --> s2["slot 2"] --> s3["slot 3"] --> s4["slot 4"] --> s0
-  H["head: next to dequeue"]:::ok -.-> s1
-  T["tail: next free slot"]:::hot -.-> s4
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+route straight
+grid 80x80
+node s0 "slot 0" at 3,0 shape=circle color=blue
+node s1 "slot 1" at 4.5,1 shape=circle color=blue
+node s2 "slot 2" at 4,2.5 shape=circle color=blue
+node s3 "slot 3" at 2,2.5 shape=circle color=blue
+node s4 "slot 4" at 1.5,1 shape=circle color=blue
+node h "head" at 6.5,1 color=green sub="next to dequeue"
+node t "tail" at 0,1 color=amber sub="next free slot"
+s0 -> s1 -> s2 -> s3 -> s4 -> s0
+h ..> s1
+t ..> s4
 ```
 
 
@@ -316,7 +320,7 @@ knowing as an alternative to manual eviction.
 
 ---
 
-## Part 5 · FIFO Sliding Window (003, LC 933)
+## Part 5 · <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> Sliding Window (003, LC 933)
 
 "Number of Recent Calls" asks: given a stream of timestamps, how many calls
 occurred in the last 3000ms? This is a queue used as a **counting window**:
@@ -337,7 +341,7 @@ ping(3002): evict while front < 3002-3000=2 -> evict 1  queue=[100,3001,3002]
              count=3
 ```
 
-This is the FIFO-window twin of topic 03's variable window — same "expire
+This is the <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>-window twin of topic 03's variable window — same "expire
 from the front while invalid" shape, except the container is a real queue
 because you need the actual front VALUE (a timestamp), not just a count.
 
@@ -465,21 +469,26 @@ force scan over all subarrays to make the complexity gap concrete.
 
 ## Part 7 · Pattern Decision Tree
 
-```mermaid
+```arch
 %% caption: Which queue or deque pattern fits.
-flowchart TD
-  Q(["Queue-shaped problem"]) --> A{"Plain FIFO, only the<br/>two ends matter?"}
-  A -->|yes| A1["collections.deque"]:::ok
-  A -->|no| B{"Events in a recent time window?"}
-  B -->|yes| B1["FIFO deque:<br/>pop from the left while expired"]:::ok
-  B -->|no| C{"Max or min of a sliding window?"}
-  C -->|yes| C1["Monotonic deque"]:::ok
-  C -->|no| D{"Negatives allowed, shortest<br/>subarray with sum ≥ K ?"}
-  D -->|yes| D1["Prefix sums + monotonic deque"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 290x100
+node q "Queue-shaped problem" at 0,0 shape=pill
+node a "Plain FIFO, only the two ends matter?" at 0,1 shape=diamond color=amber
+node a1 "collections.deque" at 1,1 color=green
+node b "Events in a recent time window?" at 0,2 shape=diamond color=amber
+node b1 "FIFO deque" at 1,2 color=green sub="pop from the left while expired"
+node c "Max or min of a sliding window?" at 0,3 shape=diamond color=amber
+node c1 "Monotonic deque" at 1,3 color=green
+node d "Negatives allowed, shortest subarray with sum ≥ K?" at 0,4 shape=diamond color=amber
+node d1 "Prefix sums + monotonic deque" at 1,4 color=green
+q -> a
+a -> a1 : "yes"
+a -> b : "no"
+b -> b1 : "yes"
+b -> c : "no"
+c -> c1 : "yes"
+c -> d : "no"
+d -> d1 : "yes"
 ```
 
 
@@ -540,7 +549,7 @@ flowchart TD
 | Two-queue stack: `push` | O(current size) | rotation every call |
 | Two-queue stack: `pop`/`top` | O(1) | always |
 | Circular array enqueue/dequeue | O(1) worst-case | pointer + modulo, no shifting |
-| FIFO window evict (003) | O(1) amortized/op | each element enqueued & dequeued once |
+| <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> window evict (003) | O(1) amortized/op | each element enqueued & dequeued once |
 | Monotonic deque pass (006) | O(n) | each index pushed once, popped at most once |
 | Brute-force shortest-subarray scan | **O(n^2)** | all `(l, r)` pairs, prefix-sum-priced |
 
@@ -606,28 +615,30 @@ is explicitly the trap topic 03's own guide warns about.
 ---
 
 <!-- block:07_py_1_practice -->
-## Part 11 · Queues in Practice: BFS Templates, 0-1 BFS, Thread Queues and Ring Variants
+## Part 11 · Queues in Practice: <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> Templates, 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, Thread Queues and Ring Variants
 
 The folder's problems are *designs* of queues. Real interview problems mostly *use* one — and the queue is
 almost always doing one of four jobs. Every snippet was run against known answers while writing this section.
 
-```mermaid
+```arch
 %% caption: The four jobs a queue does in interviews. The container is the same deque each time; what changes is what you put in it and when you mark things visited.
-flowchart TD
-  Q(["Why is there a queue?"]) --> A{"What does FIFO buy you?"}
-  A -->|"process by distance / level"| B["BFS: shortest path in an<br/>unweighted graph or grid"]:::ok
-  A -->|"process oldest first, forget the old"| C["FIFO window:<br/>recent calls, rate limiter, logs"]:::ok
-  A -->|"0/1 edge weights"| D["0-1 BFS: deque, push 0-cost<br/>neighbours to the FRONT"]:::hot
-  A -->|"hand work between threads"| E["producer / consumer:<br/>a blocking, bounded queue"]:::ok
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 180x100
+node q "Why is there a queue?" at 1,0 shape=pill
+node a "What does FIFO buy you?" at 1,1 shape=diamond color=amber
+node b "BFS" at 0,3 color=green w=165 sub="shortest path in an unweighted graph or grid"
+node c "FIFO window" at 1,3 color=green w=165 sub="recent calls, rate limiter, logs"
+node d "0-1 BFS" at 2,3 color=amber w=165 sub="deque, push 0-cost neighbours to the FRONT"
+node e "Producer / consumer" at 3,3 color=green w=165 sub="a blocking, bounded queue"
+q -> a
+a:L -> b:T : "process by distance / level"
+a:B -> c:T : "process oldest first, forget the old"
+a:R -> e:T : "hand work between threads"
+a:R -> d:T : "0/1 edge weights"
 ```
 
-### 11.1 The BFS template — and the one rule that matters
+### 11.1 The <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> template — and the one rule that matters
 
-BFS visits nodes in order of distance from the source *because* the queue is FIFO: everything at distance `d` is dequeued
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> visits nodes in order of distance from the source *because* the queue is <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>: everything at distance `d` is dequeued
 before anything at `d + 1`. **Mark a node visited when you ENQUEUE it, not when you dequeue it** — otherwise the same
 node can be enqueued many times before its first dequeue, and the running time (and the queue) blows up.
 
@@ -648,7 +659,7 @@ def shortest_path(grid):                         # 0 = open, 1 = wall, 4 directi
 ```
 
 Two variants you need: carry the distance *in the queue entry* (above), or process **level by level** with
-`for _ in range(len(q))` when you only need the number of levels. **Multi-source BFS** (Rotting Oranges) starts with
+`for _ in range(len(q))` when you only need the number of levels. **Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>** (Rotting Oranges) starts with
 *every* source already in the queue — the "time until everything is reached" is then the number of levels:
 
 ```python
@@ -661,7 +672,7 @@ while q and fresh:
 return minutes if fresh == 0 else -1               # [[2,1,1],[1,1,0],[0,1,1]] -> 4    [[2,1,1],[0,1,1],[1,0,1]] -> -1
 ```
 
-### 11.2 0-1 BFS: a deque makes Dijkstra unnecessary for {0, 1} weights
+### 11.2 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: a deque makes Dijkstra unnecessary for {0, 1} weights
 
 When every edge costs 0 or 1, you do not need a priority queue. Push a **0-cost** neighbour to the **front** (it is at
 the same distance as the node you are on) and a **1-cost** neighbour to the **back**. The deque stays sorted by
@@ -704,7 +715,7 @@ Part 6, exposed as a data structure. (Two stacks with a running minimum each ach
 
 ### 11.5 A queue *between threads* is a different tool
 
-`collections.deque` is fast and its `append`/`popleft` are atomic under the GIL, but it never **blocks** and has no
+`collections.deque` is fast and its `append`/`popleft` are atomic under the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr>, but it never **blocks** and has no
 notion of "full". A producer/consumer pipeline wants `queue.Queue`: `put` blocks when the queue is full
 (**backpressure** — a fast producer is slowed instead of exhausting memory) and `get` blocks when it is empty.
 
@@ -721,7 +732,7 @@ q.put(None); q.join()                                # join() waits until every 
 ```
 
 `queue.LifoQueue` is the thread-safe stack and `queue.PriorityQueue` the thread-safe heap. Across processes use
-`multiprocessing.Queue`; in `asyncio` use `asyncio.Queue` (the same API, awaitable).
+`multiprocessing.Queue`; in `asyncio` use `asyncio.Queue` (the same <abbr title="Application Programming Interface">API</abbr>, awaitable).
 
 ### 11.6 Two kinds of "full"
 
@@ -739,9 +750,9 @@ list(d)              # [2, 3, 4] — the two oldest were dropped silently
 
 | Follow-up | The answer |
 |---|---|
-| "Why is BFS shortest-path correct?" | FIFO order means all nodes at distance `d` leave the queue before any at `d + 1`, so the first time a node is *reached* is by a shortest path (unweighted edges only). |
-| "Weighted edges?" | 0/1 → 0-1 BFS; arbitrary non-negative → Dijkstra with a heap (topic 15). |
-| "How would you do it from both ends?" | Bidirectional BFS: expand the smaller frontier each round — roughly the square root of the states. |
+| "Why is <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> shortest-path correct?" | <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> order means all nodes at distance `d` leave the queue before any at `d + 1`, so the first time a node is *reached* is by a shortest path (unweighted edges only). |
+| "Weighted edges?" | 0/1 → 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>; arbitrary non-negative → Dijkstra with a heap (topic 15). |
+| "How would you do it from both ends?" | Bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: expand the smaller frontier each round — roughly the square root of the states. |
 | "Memory is tight." | Store visited as a bitmap/array not a set; process level by level and drop old levels. |
 | "The queue must never grow without bound." | Bound it (`maxsize`) and choose: block the producer, reject, or overwrite the oldest. |
 | "Priority instead of arrival order." | A heap, not a queue (topic 12). |
@@ -753,13 +764,13 @@ list(d)              # [2, 3, 4] — the two oldest were dropped silently
 <!-- problem-map:start -->
 ## Part 12 · Every Problem in This Topic, by Pattern
 
-Six problems, four moves — two "implement one with the other" designs, a FIFO window, two ring buffers and one monotonic deque. Each **Trap** is one the tests in that problem's solution file actually trigger.
+Six problems, four moves — two "implement one with the other" designs, a <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> window, two ring buffers and one monotonic deque. Each **Trap** is one the tests in that problem's solution file actually trigger.
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
 | [001 · Implement Queue using Stacks](PyDSA/07_queue_deque/001_implement_queue_using_stacks_solution.py) <br>LC 232 · Easy | Two stacks, one direction each | Every `push` goes on `in_stack`; when `out_stack` is empty, drain `in_stack` into it — that reverses the order, so the oldest item ends up on top. Amortised O(1). **Trap:** draining on *every* `pop` (O(n) per call); implementing `peek` by popping and forgetting to restore. |
 | [002 · Implement Stack using Queues](PyDSA/07_queue_deque/002_implement_stack_using_queues_solution.py) <br>LC 225 · Easy | One queue + rotation | Append the new element, then rotate the `len(q) - 1` older elements behind it so the newest sits at the front, ready for `popleft`. `push` is O(n), `pop` O(1). **Trap:** rotating *before* appending; rotating `len(q)` times (the new element cycles back to the rear). |
-| [003 · Number of Recent Calls](PyDSA/07_queue_deque/003_number_of_recent_calls_solution.py) <br>LC 933 · Easy | FIFO sliding count | Enqueue each timestamp and evict from the front while it has aged out of `[t - 3000, t]`; timestamps strictly increase, so the front is always the oldest. **Trap:** `<=` instead of `<` (evicts the inclusive boundary); `if` instead of `while` (stale entries survive a long gap). |
+| [003 · Number of Recent Calls](PyDSA/07_queue_deque/003_number_of_recent_calls_solution.py) <br>LC 933 · Easy | <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> sliding count | Enqueue each timestamp and evict from the front while it has aged out of `[t - 3000, t]`; timestamps strictly increase, so the front is always the oldest. **Trap:** `<=` instead of `<` (evicts the inclusive boundary); `if` instead of `while` (stale entries survive a long gap). |
 | [004 · Design Circular Queue](PyDSA/07_queue_deque/004_design_circular_queue_solution.py) <br>LC 622 · Medium | Fixed ring buffer | An array, a `head` and an explicit `size`; the insert slot is *derived* as `(head + size) % cap`, never stored. **Trap:** advancing with `+ 1` and no modulo; telling empty from full by `head == tail` alone (identical states). |
 | [005 · Design Circular Deque](PyDSA/07_queue_deque/005_design_circular_deque_solution.py) <br>LC 641 · Medium | Ring buffer, both ends | 004 generalised so `head` can move backwards: `insertFront` sets `head = (head - 1) % cap` **before** writing; `deleteLast` just shrinks `size`. **Trap:** writing before moving `head`; assuming a negative `%` is fine in another language (Python's is; Go's and Java's are not). |
 | [006 · Shortest Subarray with Sum at Least K](PyDSA/07_queue_deque/006_shortest_subarray_with_sum_at_least_k_solution.py) <br>LC 862 · Hard | Monotonic deque over prefix sums | Negatives break the sliding window, so use prefix sums plus a deque of indices with increasing prefix values: pop the front *while* the sum is big enough, pop the back while it is `>=` the new prefix. **Trap:** reaching for a window (the sign constraint *is* the problem); `if` instead of `while` on the front pop. |
@@ -769,7 +780,7 @@ Six problems, four moves — two "implement one with the other" designs, a FIFO 
 
 ## Checklist Before Leaving This Topic
 
-- [ ] I can state the FIFO vs LIFO distinction in one sentence and never
+- [ ] I can state the <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> vs <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> distinction in one sentence and never
       confuse enqueue/dequeue with push/pop under pressure.
 - [ ] I can derive the two-stack queue and state exactly why `dequeue` is
       amortized O(1) — "each element moves at most 4 times total across
@@ -791,8 +802,8 @@ Six problems, four moves — two "implement one with the other" designs, a FIFO 
       is found (can only get worse later), back pops when a newer index
       has a smaller-or-equal prefix (strictly better on both axes).
 </content>
-- [ ] Say why a node is marked visited on *enqueue*, not on dequeue, in BFS <!--ca-->
-- [ ] Write multi-source BFS and the level-by-level `for _ in range(len(q))` idiom <!--ca-->
-- [ ] Explain 0-1 BFS: 0-cost neighbours to the front, 1-cost to the back <!--ca-->
+- [ ] Say why a node is marked visited on *enqueue*, not on dequeue, in <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> <!--ca-->
+- [ ] Write multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> and the level-by-level `for _ in range(len(q))` idiom <!--ca-->
+- [ ] Explain 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: 0-cost neighbours to the front, 1-cost to the back <!--ca-->
 - [ ] Say what `queue.Queue` adds over `collections.deque` (blocking, bounded, backpressure) <!--ca-->
 - [ ] Choose reject vs overwrite-oldest for a full ring buffer <!--ca-->

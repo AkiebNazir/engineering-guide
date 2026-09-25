@@ -1,6 +1,6 @@
 # 030 — Design an LLM-Powered Assistant Feature
 
-Design an AI writing assistant inside an email product: users ask it to summarise long threads, draft replies, and answer questions about their own mail.
+Design an <abbr title="Artificial Intelligence">AI</abbr> writing assistant inside an email product: users ask it to summarise long threads, draft replies, and answer questions about their own mail.
 
 ## Functional requirements
 
@@ -23,7 +23,7 @@ Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
 2. Back-of-envelope estimates: request rate, tokens per second, GPU capacity, and cost drivers.
-3. API contract, including streaming and quotas.
+3. <abbr title="Application Programming Interface">API</abbr> contract, including streaming and quotas.
 4. Baseline architecture: gateway, orchestration, retrieval over the mailbox, model serving.
 5. Serving capacity: batching, KV and prefix caching, model routing, and handling peaks.
 6. Quotas and rate limits, safety and prompt injection, privacy, evaluation, and fallbacks.

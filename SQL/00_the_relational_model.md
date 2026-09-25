@@ -42,7 +42,7 @@ entire reason to use one:
    and refuses to delete a customer who still has orders (unless you explicitly say
    otherwise). Nothing like this exists between two spreadsheet tabs.
 3. **A query language, not manual lookup.** "Give me every customer in Japan who
-   placed an order over $100 last month, sorted by total spend" is one SQL query.
+   placed an order over $100 last month, sorted by total spend" is one <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> query.
    In a spreadsheet, it's a chain of manually-maintained filters, VLOOKUPs, and
    pivot tables that silently go stale the moment the data changes shape.
 

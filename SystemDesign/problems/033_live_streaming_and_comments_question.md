@@ -23,10 +23,10 @@ Design a live video platform in the spirit of Twitch, YouTube Live or Facebook L
 Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
-2. Back-of-envelope QPS, storage, and bandwidth estimates.
-3. API contracts and core data model.
+2. Back-of-envelope <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage, and bandwidth estimates.
+3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
-5. Ingest and redundancy, the live transcoding ladder and packaging with a latency budget by stage, CDN fan-out with origin protection for one mega-stream, live comment and reaction fan-out to millions, and the moderation pipeline.
+5. Ingest and redundancy, the live transcoding ladder and packaging with a latency budget by stage, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> fan-out with origin protection for one mega-stream, live comment and reaction fan-out to millions, and the moderation pipeline.
 6. Cache, scale, abuse, failure, and observability plan.
 7. One explicit trade-off you would revisit at 100× traffic or multi-region.
 

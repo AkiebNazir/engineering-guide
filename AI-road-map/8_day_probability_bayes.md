@@ -2,9 +2,9 @@
 
 Welcome to Phase 2! You have officially survived the deterministic world of Linear Algebra and Calculus. 
 
-In Phase 1, if you multiplied $2 \times 3$, the answer was always $6$. But the real world is noisy, unpredictable, and full of missing information. How do we teach an AI to make decisions when it doesn't have all the facts? We use **Probability**. 
+In Phase 1, if you multiplied $2 \times 3$, the answer was always $6$. But the real world is noisy, unpredictable, and full of missing information. How do we teach an <abbr title="Artificial Intelligence">AI</abbr> to make decisions when it doesn't have all the facts? We use **Probability**. 
 
-Today, we learn how AI models uncertainty, how they update their beliefs when they see new evidence, and the mathematical theorem that underpins everything from spam filters to self-driving cars.
+Today, we learn how <abbr title="Artificial Intelligence">AI</abbr> models uncertainty, how they update their beliefs when they see new evidence, and the mathematical theorem that underpins everything from spam filters to self-driving cars.
 
 ---
 
@@ -23,8 +23,8 @@ Before we can calculate probabilities, we have to agree on the fundamental laws 
 > Rule 2: $P(1) + P(2) + P(3) + P(4) + P(5) + P(6) = \frac{6}{6} = 1.0$.
 > Rule 3: $P(\text{rolling a 1 OR a 2}) = P(1) + P(2) = \frac{1}{6} + \frac{1}{6} = \frac{2}{6}$.
 > 
-> **AI Context (The Softmax Function):** 
-> When an LLM like ChatGPT guesses the next word, it outputs a raw array of numbers (logits). Some are negative, some are huge. The AI applies a "Softmax" function to these numbers. Softmax mathematically forces the outputs to obey the Kolmogorov Axioms: it squishes all negative numbers to be $\ge 0$, and forces the entire array to sum perfectly to $1.0$. Without Softmax, the AI's output is mathematically meaningless.
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (The Softmax Function):** 
+> When an <abbr title="Large Language Model">LLM</abbr> like ChatGPT guesses the next word, it outputs a raw array of numbers (logits). Some are negative, some are huge. The <abbr title="Artificial Intelligence">AI</abbr> applies a "Softmax" function to these numbers. Softmax mathematically forces the outputs to obey the Kolmogorov Axioms: it squishes all negative numbers to be $\ge 0$, and forces the entire array to sum perfectly to $1.0$. Without Softmax, the <abbr title="Artificial Intelligence">AI</abbr>'s output is mathematically meaningless.
 
 ### 2. Joint, Marginal, and Conditional Probability
 To understand how variables interact, we use three distinct viewpoints:
@@ -39,7 +39,7 @@ To understand how variables interact, we use three distinct viewpoints:
 > **Marginal $P(\text{Red})$:** Half the deck is red, regardless of the face value. $P = \frac{26}{52} = 50\%$.
 > **Conditional $P(\text{King} | \text{Red})$:** Imagine I draw a card, peek at it, and tell you "It is Red!" Now, your universe has shrunk from 52 cards to only 26 cards. Out of those 26 red cards, 2 are Kings. $P = \frac{2}{26} = 7.6\%$. 
 > 
-> **AI Context (Language Modeling):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Language Modeling):** 
 > Large Language Models (LLMs) are purely massive Conditional Probability engines. When generating text, they calculate $P(\text{Word}_n | \text{Word}_{n-1}, \text{Word}_{n-2}, \dots)$. They are calculating the probability of the *next* word, strictly conditional on the context of the words that came before it.
 
 ### 3. Bayes' Theorem: How to Update Your Beliefs
@@ -63,14 +63,14 @@ Where:
 > $P(\text{Disease} | \text{Positive Test}) = \frac{0.90 \times 0.01}{0.05} = \frac{0.009}{0.05} = 0.18$
 > **Result:** Even though the test is 90% accurate, because the disease is so rare, you only have an **18% chance** of actually being sick! 
 > 
-> **AI Context (Machine Learning Core):** 
-> This is how AI "learns". Initially, a neural network's weights are random (The Prior). It looks at a batch of training data and sees how likely that data is given its current weights (The Likelihood). It then uses calculus to update its weights to become smarter (The Posterior). That Posterior then becomes the *new* Prior for the next batch of data!
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Machine Learning Core):** 
+> This is how <abbr title="Artificial Intelligence">AI</abbr> "learns". Initially, a neural network's weights are random (The Prior). It looks at a batch of training data and sees how likely that data is given its current weights (The Likelihood). It then uses calculus to update its weights to become smarter (The Posterior). That Posterior then becomes the *new* Prior for the next batch of data!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG
 
-Let's build a classic AI system entirely from scratch using only Probability: A **Naive Bayes Spam Classifier**. 
+Let's build a classic <abbr title="Artificial Intelligence">AI</abbr> system entirely from scratch using only Probability: A **Naive Bayes Spam Classifier**. 
 
 It is called "Naive" because it makes the massive assumption that every word in an email is completely independent of every other word *(which is linguistically false, but mathematically highly effective)*.
 
@@ -187,18 +187,18 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **Log-Probabilities:** Because probabilities are decimals between 0 and 1, multiplying thousands of them together (for a long email) will cause a computer's 32-bit float limit to round the answer to absolute zero (Underflow). By taking the `np.log()` of the probabilities, we can safely *add* them together instead!
-2. **Laplace Smoothing:** Notice the `+ 1` in the math. This is a critical statistical trick. If your AI encounters a completely new word it has never seen before, its count is 0. If you don't add 1, the probability $P(\text{Word}) = 0$, and multiplying *anything* by 0 destroys the entire equation. Laplace smoothing ensures no probability is ever truly zero.
+2. **Laplace Smoothing:** Notice the `+ 1` in the math. This is a critical statistical trick. If your <abbr title="Artificial Intelligence">AI</abbr> encounters a completely new word it has never seen before, its count is 0. If you don't add 1, the probability $P(\text{Word}) = 0$, and multiplying *anything* by 0 destroys the entire equation. Laplace smoothing ensures no probability is ever truly zero.
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: The Medical Diagnostic AI
+### 🛠️ The Challenge: The Medical Diagnostic <abbr title="Artificial Intelligence">AI</abbr>
 **Your Task:** Create a file named `diagnostic_bayes.py`.
 
-You are building an AI tool for doctors. 
+You are building an <abbr title="Artificial Intelligence">AI</abbr> tool for doctors. 
 1. The disease **Z-Flu** affects 3% of the population (The Prior).
-2. The AI uses a symptom checker. If a patient has Z-Flu, they have a 85% chance of reporting a "Fever" (The Likelihood).
+2. The <abbr title="Artificial Intelligence">AI</abbr> uses a symptom checker. If a patient has Z-Flu, they have a 85% chance of reporting a "Fever" (The Likelihood).
 3. If a patient does *not* have Z-Flu (they are just healthy/have a cold), they still have a 20% chance of reporting a "Fever" (The False Positive Likelihood).
 4. Write a script that asks the user if they have a fever (Yes/No).
 5. If they say Yes, use Bayes' Theorem to calculate the exact percentage chance they have Z-Flu, and print it to the screen. 
@@ -210,7 +210,7 @@ You are building an AI tool for doctors.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"A production fraud detection system for our payment gateway processes 10 million transactions a day. The base rate of fraud is incredibly low: 0.1%. Your new ML model has 99% Recall (it catches 99% of actual fraud) and 95% Precision (when it flags fraud, it's correct 95% of the time on a balanced dataset). If the system flags a live transaction in production, what is the actual probability that it is fraudulent? Explain your reasoning."*
+*"A production fraud detection system for our payment gateway processes 10 million transactions a day. The base rate of fraud is incredibly low: 0.1%. Your new <abbr title="Machine Learning">ML</abbr> model has 99% Recall (it catches 99% of actual fraud) and 95% Precision (when it flags fraud, it's correct 95% of the time on a balanced dataset). If the system flags a live transaction in production, what is the actual probability that it is fraudulent? Explain your reasoning."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:

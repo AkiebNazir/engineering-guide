@@ -125,7 +125,7 @@ sort.Slice(tasks, func(i, j int) bool { return tasks[i].Priority < tasks[j].Prio
 
 > ⚠️ If a later step in your algorithm depends on "elements with equal keys
 > keep their input order" — e.g. you sorted by priority and now rely on
-> insertion order as a tiebreak for FIFO processing — using `sort.Slice`
+> insertion order as a tiebreak for <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> processing — using `sort.Slice`
 > instead of `sort.SliceStable` is a real, silent correctness bug. Python's
 > `list.sort()`/`sorted()` (Timsort) is *always* stable, so this class of bug
 > does not exist when porting from Python — it is introduced by moving to Go.
@@ -465,7 +465,7 @@ slices.SortFunc(ps, func(a, b P) int { return cmp.Or(cmp.Compare(b.age, a.age), 
 **Never write `a - b` as the comparator.** It overflows, silently. Measured: `slices.SortFunc(xs, func(a, b int) int { return a - b })`
 on `[MaxInt64, -5, MinInt64+1, 3]` returned `[9223372036854775807 -9223372036854775807 -5 3]` — not sorted — while
 `cmp.Compare[int]` sorted it. The same bug shows up with `int32` keys: `int(a - b)` on `[2000000000, -2000000000, 0, 5]`
-computes the subtraction in `int32`, wraps, and leaves the slice unsorted. Other API facts: `sort.Sort(sort.Reverse(sort.IntSlice(xs)))`
+computes the subtraction in `int32`, wraps, and leaves the slice unsorted. Other <abbr title="Application Programming Interface">API</abbr> facts: `sort.Sort(sort.Reverse(sort.IntSlice(xs)))`
 also sorts descending; `slices.Sort` orders **NaN before every other float** (`[3 NaN 1 NaN 2]` → `[NaN NaN 1 2 3]`); `slices.Sort`
 works directly on `[]rune` and `[]byte` (`"hello"` → `"ehllo"`), and `sort.Slice(5, …)` panics because it needs a slice.
 
@@ -507,20 +507,24 @@ Parts 2–3 give the textbook versions; three of them have real weaknesses in Go
 merge sort that allocates at every level, a counting sort that panics on negatives). Every snippet below was compiled with
 `go vet` and checked against `slices.Sort` on random input (500 cases per sort, lengths 0–59, values in `[-10, 9]`).
 
-```mermaid
+```arch
 %% caption: Choosing a sort in Go. The standard library covers most cases; hand-rolled sorts are for stability, bounded keys or the interview itself.
-flowchart TD
-  Q(["Sort a slice in Go"]) --> A{"Keys are small integers?"}
-  A -->|"yes"| B["counting sort, or LSD radix for 32-bit keys"]:::ok
-  A -->|"no"| C{"Equal keys must keep input order?"}
-  C -->|"yes"| D["slices.SortStableFunc,<br/>or an index tiebreak, or a one-buffer merge sort"]:::hot
-  C -->|"no"| E["slices.Sort / slices.SortFunc (pdqsort)"]:::ok
-  E --> F{"Comparator subtracts?"}
-  F -->|"yes"| G["use cmp.Compare - subtraction overflows"]:::bad
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 240x80
+node q "Sort a slice in Go" at 0,0 shape=pill
+node a "Keys are small\nintegers?" at 0,1 shape=diamond color=amber
+node b "Counting sort" at 1,1 color=green w=260 sub="or LSD radix for 32-bit keys"
+node c "Equal keys must\nkeep input order?" at 0,2 shape=diamond color=amber w=250
+node d "slices.SortStableFunc" at 1,2 color=amber w=260 sub="or an index tiebreak, or a one-buffer merge sort"
+node e "slices.Sort / slices.SortFunc" at 0,3 color=green w=230 sub="pdqsort"
+node f "Comparator subtracts?" at 0,4 shape=diamond color=amber
+node g "Use cmp.Compare" at 1,4 color=red w=260 sub="subtraction overflows"
+q -> a
+a -> b : "yes"
+a -> c : "no"
+c -> d : "yes"
+c -> e : "no"
+e -> f
+f -> g : "yes"
 ```
 
 ### 9.1 Quicksort with a 3-way partition — and why the Lomuto version is quadratic on duplicates
@@ -566,22 +570,25 @@ func quick3(a []int, lo, hi int) { // random pivot + Dutch-flag partition; recur
 The inner loop is Problem 003's Dutch national flag with the pivot chosen at random instead of fixed to `1`. Looping on the
 larger side and recursing on the smaller keeps the stack at O(log n) even when the partitions are lopsided.
 
-```mermaid
+```arch
 %% caption: Dutch national flag: one pass, three regions. The 2 case does not advance mid because the swapped-in value is still unexamined.
-flowchart TD
-  A["lo = 0, mid = 0, hi = n - 1"] --> B{"mid is at most hi ?"}
-  B -->|no| Z["sorted"]:::ok
-  B -->|yes| C{"nums[mid]"}
-  C -->|"0"| D["swap(lo, mid)<br/>lo += 1, mid += 1"]
-  C -->|"1"| E["mid += 1"]
-  C -->|"2"| F["swap(mid, hi), hi -= 1<br/>do NOT advance mid"]:::hot
-  D --> B
-  E --> B
-  F --> B
-    classDef hot stroke:#d99a2b,stroke-width:2.5px
-    classDef ok stroke:#3fa66b,stroke-width:2.5px
-    classDef bad stroke:#d9534f,stroke-width:2.5px
-    classDef dim stroke-dasharray:4 3
+grid 180x80
+node a "lo = 0, mid = 0, hi = n - 1" at 1,0 shape=pill w=240
+node b "mid ≤ hi ?" at 1,1 shape=diamond color=amber
+node z "sorted" at 0,1 color=green
+node c "nums[mid]" at 1,2 shape=diamond color=amber
+node d "swap(lo, mid)" at 2,2 w=190 sub="lo += 1, mid += 1"
+node e "mid += 1" at 2,3 w=190
+node f "swap(mid, hi), hi -= 1" at 2,4 color=amber w=190 sub="do NOT advance mid"
+a -> b
+b -> z : "no"
+b -> c : "yes"
+c:R -> d:L : "0"
+c:R -> e:L : "1"
+c:R -> f:L : "2"
+d:R -> b:R
+e:R -> b:R
+f:R -> b:R
 ```
 
 ### 9.2 Merge sort with one buffer, and bottom-up

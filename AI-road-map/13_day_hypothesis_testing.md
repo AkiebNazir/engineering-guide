@@ -1,8 +1,8 @@
 # Day 13: Hypothesis Testing, Confidence Intervals & A/B Testing
 
-Welcome to Day 13. You have spent the last 12 days learning how to build complex AI models. Today, we confront the harsh reality of the business world. 
+Welcome to Day 13. You have spent the last 12 days learning how to build complex <abbr title="Artificial Intelligence">AI</abbr> models. Today, we confront the harsh reality of the business world. 
 
-When you deploy a new AI recommendation engine to production, your product manager is going to ask: *"Did your model actually increase our sales by 5%, or did we just get lucky this week?"* 
+When you deploy a new <abbr title="Artificial Intelligence">AI</abbr> recommendation engine to production, your product manager is going to ask: *"Did your model actually increase our sales by 5%, or did we just get lucky this week?"* 
 
 If you cannot mathematically prove that your model is the direct cause of the success, your model will be deleted. We prove causation using **Hypothesis Testing and A/B Testing**.
 
@@ -11,21 +11,21 @@ If you cannot mathematically prove that your model is the direct cause of the su
 ## 🕒 HOUR 1: DEEP THEORY & MATHEMATICS
 
 ### 1. The Null and Alternative Hypothesis
-In statistics, you must assume your new AI model is garbage until proven otherwise. This is the foundation of the scientific method.
+In statistics, you must assume your new <abbr title="Artificial Intelligence">AI</abbr> model is garbage until proven otherwise. This is the foundation of the scientific method.
 
-- **Null Hypothesis ($H_0$):** The default, boring assumption. *(e.g., "The new AI model had exactly zero impact on user clicks.")*
-- **Alternative Hypothesis ($H_A$):** Your actual theory. *(e.g., "The new AI model increased user clicks.")*
+- **Null Hypothesis ($H_0$):** The default, boring assumption. *(e.g., "The new <abbr title="Artificial Intelligence">AI</abbr> model had exactly zero impact on user clicks.")*
+- **Alternative Hypothesis ($H_A$):** Your actual theory. *(e.g., "The new <abbr title="Artificial Intelligence">AI</abbr> model increased user clicks.")*
 
 ### 2. The P-Value (The Most Misunderstood Number in Science)
 To decide between $H_0$ and $H_A$, we calculate a **p-value**.
 A p-value is **NOT** the probability that your hypothesis is right. 
 
 **Algebraic Definition:**
-A p-value is $P(\text{Data} | H_0)$. It asks: *"Assuming the new AI model is actually garbage, what are the chances we would see this 5% spike in sales just due to random luck?"*
+A p-value is $P(\text{Data} | H_0)$. It asks: *"Assuming the new <abbr title="Artificial Intelligence">AI</abbr> model is actually garbage, what are the chances we would see this 5% spike in sales just due to random luck?"*
 
 > **Mathematical Example (Concrete Numbers):**
 > You run an A/B test. The p-value comes back as $0.02$ (or 2%). 
-> This means: If the AI model was completely broken and did nothing, there is only a 2% chance you would have randomly gotten this lucky. Because 2% is so low (usually $\le 5\%$), we **reject the Null Hypothesis** and conclude the AI model actually works!
+> This means: If the <abbr title="Artificial Intelligence">AI</abbr> model was completely broken and did nothing, there is only a 2% chance you would have randomly gotten this lucky. Because 2% is so low (usually $\le 5\%$), we **reject the Null Hypothesis** and conclude the <abbr title="Artificial Intelligence">AI</abbr> model actually works!
 
 ### 3. Type I and Type II Errors
 Because A/B testing relies on probability, it is never 100% perfect. You will make mistakes.
@@ -48,14 +48,14 @@ What happens if you run 20 A/B tests at the exact same time, using the standard 
 > The math for getting zero False Positives across 20 tests is: $(0.95)^{20} \approx 0.36$.
 > This means there is a $1.0 - 0.36 = 64\%$ chance that at least one of your "winning" A/B tests is a complete hallucination!
 > 
-> **AI Context (Bonferroni Correction):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Bonferroni Correction):** 
 > To stop this, statisticians use the **Bonferroni Correction**. You divide your $p$-value threshold by the number of tests you are running. If you run 20 tests, your new threshold for success is $0.05 / 20 = 0.0025$. Only models with a p-value lower than $0.0025$ are allowed to ship to production!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG
 
-Let's write a script that proves how powerful the **Bootstrap Method** is. We don't need any complex probability math to calculate exactly how much money our new AI model is making the company.
+Let's write a script that proves how powerful the **Bootstrap Method** is. We don't need any complex probability math to calculate exactly how much money our new <abbr title="Artificial Intelligence">AI</abbr> model is making the company.
 
 Create a file named `ab_testing_bootstrap.py`:
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **Sampling with Replacement:** The secret to Bootstrapping is `replace=True`. If you have a dataset of `[1, 2, 3]`, a bootstrap sample might be `[1, 1, 3]`. This accurately mimics the variance of drawing new users from the general population.
-2. **Visual Proof:** Look at `bootstrap_ab_test.png`. The entire purple bell curve shows all the possible parallel realities. If that red lower-bound line crosses the black $0.00 line, it means there is a highly realistic parallel universe where your AI model actually *lost* money. You cannot ship it.
+2. **Visual Proof:** Look at `bootstrap_ab_test.png`. The entire purple bell curve shows all the possible parallel realities. If that red lower-bound line crosses the black $0.00 line, it means there is a highly realistic parallel universe where your <abbr title="Artificial Intelligence">AI</abbr> model actually *lost* money. You cannot ship it.
 
 ---
 
@@ -145,10 +145,10 @@ if __name__ == "__main__":
 
 You need to tell the Product Manager how long to run the A/B test.
 1. Write a `for` loop that tests different sample sizes: `[100, 500, 1000, 5000]`.
-2. Inside the loop, run 1,000 mini A/B tests using `np.random.normal`. Group A mean is 50, Group B mean is 52. (The AI definitely works, it makes +$2).
+2. Inside the loop, run 1,000 mini A/B tests using `np.random.normal`. Group A mean is 50, Group B mean is 52. (The <abbr title="Artificial Intelligence">AI</abbr> definitely works, it makes +$2).
 3. For each test, run a `scipy.stats.ttest_ind` to get the p-value.
 4. Count how many times the p-value is $< 0.05$. Divide by 1,000 to get the **Power** percentage.
-5. **The Revelation:** You will see that at `N=100`, the Power is maybe 15%. This means even though your AI model is brilliantly successful, you will wrongly delete it 85% of the time (Type II Error) simply because your sample size was too small to mathematically prove it!
+5. **The Revelation:** You will see that at `N=100`, the Power is maybe 15%. This means even though your <abbr title="Artificial Intelligence">AI</abbr> model is brilliantly successful, you will wrongly delete it 85% of the time (Type II Error) simply because your sample size was too small to mathematically prove it!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -170,6 +170,6 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Suggest implementing the **False Discovery Rate (FDR)** control using the Benjamini-Hochberg procedure. This is the industry standard for MAANG platforms. It guarantees that out of all the "winning" tests you ship to production, no more than exactly 5% of them are fake.
 
 ---
-**Task for the end of the day:** Commit your code to Git. You now have the statistical armor required to defend your AI models in a corporate boardroom. 
+**Task for the end of the day:** Commit your code to Git. You now have the statistical armor required to defend your <abbr title="Artificial Intelligence">AI</abbr> models in a corporate boardroom. 
 
 Tomorrow, in **Day 14**, we reach the end of Week 2! We will conduct a massive review of Probability, bringing it all together into a **Probabilistic Graphical Model**.

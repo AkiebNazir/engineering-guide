@@ -26,64 +26,57 @@ sequenceDiagram
 ## 1. Core Architecture & System Design
 
 ### Deep Dive
-**REST** (Representational State Transfer) is an architectural style rather than a strict protocol. It relies heavily on standard HTTP mechanics (GET, POST, PUT, DELETE) and treats data as "Resources" accessed via URIs.
-- **Transport Layer**: Usually HTTP/1.1 (though HTTP/2 is increasingly used). It relies on standard TCP connections.
+**<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>** (Representational State Transfer) is an architectural style rather than a strict protocol. It relies heavily on standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> mechanics (GET, POST, PUT, DELETE) and treats data as "Resources" accessed via URIs.
+- **Transport Layer**: Usually <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 (though <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 is increasingly used). It relies on standard <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connections.
 - **Statelessness**: Every request must contain all the information the server needs to fulfill it (e.g., Auth headers). The server does not store client context between requests.
 - **Request/Response Lifecycle**:
-  1. **Client Request**: Initiates an HTTP request to a specific URI (e.g., `GET /users/123`).
+  1. **Client Request**: Initiates an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request to a specific URI (e.g., `GET /users/123`).
   2. **Headers & Payload**: Includes Accept headers (usually `application/json`) and Auth tokens.
-  3. **Server Routing**: An API Gateway or Load Balancer routes the HTTP request to a specific handler.
-  4. **Processing**: The backend fetches data, serializes it to JSON, and assigns an appropriate HTTP Status Code (200, 404, 500).
-  5. **Response**: The client receives the JSON payload and closes the connection (or keeps it alive for reuse).
+  3. **Server Routing**: An <abbr title="Application Programming Interface">API</abbr> Gateway or Load Balancer routes the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request to a specific handler.
+  4. **Processing**: The backend fetches data, serializes it to <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, and assigns an appropriate <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Status Code (200, 404, 500).
+  5. **Response**: The client receives the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> payload and closes the connection (or keeps it alive for reuse).
 
 ### Trade-offs
 **Pros:**
-- **Ubiquity**: Every language, framework, and browser natively understands HTTP and JSON.
-- **Caching**: HTTP caching mechanisms (ETag, Cache-Control, CDNs) work out-of-the-box for GET requests.
-- **Decoupling**: The client and server are completely decoupled. The server can change its internal structure as long as the JSON contract remains intact.
-- **Human Readable**: JSON payloads are easy to debug in the browser network tab.
+- **Ubiquity**: Every language, framework, and browser natively understands <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> and <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
+- **Caching**: <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching mechanisms (ETag, Cache-Control, CDNs) work out-of-the-box for GET requests.
+- **Decoupling**: The client and server are completely decoupled. The server can change its internal structure as long as the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> contract remains intact.
+- **Human Readable**: <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> payloads are easy to debug in the browser network tab.
 
 **Cons:**
-- **Over-fetching & Under-fetching**: A REST endpoint returns a fixed payload. If you only need a user's name, but `GET /users/1` returns 50 fields, you over-fetch. If you also need their recent posts, you must make a second request (under-fetching).
-- **Payload Size**: JSON is text-based and verbose compared to binary formats like Protobuf.
-- **Lack of Strict Contracts**: While OpenAPI/Swagger exists, REST does not strictly enforce types at the protocol level.
+- **Over-fetching & Under-fetching**: A <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> endpoint returns a fixed payload. If you only need a user's name, but `GET /users/1` returns 50 fields, you over-fetch. If you also need their recent posts, you must make a second request (under-fetching).
+- **Payload Size**: <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is text-based and verbose compared to binary formats like Protobuf.
+- **Lack of Strict Contracts**: While OpenAPI/Swagger exists, <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> does not strictly enforce types at the protocol level.
 
 ### System Design Fit
 **Optimal Scenarios:**
-- **Public-Facing Web APIs**: Providing an API to external developers (e.g., Stripe, Twilio, GitHub).
-- **Standard CRUD Applications**: Admin dashboards, content management systems, blogs.
+- **Public-Facing Web APIs**: Providing an <abbr title="Application Programming Interface">API</abbr> to external developers (e.g., Stripe, Twilio, GitHub).
+- **Standard <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> Applications**: Admin dashboards, content management systems, blogs.
 - **Stateless Microservices**: Services that require heavy caching via CDNs.
 
 **Anti-Patterns:**
-- **High-Frequency Real-time Data**: Polling a REST endpoint every second is extremely inefficient. Use WebSockets.
-- **Complex Inter-Service Communication**: Microservices requiring massive throughput and strict type safety should use gRPC.
+- **High-Frequency Real-time Data**: Polling a <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> endpoint every second is extremely inefficient. Use WebSockets.
+- **Complex Inter-Service Communication**: Microservices requiring massive throughput and strict type safety should use <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>.
 
 ---
 
 ## 2. Diagrams & Animated Visualizations
 
 ### Architecture Diagram
-```mermaid
-graph LR
-    subgraph Client [Web Browser / Mobile App]
-        A[HTTP Client]
-    end
-
-    subgraph CDN_Layer [CDN / Caching Layer]
-        B[Cloudflare / Varnish]
-    end
-
-    subgraph Server_Cluster [Backend Microservices]
-        C[API Gateway / LB]
-        D[User Service]
-        E[Order Service]
-        
-        C -->|Route /users| D
-        C -->|Route /orders| E
-    end
-    
-    A -->|GET /users/123| B
-    B -->|Cache Miss| C
+```arch
+%% caption: A request passes through the CDN cache first, and only misses reach the gateway that routes by path to each backend service.
+group Client "Web Browser / Mobile App" icon=browser color=slate
+node A "HTTP Client" at 1,0 in Client icon=browser
+group CDN_Layer "CDN / Caching Layer" icon=cdn color=purple
+node B "Cloudflare / Varnish" at 1,1 in CDN_Layer icon=cloudflare-icon
+group Server_Cluster "Backend Microservices" icon=server color=orange
+node C "API Gateway / LB" at 1,2 in Server_Cluster icon=gateway
+node D "User Service" at 0,3 in Server_Cluster icon=service
+node E "Order Service" at 2,3 in Server_Cluster icon=service
+A -> B : "GET /users/123"
+B -> C : "Cache Miss"
+C -> D : "Route /users"
+C -> E : "Route /orders"
 ```
 
 ### Animated Flow Visualization
@@ -132,8 +125,8 @@ Save the block below as an HTML file (e.g. `rest-anim.html`) or paste it into a 
 
 ## 3. Five Real-World Use Cases & Implementations
 
-### Use Case 1: Standard CRUD Entity (Users)
-**System Design Fit:** Exposing a public API to create and retrieve user data.
+### Use Case 1: Standard <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> Entity (Users)
+**System Design Fit:** Exposing a public <abbr title="Application Programming Interface">API</abbr> to create and retrieve user data.
 
 #### Golang (Server - `net/http`)
 ```go
@@ -267,8 +260,8 @@ async def fetch_feed():
 
 ---
 
-### Use Case 4: File Upload API (Multipart Form)
-**System Design Fit:** A user uploading a profile picture to AWS S3 via your backend REST API.
+### Use Case 4: File Upload <abbr title="Application Programming Interface">API</abbr> (Multipart Form)
+**System Design Fit:** A user uploading a profile picture to AWS S3 via your backend <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr>.
 
 #### Golang (Server)
 ```go

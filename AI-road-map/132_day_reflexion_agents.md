@@ -12,7 +12,7 @@ Today, we teach LLMs to act like humans. We learn **Reflexion**, a powerful arch
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The Reflexion Pattern
-Reflexion (with an 'x') is a famous AI paper that introduces a strict feedback loop:
+Reflexion (with an 'x') is a famous <abbr title="Artificial Intelligence">AI</abbr> paper that introduces a strict feedback loop:
 1. **Attempt:** The Generator Agent attempts the task (e.g., writes a Python function).
 2. **Evaluate:** The output is tested. This could be an automated Unit Test (did the code compile?) or an Evaluator Agent (does this essay have 3 metaphors?).
 3. **Reflect:** If the evaluation fails, the Generator Agent is forced to write a "Verbal Reflection". It must explicitly write down *why* it failed (e.g., *"I failed because I used a `while` loop instead of a `for` loop."*).
@@ -25,13 +25,13 @@ The Generator creates 3 *different* drafts. The Evaluator critiques all 3 and sc
 
 ### 3. Generator-Critic Architecture
 This is an adversarial setup used heavily in coding agents. 
-- The **Generator** is an LLM trying to write code.
-- The **Critic** is not an LLM. It is a literal Python compiler or `pytest` sandbox.
+- The **Generator** is an <abbr title="Large Language Model">LLM</abbr> trying to write code.
+- The **Critic** is not an <abbr title="Large Language Model">LLM</abbr>. It is a literal Python compiler or `pytest` sandbox.
 The Generator writes code. The Critic runs it, captures the giant red Traceback Error, and feeds it back to the Generator. They fight until the tests pass!
 
 ### 4. Adaptive Reflection
 Reflection is magic; it increases coding accuracy from $40\%$ to $80\%$. 
-But it multiplies token costs and latency by $4\times$ because the LLM is looping 4 times! 
+But it multiplies token costs and latency by $4\times$ because the <abbr title="Large Language Model">LLM</abbr> is looping 4 times! 
 **Adaptive Reflection** uses a fast Router to predict if reflection is needed. If the user asks *"What is 2+2?"*, the router skips reflection. If the user asks *"Write a React hook for websockets"*, the router enables the Reflexion loop.
 
 ---
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Verbal Reflection:** The key to Reflexion is not just telling the LLM "You failed." You must force the LLM to explicitly articulate *why* it failed in the `current_reflection` variable. This focuses the LLM's attention mechanism on the exact mistake for the next forward pass.
+1. **The Verbal Reflection:** The key to Reflexion is not just telling the <abbr title="Large Language Model">LLM</abbr> "You failed." You must force the <abbr title="Large Language Model">LLM</abbr> to explicitly articulate *why* it failed in the `current_reflection` variable. This focuses the <abbr title="Large Language Model">LLM</abbr>'s attention mechanism on the exact mistake for the next forward pass.
 2. **Quality Assurance (QA):** This architecture guarantees a baseline level of quality. The user never sees the first, lazy draft. They only see the polished, rubric-approved final draft.
 
 ---
@@ -136,7 +136,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Propose placing a fast, cheap router model (or a semantic classifier) in front of the Reflection loop.
 2. **Prediction Heuristics (When to Reflect):**
    - **Task Complexity:** If the prompt length is short or requires simple factual retrieval (*"Who is the CEO of Apple?"*), route to standard execution. If the prompt requires synthesis (*"Write an essay"*), route to Reflection.
-   - **Logprob Uncertainty:** Extract the Token Probabilities (`logprobs`) from the LLM's first generation. If the LLM generates the answer with $99\%$ confidence, skip reflection. If the LLM's confidence is hovering around $50\%$, it is uncertain and should be routed into a Reflection loop to double-check its work!
+   - **Logprob Uncertainty:** Extract the Token Probabilities (`logprobs`) from the <abbr title="Large Language Model">LLM</abbr>'s first generation. If the <abbr title="Large Language Model">LLM</abbr> generates the answer with $99\%$ confidence, skip reflection. If the <abbr title="Large Language Model">LLM</abbr>'s confidence is hovering around $50\%$, it is uncertain and should be routed into a Reflection loop to double-check its work!
 3. **The Budget Cap:**
    - Mention that you must enforce a strict `max_reflection_loops=3` budget constraint to prevent the agent from getting stuck in an infinite perfectionism loop.
 

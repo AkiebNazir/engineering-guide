@@ -80,7 +80,7 @@ Real output after this stage:
 
 `$group`'s `_id` is the grouping key (here, `customer_id`) — every other field is an accumulator (`$sum`, `$avg`, `$max`, `$min`, `$push` to collect values into an array, etc.) computed across all documents sharing that key. `cust_1`'s `114.47` is `2×29.99 + 1×4.99 + 1×49.5` across its 3 surviving line items; `cust_3` doesn't appear at all — it had no line items left after `$match` removed its only (February) order.
 
-### `$lookup` — MongoDB's answer to a SQL JOIN
+### `$lookup` — MongoDB's answer to a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> JOIN
 
 We have customer IDs, not names. `$lookup` performs a **left outer join** against another collection in the same database — this is the direct, explicit answer to "how do I join in MongoDB":
 

@@ -30,7 +30,7 @@ runtime checks that `panic` on mismatch (not just print-and-hope), and ends with
 | Level | What it teaches |
 |---|---|
 | 1 | The single most common use — one function/type, minimal example |
-| 2 | The core API surface — what covers 90% of real usage |
+| 2 | The core <abbr title="Application Programming Interface">API</abbr> surface — what covers 90% of real usage |
 | 3 | Combining basics into a small realistic idiom |
 | 4 | Error handling — the real error values/types, triggered for real |
 | 5 | An intermediate pattern specific to the package |

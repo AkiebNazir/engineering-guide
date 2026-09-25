@@ -1,8 +1,8 @@
 # Day 0: The AI Engineer's Lexicon & Mathematical Primer
 
-Welcome to Day 0. Before you begin the 180-day journey to becoming a Principal AI Engineer, you need the master key. 
+Welcome to Day 0. Before you begin the 180-day journey to becoming a Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer, you need the master key. 
 
-Advanced AI papers, documentation, and MAANG system design interviews use a highly specific vocabulary and set of mathematical symbols. If you don't know the symbols, the math looks like alien hieroglyphs. But once you understand the symbols, you will realize the math is just shorthand for simple logical operations.
+Advanced <abbr title="Artificial Intelligence">AI</abbr> papers, documentation, and MAANG system design interviews use a highly specific vocabulary and set of mathematical symbols. If you don't know the symbols, the math looks like alien hieroglyphs. But once you understand the symbols, you will realize the math is just shorthand for simple logical operations.
 
 This document is your permanent cheat sheet. Keep it open. Refer back to it whenever you see a symbol or concept you don't instantly recognize.
 
@@ -19,10 +19,10 @@ Don't try to visualize a 1,536-dimensional cube. Instead, think of a **dimension
 - **3D Space:** Three numbers. (e.g., Price, Square Footage, and Age).
 - **1,536D Space:** A list of 1,536 different numbers describing 1,536 different attributes of a word or sentence. 
 
-In AI, **High-Dimensional Geometry** just means we use math (like finding the distance between two points) on very long lists of numbers to figure out how similar two complex concepts are.
+In <abbr title="Artificial Intelligence">AI</abbr>, **High-Dimensional Geometry** just means we use math (like finding the distance between two points) on very long lists of numbers to figure out how similar two complex concepts are.
 
 ### Scalars, Vectors, Matrices, and Tensors
-These are the data structures of mathematics. Every piece of data in AI takes one of these forms:
+These are the data structures of mathematics. Every piece of data in <abbr title="Artificial Intelligence">AI</abbr> takes one of these forms:
 
 1. **Scalar (0D):** A single, regular number. 
    - *Example:* `42`, `3.14`, `-7`. 
@@ -41,7 +41,7 @@ These are the data structures of mathematics. Every piece of data in AI takes on
 
 ## 🧮 Part 2: The Master Symbol Glossary
 
-When reading AI papers (like the famous "Attention Is All You Need"), you will encounter these symbols.
+When reading <abbr title="Artificial Intelligence">AI</abbr> papers (like the famous "Attention Is All You Need"), you will encounter these symbols.
 
 ### 1. Spaces & Sets
 - $\mathbb{R}$: **The Set of Real Numbers.** Any number that isn't imaginary.
@@ -58,11 +58,11 @@ When reading AI papers (like the famous "Attention Is All You Need"), you will e
 - $A \odot B$: **Hadamard Product.** Element-wise multiplication. You literally just multiply the matching slots in two grids.
 
 ### 3. Calculus (Gradients & Optimization)
-*Calculus in AI is entirely about finding the slope of a curve so we know which way to adjust our weights to reduce errors.*
+*Calculus in <abbr title="Artificial Intelligence">AI</abbr> is entirely about finding the slope of a curve so we know which way to adjust our weights to reduce errors.*
 - $\Delta x$: **Delta.** A change or difference in $x$.
 - $\frac{d}{dx}$: **Derivative.** The rate of change of a function with respect to $x$ (the slope).
-- $\frac{\partial}{\partial x}$: **Partial Derivative.** The rate of change with respect to $x$, assuming all other variables are frozen. (Because AI models have billions of variables, we always use partial derivatives).
-- $\nabla L$: **Gradient (Nabla).** A vector containing all the partial derivatives of the Loss function. **This is the most important symbol in AI training.** It acts as a compass pointing toward the steepest uphill direction. To train a model, we take a step in the exact opposite direction ($-\nabla L$).
+- $\frac{\partial}{\partial x}$: **Partial Derivative.** The rate of change with respect to $x$, assuming all other variables are frozen. (Because <abbr title="Artificial Intelligence">AI</abbr> models have billions of variables, we always use partial derivatives).
+- $\nabla L$: **Gradient (Nabla).** A vector containing all the partial derivatives of the Loss function. **This is the most important symbol in <abbr title="Artificial Intelligence">AI</abbr> training.** It acts as a compass pointing toward the steepest uphill direction. To train a model, we take a step in the exact opposite direction ($-\nabla L$).
 
 ### 4. Probability & Statistics
 - $\mu$ (Mu): **Mean / Average.**

@@ -1,8 +1,8 @@
 # Day 6: Matrix Calculus & Jacobians
 
-Welcome to Day 6. Over the last 5 days, we built the spatial universe (Vectors, Matrices, SVD, Distances). Today, we breathe life into it. 
+Welcome to Day 6. Over the last 5 days, we built the spatial universe (Vectors, Matrices, <abbr title="Singular Value Decomposition">SVD</abbr>, Distances). Today, we breathe life into it. 
 
-If linear algebra is how an AI *stores* knowledge, **Matrix Calculus** is how an AI *learns*. Deep Learning is fundamentally just taking a massive mathematical function (the neural network), feeding it data, checking how wrong the output is, and then using calculus to tweak millions of weights to make it less wrong next time. 
+If linear algebra is how an <abbr title="Artificial Intelligence">AI</abbr> *stores* knowledge, **Matrix Calculus** is how an <abbr title="Artificial Intelligence">AI</abbr> *learns*. Deep Learning is fundamentally just taking a massive mathematical function (the neural network), feeding it data, checking how wrong the output is, and then using calculus to tweak millions of weights to make it less wrong next time. 
 
 The engine that makes this possible is the Gradient, and the fuel is the Chain Rule. Let's build the engine.
 
@@ -11,7 +11,7 @@ The engine that makes this possible is the Gradient, and the fuel is the Chain R
 ## 🕒 HOUR 1: DEEP THEORY & MATHEMATICS
 
 ### 1. The Gradient Vector ($\nabla f$)
-In basic high school calculus, the derivative $f'(x)$ tells you the slope of a line at a specific point. But in AI, our Loss Function *(a mathematical formula calculating how wrong the AI's prediction is)* depends on millions of variables (weights). 
+In basic high school calculus, the derivative $f'(x)$ tells you the slope of a line at a specific point. But in <abbr title="Artificial Intelligence">AI</abbr>, our Loss Function *(a mathematical formula calculating how wrong the <abbr title="Artificial Intelligence">AI</abbr>'s prediction is)* depends on millions of variables (weights). 
 
 When a function takes a vector $\mathbf{x}$ as input and outputs a single scalar *(a regular number)* $f(\mathbf{x})$, we package all the partial derivatives *(the slope with respect to just one specific variable, pretending all others are frozen)* into a single vector. This is the **Gradient**, denoted by $\nabla$ (Nabla).
 
@@ -25,7 +25,7 @@ $$ \nabla f(\mathbf{x}) = \begin{bmatrix} \frac{\partial f}{\partial x_1} \\ \fr
 > Step 3: Package them into the Gradient Vector: $\nabla f = \begin{bmatrix} 2x_1 \\ 3 \end{bmatrix}$.
 > If we evaluate this at the point where weights are $x_1=4, x_2=1$, the gradient is $\begin{bmatrix} 8 \\ 3 \end{bmatrix}$.
 > 
-> **AI Context (Gradient Descent):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Gradient Descent):** 
 > The Gradient Vector possesses a magical mathematical property: **It always points in the direction of the steepest ascent (uphill).** Since we want our Loss to go down to zero (steepest descent), we simply take the weights and subtract the gradient. This is Gradient Descent: $\mathbf{w}_{new} = \mathbf{w}_{old} - \alpha \nabla L$.
 
 ### 2. The Jacobian Matrix ($J$)
@@ -43,7 +43,7 @@ $$ J_{ij} = \frac{\partial f_i}{\partial x_j} $$
 > The bottom output ($f_2$) is $x_1 + x_2$. The partials are $1$ and $1$.
 > The Jacobian Matrix is: $J = \begin{bmatrix} x_2 & x_1 \\ 1 & 1 \end{bmatrix}$.
 > 
-> **AI Context (Backpropagation through Layers):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Backpropagation through Layers):** 
 > To pass the "error signal" backward through a neural network layer, the math requires you to multiply the incoming error vector by the Transpose of that layer's Jacobian Matrix! The Jacobian acts as a routing switchboard, perfectly distributing the blame for the error back to the exact weights that caused it.
 
 ### 3. The Hessian Matrix ($H$)
@@ -52,9 +52,9 @@ If the Jacobian holds the *first* derivatives (slope/speed), the **Hessian** hol
 **Algebraic Definition:**
 $$ H_{ij} = \frac{\partial^2 f}{\partial x_i \partial x_j} $$
 
-> **AI Context (The Computational Barrier of Deep Learning):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (The Computational Barrier of Deep Learning):** 
 > The Hessian tells you exactly how the "bowl" of the Loss Landscape curves. If you use it (Newton's Method), you can jump straight to the bottom of the bowl in very few steps! 
-> *So why doesn't AI use it?* If ChatGPT has 1 Trillion parameters, the Gradient Vector is size 1 Trillion. The Hessian Matrix would be $1 \text{ Trillion} \times 1 \text{ Trillion}$. Storing that would require more hard drives than exist on planet Earth. Therefore, Deep Learning exclusively relies on First-Order Optimization (just the Gradient) because computing the Hessian is impossible.
+> *So why doesn't <abbr title="Artificial Intelligence">AI</abbr> use it?* If ChatGPT has 1 Trillion parameters, the Gradient Vector is size 1 Trillion. The Hessian Matrix would be $1 \text{ Trillion} \times 1 \text{ Trillion}$. Storing that would require more hard drives than exist on planet Earth. Therefore, Deep Learning exclusively relies on First-Order Optimization (just the Gradient) because computing the Hessian is impossible.
 
 ### 4. The Matrix Chain Rule
 If you have nested functions, like $y = f(g(x))$, you use the Chain Rule: $y' = f'(g(x)) \times g'(x)$. 
@@ -66,8 +66,8 @@ $$ \frac{\partial \mathbf{z}}{\partial \mathbf{x}} = \frac{\partial \mathbf{z}}{
 > **Mathematical Example:**
 > You literally just multiply the Jacobian matrices of the layers together in reverse order!
 > 
-> **AI Context (The Definition of Backpropagation):** 
-> The "Backpropagation Algorithm" is not some mysterious AI concept. It is literally just the **Matrix Chain Rule** applied to a computational graph. We calculate the gradient of the Loss, and then multiply it backward by the Jacobian of Layer 3, then Layer 2, then Layer 1.
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (The Definition of Backpropagation):** 
+> The "Backpropagation Algorithm" is not some mysterious <abbr title="Artificial Intelligence">AI</abbr> concept. It is literally just the **Matrix Chain Rule** applied to a computational graph. We calculate the gradient of the Loss, and then multiply it backward by the Jacobian of Layer 3, then Layer 2, then Layer 1.
 
 ---
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **Gradient Checking:** Before frameworks like PyTorch existed, AI engineers had to derive all calculus by hand. They would use the `numerical_gradient` function to check their math. If the analytical math didn't match the numerical approximation, they knew they made a calculus error.
+1. **Gradient Checking:** Before frameworks like PyTorch existed, <abbr title="Artificial Intelligence">AI</abbr> engineers had to derive all calculus by hand. They would use the `numerical_gradient` function to check their math. If the analytical math didn't match the numerical approximation, they knew they made a calculus error.
 2. **The Shape Rule:** Look at `dL_dW` in the neural net example. A golden rule of backpropagation is that **the gradient of a variable must have the exact same shape as the variable itself**. Since $W$ is $3 \times 2$, $dL/dW$ must be $3 \times 2$. If your matrix shapes don't align during backprop, you made a mistake!
 
 ---
@@ -197,11 +197,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Define a neural network as a computation graph. Backpropagation is the application of the Matrix Chain Rule starting from the Loss scalar back to the first layer's weights.
    - Explain that passing the error backwards involves multiplying the incoming error vector by the **Transpose of the Local Jacobian** of the current layer.
 2. **Caching Forward Activations:** 
-   - Mention that to compute the local Jacobian during the backward pass, we almost always need the $x$ values (activations) from the forward pass. This is why training a model requires so much VRAM *(Video RAM on the GPU)*—you must cache all forward activations in memory until the backward pass is complete.
+   - Mention that to compute the local Jacobian during the backward pass, we almost always need the $x$ values (activations) from the forward pass. This is why training a model requires so much VRAM *(Video <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> on the GPU)*—you must cache all forward activations in memory until the backward pass is complete.
 3. **Vanishing Gradients (The Instability):** 
    - The Matrix Chain Rule means we are multiplying matrices together $L$ times (where $L$ is the number of layers).
    - If the eigenvalues of those Jacobian matrices are consistently less than $1.0$ (often caused by saturating activation functions like Sigmoid or Tanh, whose derivatives max out at 0.25), multiplying fractions by fractions 100 times causes the gradient to mathematically collapse to $0.0000001$. 
    - When the gradient vanishes, the earlier layers of the network receive no error signal, meaning their weights never update, and the network stops learning entirely.
 
 ---
-**Task for the end of the day:** Take a breath. You have officially completed the mathematical core of AI. Tomorrow, Day 7, is your Integration Lab. We will review everything from Vectors to Jacobians, and you will build a complete mathematical toolkit from scratch.
+**Task for the end of the day:** Take a breath. You have officially completed the mathematical core of <abbr title="Artificial Intelligence">AI</abbr>. Tomorrow, Day 7, is your Integration Lab. We will review everything from Vectors to Jacobians, and you will build a complete mathematical toolkit from scratch.

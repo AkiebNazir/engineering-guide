@@ -2,7 +2,7 @@
 
 Welcome to Day 14! Today is the final day of Phase 2 (Probability). 
 
-For the last week, we have been studying individual probabilities, distributions, and hypothesis tests. But real-world AI systems (like medical diagnostic tools or autonomous cars) do not deal with single variables. They deal with thousands of interconnected variables.
+For the last week, we have been studying individual probabilities, distributions, and hypothesis tests. But real-world <abbr title="Artificial Intelligence">AI</abbr> systems (like medical diagnostic tools or autonomous cars) do not deal with single variables. They deal with thousands of interconnected variables.
 
 How do we model the chaotic, interconnected web of the real world? We use **Probabilistic Graphical Models (PGMs)**.
 
@@ -28,7 +28,7 @@ Let's look at a classic Bayesian Network:
 > - $P(\text{Earthquake}) = 0.002$
 > - $P(\text{Alarm} | \text{Burglar}, \text{Earthquake}) = 0.95$
 > 
-> **AI Context (Explaining Away):** 
+> **<abbr title="Artificial Intelligence">AI</abbr> Context (Explaining Away):** 
 > Imagine the Alarm goes off. Your probability of a Burglar spikes to 90%. But then you check Twitter and see an Earthquake just happened! Suddenly, your probability of a Burglar drops back down to 5%. This is called "Explaining Away." The PGM math perfectly mimics human deductive reasoning!
 
 ### 3. Belief Propagation
@@ -36,7 +36,7 @@ How do we calculate these probabilities across a massive network of 10,000 nodes
 Nodes act like little computers. They calculate their own probability, and then send a mathematical "message" across the edge to their neighbor saying: *"Hey, I just updated my belief. You should update yours."* This ripples through the network until everything stabilizes.
 
 ### 4. Probabilistic Programming
-Writing the math for Belief Propagation by hand is brutal. Modern AI engineers use **Probabilistic Programming** languages (like `PyMC` or `Pyro`). In normal code, a variable holds a number (e.g., `x = 5`). In Probabilistic Programming, a variable holds an entire probability distribution!
+Writing the math for Belief Propagation by hand is brutal. Modern <abbr title="Artificial Intelligence">AI</abbr> engineers use **Probabilistic Programming** languages (like `PyMC` or `Pyro`). In normal code, a variable holds a number (e.g., `x = 5`). In Probabilistic Programming, a variable holds an entire probability distribution!
 
 ---
 
@@ -144,4 +144,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. Take a deep breath. You have officially completed Phase 2.
 
-Tomorrow, in **Day 15**, we enter **Phase 3: Optimization**. We throw away the probabilities and learn how AI actually "learns" from its mistakes by sliding down mathematical mountains using **Gradient Descent**!
+Tomorrow, in **Day 15**, we enter **Phase 3: Optimization**. We throw away the probabilities and learn how <abbr title="Artificial Intelligence">AI</abbr> actually "learns" from its mistakes by sliding down mathematical mountains using **Gradient Descent**!

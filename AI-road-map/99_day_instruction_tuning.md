@@ -17,7 +17,7 @@ SFT is the first step of Alignment.
 We collect thousands of high-quality examples of a human "Instruction" and a perfect "Response". We fine-tune the model to recognize this pattern. We are literally teaching the model: *When you see a question, stop autocompleting the question, and instead switch into 'Answer Mode'.*
 
 ### 2. Chat Templates (The Secret Syntax)
-An LLM only understands a single 1D string of text. It has no concept of a "User UI" or an "Assistant UI". 
+An <abbr title="Large Language Model">LLM</abbr> only understands a single 1D string of text. It has no concept of a "User UI" or an "Assistant UI". 
 To create the illusion of a conversation, researchers invented special control tokens.
 - **ChatML (OpenAI's format):**
   `<|im_start|>user\nWhat is 2+2?<|im_end|>\n<|im_start|>assistant\nIt is 4.<|im_end|>`
@@ -39,7 +39,7 @@ Because it is the absolute first thing the Attention Mechanism reads, it sets th
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Python script that takes a raw JSON dataset of instructions and formats it strictly into ChatML strings, preparing it for the HuggingFace `SFTTrainer`.
+Let's build a Python script that takes a raw <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> dataset of instructions and formats it strictly into ChatML strings, preparing it for the HuggingFace `SFTTrainer`.
 
 Create a file named `chat_templates.py`:
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Inference Hack:** Notice the inference prompt ends exactly at `<|im_start|>assistant\n`. Because the LLM is an autocomplete engine, the only mathematical path forward is to generate the assistant's answer!
+1. **The Inference Hack:** Notice the inference prompt ends exactly at `<|im_start|>assistant\n`. Because the <abbr title="Large Language Model">LLM</abbr> is an autocomplete engine, the only mathematical path forward is to generate the assistant's answer!
 2. **Tokenizer Templates:** In modern HuggingFace, you don't need to write this string concatenation manually. You can use `tokenizer.apply_chat_template(messages)`, and the tokenizer will automatically pull the correct `ChatML` or `Llama-3` template directly from the model's config file!
 
 ---
@@ -113,13 +113,13 @@ if __name__ == "__main__":
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The UI Parser
-When the LLM finishes generating, it spits out a raw ChatML string. Your React frontend UI doesn't know what `<|im_start|>` is.
+When the <abbr title="Large Language Model">LLM</abbr> finishes generating, it spits out a raw ChatML string. Your React frontend UI doesn't know what `<|im_start|>` is.
 **Your Task:**
 1. Conceptually write a Python script using Regex or `string.split()`.
 2. Take an entire ChatML string containing a 4-turn conversation.
-3. Parse it into a standard JSON List of Dictionaries: 
+3. Parse it into a standard <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> List of Dictionaries: 
 `[{"role": "user", "content": "Hello"}, {"role": "assistant", "content": "Hi there!"}]`.
-4. This is the exact code that runs inside API gateways like OpenAI's `/v1/chat/completions`.
+4. This is the exact code that runs inside <abbr title="Application Programming Interface">API</abbr> gateways like OpenAI's `/v1/chat/completions`.
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -134,8 +134,8 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **Diversity over Volume:** 
    - State that training on 10,000 math problems is useless. The 1,000 examples must have massive diversity (10 math, 10 coding, 10 creative writing, 10 legal analysis).
 2. **Tone and Formatting Consistency:**
-   - Explain that the LLM is learning *style* during SFT, not facts. Every single one of the 1,000 examples must have perfect grammar, strict adherence to formatting (e.g., always using Markdown for code), and a consistent, polite, unbiased tone.
-3. **Measuring Quality (LLM-as-a-Judge):**
+   - Explain that the <abbr title="Large Language Model">LLM</abbr> is learning *style* during SFT, not facts. Every single one of the 1,000 examples must have perfect grammar, strict adherence to formatting (e.g., always using Markdown for code), and a consistent, polite, unbiased tone.
+3. **Measuring Quality (<abbr title="Large Language Model">LLM</abbr>-as-a-Judge):**
    - Propose using GPT-4 as an automated evaluator. You pass the SFT example to GPT-4 and ask it to score the response from 1-10 based on Helpfulness, Clarity, and Formatting. Drop any example that scores below an 8.
 
 ---
