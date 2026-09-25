@@ -8,6 +8,23 @@ any of them: `Copy`, `ReadAll`, `Pipe`, `MultiWriter`, `TeeReader`,
 (`os`, `net`, `bufio`, `compress/*`, `crypto/*`) is built on these few
 interfaces.
 
+```arch
+%% caption: Go io Interfaces Architecture
+node r "io.Reader" at 0,1 shape=diamond icon=file color=blue
+node w "io.Writer" at 2,1 shape=diamond icon=file color=amber
+node rw "io.ReadWriter" at 1,0 shape=diamond icon=layers color=green
+
+node f "os.File" at 0,2 shape=card icon=disk color=slate
+node net "net.Conn" at 2,2 shape=card icon=network color=slate
+node buf "bytes.Buffer" at 1,2 shape=card icon=memory color=slate
+
+r -> rw : "embeds"
+w -> rw : "embeds"
+f -> r : "implements"
+net -> rw : "implements"
+buf -> rw : "implements"
+```
+
 ## When to reach for it vs alternatives already in this repo
 
 - Copying bytes from one stream to another → `io.Copy`, not a manual

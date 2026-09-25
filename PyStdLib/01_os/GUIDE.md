@@ -6,6 +6,18 @@ variables, processes, file descriptors, directory entries, and the raw bits behi
 the filesystem or a process (`pathlib`, `subprocess`, `shutil`, `tempfile`) is built on
 top of `os` — so the mental model here is the foundation for all of them.
 
+```arch
+%% caption: Python os Module Architecture
+node os "os module" at 1,1 shape=hexagon icon=process color=blue
+node sys "POSIX / Win32 Syscalls" at 1,2 shape=card icon=server color=slate
+node p "pathlib" at 0,0 shape=card icon=folder color=green
+node sub "subprocess" at 2,0 shape=card icon=process color=amber
+
+os -> sys : "wraps"
+p -> os : "uses (os.stat, os.scandir)"
+sub -> os : "uses (os.exec, os.pipe)"
+```
+
 ## When to reach for `os` vs alternatives already in this repo
 
 - **Path manipulation (joining, suffixes, globbing, reading a whole file):** prefer

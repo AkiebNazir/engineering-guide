@@ -3,6 +3,20 @@ Problem 01 — REST API Service (net/http, Go 1.22+ routing)
 
 WHAT WE'RE BUILDING
 
+```arch
+%% caption: REST API Service Architecture
+node req "Client Request" at 0,1 icon=client color=blue
+node api "ServeMux Router\n(HTTP endpoints)" at 1,1 icon=api color=green
+node valid "JSON Decode\n(& Validation)" at 2,1 icon=check color=amber
+node domain "Domain Logic\n(CRUD ops)" at 3,1 icon=process color=slate
+node db "In-Memory Store\n(with sync.RWMutex)" at 4,1 icon=memory color=red
+
+req -> api
+api -> valid : "parses JSON"
+valid -> domain : "valid payload"
+domain -> db : "safe mutation"
+```
+
 A small but production-shaped HTTP API for managing "tasks" (think a minimal
 issue tracker): create, list, fetch, update, and delete tasks, backed by an
 in-memory store guarded for concurrent access. This is the shape of *every*

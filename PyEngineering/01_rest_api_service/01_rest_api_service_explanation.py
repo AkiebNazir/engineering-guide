@@ -4,6 +4,20 @@
 
 WHAT WE'RE BUILDING
 --------------------
+```arch
+%% caption: REST API Service Architecture
+node req "Client Request" at 0,1 icon=client color=blue
+node api "FastAPI Router\n(HTTP endpoints)" at 1,1 icon=api color=green
+node valid "Pydantic\n(Validation)" at 2,1 icon=check color=amber
+node domain "Domain Logic\n(CRUD ops)" at 3,1 icon=process color=slate
+node db "In-Memory Store\n(with asyncio.Lock)" at 4,1 icon=memory color=red
+
+req -> api
+api -> valid : "parses JSON"
+valid -> domain : "valid payload"
+domain -> db : "safe mutation"
+```
+
 A small but production-shaped "Tasks" REST API on FastAPI: full CRUD over an
 in-memory store, Pydantic request/response validation, a typed custom
 exception hierarchy mapped to HTTP status codes, and a `lifespan` context

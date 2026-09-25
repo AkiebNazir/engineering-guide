@@ -3,6 +3,26 @@ Problem 02 — Middleware Chain (log/slog, request IDs, recovery, timeouts, auth
 
 WHAT WE'RE BUILDING
 
+```arch
+%% caption: Middleware Onion Architecture
+group m "Middleware Chain (Outbound & Inbound)" color=slate style=dashed
+node m1 "Panic\nRecovery" at 1,0 in m icon=shield color=red
+node m2 "Request\nID" at 2,0 in m icon=tag color=blue
+node m3 "Access\nLog" at 3,0 in m icon=file color=amber
+node m4 "Timeout" at 4,0 in m icon=cron color=purple
+node m5 "Auth" at 5,0 in m icon=lock color=green
+
+node client "Client" at 0,0 icon=client color=blue
+node app "http.Handler\n(Business Logic)" at 6,0 icon=process color=slate
+
+client -> m1
+m1 -> m2
+m2 -> m3
+m3 -> m4
+m4 -> m5
+m5 -> app
+```
+
 A composable HTTP middleware stack for the kind of service problem 01 built:
 structured request logging, per-request IDs threaded through context and
 response headers, panic recovery that never lets a handler crash the

@@ -68,9 +68,9 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 - [x] ~~**SQL/** — no visualization or flow labs whatsoever.~~
 - [x] ~~**NoSQL/**~~ — no visualization or flow labs.
 - [x] ~~**SoftwareDesign/** — no visualization or flow labs.~~
-- [ ] **GoEngineering/PyEngineering/** — no visualization or flow labs.
-- [ ] **GoStdLib/PyStdLib/** — no visualization or flow labs.
-- [ ] **GoogleBehavioral/** — no visualization or flow labs (may not need them).
+- [x] ~~**GoEngineering/PyEngineering/** — no visualization or flow labs.~~
+- [x] ~~**GoStdLib/PyStdLib/** — no visualization or flow labs.~~
+- [x] ~~**GoogleBehavioral/** — no visualization or flow labs (may not need them).~~
 
 ---
 
