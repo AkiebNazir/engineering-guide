@@ -30,13 +30,7 @@ deep dive and the SD solutions:
       are perfect for box-and-arrow), `08_application_architecture_in_code.md`
       (hexagonal, clean arch, CQRS), `10_designing_observable_code.md`,
       `11_performance_aware_design.md`.
-- [ ] **SystemDesign/building_blocks/** — 13 of 33 files have zero arch
-      diagrams. (Completed: 01, 02, 03, 04, 05, 06, 08, 09, 11, 13, 14).
-      Key missing: `15_observability_and_reliability.md`, `16_platform_and_infra.md`,
-      `17_decision_framework.md`, `18_back_of_envelope_estimation.md`,
-      `19_consensus_and_coordination.md`, `20_specialized_data_structures.md`,
-      `24_google_papers.md`, `25_partitioning_and_hot_keys.md`,
-      `32_industry_papers_and_case_studies.md`.
+- [x] ~~**SystemDesign/building_blocks/** — 20 of 33 files had zero arch diagrams. (All identified key files now have arch diagrams).~~
 
 - [ ] **SystemDesign/solutions/** — 2 solutions still have zero arch diagrams:
       `017_payment_ledger_solution.md`, `019_feature_flags_solution.md`.
