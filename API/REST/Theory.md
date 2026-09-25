@@ -387,6 +387,19 @@ A ladder that shows how "RESTful" an <abbr title="Application Programming Interf
 
 Most production "<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>" APIs are **level 2**, and that is fine.
 
+```arch
+%% caption: The Richardson Maturity Model traces the evolution from single-endpoint RPC to fully navigable hypermedia.
+route straight
+node l0 "Level 0\nSingle Endpoint, POST" at 0,0 icon=internet color=slate
+node l1 "Level 1\nResources (URLs)" at 2,0 icon=doc color=blue
+node l2 "Level 2\nHTTP Verbs & Status" at 4,0 icon=check color=green
+node l3 "Level 3\nHATEOAS (Links)" at 6,0 icon=internet color=amber
+
+l0 -> l1
+l1 -> l2
+l2 -> l3
+```
+
 ### HATEOAS example (level 3)
 
 ```json

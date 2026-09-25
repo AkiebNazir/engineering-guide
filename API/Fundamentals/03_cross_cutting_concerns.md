@@ -285,6 +285,22 @@ A contract-first workflow (write the contract, generate code, test against it) c
 *   **Distributed tracing**: propagate the W3C `traceparent` header (`00-<trace-id>-<span-id>-01`) through every hop so you can see one request across ten services.
 *   **Health endpoints**: `/healthz` (process alive) and `/readyz` (dependencies ready) for orchestrators. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> has a standard health-checking protocol.
 
+```arch
+%% caption: Distributed tracing propagates a single trace ID through headers across microservices, allowing observability backends to reconstruct the full request path.
+node c "Client" at 0,1 icon=client color=blue
+node gw "API Gateway\n(Starts Trace ID)" at 2,1 icon=gateway color=green
+node svc1 "Service A\n(Passes Trace ID)" at 4,0 icon=app color=green
+node svc2 "Service B\n(Passes Trace ID)" at 4,2 icon=app color=green
+node obs "Tracing Backend\n(Jaeger / DataDog)" at 6,1 icon=metrics color=slate
+
+c -> gw : "request"
+gw -> svc1 : "header:\ntraceparent"
+gw -> svc2 : "header:\ntraceparent"
+gw ..> obs : "send span"
+svc1 ..> obs : "send span"
+svc2 ..> obs : "send span"
+```
+
 ## 12. Security Checklist
 
 *   <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> everywhere; HSTS on browser-facing hosts.

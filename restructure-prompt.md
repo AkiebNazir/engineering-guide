@@ -40,12 +40,9 @@ deep dive and the SD solutions:
       `redis/00_the_key_value_model.md`, `redis/05_caching_patterns.md`).
       Key gaps: `redis/08_distributed_locking.md`, `redis/10_persistence_rdb_aof.md`,
       `mongodb/09_transactions_in_mongodb.md`.
-- [ ] **API/Fundamentals/02_http_and_web_foundations.md** — 0 arch diagrams
-      (287 lines, should have HTTP request lifecycle, TLS handshake arch).
-- [ ] **API/Fundamentals/03_cross_cutting_concerns.md** — 0 arch diagrams
-      (335 lines, should have observability pipeline, auth flow arch).
-- [ ] **API/REST/Theory.md** — 0 arch diagrams (510 lines, the largest API
-      theory file, should have REST resource hierarchy, HATEOAS flow).
+- [x] ~~**API/Fundamentals/02_http_and_web_foundations.md** — arch diagrams added.~~
+- [x] ~~**API/Fundamentals/03_cross_cutting_concerns.md** — arch diagrams added.~~
+- [x] ~~**API/REST/Theory.md** — arch diagrams added.~~
 - [ ] **CSFundamentals/** — topics 05 through 10 have zero arch diagrams.
       Topic 01 (OS) has 6, topic 02 has 3, topics 03–04 have 1–2 each.
 

@@ -174,6 +174,19 @@ Why you care: **<abbr title="gRPC Remote Procedure Call - A modern, open-source,
 *   Terminate <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> at the load balancer or gateway, or all the way to the service, depending on your threat model.
 *   Never send credentials over plain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. Webhook receivers and WebSocket endpoints (`wss://`) must use <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> too.
 
+```arch
+%% caption: TLS termination usually happens at the Load Balancer or API Gateway; internal traffic runs in plaintext within the private network.
+node client "Client (Internet)" at 0,1 icon=client color=blue
+node lb "Load Balancer\n(TLS Terminator)" at 2,1 icon=lb color=amber
+group vpc "Private VPC" color=slate style=dashed
+node svc1 "Backend Service A" at 4,0 in vpc icon=app color=green
+node svc2 "Backend Service B" at 4,2 in vpc icon=app color=green
+
+client ==> lb : "HTTPS (TLS encrypted)"
+lb -> svc1 : "HTTP (Plaintext)"
+lb -> svc2 : "HTTP (Plaintext)"
+```
+
 ## 9. CORS: The Browser Rule That Confuses Everyone
 
 The browser's **same-origin policy** blocks JavaScript on `https://app.com` from reading responses from `https://api.com`, unless the <abbr title="Application Programming Interface">API</abbr> opts in with CORS headers.
