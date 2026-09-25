@@ -4,7 +4,7 @@
 
 **What is it?**
 PyTorch is a framework for building Deep Neural Networks. It provides two main superpowers:
-1. **GPU-Accelerated Tensors:** It is exactly like NumPy, but it can run matrix math on an NVIDIA GPU (which is 100x faster than a CPU).
+1. **GPU-Accelerated Tensors:** It is exactly like NumPy, but it can run matrix math on an NVIDIA GPU (which is 100x faster than a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>).
 2. **Autograd (Automatic Differentiation):** If you write a complex mathematical equation, PyTorch automatically calculates the calculus derivatives (gradients) for you. You do not need to know calculus to train a neural network.
 
 **Why does it exist?**
@@ -43,7 +43,7 @@ A Tensor is just a multi-dimensional matrix.
 - `dtype`: The data type. 
   - *Effect of change:* Default is `torch.float32` (4 bytes per number). If you change this to `torch.float16` (Half Precision), your model will use exactly 50% less VRAM and train twice as fast, but it might suffer from numerical instability (numbers rounding to zero).
 - `device`: Where the memory physically lives (`'cpu'` or `'cuda'`).
-  - *Effect of change:* If you try to multiply a CPU tensor by a CUDA tensor, PyTorch will instantly crash. They must live on the same hardware.
+  - *Effect of change:* If you try to multiply a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> tensor by a CUDA tensor, PyTorch will instantly crash. They must live on the same hardware.
 - `requires_grad`: Boolean. 
   - *Effect of change:* If `True`, PyTorch starts tracking every mathematical operation performed on this tensor so it can calculate the calculus derivative later. If `False` (default), it acts just like a NumPy array to save memory.
 
@@ -216,7 +216,7 @@ for epoch in range(epochs):
 
 ### Deep Dive: `with torch.no_grad():`
 When you deploy a model to production (Inference), you are not training it. You do not need to calculate gradients.
-- *Effect of NOT using this in production:* PyTorch will quietly build a massive computational graph in memory for every prediction you make. Within 5 minutes, your server will crash with an Out Of Memory (OOM) error.
+- *Effect of NOT using this in production:* PyTorch will quietly build a massive computational graph in memory for every prediction you make. Within 5 minutes, your server will crash with an Out Of Memory (<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>) error.
 - *Effect of using this:* It completely disables the Autograd engine. Memory consumption drops by 50%, and inference speed increases by 20%.
 
 ```python

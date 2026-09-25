@@ -18,7 +18,7 @@
 
 ## Part 0 · The eight problems and their tricks
 
-**KMP's failure function as a "how much do I already know" cache** (001
+**<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s failure function as a "how much do I already know" cache** (001
 Find the Index of the First Occurrence in a String): the naive substring
 search re-checks characters it has already seen, throwing away
 information on every mismatch. The `lps` ("longest proper prefix that is
@@ -89,13 +89,13 @@ plus one, to cover a boundary-straddling match), then just test those
 two. The "algorithm" is really a length-arithmetic proof that collapses
 an apparently unbounded search into two lookups.
 
-**KMP's failure function applied to a CONSTRUCTED string, not a literal
+**<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s failure function applied to a CONSTRUCTED string, not a literal
 needle/haystack pair** (006 Shortest Palindrome): build `t = s + '#' +
 reverse(s)` (the `'#'` separator prevents any cross-boundary spurious
 match) and read `lps[-1]` off of `t` — it turns out to be exactly the
 length of `s`'s longest palindromic PREFIX. Once you know that length,
 the answer is a direct O(n) construction: mirror everything after the
-palindromic prefix and prepend it. The deep lesson: KMP's failure
+palindromic prefix and prepend it. The deep lesson: <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s failure
 function is a general tool for extracting "how much of this constructed
 string overlaps with itself," not a substring-search-specific trick.
 
@@ -130,7 +130,7 @@ implementation cost — directly foreshadowed by topic 13's trie material.
 This topic really has TWO core tools, reused across all eight problems
 in different combinations:
 
-**1. The KMP failure function (`lps` array).** Built once over some
+**1. The <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> failure function (`lps` array).** Built once over some
 string in O(n), it answers "for every prefix of this string, what's the
 longest proper prefix that's also a suffix?" That single array answers
 three DIFFERENT-looking questions depending on what string you build it
@@ -177,7 +177,7 @@ strings (no hashing algorithm needed, since Python dicts already hash
 strings exactly) combined with a straightforward two-pointer palindrome
 check. They're included in this topic because they're still fundamentally
 about STRING STRUCTURE (periodicity, numeric grammar, self-similarity,
-reversal), not because they use KMP or Rabin-Karp specifically.
+reversal), not because they use <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> or Rabin-Karp specifically.
 
 ---
 
@@ -185,12 +185,12 @@ reversal), not because they use KMP or Rabin-Karp specifically.
 
 | # | Problem | Difficulty | Core trick |
 |---|---|---|---|
-| 001 | Find the Index of the First Occurrence in a String | Easy | KMP failure function, O(n+m) substring search |
+| 001 | Find the Index of the First Occurrence in a String | Easy | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> failure function, O(n+m) substring search |
 | 002 | Repeated Substring Pattern | Easy | `len(s) - lps[-1]` = smallest period |
 | 003 | String to Integer (atoi) | Medium | careful 4-phase state-machine parsing |
 | 004 | Repeated DNA Sequences | Medium | 2-bit perfect rolling hash over a 4-letter alphabet |
 | 005 | Repeated String Match | Medium | bound the answer to 2 candidate repeat counts |
-| 006 | Shortest Palindrome | Hard | KMP `lps` on `s + '#' + reverse(s)` |
+| 006 | Shortest Palindrome | Hard | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> `lps` on `s + '#' + reverse(s)` |
 | 007 | Longest Duplicate Substring | Hard | binary search on length + Rabin-Karp + verification |
 | 008 | Palindrome Pairs | Hard | reverse-and-lookup via hashmap, avoids all-pairs O(n²) |
 
@@ -198,7 +198,7 @@ reversal), not because they use KMP or Rabin-Karp specifically.
 
 ## Part 3 · Cross-references worth remembering
 
-- **001 ↔ 002 ↔ 006**: all three build and read a KMP `lps` array; the
+- **001 ↔ 002 ↔ 006**: all three build and read a <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> `lps` array; the
   only thing that changes is WHAT string you build it over and how you
   interpret the resulting array. Once `_build_lps` is written once, it's
   a two-line reuse for the other two.
@@ -241,7 +241,7 @@ reversal), not because they use KMP or Rabin-Karp specifically.
 
 Unlike topic 21 (Math & Geometry), where each problem was a
 self-contained trick, this topic has real internal structure: two tools
-(KMP failure function, rolling hash) get reused and recombined across
+(<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> failure function, rolling hash) get reused and recombined across
 five of the eight problems. The genuinely hard part isn't memorizing
 either tool in isolation — it's recognizing, given a new string problem,
 WHICH tool applies, and inside the rolling-hash tool, whether you're in
@@ -257,7 +257,7 @@ not hypothetical.
 ## Part 5 · The Search Toolkit — Prefix Function, Z-Function, Find-All, Periods and Borders
 
 Parts 0–4 tell you *which* trick each problem uses. This Part is the machinery itself, written out and measured: the two
-linear-time "self-overlap" tables (the KMP prefix function and the Z-function), how to list *every* match, and what the
+linear-time "self-overlap" tables (the <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> prefix function and the Z-function), how to list *every* match, and what the
 tables say about periods and borders. Every function below was checked against brute force on 3,000 random binary strings.
 
 ```arch
@@ -365,7 +365,7 @@ separator `'\x00'` matters for the same reason it does in Problem 006: without i
 
 ### 5.5 In practice: `str.find` against the algorithms you write
 
-| Case (CPython 3.13, best of a few runs) | Naive | KMP (pure Python) | `str.find` |
+| Case (CPython 3.13, best of a few runs) | Naive | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> (pure Python) | `str.find` |
 |---|--:|--:|--:|
 | worst case, `n = 10,000`, `m = 200` (`'a'…` against `'a'…ab`) | 50.5 ms | 0.56 ms | 0.004 ms |
 | `n = 10⁶` `'a'`s, `m = 1,000` (`'a'*999 + 'b'`) | — | 73 ms | 0.28 ms |
@@ -374,7 +374,7 @@ On an adversarial needle — `'a'*(m/2) + 'b' + 'a'*(m/2 − 1)` against a text 
 matches at every window — `str.find` took 0.9 ms for `m = 100`, 0.8 ms for `m = 1,000`, 0.8 ms for `m = 10,000`, 1.0 ms
 for `m = 100,000` and 1.8 ms for `m = 400,000`: essentially flat in `m`. (CPython's search uses a skip-based scan for short needles and, since
 3.10, the linear-time Two-Way algorithm for long ones.) So in production code use `find`, `in`, `startswith` and `count`;
-write KMP or Z when the *table* is the point — periods, borders, palindromic prefixes — or when an interviewer forbids the
+write <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> or Z when the *table* is the point — periods, borders, palindromic prefixes — or when an interviewer forbids the
 built-in (Problem 001).
 
 ### 5.6 Follow-ups the interviewer reaches for
@@ -382,11 +382,11 @@ built-in (Problem 001).
 | Follow-up | The answer |
 |---|---|
 | "Find *all* occurrences, overlapping too." | Keep scanning after a full match with `k = pi[k - 1]`. |
-| "Many patterns against one text." | Aho–Corasick: a trie of the patterns plus KMP-style failure links, O(text + total pattern length + matches). |
+| "Many patterns against one text." | Aho–Corasick: a trie of the patterns plus <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>-style failure links, O(text + total pattern length + matches). |
 | "The same needle against millions of texts." | Build `pi` once and reuse it. |
 | "Is `t` a rotation of `s`?" | `len(s) == len(t) and t in s + s`. |
 | "Smallest string to append/prepend to make a palindrome?" | The prefix function on `s + sep + reverse(s)` — Problem 006. |
-| "Count the distinct substrings / longest repeated substring." | Suffix array + LCP (the palindromes-and-suffixes Part below). |
+| "Count the distinct substrings / longest repeated substring." | Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> (the palindromes-and-suffixes Part below). |
 
 ---
 <!-- /block:23_py_1_search -->
@@ -505,7 +505,7 @@ Four letters need 2 bits, so a 10-mer is a 20-bit integer — a bijection, no mo
 <!-- /block:23_py_2_hashing -->
 
 <!-- block:23_py_3_palindromes -->
-## Part 7 · Palindromes and Suffix Structures — Manacher, Suffix Array with LCP, Palindrome Pairs
+## Part 7 · Palindromes and Suffix Structures — Manacher, Suffix Array with <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr>, Palindrome Pairs
 
 Problems 006 and 008 are about palindromes; the topic's opening question — "what is the longest substring that occurs twice" — is
 the doorway to suffix structures. All code here was checked against brute force on thousands of random strings.
@@ -574,10 +574,10 @@ Matched brute force on 2,000 random word lists (including the empty string). The
 a palindrome check and a slice), so O(n · L²) overall — the "trie of reversed words" version reaches the problem's stated
 bound at real implementation cost.
 
-### 7.4 Suffix array + LCP: repeated substrings without hashing
+### 7.4 Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr>: repeated substrings without hashing
 
-A **suffix array** lists the start indices of all suffixes in sorted order; the **LCP array** stores the longest common prefix of
-each adjacent pair. The longest substring occurring at least twice is the maximum LCP value — no hash, so no collisions:
+A **suffix array** lists the start indices of all suffixes in sorted order; the **<abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> array** stores the longest common prefix of
+each adjacent pair. The longest substring occurring at least twice is the maximum <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> value — no hash, so no collisions:
 
 ```python
 def suffix_array(s):
@@ -612,7 +612,7 @@ also answers "how many distinct substrings" (`n(n+1)/2 − Σ lcp`) and pattern 
 |---|---|---|
 | Trie | O(total length) | prefix queries, many-word lookups (topic 13) |
 | Aho–Corasick | O(total pattern length) | all occurrences of many patterns in one pass |
-| Suffix array + LCP | O(n log n) – O(n) | longest repeated substring, distinct substrings, LCP of any two suffixes |
+| Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> | O(n log n) – O(n) | longest repeated substring, distinct substrings, <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> of any two suffixes |
 | Suffix automaton | O(n) | distinct-substring counts, occurrence counts, shortest non-occurring string |
 
 ---
@@ -677,7 +677,7 @@ Eight problems, five moves (the prefix function reused three ways · exact keys 
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Find the Index of the First Occurrence in a String](PyDSA/23_string_algorithms/001_find_the_index_of_the_first_occurrence_in_a_string_solution.py) <br>LC 28 · Easy | KMP substring search | Build `lps` over the needle; scan the haystack with `i` that never moves back, falling back with `j = lps[j-1]`. Match start is `i - j`. **Trap:** moving `i` backwards; advancing `i` in the fallback branch; returning `i` instead of `i - j`; an empty needle with no guard. |
+| [001 · Find the Index of the First Occurrence in a String](PyDSA/23_string_algorithms/001_find_the_index_of_the_first_occurrence_in_a_string_solution.py) <br>LC 28 · Easy | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> substring search | Build `lps` over the needle; scan the haystack with `i` that never moves back, falling back with `j = lps[j-1]`. Match start is `i - j`. **Trap:** moving `i` backwards; advancing `i` in the fallback branch; returning `i` instead of `i - j`; an empty needle with no guard. |
 | [002 · Repeated Substring Pattern](PyDSA/23_string_algorithms/002_repeated_substring_pattern_solution.py) <br>LC 459 · Easy | Period from the prefix function | `p = len(s) - lps[-1]`; a repetition iff `p != len(s)` and `len(s) % p == 0`. **Trap:** dropping the `lps[-1] != 0` guard (every string then "repeats"); treating `lps[-1]` itself as the period; in the `(s+s)[1:-1]` trick, trimming only one end. |
 | [003 · String to Integer (atoi)](PyDSA/23_string_algorithms/003_string_to_integer_atoi_solution.py) <br>LC 8 · Medium | A four-phase parser | Skip spaces → one optional sign → digits → clamp the *signed* result. **Trap:** skipping whitespace after the sign; a second sign or a sign after digits; treating `.` as part of the number; multiplying by 10 before the overflow check in a fixed-width language; `isdigit()` accepting `'²'`. |
 | [004 · Repeated DNA Sequences](PyDSA/23_string_algorithms/004_repeated_dna_sequences_solution.py) <br>LC 187 · Medium | An exact 2-bit code | `h = ((h << 2) \| code) & mask` gives a 20-bit integer for a 10-mer: a perfect hash. Report a window the *second* time it is seen. **Trap:** no mask (old bits corrupt later windows); reporting on the first sighting; reaching for a modular hash that can only add false positives. |
@@ -693,10 +693,10 @@ Eight problems, five moves (the prefix function reused three ways · exact keys 
 ## Checklist Before Leaving This Topic <!--ca-->
 
 - [ ] Write the prefix function and the Z-function, and say why each is O(n) despite the nested loop <!--ca-->
-- [ ] List every (overlapping) match with KMP, and say why `str.count` returns fewer <!--ca-->
+- [ ] List every (overlapping) match with <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>, and say why `str.count` returns fewer <!--ca-->
 - [ ] Distinguish "has period `p`" from "is a repetition" (`n % p == 0` and `p != n`) <!--ca-->
 - [ ] Quote the collision math: `n²/2m`, 3 observed collisions for 10⁵ strings mod `10⁹+7`, none mod `2⁶¹−1` <!--ca-->
 - [ ] Explain why a `mod 2⁶⁴` polynomial hash is breakable (Thue–Morse) and why the base must be random <!--ca-->
-- [ ] Write Manacher's algorithm, and Kasai's LCP for the longest repeated substring <!--ca-->
+- [ ] Write Manacher's algorithm, and Kasai's <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> for the longest repeated substring <!--ca-->
 - [ ] Write Palindrome Pairs with both guards (`k != i`, `j != len(w)`) and say what each prevents <!--ca-->
 - [ ] Reject `isdigit()`, `int()` and non-ASCII digits in a hand-written `atoi`, and name the Unicode traps (`len`, normalisation, `casefold`) <!--ca-->

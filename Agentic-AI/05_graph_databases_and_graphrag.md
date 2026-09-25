@@ -263,7 +263,7 @@ pointer follow each. That constant gap, times a million, is the whole argument.
 
 ### 2.3 Graph traversal algorithms
 
-**BFS (Breadth-First Search)** — explores level by level using a FIFO queue; the
+**<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (Breadth-First Search)** — explores level by level using a <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> queue; the
 natural algorithm for "k-hop neighborhood" queries (exactly what most GraphRAG local
 retrieval needs — "everything within 2 hops of this entity"):
 
@@ -271,7 +271,7 @@ $$
 \text{Time complexity: } O(V + E) \text{ within the explored region}
 $$
 
-**DFS (Depth-First Search)** — explores as deep as possible along one path before
+**<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (Depth-First Search)** — explores as deep as possible along one path before
 backtracking, using a stack (explicit or via recursion); natural for path-existence
 queries and topological structure discovery, less natural for "nearest neighborhood"
 queries since it doesn't guarantee shortest-hop-count discovery order.
@@ -308,7 +308,7 @@ the most "structurally central" entities — useful for prioritizing which entit
 summaries to include first under a token budget, or for weighting retrieved subgraphs
 by importance rather than treating every node equally.
 
-#### 🧮 Worked example — BFS: "everything within 2 hops of Marie Curie"
+#### 🧮 Worked example — <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: "everything within 2 hops of Marie Curie"
 
 ```arch
 %% caption: Edges point one way. BFS from Marie Curie follows outgoing edges only.
@@ -341,7 +341,7 @@ Result: **Marie Curie, Radium, Sorbonne, Nobel Prize, Paris**.
 > ⚠️ **Pierre Curie is missing** even though he's "right next to" Marie Curie — his edge points
 > *into* her. Many GraphRAG systems traverse edges in both directions for exactly this reason.
 
-#### 🧪 Try it — change the graph, change what BFS can reach
+#### 🧪 Try it — change the graph, change what <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> can reach
 
 Switch to "Both directions" to bring Pierre Curie back, cut `WORKED_AT` to lose Paris, or add a hub and
 raise k to 3 to watch the neighbourhood explode.
@@ -415,7 +415,7 @@ How to read it:
 **Stage 1 — Knowledge graph extraction**: an <abbr title="Large Language Model">LLM</abbr> is prompted, per document chunk, to
 extract structured `(entity, relation, entity)` triples (and often entity type labels
 and short descriptions) using a **constrained/structured output format** — the exact
-same JSON-grammar-constrained decoding mechanism covered in Module 2 §2.3, just applied
+same <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-grammar-constrained decoding mechanism covered in Module 2 §2.3, just applied
 to a relation-extraction schema instead of a tool-call schema. Extracted triples across
 all chunks of a corpus are merged into one graph, with entity resolution/deduplication
 (e.g. "Marie Curie" and "M. Curie" referring to the same node) as a critical, failure-
@@ -443,7 +443,7 @@ at the aggregate/community level.
    community summaries via dense retrieval (Module 3's machinery, applied to graph
    nodes/summaries instead of raw text chunks).
 2. **Subgraph expansion**: from matched entities, traverse $k$-hop neighborhoods
-   (§2.3's BFS) to pull in directly connected context that a single embedding match
+   (§2.3's <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>) to pull in directly connected context that a single embedding match
    alone wouldn't surface.
 3. **Community-level context injection**: for broad/global questions, inject the
    relevant community summaries instead of (or in addition to) raw entity-level
@@ -491,7 +491,7 @@ sum ..> glo
 
 Chunk: *"Marie Curie, who worked at the Sorbonne, discovered radium in 1898."*
 
-The <abbr title="Large Language Model">LLM</abbr> is asked for JSON that matches a fixed schema (same constrained-decoding idea as tool
+The <abbr title="Large Language Model">LLM</abbr> is asked for <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> that matches a fixed schema (same constrained-decoding idea as tool
 calls in Module 2 §2.3):
 
 ```json
@@ -552,7 +552,7 @@ mc .. so : "one bridge edge"
 | Question | Type | Best route |
 |---|---|---|
 | "When did Marie Curie discover radium?" | single fact | plain vector <abbr title="Retrieval-Augmented Generation">RAG</abbr> is enough |
-| "In which city did the discoverer of Radium work?" | multi-hop | **local**: match "Radium" → BFS Radium → Marie Curie → Sorbonne → Paris |
+| "In which city did the discoverer of Radium work?" | multi-hop | **local**: match "Radium" → <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> Radium → Marie Curie → Sorbonne → Paris |
 | "What are the main themes of this collection?" | global | **global**: read community summaries — no single chunk says it |
 
 | | Vector <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Module 3) | GraphRAG |
@@ -621,7 +621,7 @@ target node ID, not a value requiring a secondary index lookup to resolve.
   explicitly requested and validated.
 - **Supernode / hub explosion**: a small number of extremely high-degree entities
   (e.g. a country name mentioned across an entire corpus) can end up connected to a
-  huge fraction of the graph — a naive $k$-hop BFS from such a node effectively
+  huge fraction of the graph — a naive $k$-hop <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from such a node effectively
   retrieves "almost everything," destroying the precision benefit of graph-scoped
   retrieval; production systems cap fan-out per hop or apply edge-weight/importance
   filtering (e.g. PageRank-weighted pruning) to prevent this.
@@ -640,7 +640,7 @@ target node ID, not a value requiring a secondary index lookup to resolve.
   varies unpredictably by which region of the graph a query happens to touch.
 - **Cache-unfriendly pointer chasing at extreme scale**: Index-Free Adjacency's
   performance advantage assumes the working set of frequently-traversed nodes fits
-  reasonably within cache/memory — for graphs far exceeding available RAM, pointer
+  reasonably within cache/memory — for graphs far exceeding available <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, pointer
   chasing across disk-resident pages reintroduces effectively the same random-I/O
   penalty relational engines pay, just via a different access pattern; graph databases
   at extreme scale still need careful physical clustering/partitioning of related
@@ -814,7 +814,7 @@ mindmap
 |---|---|
 | LPG vs RDF | "properties live on edges" vs "everything is a triple" |
 | Index-free adjacency | "friends' pages stapled to yours — no directory lookup per hop" |
-| BFS | "rings of neighbours, closest first — watch edge direction" |
+| <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | "rings of neighbours, closest first — watch edge direction" |
 | PageRank | "important if important things point at you" |
 | GraphRAG | "extract → resolve → cluster → summarise, then answer multi-hop and big-picture questions" |
 
@@ -829,9 +829,9 @@ so cost depends on hops and local fan-out — not on the total number of nodes a
 </details>
 
 <details>
-<summary>2. BFS from Marie Curie never reached Pierre Curie. Why?</summary>
+<summary>2. <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from Marie Curie never reached Pierre Curie. Why?</summary>
 
-The edge is `Pierre Curie → COLLABORATED_WITH → Marie Curie`: it points *into* her, and the BFS only
+The edge is `Pierre Curie → COLLABORATED_WITH → Marie Curie`: it points *into* her, and the <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> only
 followed outgoing edges. Traverse both directions when relationships are symmetric.
 
 </details>

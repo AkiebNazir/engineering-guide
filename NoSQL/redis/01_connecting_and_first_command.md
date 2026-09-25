@@ -82,7 +82,7 @@ r = redis.Redis(host="localhost", port=6390, decode_responses=True)
 `decode_responses=True` matters: without it, every string Redis returns comes back as
 `bytes` (`b"bar"`), because Redis itself is byte-string-oriented and doesn't know about
 Python's `str`. Setting it makes the client decode to `str` for you, at the cost of
-assuming UTF-8-safe data (fine for this module; a binary blob store would leave it off).
+assuming <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8-safe data (fine for this module; a binary blob store would leave it off).
 
 The following was run against the live lab instance to confirm real behavior — not just
 described:
@@ -181,7 +181,7 @@ integer into Go's native duration type for you.
   assumes a session key is still alive.
 - **One global client per app, not one per request.** `redis.Redis(...)` is safe to share
   across threads and reuse — it manages a connection pool internally (more in level 11).
-  Creating a new client (and new TCP connection) per request is a common performance bug.
+  Creating a new client (and new <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection) per request is a common performance bug.
 - **In Go, checking `err != nil` for "key doesn't exist" instead of `err == redis.Nil`.**
   A missing key is not a failure — it's `go-redis`'s normal way of returning "nothing
   here," and code that treats it the same as a real connection error will misreport a

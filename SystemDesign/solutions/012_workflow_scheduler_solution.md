@@ -15,9 +15,9 @@ The question's numbers are the contract: **1M runs/day × 8 steps, 5,000 workflo
 - **Step rate**: 1M × 8 = **8M steps/day ÷ 86,400 = 93 steps/s** average; assume 10× peak (business hours, top-of-hour cron) → **~930/s**. → *Small. A single well-indexed Postgres primary with lease columns and `SELECT … FOR UPDATE SKIP LOCKED` handles it; sharding on day 1 is resume-driven design.*
 - **Write load**: per step, one **claim** txn and one **complete-and-advance** txn (~6 rows: step, successors, ~3 events, run) ≈ 7 row writes. Peak 930 × 2 = 1.9K txns/s, plus **heartbeats** 5,000 running leases ÷ 10 s = 500/s → **~2.4K txns/s, ~6.5K row writes/s**. → *Headroom of 4–8× against an assumed 10–20K short txns/s ceiling for one NVMe primary with a sync replica (assumption: benchmark it).*
 - **Concurrency**: peak arrival 11.6 runs/s × 10 = 116/s, so 5,000 active implies a mean active lifetime of 5,000 ÷ 116 ≈ **43 s** (Little's law), ~5 s per step: API-call-shaped. Parked runs are extra: assume 2% wait ~2 days → 0.02 × 1M × 2 = **~40K parked**. → *Parked runs cost a row, not a thread. Workers: 5,000 ÷ 50 slots = **~100 processes**.*
-- **Dispatch budget**: a ~200 ms poll interval + ~5 ms claim leaves > 1.7 s of the 2 s for queueing; 100 workers × 5 polls/s = 500 index probes/s. → *Slot exhaustion, not polling, is the risk: autoscale on `ready_age_p99`, not CPU.*
+- **Dispatch budget**: a ~200 ms poll interval + ~5 ms claim leaves > 1.7 s of the 2 s for queueing; 100 workers × 5 polls/s = 500 index probes/s. → *Slot exhaustion, not polling, is the risk: autoscale on `ready_age_p99`, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.*
 - **Storage**: 0.3 KB row + 5 events × 0.25 KB + 2 KB payload (assumption) ≈ **3.55 KB/step** → **28 GB/day → 10.4 TB/yr (~13.5 TB with indexes)** (2.9B step rows). The 30-day hot window ≈ 1.1 TB. → *Fits one primary; 1 year is a tiering policy.* Archive: 10.4 TB ÷ ~4 (assumed compression) ≈ 2.6 TB × $23/TB-month (S3 list) ≈ **$60/month**.
-- **When to shard**: at 100× (9.3K steps/s average, 93K peak, ~240K txns/s) at ~5K txns/s per shard = ~48 → **64 shards**, ~110 TB hot. Before that, shard on *measured* triggers: primary CPU > 50% sustained, commit p99 > 20 ms, autovacuum lagging on `steps`, or hot set > RAM. None holds today.
+- **When to shard**: at 100× (9.3K steps/s average, 93K peak, ~240K txns/s) at ~5K txns/s per shard = ~48 → **64 shards**, ~110 TB hot. Before that, shard on *measured* triggers: primary <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> > 50% sustained, commit p99 > 20 ms, autovacuum lagging on `steps`, or hot set > <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. None holds today.
 
 ## Mechanisms compared
 
@@ -66,7 +66,7 @@ workflow_defs, signals (run_id, signal_id, payload), approvals (approvers[], nee
 ```
 
 - **Source of truth**: `steps` (state + lease) and append-only `run_events`; definitions are immutable.
-- **Partition key when sharding**: `hash(run_id)`, so a run's rows share a shard and complete-and-advance stays one ACID transaction. Not tenant: one huge tenant would be a hot shard ([25](../building_blocks/25_partitioning_and_hot_keys.md)).
+- **Partition key when sharding**: `hash(run_id)`, so a run's rows share a shard and complete-and-advance stays one <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> transaction. Not tenant: one huge tenant would be a hot shard ([25](../building_blocks/25_partitioning_and_hot_keys.md)).
 - **Partial indexes are the trick**: `steps_ready` holds a few thousand rows and `steps_lease` ≤ 5,000, so heartbeats (which rewrite an indexed column) churn a tiny index. The event PK includes `at` because Postgres needs the partition column in unique keys.
 
 ## Architecture and flow
@@ -100,7 +100,7 @@ sequenceDiagram
     Note over Store: next step may be another task, a durable timer, or a human-approval wait
 ```
 
-The fencing token is the hard mechanism: lease expiry alone is not enough, because a worker can be merely slow (GC pause, network blip) rather than dead, and a naive "am I still the owner" check races with the reclaimer. Requiring the completion write to match the exact token issued at claim time closes that race deterministically, at the price of a small monotonic counter per claim.
+The fencing token is the hard mechanism: lease expiry alone is not enough, because a worker can be merely slow (<abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pause, network blip) rather than dead, and a naive "am I still the owner" check races with the reclaimer. Requiring the completion write to match the exact token issued at claim time closes that race deterministically, at the price of a small monotonic counter per claim.
 
 ```arch
 %% caption: Every step follows one state machine, and READY with a future available_at is how retries, timers and delayed starts share a single queue.
@@ -141,9 +141,9 @@ RETURNING run_id, step_key, attempt, fence, lease_expires_at;   -- one short txn
 ## Leases, heartbeats, and fencing in detail
 
 - **DB clock**: lease time is `now()` inside the claim, never a worker clock. The worker tracks its deadline on a monotonic clock and stops side effects at `ttl − margin` (30 − 5 s), *before* the reaper reassigns the step.
-- **TTL 30 s, heartbeat every 10 s** (two misses tolerated): a crashed worker's step re-dispatches in ≤ 30 s plus a sweeper tick (the recovery latency to quote). Shorter steals from GC-paused workers.
+- **TTL 30 s, heartbeat every 10 s** (two misses tolerated): a crashed worker's step re-dispatches in ≤ 30 s plus a sweeper tick (the recovery latency to quote). Shorter steals from <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>-paused workers.
 - **Fence**: incremented per claim; `complete/heartbeat/fail` carry `WHERE fence = $f AND state = 'RUNNING'`, rowcount 0 means stale. This is the fencing-token pattern (Kleppmann, "How to do distributed locking", 2016), with his caveat: a token protects only a resource that *checks* it. Ours do; an external payment <abbr title="Application Programming Interface">API</abbr> does not, so the activity sends the constant `idempotency_key` (and the fence where the provider supports conditional writes).
-- **Poison steps**: `attempt` increments at *claim*, so a step that kills every worker (OOM on a bad payload) still burns attempts and reaches `FAILED` after `max_attempts`.
+- **Poison steps**: `attempt` increments at *claim*, so a step that kills every worker (<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> on a bad payload) still burns attempts and reaches `FAILED` after `max_attempts`.
 - **Reaper**: the same shape as claim, over `state='RUNNING' AND lease_expires_at < now()`, setting READY with a backoff `available_at`; any number of sweeper copies may run it.
 
 > 🎯 Two identifiers, two jobs: the **idempotency key** is constant across attempts so the outside world can dedupe a retry; the **fence** changes every attempt so *our* database can reject a stale one.
@@ -166,7 +166,7 @@ Options: strict priority (bulk starves without aging); a per-tenant running cap 
 
 **No leader is needed for correctness**: claim, reap, timeout and cron loops are `SKIP LOCKED` scans, so N stateless copies cooperate through the database and a dead copy costs nothing (a pushing leader adds election and split-brain for no gain here). True singletons (partition maintenance, archive export) use a Postgres advisory lock or an existing etcd/ZooKeeper lease ([19](../building_blocks/19_consensus_and_coordination.md)); being idempotent, a brief double leader is harmless.
 
-**Database failover is the real SPOF.** Primary plus a **synchronous** replica (RPO 0 for acknowledged commits) with automated promotion (Patroni-style; tens of seconds, measure yours). Meanwhile claims fail, workers retry `complete` with the same fence, and leases are wall-clock, so nothing is double-assigned. The 2 s SLO is steady-state; failover is a ~30 s availability event.
+**Database failover is the real SPOF.** Primary plus a **synchronous** replica (RPO 0 for acknowledged commits) with automated promotion (Patroni-style; tens of seconds, measure yours). Meanwhile claims fail, workers retry `complete` with the same fence, and leases are wall-clock, so nothing is double-assigned. The 2 s <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> is steady-state; failover is a ~30 s availability event.
 
 **How to shard** when a trigger fires: 256 fixed *logical* shards `= hash(run_id) mod 256`, mapped to physical clusters by a routing table (start with one cluster; split by moving logical shards). Temporal fixes its shard count at cluster creation (per its docs), so pick the logical count generously. The <abbr title="Application Programming Interface">API</abbr> routes by a shard id embedded in `run_id`; cross-run queries ("failed runs for tenant X") use a CDC-fed index ([09](../building_blocks/09_messaging_and_streaming.md)).
 
@@ -188,12 +188,12 @@ Definitions are immutable and versioned; a run is **pinned** to `(name, version)
 | | Explicit state machine (this design) | Event-history replay (Temporal/Cadence style) |
 |---|---|---|
 | Model | Steps and dependencies are **data**; transitions happen in the DB | Workflow is deterministic **code**; the engine stores event history and rebuilds locals by re-running the code |
-| Expressiveness | Static or slowly varying DAG; loops and dynamic fan-out need DSL features | Full language: loops, branches, fan-out are code |
+| Expressiveness | Static or slowly varying <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>; loops and dynamic fan-out need DSL features | Full language: loops, branches, fan-out are code |
 | Recovery | Read the row | Replay history; code must be deterministic (no wall clock, randomness or direct I/O) |
 | Versioning | Pin to a definition version | Old histories must replay on new code: patch markers or pinned builds, or replay fails |
 | Limits | The ones you choose | History-size limits (tens of thousands of events per execution in Temporal's docs): long loops use continue-as-new |
 
-Decision here (8 mostly linear steps, human gates, audit as SQL): the **explicit state machine**. It buys inspectable status and simple recovery at the cost of expressiveness, acceptable because most business workflows are DAGs. If the product needs code-defined orchestration (sagas with compensation loops, long-lived entity workflows), **buy Temporal or a cloud workflow service** rather than rebuilding replay. Check retention when you buy: Step Functions Standard documents executions up to one year but limited history retention (90 days at the time of writing).
+Decision here (8 mostly linear steps, human gates, audit as <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>): the **explicit state machine**. It buys inspectable status and simple recovery at the cost of expressiveness, acceptable because most business workflows are DAGs. If the product needs code-defined orchestration (sagas with compensation loops, long-lived entity workflows), **buy Temporal or a cloud workflow service** rather than rebuilding replay. Check retention when you buy: Step Functions Standard documents executions up to one year but limited history retention (90 days at the time of writing).
 
 ## Retention and archival for the 1-year audit
 
@@ -212,7 +212,7 @@ Task volume is dominated by step fan-out, not workflow count: a multi-day workfl
 
 Hygiene for a hot, update-heavy table: keep claim/complete transactions to milliseconds and never span an activity (a long transaction blocks vacuum), `fillfactor` ~70 so lease updates stay HOT, aggressive autovacuum on `steps`, and drop old `run_events` by `DETACH`, not `DELETE`.
 
-Do not treat "claimed exactly once" as "executed exactly once" (the crashed worker's HTTP call may have gone through), and do not implement durable timers as sleeping threads — a restart drops every wait.
+Do not treat "claimed exactly once" as "executed exactly once" (the crashed worker's <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> call may have gone through), and do not implement durable timers as sleeping threads — a restart drops every wait.
 
 ## Failure and abuse behavior
 

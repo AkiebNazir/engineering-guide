@@ -1,11 +1,11 @@
 ---
-title: "2. HTTP & Web Foundations"
-description: "The HTTP knowledge every <abbr title="Application Programming Interface">API</abbr> style is built on: messages, methods, status codes, headers, TLS, HTTP/2, CORS, and how a request travels."
+title: "2. <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> & Web Foundations"
+description: "The <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> knowledge every <abbr title="Application Programming Interface">API</abbr> style is built on: messages, methods, status codes, headers, <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2, CORS, and how a request travels."
 ---
 
-# HTTP & Web Foundations
+# <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> & Web Foundations
 
-REST, GraphQL, SOAP, Webhooks and gRPC all ride on HTTP, and WebSockets begin as an HTTP request. If you understand HTTP well, every <abbr title="Application Programming Interface">API</abbr> style becomes a small variation. If you do not, every style feels like magic.
+<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>, Webhooks and <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> all ride on <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, and WebSockets begin as an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request. If you understand <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> well, every <abbr title="Application Programming Interface">API</abbr> style becomes a small variation. If you do not, every style feels like magic.
 
 ## 1. What Happens When a Client Calls an <abbr title="Application Programming Interface">API</abbr>
 
@@ -24,13 +24,13 @@ sequenceDiagram
     note over C,S: Connection kept alive for the next request
 ```
 
-Latency is the sum of these steps. DNS + TCP + TLS cost **several round trips before the first byte of your request is sent**. That single fact explains:
+Latency is the sum of these steps. <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> + <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> + <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> cost **several round trips before the first byte of your request is sent**. That single fact explains:
 
 *   why **connection reuse** (keep-alive, connection pools) matters so much,
-*   why **HTTP/2** multiplexes many requests over one connection,
-*   why **WebSockets** and **gRPC** keep connections open for a long time.
+*   why **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2** multiplexes many requests over one connection,
+*   why **WebSockets** and **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>** keep connections open for a long time.
 
-## 2. Anatomy of an HTTP Message
+## 2. Anatomy of an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Message
 
 ### Request
 
@@ -51,7 +51,7 @@ Content-Length: 47
 | **Request line** | `POST /v1/orders HTTP/1.1` | Method + target + version |
 | **Headers** | `Authorization`, `Content-Type` | Metadata about the request and the body |
 | **Blank line** | | Separates headers from body |
-| **Body** | JSON | The payload (optional; `GET` usually has none) |
+| **Body** | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | The payload (optional; `GET` usually has none) |
 
 ### Response
 
@@ -150,29 +150,29 @@ Accept: application/json, application/xml;q=0.5
 
 | Format | Media type | Strength | Weakness |
 | :--- | :--- | :--- | :--- |
-| JSON | `application/json` | Universal, readable | Verbose, no binary type, no built-in schema |
-| XML | `text/xml`, `application/soap+xml` | Schemas, namespaces, signatures | Very verbose |
+| <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | `application/json` | Universal, readable | Verbose, no binary type, no built-in schema |
+| <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> | `text/xml`, `application/soap+xml` | Schemas, namespaces, signatures | Very verbose |
 | Protobuf | `application/x-protobuf`, `application/grpc` | Tiny and fast | Not human-readable, needs the schema |
 | Form / multipart | `application/x-www-form-urlencoded`, `multipart/form-data` | Browser forms, file uploads | Flat data only |
 
-## 7. Connections: HTTP/1.1 vs HTTP/2 vs HTTP/3
+## 7. Connections: <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 vs <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 vs <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3
 
-| | HTTP/1.1 | HTTP/2 | HTTP/3 |
+| | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3 |
 | :--- | :--- | :--- | :--- |
 | **Format** | Text | Binary frames | Binary frames |
 | **Requests per connection** | One at a time (head-of-line blocking) | Many in parallel (multiplexed streams) | Many in parallel |
 | **Header compression** | None | HPACK | QPACK |
-| **Transport** | TCP | TCP | QUIC (over UDP) |
-| **Server push / streaming** | No | Streams (gRPC builds on this) | Streams |
+| **Transport** | <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> | <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> | QUIC (over <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr>) |
+| **Server push / streaming** | No | Streams (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> builds on this) | Streams |
 
-Why you care: **gRPC requires HTTP/2** for its streaming and multiplexing. **REST works on all three**, and browsers upgrade transparently.
+Why you care: **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> requires <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2** for its streaming and multiplexing. **<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> works on all three**, and browsers upgrade transparently.
 
-## 8. TLS and HTTPS
+## 8. <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> and <abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr>
 
-*   **TLS** encrypts the connection and proves the server's identity through a certificate.
-*   **mTLS** (mutual TLS): the *client* also presents a certificate. Common between internal microservices (see `gRPC/mtls/`).
-*   Terminate TLS at the load balancer or gateway, or all the way to the service, depending on your threat model.
-*   Never send credentials over plain HTTP. Webhook receivers and WebSocket endpoints (`wss://`) must use TLS too.
+*   **<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>** encrypts the connection and proves the server's identity through a certificate.
+*   **mTLS** (mutual <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>): the *client* also presents a certificate. Common between internal microservices (see `gRPC/mtls/`).
+*   Terminate <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> at the load balancer or gateway, or all the way to the service, depending on your threat model.
+*   Never send credentials over plain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. Webhook receivers and WebSocket endpoints (`wss://`) must use <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> too.
 
 ## 9. CORS: The Browser Rule That Confuses Everyone
 
@@ -188,7 +188,7 @@ sequenceDiagram
     A-->>B: 201 + Access-Control-Allow-Origin
 ```
 
-*   CORS is enforced **by browsers only**. `curl`, mobile apps, and server-to-server calls (Webhooks, gRPC) ignore it.
+*   CORS is enforced **by browsers only**. `curl`, mobile apps, and server-to-server calls (Webhooks, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>) ignore it.
 *   Do not answer `Access-Control-Allow-Origin: *` on an <abbr title="Application Programming Interface">API</abbr> that uses cookies. List exact origins.
 *   A "CORS error" almost always means the *server* is missing headers, not that the client code is wrong.
 
@@ -196,13 +196,13 @@ sequenceDiagram
 
 ## 10. Cookies vs Tokens
 
-| | Session cookie | Bearer token (JWT / opaque) |
+| | Session cookie | Bearer token (<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> / opaque) |
 | :--- | :--- | :--- |
 | **Stored in** | Browser cookie jar | App memory / secure storage |
 | **Sent** | Automatically by the browser | Explicitly in `Authorization` |
 | **CSRF risk** | Yes (needs SameSite / CSRF token) | No (not sent automatically) |
 | **Fits** | Server-rendered web apps | Mobile apps, SPAs, service-to-service APIs |
-| **Stateless server** | No (session store) | Yes (JWT) or lookup (opaque) |
+| **Stateless server** | No (session store) | Yes (<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>) or lookup (opaque) |
 
 ## 11. Try It Yourself
 
@@ -277,11 +277,11 @@ func main() {
 >
 > ❓ **Question 3:** Why does a browser send an `OPTIONS` request before your `POST`, and why do `curl` and a Go client never do that?
 >
-> ❓ **Question 4:** Why can gRPC not run on HTTP/1.1?
+> ❓ **Question 4:** Why can <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> not run on <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1?
 
 **Answers**
 
 1.  `PUT` is idempotent (same final state), so a client can retry safely after a timeout. `POST` created two records; a retry after an unknown outcome may duplicate the work. Fix with an idempotency key.
 2.  `401 Unauthorized` with a `WWW-Authenticate` header. A client seeing `401` knows to refresh its token and retry; `403` tells it retrying is pointless.
 3.  CORS preflight is a browser-only safety check for non-simple cross-origin requests. Non-browser clients do not enforce the same-origin policy.
-4.  gRPC needs multiplexed bidirectional streams and trailers (used to carry the final status). HTTP/1.1 offers neither.
+4.  <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> needs multiplexed bidirectional streams and trailers (used to carry the final status). <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 offers neither.

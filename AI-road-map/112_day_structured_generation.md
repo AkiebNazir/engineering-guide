@@ -1,15 +1,15 @@
-# Day 112: Structured Generation (Outlines & JSON)
+# Day 112: Structured Generation (Outlines & <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>)
 
 Welcome to Day 112. 
 
-If you use an <abbr title="Large Language Model">LLM</abbr> as the "brain" of a web application, you need the <abbr title="Large Language Model">LLM</abbr> to output structured data (like JSON) so your backend database can process it. 
+If you use an <abbr title="Large Language Model">LLM</abbr> as the "brain" of a web application, you need the <abbr title="Large Language Model">LLM</abbr> to output structured data (like <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>) so your backend database can process it. 
 
-You write a prompt: *"Extract the user's name and age from this text. Output strict JSON."*
-$95\%$ of the time, the <abbr title="Large Language Model">LLM</abbr> outputs perfect JSON.
-But $5\%$ of the time, it forgets a closing bracket `}`, or it adds a conversational prefix like *"Here is the JSON you requested:"*. 
+You write a prompt: *"Extract the user's name and age from this text. Output strict <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>."*
+$95\%$ of the time, the <abbr title="Large Language Model">LLM</abbr> outputs perfect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
+But $5\%$ of the time, it forgets a closing bracket `}`, or it adds a conversational prefix like *"Here is the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> you requested:"*. 
 When your Python backend calls `json.loads(llm_output)`, your entire application crashes. 
 
-Today, we learn **Structured Generation**. We will mathematically force the <abbr title="Large Language Model">LLM</abbr> to output $100\%$ valid JSON, every single time!
+Today, we learn **Structured Generation**. We will mathematically force the <abbr title="Large Language Model">LLM</abbr> to output $100\%$ valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, every single time!
 
 ---
 
@@ -21,16 +21,16 @@ This increases latency and <abbr title="Application Programming Interface">API</
 
 ### 2. Constrained Decoding (Masking Logits)
 During Generation, an <abbr title="Large Language Model">LLM</abbr> outputs a probability distribution over its entire vocabulary of 32,000 words. 
-What if we just *delete* the probabilities of words that break our JSON syntax?
+What if we just *delete* the probabilities of words that break our <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> syntax?
 
-If the <abbr title="Large Language Model">LLM</abbr> has already generated `{"name": "John"`, the JSON format dictates that the *only* valid next character is a comma `,` or a closing bracket `}`. 
+If the <abbr title="Large Language Model">LLM</abbr> has already generated `{"name": "John"`, the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> format dictates that the *only* valid next character is a comma `,` or a closing bracket `}`. 
 Before the <abbr title="Large Language Model">LLM</abbr> selects the next token, we intercept the probabilities. We set the probability of `,` and `}` to their normal values, and we set the probability of every other word in the dictionary to **Negative Infinity**! 
-The <abbr title="Large Language Model">LLM</abbr> is mathematically forced to output a valid JSON character!
+The <abbr title="Large Language Model">LLM</abbr> is mathematically forced to output a valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> character!
 
 ### 3. Finite State Machines (FSM)
 How do we know which characters are valid at any given microsecond?
-Libraries like **Outlines** and **Guidance** compile your JSON Schema (or Pydantic Model) into a **Finite State Machine (FSM)**. 
-An FSM is a computer science graph that tracks exactly where you are in the JSON structure. It acts as the ultimate bouncer, instantly blocking any token that violates the path of the graph.
+Libraries like **Outlines** and **Guidance** compile your <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema (or Pydantic Model) into a **Finite State Machine (FSM)**. 
+An FSM is a computer science graph that tracks exactly where you are in the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> structure. It acts as the ultimate bouncer, instantly blocking any token that violates the path of the graph.
 
 ---
 
@@ -104,17 +104,17 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The FSM Compilation:** Compiling a massive JSON schema into an FSM Regex graph takes a few milliseconds, but `outlines` caches the graph. Once cached, masked generation runs at the exact same speed as normal generation!
-2. **Zero Prompt Engineering:** Notice the prompt: *"Extract the user profile"*. We didn't have to write a massive prompt saying *"You are a JSON assistant. Ensure you use double quotes. Ensure you do not add conversational text."* The FSM enforces the rules, freeing up your prompt space for actual logic!
+1. **The FSM Compilation:** Compiling a massive <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schema into an FSM Regex graph takes a few milliseconds, but `outlines` caches the graph. Once cached, masked generation runs at the exact same speed as normal generation!
+2. **Zero Prompt Engineering:** Notice the prompt: *"Extract the user profile"*. We didn't have to write a massive prompt saying *"You are a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> assistant. Ensure you use double quotes. Ensure you do not add conversational text."* The FSM enforces the rules, freeing up your prompt space for actual logic!
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: SQL Constrained Decoding
-You want an <abbr title="Large Language Model">LLM</abbr> to generate SQL queries. But LLMs hallucinate table names!
+### 🛠️ The Challenge: <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> Constrained Decoding
+You want an <abbr title="Large Language Model">LLM</abbr> to generate <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> queries. But LLMs hallucinate table names!
 **Your Task:**
-1. Conceptually design an FSM constraint for SQL.
+1. Conceptually design an FSM constraint for <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>.
 2. If your database only has a `users` table and an `orders` table, you can write a Regex constraint: `SELECT \* FROM (users|orders)`.
 3. If you pass this Regex to `outlines.generate.regex(model, pattern)`, the <abbr title="Large Language Model">LLM</abbr> is mathematically prevented from querying any table that doesn't exist! It literally cannot hallucinate!
 
@@ -123,22 +123,22 @@ You want an <abbr title="Large Language Model">LLM</abbr> to generate SQL querie
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You need 100% valid JSON from an <abbr title="Large Language Model">LLM</abbr> in a high-traffic production app. Compare three approaches: OpenAI's 'JSON Mode', Constrained Decoding (Outlines), and Post-Processing Retry Loops. Discuss reliability and latency."*
+*"You need 100% valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> from an <abbr title="Large Language Model">LLM</abbr> in a high-traffic production app. Compare three approaches: OpenAI's '<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Mode', Constrained Decoding (Outlines), and Post-Processing Retry Loops. Discuss reliability and latency."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Post-Processing Retry Loops:** 
    - Dismiss this immediately for high-traffic apps. Catching a `JSONDecodeError` and re-prompting the <abbr title="Large Language Model">LLM</abbr> doubles the <abbr title="Application Programming Interface">API</abbr> cost and doubles the latency for the user.
-2. **OpenAI JSON Mode:**
-   - Explain that <abbr title="Application Programming Interface">API</abbr> "JSON Mode" guarantees the output is syntactically valid JSON. *However*, it does NOT guarantee it matches your specific schema! It might output `{"first_name": "John"}` when your backend expected `{"name": "John"}`. Your app will still crash with a `KeyError`.
+2. **OpenAI <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Mode:**
+   - Explain that <abbr title="Application Programming Interface">API</abbr> "<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Mode" guarantees the output is syntactically valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. *However*, it does NOT guarantee it matches your specific schema! It might output `{"first_name": "John"}` when your backend expected `{"name": "John"}`. Your app will still crash with a `KeyError`.
 3. **Constrained Decoding (Outlines):**
    - Crown this the winner for self-hosted models. It guarantees valid syntax AND guarantees exact schema adherence. Because it masks logits during the forward pass, it requires exactly zero retries, providing the lowest latency and highest reliability.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-We can now guarantee the <abbr title="Large Language Model">LLM</abbr> outputs perfect JSON. 
-But what do we *do* with that JSON? What if that JSON represents a command to execute a Python function or search the web?
+We can now guarantee the <abbr title="Large Language Model">LLM</abbr> outputs perfect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. 
+But what do we *do* with that <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>? What if that <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> represents a command to execute a Python function or search the web?
 
 Tomorrow, in **Day 113**, we learn the foundation of Agentic <abbr title="Artificial Intelligence">AI</abbr>: **Tool Use and Function Calling Architecture**!

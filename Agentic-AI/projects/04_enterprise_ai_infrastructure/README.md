@@ -5,7 +5,7 @@ This capstone project focuses on architecting a secure, air-gapped local inferen
 
 ## Architecture
 - **Inference Layer**: Python-based Langchain wrapper around Ollama hosting open-source models (e.g., Llama 3) for high-throughput, low-latency text generation.
-- **<abbr title="Model Context Protocol">MCP</abbr> Server**: A Python FastMCP server that standardizes the connectivity between the <abbr title="Large Language Model">LLM</abbr> and backend enterprise data systems (e.g., SQL databases or internal APIs).
+- **<abbr title="Model Context Protocol">MCP</abbr> Server**: A Python FastMCP server that standardizes the connectivity between the <abbr title="Large Language Model">LLM</abbr> and backend enterprise data systems (e.g., <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> databases or internal APIs).
 - **Security**: Designed for zero-trust environments.
 
 ## Directory Structure

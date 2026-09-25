@@ -29,7 +29,7 @@ The solution is **Mini-Batch <abbr title="Stochastic Gradient Descent">SGD</abbr
 By using a batch of 128, the gradient points *mostly* downhill, and your GPU matrix cores can process all 128 images simultaneously. 
 
 ### 3. Gradient Noise as Implicit Regularization
-Why don't we just buy a giant $1,000,000 supercomputer with enough RAM to process the whole dataset at once?
+Why don't we just buy a giant $1,000,000 supercomputer with enough <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> to process the whole dataset at once?
 Because we *want* the noise!
 
 > **<abbr title="Artificial Intelligence">AI</abbr> Context (The Generalization Gap):** 

@@ -42,10 +42,10 @@ Java: ArrayList, HashMap/HashSet, ArrayDeque as stack and queue, PriorityQueue w
 
 C++: vector, unordered_map, map/set with lower_bound and upper_bound, priority_queue (max-heap by default, greater<> for min), deque, lambdas in sort, pair/tuple, references vs copies.
 
-Mastery check: Write a Dijkstra, an LRU cache, and a trie in plain text with zero syntax lookups.
+Mastery check: Write a Dijkstra, an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache, and a trie in plain text with zero syntax lookups.
 
 
-Write code without an IDE
+Write code without an <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr>
 ›
 Practice in a plain doc or on a whiteboard: no autocomplete, no running code. Build habits for helper functions, meaningful names, and consistent indentation. You'll have at least one in-person round, so also practice on paper or a whiteboard.
 
@@ -144,11 +144,11 @@ Trees, heaps, and tries
 
 Binary trees and BSTs
 ›
-Recursive and iterative traversals (in, pre, post, level order), height and diameter, path sums, lowest common ancestor, BST validation, insert, delete, and successor, building a tree from traversals, serialization, and tree DP where a function returns multiple values from each child.
+Recursive and iterative traversals (in, pre, post, level order), height and diameter, path sums, lowest common ancestor, <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> validation, insert, delete, and successor, building a tree from traversals, serialization, and tree <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> where a function returns multiple values from each child.
 
-Practice: Binary Tree Maximum Path Sum, Lowest Common Ancestor of a Binary Tree, Validate Binary Search Tree, Serialize and Deserialize Binary Tree, Construct Binary Tree from Preorder and Inorder Traversal, Binary Tree Right Side View, All Nodes Distance K in Binary Tree, House Robber III, Kth Smallest Element in a BST
+Practice: Binary Tree Maximum Path Sum, Lowest Common Ancestor of a Binary Tree, Validate Binary Search Tree, Serialize and Deserialize Binary Tree, Construct Binary Tree from Preorder and Inorder Traversal, Binary Tree Right Side View, All Nodes Distance K in Binary Tree, House Robber III, Kth Smallest Element in a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>
 
-Mastery check: Write iterative inorder traversal from memory, and solve a tree DP problem by defining what each call returns.
+Mastery check: Write iterative inorder traversal from memory, and solve a tree <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem by defining what each call returns.
 
 
 Heaps and priority queues
@@ -160,15 +160,15 @@ Practice: Find Median from Data Stream, K Closest Points to Origin, Task Schedul
 
 Tries
 ›
-Insert, search, and prefix lookup, wildcard search with DFS, a trie combined with grid backtracking, and storing counts or top suggestions at nodes.
+Insert, search, and prefix lookup, wildcard search with <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, a trie combined with grid backtracking, and storing counts or top suggestions at nodes.
 
-Practice: Implement Trie (Prefix Tree), Design Add and Search Words Data Structure, Word Search II, Search Suggestions System, Maximum XOR of Two Numbers in an Array
+Practice: Implement Trie (Prefix Tree), Design Add and Search Words Data Structure, Word Search II, Search Suggestions System, Maximum <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> of Two Numbers in an Array
 
 Graphs (Google asks these often)
 
 Graph traversal
 ›
-Adjacency lists vs matrices, BFS for unweighted shortest paths, DFS (recursive and iterative), grids as graphs, multi-source BFS, connected components, cycle detection (undirected with a parent, directed with three colors), bipartite checks, implicit graphs where states are nodes, bidirectional BFS.
+Adjacency lists vs matrices, <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> for unweighted shortest paths, <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (recursive and iterative), grids as graphs, multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, connected components, cycle detection (undirected with a parent, directed with three colors), bipartite checks, implicit graphs where states are nodes, bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>.
 
 Practice: Number of Islands, Rotting Oranges, Clone Graph, Pacific Atlantic Water Flow, Is Graph Bipartite?, Word Ladder, Open the Lock, Shortest Path in Binary Matrix, Surrounded Regions
 
@@ -177,7 +177,7 @@ Mastery check: Model a problem that doesn't look like a graph (such as a lock co
 
 Ordering and connectivity
 ›
-Topological sort (Kahn's algorithm and DFS), detecting impossible orderings, union-find with path compression and union by rank, minimum spanning trees (Kruskal and Prim).
+Topological sort (Kahn's algorithm and <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>), detecting impossible orderings, union-find with path compression and union by rank, minimum spanning trees (Kruskal and Prim).
 
 Practice: Course Schedule II, Alien Dictionary, Number of Provinces, Redundant Connection, Accounts Merge, Min Cost to Connect All Points, Satisfiability of Equality Equations
 
@@ -194,7 +194,7 @@ Practice: Critical Connections in a Network
 
 Shortest paths
 ›
-Dijkstra with a heap (and why it fails with negative edges), 0-1 BFS, Bellman-Ford and the limited-edges variant, Floyd-Warshall for small all-pairs graphs, and Dijkstra over augmented states (node plus extra information such as stops or keys). Know that A* exists.
+Dijkstra with a heap (and why it fails with negative edges), 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, Bellman-Ford and the limited-edges variant, Floyd-Warshall for small all-pairs graphs, and Dijkstra over augmented states (node plus extra information such as stops or keys). Know that A* exists.
 
 Practice: Network Delay Time, Cheapest Flights Within K Stops, Path With Minimum Effort, Swim in Rising Water, Minimum Cost to Make at Least One Valid Path in a Grid, Evaluate Division
 
@@ -215,24 +215,24 @@ Define the state, transition, and base case in words before writing code. Go fro
 
 Practice: Climbing Stairs, House Robber II, Decode Ways, Word Break, Unique Paths II, Minimum Path Sum, Coin Change, Coin Change II, Partition Equal Subset Sum, Target Sum
 
-Mastery check: For any DP problem, write the state definition in one sentence before coding.
+Mastery check: For any <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem, write the state definition in one sentence before coding.
 
 
-DP on sequences and strings
+<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> on sequences and strings
 ›
 Longest increasing subsequence in O(n²) and O(n log n), longest common subsequence, edit distance, palindromic subsequences, counting distinct subsequences, and regex or wildcard matching.
 
 Practice: Longest Increasing Subsequence, Russian Doll Envelopes, Longest Common Subsequence, Edit Distance, Longest Palindromic Subsequence, Distinct Subsequences, Interleaving String, Regular Expression Matching
 
 
-Advanced DP patterns
+Advanced <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> patterns
 ›
-Interval DP, state-machine DP (stock problems with cooldowns, fees, or transaction limits), bitmask DP for n up to about 20, DP on DAGs and grids with memoized DFS, and counting modulo 10⁹+7.
+Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, state-machine <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (stock problems with cooldowns, fees, or transaction limits), bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> for n up to about 20, <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> on DAGs and grids with memoized <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, and counting modulo 10⁹+7.
 
 Practice: Burst Balloons, Best Time to Buy and Sell Stock with Cooldown, Best Time to Buy and Sell Stock IV, Partition to K Equal Sum Subsets, Shortest Path Visiting All Nodes, Longest Increasing Path in a Matrix, Minimum Cost Tree From Leaf Values
 
 
-Digit DP
+Digit <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 stretch
 ›
 Counting numbers in a range with digit constraints, using a tight flag. Rare, but useful to recognize.
@@ -252,7 +252,7 @@ Mastery check: Explain why your greedy approach is correct, not only that it pas
 
 Bit manipulation and math
 ›
-XOR properties, clearing the lowest set bit with x & (x−1), bitmasks for subsets, GCD and LCM, modular arithmetic and fast exponentiation, sieve of Eratosthenes, combinations, overflow handling, and randomness (Fisher-Yates shuffle, reservoir sampling, weighted random choice with prefix sums and binary search).
+<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> properties, clearing the lowest set bit with x & (x−1), bitmasks for subsets, GCD and LCM, modular arithmetic and fast exponentiation, sieve of Eratosthenes, combinations, overflow handling, and randomness (Fisher-Yates shuffle, reservoir sampling, weighted random choice with prefix sums and binary search).
 
 Practice: Single Number II, Counting Bits, Pow(x, n), Count Primes, Random Pick with Weight, Linked List Random Node, Shuffle an Array
 
@@ -271,9 +271,9 @@ Design-style coding problems
 ›
 Implement a class with several methods and clear complexity guarantees for each. These are common at Google and reward clean <abbr title="Application Programming Interface">API</abbr> design, well-chosen invariants, and edge-case handling.
 
-Practice: LRU Cache, LFU Cache, Design Hit Counter, Logger Rate Limiter, Snapshot Array, Time Based Key-Value Store, Design Browser History, Flatten Nested List Iterator, Stock Price Fluctuation, Design Twitter
+Practice: <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache, <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache, Design Hit Counter, Logger Rate Limiter, Snapshot Array, Time Based Key-Value Store, Design Browser History, Flatten Nested List Iterator, Stock Price Fluctuation, Design Twitter
 
-Mastery check: Write LRU cache with a hashmap and doubly linked list, bug-free, in under 15 minutes.
+Mastery check: Write <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache with a hashmap and doubly linked list, bug-free, in under 15 minutes.
 
 Google-style follow-ups to practice on every problem
 After solving a problem, ask yourself the follow-ups Google interviewers like to add, and sketch an answer for each:
@@ -331,14 +331,14 @@ Basics
 
 Back-of-envelope estimation
 ›
-Latency orders of magnitude (memory in nanoseconds, SSD reads in microseconds, a cross-continent round trip around 150 ms), powers of two, about 86,400 seconds (roughly 10⁵) in a day. QPS = daily users × actions per user ÷ 86,400, then multiply by 2 to 3 for peak. Storage = record size × record count × replication factor × retention period. Also estimate bandwidth.
+Latency orders of magnitude (memory in nanoseconds, <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> reads in microseconds, a cross-continent round trip around 150 ms), powers of two, about 86,400 seconds (roughly 10⁵) in a day. <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> = daily users × actions per user ÷ 86,400, then multiply by 2 to 3 for peak. Storage = record size × record count × replication factor × retention period. Also estimate bandwidth.
 
-Mastery check: Estimate QPS, storage, and servers for a photo-sharing app in under 4 minutes.
+Mastery check: Estimate <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage, and servers for a photo-sharing app in under 4 minutes.
 
 
 Networking and APIs
 ›
-DNS, TCP vs UDP, HTTP/1.1 vs HTTP/2 vs HTTP/3 (QUIC), TLS basics, REST vs gRPC vs GraphQL, WebSockets vs server-sent events vs long polling, CDNs, and <abbr title="Application Programming Interface">API</abbr> design: cursor vs offset pagination, idempotency keys, versioning, and error semantics.
+<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>, <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> vs <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr>, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 vs <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 vs <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3 (QUIC), <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> basics, <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> vs <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> vs GraphQL, WebSockets vs server-sent events vs long polling, CDNs, and <abbr title="Application Programming Interface">API</abbr> design: cursor vs offset pagination, idempotency keys, versioning, and error semantics.
 
 
 Load balancing and service architecture
@@ -349,14 +349,14 @@ Data
 
 Databases
 ›
-Relational modeling and normalization, B-tree indexes (composite and covering), transactions, isolation levels and their anomalies (dirty reads, non-repeatable reads, phantoms, write skew), MVCC. The NoSQL families: key-value, wide-column, document, and graph. When to choose each.
+Relational modeling and normalization, B-tree indexes (composite and covering), transactions, isolation levels and their anomalies (dirty reads, non-repeatable reads, phantoms, write skew), <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr>. The <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> families: key-value, wide-column, document, and graph. When to choose each.
 
 Mastery check: Choose a database for 5 different systems and defend each choice against an alternative.
 
 
 Storage engines
 ›
-B-trees vs LSM-trees: write and read amplification, compaction, bloom filters, and why write-heavy systems like Bigtable use LSM designs.
+B-trees vs <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr>-trees: write and read amplification, compaction, bloom filters, and why write-heavy systems like Bigtable use <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> designs.
 
 
 Replication
@@ -371,7 +371,7 @@ Range vs hash partitioning, consistent hashing with virtual nodes, hot keys and 
 
 Caching
 ›
-Where to cache (client, CDN, application, distributed cache), patterns (cache-aside, read-through, write-through, write-behind), eviction (LRU, LFU, TTL), invalidation strategies, preventing stampedes (request coalescing, jittered TTLs), and hot-key mitigation.
+Where to cache (client, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, application, distributed cache), patterns (cache-aside, read-through, write-through, write-behind), eviction (<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>, <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>, TTL), invalidation strategies, preventing stampedes (request coalescing, jittered TTLs), and hot-key mitigation.
 
 
 Specialized data structures and indexes
@@ -389,7 +389,7 @@ Mastery check: Explain how you'd avoid charging a customer twice when a message 
 
 Consistency and consensus
 ›
-CAP and PACELC, linearizable vs causal vs eventual consistency, Raft basics (leader election, log replication, majorities), where Paxos fits, lock and coordination services (Chubby, ZooKeeper, etcd), leases and fencing tokens, clock issues (NTP drift, Lamport and vector clocks, Spanner's TrueTime), two-phase commit vs sagas.
+<abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> and PACELC, linearizable vs causal vs eventual consistency, Raft basics (leader election, log replication, majorities), where Paxos fits, lock and coordination services (Chubby, ZooKeeper, etcd), leases and fencing tokens, clock issues (NTP drift, Lamport and vector clocks, Spanner's TrueTime), two-phase commit vs sagas.
 
 
 Resilience patterns
@@ -417,7 +417,7 @@ Mastery check: For any design, say how you'd monitor it and what happens when a 
 
 Security and privacy
 ›
-Authentication vs authorization, OAuth 2.0 and OpenID Connect, JWT trade-offs, encryption in transit and at rest, key management, least privilege, abuse and spam prevention, and handling personal data, including deletion requirements.
+Authentication vs authorization, OAuth 2.0 and OpenID Connect, <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> trade-offs, encryption in transit and at rest, key management, least privilege, abuse and spam prevention, and handling personal data, including deletion requirements.
 
 
 <abbr title="Machine Learning">ML</abbr> and <abbr title="Artificial Intelligence">AI</abbr> systems
@@ -457,7 +457,7 @@ ID generation (base62, counters vs hashing, collisions), read-heavy caching, 301
 
 Distributed rate limiter
 ›
-Choosing an algorithm, atomic counters in a shared store, per-user and per-IP limits, synchronizing across regions, fail-open vs fail-closed behavior.
+Choosing an algorithm, atomic counters in a shared store, per-user and per-<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> limits, synchronizing across regions, fail-open vs fail-closed behavior.
 
 
 Unique ID generator
@@ -482,7 +482,7 @@ Tries with top-K suggestions at each node vs precomputed prefix tables, an offli
 
 Web crawler
 ›
-URL frontier with politeness and priority, deduplication of URLs and near-duplicate content, robots.txt, DNS caching, distributed workers, and crawler traps.
+URL frontier with politeness and priority, deduplication of URLs and near-duplicate content, robots.txt, <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> caching, distributed workers, and crawler traps.
 
 
 Notification system
@@ -514,7 +514,7 @@ File chunking, deduplication, metadata database, resumable uploads, delta sync, 
 
 YouTube
 ›
-Upload pipeline, transcoding as a DAG of tasks, adaptive bitrate streaming (HLS or DASH), CDN strategy, view counting at scale, and thumbnails.
+Upload pipeline, transcoding as a <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> of tasks, adaptive bitrate streaming (HLS or DASH), <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> strategy, view counting at scale, and thumbnails.
 
 
 Web search
@@ -578,7 +578,7 @@ At L5 you should drive the whole conversation. The interviewer should mostly be 
 Minutes 0–5: requirements
 List the core functional features and agree on what's out of scope. Then list non-functional requirements: scale, latency, availability vs consistency, durability, and read/write ratio.
 Minutes 5–10: estimates and <abbr title="Application Programming Interface">API</abbr>
-Estimate QPS, storage, and bandwidth, and say which numbers will shape the design. Define the main <abbr title="Application Programming Interface">API</abbr> endpoints.
+Estimate <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage, and bandwidth, and say which numbers will shape the design. Define the main <abbr title="Application Programming Interface">API</abbr> endpoints.
 Minutes 10–15: data model
 Define entities, access patterns, database choice, and a first view of partitioning.
 Minutes 15–25: high-level design
@@ -751,8 +751,8 @@ Week	Coding	System design and behavioral
 3	Trees, heaps, tries	APIs, load balancing, databases
 4	Graph traversal, ordering, union-find	Storage engines, replication, partitioning
 5	Shortest paths, backtracking	Caching, messaging. Write your first 5 stories.
-6	DP foundations and DP on strings. First coding mock.	Consistency, consensus, resilience patterns
-7	Advanced DP, greedy and intervals	Stream processing, search and geo indexes, SRE concepts. Finish all stories.
+6	<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> foundations and <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> on strings. First coding mock.	Consistency, consensus, resilience patterns
+7	Advanced <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, greedy and intervals	Stream processing, search and geo indexes, SRE concepts. Finish all stories.
 8	Bits and math, range query structures, design-style coding	Design: URL shortener, rate limiter, key-value store, autocomplete
 9	Mixed Google-tagged sets. Second coding mock.	Design: news feed, chat, notifications, Docs, Drive. First design mock.
 10	Timed sessions: 2 problems in 45 minutes	Design: YouTube, search, Maps, job scheduler, ad aggregation. Behavioral mock.
@@ -771,7 +771,7 @@ I solve unseen medium problems in 25 minutes or less, 8 times out of 10, bug-fre
 
 I solve unseen hard problems in about 40 minutes at least half the time, and reach a solid approach on the rest
 
-I can write Dijkstra, union-find, topological sort, a trie, binary search, quickselect, an LRU cache, and a Fenwick tree from memory
+I can write Dijkstra, union-find, topological sort, a trie, binary search, quickselect, an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache, and a Fenwick tree from memory
 
 My last 3 coding mocks, with strangers, came back as hire or strong hire
 System design

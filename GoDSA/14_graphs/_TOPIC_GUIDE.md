@@ -3,7 +3,7 @@
 > A graph is just nodes and edges, but *how you represent them* dictates every
 > constant factor that follows. Go gives you three honest choices — a map, a
 > slice of slices, or a matrix — with no framework hiding the tradeoff. Pick
-> wrong and a BFS that should run in milliseconds spends its time hashing
+> wrong and a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> that should run in milliseconds spends its time hashing
 > integers. This is the document that makes the choice deliberate.
 
 ---
@@ -103,13 +103,13 @@ aren't small dense integers.
 > `visited` only when a node is *dequeued* and processed, the same node can be
 > pushed onto the queue multiple times by different neighbors before it's
 > ever processed — each duplicate wastes a full neighbor-scan, and on a dense
-> graph this degrades BFS from O(V+E) toward O(E·V) in the worst case. Marking
+> graph this degrades <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from O(V+E) toward O(E·V) in the worst case. Marking
 > at enqueue guarantees each node enters the queue exactly once.
 
 Regarding the queue itself: `queue = queue[1:]` leaks backing-array capacity
-the way Topic 7 describes, but a BFS runs to completion in one call and the
+the way Topic 7 describes, but a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> runs to completion in one call and the
 whole slice is garbage the moment the function returns — the leak never has
-time to matter. Reach for a ring buffer only if you're running BFS
+time to matter. Reach for a ring buffer only if you're running <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>
 repeatedly inside a long-lived process.
 
 ---
@@ -148,10 +148,10 @@ func dfs(adj [][]int, node int, visited []bool, order *[]int) {
 }
 ```
 
-Recursive DFS is the idiomatic first reach in Go — but recall Topic 9's
+Recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> is the idiomatic first reach in Go — but recall Topic 9's
 warning: **Go performs no tail-call optimization**, and a goroutine's stack,
 while growable (starts at 2 KB, grows by copy-and-double to a configurable max — 1 GB by
-default on 64-bit), is not unbounded. A DFS on a graph containing a long
+default on 64-bit), is not unbounded. A <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> on a graph containing a long
 simple path (in the worst case, V nodes chained in a line) recurses V deep.
 For V in the tens of thousands this is usually fine; for adversarial or
 very large inputs, prefer the iterative form below.
@@ -184,19 +184,19 @@ func dfsIterative(adj [][]int, start int) []int {
 }
 ```
 
-> ⚠️ **Recursive and iterative DFS don't visit neighbors in the same order.**
-> Recursive DFS fully explores `adj[node][0]` before ever looking at
+> ⚠️ **Recursive and iterative <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> don't visit neighbors in the same order.**
+> Recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> fully explores `adj[node][0]` before ever looking at
 > `adj[node][1]`. The stack version pushes all neighbors first, then pops the
 > *last* one pushed — so it explores `adj[node][len-1]` first. Both are valid
-> DFS orderings, but if a problem's expected output depends on traversal
+> <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> orderings, but if a problem's expected output depends on traversal
 > order (rare, but it happens with "print the path" style problems), pick the
 > form that matches, or reverse the neighbor slice before pushing.
 
 Note also the iterative version checks `visited` *after* popping, not before
 pushing — a node can be pushed multiple times (once per incoming edge) before
 it's first popped; the post-pop check discards the duplicates. This is the
-opposite convention from BFS's enqueue-time marking, and mixing the two up
-is an easy way to introduce a bug when porting a BFS solution to DFS.
+opposite convention from <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>'s enqueue-time marking, and mixing the two up
+is an easy way to introduce a bug when porting a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> solution to <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>.
 
 ---
 
@@ -206,8 +206,8 @@ is an easy way to introduce a bug when porting a BFS solution to DFS.
 
 Union-Find answers "are these two nodes in the same connected component?" and
 "merge these two components" — both in near-constant time, without ever
-walking a full BFS/DFS per query. It is the tool of choice whenever edges
-arrive one at a time and you need running connectivity (Kruskal's MST,
+walking a full <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> per query. It is the tool of choice whenever edges
+arrive one at a time and you need running connectivity (Kruskal's <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr>,
 redundant-connection problems, accounts-merge, cycle detection below).
 
 ### 4.2 Two optimizations, stacked
@@ -293,7 +293,7 @@ Two approaches:
 
 1. **Union-Find**: process edges one at a time; if `Union(u, v)` returns
    `false`, `u` and `v` were already connected — this edge closes a cycle.
-2. **DFS with parent tracking**: a visited neighbor that *isn't* the node you
+2. **<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> with parent tracking**: a visited neighbor that *isn't* the node you
    just came from indicates a cycle.
 
 ```go
@@ -314,7 +314,7 @@ func hasCycleUndirected(adj [][]int, node, parent int, visited []bool) bool {
 
 > ⚠️ **The parent check is mandatory for undirected graphs.** An undirected
 > edge `u↔v` is stored as `v` in `adj[u]` *and* `u` in `adj[v]`. Without
-> excluding `parent`, DFS immediately "rediscovers" the edge it just walked
+> excluding `parent`, <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> immediately "rediscovers" the edge it just walked
 > and reports a false cycle on every single edge.
 
 ### 5.2 Directed graphs — parent-tracking isn't enough
@@ -352,13 +352,13 @@ func hasCycleDirected(adj [][]int, node int, color []int) bool {
 > directed graph, an edge to an already-**black** node is a perfectly normal
 > cross-edge or forward-edge — not a cycle — because the graph's edges are
 > one-directional. Only gray (currently-on-the-stack) targets indicate a
-> cycle. Conflating the two schemes is the single most common graph-DFS bug.
+> cycle. Conflating the two schemes is the single most common graph-<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> bug.
 
 ---
 
 ## Part 6 · Bipartite Check
 
-Two-color the graph during BFS or DFS; a conflict (a neighbor already colored
+Two-color the graph during <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> or <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>; a conflict (a neighbor already colored
 the *same* color) means the graph isn't bipartite:
 
 ```go
@@ -399,7 +399,7 @@ and each component must be colored independently.
 |---|---|---|
 | Adjacency list | `defaultdict(list)` — always map-backed | `[][]int` preferred for dense IDs — no hashing |
 | Visited set | `set()` | `[]bool` for dense IDs, `map[int]bool` for sparse |
-| Queue for BFS | `collections.deque` — true O(1) both ends | Slice with `s[1:]` (fine for one-shot BFS) or a ring buffer (Topic 7) |
+| Queue for <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | `collections.deque` — true O(1) both ends | Slice with `s[1:]` (fine for one-shot <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>) or a ring buffer (Topic 7) |
 | Recursion depth | `sys.setrecursionlimit`, fixed C-stack ceiling | Growable goroutine stack (starts at 2 KB, grows to ~1 GB default) |
 | Union-Find | Hand-rolled (no stdlib) | Hand-rolled (no stdlib) — parity here, unusually |
 | Graph library | `networkx` for prototyping | None in stdlib — everything is hand-rolled |
@@ -415,20 +415,20 @@ dense integer IDs and slices.
 
 | Algorithm | Time | Space | Problem |
 |---|:--:|:--:|---|
-| BFS (shortest path, unweighted) | O(V+E) | O(V) | LC 200 Number of Islands, LC 133 Clone Graph |
-| DFS (recursive or iterative) | O(V+E) | O(V) | LC 200, LC 695 Max Area of Island |
+| <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (shortest path, unweighted) | O(V+E) | O(V) | LC 200 Number of Islands, LC 133 Clone Graph |
+| <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (recursive or iterative) | O(V+E) | O(V) | LC 200, LC 695 Max Area of Island |
 | Union-Find with path compression + union by rank | O(α(n)) amortized/op | O(V) | LC 547 Number of Provinces, LC 684 Redundant Connection |
-| Cycle detection (undirected, Union-Find or DFS+parent) | O(V+E) | O(V) | LC 684 |
-| Cycle detection (directed, 3-color DFS) | O(V+E) | O(V) | LC 207 Course Schedule (cycle-free check) |
+| Cycle detection (undirected, Union-Find or <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>+parent) | O(V+E) | O(V) | LC 684 |
+| Cycle detection (directed, 3-color <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>) | O(V+E) | O(V) | LC 207 Course Schedule (cycle-free check) |
 | Bipartite check (2-coloring) | O(V+E) | O(V) | LC 785 Is Graph Bipartite? |
 
-Dijkstra, topological sort (Kahn's/DFS-based), Bellman-Ford, Floyd-Warshall,
-and MST (Kruskal/Prim) build directly on the representations and Union-Find
+Dijkstra, topological sort (Kahn's/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>-based), Bellman-Ford, Floyd-Warshall,
+and <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> (Kruskal/Prim) build directly on the representations and Union-Find
 structure here — see `15_advanced_graphs`.
 
 ---
 
-## Part 9 · Building Union-Find + Grid BFS From Scratch
+## Part 9 · Building Union-Find + Grid <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> From Scratch
 
 ```go
 package main
@@ -522,7 +522,7 @@ subtree are O(1).
 <!-- block:14_go_1_topo -->
 ## Part 10 · Directed Graphs in Go: Cycle Detection and Topological Order
 
-The Go guide so far covers representation, BFS/DFS, undirected cycles and bipartite checks. **Directed** graphs — course
+The Go guide so far covers representation, <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, undirected cycles and bipartite checks. **Directed** graphs — course
 schedules, build orders, dependency resolution — need two more tools, and they are the same question asked twice: *is
 there a cycle?* and *what order respects every edge?* All code below ran on Go 1.24.5 against LeetCode's own examples.
 
@@ -546,7 +546,7 @@ f -> g : "yes"
 f -> h : "no"
 ```
 
-### Kahn's algorithm — BFS on in-degree
+### Kahn's algorithm — <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> on in-degree
 
 ```go
 func topoOrder(n int, prereq [][]int) ([]int, bool) {
@@ -575,7 +575,7 @@ detect cycles in (and order) the wrong graph. And **returning `order` without ch
 partial order for a cyclic graph. `if indeg[v]--; indeg[v] == 0` uses Go's `if` *init statement* — the decrement happens,
 then the condition tests the new value.
 
-### Three-colour DFS — why one `visited` is not enough
+### Three-colour <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> — why one `visited` is not enough
 
 In a *directed* graph, reaching an already-visited node is **not** a cycle: two different chains can converge on the same
 downstream node. You need to know whether it is on the **current path**:
@@ -595,7 +595,7 @@ dfs = func(u int) bool {
 ```
 
 `black` means "explored, no cycle through me" — reaching one again is fine. A single `visited []bool` reports a false cycle
-on `1→2, 1→3, 2→4, 3→4` (a diamond). The DFS finish order, **reversed**, is also a valid topological order — the DFS-based
+on `1→2, 1→3, 2→4, 3→4` (a diamond). The <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> finish order, **reversed**, is also a valid topological order — the <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>-based
 alternative to Kahn's.
 
 ### Reachability and degree puzzles
@@ -623,10 +623,10 @@ Every grid problem is a graph problem with four (or eight) implicit edges per ce
 - a **flat index** `r*cols + c` so `visited` is a `[]bool` instead of a `map[[2]int]bool` (Part 9);
 - **mark visited when you enqueue**, never when you dequeue — otherwise a cell is queued once per neighbour.
 
-### Multi-source BFS: seed *everything* at once (01 Matrix, Walls and Gates, Rotting Oranges)
+### Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: seed *everything* at once (01 Matrix, Walls and Gates, Rotting Oranges)
 
-"Distance to the *nearest* X" is one BFS started from **all** the X's simultaneously: the first time a cell is reached is
-its nearest source. O(R·C) total — one BFS per source is O(sources · R · C):
+"Distance to the *nearest* X" is one <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> started from **all** the X's simultaneously: the first time a cell is reached is
+its nearest source. O(R·C) total — one <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per source is O(sources · R · C):
 
 ```go
 for r := range dist {
@@ -672,7 +672,7 @@ A `set` of visited originals cannot say *which* clone to reuse; that is why it m
 
 Comparing every pair of words is O(n²·L). Instead bucket words by pattern — `hot` → `*ot`, `h*t`, `ho*` — so a word's
 neighbours are the union of three bucket lookups, O(L) per word. Deleting a bucket after it is expanded once keeps the
-BFS linear:
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> linear:
 
 ```go
 for i := range w {
@@ -682,7 +682,7 @@ for i := range w {
 }                                                  // hit → cog: 5     (without "cog" in the list: 0)
 ```
 
-### Open the Lock: an implicit graph, and bidirectional BFS
+### Open the Lock: an implicit graph, and bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>
 
 The graph is never built: a state is a 4-digit number and `neighbors(state)` generates the eight moves. With states as
 `int`s, `visited` and `dead` are `[10000]bool` value arrays; digit `pos` is `cur / p % 10` with `p = 10^pos`:
@@ -697,12 +697,12 @@ for pos, p := 0, 1; pos < 4; pos, p = pos+1, p*10 {
 }
 ```
 
-Check that `"0000"` itself is not a dead end, or BFS returns a number instead of `-1`. **Bidirectional BFS** expands from
+Check that `"0000"` itself is not a dead end, or <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> returns a number instead of `-1`. **Bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>** expands from
 both start and goal and stops when the frontiers touch; each round expand the **smaller** frontier. Nodes expanded on
-this 10,000-state graph (plain BFS vs bidirectional; the bidirectional count can vary by one with Go's random map
+this 10,000-state graph (plain <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> vs bidirectional; the bidirectional count can vary by one with Go's random map
 iteration order):
 
-| Case | Plain BFS | Bidirectional |
+| Case | Plain <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | Bidirectional |
 |---|---:|---:|
 | the LeetCode example (`0202`, 5 deadends, answer 6) | 822 | 45–46 |
 | `5555`, no deadends (answer 20) | 10,000 | 7,491 |
@@ -760,7 +760,7 @@ shapes[sb.String()] = true                          // example 1 -> 1 shape, exa
 | Marking visited on dequeue | A cell is queued once per neighbour. | Mark on enqueue. |
 | A single `visited []bool` for *directed* cycles | A diamond is reported as a cycle. | Three states (white/gray/black), or Kahn. |
 | Edge direction reversed (`[a, b]`) | Orders the wrong graph. | `[a, b]` means `b → a`; write it in a comment. |
-| Recursive DFS on a `10⁶`-cell island | Deep recursion — Go's stack grows (1 GB ceiling) but overflow is fatal and unrecoverable. | An explicit stack, or BFS. |
+| Recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> on a `10⁶`-cell island | Deep recursion — Go's stack grows (1 GB ceiling) but overflow is fatal and unrecoverable. | An explicit stack, or <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>. |
 | Mutating the input grid as `visited` | The caller's data is changed. | State it, clone, or use a separate `[]bool`. |
 | Ranging a `map[string][]string` while deleting keys | Legal in Go, but the iteration is random. | Fine here (Word Ladder deletes by key, not while ranging). |
 | `strings.Builder` shared across islands | Stale shape from the previous island. | `sb.Reset()` before each island. |
@@ -769,11 +769,11 @@ shapes[sb.String()] = true                          // example 1 -> 1 shape, exa
 
 | Follow-up | The answer |
 |---|---|
-| "Print the path." | Keep `parent []int` (BFS) and walk it back from the target; reverse with `slices.Reverse`. |
-| "Doesn't fit in memory." | Distributed BFS by frontier, partition by node id, or an implicit graph generated on the fly. |
-| "Weighted edges." | 0/1 → 0-1 BFS (deque); non-negative → Dijkstra (`container/heap`, topic 15); negative → Bellman-Ford. |
-| "Count the paths." | DP in topological order on a DAG, or memoised DFS. |
-| "Why BFS for shortest paths?" | Level order: every node is first reached by a fewest-edges path (unweighted only). |
+| "Print the path." | Keep `parent []int` (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>) and walk it back from the target; reverse with `slices.Reverse`. |
+| "Doesn't fit in memory." | Distributed <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> by frontier, partition by node id, or an implicit graph generated on the fly. |
+| "Weighted edges." | 0/1 → 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (deque); non-negative → Dijkstra (`container/heap`, topic 15); negative → Bellman-Ford. |
+| "Count the paths." | <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> in topological order on a <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>, or memoised <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>. |
+| "Why <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> for shortest paths?" | Level order: every node is first reached by a fewest-edges path (unweighted only). |
 | "Concurrent traversal." | Expand a frontier in parallel chunks with a shared visited set using atomic test-and-set. |
 
 ---
@@ -782,25 +782,25 @@ shapes[sb.String()] = true                          // example 1 -> 1 shape, exa
 <!-- problem-map:start -->
 ## Part 12 · Every Problem in This Topic, by Pattern
 
-Eighteen problems, seven moves (flood fill · components · clone/copy · multi-source BFS · directed cycles and topological order · tree/bipartite tests · implicit graphs) — the Python guide's map in Go, with the Go-only traps. Topic 14's solutions are Python-first; the Go column is the plan you would write.
+Eighteen problems, seven moves (flood fill · components · clone/copy · multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> · directed cycles and topological order · tree/bipartite tests · implicit graphs) — the Python guide's map in Go, with the Go-only traps. Topic 14's solutions are Python-first; the Go column is the plan you would write.
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Flood Fill](GoDSA/14_graphs/001_flood_fill/solution.go) <br>LC 733 · Easy | Flood fill | Capture `old := image[sr][sc]` once; return early if `old == color`; recurse or BFS on `[4][2]int` directions. **Trap:** re-reading the pixel inside the helper; no `old == color` guard (infinite recursion). |
+| [001 · Flood Fill](GoDSA/14_graphs/001_flood_fill/solution.go) <br>LC 733 · Easy | Flood fill | Capture `old := image[sr][sc]` once; return early if `old == color`; recurse or <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> on `[4][2]int` directions. **Trap:** re-reading the pixel inside the helper; no `old == color` guard (infinite recursion). |
 | [002 · Number of Islands](GoDSA/14_graphs/002_number_of_islands/solution.go) <br>LC 200 · Medium | Count components on a grid | Loop over cells, one traversal per unvisited `'1'` (a `byte`, not an `int`); flat `visited []bool`. **Trap:** comparing to `1` instead of `'1'`; marking on dequeue. |
-| [003 · Max Area of Island](GoDSA/14_graphs/003_max_area_of_island/solution.go) <br>LC 695 · Medium | Flood that returns a size | The DFS returns `1 + dfs(4 neighbours)`; take the max. **Trap:** a boolean result; not marking the cell before recursing. |
+| [003 · Max Area of Island](GoDSA/14_graphs/003_max_area_of_island/solution.go) <br>LC 695 · Medium | Flood that returns a size | The <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> returns `1 + dfs(4 neighbours)`; take the max. **Trap:** a boolean result; not marking the cell before recursing. |
 | [004 · Clone Graph](GoDSA/14_graphs/004_clone_graph/solution.go) <br>LC 133 · Medium | Clone with a `map[*Node]*Node` | Pointers are identity keys; register the clone **before** recursing. **Trap:** a `map[*Node]bool` (cannot say which clone); registering afterwards. |
-| [005 · Walls and Gates](GoDSA/14_graphs/005_walls_and_gates/solution.go) <br>LC 286 · Medium | Multi-source BFS from the gates | Every gate seeds the queue; `dist == -1` marks unreached. **Trap:** one BFS per gate. |
-| [006 · Rotting Oranges](GoDSA/14_graphs/006_rotting_oranges/solution.go) <br>LC 994 · Medium | Level-by-level BFS | `for size := len(q); size > 0; size--`; increment minutes per level. **Trap:** incrementing per dequeue. |
-| [007 · Pacific Atlantic Water Flow](GoDSA/14_graphs/007_pacific_atlantic_water_flow/solution.go) <br>LC 417 · Medium | Reverse flood fill | Two BFS's from the ocean borders with rule `>=`; intersect. **Trap:** the forward rule in the reverse flood. |
+| [005 · Walls and Gates](GoDSA/14_graphs/005_walls_and_gates/solution.go) <br>LC 286 · Medium | Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from the gates | Every gate seeds the queue; `dist == -1` marks unreached. **Trap:** one <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per gate. |
+| [006 · Rotting Oranges](GoDSA/14_graphs/006_rotting_oranges/solution.go) <br>LC 994 · Medium | Level-by-level <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | `for size := len(q); size > 0; size--`; increment minutes per level. **Trap:** incrementing per dequeue. |
+| [007 · Pacific Atlantic Water Flow](GoDSA/14_graphs/007_pacific_atlantic_water_flow/solution.go) <br>LC 417 · Medium | Reverse flood fill | Two <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>'s from the ocean borders with rule `>=`; intersect. **Trap:** the forward rule in the reverse flood. |
 | [008 · Surrounded Regions](GoDSA/14_graphs/008_surrounded_regions/solution.go) <br>LC 130 · Medium | Flood from the border | Mark border-reachable `'O'` as safe, flip the rest, restore the marks. **Trap:** flipping first and undoing. |
-| [009 · Number of Connected Components in an Undirected Graph](GoDSA/14_graphs/009_number_of_connected_components_in_an_undirected_graph/solution.go) <br>LC 323 · Medium | Components by DFS | One `visited []bool` across the outer loop; adjacency built in *both* directions. **Trap:** a one-directional list; resetting `visited` per node. |
+| [009 · Number of Connected Components in an Undirected Graph](GoDSA/14_graphs/009_number_of_connected_components_in_an_undirected_graph/solution.go) <br>LC 323 · Medium | Components by <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> | One `visited []bool` across the outer loop; adjacency built in *both* directions. **Trap:** a one-directional list; resetting `visited` per node. |
 | [010 · Graph Valid Tree](GoDSA/14_graphs/010_graph_valid_tree/solution.go) <br>LC 261 · Medium | Connected *and* n−1 edges | `len(edges) == n-1` then traverse and `count == n`. **Trap:** only one of the two checks. |
 | [011 · Course Schedule](GoDSA/14_graphs/011_course_schedule/solution.go) <br>LC 207 · Medium | Directed cycle detection | `const ( white = iota; gray; black )`; a `gray` neighbour is a back edge. **Trap:** one `visited` (a diamond looks cyclic); edge direction reversed. |
 | [012 · Course Schedule II](GoDSA/14_graphs/012_course_schedule_ii/solution.go) <br>LC 210 · Medium | Topological order (Kahn) | `indeg` array, queue of zeros, `if indeg[v]--; indeg[v] == 0`; check `len(order) == n`. **Trap:** returning a partial order for a cyclic graph. |
 | [013 · Redundant Connection](GoDSA/14_graphs/013_redundant_connection/solution.go) <br>LC 684 · Medium | Redundant connection | The first edge whose endpoints are already connected (traversal here; union-find in topic 15). **Trap:** asking "is it an edge?" instead of "is it reachable?". |
-| [014 · 01 Matrix](GoDSA/14_graphs/014_01_matrix/solution.go) <br>LC 542 · Medium | Multi-source BFS from the zeros | All zeros seed the queue; `-1` = unreached. **Trap:** one BFS per `1`; marking on dequeue. |
-| [015 · Shortest Path in Binary Matrix](GoDSA/14_graphs/015_shortest_path_in_binary_matrix/solution.go) <br>LC 1091 · Medium | BFS with 8 directions | Double `for dr`/`dc` loop; check both corners up front. **Trap:** the 4-direction list; mutating the caller's grid unannounced. |
+| [014 · 01 Matrix](GoDSA/14_graphs/014_01_matrix/solution.go) <br>LC 542 · Medium | Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from the zeros | All zeros seed the queue; `-1` = unreached. **Trap:** one <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per `1`; marking on dequeue. |
+| [015 · Shortest Path in Binary Matrix](GoDSA/14_graphs/015_shortest_path_in_binary_matrix/solution.go) <br>LC 1091 · Medium | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> with 8 directions | Double `for dr`/`dc` loop; check both corners up front. **Trap:** the 4-direction list; mutating the caller's grid unannounced. |
 | [016 · Word Ladder](GoDSA/14_graphs/016_word_ladder/solution.go) <br>LC 127 · Hard | Word ladder | `patterns map[string][]string` (`h*t`); `delete(patterns, p)` after expanding. **Trap:** O(n²·L) pairwise adjacency. |
 | [017 · Is Graph Bipartite?](GoDSA/14_graphs/017_is_graph_bipartite/solution.go) <br>LC 785 · Medium | Bipartite = 2-colourable | `color []int` (0, 1, −1); an outer loop over every start node. **Trap:** only node 0; colouring on dequeue. |
 | [018 · Open the Lock](GoDSA/14_graphs/018_open_the_lock/solution.go) <br>LC 752 · Medium | An implicit graph | `[10000]bool` value arrays for `seen`/`dead`; digits via `cur / p % 10`. **Trap:** `"0000"` in the deadends; marking on dequeue. |
@@ -811,16 +811,16 @@ Eighteen problems, seven moves (flood fill · components · clone/copy · multi-
 ## Checklist Before Leaving This Topic
 
 - [ ] Justify `[][]int` vs `map[int][]int` vs adjacency matrix for a given input shape
-- [ ] Explain why visited must be marked at BFS enqueue time, not dequeue time
-- [ ] State why recursive DFS depth is bounded by Go's goroutine stack, not unbounded
-- [ ] Explain the ordering difference between recursive and iterative DFS
+- [ ] Explain why visited must be marked at <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> enqueue time, not dequeue time
+- [ ] State why recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> depth is bounded by Go's goroutine stack, not unbounded
+- [ ] Explain the ordering difference between recursive and iterative <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>
 - [ ] Implement Union-Find with both path compression and union by rank
 - [ ] Explain why undirected cycle detection needs a parent check but directed needs 3-color
 - [ ] Two-color a graph to check bipartiteness, handling disconnected components
 - [ ] Flatten a 2D grid coordinate to a 1D index to use `[]bool` instead of a map
-- [ ] Write BFS, DFS, and Union-Find from memory in under 15 minutes each
+- [ ] Write <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, and Union-Find from memory in under 15 minutes each
 - [ ] Write Kahn's algorithm with the edge direction stated (`[a, b]` means `b → a`) and the `len(order) == n` check <!--ca-->
-- [ ] Write three-colour DFS with `iota` constants, and say why one `visited` gives false cycles in a diamond <!--ca-->
+- [ ] Write three-colour <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> with `iota` constants, and say why one `visited` gives false cycles in a diamond <!--ca-->
 - [ ] Flatten a grid to `r*cols + c` and mark visited on *enqueue* <!--ca-->
 - [ ] Use `map[*Node]*Node` for Clone Graph and register the clone before recursing <!--ca-->
-- [ ] Explain bidirectional BFS and give the measured saving (822 → ~46 on the Open the Lock example) <!--ca-->
+- [ ] Explain bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> and give the measured saving (822 → ~46 on the Open the Lock example) <!--ca-->

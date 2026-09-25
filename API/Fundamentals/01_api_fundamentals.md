@@ -43,28 +43,28 @@ asyncn:R -> ws:L
 asyncn:R -> wh:L
 ```
 
-### 1. REST (Representational State Transfer)
-The most common standard for web APIs. It treats everything as a **Resource** (e.g., a User, a Post) and uses standard HTTP verbs (`GET`, `POST`, `PUT`, `DELETE`) to perform CRUD operations on those resources.
+### 1. <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> (Representational State Transfer)
+The most common standard for web APIs. It treats everything as a **Resource** (e.g., a User, a Post) and uses standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> verbs (`GET`, `POST`, `PUT`, `DELETE`) to perform <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> operations on those resources.
 *   **Real-world scenario:** A social media app fetching a user's profile (`GET /users/123`).
 
 ### 2. GraphQL
-Created by Facebook to solve REST's over-fetching/under-fetching problem. Instead of multiple endpoints, it exposes a single endpoint (`/graphql`). The client sends a specific query asking for *exactly* what it needs, and nothing more.
+Created by Facebook to solve <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>'s over-fetching/under-fetching problem. Instead of multiple endpoints, it exposes a single endpoint (`/graphql`). The client sends a specific query asking for *exactly* what it needs, and nothing more.
 *   **Real-world scenario:** A mobile app rendering a complex dashboard that needs user data, recent posts, and friend counts in a single network request to save bandwidth.
 
-### 3. gRPC (Google Remote Procedure Call)
-A high-performance RPC framework developed by Google. It uses **Protocol Buffers (Protobuf)** as its interface definition language and underlying message interchange format. It runs over HTTP/2, making it exceptionally fast, binary-encoded, and supporting bidirectional streaming.
+### 3. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> (Google Remote Procedure Call)
+A high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework developed by Google. It uses **Protocol Buffers (Protobuf)** as its interface definition language and underlying message interchange format. It runs over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2, making it exceptionally fast, binary-encoded, and supporting bidirectional streaming.
 *   **Real-world scenario:** Internal microservices communicating with each other in a distributed backend system (e.g., a payment service talking to an inventory service).
 
 ### 4. WebSockets
-Unlike HTTP, which is strictly request-response, WebSockets establish a persistent, full-duplex TCP connection. Both the client and server can send messages to each other at any time.
+Unlike <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, which is strictly request-response, WebSockets establish a persistent, full-duplex <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection. Both the client and server can send messages to each other at any time.
 *   **Real-world scenario:** A live chat application, a collaborative document editor (like Google Docs), or real-time trading dashboards.
 
 ### 5. Webhooks (Reverse APIs)
-Instead of a client constantly polling a server ("Is it done yet?"), the client provides a URL to the server. When an event happens, the server makes an HTTP request *to the client's URL* to notify them.
+Instead of a client constantly polling a server ("Is it done yet?"), the client provides a URL to the server. When an event happens, the server makes an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request *to the client's URL* to notify them.
 *   **Real-world scenario:** Stripe sending a notification to your backend when a customer's payment succeeds.
 
-### 6. SOAP (Simple Object Access Protocol)
-A legacy protocol heavily used in enterprise systems. It relies entirely on XML and has strict, built-in standards for security (WS-Security) and transactional reliability.
+### 6. <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> (Simple Object Access Protocol)
+A legacy protocol heavily used in enterprise systems. It relies entirely on <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> and has strict, built-in standards for security (WS-Security) and transactional reliability.
 *   **Real-world scenario:** Legacy banking systems, legacy payment gateways, or enterprise ERP integrations.
 
 ## How Data Moves: The Four Communication Patterns
@@ -73,18 +73,18 @@ Every <abbr title="Application Programming Interface">API</abbr> style is a diff
 
 | Pattern | Who talks | Messages | Used by |
 | :--- | :--- | :--- | :--- |
-| **Request / Response** | Client asks, server answers | 1 → 1 | REST, GraphQL, SOAP, gRPC unary |
-| **Server push (one-way)** | Server sends events to the client | 1 → many | Webhooks, SSE, gRPC server streaming |
-| **Client streaming** | Client sends many, server answers once | many → 1 | gRPC client streaming (uploads, metrics) |
-| **Full duplex** | Both sides send whenever they want | many ↔ many | WebSockets, gRPC bidirectional streaming |
+| **Request / Response** | Client asks, server answers | 1 → 1 | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> unary |
+| **Server push (one-way)** | Server sends events to the client | 1 → many | Webhooks, <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> server streaming |
+| **Client streaming** | Client sends many, server answers once | many → 1 | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> client streaming (uploads, metrics) |
+| **Full duplex** | Both sides send whenever they want | many ↔ many | WebSockets, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> bidirectional streaming |
 
-> **Key idea:** Choosing an <abbr title="Application Programming Interface">API</abbr> style is mostly choosing one of these four patterns, then choosing a *contract format* (JSON, XML, Protobuf) to go with it.
+> **Key idea:** Choosing an <abbr title="Application Programming Interface">API</abbr> style is mostly choosing one of these four patterns, then choosing a *contract format* (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>, Protobuf) to go with it.
 
 ## What Every <abbr title="Application Programming Interface">API</abbr> Has (Regardless of Style)
 
 1.  **A contract** - what can I call, what do I send, what do I get back? (OpenAPI, GraphQL SDL, `.proto`, WSDL.)
-2.  **A transport** - HTTP/1.1, HTTP/2, or a raw upgraded TCP connection.
-3.  **A serialization format** - JSON, XML, or binary Protobuf.
+2.  **A transport** - <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2, or a raw upgraded <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection.
+3.  **A serialization format** - <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>, or binary Protobuf.
 4.  **Identity and access control** - who are you, and what may you do?
 5.  **An error model** - how do failures look, and which are safe to retry?
 6.  **A versioning strategy** - how does it change without breaking existing clients?
@@ -97,8 +97,8 @@ Work through the folders in this order. Each <abbr title="Application Programmin
 
 | Step | Read | Why in this order |
 | :---: | :--- | :--- |
-| 1 | `Fundamentals/02_http_and_web_foundations.md` | Everything except raw TCP sits on HTTP. |
-| 2 | `REST/` | The baseline. Every other style is defined by what it fixes about REST. |
+| 1 | `Fundamentals/02_http_and_web_foundations.md` | Everything except raw <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> sits on <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. |
+| 2 | `REST/` | The baseline. Every other style is defined by what it fixes about <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>. |
 | 3 | `GraphQL/` | Fixes over/under-fetching. Introduces schemas and resolvers. |
 | 4 | `Protobuf/` then `gRPC/` | Learn the binary format first, then the framework built on it. |
 | 5 | `WebSockets/` | First stateful protocol. Changes how you think about scaling. |
@@ -109,14 +109,14 @@ Work through the folders in this order. Each <abbr title="Application Programmin
 
 ## Quick Comparison
 
-| | REST | GraphQL | gRPC | WebSockets | Webhooks | SOAP |
+| | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> | GraphQL | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> | WebSockets | Webhooks | <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Contract** | OpenAPI (optional) | SDL schema | `.proto` | none (you invent one) | payload docs | WSDL + XSD |
-| **Format** | JSON | JSON | Protobuf (binary) | text or binary frames | JSON | XML |
-| **Transport** | HTTP/1.1, 2 | HTTP (usually POST) | HTTP/2 | Upgraded TCP | HTTP POST | HTTP (also SMTP, JMS) |
+| **Format** | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | Protobuf (binary) | text or binary frames | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> |
+| **Transport** | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1, 2 | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> (usually POST) | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 | Upgraded <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> POST | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> (also SMTP, JMS) |
 | **Direction** | Client -> server | Client -> server (+ subscriptions) | Both, streaming | Both | Server -> client | Client -> server |
-| **Browser-native** | Yes | Yes | Needs gRPC-Web | Yes | n/a (server side) | Poor |
-| **HTTP caching** | Excellent | Hard | None | None | n/a | None |
+| **Browser-native** | Yes | Yes | Needs <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Web | Yes | n/a (server side) | Poor |
+| **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching** | Excellent | Hard | None | None | n/a | None |
 
 ---
-**Next Steps:** Continue to `02_http_and_web_foundations.md`, then follow the learning path above. Every <abbr title="Application Programming Interface">API</abbr> type has runnable labs in **Python** (standard library, FastAPI, Strawberry, `websockets`, `grpcio`, `zeep`) and **Go** (latest `net/http`, `coder/websocket`, gRPC-Go, graphql-go, `encoding/xml`).
+**Next Steps:** Continue to `02_http_and_web_foundations.md`, then follow the learning path above. Every <abbr title="Application Programming Interface">API</abbr> type has runnable labs in **Python** (standard library, FastAPI, Strawberry, `websockets`, `grpcio`, `zeep`) and **Go** (latest `net/http`, `coder/websocket`, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Go, graphql-go, `encoding/xml`).

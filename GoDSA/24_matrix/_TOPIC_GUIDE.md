@@ -11,7 +11,7 @@
 
 ### 1.1 The layout, drawn
 
-Topics 4 and 17 touched this in passing for prefix sums and DP tables. Here it's
+Topics 4 and 17 touched this in passing for prefix sums and <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> tables. Here it's
 the main event.
 
 ```go
@@ -38,7 +38,7 @@ for i := range grid {
 The outer slice is one contiguous block of 3-word row headers. Each row's data
 is its **own** `runtime.mallocgc` call. Nothing here promises row 1 lives next
 to row 0 in memory — the allocator is free to put them anywhere, and after a few rounds
-of GC and reallocation elsewhere in the program, it may.
+of <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> and reallocation elsewhere in the program, it may.
 
 Compare to a **flattened** representation:
 
@@ -59,7 +59,7 @@ What the guarantee is *worth* is a different question — measured in Part 9.1, 
 
 ### 1.2 Building a fresh grid — the same aliasing bug, in a new house
 
-Topic 17 flagged this for DP tables; it bites just as hard when a matrix
+Topic 17 flagged this for <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> tables; it bites just as hard when a matrix
 problem asks you to *construct* output, not just read input.
 
 ```go
@@ -257,8 +257,8 @@ func findDiagonalOrder(m [][]int) []int {
 
 ## Part 4 · Flood Fill — Visited Grid vs. Mutate-in-Place
 
-Grid BFS/DFS (number of islands, flood fill, rotting oranges) reuses topic 14's
-BFS/DFS mechanics wholesale — see that guide for the queue/recursion tradeoffs.
+Grid <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (number of islands, flood fill, rotting oranges) reuses topic 14's
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> mechanics wholesale — see that guide for the queue/recursion tradeoffs.
 The one matrix-specific decision is **how to track "visited"**:
 
 ```go
@@ -291,7 +291,7 @@ grid[r][c] = 0   // or a sentinel like 2, distinct from "land" and "water"
 | Rotate 90° in place | O(rows·cols) | O(1) | Transpose + per-row reverse |
 | Spiral traversal | O(rows·cols) | O(1)* | Four shrinking boundaries |
 | Diagonal traversal | O(rows·cols) | O(rows+cols) | Bucket by `r+c`, then flatten |
-| Flood fill (BFS/DFS) | O(rows·cols) | O(rows·cols) worst case | Visited grid or recursion stack |
+| Flood fill (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>) | O(rows·cols) | O(rows·cols) worst case | Visited grid or recursion stack |
 | Row-major flattened access | O(1) per cell | — | `data[r*cols+c]`, one allocation |
 
 \* excluding the output slice
@@ -318,7 +318,7 @@ grid[r][c] = 0   // or a sentinel like 2, distinct from "land" and "water"
 | In-place 90° rotation | O(n²) | O(1) | LC 48 Rotate Image |
 | Boundary-shrinking spiral | O(rows·cols) | O(1)* | LC 54 Spiral Matrix |
 | Diagonal bucketing | O(rows·cols) | O(rows+cols) | LC 498 Diagonal Traverse |
-| Grid flood fill (BFS/DFS) | O(rows·cols) | O(rows·cols) | LC 200 Number of Islands, LC 733 Flood Fill |
+| Grid flood fill (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>) | O(rows·cols) | O(rows·cols) | LC 200 Number of Islands, LC 733 Flood Fill |
 | Row/column zero-marking | O(rows·cols) | O(1)† | LC 73 Set Matrix Zeroes |
 
 \* excluding output · † using first row/column as sentinels instead of a separate boolean grid
@@ -452,7 +452,7 @@ Summing every cell of an `n × n` `[]int` grid, direct loops (no closure in the 
 Two conclusions. **The layout barely mattered:** rows allocated back to back sat next to each other, so the pointer-per-row structure cost nothing measurable
 (a third variant — a `[][]int` whose rows are sub-slices of one backing array — measured the same again). **The loop order mattered a great deal:** walking down
 columns was about 3× slower at 2 MB and about **12× slower at 134 MB**, for either layout, because each step lands on a different cache line. So write the row index in the
-outer loop, and treat "flatten it" as an allocation and ergonomics decision, not a speed-up. (In topic 21 or 14 this shows up as "why is my grid BFS slow": the
+outer loop, and treat "flatten it" as an allocation and ergonomics decision, not a speed-up. (In topic 21 or 14 this shows up as "why is my grid <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> slow": the
 neighbour order is fine, the *sweep* order is what to check.)
 
 If you want one contiguous block *and* `grid[r][c]` syntax, slice a single backing array — with a **full slice expression** so a row cannot grow into its neighbour:

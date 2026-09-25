@@ -26,8 +26,8 @@ Examples are in **Python** with **Go** in §8. Every example was run; outputs ar
 | Code-level <abbr title="Application Programming Interface">API</abbr> evolution (expand → migrate → contract, semver) | `03_modularity_coupling_and_api_design.md` §10 |
 | DTO vs. domain model vs. persistence model | `08_application_architecture_in_code.md` §6 |
 | Migration runner implementation (versions table, transactions) | `PyEngineering/11_migrations_schema_management`, `GoEngineering/11_*` |
-| JSON/protobuf encoding hands-on | `PyEngineering/23_custom_json_protobuf_encoding`, `GoEngineering/23_*` |
-| Serialisation formats compared; REST/gRPC <abbr title="Application Programming Interface">API</abbr> versioning | `SystemDesign/building_blocks/04_api_design_low_level.md`, `SystemDesign/building_blocks/03_api_design_high_level.md` |
+| <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>/protobuf encoding hands-on | `PyEngineering/23_custom_json_protobuf_encoding`, `GoEngineering/23_*` |
+| Serialisation formats compared; <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>/<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> <abbr title="Application Programming Interface">API</abbr> versioning | `SystemDesign/building_blocks/04_api_design_low_level.md`, `SystemDesign/building_blocks/03_api_design_high_level.md` |
 | Normalisation, indexes, isolation levels, database internals | `CSFundamentals/03_databases_deep_dive.md`, `SystemDesign/building_blocks/05–06` |
 | Event sourcing, outbox, CQRS | `CSFundamentals/04_software_engineering_deep_dive.md` §2 |
 
@@ -70,7 +70,7 @@ Three consequences shape everything else in this file:
 2. **Rollback must be possible**, so the new version cannot write data the old version
    can't read — at least until the new version is proven.
 3. **Data has consumers you don't know about.** A column rename breaks the finance team's
-   nightly SQL report, which nobody told you exists. Treat stored and published data as a
+   nightly <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> report, which nobody told you exists. Treat stored and published data as a
    public <abbr title="Application Programming Interface">API</abbr>.
 
 ---
@@ -129,13 +129,13 @@ forward compatibility buys you.
 | New required field | Don't. Add as optional with a default → deploy writers → backfill → then enforce |
 
 Schema registries (Confluent Schema Registry, Buf) enforce a chosen compatibility mode
-automatically on every schema change — reject the change at CI time rather than at 2 a.m.
+automatically on every schema change — reject the change at <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> time rather than at 2 a.m.
 
 ---
 
 ## 3 · The rules of safe schema change
 
-These rules apply to JSON documents, protobuf messages, Avro records, database tables, and
+These rules apply to <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> documents, protobuf messages, Avro records, database tables, and
 cache entries alike.
 
 | Change | Safe? | Why / how |
@@ -330,14 +330,14 @@ What the example handles, and why each matters:
 The last row is the subtle one, and it bites in production: an old service instance loads
 a record, changes one field, and saves it — dropping every field added by the newer
 version. Preserving unknowns (protobuf does this automatically since 3.5; hand-written
-JSON code must do it explicitly) or refusing to write records with a newer version are the
+<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> code must do it explicitly) or refusing to write records with a newer version are the
 two safe options.
 
 ### Versioning strategies compared
 
 | Strategy | How | Good for | Cost |
 |---|---|---|---|
-| **Additive only, no version** | Only ever add optional fields | Most JSON APIs and events | Accumulated optional fields; no breaking changes ever |
+| **Additive only, no version** | Only ever add optional fields | Most <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> APIs and events | Accumulated optional fields; no breaking changes ever |
 | **Version field + upcasters** | Upgrade on read (above) | Event stores, documents, files | Upcaster chain must be maintained and tested |
 | **Migrate in place** | Rewrite all records to the new version | Databases you control completely | Big batch job; must coexist with live traffic (§5) |
 | **New type / topic / endpoint** | `orders.v2` alongside `orders.v1` | Truly incompatible redesigns | Dual publishing; consumer migration; long tail |
@@ -482,13 +482,13 @@ Rules the example encodes:
 6. **Constraints are ordering constraints.** The old column was `NOT NULL`, so V4 couldn't
    insert without it; the drop (or a `DROP NOT NULL` during expand) must precede V4.
 
-### Operational hazards of DDL itself
+### Operational hazards of <abbr title="Data Definition Language. Syntax for creating and modifying database objects such as tables, indices, and users.">DDL</abbr> itself
 
 | Hazard | Example | Mitigation |
 |---|---|---|
 | **Table rewrite** | Changing a column type in PostgreSQL rewrites the table under an exclusive lock | New column + backfill instead |
 | **Lock queueing** | `ALTER TABLE` waits for a long-running query; every later query queues behind the `ALTER` — outage | Set `lock_timeout` (e.g. 2 s) and retry; kill long transactions first |
-| **Index builds** | `CREATE INDEX` blocks writes | `CREATE INDEX CONCURRENTLY` (PostgreSQL); online DDL (MySQL `ALGORITHM=INPLACE`, gh-ost, pt-online-schema-change) |
+| **Index builds** | `CREATE INDEX` blocks writes | `CREATE INDEX CONCURRENTLY` (PostgreSQL); online <abbr title="Data Definition Language. Syntax for creating and modifying database objects such as tables, indices, and users.">DDL</abbr> (MySQL `ALGORITHM=INPLACE`, gh-ost, pt-online-schema-change) |
 | **Adding a foreign key / check** | Validates every existing row under lock | Add as `NOT VALID`, then `VALIDATE CONSTRAINT` separately |
 | **Backfill load** | Saturates I/O, lags replicas | Throttle between batches; watch replica lag |
 | **Migrations coupled to app deploys** | App V2 fails to start because migration hasn't run | Migrations are their own step; app code tolerates both schema states |
@@ -571,13 +571,13 @@ None 2026-03-29T00:30:00+00:00 2026-03-29T00:30:00+00:00
 ALL PASSED
 ```
 
-(The UUID prefixes change every run; that they sort in creation order does not.)
+(The <abbr title="Universally Unique Identifier - A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems.">UUID</abbr> prefixes change every run; that they sort in creation order does not.)
 
 ### Money
 
 | Do | Don't |
 |---|---|
-| Integer **minor units** (cents) + ISO 4217 currency code, or `Decimal` with explicit rounding | Binary floats (`float`, `double`, JSON numbers parsed as float) |
+| Integer **minor units** (cents) + ISO 4217 currency code, or `Decimal` with explicit rounding | Binary floats (`float`, `double`, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> numbers parsed as float) |
 | Store the currency **with every amount** | Assume a global currency |
 | Decide rounding rules (banker's rounding, when to round) explicitly | Round at display time only |
 | Allocate remainders explicitly when splitting (`split_evenly`) | `total / n` and hope it sums |
@@ -616,9 +616,9 @@ detectable; and treat IDs as **opaque strings** in APIs, so the format can chang
 
 ### Text
 
-- **UTF-8 everywhere**; in MySQL that means `utf8mb4` (MySQL's legacy `utf8` can't store emoji).
+- **<abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 everywhere**; in MySQL that means `utf8mb4` (MySQL's legacy `utf8` can't store emoji).
 - **Length limits in characters vs. bytes vs. grapheme clusters** differ: "👩‍👩‍👧" is 1
-  grapheme, 5 code points, 18 UTF-8 bytes.
+  grapheme, 5 code points, 18 <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 bytes.
 - **Normalise before comparing** (Unicode NFC; case-folding with `str.casefold()` for
   case-insensitive matching) — "é" can be one or two code points.
 - **Email addresses and usernames**: store as entered, compare on a normalised form with a
@@ -795,7 +795,7 @@ Python equivalents: Pydantic `model_config = ConfigDict(extra="ignore")` for mes
 and .NET `BinaryFormatter` can **execute code** while deserialising. Never use them for
 anything that crosses a trust boundary — network, queue, uploaded file, even a cache that
 another service writes. They also tie the data format to class names in code, so a rename
-breaks stored data. Use explicit schemas: JSON with validation, protobuf, Avro, MessagePack.
+breaks stored data. Use explicit schemas: <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> with validation, protobuf, Avro, MessagePack.
 
 ---
 
@@ -837,7 +837,7 @@ message Order {
 | **Unknown enum values are preserved** as their number (open enums in proto3) | Old readers can round-trip new states — but code must handle "none of the known cases" |
 | **Unknown fields are preserved** on re-serialise (proto3 ≥ 3.5) | Middlemen don't drop newer fields |
 | **Don't change types** — few are wire-compatible (`int32`/`int64`/`bool` partly are, with truncation) | Silent corruption |
-| **Use `buf breaking`** in CI | Catches all of the above automatically against the previous version |
+| **Use `buf breaking`** in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> | Catches all of the above automatically against the previous version |
 | **Avoid `required`** (proto2) | Once required, can never be removed without breaking old readers — why proto3 dropped it |
 
 Google's internal style leans on the same rules at enormous scale: protocol buffers were
@@ -857,7 +857,7 @@ and enforced by nobody. Apply §3–§4 to all of these:
 | **Document DBs** (MongoDB, Firestore, DynamoDB) | Field names/types each code path expects | Documents of many generations coexist forever | `schema_version` + upcasters (§4), or scheduled migrations |
 | **Files and object storage** | File format, path layout | Old files re-processed by new code (backfills, reprocessing) | Format version header; immutable, versioned paths |
 | **Feature flags / remote config** | Keys, value types | Malformed value pushed → every instance fails at once | Validate on publish and on read; fall back to last known good |
-| **Client local storage** (mobile, browser) | Stored JSON shape | App update reads last version's data; can't migrate server-side | Versioned storage + client migrations |
+| **Client local storage** (mobile, browser) | Stored <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> shape | App update reads last version's data; can't migrate server-side | Versioned storage + client migrations |
 | **Analytics tables / data lake** | Column meanings downstream teams depend on | Renames and semantic changes break reports silently | Data contracts; announce deprecations; add, don't change |
 | **Logs** (when parsed) | Field names | Dashboards and alerts break on rename | §11 of `10_designing_observable_code.md`: consistent names |
 
@@ -886,7 +886,7 @@ that meeting.
 | **Golden files of old formats** | Commit real serialised examples of every historical version (`fixtures/order_v1.json`, `_v2`, …). Test that current code reads all of them. Never edit old fixtures. |
 | **Round-trip preserves unknowns** | Decode a record with extra fields, modify, encode; assert extras survive (as §4's example does) |
 | **Forward-compat fixture** | A hand-written "future" record with unknown fields and enum values; assert the current reader doesn't crash |
-| **Schema diff in CI** | `buf breaking`, schema-registry compatibility checks, `openapi-diff` for HTTP APIs |
+| **Schema diff in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>** | `buf breaking`, schema-registry compatibility checks, `openapi-diff` for <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> APIs |
 | **Migration tests against realistic data** | Run migrations on a copy of production-sized, anonymised data; measure lock time and duration |
 | **Two-version integration test** | Run version N and N+1 against one database/topic; exercise reads and writes in both directions |
 | **Rollback rehearsal** | Deploy N+1 to staging, write data, roll back to N, verify N works |
@@ -952,7 +952,7 @@ never binary floats — and explicit remainder allocation when splitting. Time: 
 UTC with a timezone-aware type; user-scheduled wall-clock times as local time plus an IANA
 zone name, because offsets change with daylight saving; dates as dates.
 
-**Q: Auto-increment vs. UUID primary keys?**
+**Q: Auto-increment vs. <abbr title="Universally Unique Identifier - A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems.">UUID</abbr> primary keys?**
 Auto-increment is compact and index-friendly but needs a central allocator and leaks
 volume and guessability if exposed. Random UUIDs can be generated anywhere but scatter
 B-tree inserts. Time-ordered IDs like UUIDv7 or ULID give decentralised generation with
@@ -969,7 +969,7 @@ version.
 Field numbers are identity: never change or reuse them — reserve removed numbers and names.
 Add fields rather than changing types or meanings. Make enum zero `UNSPECIFIED` and handle
 unknown enum values. Use `optional` where presence matters. Enforce with `buf breaking` in
-CI.
+<abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.
 
 **Q: Soft delete or hard delete?**
 Soft delete when you need undo, audit, or referential history — with default-filtered
@@ -999,10 +999,10 @@ erasure.
 **Migrations**
 - [ ] Expand → dual-write → backfill → switch reads → contract.
 - [ ] Backfills are batched, throttled, idempotent, and resumable.
-- [ ] DDL uses lock timeouts and online variants; no table rewrites on hot tables.
+- [ ] <abbr title="Data Definition Language. Syntax for creating and modifying database objects such as tables, indices, and users.">DDL</abbr> uses lock timeouts and online variants; no table rewrites on hot tables.
 - [ ] Migrations deploy separately from code; both schema states are supported.
 
 **Verification**
 - [ ] Golden fixtures of every historical format are read in tests.
-- [ ] Schema compatibility is checked in CI.
+- [ ] Schema compatibility is checked in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.
 - [ ] Rollback has been rehearsed.

@@ -3,7 +3,7 @@
 Welcome to Day 130. 
 
 You built a powerful Agent. You ran it locally on your laptop, and it successfully wrote a python script and emailed it to you. You deployed it to production.
-Ten minutes later, the Agent went into an infinite loop, hallucinated a fake SQL query, and burned through $50 of <abbr title="Application Programming Interface">API</abbr> credits before crashing.
+Ten minutes later, the Agent went into an infinite loop, hallucinated a fake <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> query, and burned through $50 of <abbr title="Application Programming Interface">API</abbr> credits before crashing.
 
 Why did this happen? Because **Agents are non-deterministic**. Traditional software engineering uses Unit Tests (e.g., `assert 2+2 == 4`). But you cannot write a Unit Test for an <abbr title="Large Language Model">LLM</abbr> because it might say "4" today, and "four" tomorrow.
 
@@ -16,7 +16,7 @@ Today, we learn the dark art of **Agent Evaluation and Testing**.
 ### 1. The Evaluation Dimensions
 You cannot just grade the Agent's final answer. A good answer might have cost $10 to generate! You must evaluate:
 - **Task Completion Rate:** Did it actually achieve the final goal?
-- **Tool Call Accuracy:** Did it use the right tool with the right JSON syntax?
+- **Tool Call Accuracy:** Did it use the right tool with the right <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> syntax?
 - **Cost Efficiency:** Did it burn unnecessary tokens?
 - **Latency:** Did the loops take 5 seconds or 5 minutes?
 

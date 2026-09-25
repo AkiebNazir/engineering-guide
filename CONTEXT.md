@@ -16,7 +16,7 @@ and Go**, plus a local web app to work through it.
 | Commitment | 25+ hrs/week, ~325 hours total |
 | Scope | DSA + system design + behavioral (full loop) |
 | Languages | Both Python and Go. Python is the interview language. |
-| User level | Solid on recursion/backtracking. Gaps: binary search, graphs, DP, heaps, intervals. |
+| User level | Solid on recursion/backtracking. Gaps: binary search, graphs, <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, heaps, intervals. |
 | User's code | Clean and idiomatic. Already handles the copy-on-append trap correctly. |
 
 ---
@@ -174,7 +174,7 @@ User asked for (a) a Go guide beside each Python one, (b) "Read the topic guide"
   question/solution files (out of scope, not touched).
 - **Not done, by the user's call:** the unfinished Go problem solutions (`GoDSA/**/solution.go` placeholders).
 
-**23 Sep 2026 — final-check pass: hygiene, SOAP Go, and a webapp modernization sweep.** An audit of every
+**23 Sep 2026 — final-check pass: hygiene, <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Go, and a webapp modernization sweep.** An audit of every
 module found the Python DSA curriculum (345/345) and all learning modules complete and wired. What it turned up, and
 what was done:
 - **GoDSA is mostly stubs — NOT fixed, by the user's call.** 299 of 344 `GoDSA/**/solution.go` are placeholders
@@ -184,7 +184,7 @@ what was done:
   `_archive/scripts/`; `RAG.md` and `google_prep_plan.md` moved to `_archive/docs/` (`GOOGLE_INTERVIEW_PREP.md` still
   names the latter, path updated). `SYSTEM_DESIGN_GUIDE.md` (served by `server.py` as the SD "Complete guide") and
   `master_dsa_plan.md` (cited by webapp code/README) deliberately stay at the root. `injected.txt`, `pico.save` deleted.
-- **SOAP Foundation Go levels 11-13 written** (`complete_soap_service`, `being_a_client`, `bonus_raw_envelope_over_tcp`);
+- **<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> Foundation Go levels 11-13 written** (`complete_soap_service`, `being_a_client`, `bonus_raw_envelope_over_tcp`);
   all 14 Go levels now match Python. gofmt/vet clean, each prints `OK`; `server.py` needed no change (it globs).
 - **Webapp.** Mobile: the sidebar was open by default under 860px and covered ~75% of the screen — `setSidebarOpen()`
   (app.js) is now the single owner of open/closed state (hamburger, backdrop tap, Esc, picking a link, search); the
@@ -193,17 +193,17 @@ what was done:
   `renderPalette` in app.js, `#palette` in index.html) searches DSA + every module, ranks prefix > word-start >
   substring, ignores the DSA chips, and multi-word queries match in any order (`matchesAll`, also used by the sidebar
   search). Routes: `#/p/<topic>/1/…` now finds `001`; `#/sd`, `#/sql` etc. work as aliases for the published hash.
-  Every navigation gets one settle-in (`.view` `view-in` keyframe). SQL, NoSQL, CS Fundamentals, Google Behavioral and
+  Every navigation gets one settle-in (`.view` `view-in` keyframe). <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr>, CS Fundamentals, Google Behavioral and
   both StdLib modules had no motif of their own and fell through to the "pytest -v" worker-pool drawing; each now has a
   purpose-built one in `motif()` (reader.js). Module cards' summaries now use the whole first paragraph
   (`doc_meta` in server.py) instead of one hard-wrapped line that ended mid-sentence. Solving a problem now says where
   it leaves you ("3 of 14 in Arrays & Hashing · 4-day streak") and the status button pops. Verified with headless
   Chrome at 1440x900 and 390x844, dark and light: zero console errors. **Restart the server to pick up `server.py`.**
 
-**23 Sep 2026 — SQL/NoSQL modules given full Go parity (all 47 levels), on top of the
+**23 Sep 2026 — <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>/<abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> modules given full Go parity (all 47 levels), on top of the
 Python content.** User asked for Go examples alongside Python in both modules, "full
 parity," using both `database/sql` and native pgx for Postgres, plus `mongo-driver/v2`
-and `go-redis/v9`. Done via 6 parallel forks (SQL split into four 5-level chunks,
+and `go-redis/v9`. Done via 6 parallel forks (<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> split into four 5-level chunks,
 MongoDB and Redis+concepts each one fork), each running real Go code against the live
 lab databases and capturing real output — no fabricated numbers, per this repo's
 standing rule. Every level in `SQL/00`-`19` and every hands-on level in
@@ -228,7 +228,7 @@ Real bugs and surprises the forks caught (all left in the docs honestly, per the
   (`SQL/07`) — psycopg has no such restriction; documented as a first-class gotcha.
 - Connection-pooling's speedup was far larger in Go (37.1x, `SQL/13`) than Python's
   7.8x, because an unpooled loop pays `sql.Open`'s per-call driver setup on top of the
-  TCP handshake.
+  <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> handshake.
 - `go-redis`'s `MaxRetries` compounds with the connection pool's own internal dial
   retry (`NoSQL/redis/11`) — 2108ms measured instead of the ~800ms a naive estimate
   predicts; written up with the real log evidence.
@@ -247,13 +247,13 @@ headless-Chrome pass renders four spot-checked pages with zero console/page erro
 and the live lab Postgres/MongoDB/Redis were confirmed clean of scratch objects left
 over from any fork's demos (compared table/database/key lists before and after).
 
-**23 Sep 2026 — SQL/NoSQL gap-fill: normalization, replication, sharding, wide-column,
-and interview playbooks, 7 new files, fully wired.** The SQL/NoSQL module below was
+**23 Sep 2026 — <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>/<abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> gap-fill: normalization, replication, sharding, wide-column,
+and interview playbooks, 7 new files, fully wired.** The <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>/<abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> module below was
 already built and webapp-wired earlier the same day, but audited against what a
 working engineer is actually asked in interviews and found genuinely missing:
 normalization/denormalization, replication/HA, and sharding had no coverage anywhere
 in `SQL/`, and `NoSQL/` had no wide-column (Cassandra/DynamoDB) design content or any
-cross-cutting SQL-vs-NoSQL / CAP-applied decision material beyond a one-line mention.
+cross-cutting <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>-vs-<abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> / <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>-applied decision material beyond a one-line mention.
 Closed with real, measured content (this repo's standing rule — nothing here is a
 fabricated number):
 - **`SQL/16_normalization_and_denormalization.md`** — all three anomalies (update,
@@ -289,12 +289,12 @@ fabricated number):
   single-table DynamoDB schema, Cassandra's `R + W > N`, explicitly labeled as design-
   level since no Cassandra/DynamoDB container exists in this repo's lab stack);
   `01_choosing_a_database_and_cap_theorem.md` (a 4-step decision framework across
-  SQL/Mongo/Redis/wide-column, and a table naming the concrete consistency knob real
+  <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>/Mongo/Redis/wide-column, and a table naming the concrete consistency knob real
   systems expose — Postgres's `synchronous_commit`, Mongo's write concern, Cassandra's
   consistency level, DynamoDB's eventual/strong toggle — deliberately consistent with
-  `SystemDesign/building_blocks/10_distributed_systems_theory.md`'s point that CAP is
+  `SystemDesign/building_blocks/10_distributed_systems_theory.md`'s point that <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> is
   per-operation, not a static per-product label); `02_interview_playbook.md` (worked
-  NoSQL data-modeling questions: blog comments, a leaderboard, rate limiting, a
+  <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> data-modeling questions: blog comments, a leaderboard, rate limiting, a
   distributed lock).
 - Both READMEs' roadmap tables and level counts updated (`SQL/` 16→20 levels,
   `NoSQL/` gains the `concepts/` group). Verified end to end with a real headless-

@@ -161,7 +161,7 @@ Your Python script works. Now make it an Enterprise <abbr title="Application Pro
 2. Wrap your `EnterpriseRAG` class inside a FastAPI app.
 3. Create an endpoint: `@app.post("/ask")`.
 4. Use a Pydantic schema to define the Request: `{"query": "string"}`.
-5. Return the final answer and the retrieved context in a JSON response. 
+5. Return the final answer and the retrieved context in a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> response. 
 6. Start the server and test it using `curl` or Postman!
 
 ### 🎤 MAANG Technical Interview Prep
@@ -178,7 +178,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - State that processing 500k PDFs requires an asynchronous message queue (like Kafka or Celery). 
    - When a document is updated by HR, an event is fired. The worker node deletes the old vectors from the DB based on the `document_id` metadata, re-embeds the new text, and upserts it.
 2. **Access Control (Pre-filtering):**
-   - Explain that the Vector DB (e.g., Qdrant) must use strict Pre-Filtering. A user's JWT token is parsed to find their `department_id`. The vector search mathematically restricts the search space to only chunks containing that `department_id` in their metadata.
+   - Explain that the Vector DB (e.g., Qdrant) must use strict Pre-Filtering. A user's <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> token is parsed to find their `department_id`. The vector search mathematically restricts the search space to only chunks containing that `department_id` in their metadata.
 3. **Retrieval & Evaluation:**
    - Define the Hybrid (Dense + Sparse) -> RRF -> Cross-Encoder pipeline to maximize context precision.
    - Explain that you will build a <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline running the RAGAS framework. Every time the Embedding model or <abbr title="Large Language Model">LLM</abbr> is updated, you run 500 historical queries and measure Faithfulness and Answer Relevance before deploying to production.

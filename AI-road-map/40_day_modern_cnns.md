@@ -19,7 +19,7 @@ A standard convolution looks at the Spatial dimensions ($3 \times 3$) AND the Co
 In 2017, Google introduced **MobileNet**. They realized that looking at Space (Height/Width) and Depth (Color/Features) at the exact same time was mathematically redundant. They split the convolution into two completely separate steps:
 1. **Depthwise Convolution:** Use a $3 \times 3$ filter on *each channel completely separately*. (Space only).
 2. **Pointwise Convolution:** Use a $1 \times 1$ filter to look at all the channels at a single pixel and mix them together. (Depth only).
-**The Result:** Doing these two steps back-to-back achieves the exact same visual result, but uses **~90% less parameters and RAM!**
+**The Result:** Doing these two steps back-to-back achieves the exact same visual result, but uses **~90% less parameters and <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>!**
 
 ### 3. EfficientNet: The Compound Scaling Formula
 Before 2019, if engineers wanted to improve a model, they guessed. They either made it **Deeper** (more layers), **Wider** (more channels), or increased the **Resolution** (larger image size).

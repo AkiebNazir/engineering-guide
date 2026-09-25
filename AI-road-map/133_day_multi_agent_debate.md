@@ -97,7 +97,7 @@ You want to build a Software Engineering team.
 **Your Task:**
 1. Conceptually define 3 Agents: `Architect`, `Developer`, and `Reviewer`.
 2. The User asks: *"Build a React component for a Login form."*
-3. **Step 1:** The `Architect` writes a JSON spec.
+3. **Step 1:** The `Architect` writes a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> spec.
 4. **Step 2:** The `Developer` reads the spec and writes the code.
 5. **Step 3:** The `Reviewer` reads the code. If the code is missing a Password field, the Reviewer sends a direct message *back* to the `Developer`. 
 6. They loop until the `Reviewer` approves the code. You have just designed an autonomous software agency!

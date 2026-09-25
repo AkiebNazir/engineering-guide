@@ -38,7 +38,7 @@ GBM is great, but it overfits very quickly. **XGBoost** is the evolution of GBM,
 
 ### 5. LightGBM
 XGBoost is perfectly accurate, but it is slow. To find the best split, XGBoost has to mathematically sort every single floating-point number in a column.
-Microsoft invented **LightGBM**. It uses **Histogram-based Binning**. Instead of sorting $1,000,000$ unique floating-point numbers, it groups them into $256$ buckets (Histograms). It only evaluates the $256$ buckets! This makes LightGBM 10x faster than XGBoost while using a fraction of the RAM, with almost zero loss in accuracy.
+Microsoft invented **LightGBM**. It uses **Histogram-based Binning**. Instead of sorting $1,000,000$ unique floating-point numbers, it groups them into $256$ buckets (Histograms). It only evaluates the $256$ buckets! This makes LightGBM 10x faster than XGBoost while using a fraction of the <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, with almost zero loss in accuracy.
 
 ---
 

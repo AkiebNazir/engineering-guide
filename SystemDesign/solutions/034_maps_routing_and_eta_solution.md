@@ -2,7 +2,7 @@
 
 ## Goal and contract
 
-A route is the minimum-time path on a directed road graph whose edge weights blend **live probe speeds, a learned time-of-day profile and free-flow speed**. Continent-scale shard groups hold the graph in RAM. An <abbr title="Machine Learning">ML</abbr> layer corrects the ETA but never edits the path.
+A route is the minimum-time path on a directed road graph whose edge weights blend **live probe speeds, a learned time-of-day profile and free-flow speed**. Continent-scale shard groups hold the graph in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. An <abbr title="Machine Learning">ML</abbr> layer corrects the ETA but never edits the path.
 
 - **One snapshot per answer.** Every route names the `build_id` (map version) and `metric_version` (weights) that produced it, so a retry or a replay sees the same numbers.
 - **Not promised:** the provably fastest route (search runs on a snapshot metric, candidates are re-priced along their own path, regret is measured), an exact ETA, or a fresh weight on a road nobody drove. No data falls back to the historical profile, never to free flow.
@@ -17,11 +17,11 @@ A route is the minimum-time path on a directed road graph whose edge weights ble
 |---|---|---|---|
 | Route demand | starts 1M / 1,800 s = 556/s, previews 4× = 2,222/s, off-route 0.1 per trip = 56/s, traffic re-checks 5% of 1M per minute = 833/s | 3,667/s vs 5,000/s peak | 1.36× headroom, so shed by request class in a storm. |
 | Status checks | 1M / 5 s = 200,000 req/s × 200 B (5 fixes × 40 B) | 40 MB/s in | A stateful gateway replying with ETA. Sessions 1M × (300 edges × 8 B + 0.5 KB) = 2.9 GB, index 3.6 GB. |
-| Dijkstra at 3,000 km | whole continent ~100M nodes at 5M settles/s (assumed) | 20 s vs 0.3 s: 67× over | Deep dive 1. A 90/9/1 short, mid, long mix averages 0.175 core-s: 876 cores at 5,000/s. Throughput is affordable, the **tail is not**. A hierarchy at ~5 ms (search 2, alternatives 2, unpack 1) × 5,000/s is 25 cores, so replicas are set by RAM and zones. |
-| Graph in RAM | Asia 330M edges × 20 B = 6.6 GB, 132M nodes × 20 B = 2.6 GB, overlay 0.5 GB + 3 metrics × 16 B/node = 6.3 GB, LIVE spare 2.1 GB, speeds 1.3 GB, +5% halo | 20.5 GB. World (1,000M edges over 6 groups) = 62 GB | It fits one big box, so shard for **fault isolation, rollout and boot time**. Geometry (8 GB) is memory-mapped from NVMe. |
+| Dijkstra at 3,000 km | whole continent ~100M nodes at 5M settles/s (assumed) | 20 s vs 0.3 s: 67× over | Deep dive 1. A 90/9/1 short, mid, long mix averages 0.175 core-s: 876 cores at 5,000/s. Throughput is affordable, the **tail is not**. A hierarchy at ~5 ms (search 2, alternatives 2, unpack 1) × 5,000/s is 25 cores, so replicas are set by <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and zones. |
+| Graph in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> | Asia 330M edges × 20 B = 6.6 GB, 132M nodes × 20 B = 2.6 GB, overlay 0.5 GB + 3 metrics × 16 B/node = 6.3 GB, LIVE spare 2.1 GB, speeds 1.3 GB, +5% halo | 20.5 GB. World (1,000M edges over 6 groups) = 62 GB | It fits one big box, so shard for **fault isolation, rollout and boot time**. Geometry (8 GB) is memory-mapped from NVMe. |
 | Probes | navigation 1M / 7 s per 100 m edge = 143k traversals/s, passive 10M × 10% driving / 10 s × 1.4 edges = 140k/s | 283k/s = 17M/min, ~10M distinct edges/min (1% of edges) | Upload matched traversals at 16 B: 4.5 MB/s = 391 GB/day, 8.2 TB for 7 days × 3. History: 200M edges × 96 buckets × 4 B × 84 days = 6.5 TB, so fit profiles offline (512 templates × 672 slots + 3 B/edge). |
 | Customization | CRP papers: ~10 s on 12 cores for 18M-node Europe (order of magnitude) = 120 core-s × 132M/18M = 880 core-s for Asia = 28 s on 32 cores, 30% cells dirty = 8 s | World 2,667 core-s × 30% / 60 s = 13 cores | A 60 s cycle. Ship dirty cells: 2.1 GB × 30% × 6 replicas / 60 s = 63 MB/s per group. |
-| Freshness | emit 30 s + lag 10 s + cycle wait 60 s + customize 28 s + ship 20 s + swap 1 s | 149 s vs 180 s target | A 120 s cycle would give 209 s and break the SLO. |
+| Freshness | emit 30 s + lag 10 s + cycle wait 60 s + customize 28 s + ship 20 s + swap 1 s | 149 s vs 180 s target | A 120 s cycle would give 209 s and break the <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>. |
 | Latency at 3,000 km | gateway 10 + snap 5 + search 20 + alternatives 20 + unpack and geometry 30 + re-price 2 + ETA 10 + network 30 | 127 ms vs 300 ms | 2.4× tail slack. Payload 72 + 2 × 24 KB = 120 KB. |
 | Offline pack | CH: (10M edges + 10M shortcuts) × 8 B + 4M nodes × 8 B + turns 8 MB = 200 MB | + ~200 MB tiles and search | No slack under 400 MB: cap regions at 10M edges. |
 
@@ -43,10 +43,10 @@ GET  /v1/offline/regions/{id}/manifest  → {version, bytes, delta_from[]}
 
 | Entity | Fields | Where and why |
 |---|---|---|
-| Graph build | CSR edges `{head, base_time, profile_id, flags}`, **stable 64-bit `segment_id`**, coordinates, cell id per level, overlay topology | Immutable artifact in RAM. Source of truth is the map database. |
+| Graph build | CSR edges `{head, base_time, profile_id, flags}`, **stable 64-bit `segment_id`**, coordinates, cell id per level, overlay topology | Immutable artifact in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. Source of truth is the map database. |
 | Metric | `{group, build_id, metric_version, kind LIVE/PEAK/OFFPEAK, edge speeds, overlay weights}` | Immutable blob, two kept: rollback is a pointer flip. |
 | Segment speed, history | `segment_id → {v, n_devices, ts}` plus 15-minute buckets `{mean, p10, p90, n}` | Stream state partitioned by (group, S2 cell), so a customizer reads local data. |
-| Nav session | `{session_id, route_epoch, build_id, segment_ids[], pos, last_seq, eta, cooldown_until}` | Gateway RAM, checkpoint every 30 s, TTL 6 h, partition by `hash(session_id)`. |
+| Nav session | `{session_id, route_epoch, build_id, segment_ids[], pos, last_seq, eta, cooldown_until}` | Gateway <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, checkpoint every 30 s, TTL 6 h, partition by `hash(session_id)`. |
 | Incident | `{id, segment_ids, type, start, end?, source, confidence}` | KV store, broadcast to shards as an infinite weight. |
 
 Shards partition **geographically**, sessions **by hash** (no locality to exploit). Sessions hold `segment_id`, so a build swap keeps them valid.
@@ -126,7 +126,7 @@ Choice: **6 continent-scale groups with a ~5% halo, cells inside**, so a trip is
 
 **No data is not free flow.** A closed road gets no probes. Incident feeds and reports write explicit weights, an upstream speed collapse with downstream silence flags a suspected closure, and silent busy segments widen the ETA range.
 
-**Time dependence.** A 4-hour trip reaches hour 3 under conditions that do not exist yet: `v(e,t) = v_profile(t) × (1 + (r − 1)·e^(−(t − now)/45 min))`, where `r` is the live-to-profile ratio and 45 min is an assumed persistence. Exact search requires the FIFO property (leaving later never arrives earlier), which smoothed profiles satisfy. We search on a snapshot metric (`LIVE`, `PEAK` or `OFFPEAK`, by expected passage time) and **re-price each candidate exactly along its own path** (3 × 30k edges × 20 ns = 2 ms). Cost: some suboptimality, acceptable because we measure it: shadow-run exact time-dependent A* on 1% of queries (50/s) and track the extra minutes as **regret** ([block 20](../building_blocks/20_specialized_data_structures.md)).
+**Time dependence.** A 4-hour trip reaches hour 3 under conditions that do not exist yet: `v(e,t) = v_profile(t) × (1 + (r − 1)·e^(−(t − now)/45 min))`, where `r` is the live-to-profile ratio and 45 min is an assumed persistence. Exact search requires the <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> property (leaving later never arrives earlier), which smoothed profiles satisfy. We search on a snapshot metric (`LIVE`, `PEAK` or `OFFPEAK`, by expected passage time) and **re-price each candidate exactly along its own path** (3 × 30k edges × 20 ns = 2 ms). Cost: some suboptimality, acceptable because we measure it: shadow-run exact time-dependent A* on 1% of queries (50/s) and track the extra minutes as **regret** ([block 20](../building_blocks/20_specialized_data_structures.md)).
 
 **Spoofing.** A 2020 art project's handcart of 99 phones was widely reported to paint a false jam. Weight by distinct devices, classify motion (vehicle or walking), bound speeds by road plausibility, require neighbours to agree.
 
@@ -158,7 +158,7 @@ sequenceDiagram
 
 **Alternatives.** The via-node (plateau) method (Abraham, Delling, Goldberg, Werneck, SEA 2010): the forward and backward search spaces already meet at candidate vias, so keep those whose route is at most ~25% longer, shares limited length with the best and is locally optimal (thresholds per the paper, hedged). One query plus a filter, not 3 searches. Fallback: the penalty method (raise weights on the found route, search again).
 
-**Map updates.** Closures and traffic are **weights**: customization, ≤ 30 min for closures (verification), 150 s for traffic. New roads, one-way flips and turn restrictions are **topology**: a new build daily, or for an urgent fix only the affected cells and parents while the partition is stable. Pipeline: validate (islands, one-way conflicts), build with stable `segment_id`s, partition, publish an immutable artifact, roll out canary first behind a **shadow diff** (replay 100k historical queries on old and new, alert on shifted route time). Rollback is a pointer flip, and a session whose segments vanished is re-routed. Route geometry rides in the response, not tiles. The traffic overlay is a separate 60 s CDN layer.
+**Map updates.** Closures and traffic are **weights**: customization, ≤ 30 min for closures (verification), 150 s for traffic. New roads, one-way flips and turn restrictions are **topology**: a new build daily, or for an urgent fix only the affected cells and parents while the partition is stable. Pipeline: validate (islands, one-way conflicts), build with stable `segment_id`s, partition, publish an immutable artifact, roll out canary first behind a **shadow diff** (replay 100k historical queries on old and new, alert on shifted route time). Rollback is a pointer flip, and a session whose segments vanished is re-routed. Route geometry rides in the response, not tiles. The traffic overlay is a separate 60 s <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> layer.
 
 ## Failure behaviour
 
@@ -177,7 +177,7 @@ sequenceDiagram
 - **SLIs:** route success and p99 by distance bucket, **freshness** (now minus newest probe in the serving metric), ETA error by trip length, regret, map-match off-road rate, reroute flip rate, customization duration, coverage (edges with `c > 0.5`), shadow-diff outliers.
 - **The one paging alert:** routes answered within 300 ms below 99.9% over 5 minutes (burn rate). Stale traffic degrades quality but routing works from profile, so freshness over 6 minutes is a ticket.
 
-Trade-off to state: "I chose a CRP-style customizable overlay served from RAM by continent-scale groups with a 60-second metric refresh, so a 3,000 km route is milliseconds of search and live speeds reach routing in about 150 seconds. The cost is a partition per map build, a customization service and approximate time-dependent search bounded by measured regret. Plain contraction hierarchies stay for static weights, like offline packs."
+Trade-off to state: "I chose a CRP-style customizable overlay served from <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> by continent-scale groups with a 60-second metric refresh, so a 3,000 km route is milliseconds of search and live speeds reach routing in about 150 seconds. The cost is a partition per map build, a customization service and approximate time-dependent search bounded by measured regret. Plain contraction hierarchies stay for static weights, like offline packs."
 
 ## Follow-ups the interviewer will ask
 
@@ -205,7 +205,7 @@ Trade-off to state: "I chose a CRP-style customizable overlay served from RAM by
 - **Build vs buy.** Start with OSRM (MLD), Valhalla or GraphHopper on licensed or open map data. Build the traffic pipeline, ETA model and gateway, the differentiators. Check licence terms.
 - **Phases.** Static profiles, then live probes and customization, then <abbr title="Machine Learning">ML</abbr> ETA, each gated on regret and ETA error.
 - **Blast radius.** Map data, traffic, routing and ETA are separate teams behind `build_id` and `metric_version`, so a poisoned feed cannot corrupt a build.
-- **Measure first.** Trip-length distribution (the 90/9/1 assumption drives p99), coverage by road class, regret, ETA error, reroute acceptance. Cost is RAM per vehicle profile: trucks and bikes each add one.
+- **Measure first.** Trip-length distribution (the 90/9/1 assumption drives p99), coverage by road class, regret, ETA error, reroute acceptance. Cost is <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> per vehicle profile: trucks and bikes each add one.
 
 ## Build exercise
 

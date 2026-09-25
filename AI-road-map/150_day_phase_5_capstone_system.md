@@ -2,7 +2,7 @@
 
 Welcome to Day 150. You made it.
 
-Over the last 30 days, you learned ReAct, Tool Creation (LATM), Multi-Modal interactions, <abbr title="Model Context Protocol">MCP</abbr> Ecosystems, LangChain LCEL, LangGraph orchestration, Subgraphs, Human-in-the-Loop, Docker deployment, and Circuit Breaker resilience.
+Over the last 30 days, you learned ReAct, Tool Creation (LATM), Multi-Modal interactions, <abbr title="Model Context Protocol">MCP</abbr> Ecosystems, LangChain LCEL, LangGraph orchestration, Subgraphs, Human-in-the-Loop, <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> deployment, and Circuit Breaker resilience.
 
 Today is the **Phase 5 Capstone**. We are bringing all of these concepts together into a single, cohesive, production-grade architecture.
 
@@ -179,7 +179,7 @@ Map out the **Observability layer** for this Capstone. Where would you inject La
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Agent Architecture:** A LangGraph Supervisor that delegates to specialized subgraphs (Email Agent, Calendar Agent, Research Agent).
-2. **Tool Ecosystem:** Using isolated <abbr title="Model Context Protocol">MCP</abbr> servers running in Docker containers. The Calendar Agent communicates securely with a Google Calendar <abbr title="Model Context Protocol">MCP</abbr> server, preventing hallucinated <abbr title="Application Programming Interface">API</abbr> calls from breaking the core logic.
+2. **Tool Ecosystem:** Using isolated <abbr title="Model Context Protocol">MCP</abbr> servers running in <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> containers. The Calendar Agent communicates securely with a Google Calendar <abbr title="Model Context Protocol">MCP</abbr> server, preventing hallucinated <abbr title="Application Programming Interface">API</abbr> calls from breaking the core logic.
 3. **Memory:** Short-term memory in the LangGraph Checkpointer (Postgres). Long-term semantic memory (Exec profiles, past decisions) embedded in a Vector Database (Pinecone).
 4. **Security:** Human-in-the-Loop for all outgoing emails or calendar modifications. Strict row-level security in the database so the Agent cannot cross-contaminate executive data.
 5. **Deployment:** FastAPI endpoints, Redis queues for async processing, Celery workers orchestrated in a Kubernetes cluster with HPA auto-scaling.

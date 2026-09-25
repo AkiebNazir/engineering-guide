@@ -37,7 +37,7 @@ db.products.find({"price": {"$lt": 40}}, {"_id": 0, "name": 1, "price": 1})
 
 `$gte`/`$lte`/`$ne` follow the same pattern (not shown — they're the obvious extensions).
 
-`$in` matches if the field equals *any* value in a given array — the equivalent of SQL's `IN (...)`:
+`$in` matches if the field equals *any* value in a given array — the equivalent of <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>'s `IN (...)`:
 
 ```python
 db.products.find(
@@ -91,7 +91,7 @@ db.products.find({"stock": {"$exists": False}}, {"_id": 0, "name": 1})
 {'name': 'Webcam'}
 ```
 
-Only "Webcam" comes back — "Monitor" has `stock: 0`, which is a present field with a falsy value, not a missing field, and `$exists: False` correctly does not match it. This is a common bug source coming from SQL, where every row structurally has every column (possibly `NULL`); in MongoDB, "field is missing" and "field is `null`" and "field is `0`/`false`/`""`" are three genuinely different states, and `$exists` only tests the first one. If you want "missing OR null," write `{"$or": [{"field": {"$exists": False}}, {"field": None}]}` explicitly.
+Only "Webcam" comes back — "Monitor" has `stock: 0`, which is a present field with a falsy value, not a missing field, and `$exists: False` correctly does not match it. This is a common bug source coming from <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, where every row structurally has every column (possibly `NULL`); in MongoDB, "field is missing" and "field is `null`" and "field is `0`/`false`/`""`" are three genuinely different states, and `$exists` only tests the first one. If you want "missing OR null," write `{"$or": [{"field": {"$exists": False}}, {"field": None}]}` explicitly.
 
 ## Projections: shaping what comes back
 

@@ -82,7 +82,7 @@ If you open your terminal and type `mlflow ui`, a beautiful web dashboard opens 
 ## 4. Deep Dive: The Model Registry (Pro Level)
 
 Tracking experiments is great, but how do you deploy a model? 
-You use the **Model Registry**. It is exactly like Docker Hub, but for <abbr title="Machine Learning">ML</abbr> models. It handles versioning and environment stages (Staging vs Production).
+You use the **Model Registry**. It is exactly like <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> Hub, but for <abbr title="Machine Learning">ML</abbr> models. It handles versioning and environment stages (Staging vs Production).
 
 ### Parameter Breakdown: `log_model(..., registered_model_name)`
 - `registered_model_name` (str): 
@@ -154,5 +154,5 @@ In production, when MLflow receives the <abbr title="Application Programming Int
 ### Scenario 2: MLflow vs Weights & Biases (WandB)
 *Interviewer:* "We are starting a new Deep Learning team. Should we use MLflow or Weights & Biases?"
 
-*Answer:* "It depends on the phase of the lifecycle. MLflow is the undisputed king of the **Deployment and Registry** phase. Its ability to serve models as REST APIs and manage Staging/Production tags is enterprise-grade. However, its UI for tracking complex real-time GPU metrics and visualizing Deep Learning loss curves is quite basic.
+*Answer:* "It depends on the phase of the lifecycle. MLflow is the undisputed king of the **Deployment and Registry** phase. Its ability to serve models as <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs and manage Staging/Production tags is enterprise-grade. However, its UI for tracking complex real-time GPU metrics and visualizing Deep Learning loss curves is quite basic.
 Weights & Biases (WandB) is the king of the **Experiment Tracking** phase. It provides gorgeous, real-time, highly collaborative cloud dashboards for Deep Learning teams to watch loss curves train live over 3 weeks. Most top-tier companies actually use both: WandB to track the massive Deep Learning experiments, and MLflow to Register and Deploy the final winning model."

@@ -142,7 +142,7 @@ dpo_trainer = DPOTrainer(
 
 ## 6. Common Pitfalls & Debugging in Production
 
-### ⚠️ Pitfall 1: OOM during <abbr title="Direct Preference Optimization">DPO</abbr>
+### ⚠️ Pitfall 1: <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> during <abbr title="Direct Preference Optimization">DPO</abbr>
 <abbr title="Direct Preference Optimization">DPO</abbr> requires having both the model you are training AND the frozen Reference Model in VRAM at the same time. If you barely fit your model in memory during SFT, <abbr title="Direct Preference Optimization">DPO</abbr> will crash your server instantly because it requires double the memory.
 *Fix:* Use `peft` (<abbr title="Low-Rank Adaptation">LoRA</abbr>) for <abbr title="Direct Preference Optimization">DPO</abbr>. Because the Base Model is frozen, TRL is smart enough to use the exact same Base Model as the Reference Model, and it only trains the tiny 100MB <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter. This eliminates the duplicate memory footprint entirely!
 

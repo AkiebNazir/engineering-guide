@@ -14,8 +14,8 @@
 
 From topic 01: a Go `string` is a read-only `[]byte` header. `len(s)` counts
 **bytes**, not characters — `len("héllo")` is 6, not 5, because `é` is 2 bytes
-in UTF-8. Indexing `s[i]` yields a `byte`, not a rune. `for i, r := range s`
-decodes UTF-8 on the fly and gives you `rune`s, with `i` jumping by more than 1
+in <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8. Indexing `s[i]` yields a `byte`, not a rune. `for i, r := range s`
+decodes <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 on the fly and gives you `rune`s, with `i` jumping by more than 1
 across multi-byte characters. `[]rune(s)` is an O(n) decode you pay once when a
 problem is genuinely Unicode-sensitive; otherwise treat ASCII input as bytes
 and skip the conversion. `strings.Builder` is the O(n) way to build a string in
@@ -27,7 +27,7 @@ times the time; the `Builder` did 100,000 in 0.06 ms). That's the foundation. Ev
 
 ## Part 1 · Naive Substring Search — the O(n·m) Baseline
 
-Before KMP or Rabin-Karp, know what they're improving on:
+Before <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> or Rabin-Karp, know what they're improving on:
 
 ```go
 func naiveSearch(text, pattern string) int {
@@ -48,14 +48,14 @@ func naiveSearch(text, pattern string) int {
 Worst case is O(n·m): a text like `"aaaaaaaaab"` against pattern `"aaab"`
 re-scans nearly the whole pattern at almost every starting position. The two
 algorithms below both exist to eliminate that redundant re-scanning, using two
-different tricks — precomputed pattern structure (KMP) vs. incremental hashing
+different tricks — precomputed pattern structure (<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>) vs. incremental hashing
 (Rabin-Karp).
 
 ---
 
-## Part 2 · KMP (Knuth-Morris-Pratt) — the Interview Classic
+## Part 2 · <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> (Knuth-Morris-Pratt) — the Interview Classic
 
-KMP's insight: when a match attempt fails at pattern position `j`, you already
+<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s insight: when a match attempt fails at pattern position `j`, you already
 know the last `j` characters of `text` matched `pattern[0:j]`. If the pattern
 has internal repeated structure, you don't need to restart the comparison from
 `pattern[0]` — you can jump ahead using information baked into the pattern
@@ -200,9 +200,9 @@ func rabinKarpSearch(text, pattern string) int {
 > pattern` before declaring a match. This is what makes Rabin-Karp's worst case
 > O(n·m) (adversarial input causing many collisions) despite averaging O(n+m).
 
-Rabin-Karp generalizes better than KMP to problems needing **many** pattern
+Rabin-Karp generalizes better than <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> to problems needing **many** pattern
 hashes at once (e.g. finding duplicate substrings of a fixed length across an
-entire text) — that's its real interview niche, not "faster than KMP."
+entire text) — that's its real interview niche, not "faster than <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>."
 
 ---
 
@@ -305,14 +305,14 @@ func longestPalindrome(s string) string {
 O(n²) time, O(1) extra space — good enough for essentially all interview-sized
 inputs. **Manacher's algorithm** finds the same answer in O(n) by reusing
 previously-computed palindrome radii (via a mirror-index trick, analogous in
-spirit to KMP's LPS reuse) to skip redundant expansions — worth knowing exists
+spirit to <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s LPS reuse) to skip redundant expansions — worth knowing exists
 and being able to sketch the idea (transform the string with separators to
 unify odd/even cases, track a rightmost-palindrome boundary and its center,
 mirror known radii into the unexplored region before expanding) but rarely
 required to implement fully in an interview.
 
 > ⚠️ **Byte-vs-rune correctness for palindromes.** `expand` above compares
-> `s[l] == s[r]` as bytes — correct for ASCII, but wrong for multi-byte UTF-8
+> `s[l] == s[r]` as bytes — correct for ASCII, but wrong for multi-byte <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8
 > input, since a byte-level mirror can split a multi-byte rune in half. For
 > Unicode-correct palindrome checks, convert to `[]rune` first and index that
 > instead (topic 01, Part 2.6) — the O(n²) or O(n) complexity is unchanged,
@@ -325,7 +325,7 @@ required to implement fully in an interview.
 | Algorithm | Time | Space | Note |
 |---|:--:|:--:|---|
 | Naive substring search | O(n·m) worst | O(1) | Fine for small inputs |
-| KMP | **O(n+m)** | O(m) | LPS array; worst case matches average |
+| <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> | **O(n+m)** | O(m) | LPS array; worst case matches average |
 | Rabin-Karp | O(n+m) average, O(n·m) worst | O(1) | Worst case only under many hash collisions |
 | Expand-around-center | O(n²) | O(1) | Longest palindromic substring |
 | Manacher's algorithm | **O(n)** | O(n) | Same problem, linear time |
@@ -353,7 +353,7 @@ required to implement fully in an interview.
 | Algorithm | Time | Space | Problem |
 |---|:--:|:--:|---|
 | Naive substring search | O(n·m) | O(1) | Baseline / LC 28 brute force |
-| KMP (LPS + scan) | O(n+m) | O(m) | LC 28, LC 459 Repeated Substring Pattern |
+| <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> (LPS + scan) | O(n+m) | O(m) | LC 28, LC 459 Repeated Substring Pattern |
 | Rabin-Karp rolling hash | O(n+m) avg | O(1) | LC 187 Repeated DNA Sequences, duplicate-substring search |
 | Sliding frequency array | O(n) | O(1) | LC 438 Find All Anagrams, LC 567 Permutation in String |
 | Expand-around-center | O(n²) | O(1) | LC 5 Longest Palindromic Substring |
@@ -362,7 +362,7 @@ required to implement fully in an interview.
 
 ---
 
-## Part 10 · Building KMP From Scratch (LC 28 / LC 459)
+## Part 10 · Building <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> From Scratch (LC 28 / LC 459)
 
 ```go
 package main
@@ -435,7 +435,7 @@ fallback line is the one line worth rehearsing until it's automatic.
 <!-- block:23_go_1_search -->
 ## Part 11 · The Search Toolkit in Go — Prefix Function, Z-Function, Find-All, Periods, and What `strings.Index` Really Does
 
-Parts 1–10 give KMP and Rabin–Karp for one search. This Part adds the pieces a complete answer needs — the Z-function, *all*
+Parts 1–10 give <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> and Rabin–Karp for one search. This Part adds the pieces a complete answer needs — the Z-function, *all*
 matches, what the tables say about periods and borders — and checks them against the standard library. All code below was
 compiled with `go vet` and compared with brute force on 3,000 random strings over `{a, b, c}`.
 
@@ -575,14 +575,14 @@ failures, **switches to Rabin–Karp** (`bytealg.IndexRabinKarp`) for the rest o
 Measured, a text of a million `'a'` bytes against an adversarial needle `a…a b a…a` (the last byte matches at every window, the mismatch is in the middle);
 best of five, none of them found the needle:
 
-| Needle length `m` | Naive | KMP | Rabin–Karp (mod 10⁹+7) | `strings.Index` |
+| Needle length `m` | Naive | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> | Rabin–Karp (mod 10⁹+7) | `strings.Index` |
 |---|--:|--:|--:|--:|
 | 100 | 18.6 ms | 0.94 ms | 5.8 ms | 1.1 ms |
 | 1,000 | 128 ms | 0.89 ms | 5.8 ms | 1.1 ms |
 | 10,000 | **1,217 ms** | 1.0 ms | 5.8 ms | 1.1 ms |
 
 The naive scan grows with `m` (it re-reads about `m/2` bytes per window); the three linear methods do not. Rabin–Karp pays a modular
-multiplication per byte, hence about 6× KMP; KMP is a tight byte loop; the library sits at KMP speed. In real code call
+multiplication per byte, hence about 6× <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>; <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> is a tight byte loop; the library sits at <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> speed. In real code call
 `strings.Index`, `strings.Contains`, `strings.HasPrefix`; write the algorithm when the *table* is the point or a rule forbids the library.
 
 ### 11.6 Follow-ups the interviewer reaches for
@@ -594,7 +594,7 @@ multiplication per byte, hence about 6× KMP; KMP is a tight byte loop; the libr
 | "Is `t` a rotation of `s`?" | `len(s) == len(t) && strings.Contains(s+s, t)`. |
 | "Same needle, millions of texts." | Build `pi` once and reuse it. |
 | "Smallest string to prepend to make a palindrome?" | Prefix function on `s + sep + reverse(s)` (Problem 006). |
-| "Longest repeated substring?" | Rolling hash + binary search, or a suffix array with an LCP array (Part 13). |
+| "Longest repeated substring?" | Rolling hash + binary search, or a suffix array with an <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> array (Part 13). |
 
 ---
 <!-- /block:23_go_1_search -->
@@ -735,7 +735,7 @@ The result is sorted only because Go randomises map order — a solution that re
 <!-- /block:23_go_2_hashing -->
 
 <!-- block:23_go_3_palindromes -->
-## Part 13 · Palindromes and Suffix Structures in Go — Manacher, Suffix Array with LCP, Palindrome Pairs
+## Part 13 · Palindromes and Suffix Structures in Go — Manacher, Suffix Array with <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr>, Palindrome Pairs
 
 Part 6 covers expand-around-center and *names* Manacher's algorithm; here it is written out, along with the suffix-array route to
 "longest repeated substring" and Problem 008. All code was compiled with `go vet` and matched brute force on thousands of random strings.
@@ -818,7 +818,7 @@ documented traps: `k != i` (a palindromic word must not pair with itself) and `j
 reported twice — the `seen` set here would hide the bug, so test the guard by removing the set). A `[2]int` is a valid map key in Go,
 which is why the dedupe set is one line. Slicing `w[:j]` and `w[j:]` copies nothing; `reverse` does allocate.
 
-### 13.4 Suffix array + LCP: repeated substrings without hashing
+### 13.4 Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr>: repeated substrings without hashing
 
 ```go
 func suffixArray(s string) []int {
@@ -864,7 +864,7 @@ of one repeated byte), fast for typical input. Prefix doubling gives O(n log² n
 |---|---|---|
 | Trie | O(total length) | prefix queries, many-word lookups (topic 13) |
 | Aho–Corasick | O(total pattern length) | all occurrences of many patterns in one pass |
-| Suffix array + LCP | O(n log n) – O(n) | longest repeated substring, distinct substrings, LCP of any two suffixes |
+| Suffix array + <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> | O(n log n) – O(n) | longest repeated substring, distinct substrings, <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr> of any two suffixes |
 | Suffix automaton | O(n) | distinct-substring counts, occurrence counts |
 
 ---
@@ -900,9 +900,9 @@ d -> f : "no"
 | `"👨‍👩‍👧"` | 18 | 5 | three emoji joined by zero-width joiners |
 | `"éx"` | 4 | 3 | `e` + a combining accent — not the same as `"éx"` |
 
-Consequences, each run: `strings.Index("héllo", "l")` is `3` — a **byte offset**, not the rune index 2. Ranging over an invalid UTF-8 string
+Consequences, each run: `strings.Index("héllo", "l")` is `3` — a **byte offset**, not the rune index 2. Ranging over an invalid <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 string
 (`"a\xffb"`) yields `U+FFFD` for the bad byte, and `utf8.ValidString` is `false`. Reversing `"héllo"` **byte by byte** produces
-`"oll\xa9\xc3h"` — invalid UTF-8 — whereas reversing a `[]rune` gives `"olléh"`. Case mapping differs from Python's: `strings.ToUpper("ß")` is
+`"oll\xa9\xc3h"` — invalid <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 — whereas reversing a `[]rune` gives `"olléh"`. Case mapping differs from Python's: `strings.ToUpper("ß")` is
 `"ß"` (Python: `"SS"`) and `strings.ToLower("İ")` is one rune, `"i"` (Python: two). `strings.EqualFold` compares with Unicode folding
 (`"K"` equals the Kelvin sign U+212A; `"ß"` does not equal `"SS"`). Interview problems almost always promise lowercase ASCII — state that
 assumption, then use bytes.
@@ -980,7 +980,7 @@ Eight problems, five moves (the prefix function reused three ways · exact keys 
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Find the Index of the First Occurrence in a String](GoDSA/23_string_algorithms/001_find_the_index_of_the_first_occurrence_in_a_string/solution.go) <br>LC 28 · Easy | KMP substring search | `prefixFunction(needle)`; scan with `i` that never moves back, `k = pi[k-1]` on a mismatch; the match starts at `i - k`. **Trap:** moving `i` backwards; advancing `i` in the fallback branch; returning `i` instead of `i - k`; an empty needle indexing `pat[0]`. |
+| [001 · Find the Index of the First Occurrence in a String](GoDSA/23_string_algorithms/001_find_the_index_of_the_first_occurrence_in_a_string/solution.go) <br>LC 28 · Easy | <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> substring search | `prefixFunction(needle)`; scan with `i` that never moves back, `k = pi[k-1]` on a mismatch; the match starts at `i - k`. **Trap:** moving `i` backwards; advancing `i` in the fallback branch; returning `i` instead of `i - k`; an empty needle indexing `pat[0]`. |
 | [002 · Repeated Substring Pattern](GoDSA/23_string_algorithms/002_repeated_substring_pattern/solution.go) <br>LC 459 · Easy | Period from the prefix function | `p := n - pi[n-1]`; a repetition iff `p != n && n%p == 0`. **Trap:** dropping `p != n` (every string then "repeats"); treating `pi[n-1]` itself as the period; in the `(s+s)[1:len(s+s)-1]` trick, trimming only one end. |
 | [003 · String to Integer (atoi)](GoDSA/23_string_algorithms/003_string_to_integer_atoi/solution.go) <br>LC 8 · Medium | A four-phase parser | Skip spaces → one optional sign → ASCII digits → clamp *before* multiplying. **Trap:** skipping whitespace after the sign; a second sign or a sign after digits; treating `.` as part of the number; accumulating in `int32` without the check (`"2147483648"` wraps); assuming `strconv.Atoi` behaves the same. |
 | [004 · Repeated DNA Sequences](GoDSA/23_string_algorithms/004_repeated_dna_sequences/solution.go) <br>LC 187 · Medium | An exact 2-bit code | `h = (h<<2 \| enc[s[i]]) & mask` in a `uint32`: a perfect 20-bit hash of a 10-mer. Report a window the *second* time it is seen. **Trap:** no mask; reporting on the first sighting; returning `map` keys unsorted (random order); a modular hash that can only add false positives. |
@@ -996,7 +996,7 @@ Eight problems, five moves (the prefix function reused three ways · exact keys 
 
 - [ ] Build the LPS array for a pattern by hand and explain what `lps[i]` means
 - [ ] Explain why the LPS fallback does not advance `i`, and why that gives O(n+m)
-- [ ] Implement the KMP search scan without looking it up
+- [ ] Implement the <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr> search scan without looking it up
 - [ ] Explain Rabin-Karp's rolling hash update, and why you still verify on hash match
 - [ ] Apply the `((x % m) + m) % m` fix to a negative intermediate hash in Go
 - [ ] Explain why `strings.Builder.String()` is O(1) and what guarantees make it safe
@@ -1005,12 +1005,12 @@ Eight problems, five moves (the prefix function reused three ways · exact keys 
 - [ ] State Manacher's algorithm's complexity and the mirror-index idea, even if not implementing it
 - [ ] Know when byte comparison is wrong for a palindrome/string check and `[]rune` is required
 - [ ] Write the prefix function and the Z-function in Go, and explain why each is O(n) despite the nested loop <!--ca-->
-- [ ] List every overlapping match with KMP, and explain why `strings.Count` returns fewer <!--ca-->
+- [ ] List every overlapping match with <abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>, and explain why `strings.Count` returns fewer <!--ca-->
 - [ ] Distinguish "has period `p`" from "is a repetition" (`n%p == 0` and `p != n`) <!--ca-->
 - [ ] Explain why a `uint64` wrap-around hash is breakable (Thue–Morse at length 1,024) and use `2⁶¹−1` with `bits.Mul64` instead <!--ca-->
 - [ ] Verify every hash match, and say why a 61-bit modulus makes the expected verification cost negligible <!--ca-->
-- [ ] Write Manacher's algorithm, Kasai's LCP, and Palindrome Pairs with both guards (`k != i`, `j != len(w)`) <!--ca-->
+- [ ] Write Manacher's algorithm, Kasai's <abbr title="Longest Common Prefix. The shared prefix of maximum length among a set of strings.">LCP</abbr>, and Palindrome Pairs with both guards (`k != i`, `j != len(w)`) <!--ca-->
 - [ ] State what `strings.Index` does (first-byte jumps, SIMD brute force, Rabin–Karp fallback) and quote the measured adversarial timings <!--ca-->
 - [ ] Know that `strings.Builder` copies panic at run time, and that `s += x` measured 12 ms for 20,000 appends and 284 ms for 100,000 <!--ca-->
 - [ ] Reject `strconv.Atoi` as a stand-in for LeetCode's `atoi`, and clamp *before* the multiply <!--ca-->
-- [ ] Choose bytes, runes or a grapheme library deliberately, and know that reversing bytes can produce invalid UTF-8 <!--ca-->
+- [ ] Choose bytes, runes or a grapheme library deliberately, and know that reversing bytes can produce invalid <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 <!--ca-->

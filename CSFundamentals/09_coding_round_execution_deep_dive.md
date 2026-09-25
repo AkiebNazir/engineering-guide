@@ -106,8 +106,8 @@ Costly: arguing with the hint, ignoring it, or asking for another hint immediate
 In order:
 1. **Go back to a small example** and solve it by hand. Watch what *you* do; that's often the algorithm.
 2. **Solve a simpler version**: sorted input, no duplicates, k = 1, a 1D version of a 2D problem.
-3. **Brute force first**, then ask what work it repeats (→ memoization/DP) or what it scans repeatedly (→ hashing, prefix sums, heaps, two pointers).
-4. **List techniques that fit the constraints**: n ≤ 20 → bitmask; "shortest" → BFS/Dijkstra; "count ways" → DP; "k largest" → heap; "contiguous" → sliding window/prefix sums.
+3. **Brute force first**, then ask what work it repeats (→ memoization/<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) or what it scans repeatedly (→ hashing, prefix sums, heaps, two pointers).
+4. **List techniques that fit the constraints**: n ≤ 20 → bitmask; "shortest" → <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/Dijkstra; "count ways" → <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>; "k largest" → heap; "contiguous" → sliding window/prefix sums.
 5. **Ask a specific question**: "Is it OK to use O(n) extra space?" beats "I'm stuck."
 6. **Say what you're trying** at every step so the interviewer can steer.
 

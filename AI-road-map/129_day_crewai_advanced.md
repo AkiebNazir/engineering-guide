@@ -129,7 +129,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Throughput Problem (Concurrency):** 
    - State that $10,000 \times 3$ minutes $= 30,000$ minutes (500 hours) of compute. This cannot be run linearly.
-   - Propose an async worker pool architecture using Celery or AWS SQS. You must deploy the Crew on a Kubernetes cluster and run 50 Crews concurrently to hit the daily SLA.
+   - Propose an async worker pool architecture using Celery or AWS SQS. You must deploy the Crew on a Kubernetes cluster and run 50 Crews concurrently to hit the daily <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr>.
 2. **The Cost Problem ($50k/day):**
    - Propose **Model Routing**. Not all 5 agents need GPT-4o. The basic "Data Entry" agent should be swapped to a highly quantized open-source model (like Llama-3 8B) running locally, reducing the <abbr title="Application Programming Interface">API</abbr> cost of that agent to near $\$0$.
 3. **Semantic Caching:**

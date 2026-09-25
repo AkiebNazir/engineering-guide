@@ -103,7 +103,7 @@ Use a brand logo only when the text names that product ("Kafka", "Redis",
 ## Layout rules: what makes it read like the reference
 
 1. **Flow in one direction.** Requests go top → bottom (or left → right). Put clients
-   on row 0, the edge/LB next, services in the middle, data stores at the bottom.
+   on row 0, the edge/<abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> next, services in the middle, data stores at the bottom.
 2. **Groups are boundaries that mean something**: region, VPC, cluster, trust
    boundary, "write path", "control plane", "kernel space". Nest at most two deep.
    Put everything that is inside the boundary in the group (`in <id>`); the linter

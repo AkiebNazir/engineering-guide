@@ -535,7 +535,7 @@ Sort the *starts* with their indices, then for each interval `sort.Search` for t
 |---|---|
 | "Online intervals." | A sorted structure with neighbour lookup (`sort.Search`, or a balanced tree for O(log n) inserts). |
 | "Peak overlap, many queries." | A segment tree with lazy range-add (topic 26), or an interval tree. |
-| "Weighted intervals?" | Greedy fails — DP over end-sorted intervals with a binary search for the last compatible one. |
+| "Weighted intervals?" | Greedy fails — <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> over end-sorted intervals with a binary search for the last compatible one. |
 | "Merge with a tolerance `k`?" | Merge when `cur[0] <= last[1] + k`. |
 | "Rectangles?" | Sweep one axis with a structure over the other (Skyline generalisations, Rectangle Area II). |
 | "Huge / streaming?" | Start-sorted streams merge in one pass with O(1) state; unsorted ones need an external sort. |

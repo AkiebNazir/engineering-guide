@@ -5,7 +5,7 @@ eventually comes down to bytes moving between two machines. This file starts wit
 what those bytes actually are and how two computers agree to exchange them, then goes
 as deep as an L5 interview loop expects: you are expected to know what happens on the
 wire. When a distributed system misbehaves, the cause is often not the application
-code but connection setup, congestion control, TLS, DNS, or load balancer behavior.
+code but connection setup, congestion control, <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>, <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>, or load balancer behavior.
 This file corrects several common simplifications; corrections are marked
 **Precision note**.
 
@@ -16,7 +16,7 @@ programs on two machines (or two processes on one machine) talking: one **client
 that initiates a request, one **server** that listens and responds. "The network" is
 everything that carries bytes between them.
 
-**Addresses and ports.** An **IP address** identifies a machine (or a machine's
+**Addresses and ports.** An **<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> address** identifies a machine (or a machine's
 network interface) — like a street address. A **port** (a number 0–65535) identifies
 *which program* on that machine a message is for — like an apartment number at that
 address. A server "listens" on a port (e.g. a web server on port 443); a client
@@ -28,43 +28,43 @@ of your data plus headers saying where they're from and where they're going. Pac
 for the same conversation can even take different physical routes and arrive out of
 order; the protocols below exist largely to hide that from you.
 
-**TCP vs. UDP — the two building blocks almost everything else uses.**
-- **TCP** is a *reliable, ordered, connected* stream: before any data moves, both
+**<abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> vs. <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr> — the two building blocks almost everything else uses.**
+- **<abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>** is a *reliable, ordered, connected* stream: before any data moves, both
   sides agree to talk (a **handshake**, §1); every packet is acknowledged, lost
   packets are retransmitted, and your application reads bytes in the exact order they
   were sent. This reliability costs setup time and a little overhead on every
   packet — the cost §2's congestion control is all about managing.
-- **UDP** is *fire-and-forget*: send a packet, no handshake, no guarantee it arrives
+- **<abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr>** is *fire-and-forget*: send a packet, no handshake, no guarantee it arrives
   or arrives in order. Cheaper and faster to start, but your application must handle
-  loss and reordering itself if it cares. QUIC (§3, the protocol behind HTTP/3) is
-  built on UDP specifically to get TCP-like reliability without TCP's TCP-specific
+  loss and reordering itself if it cares. QUIC (§3, the protocol behind <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3) is
+  built on <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr> specifically to get <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>-like reliability without <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>'s <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>-specific
   head-of-line blocking problem.
 
-**HTTP, in one exchange.** HTTP is a text-shaped (in HTTP/1.1) *request/response*
-protocol that normally runs on top of TCP: the client sends a request (a method like
+**<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, in one exchange.** <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> is a text-shaped (in <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1) *request/response*
+protocol that normally runs on top of <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>: the client sends a request (a method like
 `GET`/`POST`, a path, headers, maybe a body); the server sends back a response (a
 status code like `200`/`404`/`500`, headers, a body). Nearly every web <abbr title="Application Programming Interface">API</abbr> you've
-used is "HTTP request/response, with JSON as the body." §3 covers how this evolved
+used is "<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request/response, with <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> as the body." §3 covers how this evolved
 across three major versions.
 
-**Encryption, in one sentence.** **TLS** (what makes `http://` into `https://`) wraps
+**Encryption, in one sentence.** **<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>** (what makes `http://` into `https://`) wraps
 that same request/response exchange in encryption, after its own handshake (§5)
 negotiates a shared secret key that only the two endpoints know.
 
-**DNS, in one sentence.** You rarely connect to a raw IP address — you connect to a
-name (`google.com`), and **DNS** (§6) is the system that turns that name into an IP
-address before the TCP handshake can even begin.
+**<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>, in one sentence.** You rarely connect to a raw <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> address — you connect to a
+name (`google.com`), and **<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>** (§6) is the system that turns that name into an <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>
+address before the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> handshake can even begin.
 
 **Vocabulary you'll meet below, in one table:**
 
 | Term | One-line meaning |
 |---|---|
-| IP address | Identifies a machine on the network |
+| <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> address | Identifies a machine on the network |
 | Port | Identifies which program on that machine |
 | Packet | A chunk of data plus routing headers; the unit the network actually moves |
 | RTT (round-trip time) | Time for a packet to reach the other side and its reply to come back |
 | Handshake | Messages exchanged before data flows, to agree on connection parameters |
-| Socket | A local endpoint (IP + port + protocol) your program reads/writes through |
+| Socket | A local endpoint (<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> + port + protocol) your program reads/writes through |
 
 Section 0 below is the classic "walk me through what happens when..." interview
 answer, using every layer above in sequence — read it once you're comfortable with
@@ -91,23 +91,23 @@ The most-asked networking question. Walk it layer by layer and stop to go deeper
               subresources (often from cache/CDN), runs JS, paints
 ```
 
-Numbers to mention: DNS usually a few ms when cached, tens of ms uncached; a same-continent RTT is ~20-80 ms; TCP+TLS 1.3 costs 2 RTTs on a new connection, HTTP/3 (QUIC) combines them into 1 RTT, and resumed QUIC sessions can send data in 0-RTT.
+Numbers to mention: <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> usually a few ms when cached, tens of ms uncached; a same-continent RTT is ~20-80 ms; <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>+<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.3 costs 2 RTTs on a new connection, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3 (QUIC) combines them into 1 RTT, and resumed QUIC sessions can send data in 0-RTT.
 
 <div class="lab" data-viz="flow-web-request"></div>
 
-## 1. TCP Fundamentals Before Congestion Control
+## 1. <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> Fundamentals Before Congestion Control
 
 ### Connection lifecycle
 - **Three-way handshake:** `SYN` (client ISN) → `SYN-ACK` (server ISN, ack client) → `ACK`. The server holds half-open state after SYN, which is what a **SYN flood** exhausts; **SYN cookies** encode that state into the ISN so no memory is held.
 - **Teardown:** `FIN`/`ACK` in each direction. The side that closes first enters **TIME_WAIT** for 2×MSL (commonly 60 s on Linux) so delayed segments from the old connection can't corrupt a new one with the same 4-tuple. A proxy that opens many short outbound connections can run out of ephemeral ports because of TIME_WAIT: use connection pooling / keep-alive.
 - **Flow control vs congestion control:** *flow control* protects the RECEIVER (the advertised receive window says how much it can buffer); *congestion control* protects the NETWORK (the congestion window, cwnd). The sender may transmit min(rwnd, cwnd).
-- **Nagle's algorithm + delayed ACKs** can add ~40 ms latency to small request/response writes. Latency-sensitive RPC stacks set `TCP_NODELAY`.
+- **Nagle's algorithm + delayed ACKs** can add ~40 ms latency to small request/response writes. Latency-sensitive <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> stacks set `TCP_NODELAY`.
 
 <div class="lab" data-viz="flow-tcp"></div>
 
-## 2. TCP Congestion Control (CUBIC vs. BBR)
+## 2. <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> Congestion Control (CUBIC vs. BBR)
 
-TCP uses a **Congestion Window (cwnd)** to decide how much unacknowledged data can be in flight.
+<abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> uses a **Congestion Window (cwnd)** to decide how much unacknowledged data can be in flight.
 
 ```arch
 %% caption: CUBIC cuts its window whenever it sees loss; BBR measures bandwidth and RTT and paces to that model instead.
@@ -140,7 +140,7 @@ b3:R -> b1:R : "pace sending rate to the model"
 *   **Precision note:** BBR aims to operate near the optimal point (full bandwidth, minimal queueing). It does not "perfectly" avoid overflowing buffers. BBRv1 was criticized for high retransmission rates and unfairness to CUBIC flows in shallow buffers; **BBRv2/v3** added loss and ECN signals to address this.
 *   **L5 Insight:** BBR is a **sender-side** change (no client update needed). Google reported large throughput and latency improvements for YouTube and Google.com traffic, especially on lossy long-distance paths. It's a strong answer for "improve a global upload/download service" — framed as "measure; BBR often helps on lossy high-RTT paths," not as a guaranteed win.
 
-## 3. The HTTP Evolution
+## 3. The <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Evolution
 
 ```arch
 %% caption: HTTP/1.1 serializes requests; HTTP/2 multiplexes streams but one TCP loss stalls them all; HTTP/3 gives each stream its own recovery.
@@ -167,27 +167,27 @@ h -> i
 i -> j : "loss in A doesn't block B"
 ```
 
-### HTTP/1.1 (Application-Level Head-of-Line Blocking)
-*   Text-based. Keep-Alive reuses a TCP connection, but responses on one connection are serialized: request 2 waits for response 1. (Pipelining existed but was broken by proxies and disabled by browsers.)
+### <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 (Application-Level Head-of-Line Blocking)
+*   Text-based. Keep-Alive reuses a <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection, but responses on one connection are serialized: request 2 waits for response 1. (Pipelining existed but was broken by proxies and disabled by browsers.)
 *   *Workaround:* browsers open ~6 connections per origin; sites used domain sharding and sprite sheets.
 
-### HTTP/2 (Multiplexing, TCP Head-of-Line Blocking)
-*   Binary framing. Many concurrent streams share **one** TCP connection; headers compressed with HPACK. gRPC runs on HTTP/2.
-*   *The flaw:* TCP delivers bytes in order. If one packet is lost, **all** streams wait for its retransmission even if their own data arrived. On lossy networks HTTP/2 over one connection can be slower than HTTP/1.1 over six.
+### <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 (Multiplexing, <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> Head-of-Line Blocking)
+*   Binary framing. Many concurrent streams share **one** <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection; headers compressed with HPACK. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> runs on <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2.
+*   *The flaw:* <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> delivers bytes in order. If one packet is lost, **all** streams wait for its retransmission even if their own data arrived. On lossy networks <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 over one connection can be slower than <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 over six.
 
-### HTTP/3 (QUIC)
-*   Runs over **UDP**, with reliability, ordering (per stream), and congestion control implemented in user space.
+### <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3 (QUIC)
+*   Runs over **<abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr>**, with reliability, ordering (per stream), and congestion control implemented in user space.
 *   Loss on stream A no longer blocks stream B: transport head-of-line blocking is gone.
-*   **Handshake:** QUIC integrates TLS 1.3 into its transport handshake, so a **new** connection is established in **1 RTT** (vs 2 RTTs for TCP + TLS 1.3). **Precision note:** **0-RTT** only applies when **resuming** a previous session with a cached key; 0-RTT data is replayable, so only idempotent requests should use it.
-*   **Connection migration:** connections are identified by connection IDs, not the IP/port 4-tuple, so a phone switching from Wi-Fi to cellular keeps its connection.
+*   **Handshake:** QUIC integrates <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.3 into its transport handshake, so a **new** connection is established in **1 RTT** (vs 2 RTTs for <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> + <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.3). **Precision note:** **0-RTT** only applies when **resuming** a previous session with a cached key; 0-RTT data is replayable, so only idempotent requests should use it.
+*   **Connection migration:** connections are identified by connection IDs, not the <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/port 4-tuple, so a phone switching from Wi-Fi to cellular keeps its connection.
 
 ### Real-time delivery options (see `SystemDesign/building_blocks/22_realtime_and_collaboration.md`)
 | Mechanism | Direction | Notes |
 |---|---|---|
 | Short polling | client pulls | Simple, wasteful |
 | Long polling | client pulls, server holds until data | Works everywhere; one request per message |
-| Server-Sent Events | server → client over HTTP | Auto-reconnect, text only, one direction |
-| WebSocket | full duplex after HTTP Upgrade | Chat, games, collaboration; needs sticky connection handling on LBs |
+| Server-Sent Events | server → client over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> | Auto-reconnect, text only, one direction |
+| WebSocket | full duplex after <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Upgrade | Chat, games, collaboration; needs sticky connection handling on LBs |
 
 ## 4. Advanced Load Balancing Architectures
 
@@ -210,15 +210,15 @@ b3 -> client2 : "5GB response DIRECTLY to client" thick
 ```
 
 ### Layer 4 (Transport) vs. Layer 7 (Application)
-*   **L4 load balancer:** Decides on IP/port (5-tuple). Forwards packets (NAT, encapsulation, or MAC rewrite) without reading HTTP. Very fast, protocol-agnostic, can't route by URL/header. Google's **Maglev** is a software L4 LB using consistent hashing so connections survive LB changes.
-*   **L7 load balancer / reverse proxy:** Terminates TCP and TLS, reads HTTP, opens its own connection (usually pooled) to the backend. Enables path/header routing, retries, rate limiting, WAF, auth, gRPC per-request balancing. Costs CPU and adds a hop. Envoy, Nginx, Google Front End (GFE).
-*   **Why L7 matters for gRPC:** HTTP/2 multiplexes many requests on one long-lived connection, so an L4 balancer pins all of a client's requests to one backend. Balance per request at L7, or use client-side load balancing.
+*   **L4 load balancer:** Decides on <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/port (5-tuple). Forwards packets (NAT, encapsulation, or MAC rewrite) without reading <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. Very fast, protocol-agnostic, can't route by URL/header. Google's **Maglev** is a software L4 <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> using consistent hashing so connections survive <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> changes.
+*   **L7 load balancer / reverse proxy:** Terminates <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> and <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>, reads <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, opens its own connection (usually pooled) to the backend. Enables path/header routing, retries, rate limiting, WAF, auth, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> per-request balancing. Costs <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> and adds a hop. Envoy, Nginx, Google Front End (GFE).
+*   **Why L7 matters for <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>:** <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 multiplexes many requests on one long-lived connection, so an L4 balancer pins all of a client's requests to one backend. Balance per request at L7, or use client-side load balancing.
 
 <div class="lab" data-viz="flow-lb-l4-l7"></div>
 
 ### Direct Server Return (DSR)
-In NAT-mode L4 balancing, responses flow back through the LB, which can bottleneck on large responses.
-*   **DSR:** The LB rewrites only the destination MAC and forwards the packet; the backend has the service IP (VIP) configured on a loopback interface and replies **directly** to the client. The LB sees only inbound traffic. Trade-off: the LB can't see responses (no response-based health signals) and backends must be on the same L2 segment (or use tunneling).
+In NAT-mode L4 balancing, responses flow back through the <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr>, which can bottleneck on large responses.
+*   **DSR:** The <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> rewrites only the destination MAC and forwards the packet; the backend has the service <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> (VIP) configured on a loopback interface and replies **directly** to the client. The <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> sees only inbound traffic. Trade-off: the <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> can't see responses (no response-based health signals) and backends must be on the same L2 segment (or use tunneling).
 
 ### Balancing algorithms
 | Algorithm | Good for | Caveat |
@@ -231,12 +231,12 @@ In NAT-mode L4 balancing, responses flow back through the LB, which can bottlene
 
 ### Anycast Routing
 How does `8.8.8.8` answer quickly from most places?
-*   Many sites around the world announce the **same IP prefix** via **BGP**. Routers send packets to the topologically nearest announcement (by BGP policy, not strictly geographic distance).
-*   Gives network-level global load distribution and DDoS absorption (attack traffic is spread across sites). Works best for short-lived or stateless flows like DNS; long TCP flows can break if routing changes mid-connection, which is why Google terminates at an anycast edge and then routes internally.
+*   Many sites around the world announce the **same <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> prefix** via **BGP**. Routers send packets to the topologically nearest announcement (by BGP policy, not strictly geographic distance).
+*   Gives network-level global load distribution and DDoS absorption (attack traffic is spread across sites). Works best for short-lived or stateless flows like <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>; long <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> flows can break if routing changes mid-connection, which is why Google terminates at an anycast edge and then routes internally.
 
-## 5. The TLS 1.3 Handshake
+## 5. The <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.3 Handshake
 
-If asked how HTTPS works, don't just say "it encrypts data." **Precision note:** in TLS 1.3 the key exchange happens *in* the Hello messages and the certificate is sent **encrypted**; older explanations describe TLS 1.2.
+If asked how <abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr> works, don't just say "it encrypts data." **Precision note:** in <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.3 the key exchange happens *in* the Hello messages and the certificate is sent **encrypted**; older explanations describe <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.2.
 
 1.  **ClientHello:** supported cipher suites, a random nonce, and a **key_share** (the client's ephemeral (EC)DHE public key, e.g. X25519), plus SNI (the hostname).
 2.  **ServerHello:** chosen cipher suite, server nonce, and the server's **key_share**. Both sides now compute the same shared secret via Diffie-Hellman; handshake keys are derived from it. Everything after this point is encrypted.
@@ -248,7 +248,7 @@ Properties to name: **forward secrecy** (ephemeral keys — a stolen server priv
 
 <div class="lab" data-viz="flow-tls13"></div>
 
-## 6. DNS in More Depth
+## 6. <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> in More Depth
 
 | Record | Purpose |
 |---|---|
@@ -260,9 +260,9 @@ Properties to name: **forward secrecy** (ephemeral keys — a stolen server priv
 | SRV | Service host + port |
 
 - **TTL trade-off:** short TTLs allow fast failover and traffic shifting but increase resolver load and latency; long TTLs are cheap but slow to change. Resolvers and clients don't always honor TTLs exactly.
-- **GeoDNS / latency-based DNS:** return different answers by resolver location (EDNS Client Subnet improves accuracy).
-- **DNS is a dependency:** cache results, set timeouts, and don't resolve per request in hot paths.
-- **UDP by default, TCP for large responses;** DNS over HTTPS/TLS for privacy.
+- **GeoDNS / latency-based <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>:** return different answers by resolver location (EDNS Client Subnet improves accuracy).
+- **<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> is a dependency:** cache results, set timeouts, and don't resolve per request in hot paths.
+- **<abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr> by default, <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> for large responses;** <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> over <abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr>/<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> for privacy.
 
 <div class="lab" data-viz="flow-dns"></div>
 
@@ -271,8 +271,8 @@ Properties to name: **forward secrecy** (ephemeral keys — a stolen server priv
 - [ ] I can walk through "type google.com" from HSTS to paint, going deep on any layer.
 - [ ] I can explain TIME_WAIT, SYN cookies, flow vs congestion control, and Nagle.
 - [ ] I can compare CUBIC and BBR precisely (IW10, β = 0.7, BBR's model).
-- [ ] I can explain HTTP/2 vs HTTP/3 head-of-line blocking and QUIC 1-RTT vs 0-RTT.
-- [ ] I can explain L4 vs L7, DSR, and why gRPC needs per-request balancing.
-- [ ] I can describe the TLS 1.3 handshake correctly, including CertificateVerify and forward secrecy.
+- [ ] I can explain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 vs <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3 head-of-line blocking and QUIC 1-RTT vs 0-RTT.
+- [ ] I can explain L4 vs L7, DSR, and why <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> needs per-request balancing.
+- [ ] I can describe the <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> 1.3 handshake correctly, including CertificateVerify and forward secrecy.
 
 Related: `SystemDesign/building_blocks/02_networking.md`, `13_scaling_and_load_balancing.md`, `22_realtime_and_collaboration.md`; GoEngineering topic 34.

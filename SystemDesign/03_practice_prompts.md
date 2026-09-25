@@ -54,7 +54,7 @@ Implement internal transfers with exact balances, immutable audit, external sett
 Design cache client/ring, TTL/eviction, consistent hashing, hot-key protection, node replacement, replication, and source fallback.
 
 ## 19 Feature Flags
-Create low-latency flag evaluation surviving control-plane outage, targeted rollout, kill switch, SDK updates, audit, and stale-config policy.
+Create low-latency flag evaluation surviving control-plane outage, targeted rollout, kill switch, <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> updates, audit, and stale-config policy.
 
 ## 20 Ride Dispatch
 Accept driver location updates, find nearby eligible drivers, assign exactly once, and provide real-time trip state under high city-scale load.

@@ -68,7 +68,7 @@ class SinglePerceptron:
         # Step Function: If > 0 return 1, else 0
         return (summation > 0).astype(int)
 
-print("--- SINGLE PERCEPTRON (XOR TEST) ---")
+print("--- SINGLE PERCEPTRON (<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> TEST) ---")
 model_1 = SinglePerceptron()
 print("Predictions:", model_1.forward(X).flatten())
 print("True Answer:", y_xor.flatten())
@@ -98,9 +98,9 @@ class TwoLayerMLP:
         final_sum = np.dot(hidden_out, self.W2) + self.b2
         return sigmoid(final_sum)
 
-print("--- TWO-LAYER MLP (XOR TEST) ---")
+print("--- TWO-LAYER MLP (<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> TEST) ---")
 # Note: I am skipping the training loop (Backpropagation) until Day 33.
-# Let's manually set the weights to the mathematical perfect solution for XOR!
+# Let's manually set the weights to the mathematical perfect solution for <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>!
 model_2 = TwoLayerMLP()
 model_2.W1 = np.array([[20, -20], [20, -20]])
 model_2.b1 = np.array([[-10, 30]])
@@ -126,7 +126,7 @@ In the MLP code above, I used a `sigmoid()` function inside the Hidden Layer ins
 **Your Task:**
 1. Copy the MLP code.
 2. Remove the `sigmoid()` call in the hidden layer, so it just becomes `hidden_out = hidden_sum`.
-3. Run the code. Notice that the MLP **FAILS** the XOR test!
+3. Run the code. Notice that the MLP **FAILS** the <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> test!
 4. **Why?** If you don't use an "Activation Function" to bend the line, stacking 100 straight lines just equals 1 single straight line. ($2x \cdot 3x = 6x$, which is still a straight line). You must introduce a curve! Tomorrow (Day 32), we learn exactly how to do this.
 
 ### 🎤 MAANG Technical Interview Prep

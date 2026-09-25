@@ -1,6 +1,6 @@
 # Day 32: Activation Functions (ReLU, GELU, SiLU)
 
-Welcome to Day 32. Yesterday, you discovered that if you stack 100 linear Perceptrons together, the network still fails the XOR problem. 
+Welcome to Day 32. Yesterday, you discovered that if you stack 100 linear Perceptrons together, the network still fails the <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> problem. 
 Why? Because $2x \cdot 3x \cdot 4x = 24x$. No matter how many straight lines you stack, the math physically collapses back into a single straight line. 
 
 To draw a curve, you must introduce **Non-Linearity**. You must place a mathematical "Gatekeeper" inside the neuron. This is the **Activation Function**. Today, we look at the evolution of these gatekeepers, and why choosing the wrong one will instantly kill your network.

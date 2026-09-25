@@ -8,13 +8,13 @@
 Qdrant is a high-performance, open-source vector similarity search engine written entirely in Rust. It offers a massive <abbr title="Application Programming Interface">API</abbr>, highly advanced filtering, and production-grade reliability.
 
 **Why does it exist?**
-It exists to bridge the gap between <abbr title="Artificial Intelligence">AI</abbr> and traditional database architectures. Qdrant handles massive scale effortlessly via Rust's memory safety and performance. Crucially, it supports "Payload Filtering." If you search for vectors, Qdrant can simultaneously filter by complex JSON data (Payloads) stored alongside the vectors. It uses a custom HNSW (Hierarchical Navigable Small World) algorithm that natively understands these filters during the actual math phase, keeping searches blazingly fast.
+It exists to bridge the gap between <abbr title="Artificial Intelligence">AI</abbr> and traditional database architectures. Qdrant handles massive scale effortlessly via Rust's memory safety and performance. Crucially, it supports "Payload Filtering." If you search for vectors, Qdrant can simultaneously filter by complex <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> data (Payloads) stored alongside the vectors. It uses a custom HNSW (Hierarchical Navigable Small World) algorithm that natively understands these filters during the actual math phase, keeping searches blazingly fast.
 
 ---
 
 ## 2. Setup & Installation
 
-In production, you run Qdrant via Docker (`docker run -p 6333:6333 qdrant/qdrant`). For this guide, we will use the Python client which can connect to Docker, or run a local version for testing.
+In production, you run Qdrant via <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> (`docker run -p 6333:6333 qdrant/qdrant`). For this guide, we will use the Python client which can connect to <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr>, or run a local version for testing.
 
 ```bash
 pip install qdrant-client
@@ -31,9 +31,9 @@ print(f"Qdrant Client version: {qdrant_client.__version__}")
 ## 3. The "Hello World": Creating a Collection
 
 In Qdrant, a "Collection" is a set of points. Every "Point" consists of:
-1. An ID (UUID or integer).
+1. An ID (<abbr title="Universally Unique Identifier - A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems.">UUID</abbr> or integer).
 2. A Vector (list of floats).
-3. A Payload (A JSON dictionary of metadata).
+3. A Payload (A <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> dictionary of metadata).
 
 ```python
 from qdrant_client import QdrantClient
@@ -111,13 +111,13 @@ for result in search_result:
 
 ## 5. Pro Level: Quantization and Memory Optimization
 
-If your database grows to 500 million vectors, RAM becomes your biggest expense. Qdrant natively supports massive compression algorithms right out of the box to solve this.
+If your database grows to 500 million vectors, <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> becomes your biggest expense. Qdrant natively supports massive compression algorithms right out of the box to solve this.
 
 ### Parameter Breakdown: `ScalarQuantizationConfig`
 - `type`: `int8`. 
-  - *Effect:* Converts your massive 32-bit float vectors into tiny 8-bit integers. It mathematically maps the decimals into bins (0-255). This instantly shrinks your entire database size by 75% in RAM, and speeds up the HNSW math exponentially, with barely any loss in search accuracy.
+  - *Effect:* Converts your massive 32-bit float vectors into tiny 8-bit integers. It mathematically maps the decimals into bins (0-255). This instantly shrinks your entire database size by 75% in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, and speeds up the HNSW math exponentially, with barely any loss in search accuracy.
 - `always_ram`: `True`.
-  - *Effect:* Keeps the tiny 8-bit vectors in the ultra-fast RAM, but pushes the massive original 32-bit payloads to standard hard-drive storage.
+  - *Effect:* Keeps the tiny 8-bit vectors in the ultra-fast <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, but pushes the massive original 32-bit payloads to standard hard-drive storage.
 
 ```python
 from qdrant_client.models import ScalarQuantizationConfig, ScalarType
@@ -149,4 +149,4 @@ Qdrant solves this by using **Pre-Filtering within the HNSW Graph**. Qdrant's Ru
 ### Scenario 2: High Availability (Raft Consensus)
 *Interviewer:* "We are deploying our <abbr title="Artificial Intelligence">AI</abbr> agent to millions of users. If the Qdrant database server crashes, our app dies. How do we ensure zero downtime?"
 
-*Answer:* "We do not run Qdrant as a single Docker container. We deploy it as a **Distributed Cluster** using Kubernetes. Qdrant uses the Raft consensus algorithm. We deploy 3 or 5 Qdrant nodes. We configure the Collection to have a `replication_factor=2`. This guarantees that every single vector is physically copied to at least 2 different servers. If Node A catches fire and dies, the Raft protocol automatically elects Node B as the leader within milliseconds. The Python client will seamlessly route queries to Node B, resulting in 100% uptime and zero data loss."
+*Answer:* "We do not run Qdrant as a single <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container. We deploy it as a **Distributed Cluster** using Kubernetes. Qdrant uses the Raft consensus algorithm. We deploy 3 or 5 Qdrant nodes. We configure the Collection to have a `replication_factor=2`. This guarantees that every single vector is physically copied to at least 2 different servers. If Node A catches fire and dies, the Raft protocol automatically elects Node B as the leader within milliseconds. The Python client will seamlessly route queries to Node B, resulting in 100% uptime and zero data loss."

@@ -155,7 +155,7 @@ s == nil                 // true
 ```
 
 A `nil` slice is a perfectly good empty slice. `make([]int, 0)` is only different
-in that it is non-nil — which matters solely for `== nil` checks and JSON
+in that it is non-nil — which matters solely for `== nil` checks and <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>
 encoding (`null` vs `[]`). Prefer `var s []int`.
 
 ### 1.6 Go's sort
@@ -234,7 +234,7 @@ s -> c
 
 The pieces, in the order a lookup uses them:
 
-1. **Hash** the key with a **per-map random seed** (hardware-accelerated where the CPU allows). Every map has its own seed, so an attacker cannot precompute colliding keys —
+1. **Hash** the key with a **per-map random seed** (hardware-accelerated where the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> allows). Every map has its own seed, so an attacker cannot precompute colliding keys —
    flooding resistance is built in, not opt-in.
 2. The **top bits** index a **directory** of tables (*extendible hashing*). One table needs zero bits.
 3. **H1** — the upper 57 bits — picks the starting **group** inside that table. **H2** — the low 7 bits — is stored in the
@@ -245,7 +245,7 @@ The pieces, in the order a lookup uses them:
    an empty slot, and that is what proves "absent".
 
 **Load factor is 7/8** (a table averages 7 of every 8 slots full before it grows). Open addressing keeps
-keys and values in one flat array, which is friendlier to the CPU cache than chasing overflow pointers.
+keys and values in one flat array, which is friendlier to the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache than chasing overflow pointers.
 
 ### 2.2 Growth and deletion in the Swiss map
 

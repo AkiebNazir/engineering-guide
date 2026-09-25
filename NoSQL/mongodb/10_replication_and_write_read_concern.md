@@ -3,7 +3,7 @@
 This level is deliberately narrow: **what write concern and read preference actually do in MongoDB, specifically** — not general replication/consensus theory, which is already covered well elsewhere in this repo. For the general theory, see:
 
 - [`SystemDesign/building_blocks/06_database_internals.md`](../../SystemDesign/building_blocks/06_database_internals.md) — "Replication modes" and "Consensus" sections: leader-follower vs. multi-leader vs. leaderless, the quorum formula `W + R > N`, Raft/Paxos.
-- [`SystemDesign/building_blocks/10_distributed_systems_theory.md`](../../SystemDesign/building_blocks/10_distributed_systems_theory.md) — CAP theorem and PACELC: the general C-vs-A tradeoff during a partition, and the latency-vs-consistency tradeoff in the normal case.
+- [`SystemDesign/building_blocks/10_distributed_systems_theory.md`](../../SystemDesign/building_blocks/10_distributed_systems_theory.md) — <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> theorem and PACELC: the general C-vs-A tradeoff during a partition, and the latency-vs-consistency tradeoff in the normal case.
 
 MongoDB's replica set is a concrete instance of the "leader-follower" pattern from that first file: **one primary** accepts all writes, **secondaries** replicate the primary's oplog (operation log) asynchronously by default, and if the primary becomes unreachable, the remaining members hold an election (built on a Raft-like consensus protocol) to promote a new primary automatically — typically within a handful of seconds.
 

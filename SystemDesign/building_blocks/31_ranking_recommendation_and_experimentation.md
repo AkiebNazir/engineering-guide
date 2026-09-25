@@ -40,7 +40,7 @@ B ..> LOG : "shown"
 
 Assumptions (ours, not a real system's): 200M DAU × 10 ranked requests/day = 2×10^9/day ÷ 86,400 = 23k/s average, ×3 peak ≈ 70k/s, p99 budget 200 ms.
 
-| Stage | Items in → out | Cost per item (assumed) | Wall clock | CPU per request |
+| Stage | Items in → out | Cost per item (assumed) | Wall clock | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> per request |
 |---|---|---|---|---|
 | Retrieval, 4 sources in parallel | 10^8 → 10^4 | index and ANN lookups | 30 ms (slowest source) | 5 ms |
 | Feature fetch | 500 items | batched multi-get | 15 ms | in stages |
@@ -48,7 +48,7 @@ Assumptions (ours, not a real system's): 200M DAU × 10 ranked requests/day = 2�
 | Heavy ranker, batched | 500 → 50 | 200 µs (multi-task DNN) | 40 ms | 500 × 200 µs = 100 ms |
 | Re-rank and blend | 50 → 20 | rules, diversity | 10 ms | 5 ms |
 
-Wall clock is 30 + 15 + 15 + 40 + 10 = 110 ms of the 200 ms budget; the other 90 ms is network hops, content hydration and tail. CPU is 5 + 50 + 100 + 5 = 160 ms per request, so 70k × 0.16 s = 11,200 busy cores, about 22,000 at 50% utilisation. So: (1) the heavy ranker is 62% of compute and the candidate count entering it is the cost dial — each extra 100 candidates costs 70k × 100 × 200 µs = 1,400 cores, and doubling 500 to 1,000 lifts CPU to 260 ms per request (36,000 cores at 50%); (2) parallelism buys latency, not cost — sharding the light ranker 5 ways cuts its wall time from 50 to 10 ms but leaves its 50 ms of CPU; (3) under overload you shrink N per stage before you fail a request ([28_overload_control_and_graceful_degradation.md](28_overload_control_and_graceful_degradation.md)).
+Wall clock is 30 + 15 + 15 + 40 + 10 = 110 ms of the 200 ms budget; the other 90 ms is network hops, content hydration and tail. <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> is 5 + 50 + 100 + 5 = 160 ms per request, so 70k × 0.16 s = 11,200 busy cores, about 22,000 at 50% utilisation. So: (1) the heavy ranker is 62% of compute and the candidate count entering it is the cost dial — each extra 100 candidates costs 70k × 100 × 200 µs = 1,400 cores, and doubling 500 to 1,000 lifts <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> to 260 ms per request (36,000 cores at 50%); (2) parallelism buys latency, not cost — sharding the light ranker 5 ways cuts its wall time from 50 to 10 ms but leaves its 50 ms of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>; (3) under overload you shrink N per stage before you fail a request ([28_overload_control_and_graceful_degradation.md](28_overload_control_and_graceful_degradation.md)).
 
 **Decision rule:** name each stage's job (retrieval buys recall, rankers buy precision, re-rank enforces policy), its in/out counts and its budget. If a stage has no distinct job, delete it.
 
@@ -163,7 +163,7 @@ X -> ST
 X -> BT
 ```
 
-| | Central assignment service | SDK-local evaluation |
+| | Central assignment service | <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>-local evaluation |
 |---|---|---|
 | Latency | One network hop per decision, plus its tail | In-process, microseconds |
 | Consistency | One source of truth, instant config change, can hold state | Bounded staleness, two servers may briefly disagree |
@@ -216,12 +216,12 @@ Run A/A tests routinely: about 5% should flag at α = 0.05 and none should fail 
 
 ## Interview angles
 
-- **"Walk me through the ranking pipeline with numbers."** Stage counts and budgets that add up (110 ms wall, 160 ms CPU), the heavy-ranker candidate count as the cost dial, parallel retrievers with deadlines, and a fallback ladder.
+- **"Walk me through the ranking pipeline with numbers."** Stage counts and budgets that add up (110 ms wall, 160 ms <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>), the heavy-ranker candidate count as the cost dial, parallel retrievers with deadlines, and a fallback ladder.
 - **"Offline AUC is up but the A/B is flat."** Selection and position bias, AUC is not the objective, calibration, system effects; propose counterfactual evaluation and interleaving; the experiment decides.
 - **"You log clicks. What is missing?"** Impressions with positions and propensities, viewability, model version, features; without them there are no negatives and no bias correction.
 - **"Cold-start item or user?"** Content embeddings, exploration budget with a cap, example age, popularity fallback, switch to personal signals after a few events.
 - **"Users are drifting to clickbait."** Objective mismatch: predict watch time or satisfaction, negative weights on hide and report, integrity filters as hard filters, long-term holdout.
-- **"Design assignment so a user never changes variant."** Salted hash to buckets, monotonic ramp, SDK-local evaluation, config version in the exposure log.
+- **"Design assignment so a user never changes variant."** Salted hash to buckets, monotonic ramp, <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>-local evaluation, config version in the exposure log.
 - **"Day 3 shows +2%, p = 0.03. Ship?"** No: peeking, novelty, SRM, multiple metrics. Fixed horizon or sequential test, whole weeks.
 - **"How do you A/B test on a social network?"** Interference; cluster randomization and its design effect, or a geo test; say what you give up.
 

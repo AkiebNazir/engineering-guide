@@ -1,4 +1,4 @@
-# Distributed Systems Theory: CAP, Consistency, Time, and Ordering
+# Distributed Systems Theory: <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>, Consistency, Time, and Ordering
 
 A network call is not a function call. It can be delayed, duplicated, reordered, or appear to fail after the remote side actually completed the work. Everything in this file is about designing correctly around that fact, not about memorizing slogans for an interview whiteboard.
 
@@ -16,9 +16,9 @@ The third row is the one people get wrong. A timeout is not "it failed" — it i
 
 > ⚠️ "We retry on timeout" is an incomplete answer in an interview — and in production. The complete answer names *what* makes the retry safe: an idempotency key, a conditional write, or a reconciliation read. Say the mechanism, not just the intent.
 
-## CAP theorem, stated precisely
+## <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> theorem, stated precisely
 
-CAP applies to a **distributed system that replicates data**, during a **network partition** (replicas cannot communicate reliably). In that moment, a system cannot simultaneously guarantee:
+<abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> applies to a **distributed system that replicates data**, during a **network partition** (replicas cannot communicate reliably). In that moment, a system cannot simultaneously guarantee:
 
 - **Consistency (C):** commonly linearizability — every successful read observes the latest successful write, in one real-time-respecting order.
 - **Availability (A):** every request to a non-failed replica gets a non-error response.
@@ -41,7 +41,7 @@ C .. ca
 ca .. A
 ```
 
-Partitions are not optional to defend against — they happen. So the real decision CAP forces is per-operation, during a partition:
+Partitions are not optional to defend against — they happen. So the real decision <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> forces is per-operation, during a partition:
 
 ```arch
 %% caption: The per-operation decision CAP actually forces, during a partition
@@ -54,21 +54,21 @@ ask -> c : "yes"
 ask -> a : "no, staleness is okay"
 ```
 
-### What CAP does NOT mean
+### What <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> does NOT mean
 
 - It does not mean "pick any two, always." Partition tolerance isn't optional for a real multi-node deployment — you are really choosing C or A *for the duration of a partition*, not architecting the system in general.
-- It does not mean relational databases are "CA" and NoSQL databases are "AP." A single-node database isn't partition tolerant because it has no replicas at all — CAP doesn't even apply to it.
+- It does not mean relational databases are "CA" and <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> databases are "AP." A single-node database isn't partition tolerant because it has no replicas at all — <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> doesn't even apply to it.
 - It does not excuse a vague "eventually consistent" answer in an interview. State the actual freshness bound and the conflict rule.
-- A single system can make different C/A choices for different operations (payments strongly consistent, search results eventually consistent) — CAP is not one global label for a product.
+- A single system can make different C/A choices for different operations (payments strongly consistent, search results eventually consistent) — <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> is not one global label for a product.
 
 ## PACELC: the normal-case complement
 
-CAP only describes behavior during a partition, which is rare. PACELC covers the rest of the time, when the network is healthy:
+<abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> only describes behavior during a partition, which is rare. PACELC covers the rest of the time, when the network is healthy:
 
-- **If P**artitioned: choose **A**vailability or **C**onsistency (this is CAP).
+- **If P**artitioned: choose **A**vailability or **C**onsistency (this is <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>).
 - **Else (E)**, in normal operation: choose **L**atency or stronger **C**onsistency/coordination.
 
-A globally coordinated write (wait for quorum across regions) is strongly consistent but pays cross-region round-trip latency on every write, partition or not. An asynchronous local replica is fast but stale, partition or not. This is the trade-off you actually live with day to day — CAP only fires during the rare partition event. State it as a product decision: "payments use strongly coordinated ledger writes (accept the latency); product search reads from an asynchronous index (accept staleness up to ~1 minute)."
+A globally coordinated write (wait for quorum across regions) is strongly consistent but pays cross-region round-trip latency on every write, partition or not. An asynchronous local replica is fast but stale, partition or not. This is the trade-off you actually live with day to day — <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> only fires during the rare partition event. State it as a product decision: "payments use strongly coordinated ledger writes (accept the latency); product search reads from an asynchronous index (accept staleness up to ~1 minute)."
 
 ## Consistency models
 
@@ -116,7 +116,7 @@ If more than one location can accept a write for the same record, you must have 
 
 - **Single writer / home region:** simplest — all writes for a record go through one owner. Lower write availability for callers far from that region.
 - **Last-write-wins (LWW):** pick the write with the latest timestamp and discard the other. Cheap, but **unsafe for anything that matters** — clock skew and drift mean "latest" is not reliably "actually last," and the losing write is silently and permanently gone, including partial data (e.g. two concurrent profile edits to different fields — LWW throws one edit away entirely instead of merging).
-- **Version / compare-and-swap (CAS):** write succeeds only if the expected version still matches; loser gets an explicit conflict to retry or merge. Correct, but pushes conflict handling to the caller.
+- **Version / compare-and-swap (<abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr>):** write succeeds only if the expected version still matches; loser gets an explicit conflict to retry or merge. Correct, but pushes conflict handling to the caller.
 - **Domain merge:** use semantics that make conflicts mergeable by construction — counters add, sets union, state machines only allow legal transitions. Requires modeling the domain, not generic infrastructure.
 - **CRDT (conflict-free replicated data type):** a data type with a mathematically deterministic merge rule, so any two replicas converge without coordination. Useful for specific collaborative/offline-editing state (shared documents, presence). Not a universal replacement for transactions — it only works for data shapes with well-defined merges.
 
@@ -128,11 +128,11 @@ Physical clocks drift, jump on NTP correction, and differ across machines. Never
 
 | Need | Practical mechanism | Trade-off |
 |---|---|---|
-| Unique identifier | UUID/random ID, database sequence, snowflake-style time+worker ID. | Random IDs hurt index locality (B-tree page splits); sequences reveal volume and centralize allocation. |
+| Unique identifier | <abbr title="Universally Unique Identifier - A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems.">UUID</abbr>/random ID, database sequence, snowflake-style time+worker ID. | Random IDs hurt index locality (B-tree page splits); sequences reveal volume and centralize allocation. |
 | Per-entity order | Per-key sequence number assigned at durable write. | Limits parallelism only for that one key — cheap and usually sufficient. |
 | Global order | Single sequencer or consensus-backed log. | Coordination latency and an availability cost on every write. |
 | Detect concurrent update | Version field / ETag / compare-and-swap. | Caller must handle the conflict response — retry or merge. |
-| Temporary exclusive ownership | Lease + monotonically increasing fencing token. | Must handle lease expiry and a stale holder waking up after a pause (GC, scheduling) and still trying to act — the fencing token, checked by the resource, is what rejects it. |
+| Temporary exclusive ownership | Lease + monotonically increasing fencing token. | Must handle lease expiry and a stale holder waking up after a pause (<abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, scheduling) and still trying to act — the fencing token, checked by the resource, is what rejects it. |
 
 Prefer per-key ordering over global ordering by default — a global sequencer is a shared bottleneck and a single point of coordination cost on every write. Only reach for it when the domain genuinely needs one total order across all entities (rare — most "ordering" requirements are actually per-conversation, per-account, or per-aggregate).
 

@@ -58,7 +58,7 @@ correct response, and mixing them up is the root of most bad error handling.
 | Kind | Examples | Expected? | Correct response | Who handles it |
 |---|---|---|---|---|
 | **Bug** (programmer error) | `None` where an object was required, index out of range, broken invariant | No | **Crash** the operation loudly; alert; fix the code | Nobody locally; top-level boundary logs and returns 500 |
-| **Invalid input** | Malformed JSON, qty = −3, unknown SKU | Yes | Reject with a precise message; never retry | The caller (user / client) |
+| **Invalid input** | Malformed <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, qty = −3, unknown SKU | Yes | Reject with a precise message; never retry | The caller (user / client) |
 | **Domain outcome** | Insufficient funds, seat already taken, card declined | Yes — part of the business | A normal result, often not an "error" at all | The use case / the user |
 | **Transient environment** | Timeout, connection reset, 503, 429, lock wait timeout | Yes, occasionally | Retry with backoff, within a deadline, if idempotent | The adapter closest to the call — once |
 | **Persistent environment** | Disk full, bad credentials, dependency down for an hour | Yes, rarely | Fail fast, degrade if possible, alert | Operators; circuit breaker |
@@ -170,7 +170,7 @@ the code at that point does one of four things:
 | **1. Recover** — do something that makes the operation succeed | Retry a transient error; fall back to a cache; use a default for an optional feature |
 | **2. Translate** — convert to the vocabulary of this layer | `sqlite3.IntegrityError` → `DuplicateEmail` in the repository adapter |
 | **3. Add context** — then re-raise | "while importing row 1,832 of users.csv" |
-| **4. Boundary** — the top of a request, job, thread, or task: log once, respond, keep the process alive | HTTP middleware → 500; worker loop → mark job failed, continue with the next |
+| **4. Boundary** — the top of a request, job, thread, or task: log once, respond, keep the process alive | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> middleware → 500; worker loop → mark job failed, continue with the next |
 
 Everything else should let the error propagate.
 
@@ -268,7 +268,7 @@ input, failed how, and why.**
 
 Rules:
 
-1. **Each layer adds what it knows and nothing more.** The DB driver knows the SQL
+1. **Each layer adds what it knows and nothing more.** The DB driver knows the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
    error; the repository knows the user ID; the use case knows "while registering".
    Stacked, they form a sentence (Go makes this explicit: §12).
 2. **Say what was expected and what was found:** `expected ISO date, got "31/02/2026"`.
@@ -432,7 +432,7 @@ gave up after 0.05s -- the call keeps running in the background
 
 That last line is the catch: `slow_call` is still running when the caller moves on —
 timing out only stops *waiting*, it doesn't cancel the work (cancellation is covered
-below). Real clients (`requests`, database drivers, gRPC stubs) build the same idea into a
+below). Real clients (`requests`, database drivers, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> stubs) build the same idea into a
 `timeout=` argument so you don't need the thread pool.
 
 ### Deadlines, not per-call timeouts
@@ -446,7 +446,7 @@ below). Real clients (`requests`, database drivers, gRPC stubs) build the same i
 ```
 
 A **deadline** is an absolute time for the whole request. Each layer passes it down;
-each outbound call uses `min(own timeout, time left)`. gRPC propagates deadlines across
+each outbound call uses `min(own timeout, time left)`. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> propagates deadlines across
 services automatically; Go carries them in `context.Context`; in Python asyncio,
 `asyncio.timeout_at` applies one to a block.
 
@@ -714,8 +714,8 @@ Design choices worth naming in a review or interview:
 - **Sleep, clock, and randomness are injected**, so the test runs instantly and is
   deterministic — no real waiting, no flaky assertions.
 - **Retryability is decided by type**, set by the adapter that understands the protocol
-  (it maps HTTP 503 → `Transient`, 400 → `Permanent`). The retry loop knows nothing about
-  HTTP.
+  (it maps <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> 503 → `Transient`, 400 → `Permanent`). The retry loop knows nothing about
+  <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>.
 - **Unknown exceptions are not retried.** A `KeyError` is a bug; retrying it three times
   only delays the crash.
 - **The last error is re-raised unchanged** (bare `raise`), so its type and traceback
@@ -995,7 +995,7 @@ Rules the example follows:
 
 - **Register a compensation only after its step succeeds.** Registering before would
   "release" stock that was never reserved.
-- **Compensations run in reverse (LIFO) order** — the log shows refund, then release b,
+- **Compensations run in reverse (<abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr>) order** — the log shows refund, then release b,
   then release a.
 - **`pop_all()` on success** discards them.
 - **The original error propagates** after compensation, so the caller still learns what
@@ -1122,7 +1122,7 @@ Go makes every failure point visible. The design questions are identical; the id
   was doing, forming a readable chain.
 - **Branch on categories** with `errors.Is` (sentinel identity) and `errors.As` (typed
   errors carrying data) — never by comparing strings.
-- **Decide meaning at the edge**: map categories to HTTP status in one place.
+- **Decide meaning at the edge**: map categories to <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status in one place.
 - **Deadlines and cancellation** travel in `context.Context`; I/O functions return
   `ctx.Err()` when it's done.
 - **Cleanup errors** are combined with `errors.Join` in a deferred function with a named
@@ -1330,7 +1330,7 @@ def test_checkout_leaves_no_trace_when_any_step_fails(fail_at):
 | `except Exception: pass` / `_ = err` | Bugs and outages become silent wrong behaviour | Handle specifically, or let it propagate |
 | Same error logged at several layers | Noise; can't tell one failure from five | Log once, at the boundary |
 | Bare `except:` or `except BaseException` around `await` | Breaks Ctrl-C and cancellation/timeouts | `except Exception`, and re-raise `CancelledError` |
-| HTTP call with no timeout | One hung dependency exhausts threads/connections | Timeout on every remote call; propagate deadlines |
+| <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> call with no timeout | One hung dependency exhausts threads/connections | Timeout on every remote call; propagate deadlines |
 | Retry loop with no backoff/jitter/limit | Retry storms; outages last longer | §7 |
 | Retrying a non-idempotent call | Double charges, duplicate emails | Idempotency key or don't retry (§8) |
 | Retries at multiple layers | Multiplicative load | Retry at one layer |

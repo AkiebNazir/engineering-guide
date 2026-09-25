@@ -2,7 +2,7 @@
 
 This is the wire-protocol companion to `03_api_design_high_level.md`: once you've chosen a style and modeled the contract, these are the mechanics that make it correct — semantics, caching, connection behavior, serialization, auth, and rate limiting at the protocol level.
 
-## HTTP method semantics
+## <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> method semantics
 
 | Method | Safe (no side effect) | Idempotent (same effect if repeated) | Typical use |
 |---|---|---|---|
@@ -53,7 +53,7 @@ If-None-Match: "a1b2c3"
 - `Cache-Control: max-age=N` — cacheable for N seconds without revalidation.
 - `Cache-Control: no-store` — never cache (sensitive data).
 - `ETag` — an opaque fingerprint of the resource; a conditional request (`If-None-Match`) lets the server confirm "still the same" with a cheap `304` instead of re-sending the full body.
-- `Retry-After` — on `429`/`503`, tells the caller how long to wait before retrying (seconds or an HTTP date) — a well-behaved client backs off to at least this, not less.
+- `Retry-After` — on `429`/`503`, tells the caller how long to wait before retrying (seconds or an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> date) — a well-behaved client backs off to at least this, not less.
 
 ## Content negotiation
 
@@ -63,18 +63,18 @@ If-None-Match: "a1b2c3"
 
 | Format | Schema | Size | Speed | Human-readable | Evolution |
 |---|---|---|---|---|---|
-| JSON | Schema-on-read (none enforced at write) | Larger (text, field names repeated) | Slower to parse | Yes | Very forgiving — extra/missing fields don't break parsing, but nothing enforces the contract |
+| <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | Schema-on-read (none enforced at write) | Larger (text, field names repeated) | Slower to parse | Yes | Very forgiving — extra/missing fields don't break parsing, but nothing enforces the contract |
 | Protocol Buffers | Schema-on-write (`.proto` compiled) | Compact (binary, field numbers not names) | Fast | No | Strong, deliberate rules: field numbers are permanent, new fields must be optional, never reuse a retired field number |
 | Avro | Schema-on-write, schema travels with data (or via registry) | Compact | Fast | No | Schema evolution rules enforced by a schema registry at write/read time — common in streaming pipelines (see `09_messaging_and_streaming.md`) |
-| MessagePack | Schema-on-read, like binary JSON | Compact | Fast | No | Same looseness as JSON, just smaller/faster on the wire |
+| MessagePack | Schema-on-read, like binary <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | Compact | Fast | No | Same looseness as <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, just smaller/faster on the wire |
 
-Use JSON for public/browser-facing APIs (universal tooling, debuggable). Use Protobuf/gRPC for internal service-to-service calls where you control both ends and want compile-time contract enforcement plus smaller/faster payloads. Use Avro where the schema needs to travel with high-volume streamed data and evolve under registry-enforced compatibility rules. Schema-on-write formats catch a broken contract at serialize time; schema-on-read formats catch it at the consumer, often in production.
+Use <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> for public/browser-facing APIs (universal tooling, debuggable). Use Protobuf/<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> for internal service-to-service calls where you control both ends and want compile-time contract enforcement plus smaller/faster payloads. Use Avro where the schema needs to travel with high-volume streamed data and evolve under registry-enforced compatibility rules. Schema-on-write formats catch a broken contract at serialize time; schema-on-read formats catch it at the consumer, often in production.
 
 ## Connection mechanics
 
-- **Keep-alive** (HTTP/1.1): reuse a TCP connection across multiple requests instead of paying handshake+TLS cost per request.
-- **HTTP/2 multiplexing**: many logical request/response streams share one TCP connection — see `02_networking.md` for the head-of-line-blocking trade-off this introduces at the TCP layer.
-- **gRPC streaming modes**:
+- **Keep-alive** (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1): reuse a <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection across multiple requests instead of paying handshake+<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> cost per request.
+- **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 multiplexing**: many logical request/response streams share one <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection — see `02_networking.md` for the head-of-line-blocking trade-off this introduces at the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> layer.
+- **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> streaming modes**:
 
 ```text
 unary            client ──1 req──▶ server ──1 resp──▶ client
@@ -92,21 +92,21 @@ Streaming modes matter for <abbr title="Application Programming Interface">API</
 | <abbr title="Application Programming Interface">API</abbr> key | Static secret sent as header/query param | Server-to-server, simple integrations | No expiry by default, easy to leak in logs/URLs, coarse-grained |
 | OAuth2 (authorization code flow) | User authorizes a client app; app exchanges a code for an access token (+ refresh token) via the auth server | Third-party apps acting on a user's behalf | Multiple round trips; token storage/refresh logic is easy to get wrong client-side |
 | OAuth2 (client credentials flow) | Service authenticates directly with client ID/secret, no user involved | Service-to-service | Same secret-management concerns as <abbr title="Application Programming Interface">API</abbr> keys |
-| JWT (JSON Web Token) | Self-contained signed token: header.payload.signature, base64url-encoded | Stateless auth — server verifies signature, no DB lookup needed per request | See pitfalls below |
-| mTLS | Both client and server present certificates during TLS handshake | Service-to-service inside a trusted network/mesh | Certificate rotation/distribution is operational overhead |
+| <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Web Token) | Self-contained signed token: header.payload.signature, base64url-encoded | Stateless auth — server verifies signature, no DB lookup needed per request | See pitfalls below |
+| mTLS | Both client and server present certificates during <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> handshake | Service-to-service inside a trusted network/mesh | Certificate rotation/distribution is operational overhead |
 
-**JWT structure**: `header.payload.signature`. The payload is **not encrypted**, only signed — never put secrets in it, only claims (subject, expiry, scopes).
+**<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> structure**: `header.payload.signature`. The payload is **not encrypted**, only signed — never put secrets in it, only claims (subject, expiry, scopes).
 
 ```json
 // payload (base64url-decoded, not encrypted)
 { "sub": "user_123", "exp": 1735689600, "scope": "orders:read orders:write" }
 ```
 
-JWT pitfalls that come up repeatedly:
+<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> pitfalls that come up repeatedly:
 
 1. **Expiry (`exp`) not checked**, or checked against client time instead of server time.
 2. **Algorithm confusion**: a server configured to accept `alg: none` or to verify an `RS256`-signed token using the public key as if it were an `HS256` shared secret — a known real-world exploit class. Pin the expected algorithm server-side; don't trust the `alg` field in the token itself.
-3. **Revocation is hard**: a JWT is self-contained and stateless by design, which means there's no cheap way to invalidate one before its `exp` — mitigations are short expiry + refresh tokens, or a server-side denylist (which reintroduces the per-request state lookup you were trying to avoid).
+3. **Revocation is hard**: a <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> is self-contained and stateless by design, which means there's no cheap way to invalidate one before its `exp` — mitigations are short expiry + refresh tokens, or a server-side denylist (which reintroduces the per-request state lookup you were trying to avoid).
 
 ## Rate limiting mechanics — token bucket worked example
 
@@ -140,8 +140,8 @@ X-RateLimit-Remaining: 0
 
 Every outbound call needs an explicit deadline smaller than the caller's own remaining budget (see the latency-budget example in `02_networking.md`). A **client-side timeout is not server-side cancellation** — if the client gives up waiting, the server may still be doing the work unless it's explicitly told to stop:
 
-- gRPC propagates a deadline as part of the call metadata; a well-behaved server checks the context and aborts work if the deadline has passed, and the deadline can be forwarded to the *next* downstream call automatically.
-- Plain HTTP has no built-in cancellation signal to the server beyond the connection closing (which the server may or may not check for).
+- <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> propagates a deadline as part of the call metadata; a well-behaved server checks the context and aborts work if the deadline has passed, and the deadline can be forwarded to the *next* downstream call automatically.
+- Plain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> has no built-in cancellation signal to the server beyond the connection closing (which the server may or may not check for).
 
 Without explicit deadline propagation, a client giving up doesn't stop the server from finishing (and possibly retrying) wasted work — this is why "the client already timed out" and "the request is now safe to ignore" are not the same fact, and why idempotency (see `03_api_design_high_level.md`) is the real safety net, not cancellation.
 

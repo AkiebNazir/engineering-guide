@@ -15,7 +15,7 @@ aware alternative to routing every conversion through `fmt.Sprintf`/
 - Formatting a number into a byte buffer inside a hot loop →
   `strconv.AppendInt`/`AppendFloat` (level 6), not `fmt.Sprintf` per call -
   `fmt.Sprintf` reflects over its arguments and allocates a new string.
-- Safely embedding an arbitrary string in generated Go/JSON-like source, or
+- Safely embedding an arbitrary string in generated Go/<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-like source, or
   logging one with control characters made visible → `strconv.Quote`/`Unquote`
   (level 5), not manual escaping.
 - Building a formatted report string → pair with `strings.Builder` (see
@@ -29,7 +29,7 @@ aware alternative to routing every conversion through `fmt.Sprintf`/
 | A range error still returns a USABLE value | `ParseInt("99999999999", 10, 8)` returns `err = ErrRange` AND `v = 127` (the clamped max for that bit size) - not zero. Ignoring the error silently gives a plausible-looking wrong number (level 9). |
 | `Atoi` is exactly `ParseInt(s, 10, 0)` | `Atoi` is a convenience wrapper - it's not a different algorithm, just base 10 with the platform int's bit size. |
 | `FormatInt`/`AppendInt` never add a base prefix | `FormatInt(255, 16)` gives `"ff"`, not `"0xff"` - if you want the prefix, add it yourself or parse with `ParseInt(s, 0, ...)` which DOES understand `0x`/`0o`/`0b` prefixes on the way in. |
-| `Quote` output is Go-syntax, not JSON | It's close to JSON string syntax but not guaranteed identical (e.g. non-ASCII handling); don't use it as a JSON encoder. |
+| `Quote` output is Go-syntax, not <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | It's close to <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> string syntax but not guaranteed identical (e.g. non-ASCII handling); don't use it as a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> encoder. |
 
 ## What the 10 levels cover
 

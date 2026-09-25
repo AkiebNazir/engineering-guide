@@ -108,7 +108,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **`faiss.normalize_L2`:** By mathematically forcing the length of every vector to equal $1.0$, the Dot Product (`IndexFlatIP`) becomes exactly equivalent to Cosine Similarity. This is the fastest way to calculate similarity on a CPU!
+1. **`faiss.normalize_L2`:** By mathematically forcing the length of every vector to equal $1.0$, the Dot Product (`IndexFlatIP`) becomes exactly equivalent to Cosine Similarity. This is the fastest way to calculate similarity on a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>!
 2. **The Prompt Restriction:** The most critical part of <abbr title="Retrieval-Augmented Generation">RAG</abbr> is the system prompt: *"Answer based ONLY on the provided context"*. This instruction is what forces the <abbr title="Large Language Model">LLM</abbr> to stop hallucinating and act strictly as a reading comprehension engine.
 
 ---

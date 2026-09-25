@@ -93,8 +93,8 @@ C -> F : "k is greater than p"
 (006): naive recursion that splits a problem at every possible operator
 position re-derives the same sub-expression's answer many times — but the
 "overlap" here is keyed by a **substring of an expression**, not an array
-index range. Contrast this directly with topic 16/17: DP-1D's `dp[i]` and
-DP-2D's `dp[i][j]` are both indexed into the ORIGINAL array/string by
+index range. Contrast this directly with topic 16/17: <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>-1D's `dp[i]` and
+<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>-2D's `dp[i][j]` are both indexed into the ORIGINAL array/string by
 position; this problem's cache key is "which substring of the expression,"
 and the recursion decides where to SPLIT rather than where to STOP. Same
 memoize-the-overlap instinct, different axis of overlap.
@@ -117,7 +117,7 @@ not a precomputed remap).
 
 Every one of these problems could superficially be filed elsewhere —
 001/002/003/004 touch arrays and linked lists, 005/007 look like sorting
-problems, 006 looks like a string/DP problem, 008 looks like a plain design
+problems, 006 looks like a string/<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem, 008 looks like a plain design
 problem. They're pulled out here because the array/list/string is
 incidental; the graded skill is:
 
@@ -127,7 +127,7 @@ incidental; the graded skill is:
    materialization, full memo table indexed by position) is strictly more
    work than the question actually requires?
 3. Can you tell the difference between "recursion overlaps on array
-   position" (DP as taught in 16/17) and "recursion overlaps on a
+   position" (<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> as taught in 16/17) and "recursion overlaps on a
    sub-expression / sub-range that isn't simply `[i:j]` of the original
    index space" (divide & conquer with memoization)?
 
@@ -167,7 +167,7 @@ invisible without a frequency count.
 ## Part 4 · Where this topic ends
 
 This is a closed set of nine problems illustrating five techniques (the ninth, Rand10 from Rand7, is rejection sampling — Part 5.8), not an
-open-ended pattern family like DP or graphs — there is no "topic 28" that
+open-ended pattern family like <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> or graphs — there is no "topic 28" that
 continues it. The value is recognizing these shapes fast: "pick uniformly
 from something I can't fully materialize" → reservoir sampling; "I only
 need one order statistic, not a sorted array" → quickselect (even under a

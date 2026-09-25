@@ -126,7 +126,7 @@ Use this as the definitions table; the last column says where the pattern is wor
 | Several changes must commit or roll back together | **Unit of Work** | Context manager wrapping a transaction |
 | `if x is None:` checks everywhere | **Null Object** | A do-nothing implementation of the interface |
 | Millions of objects sharing identical intrinsic state | **Flyweight** | Interning / cache by key; `__slots__` |
-| Objects are expensive to create and reusable | **Object Pool** | `queue.Queue` of instances; Go `sync.Pool` (for GC pressure, not connections) |
+| Objects are expensive to create and reusable | **Object Pool** | `queue.Queue` of instances; Go `sync.Pool` (for <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pressure, not connections) |
 
 ---
 
@@ -746,7 +746,7 @@ All four wrap something. They differ by **intent and interface**:
 |---|---|---|---|
 | **Decorator** | **Same** | Add behaviour | Retry, logging, metrics, caching around a client |
 | **Proxy** | **Same** | Control access | Lazy loading, remote stub, permission check, rate limit |
-| **Adapter** | **Different** (converts) | Make an incompatible interface fit | Wrap a vendor SDK to implement your `PaymentGateway` port |
+| **Adapter** | **Different** (converts) | Make an incompatible interface fit | Wrap a vendor <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> to implement your `PaymentGateway` port |
 | **Facade** | **Simpler / new** | Hide a complicated subsystem | `VideoConverter.convert(file, fmt)` over codecs, muxers, buffers |
 
 ### GoF Decorator vs. Python `@decorator`
@@ -934,8 +934,8 @@ Two variants:
 
 1. **Classic CoR:** each handler decides whether to handle *or* pass on; typically one
    handles it. (Logging levels, support-ticket escalation, ATM note dispensing.)
-2. **Middleware / pipeline:** every handler runs, wrapping the next. (HTTP middleware,
-   gRPC interceptors.)
+2. **Middleware / pipeline:** every handler runs, wrapping the next. (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> middleware,
+   <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> interceptors.)
 
 ```python
 from typing import Callable
@@ -1047,7 +1047,7 @@ def run_import(raw: str, parse, save, validate=lambda r: True) -> int:
 
 Template Method is fine for a stable framework hook (`unittest.TestCase.setUp`,
 `threading.Thread.run`), but it binds step choices together in one subclass: a CSV parser
-with a Postgres saver and a JSON parser with a Postgres saver are two subclasses, and
+with a Postgres saver and a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> parser with a Postgres saver are two subclasses, and
 every parser × saver combination is another. Composition lets them vary independently.
 
 ---
@@ -1158,8 +1158,8 @@ query = IS_FILE & (extension(".xml") | larger_than(5_000_000)) & ~extension(".tm
 
 - Open/closed in practice: a new criterion is one function; no existing code changes.
 - The `label` makes queries debuggable and loggable.
-- To push filters down to a database or index, keep specs as **data** (an AST of
-  `And/Or/Not/Leaf`) instead of closures, then translate that AST to SQL or evaluate it
+- To push filters down to a database or index, keep specs as **data** (an <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> of
+  `And/Or/Not/Leaf`) instead of closures, then translate that <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> to <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> or evaluate it
   in memory (Composite + Interpreter).
 
 Full tested version: `lld/010_unix_find_solution.py`.
@@ -1197,7 +1197,7 @@ class InMemoryOrderRepository:                            # the test fake — a 
 
 Rules: **one repository per aggregate root** (no `OrderLineRepository`); methods named
 for domain queries (`list_open_for`), not generic `query(sql)`; returns domain objects,
-never ORM rows or cursors.
+never <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> rows or cursors.
 
 **Unit of Work:** tracks changes during a business operation and commits them atomically.
 
@@ -1218,7 +1218,7 @@ def cancel_order(uow: UnitOfWork, order_id: str) -> None:
 Worked versions with real SQLite transactions: `PyEngineering/09_database_repository_layer`,
 `10_transactions_concurrency_control`.
 
-**Don't** add a Repository over an ORM for a CRUD app with no domain logic — it's a
+**Don't** add a Repository over an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> for a <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> app with no domain logic — it's a
 pass-through layer (`01` §6).
 
 ---
@@ -1312,8 +1312,8 @@ assert pool._free == ["conn-0", "conn-1"]     # returned automatically
 ```
 
 - **Database connection pools** and **thread/worker pools** are pools; use the library's.
-- **Go `sync.Pool`** is for reducing GC pressure on short-lived temporary objects (e.g.
-  `bytes.Buffer`); items can be dropped at any GC, so **never** use it for connections.
+- **Go `sync.Pool`** is for reducing <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pressure on short-lived temporary objects (e.g.
+  `bytes.Buffer`); items can be dropped at any <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, so **never** use it for connections.
 - Pool pitfalls: returning a dirty object (reset before reuse), leaking (always return in
   `finally`/`defer`), pool exhaustion deadlock (a task holding one connection waits for a
   second). The `@contextmanager` form above returns the connection in `finally` so
@@ -1352,7 +1352,7 @@ assert pool._free == ["conn-0", "conn-1"]     # returned automatically
 | In-memory KV store with transactions | Command / Memento (transaction log), Stack of scopes | `lld/006` |
 | Logging framework | Chain of Responsibility (levels), Strategy (formatter), Observer/Composite (appenders), Singleton-avoidance | `lld/007` |
 | Tic-tac-toe / board games | Strategy (players, win rules), State (game), Factory | `lld/008` |
-| Cache with eviction | Strategy (LRU/LFU/FIFO), Decorator (TTL, stats), Proxy | `lld/009` |
+| Cache with eviction | Strategy (<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>/<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>/<abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>), Decorator (TTL, stats), Proxy | `lld/009` |
 | Unix find | Specification, Composite, Iterator | `lld/010` |
 | Meeting room / hotel booking | Strategy (room selection), value objects (intervals), Observer (notifications) | `lld/011` |
 | Rate limiter library | Strategy (token bucket, sliding window), Decorator / Proxy | `lld/012` |

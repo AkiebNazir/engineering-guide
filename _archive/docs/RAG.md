@@ -21,7 +21,7 @@ Before you can chunk anything, you have to extract clean text from source format
 
 - **PDFs** — text extraction can scramble reading order in multi-column layouts, drop table structure, or merge headers into body text. Tools like `unstructured`, `PyMuPDF`, or vision-based extraction (rendering pages as images and using a multimodal model) handle this with varying fidelity.
 - **HTML** — need to strip nav bars, ads, and boilerplate while preserving semantic structure (headings, lists, tables).
-- **Tables** — flattening a table into plain text loses row/column relationships; some pipelines convert tables to markdown or JSON to preserve structure.
+- **Tables** — flattening a table into plain text loses row/column relationships; some pipelines convert tables to markdown or <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> to preserve structure.
 
 Garbage extraction here poisons every later stage — no amount of clever chunking or reranking fixes text that was already scrambled on the way in.
 
@@ -88,7 +88,7 @@ The embeddings go into a vector database (Pinecone, Weaviate, Qdrant, pgvector, 
 
 - **HNSW (Hierarchical Navigable Small World)** — builds a multi-layer graph of vectors; search hops through layers from coarse to fine. Very fast query time, higher memory use. Most common default today.
 - **IVF (Inverted File Index)** — clusters vectors into buckets (via k-means), and search only scans the most relevant buckets. Lower memory, needs a training step.
-- **Product Quantization (PQ)** — compresses vectors to reduce memory footprint, often combined with IVF (IVF-PQ), at some cost to precision.
+- **Product Quantization (<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>)** — compresses vectors to reduce memory footprint, often combined with IVF (IVF-<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>), at some cost to precision.
 
 Similarity is measured via **cosine similarity**, **dot product**, or **Euclidean (L2) distance** — cosine and normalized dot product are most common for text embeddings since they're insensitive to vector magnitude.
 

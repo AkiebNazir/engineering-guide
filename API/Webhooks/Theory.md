@@ -8,7 +8,7 @@ description: "Master event-driven reverse APIs: polling vs webhooks, event desig
 <div data-viz="api-webhooks"></div>
 
 ## What is a Webhook?
-A Webhook is often called a "Reverse <abbr title="Application Programming Interface">API</abbr>." Instead of a client continuously asking a server if new data is available (Polling), the client gives the server a URL. When an event happens on the server, the server makes an HTTP `POST` request to the client's URL with the event data.
+A Webhook is often called a "Reverse <abbr title="Application Programming Interface">API</abbr>." Instead of a client continuously asking a server if new data is available (Polling), the client gives the server a URL. When an event happens on the server, the server makes an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> `POST` request to the client's URL with the event data.
 
 The terms are easy to mix up, so fix them once:
 
@@ -17,12 +17,12 @@ The terms are easy to mix up, so fix them once:
 | Ordinary <abbr title="Application Programming Interface">API</abbr> | The provider | The client |
 | **Webhook** | **The consumer** (you) | **The provider** |
 
-Webhooks are plain HTTP, so there is no new protocol. The engineering is entirely in **trust** (is this really from the provider?), **reliability** (what if my server is down?) and **safety** (what if a customer registers a hostile URL?).
+Webhooks are plain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, so there is no new protocol. The engineering is entirely in **trust** (is this really from the provider?), **reliability** (what if my server is down?) and **safety** (what if a customer registers a hostile URL?).
 
 > **Analogy:** Polling is walking to the post office every hour to ask "any mail?". A webhook is leaving your address with the post office so the postman rings your bell when a parcel arrives. If you are out, a good postman tries again later; if the bell rings for a fake "parcel", you must check who is at the door.
 
 ### Polling vs Webhooks
-*   **Polling:** "Are we there yet?" ... "No." ... "Are we there yet?" ... "No." (Wastes bandwidth, CPU, and <abbr title="Application Programming Interface">API</abbr> rate limits).
+*   **Polling:** "Are we there yet?" ... "No." ... "Are we there yet?" ... "No." (Wastes bandwidth, <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, and <abbr title="Application Programming Interface">API</abbr> rate limits).
 *   **Webhooks:** "Wake me up when we get there." (Efficient, instant, event-driven).
 
 | | Polling | Webhooks |
@@ -30,7 +30,7 @@ Webhooks are plain HTTP, so there is no new protocol. The engineering is entirel
 | **Latency** | Up to one polling interval | Near real time |
 | **Cost** | Constant, even with no news | Proportional to events |
 | **Reliability** | You control it: missed poll = next poll catches up | Depends on delivery, retries, your uptime |
-| **Firewall / NAT** | Outbound only: works anywhere | You need a **public HTTPS endpoint** |
+| **Firewall / NAT** | Outbound only: works anywhere | You need a **public <abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr> endpoint** |
 | **Complexity** | Simple | Signatures, dedupe, retries, security |
 
 The professional pattern is **both**: webhooks for speed, plus a periodic **reconciliation poll** (or a `GET /events?after=...` <abbr title="Application Programming Interface">API</abbr>) that catches anything a webhook missed.
@@ -138,15 +138,15 @@ c -> no : "mismatch"
 
 The rules that separate a secure check from a decorative one:
 
-1.  **Verify the raw bytes.** `json.loads` then `json.dumps` changes spacing and key order, so the signature no longer matches. Capture the raw body *before* your framework parses it. (Python lab 1 proves it: the same JSON re-formatted is rejected.)
+1.  **Verify the raw bytes.** `json.loads` then `json.dumps` changes spacing and key order, so the signature no longer matches. Capture the raw body *before* your framework parses it. (Python lab 1 proves it: the same <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> re-formatted is rejected.)
 2.  **Constant-time comparison** (`hmac.compare_digest`, `hmac.Equal`). Plain `==` returns at the first differing byte, leaking timing information.
 3.  **Verify first, parse second, act third.** On failure: `401`, no side effects.
 4.  **Include a timestamp in the signed content and enforce a tolerance** (typically 5 minutes). Otherwise a captured request can be **replayed** forever. The timestamp must be signed, so an attacker cannot refresh it.
 5.  **Dedupe on the event id** (also a replay defence inside the window).
 6.  **Per-endpoint secrets**, stored in a secrets manager, **rotated** without downtime (below).
-7.  **HTTPS only.** TLS protects the secret-derived signature *and* the payload's confidentiality.
+7.  **<abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr> only.** <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> protects the secret-derived signature *and* the payload's confidentiality.
 8.  **Bound everything**: body size (`MaxBytesReader`), timeouts.
-9.  **Optional extras**: IP allow-lists (providers publish sender ranges; brittle but cheap), mTLS.
+9.  **Optional extras**: <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> allow-lists (providers publish sender ranges; brittle but cheap), mTLS.
 
 ### Real providers, different formats
 
@@ -157,7 +157,7 @@ The rules that separate a secure check from a decorative one:
 | Slack | `X-Slack-Signature: v0=<hex>` + `X-Slack-Request-Timestamp` | `v0:<ts>:<body>` | timestamp tolerance |
 | **Standard Webhooks** (open spec) | `webhook-id`, `webhook-timestamp`, `webhook-signature: v1,<base64> ...` | `<id>.<ts>.<body>` | timestamp tolerance + id |
 
-Go lab 2 implements the first three with a known-answer test from GitHub's docs and 18 attack cases; Python lab 5 implements the Standard Webhooks scheme and passes the spec's **official test vector**. Prefer the vendor's SDK verifier in production.
+Go lab 2 implements the first three with a known-answer test from GitHub's docs and 18 attack cases; Python lab 5 implements the Standard Webhooks scheme and passes the spec's **official test vector**. Prefer the vendor's <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> verifier in production.
 
 ### Secret rotation without downtime
 
@@ -180,7 +180,7 @@ The sender emits several `v1` signatures during the overlap; the receiver accept
 
 Providers cannot know whether your `200` was lost on the way back, so they **retry until they see 2xx**. Therefore:
 
-*   **At-least-once** delivery: **duplicates are normal.** Exactly-once does not exist over HTTP.
+*   **At-least-once** delivery: **duplicates are normal.** Exactly-once does not exist over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>.
 *   **No ordering guarantee**: a retried `order.created` can arrive *after* `order.updated`.
 *   **Bursts**: after your outage, thousands of events arrive at once.
 
@@ -199,7 +199,7 @@ Providers cannot know whether your `200` was lost on the way back, so they **ret
 | Exhausted retries | **Dead-letter** queue + manual **replay** |
 | Redirects | Never follow |
 
-Python lab 3 builds this engine with virtual time (days of retries in milliseconds); Go lab 3 does it with real HTTP, a worker pool, and per-endpoint limits.
+Python lab 3 builds this engine with virtual time (days of retries in milliseconds); Go lab 3 does it with real <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>, a worker pool, and per-endpoint limits.
 
 ## Building a Robust Receiver
 
@@ -278,19 +278,19 @@ If **you** offer webhooks to your customers, you own a distributed delivery syst
 
 A malicious customer registers `http://169.254.169.254/latest/meta-data/iam/security-credentials/` (cloud credentials), `http://localhost:6379/` (Redis), or an internal admin <abbr title="Application Programming Interface">API</abbr>. Your delivery workers, inside your network, obediently fetch it.
 
-*   **Validating the URL is not enough.** DNS rebinding (a name resolves to a public IP at check time and to `127.0.0.1` at connect time), numeric tricks (`2130706433`, `0x7f000001`, `127.1`, `::ffff:127.0.0.1`), and **redirects** all bypass a pre-check.
-*   **The fix: check the IP at connect time**, in `net.Dialer.Control`, which sees the address the socket is really about to use. Block loopback, private, link-local (metadata), CGNAT, multicast, unspecified.
-*   Also: **never follow redirects**, ignore proxy environment variables, **HTTPS only**, tight timeouts, bounded response reads, and **never show the response body to the customer**.
+*   **Validating the URL is not enough.** <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> rebinding (a name resolves to a public <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> at check time and to `127.0.0.1` at connect time), numeric tricks (`2130706433`, `0x7f000001`, `127.1`, `::ffff:127.0.0.1`), and **redirects** all bypass a pre-check.
+*   **The fix: check the <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> at connect time**, in `net.Dialer.Control`, which sees the address the socket is really about to use. Block loopback, private, link-local (metadata), CGNAT, multicast, unspecified.
+*   Also: **never follow redirects**, ignore proxy environment variables, **<abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr> only**, tight timeouts, bounded response reads, and **never show the response body to the customer**.
 
-Go lab 4 demonstrates every attack: a naive client leaks a fake AWS secret, the guarded client refuses 14 destinations, blocks the redirect attack, and stops a simulated DNS-rebinding attack that defeats check-then-connect.
+Go lab 4 demonstrates every attack: a naive client leaks a fake AWS secret, the guarded client refuses 14 destinations, blocks the redirect attack, and stops a simulated <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>-rebinding attack that defeats check-then-connect.
 
 ## Testing and Debugging Webhooks
 
 | Need | Tool |
 | :--- | :--- |
-| Receive webhooks on your laptop | A tunnel: `ngrok`, `cloudflared`, or the provider's CLI (`stripe listen --forward-to localhost:8080/webhook`) |
+| Receive webhooks on your laptop | A tunnel: `ngrok`, `cloudflared`, or the provider's <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> (`stripe listen --forward-to localhost:8080/webhook`) |
 | Inspect payloads | webhook.site, RequestBin, or your own request logger |
-| Trigger events | Provider's dashboard "send test event" or CLI (`stripe trigger payment_intent.succeeded`) |
+| Trigger events | Provider's dashboard "send test event" or <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> (`stripe trigger payment_intent.succeeded`) |
 | Reproduce a bad delivery | **Replay** from the delivery log; the same event id lets you test your dedupe |
 | Automated tests | Sign the payload with your test secret and POST it; test tampering, replays and duplicates as the labs do |
 
@@ -300,7 +300,7 @@ Go lab 4 demonstrates every attack: a naive client leaks a fake AWS secret, the 
 | :--- | :--- | :--- | :--- | :--- |
 | Direction | Provider to your server | You to provider | Both | Producer to consumer |
 | Needs public endpoint | **Yes** | No | No (client connects out) | No |
-| Delivery guarantee | At-least-once (HTTP retries) | You control | Connection-bound | At-least-once, durable, ordered per key |
+| Delivery guarantee | At-least-once (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> retries) | You control | Connection-bound | At-least-once, durable, ordered per key |
 | Between companies | Excellent | Fine | Awkward | Needs shared infrastructure |
 | Best for | Cross-organisation events | Simple, low-frequency sync | Browsers, live UIs | Inside one organisation |
 
@@ -327,7 +327,7 @@ Go lab 4 demonstrates every attack: a naive client leaks a fake AWS secret, the 
 >
 > ❓ **Question 4:** An attacker records a valid signed request and replays it two hours later. Which mechanisms stop it?
 >
-> ❓ **Question 5 (sender):** A customer registers `http://evil.example.com/`, whose DNS answers `93.184.216.34` for your validation lookup and `169.254.169.254` a millisecond later. How do you defend?
+> ❓ **Question 5 (sender):** A customer registers `http://evil.example.com/`, whose <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> answers `93.184.216.34` for your validation lookup and `169.254.169.254` a millisecond later. How do you defend?
 
 **Answers**
 
@@ -335,7 +335,7 @@ Go lab 4 demonstrates every attack: a naive client leaks a fake AWS secret, the 
 2.  Idempotency: a `UNIQUE(event_id)` inbox row (or an idempotent business operation keyed by event/order id). The retry gets `200` and is not processed again. Also acknowledge fast so it does not time out.
 3.  Never assume order. Apply updates only if they are newer than the stored version (compare `version`/`created`), or fetch the current state from the provider; ignore the stale one.
 4.  The signed timestamp with a tolerance window (an old timestamp is rejected, and the attacker cannot change it without breaking the signature), plus deduplication on the event id inside the window.
-5.  Validate at **connect time**, not before: a `net.Dialer.Control` hook sees the real destination IP after DNS and rejects private/loopback/link-local addresses; also refuse redirects, ignore proxy settings, and use https-only.
+5.  Validate at **connect time**, not before: a `net.Dialer.Control` hook sees the real destination <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> after <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> and rejects private/loopback/link-local addresses; also refuse redirects, ignore proxy settings, and use https-only.
 
 ## Hands-On Labs
 
@@ -346,7 +346,7 @@ Setup from the `API/` folder: `pip install -r requirements.txt` (the Python labs
 | # | Python (`Webhooks/labs/python/`) | You learn |
 | :---: | :--- | :--- |
 | 1 | `01_receiver_hmac_verification.py` | HMAC verification of the raw body, constant-time compare, five attacks rejected, why re-serialising breaks it |
-| 2 | `02_sender_signed_events.py` | Event envelope, fat vs thin payloads, timestamped signatures, real HTTP delivery and its failure modes |
+| 2 | `02_sender_signed_events.py` | Event envelope, fat vs thin payloads, timestamped signatures, real <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> delivery and its failure modes |
 | 3 | `03_retries_backoff_dead_letter.py` | A delivery engine in virtual time: jittered backoff, `Retry-After`, `410`, dead letters, replay, auto-disable |
 | 4 | `04_idempotent_async_receiver.py` | Store-then-process inbox with `UNIQUE` dedupe (12-thread race), out-of-order updates, crash recovery, ack speed |
 | 5 | `05_standard_webhooks_replay_and_rotation.py` | The Standard Webhooks scheme with the official test vector, replay protection, zero-downtime secret rotation |
@@ -356,7 +356,7 @@ Setup from the `API/` folder: `pip install -r requirements.txt` (the Python labs
 | 1 | `01_receiver_net_http` | `MaxBytesReader`, HMAC verify, bounded queue with `503 + Retry-After` back-pressure, graceful worker drain |
 | 2 | `02_provider_signature_schemes` | Stripe, GitHub and Slack verification, GitHub's official vector, 18 table-driven attack cases |
 | 3 | `03_delivery_worker_pool` | Worker pool, per-endpoint concurrency cap without head-of-line blocking, timeouts, no redirects, graceful `Stop` |
-| 4 | `04_ssrf_safe_sender` | Connect-time IP guard in `Dialer.Control`, numeric-IP tricks, redirect attack, DNS rebinding |
+| 4 | `04_ssrf_safe_sender` | Connect-time <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> guard in `Dialer.Control`, numeric-<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> tricks, redirect attack, <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> rebinding |
 | 5 | `05_subscriptions_breaker_and_replay` | Subscription globs, per-endpoint secrets, circuit breaker states, delivery log <abbr title="Application Programming Interface">API</abbr>, replay, test event |
 
 ```bash
@@ -375,6 +375,6 @@ go run -race ./Webhooks/labs/golang/03_delivery_worker_pool
 
 ## Where To Go Next
 
-*   **`REST/`**: webhooks are ordinary REST calls; idempotency keys and ETags (REST labs 4-5) are the same ideas.
+*   **`REST/`**: webhooks are ordinary <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> calls; idempotency keys and ETags (<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> labs 4-5) are the same ideas.
 *   **`WebSockets/`**: when the consumer is a browser and needs push, not a server.
 *   **`Fundamentals/03_cross_cutting_concerns.md`**: idempotency, retries with jitter, rate limiting, security checklist.

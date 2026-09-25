@@ -11,7 +11,7 @@ You do not use SFT. SFT is for *behavior*. To inject *raw knowledge*, you must u
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. SFT vs CPT
-- **SFT (Supervised Fine-Tuning):** Changes the model's *behavior*. (e.g., "Always respond in JSON format"). SFT requires high-quality Question/Answer pairs.
+- **SFT (Supervised Fine-Tuning):** Changes the model's *behavior*. (e.g., "Always respond in <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> format"). SFT requires high-quality Question/Answer pairs.
 - **CPT (Continued Pre-Training):** Injects *raw knowledge and vocabulary*. CPT does not use Q/A pairs. It uses millions of raw, unstructured text documents (e.g., raw PDFs of medical research papers). The objective is simply Next-Token Prediction, exactly like original Pre-Training!
 
 ### 2. The Learning Rate Danger

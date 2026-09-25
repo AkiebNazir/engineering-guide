@@ -6,14 +6,14 @@ Chat, live notifications, multiplayer cursors, and collaborative documents all b
 
 | Transport | How it works | Latency | Cost per idle client | Direction | Good for |
 |---|---|---|---|---|---|
-| Short polling | Client asks every N seconds. | Up to N seconds | A full HTTP request every interval | Client → server | Rare updates, simplest possible client |
+| Short polling | Client asks every N seconds. | Up to N seconds | A full <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request every interval | Client → server | Rare updates, simplest possible client |
 | Long polling | Server holds the request open until there is data (or a timeout), then the client re-opens. | Near-instant | One hanging request; a new request per message | Server → client | Legacy environments, firewalls that block WebSockets |
-| Server-sent events (SSE) | One long-lived HTTP response streaming `text/event-stream`. Automatic reconnect with `Last-Event-ID`. | Instant | One connection | Server → client only | Live feeds, notifications, token streaming from LLMs |
-| WebSocket | HTTP upgrade to a persistent full-duplex TCP connection; small frames. | Instant | One connection | Both | Chat, collaborative editing, games, presence |
-| WebTransport / QUIC | Multiplexed streams and datagrams over HTTP/3. | Instant | One connection | Both | Emerging: media, games with unreliable datagrams |
+| Server-sent events (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>) | One long-lived <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> response streaming `text/event-stream`. Automatic reconnect with `Last-Event-ID`. | Instant | One connection | Server → client only | Live feeds, notifications, token streaming from LLMs |
+| WebSocket | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> upgrade to a persistent full-duplex <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection; small frames. | Instant | One connection | Both | Chat, collaborative editing, games, presence |
+| WebTransport / QUIC | Multiplexed streams and datagrams over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/3. | Instant | One connection | Both | Emerging: media, games with unreliable datagrams |
 | Mobile push (APNs/FCM) | Platform-owned connection wakes the app. | Seconds, best effort | Free for you | Server → device | Offline users, background delivery |
 
-> 🎯 Default answer: WebSockets for bidirectional interactive features, SSE when updates only flow from server to client, and mobile push for users who are not connected. Always add a way to catch up from durable storage — no transport guarantees you did not miss something while disconnected.
+> 🎯 Default answer: WebSockets for bidirectional interactive features, <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> when updates only flow from server to client, and mobile push for users who are not connected. Always add a way to catch up from durable storage — no transport guarantees you did not miss something while disconnected.
 
 ## Architecture for millions of connections
 

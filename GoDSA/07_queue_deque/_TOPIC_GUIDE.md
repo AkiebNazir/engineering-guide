@@ -13,7 +13,7 @@
 
 Unlike Python's `collections.deque` (a doubly-linked list of fixed-size blocks,
 genuinely O(1) at both ends, in the standard library, no import ceremony), Go
-offers no ready-made FIFO or double-ended container. You have three real options,
+offers no ready-made <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> or double-ended container. You have three real options,
 and each has a different cost model. Knowing which one to reach for — and being
 able to explain *why* — is the actual skill this topic tests.
 
@@ -51,7 +51,7 @@ shrink by one. No data moves. That's the same slice-header arithmetic from
 >        │                        queue → starts at index 3, cap now 5
 >        original queue           10,20,30 are dead weight, still allocated
 > ```
-> For a **short-lived queue that drains completely in one pass** (a single BFS run, for example), neither effect
+> For a **short-lived queue that drains completely in one pass** (a single <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> run, for example), neither effect
 > matters — the whole array becomes garbage the moment the function returns. They matter for **long-running queues**
 > that live for the life of a service. Calibrate the warning to the lifetime.
 
@@ -110,7 +110,7 @@ this is the version worth being able to write cold in an interview.
 
 ---
 
-## Part 2 · BFS: the Canonical Queue Consumer
+## Part 2 · <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: the Canonical Queue Consumer
 
 Breadth-first search is where the queue earns its keep: level-order tree
 traversal, shortest path in an unweighted graph, multi-source flood fill.
@@ -144,7 +144,7 @@ func levelOrder(root *TreeNode) [][]int {
 
 > ✅ This is exactly the case from §1.1 where the "leak" doesn't matter: the
 > queue is a local variable that runs to completion and is discarded. Reach for
-> Strategy A by default for BFS; reach for Strategy C only when the queue is a
+> Strategy A by default for <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>; reach for Strategy C only when the queue is a
 > long-lived structure (a work queue inside a server, a scheduler) or when
 > profiling shows the re-slicing churn actually costs something.
 
@@ -164,7 +164,7 @@ before you start pushing next-level nodes onto the same queue.
 | `PopBack` | O(1) (`s[:len(s)-1]`) | **O(1)** | **O(1)** |
 | Random access `[i]` | O(1) | O(n) (pointer-chase) | O(1) |
 | Memory overhead | none beyond payload | pointer×2 + interface box per node | occasional 2x on grow |
-| GC pressure | low (few large arrays) | high (one alloc per element) | low |
+| <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pressure | low (few large arrays) | high (one alloc per element) | low |
 
 ---
 
@@ -257,7 +257,7 @@ len(d.buf)` avoids Go's `%` returning a negative result for negative operands
 (unlike Python, where `%` always returns a non-negative result matching the
 divisor's sign — another quiet Go/Python divergence worth knowing); zeroing on
 pop prevents holding a stale reference alive if `T` is a pointer or contains
-one, mirroring the same GC-retention concern as slice-based stacks.
+one, mirroring the same <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>-retention concern as slice-based stacks.
 
 ---
 
@@ -326,7 +326,7 @@ func (s *MyStack) Push(x int) {
 }                                               // push 1,2,3 -> pops 3,2,1
 ```
 
-### Number of Recent Calls (LC 933) — a FIFO window
+### Number of Recent Calls (LC 933) — a <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> window
 
 Timestamps strictly increase, so the front of the queue is always the oldest. Evict with a **`for`**, and compare with
 `<` (the window `[t-3000, t]` is inclusive):
@@ -387,11 +387,11 @@ answer.
 <!-- /block:07_go_1_designs -->
 
 <!-- block:07_go_2_practice -->
-## Part 7 · Queues in Practice in Go: BFS, 0-1 BFS, Channels and Ring Variants
+## Part 7 · Queues in Practice in Go: <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, Channels and Ring Variants
 
-### The BFS template — mark visited on **enqueue**
+### The <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> template — mark visited on **enqueue**
 
-BFS reaches nodes in order of distance because the queue is FIFO. Mark a node visited when you **enqueue** it, not when
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> reaches nodes in order of distance because the queue is <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>. Mark a node visited when you **enqueue** it, not when
 you dequeue it — otherwise a node can be enqueued many times before its first dequeue. A plain slice queue is the right
 default here (Part 2): the queue is local and drains in one pass.
 
@@ -430,11 +430,11 @@ d:L -> b:L
 ```
 
 Note `[4][2]int{...}` — an *array* of directions is a value, allocated on the stack, and ranging over it needs no
-`make`. **Multi-source BFS** (Rotting Oranges) puts *every* source in the queue first and freezes the level size with
+`make`. **Multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>** (Rotting Oranges) puts *every* source in the queue first and freezes the level size with
 `for size := len(q); size > 0; size--`; the answer is the number of levels: `[[2 1 1] [1 1 0] [0 1 1]]` → 4,
 `[[2 1 1] [0 1 1] [1 0 1]]` → -1.
 
-### 0-1 BFS: a deque replaces the heap when every edge costs 0 or 1
+### 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>: a deque replaces the heap when every edge costs 0 or 1
 
 Push a 0-cost neighbour to the **front** (same distance as the current node) and a 1-cost neighbour to the **back**. The
 deque stays ordered by distance, so O(V + E) beats Dijkstra's O(E log V). This needs push at *both* ends — the generic
@@ -465,7 +465,7 @@ deque of LC 862 exposed as a data structure.
 
 ### Channels: Go's built-in, thread-safe, bounded queue
 
-A **buffered channel** is a FIFO with a fixed capacity, blocking semantics and safe use from many goroutines — the
+A **buffered channel** is a <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> with a fixed capacity, blocking semantics and safe use from many goroutines — the
 thing `collections.deque` is *not*. `send` blocks when it is full (**backpressure**: a fast producer is slowed, not
 allowed to exhaust memory) and `receive` blocks when it is empty:
 
@@ -519,9 +519,9 @@ c.size++
 
 | Follow-up | The answer |
 |---|---|
-| "Why is BFS shortest-path correct?" | FIFO order: every node at distance `d` leaves the queue before any at `d + 1`, so the first time a node is *reached* is by a shortest path (unweighted edges only). |
-| "Weighted edges?" | 0/1 → 0-1 BFS; non-negative → Dijkstra with `container/heap` (topic 15). |
-| "From both ends?" | Bidirectional BFS — expand the smaller frontier each round. |
+| "Why is <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> shortest-path correct?" | <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> order: every node at distance `d` leaves the queue before any at `d + 1`, so the first time a node is *reached* is by a shortest path (unweighted edges only). |
+| "Weighted edges?" | 0/1 → 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>; non-negative → Dijkstra with `container/heap` (topic 15). |
+| "From both ends?" | Bidirectional <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> — expand the smaller frontier each round. |
 | "The queue must not grow without bound." | Bound it (buffered channel or fixed ring) and pick: block, reject, or overwrite the oldest. |
 | "Priority instead of arrival order." | A heap, not a queue (topic 12). |
 | "Is your queue thread-safe?" | A slice or ring buffer is not — guard with a `sync.Mutex`, or use a channel. |
@@ -538,7 +538,7 @@ Six problems, four moves — the Python guide's map in Go, with the Go-only trap
 |---|---|---|
 | [001 · Implement Queue using Stacks](GoDSA/07_queue_deque/001_implement_queue_using_stacks/solution.go) <br>LC 232 · Easy | Two stacks, one direction each | `in`/`out` slices; drain `in` into `out` **only when `out` is empty**; each element moves at most twice, so amortised O(1). **Trap:** draining on every `Pop` (O(n) each); `Peek` that pops and forgets to restore. |
 | [002 · Implement Stack using Queues](GoDSA/07_queue_deque/002_implement_stack_using_queues/solution.go) <br>LC 225 · Easy | One queue + rotation | `q = append(q, x)`, then rotate the older `len(q) - 1` elements: `q = append(q, q[0]); q = q[1:]`. **Trap:** rotating `len(q)` times; rotating before appending. |
-| [003 · Number of Recent Calls](GoDSA/07_queue_deque/003_number_of_recent_calls/solution.go) <br>LC 933 · Easy | FIFO sliding count | Append `t`, then `for q[0] < t-3000 { q = q[1:] }`; return `len(q)`. **Trap:** `<=` (evicts the boundary); `if` instead of `for`; a slice queue's leak is irrelevant for one bounded run. |
+| [003 · Number of Recent Calls](GoDSA/07_queue_deque/003_number_of_recent_calls/solution.go) <br>LC 933 · Easy | <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> sliding count | Append `t`, then `for q[0] < t-3000 { q = q[1:] }`; return `len(q)`. **Trap:** `<=` (evicts the boundary); `if` instead of `for`; a slice queue's leak is irrelevant for one bounded run. |
 | [004 · Design Circular Queue](GoDSA/07_queue_deque/004_design_circular_queue/solution.go) <br>LC 622 · Medium | Fixed ring buffer | `buf []int`, `head`, `size`; insert at `(head + size) % len(buf)`; return `false` when full. **Trap:** no modulo; `head == tail` alone cannot tell empty from full. |
 | [005 · Design Circular Deque](GoDSA/07_queue_deque/005_design_circular_deque/solution.go) <br>LC 641 · Medium | Ring buffer, both ends | `head = (head - 1 + len(buf)) % len(buf)` then write. **Trap:** `(head - 1) % len(buf)` — **Go's `%` is negative at 0** and the write panics (Python's is not); writing before moving `head`. |
 | [006 · Shortest Subarray with Sum at Least K](GoDSA/07_queue_deque/006_shortest_subarray_with_sum_at_least_k/solution.go) <br>LC 862 · Hard | Monotonic deque over prefix sums | A `[]int` with a `head` cursor is enough (each index is appended once); `for` (not `if`) on the front pop; pop the back while prefix `>=`. **Trap:** a sliding window (negatives!); `if` on the front pop returns a non-minimal length. |
@@ -550,14 +550,14 @@ Six problems, four moves — the Python guide's map in Go, with the Go-only trap
 
 - [ ] Explain why Go has no built-in queue/deque, unlike Python's `collections.deque`
 - [ ] Explain why `s[1:]` is O(1) but can leak capacity in a long-lived queue
-- [ ] Know when that leak doesn't matter (a queue that drains in one pass, e.g. BFS)
+- [ ] Know when that leak doesn't matter (a queue that drains in one pass, e.g. <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>)
 - [ ] Explain `container/list`'s tradeoffs: true O(1) both ends vs. per-node allocation and `Value any` boxing
-- [ ] Write BFS level-order traversal using `levelSize := len(queue)` to separate levels
+- [ ] Write <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> level-order traversal using `levelSize := len(queue)` to separate levels
 - [ ] Explain why random access is O(1) on a slice/ring buffer but O(n) on `container/list`
 - [ ] Write a ring-buffer deque with `PushFront`/`PushBack`/`PopFront`/`PopBack` in under 15 minutes
 - [ ] Know that Go's `%` can return a negative result for negative operands, unlike Python's
 - [ ] State the amortised argument for two-stacks-as-a-queue (each element moves at most twice) <!--ca-->
 - [ ] Write `(head - 1 + cap) % cap` and explain why `(head - 1) % cap` panics in Go but not in Python <!--ca-->
-- [ ] Mark visited on *enqueue* in BFS, and write the level-size loop for multi-source BFS <!--ca-->
-- [ ] Explain 0-1 BFS and why it needs a deque with `PushFront` <!--ca-->
+- [ ] Mark visited on *enqueue* in <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, and write the level-size loop for multi-source <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> <!--ca-->
+- [ ] Explain 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> and why it needs a deque with `PushFront` <!--ca-->
 - [ ] Say when a buffered channel is the right queue (sharing across goroutines, backpressure) and when it is not <!--ca-->

@@ -19,7 +19,7 @@ What can go wrong when you give an <abbr title="Large Language Model">LLM</abbr>
 
 ### 2. Defense Layer 1: The Sandbox
 If your Agent uses Python execution (like Day 134), you **must** sandbox it. 
-Never run `exec()` on your host server. You must run the Agent's generated code inside an ephemeral Docker container with **network access disabled** or using Google's `gVisor` to strictly limit Linux kernel system calls.
+Never run `exec()` on your host server. You must run the Agent's generated code inside an ephemeral <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container with **network access disabled** or using Google's `gVisor` to strictly limit Linux kernel system calls.
 
 ### 3. Defense Layer 2: Principle of Least Privilege (PoLP)
 Agents should only get the *exact* permissions they need for a specific task.
@@ -27,7 +27,7 @@ If an Agent's goal is to summarize a Jira ticket, it should be given a Jira <abb
 
 ### 4. Defense Layer 3: Trust Boundaries
 This is the most important rule in <abbr title="Artificial Intelligence">AI</abbr> Security: **Treat ALL <abbr title="Large Language Model">LLM</abbr> output as untrusted user input.**
-If the <abbr title="Large Language Model">LLM</abbr> outputs a SQL query, you do not pass it directly to `db.execute()`. You pass it through a strict regex validator, a SQL AST parser, and parameterized execution constraints.
+If the <abbr title="Large Language Model">LLM</abbr> outputs a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> query, you do not pass it directly to `db.execute()`. You pass it through a strict regex validator, a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> parser, and parameterized execution constraints.
 
 ---
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Gateway Pattern:** Notice that the Agent does not call the tools directly. It passes a JSON string to `secure_tool_executor`. The Python backend is the ultimate source of truth. Even if the <abbr title="Large Language Model">LLM</abbr> is completely brainwashed by a Prompt Injection, it cannot bypass the hardcoded `if not is_authorized:` check!
+1. **The Gateway Pattern:** Notice that the Agent does not call the tools directly. It passes a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> string to `secure_tool_executor`. The Python backend is the ultimate source of truth. Even if the <abbr title="Large Language Model">LLM</abbr> is completely brainwashed by a Prompt Injection, it cannot bypass the hardcoded `if not is_authorized:` check!
 2. **Fail Closed:** When a security check fails, we return an error string back to the Agent. We do not crash the server. This allows the Agent to realize it made a mistake and attempt a different, safer path.
 
 ---
@@ -127,8 +127,8 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Isolation & Sandboxing:** 
-   - Code Execution tools MUST run in ephemeral, network-isolated Docker containers with strict CPU/Memory limits to prevent Denial of Service (DoS) and lateral network movement.
-2. **Database Hardening (No DDL):**
+   - Code Execution tools MUST run in ephemeral, network-isolated <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> containers with strict <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>/Memory limits to prevent Denial of Service (DoS) and lateral network movement.
+2. **Database Hardening (No <abbr title="Data Definition Language. Syntax for creating and modifying database objects such as tables, indices, and users.">DDL</abbr>):**
    - The Agent's database credentials must be strictly locked down at the Postgres IAM level. The Agent's Postgres user must only have `SELECT` and `INSERT` permissions. It should be mathematically impossible for the database to accept a `DROP TABLE` command from the Agent's credentials.
 3. **Human-in-the-Loop (HITL):**
    - Any destructive or high-risk action (like updating a production config) must trigger an Approval Gate (Day 138). The Agent can prepare the command, but it cannot execute it without a Senior Engineer clicking "Approve" via MFA (Multi-Factor Authentication).

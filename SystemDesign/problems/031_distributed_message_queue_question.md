@@ -17,14 +17,14 @@ Design a company-wide messaging service in the style of Kafka, Google Cloud Pub/
 - About 5,000 topics from 200 tenant teams and about 4,000 consumer groups, so roughly three groups read each message.
 - 7-day retention, 3 replicas across 3 zones. An acknowledged message must survive the loss of any one zone, and publishing must stay available through it.
 - p99 publish acknowledgement under 20 ms in-region; p99 publish-to-delivery under 100 ms for caught-up consumers.
-- Broker hardware for sizing: 24 TB of local SSD, 64 GB of page cache, 10 GbE per broker.
+- Broker hardware for sizing: 24 TB of local <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr>, 64 GB of page cache, 10 GbE per broker.
 
 ## Your task
 
 Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
-2. Back-of-envelope QPS, storage, and bandwidth estimates, including broker and partition counts.
+2. Back-of-envelope <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage, and bandwidth estimates, including broker and partition counts.
 3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
 5. Partitioning and ordering, the replication durability versus latency trade-off, consumer group and offset management, delivery semantics with retry, dead-letter and delay, and how the log model compares with a broker-per-message queue.

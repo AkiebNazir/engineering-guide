@@ -148,7 +148,7 @@ final_merged_model = production_model.merge_and_unload()
 ## 6. MAANG Interview Scenarios
 
 ### Scenario 1: Multi-Tenant Inference (The True Power of <abbr title="Low-Rank Adaptation">LoRA</abbr>)
-*Interviewer:* "We are a massive SaaS company. 500 different enterprise clients want their own custom-trained <abbr title="Large Language Model">LLM</abbr>. If we deploy 500 separate Llama-3 models to our AWS cluster, we will go bankrupt paying for GPU instances. How do we solve this?"
+*Interviewer:* "We are a massive <abbr title="Software as a Service - A software licensing and delivery model in which software is licensed on a subscription basis and is centrally hosted.">SaaS</abbr> company. 500 different enterprise clients want their own custom-trained <abbr title="Large Language Model">LLM</abbr>. If we deploy 500 separate Llama-3 models to our AWS cluster, we will go bankrupt paying for GPU instances. How do we solve this?"
 
 *Answer:* "We use Serverless <abbr title="Low-Rank Adaptation">LoRA</abbr> inference (like vLLM or Lorax). Because the Base Model is completely frozen, we only need to load the massive Base Model into the GPU's VRAM *once*. For all 500 clients, we fine-tune a tiny 100MB <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter for them. 
 When Client A makes an <abbr title="Application Programming Interface">API</abbr> request, the server dynamically injects Client A's 100MB adapter into the GPU in roughly 5 milliseconds, runs the inference, and unloads it. A single GPU cluster can serve 500 custom models simultaneously, saving 99% on infrastructure costs."

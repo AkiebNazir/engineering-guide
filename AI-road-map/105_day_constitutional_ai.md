@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The Automation of Morality:** This script proves that an <abbr title="Large Language Model">LLM</abbr> *already knows* what is right and wrong (it read Wikipedia, after all). It just needs to be explicitly prompted to activate that knowledge!
-2. **Scalability:** Human labeling costs millions of dollars. Anthropic proved that you can align a frontier-class model like Claude entirely using CPU cycles and <abbr title="Application Programming Interface">API</abbr> calls.
+2. **Scalability:** Human labeling costs millions of dollars. Anthropic proved that you can align a frontier-class model like Claude entirely using <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cycles and <abbr title="Application Programming Interface">API</abbr> calls.
 
 ---
 

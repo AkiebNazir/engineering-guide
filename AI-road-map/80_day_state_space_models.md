@@ -141,8 +141,8 @@ if __name__ == "__main__":
 
 ### 🛠️ The Challenge: In-Context Learning Failure
 SSMs struggle with one specific thing: "Copy-Paste" tasks (In-Context Learning).
-If you put a 50-line JSON file into the prompt, and ask the model to extract a specific key, a Transformer can look back, find the exact word, and copy it perfectly via Attention. 
-An SSM has compressed that entire JSON into a single hidden state $h(t)$. It physically cannot "look back". 
+If you put a 50-line <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> file into the prompt, and ask the model to extract a specific key, a Transformer can look back, find the exact word, and copy it perfectly via Attention. 
+An SSM has compressed that entire <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> into a single hidden state $h(t)$. It physically cannot "look back". 
 **Your Task:**
 1. Conceptually design a **Hybrid Architecture** (like Jamba).
 2. Stack 8 Mamba Layers, followed by 1 Transformer Attention Layer, followed by 8 Mamba layers.

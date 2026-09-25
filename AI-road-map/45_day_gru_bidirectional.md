@@ -1,9 +1,9 @@
 # Day 45: <abbr title="Gated Recurrent Unit">GRU</abbr> & Bidirectional RNNs
 
-Welcome to Day 45. The <abbr title="Long Short-Term Memory">LSTM</abbr> is a mathematical masterpiece, but it has a massive problem: **RAM**.
+Welcome to Day 45. The <abbr title="Long Short-Term Memory">LSTM</abbr> is a mathematical masterpiece, but it has a massive problem: **<abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>**.
 Because the <abbr title="Long Short-Term Memory">LSTM</abbr> uses 4 separate weight matrices to calculate its gates, it takes up a massive amount of memory and is very slow to train. 
 
-In 2014, researchers discovered a way to streamline the math. They created a network that runs 25% faster than an <abbr title="Long Short-Term Memory">LSTM</abbr>, uses less RAM, and achieves the exact same accuracy. It is called the **<abbr title="Gated Recurrent Unit">GRU</abbr>**.
+In 2014, researchers discovered a way to streamline the math. They created a network that runs 25% faster than an <abbr title="Long Short-Term Memory">LSTM</abbr>, uses less <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, and achieves the exact same accuracy. It is called the **<abbr title="Gated Recurrent Unit">GRU</abbr>**.
 
 ---
 
@@ -134,7 +134,7 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Causality Flaw of BiRNNs:** 
-   - State that a Bidirectional <abbr title="Recurrent Neural Network">RNN</abbr> requires the entire sequence to be present in RAM before it can process the very first word (because the Backward <abbr title="Recurrent Neural Network">RNN</abbr> must start at the end of the sentence and read backwards).
+   - State that a Bidirectional <abbr title="Recurrent Neural Network">RNN</abbr> requires the entire sequence to be present in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> before it can process the very first word (because the Backward <abbr title="Recurrent Neural Network">RNN</abbr> must start at the end of the sentence and read backwards).
    - In a Live Video Call, the user is currently speaking. The end of the sentence literally does not exist yet. The <abbr title="Artificial Intelligence">AI</abbr> would have to wait in silence for the user to finish their entire paragraph before translating the first word, causing unacceptable latency.
 2. **The Alternative (Causal/Unidirectional):**
    - Explain that for real-time streaming, you must use strictly **Unidirectional** (Causal) LSTMs or GRUs, which only process data from Left-to-Right.

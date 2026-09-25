@@ -21,7 +21,7 @@ level 5 does a direct side-by-side comparison.
   files/directories directly (`.unlink()`, empty-dir `.rmdir()`); for a whole tree use
   `shutil.copytree`/`shutil.rmtree`, exactly as `PyEngineering/07_filesystem_walker`
   does on top of `pathlib`.
-- **Config file loading (TOML/JSON) that needs a resolved, validated path:**
+- **Config file loading (TOML/<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>) that needs a resolved, validated path:**
   `PyEngineering/08_config_loader` builds directly on `Path.read_text()`/`.exists()`
   patterns from level 2-3 here.
 

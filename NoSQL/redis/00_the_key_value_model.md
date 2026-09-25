@@ -2,17 +2,17 @@
 
 Redis (**RE**mote **DI**ctionary **S**erver) is an in-memory data structure store. Strip
 away every command and data type and what's left is one idea: **a giant dictionary that
-lives in RAM, that many processes can share over the network.** Everything else in this
+lives in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, that many processes can share over the network.** Everything else in this
 module — sorted sets, pub/sub, transactions, locks — is built on top of that one idea, so
 it is worth understanding precisely before touching a single command.
 
-## Mental model: RAM + one thread + a event loop
+## Mental model: <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> + one thread + a event loop
 
 Three properties explain almost everything about how Redis behaves:
 
-1. **The dataset lives in RAM.** Every `GET`, `HSET`, `ZADD` is a memory access, not a disk
+1. **The dataset lives in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>.** Every `GET`, `HSET`, `ZADD` is a memory access, not a disk
    seek. That is *why* Redis is fast — not because the code is exceptionally clever, but
-   because RAM is roughly 100,000x faster than a disk seek and 100x faster than an SSD
+   because <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> is roughly 100,000x faster than a disk seek and 100x faster than an <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr>
    read. Persistence (level 10) exists to survive restarts, but the read/write path never
    waits on disk.
 
@@ -33,7 +33,7 @@ Three properties explain almost everything about how Redis behaves:
 
 3. **It's event-driven, not blocking-per-connection.** Redis uses an event loop (built on
    epoll/kqueue) to multiplex thousands of client sockets on that one thread, similar in
-   shape to Node.js's event loop. It never dedicates an OS thread per connection, which is
+   shape to Node.js's event loop. It never dedicates an <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> thread per connection, which is
    how a single Redis instance handles tens of thousands of concurrent clients on modest
    hardware.
 
@@ -57,13 +57,13 @@ el ..> disk : "snapshot / append"
 
 | Property | Consequence |
 |---|---|
-| RAM-resident | Sub-millisecond latency for simple ops; dataset size is bounded by RAM, not disk |
+| <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>-resident | Sub-millisecond latency for simple ops; dataset size is bounded by <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, not disk |
 | Single-threaded execution | Every individual command is atomic; no data-structure locking; but one slow command stalls all clients |
 | Event loop | Cheap to hold many idle connections open (good for pub/sub, session stores) |
 | Optional persistence | You choose the durability/performance tradeoff (level 10) rather than getting it for free |
 
 This is a different bet from a disk-backed database like Postgres or MongoDB, which trade
-some raw speed for datasets far larger than RAM and stronger default durability. Redis is
+some raw speed for datasets far larger than <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and stronger default durability. Redis is
 usually not your system of record — it's the fast layer in front of, or beside, one.
 
 ## Where Redis actually gets used

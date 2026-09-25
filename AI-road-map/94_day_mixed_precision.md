@@ -1,7 +1,7 @@
 # Day 94: Mixed Precision & Memory Optimization
 
 Welcome to Day 94. Distributing a model across 256 GPUs works, but what if you don't have \$10 Million to buy a cluster? 
-If we can mathematically optimize the training loop to use less RAM, we can train massive models on fewer GPUs.
+If we can mathematically optimize the training loop to use less <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, we can train massive models on fewer GPUs.
 
 Today, we master the "Holy Trinity of GPU Poverty": **Mixed Precision (BF16), Gradient Accumulation, and Activation Checkpointing**.
 
@@ -17,18 +17,18 @@ But neural networks don't actually need 32 decimals of precision to learn.
 - **The BF16 Miracle:** Google invented **BFloat16** (Brain Float 16). It is a 16-bit number, but it steals bits from the decimal fraction and gives them to the exponent! It sacrifices decimal precision, but it has the exact same massive exponent range as FP32 ($10^{-38}$). You can train in BF16 natively without any underflow crashes!
 
 ### 2. Gradient Accumulation (Simulating Compute)
-You have a 24GB consumer GPU. You want to train with a Batch Size of 32, but if you put 32 images on the GPU, you get a CUDA Out-Of-Memory (OOM) error. Your GPU can only hold 4 images at a time.
+You have a 24GB consumer GPU. You want to train with a Batch Size of 32, but if you put 32 images on the GPU, you get a CUDA Out-Of-Memory (<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>) error. Your GPU can only hold 4 images at a time.
 **The Fix:** Gradient Accumulation.
 1. Run a forward/backward pass with a micro-batch of 4. Calculate the gradients.
 2. **DO NOT run `optimizer.step()`!**
 3. Run another micro-batch of 4. Add the new gradients to the old gradients.
 4. Loop this 8 times. ($4 \times 8 = 32$).
-5. Now, run `optimizer.step()`. You just mathematically simulated a batch size of 32 using the RAM required for a batch size of 4!
+5. Now, run `optimizer.step()`. You just mathematically simulated a batch size of 32 using the <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> required for a batch size of 4!
 
 ### 3. Gradient Checkpointing (Trading Compute for Memory)
-During the Forward Pass, PyTorch must save all the intermediate activations (the outputs of every layer) into RAM so it can use them for the chain rule during the Backward Pass. For a 100-layer Transformer, these saved activations consume massive amounts of memory.
+During the Forward Pass, PyTorch must save all the intermediate activations (the outputs of every layer) into <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> so it can use them for the chain rule during the Backward Pass. For a 100-layer Transformer, these saved activations consume massive amounts of memory.
 **The Fix:** Gradient (Activation) Checkpointing.
-We simply delete the activations from RAM! When the backward pass needs them, it literally re-runs the forward pass a second time to recalculate them on the fly!
+We simply delete the activations from <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>! When the backward pass needs them, it literally re-runs the forward pass a second time to recalculate them on the fly!
 **The Trade-off:** Training becomes $20\%$ slower (more compute), but it saves $50\%$ to $70\%$ of VRAM, allowing you to fit massive models on cheap GPUs!
 
 ---
@@ -151,9 +151,9 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - State that you will immediately enable BF16 Autocast. This cuts the activation memory in half with absolutely zero compute penalty (it actually speeds up the GPU via Tensor Cores).
 2. **Step 2: Gradient Checkpointing (Compute Trade-off):**
    - If it still OOMs, enable Gradient Checkpointing. Explain that you will trade $20\%$ slower training time for a massive $50\%$ reduction in VRAM by dropping the forward activations.
-3. **Step 3: Paged Optimizers / CPU Offload (The Last Resort):**
+3. **Step 3: Paged Optimizers / <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> Offload (The Last Resort):**
    - If the model is so massive that the AdamW optimizer states crash the GPU, implement **DeepSpeed ZeRO-Offload** (or FSDP CPUOffload). 
-   - Acknowledge the severe trade-off: Offloading states to CPU RAM requires sending data over the PCIe bus, which is a massive bottleneck and will slow training down significantly.
+   - Acknowledge the severe trade-off: Offloading states to <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> requires sending data over the PCIe bus, which is a massive bottleneck and will slow training down significantly.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

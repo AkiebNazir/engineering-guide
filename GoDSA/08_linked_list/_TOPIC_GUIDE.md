@@ -45,19 +45,19 @@ head == nil               // true
 An uninitialized pointer field in Go is guaranteed `nil`, never an
 uninitialized address pointing at random memory. This is unlike C, where an
 uninitialized pointer is whatever garbage was on the stack. Combined with the
-GC, this eliminates two entire bug classes that dominate linked-list work in
+<abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, this eliminates two entire bug classes that dominate linked-list work in
 manual-memory languages:
 
 | Bug class | C / manual memory | Go |
 |---|---|---|
-| Dangling pointer (use freed node) | Common — `free(node)` then dereference | **Impossible** — no `free`; GC keeps a node alive as long as anything reachable points to it |
+| Dangling pointer (use freed node) | Common — `free(node)` then dereference | **Impossible** — no `free`; <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> keeps a node alive as long as anything reachable points to it |
 | Double free | Common — `free(node)` twice | **Impossible** — no explicit free at all |
 | Uninitialized pointer read | Common — garbage address | **Impossible** — zero value is always `nil` |
 
-> ⚠️ **The GC gotcha that replaces them: leak via reachability.** If you build
+> ⚠️ **The <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> gotcha that replaces them: leak via reachability.** If you build
 > a new list (e.g. reversing, merging, deduplicating) and accidentally leave a
-> stray pointer from a *surviving* node back into the *old* chain, the GC
-> can't collect any of it — because from the GC's point of view, that whole
+> stray pointer from a *surviving* node back into the *old* chain, the <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>
+> can't collect any of it — because from the <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>'s point of view, that whole
 > chain is still reachable. This is the closest thing Go linked-list code has
 > to a "leak": not freed memory, but memory kept alive one link longer than
 > you intended. It's why reversal code explicitly sets a node's `Next` to
@@ -364,8 +364,8 @@ that's what you mean.
 |---|---|---|
 | Node representation | Class instance (heap object + refcount) | `struct` behind a pointer — same shape, no refcounting overhead |
 | `None`/`nil` method calls | Immediately raises `AttributeError` | **May not panic** — only panics on actual field dereference (Part 1.3) |
-| Memory reclamation | Refcounting (+ cycle collector for cycles) | Tracing GC — **cycles are not a special case**, unlike CPython's refcounting, which needs its separate cycle collector specifically because a linked cycle never hits refcount zero on its own |
-| Tail-call recursion | No TCO either (CPython) | No TCO — **same limitation**, but Go's growable goroutine stack is more forgiving than Python's fixed, shallow default recursion limit (~1000 frames) |
+| Memory reclamation | Refcounting (+ cycle collector for cycles) | Tracing <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> — **cycles are not a special case**, unlike CPython's refcounting, which needs its separate cycle collector specifically because a linked cycle never hits refcount zero on its own |
+| Tail-call recursion | No <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr> either (CPython) | No <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr> — **same limitation**, but Go's growable goroutine stack is more forgiving than Python's fixed, shallow default recursion limit (~1000 frames) |
 | Struct/object copy | `copy.copy()` is explicit and rare | `*b = *a` is a **plain assignment** that silently copies every field — easy to trigger by accident (Part 5) |
 | Built-in linked list | None idiomatic — people use `list` or `collections.deque` instead | None either — you hand-roll `ListNode`, or use `container/list` (a doubly linked list of `any` — see Part 8 below) |
 
@@ -393,7 +393,7 @@ bookkeeping than a hand-rolled `*ListNode` (`Element` carries pointers to both
 neighbors **and** back to its owning list). It shines when you need a
 **generic, reusable** doubly linked list with stable `*Element` handles you
 can hold onto for O(1) arbitrary removal — which is exactly the situation in
-Part 9's LRU cache, if you chose not to hand-roll the list. For LeetCode
+Part 9's <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache, if you chose not to hand-roll the list. For LeetCode
 `ListNode` problems, hand-rolling is simpler, faster, and what interviewers
 expect to see.
 
@@ -410,11 +410,11 @@ expect to see.
 | Iterative reversal | O(n) | O(1) | LC 206 Reverse Linked List |
 | Reversal in groups of k (recursive) | O(n) | O(n/k) | LC 25 |
 | Merge two sorted lists (dummy head) | O(n+m) | O(1) | LC 21 |
-| Doubly linked list + hash map | O(1) per op | O(capacity) | LC 146 LRU Cache |
+| Doubly linked list + hash map | O(1) per op | O(capacity) | LC 146 <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache |
 
 ---
 
-## Part 10 · Building an LRU Cache From Scratch (LC 146)
+## Part 10 · Building an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache From Scratch (LC 146)
 
 O(1) `Get`/`Put` needs two structures working together: a **map** for O(1)
 lookup by key, and a **doubly linked list** for O(1) reordering to
@@ -727,7 +727,7 @@ The failure they share is **forgetting to nil the new tail**: it keeps its stale
 ### Doubly linked list templates
 
 Given a node, `remove` and `insertAfter` are O(1) because the node knows both neighbours; two sentinels remove every
-empty-list branch (the LRU code above is exactly this):
+empty-list branch (the <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> code above is exactly this):
 
 ```go
 func remove(n *dNode) { n.prev.next, n.next.prev = n.next, n.prev }
@@ -758,9 +758,9 @@ func insertAfter(at, n *dNode) {
 | "O(1) extra space?" | Reversal in place, two pointers, or Floyd; say which trade you made (Palindrome mutates and should restore). |
 | "Recursively?" | Clearer, but O(n) stack; Go's growable stack is forgiving, not infinite. |
 | "Doubly linked?" | A tail pointer and `prev` make pops at both ends and reverse iteration O(1) — that is a deque. |
-| "Why use a linked list at all?" | O(1) splice at a known node and stable handles (LRU, free lists, intrusive lists). For iteration, a slice wins on cache locality. |
-| "`container/list`?" | Fine for LRU with `*Element` handles; every element is boxed (`any`) and separately allocated. |
-| "Thread safety?" | Pointer rewiring is not atomic — a mutex, or lock-free CAS on the head for a stack (`sync/atomic`). |
+| "Why use a linked list at all?" | O(1) splice at a known node and stable handles (<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>, free lists, intrusive lists). For iteration, a slice wins on cache locality. |
+| "`container/list`?" | Fine for <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> with `*Element` handles; every element is boxed (`any`) and separately allocated. |
+| "Thread safety?" | Pointer rewiring is not atomic — a mutex, or lock-free <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> on the head for a stack (`sync/atomic`). |
 
 ---
 <!-- /block:08_go_2_beyond -->
@@ -798,11 +798,11 @@ Fifteen problems, six moves (reversal · dummy head · fast/slow · fixed gap ·
 - [ ] Reach for a dummy/sentinel node any time you might touch the head
 - [ ] Draw the fast/slow pointer meeting point and derive the cycle-start restart trick
 - [ ] Write the iterative reversal from memory — prev/curr/next, in that order
-- [ ] Explain why Go's lack of TCO makes the recursive reversal a real (not theoretical) stack-depth concern
+- [ ] Explain why Go's lack of <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr> makes the recursive reversal a real (not theoretical) stack-depth concern
 - [ ] Spot the `*b = *a` full-struct-copy trap on sight
 - [ ] Know when `container/list` earns its keep vs. when hand-rolling is simpler
-- [ ] Explain why LRU needs *both* a map and a doubly linked list, not just one
-- [ ] Write the LRU cache's four operations (map lookup, remove, insertFront, evict) in under 15 minutes
+- [ ] Explain why <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> needs *both* a map and a doubly linked list, not just one
+- [ ] Write the <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache's four operations (map lookup, remove, insertFront, evict) in under 15 minutes
 - [ ] Implement `heap.Interface` on `[]*ListNode` for Merge k Sorted Lists, and call `heap.Push`/`heap.Pop` (never the methods directly) <!--ca-->
 - [ ] Use `map[*Node]*Node` for Copy List with Random Pointer and explain why `copies[nil]` needs no special case <!--ca-->
 - [ ] Find the cycle entry and the list intersection, and explain both algebraically <!--ca-->

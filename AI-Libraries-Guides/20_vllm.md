@@ -9,7 +9,7 @@ vLLM is a high-throughput, memory-efficient <abbr title="Large Language Model">L
 
 **Why does it exist?**
 When an <abbr title="Large Language Model">LLM</abbr> generates text, it must store the history of the conversation in the GPU's memory (this is called the **KV Cache**). Standard Hugging Face creates a massive, static block of memory for every user. If the user only asks a short question, 90% of that memory is wasted (fragmented). 
-vLLM invented a technique called **PagedAttention**. It manages GPU memory exactly like a modern computer OS manages RAM—by chopping the memory into tiny "pages" and assigning them dynamically. This allows vLLM to serve **10x to 20x more users simultaneously** on the exact same hardware without crashing.
+vLLM invented a technique called **PagedAttention**. It manages GPU memory exactly like a modern computer <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> manages <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>—by chopping the memory into tiny "pages" and assigning them dynamically. This allows vLLM to serve **10x to 20x more users simultaneously** on the exact same hardware without crashing.
 
 ---
 
@@ -65,13 +65,13 @@ for output in outputs:
 
 ## 4. Deep Dive: Loading Massive Models (Parameters)
 
-If you are loading a 70B parameter model, you must carefully configure the `LLM` class, or your server will instantly OOM (Out Of Memory).
+If you are loading a 70B parameter model, you must carefully configure the `LLM` class, or your server will instantly <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> (Out Of Memory).
 
 ### Parameter Breakdown: `LLM(...)`
 - `tensor_parallel_size` (int): Crucial for massive models.
   - *Effect:* If you have a massive 70B model that requires 140GB of VRAM, it won't fit on a single 80GB A100 GPU. If you set `tensor_parallel_size=2`, vLLM will mathematically slice the neural network matrices in half vertically. It will put exactly 50% of the math on GPU #1, and 50% on GPU #2. They will compute the math simultaneously and communicate via ultra-fast NVLink cables. This provides a massive speedup and solves the memory limit.
 - `gpu_memory_utilization` (float): Default is `0.90` (90%).
-  - *Effect:* vLLM is incredibly greedy. By default, it allocates 90% of your entire GPU VRAM immediately to reserve space for the PagedAttention KV Cache. If you try to run another PyTorch script on the same GPU, it will crash because vLLM stole all the RAM. If you need to share the GPU, reduce this to `0.50` (50%).
+  - *Effect:* vLLM is incredibly greedy. By default, it allocates 90% of your entire GPU VRAM immediately to reserve space for the PagedAttention KV Cache. If you try to run another PyTorch script on the same GPU, it will crash because vLLM stole all the <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. If you need to share the GPU, reduce this to `0.50` (50%).
 - `max_model_len` (int): 
   - *Effect:* A model might support 8000 tokens of context. But allocating cache for 8000 tokens per user takes massive VRAM. If you know your users only send short chat messages, set this to `1024`. You will save gigabytes of VRAM, allowing you to serve way more simultaneous users.
 
@@ -90,7 +90,7 @@ llm = LLM(
 
 ## 5. Pro Level: The OpenAI Compatible <abbr title="Application Programming Interface">API</abbr> Server
 
-You almost never run `llm.generate()` in production. You want a web server that runs 24/7, and your frontend (React/Node.js) sends HTTP requests to it.
+You almost never run `llm.generate()` in production. You want a web server that runs 24/7, and your frontend (React/Node.js) sends <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> requests to it.
 
 vLLM has a built-in server that perfectly mimics the OpenAI <abbr title="Application Programming Interface">API</abbr>. If your code is currently written to talk to ChatGPT, you can change the URL to your local vLLM server, and it works instantly without rewriting your frontend!
 
@@ -130,7 +130,7 @@ print(response.choices[0].message.content)
 ### Scenario 1: KV Cache Memory Fragmentation
 *Interviewer:* "Before vLLM, why did Hugging Face models crash when serving 100 concurrent users, even if the GPU had 80GB of VRAM available?"
 
-*Answer:* "It was due to **Memory Fragmentation in the KV Cache**. Hugging Face allocated a contiguous, static chunk of memory for every user based on the absolute maximum sequence length (e.g., 2048 tokens). If a user only generated 5 tokens, the remaining 2043 tokens of memory were permanently locked up and wasted. Furthermore, because memory had to be contiguous, if the memory became fragmented, the OS couldn't allocate new blocks even if total free VRAM was high. vLLM's **PagedAttention** breaks the KV cache into small blocks (e.g., 16 tokens per block). It allocates these blocks dynamically only when needed, completely eliminating internal fragmentation and contiguous memory constraints."
+*Answer:* "It was due to **Memory Fragmentation in the KV Cache**. Hugging Face allocated a contiguous, static chunk of memory for every user based on the absolute maximum sequence length (e.g., 2048 tokens). If a user only generated 5 tokens, the remaining 2043 tokens of memory were permanently locked up and wasted. Furthermore, because memory had to be contiguous, if the memory became fragmented, the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> couldn't allocate new blocks even if total free VRAM was high. vLLM's **PagedAttention** breaks the KV cache into small blocks (e.g., 16 tokens per block). It allocates these blocks dynamically only when needed, completely eliminating internal fragmentation and contiguous memory constraints."
 
 ### Scenario 2: Continuous Batching vs Static Batching
 *Interviewer:* "Explain how vLLM handles requests that take different amounts of time to complete."

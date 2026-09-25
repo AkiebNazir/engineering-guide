@@ -4,7 +4,7 @@ This file is a reference, not a narrative read: dip into whichever section you n
 If `O(1)`/`O(n)` or "hash map" feel unfamiliar, read `07_complexity_analysis_deep_dive.md`
 and `06_data_structure_internals_deep_dive.md` first — this file assumes that
 vocabulary and turns it into exact Python tool choices. Python is this curriculum's
-interview language. The plan's mastery check: **write Dijkstra, an LRU cache, and a
+interview language. The plan's mastery check: **write Dijkstra, an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache, and a
 trie in a plain doc with zero syntax lookups.** This file is the complete toolkit,
 with the complexity and the traps for each tool. Every snippet here runs on Python
 3.10+ (verified on 3.13).
@@ -155,7 +155,7 @@ math.inf, math.isclose(a, b)
 import sys
 sys.setrecursionlimit(10**6)   # raises Python's limit, not the C stack; can still segfault
 ```
-Safer: write DFS iteratively with an explicit stack when depth can exceed ~1000 (degenerate trees, long paths, big grids).
+Safer: write <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> iteratively with an explicit stack when depth can exceed ~1000 (degenerate trees, long paths, big grids).
 
 ## 7. Idioms That Make Interview Code Clean
 
@@ -201,7 +201,7 @@ def dijkstra(n, edges, src):
 ```
 Marking visited on **pop** (or the `d > dist[u]` check) is correct; finalizing on push is wrong because a shorter path may be discovered later. O((V + E) log V). Wrong with negative edges.
 
-### LRU cache (hash map + doubly linked list)
+### <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache (hash map + doubly linked list)
 ```python
 class Node:
     __slots__ = ("key", "val", "prev", "next")
@@ -271,7 +271,7 @@ class Trie:
 ```
 
 ### Also be able to write cold
-Union-Find (path compression + union by rank), Kahn's topological sort, binary search (section 4), BFS on a grid, quickselect, Fenwick tree. All are in the PyDSA topic folders with explanations; the readiness checklist in `GOOGLE_INTERVIEW_PREP.md` lists them.
+Union-Find (path compression + union by rank), Kahn's topological sort, binary search (section 4), <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> on a grid, quickselect, Fenwick tree. All are in the PyDSA topic folders with explanations; the readiness checklist in `GOOGLE_INTERVIEW_PREP.md` lists them.
 
 ## 9. Python Traps Interviewers Notice
 
@@ -288,7 +288,7 @@ Union-Find (path compression + union by rank), Kahn's topological sort, binary s
 | Recursion depth | RecursionError at ~1000 | iterative stack |
 | `sort()` returns None | `x = a.sort()` | `sorted(a)` |
 
-## 10. Writing Without an IDE
+## 10. Writing Without an <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr>
 
 The plan's second foundation: at least one round is in person or in a plain doc.
 - Practice in a plain text editor with no autocomplete and no running code; then run it and count the bugs.
@@ -298,6 +298,6 @@ The plan's second foundation: at least one round is in person or in a plain doc.
 ## Checklist
 
 - [ ] I know the complexity of every operation in sections 1–5 without looking.
-- [ ] I can write Dijkstra, LRU cache, and trie cold in under 15 minutes each.
+- [ ] I can write Dijkstra, <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache, and trie cold in under 15 minutes each.
 - [ ] I can explain `bisect_left` vs `bisect_right` with a duplicate example.
 - [ ] I avoid all ten traps in section 9 automatically.

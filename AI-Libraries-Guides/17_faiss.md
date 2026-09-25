@@ -2,19 +2,19 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* Before the explosion of modern "Vector Databases" (like Pinecone or Qdrant), there was **FAISS** (Facebook <abbr title="Artificial Intelligence">AI</abbr> Similarity Search). While it doesn't have fancy cloud APIs or complex metadata filtering, it remains the absolute fastest, most mathematically optimized library on Earth for searching through billions of vectors locally in RAM. 
+*Why is this tool relevant?* Before the explosion of modern "Vector Databases" (like Pinecone or Qdrant), there was **FAISS** (Facebook <abbr title="Artificial Intelligence">AI</abbr> Similarity Search). While it doesn't have fancy cloud APIs or complex metadata filtering, it remains the absolute fastest, most mathematically optimized library on Earth for searching through billions of vectors locally in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. 
 
 **What is it?**
 FAISS is a C++ library (with Python bindings) developed by Meta. It allows developers to quickly search for embeddings (vectors) that are similar to each other using distances like L2 (Euclidean) or Inner Product (Cosine Similarity).
 
 **Why does it exist?**
-If you have 1 million document vectors, and you want to find the 5 vectors closest to your query, standard math requires calculating 1 million dot products. This is extremely slow. FAISS implements specialized clustering algorithms (like IVF - Inverted File Index) and quantization (like PQ - Product Quantization) to mathematically skip 99% of the calculations, returning results in milliseconds instead of minutes.
+If you have 1 million document vectors, and you want to find the 5 vectors closest to your query, standard math requires calculating 1 million dot products. This is extremely slow. FAISS implements specialized clustering algorithms (like IVF - Inverted File Index) and quantization (like <abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr> - Product Quantization) to mathematically skip 99% of the calculations, returning results in milliseconds instead of minutes.
 
 ---
 
 ## 2. Setup & Installation
 
-You must choose the CPU or GPU version. The GPU version is blazingly fast but requires an NVIDIA card.
+You must choose the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> or GPU version. The GPU version is blazingly fast but requires an NVIDIA card.
 
 ```bash
 # For standard CPUs
@@ -110,10 +110,10 @@ distances, indices = index_ivf.search(query_vector, k=3)
 
 ## 5. MAANG Interview Scenarios
 
-### Scenario 1: RAM Exhaustion with FAISS
-*Interviewer:* "You have 1 Billion vectors. Each vector is 1024 dimensions of `float32`. Storing this in an `IndexFlatL2` FAISS index requires 4 Terabytes of RAM. You only have a 256GB server. How do you use FAISS to search this data in RAM?"
+### Scenario 1: <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> Exhaustion with FAISS
+*Interviewer:* "You have 1 Billion vectors. Each vector is 1024 dimensions of `float32`. Storing this in an `IndexFlatL2` FAISS index requires 4 Terabytes of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. You only have a 256GB server. How do you use FAISS to search this data in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>?"
 
-*Answer:* "I must use **Product Quantization (PQ)**. Instead of storing the exact 32-bit floats, PQ mathematically compresses the vectors. It chops the 1024-dimensional vector into sub-vectors, replaces them with short 8-bit integer IDs from a codebook, and fundamentally shrinks the memory footprint by up to 97%. I would use `faiss.IndexIVFPQ`. The search will be Approximate, and I will lose a slight amount of precision, but the 4TB database will easily fit into my 256GB of RAM."
+*Answer:* "I must use **Product Quantization (<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>)**. Instead of storing the exact 32-bit floats, <abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr> mathematically compresses the vectors. It chops the 1024-dimensional vector into sub-vectors, replaces them with short 8-bit integer IDs from a codebook, and fundamentally shrinks the memory footprint by up to 97%. I would use `faiss.IndexIVFPQ`. The search will be Approximate, and I will lose a slight amount of precision, but the 4TB database will easily fit into my 256GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>."
 
 ### Scenario 2: Cosine Similarity vs L2 Distance
 *Interviewer:* "We are using OpenAI text embeddings for <abbr title="Retrieval-Augmented Generation">RAG</abbr>. We put them into a FAISS `IndexFlatL2`. The retrieval results are weird. OpenAI documentation says we must use Cosine Similarity, but FAISS doesn't have an `IndexFlatCosine`. How do we fix this?"
@@ -128,6 +128,6 @@ distances, indices = index_ivf.search(query_vector, k=3)
 If you extract embeddings using a standard Pandas or NumPy pipeline, Python often defaults to `float64`. If you pass a `float64` array to `index.add()`, FAISS will instantly throw a massive C++ segmentation fault or type error.
 *Fix:* Always explicitly cast your data: `vectors = vectors.astype(np.float32)`.
 
-### ⚠️ Pitfall 2: Forgetting to Train IVF/PQ
+### ⚠️ Pitfall 2: Forgetting to Train IVF/<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>
 If you use an advanced index like `IndexIVFFlat` or `IndexIVFPQ` and immediately call `.add()`, it will crash. Advanced indexes must learn the mathematical distribution of your specific dataset first.
-*Fix:* Always run `index.train(vectors)` first. If your database is too massive to fit in RAM, you don't need to train on the whole thing—randomly sample 10% of your vectors, run `.train()` on the sample, and then `.add()` the full dataset.
+*Fix:* Always run `index.train(vectors)` first. If your database is too massive to fit in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, you don't need to train on the whole thing—randomly sample 10% of your vectors, run `.train()` on the sample, and then `.add()` the full dataset.

@@ -87,9 +87,9 @@ O(n·range). This is the technique behind "apply k bookings, then report the
 final state" problems (LC 370-style range addition, meeting-room-style sweep
 counting).
 
-### 1.3 Prefix XOR
+### 1.3 Prefix <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>
 
-The same shifting trick works for any associative, invertible operation — XOR
+The same shifting trick works for any associative, invertible operation — <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>
 included, because `a ^ b ^ b = a`:
 
 ```go
@@ -100,8 +100,8 @@ for i, v := range nums {
 xorRange := func(l, r int) int { return px[r+1] ^ px[l] }   // O(1)
 ```
 
-This is the whole trick behind "XOR of range" problems and shows up again
-inside subarray-XOR-equals-K (map from prefix-XOR value → count, same shape as
+This is the whole trick behind "<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> of range" problems and shows up again
+inside subarray-<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-equals-K (map from prefix-<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> value → count, same shape as
 the hash-map complement lookup from Topic 01).
 
 ### 1.4 Complexity
@@ -303,7 +303,7 @@ warning from Topic 01's Part 3. Two habits carry over directly:
 |---|---|---|
 | 2D array | `list` of `list` — same pointer-chasing structure as Go | `[][]int` — pointer-chasing rows, **or** flatten to `[]int` |
 | Contiguous 2D memory | Only via NumPy (`ndarray`) | Only via manual flattening — no stdlib equivalent |
-| `itertools.accumulate` | Built-in running-sum/XOR/etc. iterator | No stdlib equivalent — write the loop yourself |
+| `itertools.accumulate` | Built-in running-sum/<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>/etc. iterator | No stdlib equivalent — write the loop yourself |
 | Fixed-size preallocation | `[0]*n` is idiomatic and common | `make([]int, n)` is idiomatic and common — same instinct |
 | Integer overflow | Never (arbitrary precision) | **Wraps silently** at 64 bits — carry `int64` discipline in |
 | Slicing for a sub-row | `row[c1:c2]` copies O(k) | `row[c1:c2]` is an O(1) aliasing view (Topic 01, §1.2) |
@@ -323,7 +323,7 @@ you flatten by hand when it matters, per §2.2.
 |---|:--:|:--:|---|
 | 1D prefix sum + O(1) range query | O(n) build, O(1)/query | O(n) | LC 303 Range Sum Query - Immutable |
 | Difference array (range update) | O(1)/update, O(n) materialize | O(n) | LC 370-style range addition |
-| Prefix XOR | O(n) build, O(1)/query | O(n) | XOR of a range, subarray-XOR-K |
+| Prefix <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> | O(n) build, O(1)/query | O(n) | <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> of a range, subarray-<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-K |
 | Prefix sum + hash map (subarray sum = K) | O(n) | O(n) | LC 560 Subarray Sum Equals K |
 | 2D prefix sum + O(1) region query | O(rows·cols) build, O(1)/query | O(rows·cols) | LC 304 Range Sum Query 2D - Immutable |
 | Running total without storing full prefix array | O(n) | O(1) | Any single-query total (max subarray via Kadane, etc.) |
@@ -530,7 +530,7 @@ c -> h : "no, any sign"
 <!-- /block:04_go_1_hashmap -->
 
 <!-- block:04_go_2_beyond -->
-## Part 7 · Beyond the Sum in Go: XOR, Kadane, Binary Search and 2D + Map
+## Part 7 · Beyond the Sum in Go: <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>, Kadane, Binary Search and 2D + Map
 
 ### Which aggregates can be "prefixed"?
 
@@ -539,11 +539,11 @@ A prefix trick needs an operation you can **undo**:
 | Operation | Invertible? | O(1) range query? |
 |---|---|---|
 | sum, count | ✅ subtract | ✅ |
-| XOR | ✅ `a ^ b ^ b == a` | ✅ |
+| <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> | ✅ `a ^ b ^ b == a` | ✅ |
 | product | ⚠️ divide, but not through `0` | only with zero bookkeeping |
 | **min / max**, gcd | ❌ | ❌ sparse table or segment tree (topic 26) |
 
-Subarray-XOR-equals-K is the flagship with `+` swapped for `^`: `seen[px^k]` instead of `seen[running-k]`
+Subarray-<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>-equals-K is the flagship with `+` swapped for `^`: `seen[px^k]` instead of `seen[running-k]`
 (`[4 2 2 6 4]`, `k = 6` → 4).
 
 ### Kadane is "prefix minus the smallest earlier prefix"
@@ -684,5 +684,5 @@ Eight problems, five moves — the Python guide's map in Go, with the Go-only tr
 - [ ] Write Subarray Sum Equals K with the `{0: 1}` seed, and say what breaks without it <!--ca-->
 - [ ] Tell the count-map variant (`{0: 1}`) from the first-index variant (`{0: -1}`) and pick by the question <!--ca-->
 - [ ] Normalise a remainder in Go (`((x % k) + k) % k`) and say why Python does not need to <!--ca-->
-- [ ] Say which aggregates can be prefixed (sum, XOR) and which cannot (min, max, gcd) <!--ca-->
+- [ ] Say which aggregates can be prefixed (sum, <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>) and which cannot (min, max, gcd) <!--ca-->
 - [ ] Write the flattened 2D prefix with the correct `cols+1` stride <!--ca-->

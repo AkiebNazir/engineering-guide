@@ -1,6 +1,6 @@
 # os — operating system interface
 
-`os` is Go's window onto the OS: files, directories, environment variables, the
+`os` is Go's window onto the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>: files, directories, environment variables, the
 process's own argv/exit code, and low-level process plumbing like pipes. Reach
 for it whenever you need to touch the filesystem or the environment the
 program is running in.

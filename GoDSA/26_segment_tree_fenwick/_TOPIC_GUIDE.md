@@ -24,8 +24,8 @@ nums[3] = 99   // one write...
 
 | Structure | Build | Point Update | Range Query | Handles non-sum ops? |
 |---|:--:|:--:|:--:|:--:|
-| Prefix sum array (Topic 04) | O(n) | **O(n)** | O(1) | No — sum/XOR only, and even those need a full rebuild on update |
-| Fenwick Tree (BIT) | O(n log n) / O(n) | **O(log n)** | O(log n) | Only invertible ops (sum, XOR) |
+| Prefix sum array (Topic 04) | O(n) | **O(n)** | O(1) | No — sum/<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> only, and even those need a full rebuild on update |
+| Fenwick Tree (BIT) | O(n log n) / O(n) | **O(log n)** | O(log n) | Only invertible ops (sum, <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>) |
 | Segment Tree | O(n) | **O(log n)** | O(log n) | ✅ Any associative op: sum, min, max, gcd |
 
 A static, never-mutated array should still just use a prefix sum — it's simpler

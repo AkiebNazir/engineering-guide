@@ -5,7 +5,7 @@
 
 `01`–`14` are the track. This file is what's left after them: two named toolkits that
 come up often enough in interviews and design reviews to deserve their own vocabulary —
-**GRASP** (the sibling of SOLID that nobody defines precisely) and the **C4 model** (for
+**GRASP** (the sibling of <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> that nobody defines precisely) and the **C4 model** (for
 drawing architecture at the right zoom level, instead of one diagram that tries to be
 every zoom level at once) — followed by a compact **field reference**: an index from
 every term this track has used to the exact section that teaches it, and a one-screen
@@ -18,11 +18,11 @@ reference whenever you need to find something fast.
 
 | Topic | Where |
 |---|---|
-| SOLID | `02_oop_and_domain_modeling.md` §12 |
+| <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> | `02_oop_and_domain_modeling.md` §12 |
 | UML class and sequence diagrams | `02_oop_and_domain_modeling.md` §13 |
 | Fuzzing and property-based testing (runnable labs) | `PyEngineering/21_fuzzing_property_testing`, `GoEngineering/21_*` — §3 below says why this file doesn't re-teach it |
 | The full 45-minute LLD framework | `14_low_level_design_interview_playbook.md` §3–§9 |
-| Named-principle index (DRY, KISS, Law of Demeter, ...) | `01_philosophy_of_software_design.md` §17 |
+| Named-principle index (<abbr title="Don't Repeat Yourself - A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions.">DRY</abbr>, <abbr title="Keep It Simple, Stupid - A design principle noting that most systems work best if they are kept simple rather than made complicated.">KISS</abbr>, Law of Demeter, ...) | `01_philosophy_of_software_design.md` §17 |
 
 ---
 
@@ -37,10 +37,10 @@ reference whenever you need to find something fast.
 
 ---
 
-## 1 · GRASP: the names SOLID doesn't cover
+## 1 · GRASP: the names <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> doesn't cover
 
 GRASP (*General Responsibility Assignment Software Patterns*, Craig Larman) answers a
-narrower question than SOLID: **given a job that needs doing, which class should do it?**
+narrower question than <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr>: **given a job that needs doing, which class should do it?**
 It's asked as nine questions. Five of them are this track's existing ideas under a
 different name — worth knowing so you recognise the word when a book or an interviewer
 uses it, but not worth re-teaching:
@@ -116,7 +116,7 @@ Nobody at the company says "go check the repository." `OrderRepository` isn't a 
 concept — it's a **pure fabrication**, invented so that `Order` (a real domain concept)
 doesn't have to import a database driver to save itself. Without it, you'd face a direct
 trade-off: either `Order` knows how to talk to Postgres (low cohesion — business rules
-and SQL in one class) or nothing does (nowhere for persistence logic to live at all).
+and <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> in one class) or nothing does (nowhere for persistence logic to live at all).
 
 ```python
 # Order stays a pure domain concept: no imports below the line a
@@ -147,11 +147,11 @@ narrower and stricter than "wherever the request lands": a Controller **receives
 delegates**; it does not contain business rules itself.
 
 `08_application_architecture_in_code.md`'s worked example already draws this line
-precisely, just without this name: `adapters/http.py` (parses the HTTP request, calls the
+precisely, just without this name: `adapters/http.py` (parses the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request, calls the
 use case, maps the result to a response) is the Controller; `application/place_order.py`
-(the actual use case) is where the orchestration — and only the orchestration, no SQL, no
-HTTP — happens. Confusing the two is the "pass-through method" smell from `01` §6 in one
-direction, and a fat, untestable HTTP handler in the other.
+(the actual use case) is where the orchestration — and only the orchestration, no <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, no
+<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> — happens. Confusing the two is the "pass-through method" smell from `01` §6 in one
+direction, and a fat, untestable <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> handler in the other.
 
 ```python
 # WRONG: the controller contains the business rule itself — it can't be
@@ -354,7 +354,7 @@ you don't remember which chapter.
 | Repository / Unit of Work | `04` §16 |
 | Retries and backoff | `06` §7 |
 | Reversibility: one-way vs. two-way doors | `13` §10 |
-| SOLID | `02` §12 |
+| <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> | `02` §12 |
 | Specification (filter composition) | `04` §15 |
 | State pattern | `04` §9 |
 | Strategy | `04` §3 |

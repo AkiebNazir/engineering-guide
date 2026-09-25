@@ -27,7 +27,7 @@ Instead, it calculates the Mean and Variance across the **Features** (the embedd
 Because it ignores the Batch Size, LayerNorm works perfectly on sentences of any length. This is exactly why ChatGPT and all Transformers use LayerNorm.
 
 ### 4. RMSNorm (Used in LLaMA)
-Calculating the Mean ($\mu$) millions of times a second takes a lot of CPU power.
+Calculating the Mean ($\mu$) millions of times a second takes a lot of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> power.
 The creators of RMSNorm realized something brilliant: *We don't actually need the Mean!*
 RMSNorm deletes the Mean calculation entirely. It just calculates the Root Mean Square (RMS) of the numbers and divides by it. 
 $\hat{x} = \frac{x}{\text{RMS}(x)} \cdot \gamma$

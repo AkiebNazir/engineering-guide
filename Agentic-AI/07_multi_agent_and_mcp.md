@@ -23,9 +23,9 @@ When multiple agents collaborate, they need a "Shared State" (like a shared whit
 
 ## 2. The Tooling Bottleneck
 
-In standard Agentic <abbr title="Artificial Intelligence">AI</abbr>, if you want your agent to talk to your company's SQL database, you have to write custom Python code to define the tool, handle the <abbr title="Application Programming Interface">API</abbr> keys, and parse the SQL.
+In standard Agentic <abbr title="Artificial Intelligence">AI</abbr>, if you want your agent to talk to your company's <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database, you have to write custom Python code to define the tool, handle the <abbr title="Application Programming Interface">API</abbr> keys, and parse the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>.
 
-If you have 10 different agent frameworks (CrewAI, AutoGen, LangChain) and 50 different data sources (GitHub, Slack, SQL, Jira), you have an N x M integration nightmare.
+If you have 10 different agent frameworks (CrewAI, AutoGen, LangChain) and 50 different data sources (GitHub, Slack, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, Jira), you have an N x M integration nightmare.
 
 ---
 

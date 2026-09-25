@@ -52,7 +52,7 @@ MULTI/EXEC result -> [OK OK 2]
 a -> 2 b -> 2
 ```
 
-Important nuance: Redis transactions are **not** like a SQL transaction with rollback.
+Important nuance: Redis transactions are **not** like a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> transaction with rollback.
 There's no "abort partway and undo" — once `EXEC` runs, every queued command executes,
 even if one of them errors (a type mismatch, say). What `MULTI`/`EXEC` guarantees is
 isolation (nothing else interleaves), not all-or-nothing rollback semantics.
@@ -162,7 +162,7 @@ batch is flushed — trading "N round trips" for "~1 round trip plus N replies r
 locally."
 
 Measured, not asserted — 1000 `INCR` calls, individually vs. pipelined, against the live
-lab container over localhost TCP:
+lab container over localhost <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>:
 
 ```python
 N = 1000

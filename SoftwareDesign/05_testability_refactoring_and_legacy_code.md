@@ -65,7 +65,7 @@ Every one of those is a design property:
 can patch anything (`unittest.mock.patch` on module internals) let you test badly
 designed code — which removes the pressure that would have improved it.
 
-### TDD: what writing the test first actually buys
+### <abbr title="Test-Driven Development. A software development process relying on software requirements being converted to test cases before software is fully developed.">TDD</abbr>: what writing the test first actually buys
 
 **Test-driven development** is a loop — write a failing test (red), make it pass with the
 simplest code (green), clean up with the tests as a safety net (refactor) — repeated in
@@ -87,7 +87,7 @@ tangled unit is painful to call from a test *before* you've built it.
 
 Where it is weak: exploratory spikes where you don't yet know the interface (spike, throw
 it away, then test-drive the real one); UI layout; and mock-heavy styles that pin tests to
-the implementation (§5). TDD applies design pressure, but it doesn't supply the design —
+the implementation (§5). <abbr title="Test-Driven Development. A software development process relying on software requirements being converted to test cases before software is fully developed.">TDD</abbr> applies design pressure, but it doesn't supply the design —
 you still need the ideas from `01`–`03`. In an interview, the cheap version is to write
 two or three example calls with expected results *first*: it is a spec you can check the
 finished code against.
@@ -374,7 +374,7 @@ starting point — a proportion to sanity-check against, not a quota.
 tests. Consequences: the suite takes minutes to hours instead of seconds; it is flaky,
 because end-to-end tests depend on timing, the network, and shared environments; locating
 one logic bug means standing up the whole stack; and engineers stop running tests before
-they push, so feedback moves from seconds to CI turnaround. It is usually a *design*
+they push, so feedback moves from seconds to <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> turnaround. It is usually a *design*
 symptom: logic is tangled with I/O, so nothing can be tested below the top.
 
 ---
@@ -449,7 +449,7 @@ enough to earn its own name.
 | **Premature optimization** | Optimizing before a profile shows the path matters, spending clarity or flexibility on an unmeasured gain | Measure first; optimise the one hot path behind a stable interface | `01` §17; `11` §8, §11 |
 | **Big ball of mud** | No recognisable architecture: dependencies point every direction and no boundary is left to reason about. Usually the end state of accumulated shotgun surgery and unrepaid debt, not one bad decision (the name is from Foote and Yoder's 1997 paper) | No rewrite: draw one boundary at a time, strangle old paths, enforce with import checks | §8, §9; `03` §12; `08` §13 |
 | **Cargo-cult pattern use** | A named pattern applied because it looks properly engineered, not because its force is present: a Singleton for something never singular, a Strategy with one implementation. The tell is indirection with no flexibility payoff | Delete the indirection until a second case appears | `04` §19 |
-| **Tight coupling to concrete classes** | A class instantiates its own Postgres connection or HTTP client, so tests need the real thing and swapping it means editing the class | Take an interface the *consumer* owns and inject the implementation (DIP) | §2; `08` §8 |
+| **Tight coupling to concrete classes** | A class instantiates its own Postgres connection or <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> client, so tests need the real thing and swapping it means editing the class | Take an interface the *consumer* owns and inject the implementation (DIP) | §2; `08` §8 |
 
 One habit covers most of the table: when you name an anti-pattern in review, name the
 **move** too — "this is shotgun surgery; the payment logic should live in one strategy" is
@@ -504,7 +504,7 @@ That second one is expand → migrate → contract (`03` §10) applied inside a 
 
 ### Tooling
 
-Use the IDE's automated refactorings (rename, extract, move, change signature) —
+Use the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr>'s automated refactorings (rename, extract, move, change signature) —
 they're semantics-aware and much safer than hand edits. In Go, `gopls` rename and
 `gofmt -r 'pattern -> replacement'`; `eg`/`gopatch` for larger rewrites. In Python,
 PyCharm / rope / LibCST codemods.
@@ -536,7 +536,7 @@ def test_characterize_invoice_total():
     assert legacy_invoice_total(customer="acme", items=SAMPLE_ITEMS, region="EU") == 1187.46
 ```
 
-For big outputs (reports, HTML, JSON), snapshot the whole output to a file and diff
+For big outputs (reports, HTML, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>), snapshot the whole output to a file and diff
 against it; generate many input combinations to cover branches. If you find a bug while
 characterising, **pin the buggy behaviour first**, and fix it as a separate, visible
 change — someone may depend on it (Hyrum's law).

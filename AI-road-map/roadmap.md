@@ -14,7 +14,7 @@
 | **Total Hours** | 540 Hours |
 | **Prerequisites** | Basic Python, High-School Mathematics |
 | **Target Level** | Principal <abbr title="Artificial Intelligence">AI</abbr> Engineer / MAANG Staff+ |
-| **Stack** | Python, PyTorch, HuggingFace, LangChain, LangGraph, CrewAI, FastMCP, vLLM, Ray, Kubernetes, Docker, MLflow |
+| **Stack** | Python, PyTorch, HuggingFace, LangChain, LangGraph, CrewAI, FastMCP, vLLM, Ray, Kubernetes, <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr>, MLflow |
 | **Start Date** | ____/____/________ |
 | **Target End Date** | ____/____/________ |
 
@@ -52,7 +52,7 @@ Before starting, ensure you can comfortably:
 ### 🚨 Parallel Track: The Google <abbr title="Artificial Intelligence">AI</abbr> Engineer Requirement (DSA & LeetCode)
 If your ultimate goal is a **Google <abbr title="Artificial Intelligence">AI</abbr> Engineer** position, you CANNOT escape traditional Data Structures & Algorithms. Google conducts 2-3 standard coding interviews (medium/hard) for almost all <abbr title="Machine Learning">ML</abbr>/<abbr title="Artificial Intelligence">AI</abbr> roles.
 - **Requirement:** You must solve 1-2 LeetCode problems daily alongside this 180-day plan.
-- **Focus Areas:** Graphs (BFS/DFS), Dynamic Programming, Trees, Sliding Window, Two Pointers.
+- **Focus Areas:** Graphs (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>), Dynamic Programming, Trees, Sliding Window, Two Pointers.
 - **Goal:** Consistently solve Mediums in 20 minutes and Hards in 40 minutes.
 
 ---
@@ -1497,7 +1497,7 @@ To fully grasp the theoretical and practical concepts across the 180 days, use t
 - **"Machine Learning A-Z" (Kirill Eremenko & Hadelin de Ponteves)** — Great practical starting point for Phase 1.
 - **"Deep Learning A-Z" (Kirill Eremenko & Hadelin de Ponteves)** — Solid coverage of ANN, <abbr title="Convolutional Neural Network">CNN</abbr>, and <abbr title="Recurrent Neural Network">RNN</abbr> implementations.
 - **"PyTorch for Deep Learning in 202X: Zero to Mastery" (Daniel Bourke)** — Excellent, code-heavy, practical PyTorch foundation.
-- **"Deployment of Machine Learning Models" (Soledad Galli)** — Exceptional for Phase 6 (MLOps, <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>, Docker, <abbr title="Application Programming Interface">API</abbr> serving).
+- **"Deployment of Machine Learning Models" (Soledad Galli)** — Exceptional for Phase 6 (MLOps, <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>, <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr>, <abbr title="Application Programming Interface">API</abbr> serving).
 - **"Generative <abbr title="Artificial Intelligence">AI</abbr> with Large Language Models" (DeepLearning.<abbr title="Artificial Intelligence">AI</abbr> / Coursera/Udemy)** — Industry-standard course on <abbr title="Large Language Model">LLM</abbr> lifecycle, <abbr title="Reinforcement Learning from Human Feedback">RLHF</abbr>, and fine-tuning.
 
 ---

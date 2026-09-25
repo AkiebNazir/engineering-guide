@@ -194,7 +194,7 @@ if __name__ == "__main__":
 ### Key Takeaways from Code:
 1. **The `@` Operator:** In modern Python/NumPy, use `@` for matrix multiplication instead of `np.dot()`. It handles multi-dimensional broadcasting much better.
 2. **Batch Processing:** Notice how `matrix @ points_matrix` transforms 100 points simultaneously. This is exactly how deep learning batches work. You don't process one image at a time; you put 128 images into a matrix and multiply them all by the weights at once.
-3. **The Power of BLAS:** Your pure Python triple loop is incredibly slow. NumPy delegates to BLAS (Basic Linear Algebra Subprograms) written in C/Fortran which uses CPU vectorization (SIMD) to do operations in parallel.
+3. **The Power of BLAS:** Your pure Python triple loop is incredibly slow. NumPy delegates to BLAS (Basic Linear Algebra Subprograms) written in C/Fortran which uses <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> vectorization (SIMD) to do operations in parallel.
 
 ---
 
@@ -224,7 +224,7 @@ A "Strong Hire" candidate must articulate the following points clearly across th
 
 1. **Algorithmic / Software Optimization:**
    - Mention replacing sequential processing with **Batched Matrix-Matrix Multiplication (GEMM)**. Instead of doing $1$ million Matrix-Vector multiplications, group the 1 million vectors into a large matrix, and do one massive Matrix-Matrix multiplication.
-   - Mention using highly optimized libraries like Intel MKL, OpenBLAS (for CPU) or cuBLAS (for GPU).
+   - Mention using highly optimized libraries like Intel MKL, OpenBLAS (for <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>) or cuBLAS (for GPU).
 2. **Data Representation (Sparsity & Precision):**
    - If the matrices are mostly zeros (e.g., user-item interaction matrices), use **Sparse Matrix formats** (CSR/CSC) to skip multiplying zeros entirely.
    - Suggest **Quantization** *(the process of rounding highly precise 32-bit decimals into smaller, rougher 8-bit integers)*. Converting floats (FP32) to (INT8) doubles or quadruples memory bandwidth and computation speed with minimal accuracy loss.

@@ -1,4 +1,4 @@
-# Connection Pooling, and ORM vs Raw SQL
+# Connection Pooling, and <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> vs Raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
 
 ## The mental model
 
@@ -12,7 +12,7 @@ real timings, not estimated.
 
 Level 01 introduced this: Postgres forks a dedicated **backend process** per
 connection, not a lightweight thread or an in-memory handle. Opening a connection
-means a TCP handshake, (optionally) a TLS handshake, process/fork overhead on the
+means a <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> handshake, (optionally) a <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> handshake, process/fork overhead on the
 server, authentication, and session setup — real, measurable cost paid **every
 time**, before your query even runs.
 
@@ -53,7 +53,7 @@ speedup: 7.8x
 ```
 
 **7.8x faster per request** just from reusing connections — and this is measured
-against `localhost`, with no real network latency or TLS in the mix. Over a real
+against `localhost`, with no real network latency or <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> in the mix. Over a real
 network to a managed database (a different AZ, let alone a different region), the
 per-connection setup cost is dramatically higher, and the relative win from pooling
 grows accordingly.
@@ -146,7 +146,7 @@ to find and fix code that assumed session persistence.
 ## The N+1 query problem — measured live
 
 The N+1 pattern: fetch a list of N rows, then loop over them issuing one more query
-per row to fetch related data — exactly what an ORM's naive "lazy loading" does by
+per row to fetch related data — exactly what an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>'s naive "lazy loading" does by
 default when you access a relationship inside a loop.
 
 Setup: 200 orders, each referencing one of 200 customers.
@@ -189,7 +189,7 @@ each), 200 extra queries is 200-400 ms added to a single request purely from que
 count, independent of how fast each individual query runs.
 
 **Go, the identical N+1-vs-join comparison** (native `pgxpool`, same `n1_orders`/
-`n1_customers` tables — Go has no "lazy relationship" ORM magic to accidentally
+`n1_customers` tables — Go has no "lazy relationship" <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> magic to accidentally
 trigger this, but the exact same *hand-written* loop-per-row mistake is just as easy
 to write and just as costly):
 
@@ -218,25 +218,25 @@ speedup: 63.2x
 
 Same order of magnitude as the Python measurement (74.3x there, 63.2x here — both
 "tens of times," and both dominated by query *count*, not per-query cost) — the N+1
-problem is a query-pattern mistake, not a language or ORM-specific one; Go code that
-hand-writes a loop-and-query is exactly as vulnerable to it as an ORM's default lazy
+problem is a query-pattern mistake, not a language or <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>-specific one; Go code that
+hand-writes a loop-and-query is exactly as vulnerable to it as an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>'s default lazy
 loading.
 
-## Raw SQL vs ORM — the actual trade-off
+## Raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> vs <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> — the actual trade-off
 
-An ORM's real value is object-relational mapping *convenience* (rows become typed
-objects, migrations get generated from model classes, simple CRUD is less
+An <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>'s real value is object-relational mapping *convenience* (rows become typed
+objects, migrations get generated from model classes, simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> is less
 boilerplate) — not, contrary to how it's sometimes pitched, "safety" (parameterized
-raw SQL is exactly as safe against injection, per level 11) or "performance" (an ORM
+raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> is exactly as safe against injection, per level 11) or "performance" (an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>
 adds a translation layer, not a query optimization).
 
-| | Raw SQL | ORM |
+| | Raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> | <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> |
 |---|---|---|
-| Simple CRUD | More boilerplate | Less boilerplate |
-| Complex queries (multi-way joins, window functions, CTEs) | Full control, exactly what you write | Often awkward or requires dropping to raw SQL anyway |
-| N+1 risk | Only if you write the loop yourself | High by default — lazy loading inside a loop is the ORM's *normal* behavior unless you explicitly eager-load |
-| Injection safety | Safe if parameterized (level 11) | Safe for generated queries; equally unsafe the moment you use its raw-SQL escape hatch carelessly |
-| Portability across databases | None — you own the SQL dialect | Often better, at the cost of lowest-common-denominator features |
+| Simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> | More boilerplate | Less boilerplate |
+| Complex queries (multi-way joins, window functions, CTEs) | Full control, exactly what you write | Often awkward or requires dropping to raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> anyway |
+| N+1 risk | Only if you write the loop yourself | High by default — lazy loading inside a loop is the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>'s *normal* behavior unless you explicitly eager-load |
+| Injection safety | Safe if parameterized (level 11) | Safe for generated queries; equally unsafe the moment you use its raw-<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> escape hatch carelessly |
+| Portability across databases | None — you own the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> dialect | Often better, at the cost of lowest-common-denominator features |
 
 The practical rule that falls out of the N+1 measurement above: whichever you use,
 know exactly how many queries a piece of code issues before it ships, not after a
@@ -260,12 +260,12 @@ level.
   rejections instead of queueing — this is exactly the problem PgBouncer's
   transaction pooling exists to solve at the infrastructure level.
 - **In Go specifically: assuming `sql.Open` connects immediately.** It doesn't —
-  `sql.Open` only validates the DSN and returns a pool handle; the first real TCP
+  `sql.Open` only validates the DSN and returns a pool handle; the first real <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>
   connection happens lazily, on the first `Query`/`Exec`/`Ping`. Benchmarking
   "connection setup cost" by timing `sql.Open` alone measures almost nothing — the
   measurement above times the first real query too, for exactly this reason.
 
 ## What's next
 
-Level 14 is the capstone: a small CRUD service that combines pooling, retries, and
+Level 14 is the capstone: a small <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> service that combines pooling, retries, and
 timeouts into one coherent client.

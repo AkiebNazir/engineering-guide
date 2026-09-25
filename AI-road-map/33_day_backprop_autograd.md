@@ -28,7 +28,7 @@ The math calculates the exact partial derivative (slope) for every single weight
 ### 4. Computational Graphs & Autograd
 If you had a 100-layer network, writing that Calculus equation by hand would take a human 50 years. 
 PyTorch solves this using **Computational Graphs**.
-Every time you multiply two numbers in PyTorch, it silently draws a "Node" in the RAM of your computer, keeping a physical roadmap of the math. 
+Every time you multiply two numbers in PyTorch, it silently draws a "Node" in the <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> of your computer, keeping a physical roadmap of the math. 
 When you type `.backward()`, the **Autograd** engine just walks backward along the graph. Because it knows the derivative of addition is 1, and the derivative of multiplication is the other number, it instantly calculates the exact calculus without you writing a single equation!
 
 ---

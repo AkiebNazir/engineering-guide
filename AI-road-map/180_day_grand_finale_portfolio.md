@@ -30,14 +30,14 @@ A portfolio should not contain 20 broken Jupyter notebooks. It should contain ex
 ### 3. The Fine-Tuned Local Model (The Hardcore <abbr title="Machine Learning">ML</abbr> Project)
 - **What to build:** Take an open-source model (Llama-3-8B) and fine-tune it on a highly specific dataset.
 - **The Tech Stack:** PyTorch, HuggingFace `peft`, Unsloth, Weights & Biases.
-- **The Wow Factor:** Do not just tune it. Track the loss curves in W&B (Day 162). Quantize the final model to GGUF and run it locally on your CPU using `llama.cpp` (Day 155). 
+- **The Wow Factor:** Do not just tune it. Track the loss curves in W&B (Day 162). Quantize the final model to GGUF and run it locally on your <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> using `llama.cpp` (Day 155). 
 - **The README:** Link to the Weights & Biases dashboard. Share the HuggingFace model card (Day 163) detailing the exact hyperparameters used.
 
 ### 4. The MLOps Pipeline (The Enterprise Project)
 - **What to build:** A fully automated training pipeline.
 - **The Tech Stack:** Dagster/Airflow, <abbr title="Data Version Control">DVC</abbr>, MLflow.
 - **The Wow Factor:** Write a Dagster pipeline that automatically downloads data, detects Data Drift via PSI (Day 168), retrains a Random Forest model, and pushes it to an MLflow Model Registry.
-- **The README:** Show a screenshot of the Dagster DAG UI glowing green. 
+- **The README:** Show a screenshot of the Dagster <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> UI glowing green. 
 
 ---
 
@@ -57,7 +57,7 @@ Recruiters spend 6 seconds looking at your resume. If your bullet points don't f
 ### The "Must-Haves" for an <abbr title="Artificial Intelligence">AI</abbr> Engineer Resume:
 1. **GitHub Links:** Ensure your GitHub is clean. Pin your 3 main portfolio projects to the top. Ensure every project has a stunning Markdown README with architecture diagrams.
 2. **Numbers:** Latency (ms), Throughput (req/sec), Accuracy (%), Cost Savings ($).
-3. **Infrastructure:** Do not just list "Python." List the tools that prove you can deploy: Docker, Kubernetes, AWS Sagemaker, vLLM, GitHub Actions.
+3. **Infrastructure:** Do not just list "Python." List the tools that prove you can deploy: <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr>, Kubernetes, AWS Sagemaker, vLLM, GitHub Actions.
 
 ---
 

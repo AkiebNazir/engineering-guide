@@ -15,7 +15,7 @@ never change; only the configuration around them does.
 | A one-off script you run yourself, output read once, thrown away | `print()` is fine |
 | Anything that runs unattended, ships to someone else, or needs different verbosity in dev vs prod | `logging` |
 | A library/package other code will import (see `PyEngineering`) | `logging.getLogger(__name__)` + `NullHandler` — never `print()`, never call `basicConfig()` |
-| Structured JSON logs shipped to a log aggregator | `logging` with a custom `Formatter` (or `logging.config.dictConfig`), not hand-rolled `json.dumps` + `print` |
+| Structured <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> logs shipped to a log aggregator | `logging` with a custom `Formatter` (or `logging.config.dictConfig`), not hand-rolled `json.dumps` + `print` |
 | Capturing subprocess output for a report | `subprocess` (see `12_subprocess`) — that's not what `logging` is for |
 
 `print()` cannot be turned off selectively, cannot be routed to two places at two

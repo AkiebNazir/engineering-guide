@@ -20,7 +20,7 @@ If the model *does* fit on 1 GPU (e.g., a 7B model), you use Distributed Data Pa
 What if the model doesn't fit on 1 GPU? We must use DeepSpeed ZeRO-3 (or PyTorch FSDP).
 FSDP mathematically shatters the model's weights, gradients, and optimizer states across the cluster.
 - **The Setup:** GPU 1 holds Layer 1. GPU 2 holds Layer 2. GPU 3 holds Layer 3. 
-- **The Forward Pass:** When the data hits Layer 1, GPU 1 calculates the math. When it's time for Layer 2, GPU 2 sends its weights over the network to GPU 1! GPU 1 calculates the math, and *instantly deletes* Layer 2 from its RAM to save space!
+- **The Forward Pass:** When the data hits Layer 1, GPU 1 calculates the math. When it's time for Layer 2, GPU 2 sends its weights over the network to GPU 1! GPU 1 calculates the math, and *instantly deletes* Layer 2 from its <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> to save space!
 They pass the shattered shards back and forth across the network. It allows infinite model scaling, but requires massive network bandwidth.
 
 ### 3. Tensor Parallelism (TP)
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The `torchrun` Launcher:** You do not run this script with `python script.py`. You run it with `torchrun --nproc_per_node=8 script.py`. PyTorch physically spawns 8 separate Python processes, one for each GPU!
-2. **CPU Offload:** If you are a broke startup with only 1 GPU, you can use FSDP with `CPUOffload=True`. PyTorch will store the massive 70B model in your computer's standard CPU RAM (which is cheap), and only stream the specific layer it needs into the GPU for the math! It is slow, but it prevents OOM crashes.
+2. **<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> Offload:** If you are a broke startup with only 1 GPU, you can use FSDP with `CPUOffload=True`. PyTorch will store the massive 70B model in your computer's standard <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> (which is cheap), and only stream the specific layer it needs into the GPU for the math! It is slow, but it prevents <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> crashes.
 
 ---
 
@@ -166,7 +166,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 3. **Pipeline Parallelism (Inter-Node):**
    - Propose using **Pipeline Parallelism (PP=4)** across the servers. Server 1 computes Layers 1-20, then transmits a tiny activation tensor to Server 2 over the slower InfiniBand network. This minimizes cross-server communication!
 4. **Data Parallelism (The Rest):**
-   - With TP=8 and PP=4, a single replica of the model consumes 32 GPUs. Because you have 256 GPUs, you use **Data Parallelism (DP=8)** to replicate that 32-GPU pipeline 8 times to process massive batches of data!
+   - With TP=8 and PP=4, a single replica of the model consumes 32 GPUs. Because you have 256 GPUs, you use **Data Parallelism (<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>=8)** to replicate that 32-GPU pipeline 8 times to process massive batches of data!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

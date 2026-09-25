@@ -19,7 +19,7 @@ The "Context Budget" is divided into:
 If your Chat History consumes $90\%$ of the budget, the <abbr title="Large Language Model">LLM</abbr> will only have enough tokens left to generate a 1-sentence response before crashing!
 
 ### 2. Strategy 1: Truncation (The Goldfish)
-The easiest solution is a Sliding Window (FIFO - First In, First Out). 
+The easiest solution is a Sliding Window (<abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> - First In, First Out). 
 You only keep the last 10 messages in the array. When message 11 arrives, you delete message 1.
 **Pros:** Easy to code. Never crashes.
 **Cons:** The <abbr title="Artificial Intelligence">AI</abbr> becomes a goldfish. If the user told the <abbr title="Artificial Intelligence">AI</abbr> their name in message 1, by message 11, the <abbr title="Artificial Intelligence">AI</abbr> has completely forgotten who the user is!
@@ -149,8 +149,8 @@ if __name__ == "__main__":
 Summaries are great, but sometimes the <abbr title="Large Language Model">LLM</abbr> summarizes too aggressively and deletes the user's name!
 **Your Task:**
 1. Conceptually design an **Entity Extraction** pipeline.
-2. Every 10 turns, pass the history to an <abbr title="Large Language Model">LLM</abbr> and prompt it: *"Extract any permanent facts about the user into a JSON object. E.g., Name, Age, Profession, Dietary Restrictions."*
-3. Pin this JSON object to the top of the System Prompt permanently. This ensures the <abbr title="Large Language Model">LLM</abbr> never forgets critical user preferences, even if the raw chat history is summarized away!
+2. Every 10 turns, pass the history to an <abbr title="Large Language Model">LLM</abbr> and prompt it: *"Extract any permanent facts about the user into a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object. E.g., Name, Age, Profession, Dietary Restrictions."*
+3. Pin this <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object to the top of the System Prompt permanently. This ensures the <abbr title="Large Language Model">LLM</abbr> never forgets critical user preferences, even if the raw chat history is summarized away!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -167,7 +167,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Hybrid Memory Architecture:**
    - Propose a 3-tier memory system.
    - **Tier 1 (Short-Term):** Keep the last 10 messages raw in the array for immediate conversational flow.
-   - **Tier 2 (Entity Memory):** Run an asynchronous background task to extract hard facts (Name, Account ID) into a JSON block pinned to the System Prompt.
+   - **Tier 2 (Entity Memory):** Run an asynchronous background task to extract hard facts (Name, Account ID) into a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> block pinned to the System Prompt.
    - **Tier 3 (Long-Term <abbr title="Retrieval-Augmented Generation">RAG</abbr>):** Embed all older messages into a Vector Database. Use the user's current message to retrieve the Top 3 relevant past messages and inject them as "Context".
 3. **Prompt Caching:**
    - Mention modern <abbr title="Application Programming Interface">API</abbr> features (like Anthropic's Prompt Caching). If the system prompt and long-term memory remain static, the <abbr title="Application Programming Interface">API</abbr> can cache the KV-tensors on the GPU, dropping the cost of a 10,000-token prompt by $90\%$!

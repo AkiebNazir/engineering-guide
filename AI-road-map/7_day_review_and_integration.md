@@ -160,8 +160,8 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Memory Bottlenecks (The $O(n^2)$ problem):** 
-   - A single $10,000 \times 10,000$ matrix of 32-bit floats (FP32) takes exactly $400$ Megabytes of RAM. 
-   - If 10,000 users request an operation at the exact same time, you need $4$ Terabytes of RAM just to hold the matrices in memory. You cannot run this on a single machine.
+   - A single $10,000 \times 10,000$ matrix of 32-bit floats (FP32) takes exactly $400$ Megabytes of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. 
+   - If 10,000 users request an operation at the exact same time, you need $4$ Terabytes of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> just to hold the matrices in memory. You cannot run this on a single machine.
 2. **Compute Bottlenecks (The $O(n^3)$ problem):** 
    - Multiplying two $10,000 \times 10,000$ matrices requires 1 Trillion operations (FLOPs). CPUs will be too slow. You must route these requests to GPU instances running highly optimized cuBLAS kernels.
 3. **The Trade-offs & Solutions:** 

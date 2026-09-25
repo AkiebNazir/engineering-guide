@@ -19,7 +19,7 @@ in every LLD round.
 |---|---|
 | Deep modules, information hiding, pass-through layers | `01_philosophy_of_software_design.md` §3–§6 |
 | Layered, hexagonal, clean architecture diagrams | `SystemDesign/best_practices/05_architectural_patterns.md` |
-| HTTP/REST/gRPC wire-level <abbr title="Application Programming Interface">API</abbr> design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `SystemDesign/building_blocks/04_api_design_low_level.md` |
+| <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>/<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> wire-level <abbr title="Application Programming Interface">API</abbr> design | `SystemDesign/building_blocks/03_api_design_high_level.md`, `SystemDesign/building_blocks/04_api_design_low_level.md` |
 | Service-level <abbr title="Application Programming Interface">API</abbr> evolution, sagas | `CSFundamentals/04_software_engineering_deep_dive.md` §3–§4 |
 | Error taxonomy code | `PyEngineering/17_error_taxonomy`, `GoEngineering/17_error_taxonomy` |
 | Monorepos and packaging | `PyEngineering/30_packaging_distribution_monorepos` |
@@ -261,7 +261,7 @@ For a package: **Ce** = efferent (outgoing) dependencies, **Ca** = afferent (inc
   extended without modification); unstable packages concrete.
 - **Main sequence:** `A + I ≈ 1`. The two failure corners:
   - **Zone of pain** (`A≈0, I≈0`): concrete *and* depended on by everything — e.g. a
-    shared `models.py` with concrete ORM classes all features import. Every change hurts.
+    shared `models.py` with concrete <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> classes all features import. Every change hurts.
     (Genuinely stable concrete things like the stdlib are fine here — they don't change.)
   - **Zone of uselessness** (`A≈1, I≈1`): abstract interfaces nobody uses.
 
@@ -309,7 +309,7 @@ package becomes a shared library used by many teams, **REP/CRP** grow in importa
 
 - `_private` names and `__all__` are conventions, not enforcement. Enforce boundaries with
   a tool: **import-linter** contracts (e.g. "`orders.domain` may not import
-  `orders.api`"; "`payments` and `orders` are independent") in CI.
+  `orders.api`"; "`payments` and `orders` are independent") in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.
 - Keep `__init__.py` light; heavy imports there create cycles and slow startup.
 - Import cycles typically surface as `ImportError: cannot import name X (most likely due
   to a circular import)`. Fixing with a function-local import hides the design problem.
@@ -463,7 +463,7 @@ An error is part of the <abbr title="Application Programming Interface">API</abb
 Every error you expose should map to a caller **action**. Classify by action, not by
 where it came from:
 
-| Category | Caller should… | Python | Go | HTTP analogue |
+| Category | Caller should… | Python | Go | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> analogue |
 |---|---|---|---|---|
 | Invalid input | fix the request; don't retry | `ValueError` subclass | sentinel / typed error | 400 / 422 |
 | Not found | handle absence | `KeyError` subclass or `Optional` | `ErrNotFound` | 404 |
@@ -663,7 +663,7 @@ def load_config(env: dict[str, str]) -> AppConfig:
 ### Extension points (plugins, hooks, strategies)
 
 - Add them where the problem **demonstrably** varies (second customer, second vendor) —
-  not in anticipation. YAGNI applies (`01` §14).
+  not in anticipation. <abbr title="You Aren't Gonna Need It - A principle of extreme programming that states a programmer should not add functionality until deemed necessary.">YAGNI</abbr> applies (`01` §14).
 - Prefer **passing a function or small interface** over a plugin registry.
 - If you do need a registry (e.g. discovered at runtime), make registration explicit
   (`register("s3", S3Store)`) rather than import side effects.

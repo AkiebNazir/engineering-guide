@@ -96,7 +96,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Avalanche:** When you run the `bad` init, you will literally watch the standard deviation jump from 1.0 to 22.0 to 11,000. By layer 30, the number becomes so massively large that your computer's RAM physically cannot hold it, and it outputs `NaN` (Infinity).
+1. **The Avalanche:** When you run the `bad` init, you will literally watch the standard deviation jump from 1.0 to 22.0 to 11,000. By layer 30, the number becomes so massively large that your computer's <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> physically cannot hold it, and it outputs `NaN` (Infinity).
 2. **The Xavier Magic:** When you run `xavier`, the standard deviation stays exactly around $1.0$ for the entire 50 layers. The signal reaches the end of the network perfectly intact!
 
 ---

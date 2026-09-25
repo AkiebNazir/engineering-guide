@@ -494,7 +494,7 @@ func diffWays(expr string, memo map[string][]int) []int {
 // diffWays("2-1-1") sorted = [0 2]      diffWays("2*3-4*5") sorted = [-34 -14 -10 -10 10]
 ```
 
-Split at every operator, combine every left result with every right result. The number of results for `n` operands is the Catalan number `C(n−1)`: nine operands (`1+2+…+9`) give **1,430** values. The memo is keyed by *substring* — two occurrences of `"1+1"` share an entry, which is correct — not by an index pair as in DP. The base case must test "no operator in this slice", not "one character", or multi-digit
+Split at every operator, combine every left result with every right result. The number of results for `n` operands is the Catalan number `C(n−1)`: nine operands (`1+2+…+9`) give **1,430** values. The memo is keyed by *substring* — two occurrences of `"1+1"` share an entry, which is correct — not by an index pair as in <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>. The base case must test "no operator in this slice", not "one character", or multi-digit
 numbers such as `"11"` break; `res == nil` is that test. A `map[string][]int` shared across the whole recursion is what turns the exponential re-derivation into work proportional to the number of distinct substrings.
 
 ---
@@ -507,7 +507,7 @@ numbers such as `"11"` break; `res == nil` is that test. A `map[string][]int` sh
 | Shuffle | `random.shuffle(a)` in place | `rand.Shuffle(n, swap)` with a swap closure, or `rand.Perm(n)` |
 | Weighted choice | `random.choices(pop, weights=)` | none — prefix sums + `sort.SearchInts`, or the alias method |
 | Reproducible runs | `random.seed(s)` | `rand.New(rand.NewSource(s))`; top-level `rand.Seed` is a no-op in Go 1.24 |
-| Thread safety | one shared generator, guarded by the GIL for single calls | top-level functions are safe; a `*rand.Rand` is not |
+| Thread safety | one shared generator, guarded by the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> for single calls | top-level functions are safe; a `*rand.Rand` is not |
 | Quickselect vs sorting | the built-in sort wins (105 ms vs 152 ms per 10⁶) | quickselect wins (7.3 ms vs 51.4 ms per 10⁶) |
 | Numeric-string ordering | key `(len(s), s)` | `cmp.Or(cmp.Compare(len(x), len(y)), strings.Compare(x, y))` |
 | Parsing very long digit strings | `int()` limit of 4,300 digits (ValueError) | `strconv.Atoi` returns the max int and `ErrRange` |

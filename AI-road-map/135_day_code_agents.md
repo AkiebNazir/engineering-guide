@@ -146,11 +146,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Context Building (Vector Search + Graph):** 
    - 1M lines cannot fit in context. The system must index the codebase nightly using a Vector Database (<abbr title="Retrieval-Augmented Generation">RAG</abbr>). 
-   - Furthermore, the system must build an Abstract Syntax Tree (AST) to map dependencies (e.g., "If I change this `User` class, which other files import it?").
+   - Furthermore, the system must build an Abstract Syntax Tree (<abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr>) to map dependencies (e.g., "If I change this `User` class, which other files import it?").
 2. **Safe Changes (The Sandbox):**
-   - The Agent MUST NOT run in the developer's raw environment. The Agent runs in an isolated Docker container with a clone of the repo. It makes changes there.
+   - The Agent MUST NOT run in the developer's raw environment. The Agent runs in an isolated <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container with a clone of the repo. It makes changes there.
 3. **Validation (<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>):**
-   - The Agent creates a Pull Request. The enterprise <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline runs all unit and integration tests. If the tests fail, the CI pipeline automatically tags the Agent in the PR with the failure logs, triggering the Agent to fix its own PR!
+   - The Agent creates a Pull Request. The enterprise <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline runs all unit and integration tests. If the tests fail, the <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> pipeline automatically tags the Agent in the PR with the failure logs, triggering the Agent to fix its own PR!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

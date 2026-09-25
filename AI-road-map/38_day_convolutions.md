@@ -31,7 +31,7 @@ A Convolutional Neural Network (<abbr title="Convolutional Neural Network">CNN</
 Mathematically sliding a $3 \times 3$ window using `for` loops is horribly slow. GPUs hate `for` loops; they love massive, flat Matrix Multiplications.
 **im2col (Image to Column)** is a genius memory trick. It takes the image, extracts every single $3 \times 3$ overlapping window, flattens them, and stacks them side-by-side into one massive matrix. 
 Now, the GPU can calculate the entire convolution in a single, instantaneous Matrix Multiplication! 
-*(The downside? Because the $3 \times 3$ windows overlap, you are duplicating pixels in RAM. It uses a massive amount of memory to achieve this speed).*
+*(The downside? Because the $3 \times 3$ windows overlap, you are duplicating pixels in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. It uses a massive amount of memory to achieve this speed).*
 
 ---
 

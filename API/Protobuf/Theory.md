@@ -1,6 +1,6 @@
 ---
 title: "Protobuf Theory"
-description: "Master Protocol Buffers: the .proto language, how the binary wire format works byte by byte, field numbers, schema evolution rules, well-known types, JSON mapping, tooling, and Python + Go usage."
+description: "Master Protocol Buffers: the .proto language, how the binary wire format works byte by byte, field numbers, schema evolution rules, well-known types, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> mapping, tooling, and Python + Go usage."
 ---
 
 # Protobuf Theory
@@ -16,9 +16,9 @@ It is two things at once:
 1.  An **Interface Definition Language (IDL)**: the `.proto` file is the contract.
 2.  A **binary encoding**: small, fast to encode and decode, and designed so old and new versions of a schema can talk to each other.
 
-Protobuf is *not* a transport. It does not send anything; it turns objects into bytes and back. gRPC is the framework that sends those bytes over HTTP/2 (see `gRPC/`). You can equally put Protobuf bytes in Kafka, Redis, files, or UDP packets.
+Protobuf is *not* a transport. It does not send anything; it turns objects into bytes and back. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> is the framework that sends those bytes over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 (see `gRPC/`). You can equally put Protobuf bytes in Kafka, Redis, files, or <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr> packets.
 
-> **Analogy:** JSON is a letter written in full sentences: readable by anyone, but wordy. Protobuf is a form with numbered boxes. Sender and receiver both hold a copy of the form, so the message only needs to say "box 2: Ana". It is tiny, but useless to someone who does not have the form.
+> **Analogy:** <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is a letter written in full sentences: readable by anyone, but wordy. Protobuf is a form with numbered boxes. Sender and receiver both hold a copy of the form, so the message only needs to say "box 2: Ana". It is tiny, but useless to someone who does not have the form.
 
 ```arch
 %% caption: One .proto contract generates code for every language; the bytes travel over any transport.
@@ -36,13 +36,13 @@ go -> b : "proto.Marshal"
 b -> r : "Kafka / Redis / file / gRPC / UDP"
 ```
 
-## Why Not Just JSON?
+## Why Not Just <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>?
 
-| | JSON | Protobuf |
+| | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | Protobuf |
 | :--- | :--- | :--- |
 | **Format** | Text | Binary |
 | **Readable by humans** | Yes | No (needs the schema and a tool) |
-| **Schema** | Optional (JSON Schema / OpenAPI) | Mandatory, enforced by generated code |
+| **Schema** | Optional (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema / OpenAPI) | Mandatory, enforced by generated code |
 | **Field identity on the wire** | Name (`"email"`) repeated in every message | Number (1 byte) |
 | **Typical size** | Baseline | 2-3x smaller raw for structured data; the gap shrinks a lot after gzip |
 | **Speed to parse** | Slower | Several times faster (Lab results below) |
@@ -54,7 +54,7 @@ Measured in this module (Lab 4 in Python, Lab 5 in Go):
 
 | Measurement | Result |
 | :--- | :--- |
-| One structured record, JSON vs Protobuf | 219 bytes vs 85 bytes in Go (2.6x smaller) |
+| One structured record, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> vs Protobuf | 219 bytes vs 85 bytes in Go (2.6x smaller) |
 | Same data after gzip | only about 1.2x smaller |
 | Go `Marshal` / `Unmarshal` vs `encoding/json` | roughly 2x / 8x faster |
 | Text-heavy record (one long string) | almost no size difference |
@@ -116,7 +116,7 @@ message GetUserRequest { int64 id = 1; }
 | `fixed32`, `fixed64`, `sfixed*` | Values that are usually large (hashes, ids) | Always 4 or 8 bytes |
 | `bool` | true / false | |
 | `float`, `double` | Floating point | 4 / 8 bytes |
-| `string` | UTF-8 text | Must be valid UTF-8 |
+| `string` | <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 text | Must be valid <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 |
 | `bytes` | Arbitrary binary | No base64 needed on the wire |
 
 **Rule of thumb:** use `int64` for ids and counts, `sint64` for signed deltas, `string` for text, `bytes` for blobs, `google.protobuf.Timestamp` for time. Never use a float for money; use an integer of cents (or a decimal message).
@@ -152,7 +152,7 @@ User { id: 150, name: "Ana", email: "a@x.io" }
 tag: field 1, VARINT = (1<<3)|0 = 0x08
 ```
 
-That is **16 bytes**. The JSON `{"id":150,"name":"Ana","email":"a@x.io"}` is **40 bytes**. Notice the names `id`, `name`, `email` do not appear anywhere: only the numbers 1, 2, 3 do.
+That is **16 bytes**. The <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> `{"id":150,"name":"Ana","email":"a@x.io"}` is **40 bytes**. Notice the names `id`, `name`, `email` do not appear anywhere: only the numbers 1, 2, 3 do.
 
 ### Varints: 7 bits per byte
 
@@ -224,7 +224,7 @@ r1 ..> ok2 : "unknown fields skipped, kept"
 | :--- | :---: | :--- |
 | **Add** a field with a **new** number | Yes | Old readers skip it; new readers see the default from old data |
 | **Remove** a field | Yes, if you `reserved` it | Otherwise someone will reuse the number |
-| **Rename** a field | Yes on the wire | Names are not on the wire (but generated code and JSON change) |
+| **Rename** a field | Yes on the wire | Names are not on the wire (but generated code and <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> change) |
 | **Change** a field's number | **Never** | Every stored/in-flight message now means something else |
 | **Reuse** a deleted number | **Never** | Old data is silently reinterpreted |
 | **Change** a field's type | Almost never | Wire types differ, or truncation. `int32 <-> int64 <-> bool` are compatible but lossy |
@@ -245,10 +245,10 @@ Lab 3 (Python) proves each rule:
 
 *   A **v2 writer** to a **v1 reader**: extra fields are skipped, no crash.
 *   A **v1 writer** to a **v2 reader**: new fields are defaults, so code must tolerate `email == ""`.
-*   A **v1 proxy** in the middle **keeps unknown fields**, so a v2 message survives a v1 hop intact. (A JSON proxy typically drops them.)
+*   A **v1 proxy** in the middle **keeps unknown fields**, so a v2 message survives a v1 hop intact. (A <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> proxy typically drops them.)
 *   **Reusing tag 3** for `nickname`: the old phone number `+47 555 0100` is silently read back as a nickname. No error. This is the failure the rules exist for.
 
-> 🎯 **Interview angle:** "How do you evolve a Protobuf <abbr title="Application Programming Interface">API</abbr>?" is a standard question. Answer with: add only new numbers, `reserved` removed ones, never change types or numbers, treat defaults as "unknown", use `buf breaking` in CI, and version the package (`v1`, `v2`) for truly breaking redesigns.
+> 🎯 **Interview angle:** "How do you evolve a Protobuf <abbr title="Application Programming Interface">API</abbr>?" is a standard question. Answer with: add only new numbers, `reserved` removed ones, never change types or numbers, treat defaults as "unknown", use `buf breaking` in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>, and version the package (`v1`, `v2`) for truly breaking redesigns.
 
 ## Presence: "Was It Set?"
 
@@ -274,28 +274,28 @@ Use `optional` when zero is meaningful ("age 0", "discount 0%"). For PATCH-style
 
 Shared, standard messages under `google/protobuf/`:
 
-| Type | Represents | JSON form |
+| Type | Represents | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> form |
 | :--- | :--- | :--- |
 | `Timestamp` | An instant (seconds + nanos since epoch) | `"2026-09-21T10:30:00Z"` |
 | `Duration` | A span of time | `"300.250s"` |
 | `Any` | Any message + its type URL | `{"@type": "type.googleapis.com/demo.v1.User", ...}` |
 | `FieldMask` | A set of field paths for partial updates | `"name,address.city"` |
-| `Struct` / `Value` | Arbitrary JSON-like data | a JSON object |
+| `Struct` / `Value` | Arbitrary <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-like data | a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object |
 | `Empty` | No data (for RPCs that take or return nothing) | `{}` |
 | `wrappers.*Value` | Nullable scalars (`Int32Value`) | number or `null` |
 
-## JSON Mapping
+## <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Mapping
 
-Protobuf defines a **canonical JSON** form, used by gRPC gateways and `protojson`/`json_format`:
+Protobuf defines a **canonical <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>** form, used by <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> gateways and `protojson`/`json_format`:
 
-| Protobuf | JSON |
+| Protobuf | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> |
 | :--- | :--- |
 | Field name `created_at` | `createdAt` (lowerCamelCase; snake_case optionally accepted) |
 | `int64` / `uint64` | **string** (`"150"`) because JavaScript numbers lose precision above 2^53 |
 | `bytes` | base64 string |
 | enum | its **name** (a number is also accepted when parsing) |
 | Default values | **omitted** unless "emit unpopulated" is set |
-| Unknown JSON fields | rejected by default; `DiscardUnknown` accepts them |
+| Unknown <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> fields | rejected by default; `DiscardUnknown` accepts them |
 
 > ⚠️ In Go never use `encoding/json` on generated messages. Use `protojson`. In Python use `google.protobuf.json_format`.
 
@@ -358,20 +358,20 @@ A serialised message has **no length and no terminator**. Two messages glued tog
 [varint length][message bytes][varint length][message bytes] ...
 ```
 
-Go: `protodelim`. Java: `writeDelimitedTo`. gRPC uses a 5-byte prefix (flag + 4-byte length). Kafka gives you message boundaries for free. Always cap the maximum frame size when reading (`protodelim.UnmarshalOptions{MaxSize: ...}`): a corrupted or hostile length prefix should not make you allocate gigabytes. Both languages' Lab 5 show this.
+Go: `protodelim`. Java: `writeDelimitedTo`. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> uses a 5-byte prefix (flag + 4-byte length). Kafka gives you message boundaries for free. Always cap the maximum frame size when reading (`protodelim.UnmarshalOptions{MaxSize: ...}`): a corrupted or hostile length prefix should not make you allocate gigabytes. Both languages' Lab 5 show this.
 
 ## Tooling
 
 | Tool | Use |
 | :--- | :--- |
 | `protoc` | The compiler; plugins produce language output |
-| **`buf`** | Modern workflow: `buf lint`, **`buf breaking`** (fails CI when you change a schema unsafely), `buf generate`, a registry |
-| `grpcurl` | curl for gRPC; uses server reflection |
+| **`buf`** | Modern workflow: `buf lint`, **`buf breaking`** (fails <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> when you change a schema unsafely), `buf generate`, a registry |
+| `grpcurl` | curl for <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>; uses server reflection |
 | `protoc --decode_raw` | Inspect bytes without a schema |
 | `protoc --decode=demo.v1.User demo.proto < msg.bin` | Inspect bytes with a schema |
-| IDE plugins | Syntax highlight, format, go-to-definition |
+| <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> plugins | Syntax highlight, format, go-to-definition |
 
-Repository layout that scales: one `proto/` directory (or a dedicated repo) as the **single source of truth**, versioned packages (`company.orders.v1`), generated code produced in CI, never hand-edited.
+Repository layout that scales: one `proto/` directory (or a dedicated repo) as the **single source of truth**, versioned packages (`company.orders.v1`), generated code produced in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>, never hand-edited.
 
 ## Where Protobuf Is Used
 
@@ -435,7 +435,7 @@ Setup from the `API/` folder: `pip install -r requirements.txt`. The generated c
 | # | Python (`Protobuf/labs/python/`) | You learn |
 | :---: | :--- | :--- |
 | 1 | `01_wire_format_by_hand.py` | Varints, tags, ZigZag, packing; an encoder verified byte-for-byte against the library; a schema-less `decode_raw` |
-| 2 | `02_messages_and_field_types.py` | Defaults, presence, `oneof`, maps, enums with unknown values, strict typing, merge/copy, text and JSON formats |
+| 2 | `02_messages_and_field_types.py` | Defaults, presence, `oneof`, maps, enums with unknown values, strict typing, merge/copy, text and <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> formats |
 | 3 | `03_schema_evolution.py` | Every evolution rule proven, including silent corruption from tag reuse and `protoc` enforcing `reserved` |
 | 4 | `04_size_speed_vs_json.py` | An honest benchmark: raw size, gzip size, encode/decode speed, structured vs text-heavy data |
 | 5 | `05_framing_streams_and_wellknown_types.py` | Length-delimited files, chunked stream reader, truncation detection, `Timestamp`, `Duration`, `Any`, `FieldMask` |
@@ -444,7 +444,7 @@ Setup from the `API/` folder: `pip install -r requirements.txt`. The generated c
 | :---: | :--- | :--- |
 | 1 | `01_marshal_unmarshal_basics` | `Marshal` / `Unmarshal`, nil-safe getters, presence with pointers, `Clone` / `Equal` / `Merge`, unknown fields, bad input |
 | 2 | `02_oneof_maps_enums` | `oneof` type switches, maps, map-order non-determinism proven, unknown enums, the cost of field numbers |
-| 3 | `03_protojson_any_fieldmask` | Canonical JSON, marshal/unmarshal options, `Any` type checks, `FieldMask` updates via reflection |
+| 3 | `03_protojson_any_fieldmask` | Canonical <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, marshal/unmarshal options, `Any` type checks, `FieldMask` updates via reflection |
 | 4 | `04_reflection_and_dynamic_messages` | Descriptors, generic walking, a schema-agnostic PII redactor, `dynamicpb`, a schema built at runtime |
 | 5 | `05_delimited_streams_and_benchmark` | `protodelim` streams over a pipe, `MaxSize` defence, clean EOF vs truncation, benchmark vs `encoding/json` |
 
@@ -457,11 +457,11 @@ go run ./Protobuf/labs/golang/05_delimited_streams_and_benchmark
 
 1.  Extend Python lab 1's encoder to handle a nested message (`Address`) and a packed `repeated int32`; compare against the library.
 2.  Add a `v3` of `Customer` that changes `email` into a `oneof { string email = 4; string phone_number = 6; }` and prove old readers still work.
-3.  Write a Go program that reads a delimited file with `dynamicpb` and prints every record as JSON, given only the `.proto` file name.
+3.  Write a Go program that reads a delimited file with `dynamicpb` and prints every record as <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, given only the `.proto` file name.
 4.  Build a Kafka-style log in Python: append length-delimited records with a CRC32 per record, and recover from a torn last write.
 5.  Install `buf` and add a `buf breaking` check that fails when you renumber a field.
 
 ## Where To Go Next
 
-*   **`gRPC/`**: Protobuf plus HTTP/2 streaming, deadlines, interceptors and mTLS.
+*   **`gRPC/`**: Protobuf plus <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 streaming, deadlines, interceptors and mTLS.
 *   **`Fundamentals/04_choosing_the_right_api.md`**: when a binary contract is worth it.

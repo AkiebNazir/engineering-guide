@@ -19,17 +19,17 @@ Assumptions (ours): 3×10^9 users, 10^9 daily active, 200 average edges, 500 gra
 | Quantity | Arithmetic | Result | So we need |
 |---|---|---|---|
 | Edge rows | 3×10^9 × 200 | 6×10^11 (3×10^11 friendships, two rows each) | Sharding by `id1` |
-| Storage per copy | edges 6×10^11 × 64 B = 38 TB, objects 3 TB, counts 3×10^9 × 6 × 24 B = 0.4 TB | 42 TB, so 42 hosts | 6 copies (3 regions × primary and in-region replica) = 250 TB, 252 hosts. Storage, not QPS, sizes the database |
+| Storage per copy | edges 6×10^11 × 64 B = 38 TB, objects 3 TB, counts 3×10^9 × 6 × 24 B = 0.4 TB | 42 TB, so 42 hosts | 6 copies (3 regions × primary and in-region replica) = 250 TB, 252 hosts. Storage, not <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, sizes the database |
 | Shards | 16,384 = 2^14; 42 TB ÷ 16,384 | 2.6 GB each, about 390 per host | Rebalance by moving a shard, never a host |
 | Reads | 10^9 × 500 ÷ 86,400 = 5.8M/s, × 2.5 | 14M/s peak, 4.8M/s per region | Meets the 10M+ requirement |
 | Writes | 14.5M ÷ 500 = 29k/s, each 2 edge rows + 2 counts + 1 outbox row | 145k row writes/s, 48k/s mastered per region | Easy. The hard part is the two-shard inverse |
 | Follower tier | Region loss: 14.5M ÷ 2 = 7.2M/s ÷ 2 tiers = 3.6M/s ÷ (50k × 0.8) | 91 servers per tier, 546 in all, 53% utilised at normal peak | Two independent tiers per region |
-| Working set | 10^9 hot users × 3 KB (100-edge prefix × 24 B = 2.4 KB, object 1 KB, counts; half of lists are shorter) | 3 TB per tier; 91 × 64 GB = 5.8 TB installed | QPS sets the fleet, spare RAM buys clones |
+| Working set | 10^9 hot users × 3 KB (100-edge prefix × 24 B = 2.4 KB, object 1 KB, counts; half of lists are shorter) | 3 TB per tier; 91 × 64 GB = 5.8 TB installed | <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> sets the fleet, spare <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> buys clones |
 | Miss path | 14.5M × 4% follower misses = 580k/s to leaders; × 25% leader misses | 145k/s to MySQL = 1% of reads, 570/s per host over 84 regional hosts | 24 leaders per region (290k/s after a region loss ÷ 14k = 21). The 4% is near the paper's 96.4% overall hit rate |
-| Sensitivity | Follower hit 90%: 14.5M × 10% × 25%; cold region: 4.8M/s ÷ (84 × 5k) | 362k/s (2.5×); 11.5× over capacity | Hit ratio is the SLO, and a cold cache is an outage |
+| Sensitivity | Follower hit 90%: 14.5M × 10% × 25%; cold region: 4.8M/s ÷ (84 × 5k) | 362k/s (2.5×); 11.5× over capacity | Hit ratio is the <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>, and a cold cache is an outage |
 | Replicas instead of cache | 14.5M ÷ 5k | 2,900 hosts versus 870 (252 + 546 + 72) | The cache tier is the design |
 
-**Latency.** A follower hit is one round trip (about 0.5 ms) plus lookup and queueing: budget p99 3 ms. A leader hit adds a hop, p99 6 ms; a MySQL read adds an SSD read, p99 12 ms. Since 4% of reads miss the follower and 1% reach MySQL, the blended p99 sits at the leader-hit/database boundary: "p99 under 10 ms" is a claim about the leader path, p99.9 under 25 ms about the database path.
+**Latency.** A follower hit is one round trip (about 0.5 ms) plus lookup and queueing: budget p99 3 ms. A leader hit adds a hop, p99 6 ms; a MySQL read adds an <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> read, p99 12 ms. Since 4% of reads miss the follower and 1% reach MySQL, the blended p99 sits at the leader-hit/database boundary: "p99 under 10 ms" is a claim about the leader path, p99.9 under 25 ms about the database path.
 
 **Fan-out tail.** A page issues about 60 parallel reads (assumption); the chance one exceeds its own p99 is 1 − 0.99^60 = 45%, so batch per destination and hedge (*The Tail at Scale*, Dean and Barroso, 2013; [13_scaling_and_load_balancing.md](../building_blocks/13_scaling_and_load_balancing.md)).
 
@@ -144,7 +144,7 @@ Decision: micro-batch, because follows tolerate 100 ms and the cost stays in one
 | Cache service that knows the <abbr title="Application Programming Interface">API</abbr> (TAO) | Range, count, membership from cached prefixes; one coordinator per shard | A leader hop on every miss and write; a service to run |
 | Replicas only | No invalidation | 2,900 hosts, still lagging |
 
-Decision: the TAO shape. **Follower tiers** serve clients from demand-filled LRU prefixes; **one leader per shard per region** owns fills, invalidations and write order and caps pending queries, so many missing followers cause one query. The extra hop is acceptable at 4% misses.
+Decision: the TAO shape. **Follower tiers** serve clients from demand-filled <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> prefixes; **one leader per shard per region** owns fills, invalidations and write order and caps pending queries, so many missing followers cause one query. The extra hop is acceptable at 4% misses.
 
 **Invalidation.** After commit the leader sends followers an invalidate for an object or a refill for an association list (an invalidate would truncate the prefix). Messages carry versions and a follower ignores an older one. Only the issuing follower is updated synchronously.
 
@@ -162,7 +162,7 @@ Decision: the TAO shape. **Follower tiers** serve clients from demand-filled LRU
 | Other user, replica region | Eventual; the paper reports lag under 1 s about 85% of the time, 3 s at 99%, 10 s at 99.8% | Messages ride the replication stream |
 | Block and unfriend checks | Master truth | `critical = true`, which the paper uses for reads that must be right |
 
-**Token cost.** If each write is followed by 5 reads in 10 s, 29k × 5 = 145k/s (1% of reads) carry tokens; only those that miss and hit a lagging replica cross regions: 1% × 4% × 14.5M = 5.8k/s. The memcache paper's remote marker ([block 30](../building_blocks/30_social_graph_and_caching_at_scale.md)) is per-key state that slows every reader of the key; a token affects only the actor, at the cost of threading it through every RPC.
+**Token cost.** If each write is followed by 5 reads in 10 s, 29k × 5 = 145k/s (1% of reads) carry tokens; only those that miss and hit a lagging replica cross regions: 1% × 4% × 14.5M = 5.8k/s. The memcache paper's remote marker ([block 30](../building_blocks/30_social_graph_and_caching_at_scale.md)) is per-key state that slows every reader of the key; a token affects only the actor, at the cost of threading it through every <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr>.
 
 **The inverse edge.** Two-phase commit is atomic but a dead participant blocks the write; TAO accepts a "hanging association" and repairs it asynchronously; the outbox commits the inverse row with the forward edge and retries idempotently. Decision: outbox plus a nightly reconcile. Cost: the inverse lags (alert on p99 above 2 s). Reconcile scans a replica at 1 TB per host ÷ 100 MB/s = 2.8 hours.
 
@@ -174,9 +174,9 @@ Decision: the TAO shape. **Follower tiers** serve clients from demand-filled LRU
 
 ## Privacy at read time and two-hop queries
 
-**Privacy.** Make visibility predicates evaluate on the viewer's shard. For 20 posts by 20 authors, asking each author's shard "did you block this viewer" costs 91 × (1 − (1 − 1/91)^20) ≈ 18 RPCs across a 91-server tier. Instead read the viewer's own `blocked` and `blocked_by` lists (tiny for almost everyone) and one `assoc_get(viewer, friend, author_set)`: all `id1 = viewer`, one RPC. The price is that `blocked_by` is an inverse edge that lags by the outbox delay plus propagation. So use two layers (ours): the cheap list check when assembling a page, and the authoritative forward edge read critically when the post or profile is opened. A confirmed block is enforced at open time at once and in listings within seconds.
+**Privacy.** Make visibility predicates evaluate on the viewer's shard. For 20 posts by 20 authors, asking each author's shard "did you block this viewer" costs 91 × (1 − (1 − 1/91)^20) ≈ 18 RPCs across a 91-server tier. Instead read the viewer's own `blocked` and `blocked_by` lists (tiny for almost everyone) and one `assoc_get(viewer, friend, author_set)`: all `id1 = viewer`, one <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr>. The price is that `blocked_by` is an inverse edge that lags by the outbox delay plus propagation. So use two layers (ours): the cheap list check when assembling a page, and the authoritative forward edge read critically when the post or profile is opened. A confirmed block is enforced at open time at once and in listings within seconds.
 
-**Mutual friends.** `assoc_get(B, friend, id2set = A's newest 500)` is one 4 KB RPC (500 × 8 B), against two lists of up to 120 KB (5,000 × 24 B); above 500 it is a lower bound ("at least N").
+**Mutual friends.** `assoc_get(B, friend, id2set = A's newest 500)` is one 4 KB <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> (500 × 8 B), against two lists of up to 120 KB (5,000 × 24 B); above 500 it is a lower bound ("at least N").
 
 **People You May Know.** Uncapped, two hops is 200 × 200 = 40,000 reads. Cap it (ranking in [31](../building_blocks/31_ranking_recommendation_and_experimentation.md)): top 50 friends by interaction, each one's newest 100 edges (the cached prefix), skipping friends with more than 5,000 edges: 1 + 50 = 51 reads, at most 5,000 candidates. Count mutual occurrences, drop friends and blocked users, keep 500, rank, store the top 200: 10^9 × 200 × 16 B = 3.2 TB. Refresh weekly and on debounced friend-add events: 10^9 × 51 ÷ 7 ÷ 86,400 = 84k reads/s, 1.5% of average load, in a class that [overload control](../building_blocks/28_overload_control_and_graceful_degradation.md) sheds first. Per profile view it would be 11.6k/s × 51 = 590k reads/s, so precompute.
 
@@ -204,9 +204,9 @@ Trade-off to state: "I chose an `id1`-sharded MySQL graph behind follower and le
 ## Follow-ups the interviewer will ask
 
 1. **"How does multi-region work?"** Each region holds a full copy. Each shard has one master region, chosen so users' own shards are mastered at home. Writes go to the master, reads and misses stay local, and messages fire only after the local replica applies the change. Non-master writers pay one round trip (80 to 150 ms, assumed).
-2. **"What changes at 10× and 100×?"** At 10× (145M reads/s) the same per-server rate needs 5,460 followers and 350 TB of RAM, so first add a per-request cache in the web tier. At 100× add a mid-tier cache per cluster and route users to a consistent tier so each caches a slice. The database grows with data, not traffic.
+2. **"What changes at 10× and 100×?"** At 10× (145M reads/s) the same per-server rate needs 5,460 followers and 350 TB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, so first add a per-request cache in the web tier. At 100× add a mid-tier cache per cluster and route users to a consistent tier so each caches a slice. The database grows with data, not traffic.
 3. **"Make friend and block changes linearizable."** One consensus group per shard across regions, reads through the leaseholder. Every write pays a cross-region quorum (100+ ms) and reads lose local latency unless you accept bounded staleness. Use it for blocks and credentials only.
-4. **"What dominates cost?"** Followers: 546 of 870 hosts. Each point of follower hit ratio is 14.5M × 1% × 25% = 36k database reads/s; batching and client caching cut follower QPS directly; prefix length trades RAM for hit ratio.
+4. **"What dominates cost?"** Followers: 546 of 870 hosts. Each point of follower hit ratio is 14.5M × 1% × 25% = 36k database reads/s; batching and client caching cut follower <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> directly; prefix length trades <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> for hit ratio.
 5. **"How do you handle abuse?"** Per-viewer rate limits on enumeration, page caps, `NOT_FOUND` for hidden edges, follow-spam limits per actor, and read-time visibility so mutual-friend counts cannot reveal a hidden list.
 6. **"Why not a graph database or Cassandra?"** The query shapes are fixed: a list, a count, a membership, two capped hops. At 6×10^11 edges a graph database shards and every hop is a network call. If pushed, use wide-column rows keyed `(id1, atype)` and keep the cache tier.
 7. **"Delete an account with 10^8 followers."** Tombstone the object so privacy hides it at once, then delete in the background at 5,000 rows/s: 5.6 hours, inverse deletes through the outbox.
@@ -216,7 +216,7 @@ Trade-off to state: "I chose an `id1`-sharded MySQL graph behind follower and le
 1. **Partitioning the graph by region or community.** It is too interconnected. Say every region holds a full copy.
 2. **`COUNT(*)` and offset pagination.** Both scan the list. Keep counts in the write transaction and page by `(ts, id2)`.
 3. **Ignoring the inverse edge.** It spans two shards and is not atomic. Name the hanging edge, the outbox, and the reconcile.
-4. **Sizing the database from read QPS.** 14.5M ÷ 5k says 2,900 hosts; the cache makes it 1%. Storage sizes the database; the cold cache is the risk.
+4. **Sizing the database from read <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>.** 14.5M ÷ 5k says 2,900 hosts; the cache makes it 1%. Storage sizes the database; the cold cache is the risk.
 5. **One hot key, one server.** A 200k/s celebrity object is 4× a server. Clone it, add a client cache, detect with a sketch.
 6. **Read-your-writes without a mechanism.** Say changeset, then tokens for failover and lag, and state the cost.
 7. **Privacy at fanout or write time.** An unfriend must affect cached content. Check on read, on the viewer's shard.
@@ -225,10 +225,10 @@ Trade-off to state: "I chose an `id1`-sharded MySQL graph behind follower and le
 ## Going from L5 to L6
 
 - **Migration.** From look-aside memcache over MySQL: service in front, shadow reads, dual writes with diffing, cut over per edge type, warm caches first.
-- **Cost model.** Price per million reads as hosts, RAM and hit ratio: 870 hosts for 14M/s versus 2,900 for replicas only, and 36k database reads/s per hit-ratio point.
+- **Cost model.** Price per million reads as hosts, <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and hit ratio: 870 hosts for 14M/s versus 2,900 for replicas only, and 36k database reads/s per hit-ratio point.
 - **Ownership and blast radius.** Two follower tiers per region, deployed one at a time; a per-edge-type registry (inverse type, prefix length, count mode, privacy class) owned by product teams; a low-priority class for PYMK.
 - **Build versus buy.** Buy MySQL and a cache primitive, build the association service (TAO is not downloadable); a graph database only for offline analysis.
-- **Phasing and first measurements.** One region with a look-aside cache, then leaders, then replica regions with tokens, then the outbox and hot lists. Measure first: degree distribution, the top 1,000 lists' QPS, miss rate per edge type, lag percentiles.
+- **Phasing and first measurements.** One region with a look-aside cache, then leaders, then replica regions with tokens, then the outbox and hot lists. Measure first: degree distribution, the top 1,000 lists' <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, miss rate per edge type, lag percentiles.
 
 ## Build exercise
 

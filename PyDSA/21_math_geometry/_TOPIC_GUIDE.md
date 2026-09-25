@@ -95,7 +95,7 @@ visible (not just theoretical) once n reaches the hundred-thousands.
 
 **Greedy digit-to-symbol mapping via a lookup table with the subtractive
 cases baked in** (006 Integer to Roman): Roman numerals have six
-"subtractive" pairs (CM, CD, XC, XL, IX, IV) alongside the six standard
+"subtractive" pairs (CM, <abbr title="Continuous Deployment / Delivery. An approach in which software functionalities are delivered frequently and through automated deployments.">CD</abbr>, XC, XL, IX, IV) alongside the six standard
 symbols. Instead of special-casing "if the digit is 4 or 9, do X" inside a
 digit-by-digit loop, bake ALL twelve values (1000 down to 1, subtractive
 pairs interleaved at their correct magnitude) into one ordered

@@ -20,7 +20,7 @@ Assumptions (ours): 5×10^8 DAU, 10 loads per user per day, peak 2.5× average, 
 |---|---|---|---|
 | Loads | 5×10^8 × 10 ÷ 86,400 = 58k/s, × 2.5 | 145k/s peak | Everything below scales from this |
 | ANN corpus | 10^8 × 3 days = 3×10^8 items × 256 B (128-dim fp16) | 77 GB, 8 shards of 9.6 GB | Every load queries all shards: 145k × 8 = 1.16M shard-queries/s ÷ 1,400 per core (assumed) = 830 cores, about 1,700 at 50% |
-| Heavy stage volume | 145k × 300 items | 43M scores/s | CPU at 250 µs each: 10.9k busy cores. An accelerator at an assumed 250k scores/s: 174 at 100%, 350 at 50%. Recommendation models are embedding-heavy (DLRM, Naumov et al., 2019), so measure |
+| Heavy stage volume | 145k × 300 items | 43M scores/s | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> at 250 µs each: 10.9k busy cores. An accelerator at an assumed 250k scores/s: 174 at 100%, 350 at 50%. Recommendation models are embedding-heavy (DLRM, Naumov et al., 2019), so measure |
 | Snapshots | 50 ids × 24 B = 1.2 KB; TTL 30 min; 58k/s × 1,800 = 104M live (260M at peak) | 125 GB, 313 GB at peak | A sharded in-memory store, 5 nodes of 64 GB at peak, replicated |
 | Impression log | 5×10^9 loads × 20 viewed = 10^11/day × 100 B | 10 TB/day, 116 MB/s | Always log |
 | Feature log | 5×10^9 × 20 × 300 × 2 B = 60 TB/day; 10% of requests | 6 TB/day | Sample; never log all 50 snapshot items (150 TB/day) |
@@ -28,7 +28,7 @@ Assumptions (ours): 5×10^8 DAU, 10 loads per user per day, peak 2.5× average, 
 
 **The cascade** (counts are ours; costs are assumptions to benchmark):
 
-| Stage | In → out | Cost per item | p99 budget | CPU per request |
+| Stage | In → out | Cost per item | p99 budget | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> per request |
 |---|---|---|---|---|
 | Context (user features, seen set) | 1 user | KV reads, parallel with retrieval | 20 ms | 5 ms |
 | Retrieval, 5 sources in parallel | 3×10^8 → 4,000 raw | index lookups | 60 ms (deadline) | 25 ms |
@@ -39,7 +39,7 @@ Assumptions (ours): 5×10^8 DAU, 10 loads per user per day, peak 2.5× average, 
 | Blend, diversity, integrity re-check | 100 → 50 | rules | 15 ms | 5 ms |
 | Hydrate page 1 (10 posts) | 10 | cache reads | 30 ms | 5 ms |
 
-Stage p99 budgets sum to 275 ms of 400, leaving 125 ms for about eight network hops and tail (summing p99s is pessimistic). CPU is 145 ms per load, so 145k × 0.145 = 21k busy cores, 42k at 50% utilisation. So: (1) the heavy ranker is 52% of CPU and the candidate count entering it is the dial (each extra 100 candidates is 145k × 100 × 250 µs = 3,600 busy cores); (2) scoring all 3,000 with the heavy model would be 145k × 3,000 × 250 µs = 108k busy cores, which is why the cascade exists; (3) under load you shrink N per stage before failing a load.
+Stage p99 budgets sum to 275 ms of 400, leaving 125 ms for about eight network hops and tail (summing p99s is pessimistic). <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> is 145 ms per load, so 145k × 0.145 = 21k busy cores, 42k at 50% utilisation. So: (1) the heavy ranker is 52% of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> and the candidate count entering it is the dial (each extra 100 candidates is 145k × 100 × 250 µs = 3,600 busy cores); (2) scoring all 3,000 with the heavy model would be 145k × 3,000 × 250 µs = 108k busy cores, which is why the cascade exists; (3) under load you shrink N per stage before failing a load.
 
 **Feature-fetch bandwidth.** Naively each load pulls 300 × (600 B static + 64 B counters) = 199 KB, so 145k × 199 KB = 29 GB/s (231 Gbps). With item features cached in the ranker (assumed 95% hit for static, 80% for counters with a 10 s TTL) plus 4 KB of user features it is about 17 KB per load: 2.4 GB/s (19 Gbps). So caches in the ranker are required, not optional.
 
@@ -145,7 +145,7 @@ New posts must be recommendable in minutes, so index a small "fresh" ANN segment
 
 ## The cascade: light ranker and heavy ranker
 
-**Light ranker, data-local.** Pulling 3,000 × 80 B = 240 KB of features per load would be 35 GB/s. Instead ship the 24 KB of ids to the shards that own those items' light features (375 ids each, 3.75 ms of CPU per shard), score in place and return only scores. Train it to imitate the heavy ranker (distillation) and monitor its recall: the share of the heavy top 100 that survives into the light top 300. That recall caps what the heavy stage can find.
+**Light ranker, data-local.** Pulling 3,000 × 80 B = 240 KB of features per load would be 35 GB/s. Instead ship the 24 KB of ids to the shards that own those items' light features (375 ids each, 3.75 ms of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> per shard), score in place and return only scores. Train it to imitate the heavy ranker (distillation) and monitor its recall: the share of the heavy top 100 that survives into the light top 300. That recall caps what the heavy stage can find.
 
 **Heavy ranker.** A multi-task network predicting p(like), p(comment), p(share), p(dwell), p(hide) and p(report), combined as above, run as one batch per load with a deadline. Keep scores calibrated (check calibration by bucket) because they are summed with weights. Diversity and the in/out-of-network mix are re-rank constraints, not model features.
 
@@ -172,7 +172,7 @@ Decision: log-at-serve for volatile features, as-of joins for slow ones.
 |---|---|---|
 | Precompute every feed | Flat load, millisecond serve | If 60% of precomputed feeds are consumed, 5×10^9 ÷ 0.6 = 8.3×10^9 runs per day (1.67× compute), hours stale, blind to session context |
 | On-demand each load | Freshest, no waste | 21k busy cores at peak, latency risk |
-| Hybrid (chosen) | Cache retrieval and light-ranker output per user for 5 minutes, run the heavy ranker and blend on demand, snapshot per session | Assuming 40% of loads repeat within 5 minutes, saves 0.4 × 55 ÷ 145 = 15% CPU for 17M entries × 3.6 KB = 63 GB, at up to 5 minutes' candidate staleness |
+| Hybrid (chosen) | Cache retrieval and light-ranker output per user for 5 minutes, run the heavy ranker and blend on demand, snapshot per session | Assuming 40% of loads repeat within 5 minutes, saves 0.4 × 55 ÷ 145 = 15% <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> for 17M entries × 3.6 KB = 63 GB, at up to 5 minutes' candidate staleness |
 
 Do not cache the final slate across sessions: seen sets and context change. The session snapshot (125 GB at average, 313 GB at peak) gives stable pages; refresh starts a new one, suppressing ids in the Bloom filter. Snapshot loss is a cache miss: the user gets a fresh ranking.
 
@@ -193,10 +193,10 @@ Log the impression, not just the click: `request_id`, item, position, model vers
 
 Deadlines are absolute and passed down. If less than 100 ms remains when the heavy stage would start, skip it. Hedge a heavy-ranker call after its p95, which adds 5% of load (7,200 requests/s) and cuts the tail (*The Tail at Scale*, 2013). The ladder is triggered by the deadline and by load, not only by errors:
 
-| Rung | Trigger | Behaviour | CPU per load |
+| Rung | Trigger | Behaviour | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> per load |
 |---|---|---|---|
 | 0 | Normal | Full cascade | 145 ms |
-| 1 | CPU above 80% or p99 near budget | Shrink N: retrieval 3,000 → 1,000, heavy 300 → 100 | 75 ms (−48%) |
+| 1 | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> above 80% or p99 near budget | Shrink N: retrieval 3,000 → 1,000, heavy 300 → 100 | 75 ms (−48%) |
 | 2 | Heavy ranker slow or failing | Skip it, blend on light-ranker order | 70 ms (−52%) |
 | 3 | Retrieval or light ranker down | Last good snapshot for this user (at most 6 hours old), re-filtered | about 5 ms |
 | 4 | No snapshot | In-network by recency ([007](007_news_feed_solution.md)) plus per-locale popular | about 10 ms |
@@ -228,7 +228,7 @@ Trade-off to state: "I chose a cascade of 3,000 → 300 → 100 → 50 with the 
 1. **"How does multi-region work?"** Each region holds ANN, model and feature replicas and serves its own users, since a cross-region hop would eat 100+ ms of the 400. Snapshots stay region-local, events ship to a central log for training, and global counters merge regional aggregates within the two-minute bound.
 2. **"What changes at 10× and 100×?"** At 10× the busy-core count is 210k, so first cut N for low-engagement users, distil harder and quantise the heavy model. At 100× serve the head from nearline precompute (users cluster into shared candidate pools) and keep on-demand ranking for the tail.
 3. **"A deleted or blocked post must vanish immediately."** Filters are read-time: hydrate re-checks visibility, the block edge comes from the graph service, and an integrity kill switch removes an item or author from all snapshots on the next page read. Never trust ids baked into a 30-minute snapshot.
-4. **"What dominates cost?"** The heavy ranker at 52% of CPU. Levers: N into the heavy stage, distillation and quantisation, accelerators (174 to 350 devices versus 10.9k cores, to be measured), the 5-minute candidate cache (−15%), and sampled feature logs (6 versus 60 TB/day).
+4. **"What dominates cost?"** The heavy ranker at 52% of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>. Levers: N into the heavy stage, distillation and quantisation, accelerators (174 to 350 devices versus 10.9k cores, to be measured), the 5-minute candidate cache (−15%), and sampled feature logs (6 versus 60 TB/day).
 5. **"How do you handle abuse?"** Bots and engagement pods inflate counters, so trust-score events before counting and exclude flagged accounts from training; rate-limit refresh; keep integrity as hard filters with a kill switch; watch exposure concentration for gaming.
 6. **"Why a cascade? One good model is simpler."** Scoring all 3,000 with the heavy model is 108k busy cores against 21k, and the extra candidates are mostly irrelevant. If the interviewer insists, widen the heavy stage as far as the budget allows and keep the light ranker as the safety net.
 7. **"Offline AUC improved 1% and the experiment is flat."** Suspect leakage or skew (replay logged requests, check feature distributions), position bias, the light stage discarding the new model's picks, and novelty. Only a randomised online test decides a launch (block 31, Part 2).
@@ -236,7 +236,7 @@ Trade-off to state: "I chose a cascade of 3,000 → 300 → 100 → 50 with the 
 ## Common mistakes
 
 1. **Scoring every candidate with the heavy model.** 108k busy cores. Give each stage a job, a count and a budget.
-2. **Naming stages without numbers.** Say counts in and out, cost per item, wall clock and CPU per load.
+2. **Naming stages without numbers.** Say counts in and out, cost per item, wall clock and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> per load.
 3. **Logging clicks only.** No negatives, no propensities. Log impressions with position, model version and viewability.
 4. **Rebuilding training features from the warehouse.** Label-time leakage. Log at serve, use as-of joins.
 5. **Re-ranking on every page.** Scores drift, items repeat or vanish. Freeze a session snapshot.

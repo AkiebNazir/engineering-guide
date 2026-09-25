@@ -474,12 +474,12 @@ A prefix trick works for any operation you can **undo** — that is what "subtra
 | Operation | Invertible? | Range query in O(1)? |
 |---|---|---|
 | sum, count | ✅ subtract | ✅ `P[r+1] - P[l]` |
-| XOR | ✅ `a ^ b ^ b == a` | ✅ `P[r+1] ^ P[l]` |
+| <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> | ✅ `a ^ b ^ b == a` | ✅ `P[r+1] ^ P[l]` |
 | product | ⚠️ divide — but not through a `0` | ✅ only if there are no zeros (or count zeros separately) |
 | **min / max** | ❌ no inverse | ❌ use a sparse table or segment tree (topic 26) |
 | gcd | ❌ | ❌ sparse table |
 
-XOR gives the "subarray XOR equals K" variant of the flagship problem with no new idea — swap `+` for `^` and
+<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> gives the "subarray <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> equals K" variant of the flagship problem with no new idea — swap `+` for `^` and
 `running - K` for `running ^ K`:
 
 ```python
@@ -495,7 +495,7 @@ def subarray_xor_k(nums, k):
 ### 7.3 Prefix sums explain Kadane
 
 `sum(a[l..r]) = P[r+1] − P[l]`, so the best subarray ending at `r` is `P[r+1]` minus the **smallest earlier
-prefix**. Keep that minimum as you go and you have Maximum Subarray (LC 53) without any DP table:
+prefix**. Keep that minimum as you go and you have Maximum Subarray (LC 53) without any <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table:
 
 ```python
 best, prefix, min_prefix = float("-inf"), 0, 0
@@ -598,7 +598,7 @@ Eight problems, five moves. Each **Trap** is one the tests in that problem's sol
 - [ ] I check the sign constraint FIRST, before deciding between a sliding
       window and a prefix-sum hashmap.
 - [ ] Build a difference array and say why `diff[r + 1] -= val` is the "undo" <!--ca-->
-- [ ] Say which aggregates a prefix trick works for (sum, XOR) and which need a different structure (min, max, gcd) <!--ca-->
+- [ ] Say which aggregates a prefix trick works for (sum, <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>) and which need a different structure (min, max, gcd) <!--ca-->
 - [ ] Explain Kadane as "prefix minus the smallest earlier prefix" <!--ca-->
 - [ ] Reduce "submatrices with sum K" to 1D by fixing two rows <!--ca-->
 - [ ] Say when a prefix array goes stale (point updates) and what replaces it <!--ca-->

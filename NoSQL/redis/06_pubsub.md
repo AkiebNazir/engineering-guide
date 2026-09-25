@@ -165,7 +165,7 @@ answer for your use case.
 - **In Go, never calling `sub.Close()`.** An unclosed `*PubSub` leaks both its
   underlying connection and the goroutine reading from `.Channel()` if nothing is ever
   sent again — always `defer sub.Close()` right after `Subscribe`, the same discipline
-  as closing a file or an HTTP response body.
+  as closing a file or an <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> response body.
 
 ## What's next
 

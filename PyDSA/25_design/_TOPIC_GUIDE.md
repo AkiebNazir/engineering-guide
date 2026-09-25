@@ -55,7 +55,7 @@ than the raw last-observed value plus a recomputation at check time.
 **Two sentinel nodes turn boundary cases into ordinary cases** (004
 Design Linked List): a dummy head AND a dummy tail eliminate every
 "is the list empty," "am I inserting at the very front/back" branch —
-this is topic 08's LRU Cache idiom, applied here to INDEX-based rather
+this is topic 08's <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache idiom, applied here to INDEX-based rather
 than recency-based traversal. A doubly linked list plus a maintained
 `size` counter also lets you walk from whichever END is closer to the
 target index, roughly halving average traversal distance for free.
@@ -90,7 +90,7 @@ moving into a cell your own tail is vacating THIS turn is legal, while
 moving into a cell that's about to remain occupied is not.
 
 **A doubly linked list PER FREQUENCY BUCKET, plus a running minimum
-pointer** (008 LFU Cache, Hard): this is LRU Cache generalized along a
+pointer** (008 <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache, Hard): this is <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache generalized along a
 second axis. Eviction order is (frequency ascending, then recency
 ascending as the tiebreaker) instead of recency alone — so instead of ONE
 doubly linked list, you need ONE PER FREQUENCY VALUE, plus a `min_freq`
@@ -143,7 +143,7 @@ R -> S -> T -> U -> V
 
 | Tension | Structure that wins one side | Structure that wins the other | The fix |
 |---|---|---|---|
-| lookup-by-key vs. order | hashmap | linked list | dict of node refs + doubly linked list (004, 008, and LRU Cache in topic 08) |
+| lookup-by-key vs. order | hashmap | linked list | dict of node refs + doubly linked list (004, 008, and <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache in topic 08) |
 | lookup-by-value vs. random access by position | set | array | array + value→index dict, swap-pop deletion (005) |
 | O(1) access vs. O(1) reorder-by-recency | array | linked list | same dict+DLL combination, generalized to per-bucket in 008 |
 | exact-string lookup vs. ranked top-K | hashmap of exact strings | sorted structure | trie with a per-node ranking index (010) |
@@ -171,7 +171,7 @@ lists, tries, heaps) is taught elsewhere.
 | 005 | Insert Delete GetRandom O(1) | Medium | array + value→index dict, swap-pop deletion |
 | 006 | Design Browser History | Medium | array + cursor, `visit` truncates forward history |
 | 007 | Design Snake Game | Medium | deque (order) + set (O(1) collision), tail-vacates-first |
-| 008 | LFU Cache | Hard | dict + doubly-linked-list PER frequency bucket + min_freq |
+| 008 | <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache | Hard | dict + doubly-linked-list PER frequency bucket + min_freq |
 | 009 | Design In-Memory File System | Hard | tree of dict-of-children nodes, dir/file type tag |
 | 010 | Design Search Autocomplete System | Hard | trie with per-node `sentence -> hot_degree` index |
 
@@ -187,8 +187,8 @@ lists, tries, heaps) is taught elsewhere.
 - **004, 008 ↔ topic 08** (Linked List): 004 is a direct generalization of
   topic 08's splicing discipline to index-based (not reference-based)
   access; 008's per-frequency doubly linked lists are literally N copies
-  of LRU Cache's (013) dummy-head/tail list, one per frequency value —
-  if LRU Cache isn't automatic, LFU Cache will be much harder than it
+  of <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache's (013) dummy-head/tail list, one per frequency value —
+  if <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache isn't automatic, <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache will be much harder than it
   needs to be.
 - **009 ↔ topic 13** (Trie): identical `children: dict[str, Node]` node
   shape; the only addition is a directory/file type tag on top of what a
@@ -233,7 +233,7 @@ E -> F -> G
    side.** Don't start coding until you can see them all at once — the
    TENSION between them is usually visible immediately once they're
    listed together (e.g. "O(1) lookup" next to "O(1) in-order eviction"
-   is the LRU/LFU tension; "O(1) random access" next to "O(1) removal by
+   is the <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>/<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> tension; "O(1) random access" next to "O(1) removal by
    value" is the RandomizedSet tension).
 
 2. **For each operation, ask: which SINGLE structure gives me this for
@@ -248,7 +248,7 @@ E -> F -> G
    topic has at least one instance of exactly this bug.
 
 4. **Identify the ONE invariant that makes an O(1)/O(log n) shortcut
-   valid**, and state it explicitly — e.g. LFU's "frequency only ever
+   valid**, and state it explicitly — e.g. <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>'s "frequency only ever
    increases by 1 per access" is why a plain integer `min_freq` suffices
    instead of a general "find current minimum" structure; RandomizedSet's
    "the array is always physically dense, no tombstones" is why a uniform
@@ -287,7 +287,7 @@ Added 16 Sep 2026 from the Google prep plan. Part 0 above covers the original te
 | # | Problem | Structure | The production system it's a miniature of |
 |---|---|---|---|
 | 011 | Design Hit Counter | 300 circular buckets tagged with their second | Rate limiters and metrics counters: memory fixed per window, not per event |
-| 012 | Snapshot Array | per-index history of (snap_id, value) + bisect | MVCC / copy-on-write: store only what changed, versioned |
+| 012 | Snapshot Array | per-index history of (snap_id, value) + bisect | <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> / copy-on-write: store only what changed, versioned |
 | 013 | Stock Price Fluctuation | dict as source of truth + two heaps with lazy validation | Derived indexes that tolerate stale entries and validate on read |
 
 Measured in the files:
@@ -569,10 +569,10 @@ Thirteen problems, one move: pair a source of truth with the index each operatio
 ## Checklist Before Leaving This Topic <!--ca-->
 
 - [ ] Choose a bucket count deliberately and reproduce the failure: multiples of 1,000 into 1,000 buckets give a chain of 1,000 <!--ca-->
-- [ ] Build an LRU with `OrderedDict` (`move_to_end`, `popitem(last=False)`) and by hand with a doubly linked list, and say which you would ship <!--ca-->
+- [ ] Build an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> with `OrderedDict` (`move_to_end`, `popitem(last=False)`) and by hand with a doubly linked list, and say which you would ship <!--ca-->
 - [ ] Use lazy validation for a heap whose entries can go stale, and say why `list.remove` + `heapify` is the wrong repair <!--ca-->
 - [ ] Use `bisect` (with `key=` on 3.10+) for versioned history, and handle "no entry yet" <!--ca-->
 - [ ] State the four rate-limiter designs and show the fixed-window boundary burst (10 allowed for a limit of 5) <!--ca-->
 - [ ] Extend RandomizedSet to duplicates with a set of indices per value <!--ca-->
 - [ ] Differential-test a design class against a brute-force reference after every operation <!--ca-->
-- [ ] Explain why the GIL does not make check-then-act atomic, and where the lock goes <!--ca-->
+- [ ] Explain why the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> does not make check-then-act atomic, and where the lock goes <!--ca-->

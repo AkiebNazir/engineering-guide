@@ -14,14 +14,14 @@ Today, we transition from building standalone agents to building **Enterprise Ag
 
 ### 1. The Bottlenecks of Agent Scaling
 When 500 users hit a standard <abbr title="Application Programming Interface">API</abbr> (like a database lookup), the server handles it easily. But when 500 users trigger a LangGraph Agent, three catastrophic bottlenecks occur:
-1. **Thread Blocking:** If an Agent runs a `while` loop that takes 30 seconds, it locks up the server's CPU threads. Other users must wait.
+1. **Thread Blocking:** If an Agent runs a `while` loop that takes 30 seconds, it locks up the server's <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> threads. Other users must wait.
 2. **<abbr title="Application Programming Interface">API</abbr> Rate Limits:** OpenAI allows (for example) 500 requests per minute (RPM). If 500 users trigger a ReAct agent that loops 5 times, that's 2,500 <abbr title="Large Language Model">LLM</abbr> calls. You hit the rate limit in 5 seconds.
-3. **Tool Execution Timeouts:** If the agent decides to scrape a slow website using a tool, the HTTP connection might time out before the agent finishes.
+3. **Tool Execution Timeouts:** If the agent decides to scrape a slow website using a tool, the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> connection might time out before the agent finishes.
 
 ### 2. The Solution: Queue-Based Architecture
 To scale agents, you cannot use a synchronous `Request -> Response` architecture. You must use a **Queue Architecture**.
 
-*Analogy:* Imagine a popular restaurant. If 500 people walk in and yell their orders at the single chef (the CPU), the chef panics and the restaurant burns down (Server Crash).
+*Analogy:* Imagine a popular restaurant. If 500 people walk in and yell their orders at the single chef (the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>), the chef panics and the restaurant burns down (Server Crash).
 Instead, you use a Hostess (FastAPI). The Hostess takes the orders instantly, gives the customer a buzzer (Task ID), and puts the order on a Ticket Line (Redis Queue). The Chefs (Worker Pool) pull tickets from the line at their own pace. When an order is ready, the buzzer flashes (Result Streaming).
 
 **The Architecture:**
@@ -33,11 +33,11 @@ Instead, you use a Hostess (FastAPI). The Hostess takes the orders instantly, gi
 
 ### 3. Concurrency Patterns
 - **Asyncio:** Used for I/O-bound tasks. If your agent is mostly waiting for <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr> responses or Web Scraping, `async` allows a single worker to handle 100 agents at once by swapping tasks while waiting for network responses.
-- **Multiprocessing:** Used for CPU-bound tasks. If your agent is doing heavy local embedding calculations, you must spin up entirely separate Python processes.
+- **Multiprocessing:** Used for <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound tasks. If your agent is doing heavy local embedding calculations, you must spin up entirely separate Python processes.
 
 ### 4. Rate Limiting & Backpressure
 - **Token Bucket Algorithm:** A bucket holds 500 tokens. Every <abbr title="Large Language Model">LLM</abbr> call costs 1 token. Tokens refill at 10 per second. If the bucket is empty, the worker pauses the agent.
-- **Backpressure:** If the Redis queue hits 10,000 pending tasks, the FastAPI server tells new users: *"System busy, please try again."* This prevents the queue from crashing the server's RAM.
+- **Backpressure:** If the Redis queue hits 10,000 pending tasks, the FastAPI server tells new users: *"System busy, please try again."* This prevents the queue from crashing the server's <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>.
 
 ---
 
@@ -151,11 +151,11 @@ A "Strong Hire" candidate must articulate:
 1. **<abbr title="Application Programming Interface">API</abbr> Layer:** Stateless FastAPI instances behind a Load Balancer (AWS ALB). They do zero processing; they only validate Auth and push to Kafka/Redis.
 2. **Message Broker:** Kafka or Redis Streams. It provides durability so if workers crash, messages aren't lost.
 3. **Worker Pool:** A Kubernetes deployment of Celery/RQ workers that pull from the broker.
-4. **Auto-Scaling (KEDA):** The workers must autoscale based on **Queue Depth**, not CPU. If there are 1,000 pending messages, Kubernetes spins up 50 more worker pods.
+4. **Auto-Scaling (KEDA):** The workers must autoscale based on **Queue Depth**, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>. If there are 1,000 pending messages, Kubernetes spins up 50 more worker pods.
 5. **State Storage:** Because workers are stateless, the LangGraph `MemorySaver` must be backed by a managed PostgreSQL instance to persist the agent states across nodes.
 6. **Result Retrieval:** Workers push the final state to a Redis Pub/Sub channel, which streams back to the frontend via WebSockets.
 
 ---
 **Task for the end of the day:** Review how Kafka and Redis Streams work at a high level. 
 
-Tomorrow, in **Day 148**, we take this architecture and containerize it. We will learn how to wrap our agents in Docker and deploy them to a Kubernetes cluster for infinite horizontal scaling!
+Tomorrow, in **Day 148**, we take this architecture and containerize it. We will learn how to wrap our agents in <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> and deploy them to a Kubernetes cluster for infinite horizontal scaling!

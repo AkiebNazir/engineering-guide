@@ -26,7 +26,7 @@ CREATE TABLE products (
 ```
 
 Run through Python and inspected via `information_schema` (the standard,
-database-agnostic catalog of table structure that every SQL database exposes):
+database-agnostic catalog of table structure that every <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database exposes):
 
 ```python
 import psycopg
@@ -126,7 +126,7 @@ in place of Python's `None`:
 
 The `*string` for `column_default` matters: Go has no direct equivalent of "this
 column can hold `NULL`" the way Python's `None` fits into any variable. Scanning a
-nullable SQL column into a plain `string` panics the moment a row's value is actually
+nullable <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> column into a plain `string` panics the moment a row's value is actually
 `NULL` — you need a pointer type (`*string`) or one of `database/sql`'s `sql.NullString`
 / pgx's equivalents to represent "no value" safely.
 

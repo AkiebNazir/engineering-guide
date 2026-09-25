@@ -95,7 +95,7 @@ Two properties must hold for a greedy algorithm to be provably correct:
 1. **Greedy-choice property** — a locally optimal choice at each step leads to
    a globally optimal solution; you never need to reconsider it later.
 2. **Optimal substructure** — an optimal solution to the whole problem contains
-   optimal solutions to its subproblems (the same property DP relies on —
+   optimal solutions to its subproblems (the same property <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> relies on —
    greedy is the special case where you don't need to explore all subproblems
    because the correct one is knowable in advance).
 
@@ -233,7 +233,7 @@ for _, x := range iv {
 }
 ```
 
-### 3.5 Kruskal's MST — greedy wearing a graph-algorithm costume
+### 3.5 Kruskal's <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> — greedy wearing a graph-algorithm costume
 
 Kruskal's is not really "a graph algorithm" so much as "sort edges by weight,
 then greedily accept any edge that doesn't create a cycle" — the graph
@@ -284,7 +284,7 @@ correct and idiomatic; `lastEnd := 0` is a subtle bug the moment an interval's
 | Farthest-reach tracking (Jump Game) | O(n) | O(1) | No sort needed — already in index order |
 | Gas Station single pass | O(n) | O(1) | |
 | Two-pass one-array (Candy) | O(n) | O(n) | The output array itself is the only allocation |
-| Kruskal's MST | O(E log E) | O(V) | Sort dominates; Union-Find is ~O(1) amortized per op |
+| Kruskal's <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> | O(E log E) | O(V) | Sort dominates; Union-Find is ~O(1) amortized per op |
 | Interval scheduling (max non-overlap) | O(n log n) | O(1) | Sort by end time |
 
 ---
@@ -404,7 +404,7 @@ profit += max(0, prices[i]-prices[i-1])                    // Stock II: sum ever
 
 Seeding Kadane's `best` with `0` allows the empty subarray and is wrong on `[-3 -2 -5]` (answer −2). Jump Game needs
 *no per-step jump choices* — "always take the biggest jump" walks into a `0`. Stock II's trick stops working the moment a
-cooldown, fee or transaction limit appears (that is DP, topic 17).
+cooldown, fee or transaction limit appears (that is <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, topic 17).
 
 ### Running total and precomputation: Gas Station, Partition Labels, Valid Parenthesis String
 

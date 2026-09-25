@@ -9,7 +9,7 @@
 ## Estimates
 
 - **Sorted-set memory**: Redis sorted-set entries cost roughly 60–100 bytes each (member ID, score, skip-list and hash overhead). 100M players × ~80 bytes ≈ **8 GB** for one season board — large for a single in-memory instance, and regional plus friend boards multiply it.
-- **Writes**: 5K/s (20K/s bursts) `ZINCRBY`/`ZADD` — trivial for one Redis node (100K+ ops/s), so the bottleneck is memory and blast radius, not CPU.
+- **Writes**: 5K/s (20K/s bursts) `ZINCRBY`/`ZADD` — trivial for one Redis node (100K+ ops/s), so the bottleneck is memory and blast radius, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.
 - **Reads**: 50K/s; the top 100 is the same for everyone and caches perfectly; "my rank" is per player.
 - **Hot keys in the hybrid design**: each update costs 2 histogram increments (old bucket down, new bucket up), so the 20K/s burst puts 40K ops/s on one histogram key, while the 16 shards see only ~1,250 writes/s each. That is inside one Redis thread's ~100K ops/s but it is the tightest spot in the design, so split the histogram across a few keys by bucket range.
 - **Scale check**: 20M DAU × ~5 matches = 100M results/day ≈ 1.2K/s average, consistent with the 5K/s peak (4.3×). At an assumed 200 B per result that is 20 GB/day, about 7 TB/year in the score DB, which is the growing cost; the sorted sets are the small one.

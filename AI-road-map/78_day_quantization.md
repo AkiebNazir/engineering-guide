@@ -111,7 +111,7 @@ if __name__ == "__main__":
 The standard HuggingFace format (`.safetensors`) is designed for GPUs. But Apple MacBooks have incredible CPUs and Unified Memory.
 **Your Task:**
 1. Research the **GGUF** format (built by Georgi Gerganov for `llama.cpp`).
-2. Conceptually understand how GGUF quantizes models specifically for CPU SIMD instructions (like Apple Silicon's AMX coprocessors). 
+2. Conceptually understand how GGUF quantizes models specifically for <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> SIMD instructions (like Apple Silicon's AMX coprocessors). 
 3. Understand why running an INT4 GGUF model on a 64GB Mac Studio is currently the cheapest way to run a 70B model locally in the world.
 
 ### 🎤 MAANG Technical Interview Prep

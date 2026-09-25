@@ -3,7 +3,7 @@
 Welcome to Day 157.
 
 Imagine you build a successful <abbr title="Artificial Intelligence">AI</abbr> application. You launch it on Product Hunt. Traffic spikes from 10 requests per minute to 10,000 requests per minute. 
-If your infrastructure is static, your vLLM nodes will OOM (Out of Memory) and crash. 
+If your infrastructure is static, your vLLM nodes will <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> (Out of Memory) and crash. 
 
 Today, we learn how to architect **Traffic Management Systems**. We will learn how to intelligently distribute traffic (Load Balancing) and how to automatically spin up massive GPU clusters exactly when you need them, and spin them down when you don't (Auto-Scaling).
 
@@ -20,14 +20,14 @@ But what if Customer 1 has a cart with 500 items (a 30,000 token prompt), and Cu
 
 ### 2. Auto-Scaling with Kubernetes HPA
 The Kubernetes **Horizontal Pod Autoscaler (HPA)** automatically increases the number of vLLM Pods when traffic spikes.
-- **CPU Scaling (Flawed):** Scaling based on CPU is a bad idea for LLMs, because inference is heavily bottlenecked by GPU VRAM, not CPU.
+- **<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> Scaling (Flawed):** Scaling based on <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> is a bad idea for LLMs, because inference is heavily bottlenecked by GPU VRAM, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.
 - **GPU Scaling (Better):** You can configure HPA to scale when GPU Utilization hits >85%.
 - **Queue Scaling (Best):** Using **KEDA (Kubernetes Event-driven Autoscaling)**, you configure <abbr title="Kubernetes">K8s</abbr> to watch a Redis Queue. If there are 500 pending requests in the queue, <abbr title="Kubernetes">K8s</abbr> instantly spins up 10 new GPU pods to chew through the backlog.
 
 ### 3. The Cold Start Problem
 If traffic spikes and Kubernetes requests a new GPU pod, it takes time.
 1. AWS must provision a physical GPU instance (1-2 minutes).
-2. Docker must pull the massive 20GB vLLM image (1 minute).
+2. <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> must pull the massive 20GB vLLM image (1 minute).
 3. vLLM must load 140GB of model weights into VRAM (2 minutes).
 This 5-minute **Cold Start** is a killer. By the time the GPU is ready, the users have already abandoned your site!
 **Solution:** Keep a baseline of "Warm" GPUs running 24/7. When traffic starts rising, scale *proactively* (predictive scaling) rather than reactively.
@@ -141,7 +141,7 @@ If ALL nodes have `active_tokens_in_flight > 8000`, the `route_request` function
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Baseline:** Keep a baseline of 5 GPUs running 24/7 on AWS Reserved Instances (cheaper) to handle the 100 req/min traffic with zero latency.
-2. **The Auto-Scaler (KEDA):** Configure Kubernetes to scale based on **Queue Depth**, not CPU.
+2. **The Auto-Scaler (KEDA):** Configure Kubernetes to scale based on **Queue Depth**, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.
 3. **Spot Instances:** Configure the Kubernetes Autoscaler to spin up **Spot/Preemptible Instances** for the spike traffic. Spot instances are 70% cheaper, but can be terminated by AWS randomly.
 4. **Fault Tolerance:** Because Spot instances can vanish, the architecture must be strictly queue-based. If a Spot GPU dies mid-generation, the message must remain unacknowledged in the Redis Queue so another GPU can pick it up seamlessly.
 5. **Cold Start Mitigation:** Implement a "predictive" scaling algorithm that watches traffic velocity. If traffic is increasing 20% minute-over-minute, spin up GPUs *before* the queue gets clogged, anticipating the 5-minute GPU startup delay.

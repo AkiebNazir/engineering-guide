@@ -18,8 +18,8 @@ Constraints from the question; (assumed) marks our numbers. Block [26](../buildi
 
 | Quantity | Arithmetic | Result | So we need... |
 |---|---|---|---|
-| Ingest | 1,000,000 × 1 KB; average 0.4 × peak | 1 GB/s peak, 0.4 GB/s = 34.6 TB/day | Disk from the average, network and CPU from the peak. |
-| Retained | 34.56 TB × 7 days; × RF 3 | 242 TB, 726 TB replicated | Disk binds. Compression (3× on JSON, assumed) is a cost lever, not in the base plan. |
+| Ingest | 1,000,000 × 1 KB; average 0.4 × peak | 1 GB/s peak, 0.4 GB/s = 34.6 TB/day | Disk from the average, network and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> from the peak. |
+| Retained | 34.56 TB × 7 days; × RF 3 | 242 TB, 726 TB replicated | Disk binds. Compression (3× on <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, assumed) is a cost lever, not in the base plan. |
 | Brokers by disk | 726 / (24 TB × 0.65 fill) = 46.5 | **48 brokers**, 16 per zone, 63% full | Also 726 TB / 1 GB segments × 3 files = 2.2 M files, 45,000 open files per broker: raise `ulimit`. |
 | Network | Ingress 1 GB/s; egress = 2 follower fetches + 3 groups = 5 GB/s; brokers see 3 in, 5 out | 63 MB/s in, 104 MB/s out per broker = 8% of 10 GbE | Network is not a constraint. |
 | Cross-zone bytes | Replication 2 GB/s + producers 2/3 × 1 + consumers 2/3 × 3 | 4.7 GB/s peak, 161 TB/day at average | The bill line. Fetch-from-closest-replica (KIP-392) removes the consumer 2 GB/s: 92 TB/day. |
@@ -91,7 +91,7 @@ CTL ..> F1
 | Consumer state | One offset per partition | Per-message: in flight, visibility timeout, acked | Per-message ack on a log (Pub/Sub, Pulsar shared subscriptions, Kafka share groups per KIP-932, check status) |
 | Broker cost per message | Sequential append, amortised across a batch | Bookkeeping and an ack per message and subscription | Higher than a log |
 | Replay | Yes, any retained offset | No: deleted on ack | Usually yes |
-| Ordering | Per partition | Best effort, or FIFO groups | Per key when enabled |
+| Ordering | Per partition | Best effort, or <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> groups | Per key when enabled |
 | Poison message | Stalls its partition | Redelivered independently, then DLQ | Independent |
 | Fan-out to 3 groups | One copy, 3 offsets | 3 queues, 3 copies | One copy |
 
@@ -136,7 +136,7 @@ sequenceDiagram
 
 Latency budget: linger 2 ms + network 0.5 + leader append 0.1 + follower fetch 1 + ack 0.5 = about 4 ms p50 (assumed), so 20 ms leaves room for one stall but not a chronically slow disk.
 
-**No fsync per batch.** Durability comes from replication across zones, not flush (as in the Kafka docs). The cost: a simultaneous power loss in two zones can lose what the OS had not written back, about ingest × writeback interval (1 GB/s × 5 s = 5 GB at peak, assumed), which is outside the stated contract. **Unclean leader election stays off**: an empty ISR waits rather than losing committed messages.
+**No fsync per batch.** Durability comes from replication across zones, not flush (as in the Kafka docs). The cost: a simultaneous power loss in two zones can lose what the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> had not written back, about ingest × writeback interval (1 GB/s × 5 s = 5 GB at peak, assumed), which is outside the stated contract. **Unclean leader election stays off**: an empty ISR waits rather than losing committed messages.
 
 ## Deep dive 4: consumer groups, offsets and delivery semantics
 
@@ -176,7 +176,7 @@ C -> D : "fail, attempt 3"
 
 | Noisy neighbour | Effect | Control |
 |---|---|---|
-| Produce burst | Broker CPU and disk saturate | Byte-rate and request-time quotas, throttle at the broker |
+| Produce burst | Broker <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> and disk saturate | Byte-rate and request-time quotas, throttle at the broker |
 | Backfill consumer reading old data | Evicts the 17-minute page-cache tail for everyone | Fetch quota, cold reads served from object storage, not brokers |
 | Heavy tenant | Skews leaders and disks | Rack-aware balancing (for example Cruise Control), dedicated broker sets above a threshold |
 

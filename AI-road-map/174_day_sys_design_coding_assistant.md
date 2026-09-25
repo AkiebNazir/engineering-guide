@@ -14,16 +14,16 @@ Today, we learn how to design a **Coding Assistant**. We will learn about Contex
 ### 1. The Context Window Problem
 If you have a massive enterprise codebase with 10,000 files, you cannot send the entire codebase to the <abbr title="Large Language Model">LLM</abbr> on every keystroke. It would cost $5.00 per keystroke and take 30 seconds to process.
 The secret to Copilot is **Context Gathering (Retrieval)**. 
-When you type a comment, the IDE extension quietly scans your local workspace to build a highly relevant, condensed prompt.
+When you type a comment, the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> extension quietly scans your local workspace to build a highly relevant, condensed prompt.
 
 ### 2. Context Ranking Algorithms
-How does the IDE know which 3 files (out of 10,000) to include in the prompt?
-1. **Jaccard Similarity / TF-IDF:** The IDE breaks your current file into keywords. It searches the rest of your open files for those same keywords. If `database.py` shares 40 keywords with your current file, it gets included in the prompt!
-2. **Path Similarity:** If you are editing `app/models/user.py`, the IDE assumes `app/models/payment.py` is highly relevant because it sits in the same directory.
-3. **LSP (Language Server Protocol):** The IDE looks at the actual Abstract Syntax Tree (AST). If you type `import sqlalchemy`, the IDE guarantees that `sqlalchemy` documentation/snippets are included in the prompt.
+How does the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> know which 3 files (out of 10,000) to include in the prompt?
+1. **Jaccard Similarity / TF-IDF:** The <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> breaks your current file into keywords. It searches the rest of your open files for those same keywords. If `database.py` shares 40 keywords with your current file, it gets included in the prompt!
+2. **Path Similarity:** If you are editing `app/models/user.py`, the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> assumes `app/models/payment.py` is highly relevant because it sits in the same directory.
+3. **LSP (Language Server Protocol):** The <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> looks at the actual Abstract Syntax Tree (<abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr>). If you type `import sqlalchemy`, the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> guarantees that `sqlalchemy` documentation/snippets are included in the prompt.
 
 ### 3. The Copilot Prompt Architecture
-Once the IDE gathers the context, it constructs a massive, hidden prompt. It looks like this:
+Once the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> gathers the context, it constructs a massive, hidden prompt. It looks like this:
 ```text
 <system>You are an expert programmer. Complete the code.</system>
 <context_file name="database.py">class DB...</context_file>
@@ -41,13 +41,13 @@ This entire text block is sent to the <abbr title="Large Language Model">LLM</ab
 
 ### 4. Streaming & Ghost Text
 Developers type fast. If Copilot takes 2 seconds to generate 20 lines of code, the developer will have already typed past the suggestion point.
-Copilot relies on **Server-Sent Events (SSE)** (Day 153). As the <abbr title="Large Language Model">LLM</abbr> generates tokens on the GPU, they are streamed down to the IDE in milliseconds and rendered as gray "Ghost Text". If the developer hits `Tab`, the Ghost Text becomes real code.
+Copilot relies on **Server-Sent Events (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>)** (Day 153). As the <abbr title="Large Language Model">LLM</abbr> generates tokens on the GPU, they are streamed down to the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> in milliseconds and rendered as gray "Ghost Text". If the developer hits `Tab`, the Ghost Text becomes real code.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a conceptual implementation of the Copilot Backend. We will simulate an IDE sending a cursor position, the backend gathering context, and generating a code completion!
+Let's build a conceptual implementation of the Copilot Backend. We will simulate an <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> sending a cursor position, the backend gathering context, and generating a code completion!
 
 ```python
 import time
@@ -154,7 +154,7 @@ If a developer goes into the middle of an existing function and hits Enter, ther
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **Privacy & Security:** Acknowledge the constraint immediately. The model must be hosted internally (e.g., vLLM cluster running `StarCoder` or `CodeLlama`) inside the bank's VPC. Code cannot leave the network.
-2. **Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval):** Jaccard similarity isn't enough for a 50-million-line monorepo. Propose a nightly Airflow job that indexes the entire monorepo into a Vector Database. When the IDE extension needs context, it performs a Semantic Search (Day 172) against the Vector DB to find relevant proprietary functions before calling the internal <abbr title="Large Language Model">LLM</abbr>.
+2. **Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval):** Jaccard similarity isn't enough for a 50-million-line monorepo. Propose a nightly Airflow job that indexes the entire monorepo into a Vector Database. When the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> extension needs context, it performs a Semantic Search (Day 172) against the Vector DB to find relevant proprietary functions before calling the internal <abbr title="Large Language Model">LLM</abbr>.
 3. **Latency:** Ensure the model is served using Continuous Batching and Tensor Parallelism (Day 154) to meet the strict <300ms Time-To-First-Token constraint for IDE rendering.
 4. **Telemetry (Evaluation):** How do we know if the model is good? We cannot use <abbr title="Large Language Model">LLM</abbr>-as-a-Judge. We must log **Acceptance Rate** (Did the developer hit Tab?) and **Retention Rate** (Did the developer delete the generated code 5 minutes later?).
 

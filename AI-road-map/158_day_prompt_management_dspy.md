@@ -6,7 +6,7 @@ When you are hacking on a weekend project, you write your prompt directly inside
 If you do this in an enterprise, you will cause a production outage.
 
 What happens when OpenAI releases GPT-4o-mini? You swap the <abbr title="Application Programming Interface">API</abbr> endpoint. But suddenly, your carefully crafted prompt (which worked perfectly for GPT-4) causes the new model to hallucinate. 
-If your prompt is hardcoded in the backend, you have to push a code change, rebuild the Docker container, and redeploy the entire application just to change a sentence!
+If your prompt is hardcoded in the backend, you have to push a code change, rebuild the <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container, and redeploy the entire application just to change a sentence!
 
 Today, we learn **Production Prompt Management** and **Automated Prompt Optimization** using DSPy.
 

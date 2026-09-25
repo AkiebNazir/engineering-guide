@@ -100,7 +100,7 @@ Confirm the level first: a design that is excellent for L4 or SDE II is too narr
 **Depth areas commonly probed.**
 - **Operating at scale**: overload, degradation, deploy safety ([28](building_blocks/28_overload_control_and_graceful_degradation.md), [12](building_blocks/12_application_resilience_patterns.md)).
 - **Resilience and chaos**: designs that assume dependencies fail; Netflix has published on failure injection (Chaos Monkey, the Simian Army) since about 2011.
-- **Streaming and CDN**: adaptive bitrate, manifests, Open Connect appliances placed inside ISP networks ([29](building_blocks/29_cdn_and_streaming_media.md)).
+- **Streaming and <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>**: adaptive bitrate, manifests, Open Connect appliances placed inside ISP networks ([29](building_blocks/29_cdn_and_streaming_media.md)).
 - **Data pipelines and experimentation**: [21](building_blocks/21_batch_and_stream_processing.md), [31](building_blocks/31_ranking_recommendation_and_experimentation.md).
 - **Judgment**: the cost of complexity; what you would not build.
 
@@ -143,7 +143,7 @@ Planning assumption: one problem is a 45-minute timed attempt plus about 30 minu
 | Signal | Google | Meta | Netflix | Amazon |
 |---|---|---|---|---|
 | Scoping | You propose scope and confirm it | You tie scope to user behavior fast | You ask what the real constraint is | You start from the customer's promise |
-| Numbers | Few, decisive, rounded | Enough to size caches and fan-out | Enough to reason about cost and headroom | Cost per request as well as QPS |
+| Numbers | Few, decisive, rounded | Enough to size caches and fan-out | Enough to reason about cost and headroom | Cost per request as well as <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> |
 | Trade-offs | Committed, four-part | Committed, pragmatic, shippable first | Committed, with the operating cost named | Committed, with cost and blast radius |
 | Depth | Scale, tail, consistency | Ranking, caches, graph | Failure, streaming, experiments | Operations, isolation, idempotency |
 | Failure | Raised unprompted, with an RPO | Degrade the product, not the page | Assumed, injected, tested | Alarms, rollback, runbook |

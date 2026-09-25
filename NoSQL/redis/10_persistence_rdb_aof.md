@@ -1,6 +1,6 @@
 # Persistence: RDB and AOF
 
-Level 00 was clear that Redis's dataset lives in RAM. RAM is volatile — a process
+Level 00 was clear that Redis's dataset lives in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> is volatile — a process
 restart, a container recreate, a host reboot, and everything in memory is gone unless
 Redis wrote it to disk first. Redis has two independent, combinable persistence
 mechanisms, and picking between (or combining) them is a genuine durability/performance
@@ -54,7 +54,7 @@ BGSAVE -> Background saving started
 copy-on-write view of the parent's memory and writes it out while the parent keeps
 serving requests normally. This is why RDB snapshotting barely dents throughput — the
 tradeoff is instead about the fork itself needing enough free memory headroom for the
-OS's copy-on-write pages to diverge during a busy write workload.
+<abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>'s copy-on-write pages to diverge during a busy write workload.
 
 **RDB's durability gap**: everything written *since* the last snapshot is lost on a crash.
 With the default schedule, a crash 10 minutes after the last save can lose up to 10
@@ -97,13 +97,13 @@ Both an `appendonlydir` (AOF, modern multi-file format) and a `dump.rdb` (RDB) c
 on disk — enabling one doesn't remove the other, and Redis can be configured to use both.
 
 AOF's durability knob is `appendfsync`, which controls how often the log is actually
-flushed to disk (as opposed to just handed to the OS's page cache):
+flushed to disk (as opposed to just handed to the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>'s page cache):
 
 | `appendfsync` | Durability | Performance |
 |---|---|---|
 | `always` | Every write is fsynced before acknowledging — near-zero data loss on crash | Slowest — one disk fsync per write |
 | `everysec` (default) | Fsync once per second in a background thread | Good default — at most ~1 second of writes lost on a crash |
-| `no` | Let the OS decide when to flush | Fastest, but a crash can lose whatever the OS hadn't flushed yet |
+| `no` | Let the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> decide when to flush | Fastest, but a crash can lose whatever the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> hadn't flushed yet |
 
 ## The actual tradeoff
 
@@ -132,7 +132,7 @@ objectives between snapshots.
   and `CONFIG GET appendonly` rather than assuming.
 - **Running `BGSAVE` (or letting the scheduled snapshot fire) on a host with too little
   free memory headroom** for the copy-on-write fork under a heavy write load — this can
-  cause memory pressure or even OOM at exactly the wrong moment.
+  cause memory pressure or even <abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> at exactly the wrong moment.
 - **Treating a cache-only Redis instance's persistence config the same as a system-of-
   record instance's.** They have opposite right answers — decide deliberately, not by
   leaving the default.

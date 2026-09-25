@@ -1,7 +1,7 @@
 # Topic 11 · Binary Search Tree — Python Deep Dive
 
-> Topic 10 gave you the grammar of trees — preorder/inorder/postorder, DFS vs
-> BFS, "down via parameters, up via return". This topic adds exactly ONE
+> Topic 10 gave you the grammar of trees — preorder/inorder/postorder, <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> vs
+> <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, "down via parameters, up via return". This topic adds exactly ONE
 > new fact on top of all of that: **the values are ordered**. Every idea
 > below is either "what the ordering invariant buys you for free" or "what
 > breaks when you forget it's there." See the Go guide
@@ -46,8 +46,8 @@ def inorder(node, out):
 ```
 
 For the tree above: `1 3 4 6 7 8 10 13 14`. This one fact is *the* reason
-BST gets its own topic instead of living inside topic 10: "validate BST",
-"kth smallest", "BST to sorted list", "closest value", "two sum in a BST",
+<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> gets its own topic instead of living inside topic 10: "validate <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>",
+"kth smallest", "<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> to sorted list", "closest value", "two sum in a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>",
 "successor/predecessor" — every one of them reduces to "in-order is sorted,
 now do something with a sorted sequence you never have to materialize."
 
@@ -56,7 +56,7 @@ the payoff for why.
 
 ---
 
-## Part 2 · The Validate-BST Trap: Local Checks Are Not Enough
+## Part 2 · The Validate-<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Trap: Local Checks Are Not Enough
 
 The instinctive first attempt: check `left.val < node.val < right.val` at
 every node. This is wrong, and the counterexample is worth memorizing:
@@ -87,7 +87,7 @@ n6 -> n7
 ```
 
 Every parent-child pair here is individually fine (1 < 5, 8 > 5, 4 < 8,
-9 > 8). The tree is still not a BST, because the definition says the
+9 > 8). The tree is still not a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, because the definition says the
 **whole left/right subtree**, not just the immediate child. A search for 4
 starting at the root goes right at 5 (4 < 5 is false... wait, 4 < 5 is
 true, so it goes LEFT at 5) and never finds the 4 that's sitting in the
@@ -145,7 +145,7 @@ same shape.
 Deleting the node holding `target`:
 
 ```arch
-%% caption: The three delete cases. With two children the in-order successor takes the node's place, which keeps the BST invariant.
+%% caption: The three delete cases. With two children the in-order successor takes the node's place, which keeps the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> invariant.
 grid 200x100
 node F "find the node to delete" at 1,0 shape=pill
 node C "how many children?" at 1,1 shape=diamond color=amber
@@ -206,7 +206,7 @@ value is bigger than everything already there, so every node becomes the
 previous node's right child — a linked list wearing a tree costume:
 
 ```arch
-%% caption: Sorted inserts degrade a BST into a linked list. A balanced tree keeps the height at log n.
+%% caption: Sorted inserts degrade a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> into a linked list. A balanced tree keeps the height at log n.
 route straight
 grid 80x80
 group S "Sorted inserts: height 5" color=red
@@ -859,7 +859,7 @@ Eleven problems, five moves (compare-and-discard · construction from inorder ·
 | [002 · Convert Sorted Array to Binary Search Tree](PyDSA/11_binary_search_tree/002_convert_sorted_array_to_binary_search_tree_solution.py) <br>LC 108 · Easy | Sorted array = inorder | A sorted array *is* the target tree's inorder sequence: make the middle the root and recurse on index ranges. **Trap:** slicing (`nums[:mid]` copies O(n log n) elements); mixing the closed `[lo, hi]` convention with a half-open base case. |
 | [003 · Insert into a Binary Search Tree](PyDSA/11_binary_search_tree/003_insert_into_a_binary_search_tree_solution.py) <br>LC 701 · Medium | Insertion is a failed search | Descend exactly as in 001; the `None` slot you run off is where the node goes; return the (possibly new) root at every level. **Trap:** assigning to a local (`root = TreeNode(val)`) instead of the parent's slot; not returning `root`. |
 | [004 · Delete Node in a BST](PyDSA/11_binary_search_tree/004_delete_node_in_a_bst_solution.py) <br>LC 450 · Medium | Three delete cases | Leaf, one child, or two children (copy the inorder successor up, then delete it from the right subtree). **Trap:** not assigning the recursive result back (`root.left = delete(...)`); forgetting the one-child case. |
-| [005 · Lowest Common Ancestor of a Binary Search Tree](PyDSA/11_binary_search_tree/005_lowest_common_ancestor_of_a_binary_search_tree_solution.py) <br>LC 235 · Medium | The split point | Walk down; the first node where `p` and `q` go different ways (or that equals one of them) is the LCA — O(h), no recursion. **Trap:** LC 236's O(n) algorithm on a sorted input. |
+| [005 · Lowest Common Ancestor of a Binary Search Tree](PyDSA/11_binary_search_tree/005_lowest_common_ancestor_of_a_binary_search_tree_solution.py) <br>LC 235 · Medium | The split point | Walk down; the first node where `p` and `q` go different ways (or that equals one of them) is the <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> — O(h), no recursion. **Trap:** LC 236's O(n) algorithm on a sorted input. |
 | [006 · Validate Binary Search Tree](PyDSA/11_binary_search_tree/006_validate_binary_search_tree_solution.py) <br>LC 98 · Medium | Bounds, not local checks | The invariant covers the whole subtree: carry `(low, high)` down, or check that inorder is *strictly* increasing. **Trap:** comparing only with the two children; `<=` / `>=` (accepts duplicates). |
 | [007 · Kth Smallest Element in a BST](PyDSA/11_binary_search_tree/007_kth_smallest_element_in_a_bst_solution.py) <br>LC 230 · Medium | Inorder with an early exit | Inorder yields ascending values, so stop at the `k`-th: O(h + k). **Trap:** collecting the full list; an off-by-one in the counter. |
 | [008 · Binary Search Tree Iterator](PyDSA/11_binary_search_tree/008_binary_search_tree_iterator_solution.py) <br>LC 173 · Medium | A paused inorder | The explicit stack *is* the iterator's state; `next()` pops, then pushes the right child's **entire left spine**. **Trap:** precomputing the list (valid, but fails the O(h) follow-up); pushing only `node.right`. |
@@ -872,25 +872,25 @@ Eleven problems, five moves (compare-and-discard · construction from inorder ·
 
 ## Checklist Before Leaving This Topic
 
-- [ ] I can state the BST invariant and explain why in-order traversal of a
-      BST yields sorted output, from first principles (Part 1).
+- [ ] I can state the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> invariant and explain why in-order traversal of a
+      <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> yields sorted output, from first principles (Part 1).
 - [ ] I can produce the parent-child-only counterexample tree from memory
       and explain why it fools a local check (Part 2).
-- [ ] I can validate a BST both ways — bounds threaded down, and in-order
+- [ ] I can validate a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> both ways — bounds threaded down, and in-order
       strictly-increasing — and know which to offer first vs. second
       (Part 2).
 - [ ] I can write search, insert, and all three delete cases (leaf, one
       child, two children via successor-splice) from memory (Part 3).
-- [ ] I can explain why an unbalanced BST degrades to O(n), and that
+- [ ] I can explain why an unbalanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> degrades to O(n), and that
       neither Python nor Go ships a balanced ordered container in their
       standard library (Part 4).
 - [ ] I can state red-black's five invariants, explain why they bound
       height to O(log n), and walk through insertion's three fixup cases
       (uncle red / triangle / line) from memory, including why only Case 1
       can repeat while Cases 2-3 are the terminal O(1) fix (Part 4a).
-- [ ] I can name at least three BST-specific algorithms that beat their
+- [ ] I can name at least three <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>-specific algorithms that beat their
       general-tree equivalent, and say WHY in one sentence each: kth
-      smallest (early exit), LCA (comparison, no search), floor/ceiling
+      smallest (early exit), <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> (comparison, no search), floor/ceiling
       (descend once) (Part 5).
 - [ ] I know Python's ~1000-frame recursion ceiling is a real, hittable
       constraint on this topic's problems specifically, because skewed
@@ -915,8 +915,8 @@ Eleven problems, five moves (compare-and-discard · construction from inorder ·
       ADJACENT pair — and why that turns an apparent O(n^2) problem into
       O(n) once you notice the data is sorted (011).
 </content>
-- [ ] Build a BST from preorder in O(n) with an upper bound, and say why a BST needs no null markers <!--ca-->
-- [ ] Augment a BST with subtree sizes and write `select` / `rank` in O(h) <!--ca-->
+- [ ] Build a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> from preorder in O(n) with an upper bound, and say why a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> needs no null markers <!--ca-->
+- [ ] Augment a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> with subtree sizes and write `select` / `rank` in O(h) <!--ca-->
 - [ ] Use reverse inorder for a running total (Greater Tree) and pruning for range problems <!--ca-->
-- [ ] Name the ordered-container options (AVL, red-black, treap, skip list, B+ tree) and when each is used <!--ca-->
+- [ ] Name the ordered-container options (<abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr>, red-black, treap, skip list, B+ tree) and when each is used <!--ca-->
 - [ ] State a duplicate policy and keep insert, delete and validate consistent with it <!--ca-->

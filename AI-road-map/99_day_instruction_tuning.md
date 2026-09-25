@@ -39,7 +39,7 @@ Because it is the absolute first thing the Attention Mechanism reads, it sets th
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Python script that takes a raw JSON dataset of instructions and formats it strictly into ChatML strings, preparing it for the HuggingFace `SFTTrainer`.
+Let's build a Python script that takes a raw <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> dataset of instructions and formats it strictly into ChatML strings, preparing it for the HuggingFace `SFTTrainer`.
 
 Create a file named `chat_templates.py`:
 
@@ -117,7 +117,7 @@ When the <abbr title="Large Language Model">LLM</abbr> finishes generating, it s
 **Your Task:**
 1. Conceptually write a Python script using Regex or `string.split()`.
 2. Take an entire ChatML string containing a 4-turn conversation.
-3. Parse it into a standard JSON List of Dictionaries: 
+3. Parse it into a standard <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> List of Dictionaries: 
 `[{"role": "user", "content": "Hello"}, {"role": "assistant", "content": "Hi there!"}]`.
 4. This is the exact code that runs inside <abbr title="Application Programming Interface">API</abbr> gateways like OpenAI's `/v1/chat/completions`.
 

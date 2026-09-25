@@ -1,9 +1,9 @@
 # Transactions and Isolation Levels
 
 **Already covered elsewhere:** `CSFundamentals/03_databases_deep_dive.md` §3 covers
-MVCC internals in depth (how Postgres actually implements snapshots via `xmin`/`xmax`
+<abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> internals in depth (how Postgres actually implements snapshots via `xmin`/`xmax`
 row versioning) and already has the isolation-level/anomaly reference table. This
-level does not re-derive *how* MVCC works — it links there for that — and instead
+level does not re-derive *how* <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> works — it links there for that — and instead
 focuses on *what happens* when transactions collide in Postgres specifically, proven
 with two real concurrent sessions, and *how to avoid it*.
 
@@ -25,19 +25,19 @@ UPDATE accounts SET balance = balance + 50 WHERE id = 2;
 COMMIT;   -- or ROLLBACK to undo both if something went wrong
 ```
 
-## ACID, precisely
+## <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr>, precisely
 
 | Property | Means | Postgres mechanism |
 |---|---|---|
 | **Atomicity** | All of a transaction's writes happen, or none do | The whole transaction is undone on `ROLLBACK` or a crash before `COMMIT` |
 | **Consistency** | A transaction moves the database from one valid state to another, respecting every constraint | Enforced by constraints (level 05) checked before commit; not something the database "provides" beyond that — it's on you to define constraints that capture your invariants |
-| **Isolation** | Concurrent transactions don't see each other's uncommitted, in-progress work | MVCC snapshots (see `CSFundamentals/03_databases_deep_dive.md` §3) — *how much* isolation is a tunable choice, covered below |
-| **Durability** | Once committed, a transaction's writes survive a crash | The write-ahead log (WAL) is fsynced before `COMMIT` returns |
+| **Isolation** | Concurrent transactions don't see each other's uncommitted, in-progress work | <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> snapshots (see `CSFundamentals/03_databases_deep_dive.md` §3) — *how much* isolation is a tunable choice, covered below |
+| **Durability** | Once committed, a transaction's writes survive a crash | The write-ahead log (<abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>) is fsynced before `COMMIT` returns |
 
 Consistency is the odd one out: it isn't a mechanism the database runs for you the
 way atomicity/isolation/durability are — it's a property that *falls out of*
 correctly using the other three plus correctly-declared constraints. A transaction
-that violates a `CHECK` constraint simply never commits; the "C" in ACID is really a
+that violates a `CHECK` constraint simply never commits; the "C" in <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> is really a
 statement about what atomicity + constraints together guarantee.
 
 ## Isolation levels and the anomalies they allow
@@ -59,10 +59,10 @@ reference, since the rest of this level assumes you know these terms:
 - Postgres's default isolation level is **`READ COMMITTED`**.
 - Postgres has no separate "repeatable read" implementation distinct from snapshot
   isolation — requesting `REPEATABLE READ` in Postgres gives you full snapshot
-  isolation for the whole transaction, which is actually *stronger* than the SQL
+  isolation for the whole transaction, which is actually *stronger* than the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
   standard requires for that level.
 - Postgres never allows dirty reads, at any isolation level — this is a Postgres
-  guarantee, not a SQL-standard requirement (some other databases' lowest level does
+  guarantee, not a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>-standard requirement (some other databases' lowest level does
   allow them).
 
 ## Demo 1: a real lost update, and the fix
@@ -175,9 +175,9 @@ actual final balance: 90
 ```
 
 Exactly the same lost update as the Python/`threading` version — this isn't a
-Python-specific bug (e.g. the GIL is irrelevant here; both goroutines block on real
-network I/O to Postgres, not on CPU-bound Python bytecode), it's a property of the
-unprotected read-modify-write pattern itself, reproduced identically with real OS
+Python-specific bug (e.g. the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> is irrelevant here; both goroutines block on real
+network I/O to Postgres, not on <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound Python bytecode), it's a property of the
+unprotected read-modify-write pattern itself, reproduced identically with real <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>
 threads under the goroutine scheduler.
 
 The fix, `SELECT ... FOR UPDATE`, carries over directly — the only change from the

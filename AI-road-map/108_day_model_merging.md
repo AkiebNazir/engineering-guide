@@ -135,7 +135,7 @@ The `MergeKit` library allows you to merge models without writing python code; y
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Model merging allows us to combine models without retraining. However, when does it fail, and what are the catastrophic interference limits? Finally, what are the IP/licensing implications of merging models from different companies?"*
+*"Model merging allows us to combine models without retraining. However, when does it fail, and what are the catastrophic interference limits? Finally, what are the <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>/licensing implications of merging models from different companies?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -144,8 +144,8 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - State that you cannot merge LLaMA with Mistral. Model merging strictly requires that all models share the exact same original *Base Architecture and Base Weights*.
 2. **Catastrophic Interference Limits:**
    - Explain that if you merge 2 models, Linear/SLERP interpolation works fine. If you merge 10 models, the mathematical space becomes too saturated. The updates destroy each other. You must use TIES or DARE to aggressively prune/drop weights before summing them.
-3. **Licensing/IP Implications:**
-   - Explain that merging a permissively licensed model (Apache 2.0) with a restrictively licensed model (e.g., Llama-3 Community License) "taints" the weights. The resulting merged model inherits the most restrictive license of its parents. You cannot launder IP through mathematical averaging!
+3. **Licensing/<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> Implications:**
+   - Explain that merging a permissively licensed model (Apache 2.0) with a restrictively licensed model (e.g., Llama-3 Community License) "taints" the weights. The resulting merged model inherits the most restrictive license of its parents. You cannot launder <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> through mathematical averaging!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

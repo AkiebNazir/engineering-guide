@@ -99,7 +99,7 @@ disp:R -> ledger:L : "claim driver, write offer"
 disp:T -> pgw:B : "offer"
 pgw -> drv
 drv:T -> api:R : "accept"
-api:R -> ledger:R : "CAS OFFERED\nto MATCHED"
+api:R -> ledger:R : "<abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> OFFERED\nto MATCHED"
 ledger -> bus : "outbox"
 bus:L -> pgw:B
 pgw -> rider
@@ -167,7 +167,7 @@ sequenceDiagram
     D->>B: offer o2 (expires in 12 s)
     A->>S: accept o1
     B->>S: accept o2
-    Note over S: trip CAS OFFERED to MATCHED, exactly one succeeds
+    Note over S: trip <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> OFFERED to MATCHED, exactly one succeeds
     S-->>A: 200 MATCHED
     S-->>B: 409 OFFER_TAKEN
 ```

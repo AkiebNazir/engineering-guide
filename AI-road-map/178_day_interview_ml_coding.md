@@ -122,7 +122,7 @@ During this 20-minute coding exercise, you proved three things to the interviewe
 ## 🕒 HOUR 3: CHALLENGE & INTERVIEW PREP
 
 ### 🛠️ The Challenge
-The interviewer says: *"Great job on the Attention mechanism. Now, write a Python generator function that yields batches of data from a massive CSV file that is too large to fit in RAM. Ensure the batches are shuffled."*
+The interviewer says: *"Great job on the Attention mechanism. Now, write a Python generator function that yields batches of data from a massive CSV file that is too large to fit in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. Ensure the batches are shuffled."*
 **Your Task:** Write this function. (Hint: Read the CSV in chunks. Maintain a small buffer in memory. Shuffle the buffer, yield a batch, and read the next chunk into the buffer).
 
 ### 🎤 MAANG Technical Interview Prep

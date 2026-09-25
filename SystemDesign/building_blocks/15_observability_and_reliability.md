@@ -9,7 +9,7 @@ Observability is the evidence a system produces about its own behavior. Reliabil
 | Metrics | Numerical time series (rate, errors, latency, saturation, queue age, cache hit rate). | Dashboards, alerting, trend detection at low storage cost. |
 | Logs | Structured event records with correlation IDs and safe context. | Root-cause detail for one specific event or request; never log secrets/PII by default. |
 | Traces | Path and timing of one request across services. | Finding which hop in a distributed call is actually slow. |
-| Profiles | CPU/memory/code-path evidence over a window. | Performance regressions and resource-usage root cause within one process. |
+| Profiles | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>/memory/code-path evidence over a window. | Performance regressions and resource-usage root cause within one process. |
 
 Metrics tell you *that* something is wrong and roughly how bad. Traces tell you *where* in the call graph. Logs tell you *why*, for one specific instance. Profiles tell you *what code* is spending the resource. Reach for all four together — a single signal type answers only one of "what/where/why/what specifically."
 
@@ -29,12 +29,12 @@ Metrics tell you *that* something is wrong and roughly how bad. Traces tell you 
 | Framework | Applies to | Dimensions |
 |---|---|---|
 | RED | Request-serving services | Rate, Errors, Duration. |
-| USE | Resources (CPU, disk, connection pool, queue) | Utilization, Saturation, Errors. |
+| USE | Resources (<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, disk, connection pool, queue) | Utilization, Saturation, Errors. |
 | Four golden signals | General service health | Latency, traffic, errors, saturation. |
 
 None of these is the "correct" framework to recite. They're starting checklists for "what should I be measuring here" — pick metrics tied to actual user harm, not to whichever framework sounds most credentialed. A service can have RED metrics that look fine while its underlying USE metrics show a connection pool at 98% saturation about to fall over — track both the request-facing view and the resource-facing view.
 
-## SLI/SLO/error budget — worked example
+## <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr>/<abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>/error budget — worked example
 
 ```text
 SLI (indicator):  fraction of feed requests that return successfully in < 300ms
@@ -47,9 +47,9 @@ The error budget is a resource you spend deliberately. If the budget is nearly e
 
 ## Alert design
 
-Page on customer impact and burn rate, not on a raw resource number. "CPU at 80%" is a diagnostic signal you look at *after* a page fires — it is rarely, by itself, something that should wake someone up. Alert on:
+Page on customer impact and burn rate, not on a raw resource number. "<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> at 80%" is a diagnostic signal you look at *after* a page fires — it is rarely, by itself, something that should wake someone up. Alert on:
 
-- SLO burn rate (are we consuming error budget faster than sustainable).
+- <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> burn rate (are we consuming error budget faster than sustainable).
 - A symptom the user actually experiences (elevated error rate, elevated p99 latency on a critical path).
 - A leading indicator close enough to real harm to be actionable (queue depth trending toward the point where requests will start timing out).
 
@@ -76,7 +76,7 @@ State explicitly which failure domain your redundancy actually covers. "We have 
 
 ## Distributed tracing in practice
 
-- A **trace** is a tree of **spans** (one per operation: RPC, DB query, queue publish). Each span has a trace ID, span ID, parent span ID, timing, and attributes.
+- A **trace** is a tree of **spans** (one per operation: <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr>, DB query, queue publish). Each span has a trace ID, span ID, parent span ID, timing, and attributes.
 - **Context propagation** carries the trace ID across process boundaries in headers (W3C `traceparent`) and across async hops by putting it in message metadata. A queue consumer that doesn't propagate context breaks the trace.
 - **Sampling:** head-based sampling (decide at the start, e.g. 1%) is cheap but misses rare slow requests; tail-based sampling (decide after completion, keep all errors and slow traces) costs buffering but keeps the traces you actually need.
 - **Use:** find which hop owns the latency, detect fan-out explosions (one request causing 400 downstream calls), and link from a metric spike to exemplar traces. OpenTelemetry is the standard instrumentation <abbr title="Application Programming Interface">API</abbr>; Google's Dapper paper is the origin of the model.
@@ -101,10 +101,10 @@ Rules that make these work:
 
 ## Capacity planning
 
-1. **Measure demand:** peak QPS per endpoint, growth rate, seasonality (daily, weekly, holidays, launches).
-2. **Measure supply:** load-test one instance to find the throughput at which the latency SLO breaks (not the throughput at which it crashes).
-3. **Compute:** `instances = peak_QPS / safe_QPS_per_instance`, then add **headroom** for failures: in N+2 planning, the system must meet the SLO with the largest failure domain (a zone) down plus one more instance during a deploy. With 3 zones, each zone must carry 50% of peak, so total provisioned capacity is 150% of peak.
-4. **Watch the true bottleneck:** often not CPU — database connections, lock contention, network bandwidth, downstream quotas, or memory.
+1. **Measure demand:** peak <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> per endpoint, growth rate, seasonality (daily, weekly, holidays, launches).
+2. **Measure supply:** load-test one instance to find the throughput at which the latency <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> breaks (not the throughput at which it crashes).
+3. **Compute:** `instances = peak_QPS / safe_QPS_per_instance`, then add **headroom** for failures: in N+2 planning, the system must meet the <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> with the largest failure domain (a zone) down plus one more instance during a deploy. With 3 zones, each zone must carry 50% of peak, so total provisioned capacity is 150% of peak.
+4. **Watch the true bottleneck:** often not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> — database connections, lock contention, network bandwidth, downstream quotas, or memory.
 5. **Plan lead time:** hardware and quota take weeks or months; autoscaling handles minutes-to-hours variation but has warm-up time and needs quota available.
 6. **Revisit on every launch** and after any architectural change; model the cost as well as the capacity.
 
@@ -112,7 +112,7 @@ See `18_back_of_envelope_estimation.md` for the arithmetic.
 
 ## Tail latency and overload
 
-The latency SLI in the worked example above is decided at the tail, not the mean. When one request fans out to many servers and waits for all of them, the slowest server sets the latency: with 100 backends that are each slow 1% of the time, 63% of requests hit at least one slow backend (`1 − 0.99¹⁰⁰`, derived in `18_back_of_envelope_estimation.md`), so per-server p99 is what you measure and alert on. A standard mitigation is the **hedged request**: for an idempotent read, send a second copy to another replica if the first has not answered within about the typical p95, take whichever reply arrives first and cancel the other, which costs a small amount of extra load only on the requests that are already slow. Hedging is a retry, so it needs the same budget discipline as any retry ([12_application_resilience_patterns.md](12_application_resilience_patterns.md)) and must back off under overload, because extra copies add load exactly when there is none to spare. The technique is described in Dean and Barroso, "The Tail at Scale" (Communications of the ACM, 2013); see [24_google_papers.md](24_google_papers.md) for where it sits among the Google papers. When demand exceeds even the planned headroom, the next layer of defence (shedding, prioritization, graceful degradation) is in [28_overload_control_and_graceful_degradation.md](28_overload_control_and_graceful_degradation.md).
+The latency <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr> in the worked example above is decided at the tail, not the mean. When one request fans out to many servers and waits for all of them, the slowest server sets the latency: with 100 backends that are each slow 1% of the time, 63% of requests hit at least one slow backend (`1 − 0.99¹⁰⁰`, derived in `18_back_of_envelope_estimation.md`), so per-server p99 is what you measure and alert on. A standard mitigation is the **hedged request**: for an idempotent read, send a second copy to another replica if the first has not answered within about the typical p95, take whichever reply arrives first and cancel the other, which costs a small amount of extra load only on the requests that are already slow. Hedging is a retry, so it needs the same budget discipline as any retry ([12_application_resilience_patterns.md](12_application_resilience_patterns.md)) and must back off under overload, because extra copies add load exactly when there is none to spare. The technique is described in Dean and Barroso, "The Tail at Scale" (Communications of the ACM, 2013); see [24_google_papers.md](24_google_papers.md) for where it sits among the Google papers. When demand exceeds even the planned headroom, the next layer of defence (shedding, prioritization, graceful degradation) is in [28_overload_control_and_graceful_degradation.md](28_overload_control_and_graceful_degradation.md).
 
 ## Multi-region disaster recovery patterns
 

@@ -22,7 +22,7 @@ mid := (left + right) / 2      // ⚠️ can overflow
 Both compute the same mathematical value when there's no overflow, and on a
 64-bit Go `int` (which is what `int` is on every modern platform Go targets),
 overflow requires `left+right` to exceed `math.MaxInt64 ≈ 9.2×10^18`. You will
-never build a slice with that many elements — you'd run out of RAM millions of
+never build a slice with that many elements — you'd run out of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> millions of
 times over first. So in practice, **for slice indices this specific bug cannot
 fire on 64-bit Go**.
 

@@ -33,9 +33,9 @@ top 1B links   ≈ 250 GB   → ~90% of redirects
 
 Redirects are overwhelmingly read-heavy, and each number ends in a decision:
 
-- **Bandwidth is not the constraint; connections are.** 76 Mbps is a fraction of one NIC, but a fresh TLS handshake per visitor costs CPU (roughly a millisecond each, an assumption), so terminate TLS at the edge with session resumption and keep-alive to the redirect tier.
+- **Bandwidth is not the constraint; connections are.** 76 Mbps is a fraction of one NIC, but a fresh <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> handshake per visitor costs <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> (roughly a millisecond each, an assumption), so terminate <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> at the edge with session resumption and keep-alive to the redirect tier.
 - **Peak writes (190/s) never force sharding; storage does.** At 1.2 TB/year a single primary that comfortably holds ~4 TB (assumption) lasts about three years, so start unsharded but choose a `code`-hashable key now and plan the split by year 3.
-- **Size the cache to the database's read budget, not to 99%.** 25 GB (about 100M entries) gives ~80% hits, so misses are 20% × 19k ≈ 3.8k reads/s at peak, a primary-key lookup a single SSD-backed node handles. Going to 250 GB buys ten more points for ten times the RAM. Real traffic also has recency (new links are clicked most), which only raises the hit rate, so treat the Zipf figure as conservative and measure the real exponent first.
+- **Size the cache to the database's read budget, not to 99%.** 25 GB (about 100M entries) gives ~80% hits, so misses are 20% × 19k ≈ 3.8k reads/s at peak, a primary-key lookup a single <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr>-backed node handles. Going to 250 GB buys ten more points for ten times the <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. Real traffic also has recency (new links are clicked most), which only raises the hit rate, so treat the Zipf figure as conservative and measure the real exponent first.
 
 The first scale investments are therefore edge/redirect cache, connection efficiency, and a compact indexed mapping lookup, not a sharded write database on day one.
 
@@ -196,7 +196,7 @@ The redirect service should not synchronously call an analytics database, URL sc
 
 ## 7. Cache trade-offs
 
-Cache-aside reduces database reads at 19k peak redirect QPS; section 2 sizes it (about 25 GB for ~80% hits, leaving ~3.8k reads/s for the database). Mapping changes are rare, so a TTL is effective. The cache is not authoritative: on miss/outage, database lookup still works.
+Cache-aside reduces database reads at 19k peak redirect <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>; section 2 sizes it (about 25 GB for ~80% hits, leaving ~3.8k reads/s for the database). Mapping changes are rare, so a TTL is effective. The cache is not authoritative: on miss/outage, database lookup still works.
 
 | Situation | Behavior |
 |---|---|
@@ -206,7 +206,7 @@ Cache-aside reduces database reads at 19k peak redirect QPS; section 2 sizes it 
 | Cache down | Database fallback with admission control; watch DB saturation. |
 | Link disabled | Invalidate key immediately plus TTL as safety net; choose TTL to meet disable-propagation promise. |
 
-If the owner must disable a malicious link globally within seconds, long unpurgeable CDN caches contradict that requirement. Either use short TTL/edge purge plus an origin check, or state a bounded propagation delay honestly.
+If the owner must disable a malicious link globally within seconds, long unpurgeable <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> caches contradict that requirement. Either use short TTL/edge purge plus an origin check, or state a bounded propagation delay honestly.
 
 ## Click event schema and pipeline sizing
 
@@ -257,7 +257,7 @@ raw archive: 2 TB/month; columnar compression of roughly 5× (assumption) → ~0
 
 | Signal | Why |
 |---|---|
-| Redirect success rate and p50/p95/p99 by region | User-facing SLI/SLO. |
+| Redirect success rate and p50/p95/p99 by region | User-facing <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr>/<abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>. |
 | Cache hit rate, miss latency, eviction/memory | Detect cache effectiveness and pressure. |
 | DB latency, connection pool saturation, error rate | Detect fallback risk. |
 | Queue/consumer lag, click event drop count | Analytics freshness/data-quality promise. |
@@ -321,7 +321,7 @@ Example SLOs: 99.9% of valid redirect requests succeed in 28 days; p99 redirect 
 
 ## 12. Build exercise
 
-Build a local version with an HTTP <abbr title="Application Programming Interface">API</abbr>, PostgreSQL/SQLite, and cache abstraction.
+Build a local version with an HTTP <abbr title="Application Programming Interface"><abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr></abbr>, PostgreSQL/SQLite, and cache abstraction.
 
 1. Add link creation with random base62 codes and a database unique constraint.
 2. Add idempotency key storage; kill the request after commit to simulate lost response.

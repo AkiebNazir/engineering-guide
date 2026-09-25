@@ -23,8 +23,8 @@ L5 engineers must influence without authority. You cannot just order people to d
 **How to structure this story:**
 *   **The Trap:** "I proved them wrong, and we did it my way."
 *   **The L5 Action:**
-    1.  **De-escalation:** "Team B wanted to use MongoDB because it was schema-less and 'faster to iterate'. My team wanted PostgreSQL because we needed strict ACID guarantees for the ledger. The debate got heated in PR comments."
-    2.  **Objectivity over Subjectivity:** "I took the conversation offline. I proposed we evaluate both against our specific SLA requirements. I wrote a quick prototype simulating our expected QPS and data schema."
+    1.  **De-escalation:** "Team B wanted to use MongoDB because it was schema-less and 'faster to iterate'. My team wanted PostgreSQL because we needed strict <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> guarantees for the ledger. The debate got heated in PR comments."
+    2.  **Objectivity over Subjectivity:** "I took the conversation offline. I proposed we evaluate both against our specific <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr> requirements. I wrote a quick prototype simulating our expected <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> and data schema."
     3.  **The Compromise:** "The data showed Postgres handled the read-heavy ledger perfectly, but MongoDB was indeed better for the unstructured user-metadata they were building. Instead of fighting for one DB to rule them all, we agreed to decouple the services and use both where appropriate."
 *   **The Result:** "We shipped on time. More importantly, we restored trust between the teams by relying on data benchmarks rather than subjective opinions."
 

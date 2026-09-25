@@ -152,7 +152,7 @@ sequenceDiagram
     participant Stream as ProductChanged stream
     participant Indexer
     participant Search as Search cluster / suggestion index
-    participant CDN
+    participant <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>
 
     Admin->>Catalog: edit product
     Catalog->>Catalog: transaction: product change + outbox row
@@ -161,11 +161,11 @@ sequenceDiagram
     Stream->>Indexer: consume (idempotent by product_id, version)
     Indexer->>Search: write via versioned index alias
 
-    User->>CDN: search / autocomplete request
+    User->><abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>: search / autocomplete request
     alt safe to cache
-        CDN-->>User: cached response
+        <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>-->>User: cached response
     else
-        CDN->>Search: authorize/filter/query
+        <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>->>Search: authorize/filter/query
         Search-->>User: results
     end
 ```

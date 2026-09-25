@@ -142,4 +142,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. You have given your <abbr title="Artificial Intelligence">AI</abbr> the gift of Long-Term Memory.
 
-Tomorrow, in **Day 45**, we streamline the <abbr title="Long Short-Term Memory">LSTM</abbr> to save RAM, and we teach the <abbr title="Artificial Intelligence">AI</abbr> how to read sentences backward! Welcome to **GRUs and Bidirectional RNNs.**
+Tomorrow, in **Day 45**, we streamline the <abbr title="Long Short-Term Memory">LSTM</abbr> to save <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, and we teach the <abbr title="Artificial Intelligence">AI</abbr> how to read sentences backward! Welcome to **GRUs and Bidirectional RNNs.**

@@ -18,7 +18,7 @@ Every modern <abbr title="Natural Language Processing">NLP</abbr> system follows
 7. **Classification:** Pass through an `nn.Linear` layer to predict Sentiment!
 
 ### 2. Time Series Fundamentals
-A Time Series is just a sequence of numbers (e.g., Apple Stock prices every minute, or Server CPU load every hour). Because it is a sequence, we can use our <abbr title="Natural Language Processing">NLP</abbr> Sequence Models (LSTMs, 1D CNNs) to predict the future!
+A Time Series is just a sequence of numbers (e.g., Apple Stock prices every minute, or Server <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> load every hour). Because it is a sequence, we can use our <abbr title="Natural Language Processing">NLP</abbr> Sequence Models (LSTMs, 1D CNNs) to predict the future!
 - **Stationarity:** A Time Series is "Stationary" if its mean and variance do not change over time. You cannot mathematically forecast a stock if it has a massive permanent upward trend. You must **Difference** the data (predicting the *change* in price, rather than the absolute price) to make it stationary before feeding it to the <abbr title="Artificial Intelligence">AI</abbr>.
 - **Autocorrelation:** How much does yesterday's data affect today's data? If it rains today, the probability of it raining tomorrow is mathematically higher. 
 

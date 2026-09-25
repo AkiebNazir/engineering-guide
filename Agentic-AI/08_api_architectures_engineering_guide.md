@@ -1,4 +1,4 @@
-# Module 8 — <abbr title="Application Programming Interface">API</abbr> Architectures: REST, GraphQL, gRPC, and WebSockets
+# Module 8 — <abbr title="Application Programming Interface">API</abbr> Architectures: <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, and WebSockets
 
 This is the ultimate engineering guide to the four dominant communication protocols in modern backend systems. 
 
@@ -9,9 +9,9 @@ For each technology, we provide:
 
 ---
 
-## 1. REST (Representational State Transfer)
+## 1. <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> (Representational State Transfer)
 
-REST uses standard HTTP methods (GET, POST, PUT, DELETE) to interact with resources (URLs).
+<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> uses standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> methods (GET, POST, PUT, DELETE) to interact with resources (URLs).
 
 ### Data Flow Visualization
 ```mermaid
@@ -26,7 +26,7 @@ sequenceDiagram
 
 ### Implementations (Python & Golang)
 
-#### 1. Basic CRUD Routing (GET)
+#### 1. Basic <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> Routing (GET)
 **Use Case**: Fetching a specific resource by ID.
 * **Python (FastAPI)**:
   ```python
@@ -43,15 +43,15 @@ sequenceDiagram
   ```
 
 #### 2. Payload Serialization (POST)
-**Use Case**: Validating and saving incoming JSON data.
-* **Python**: Pydantic models automatically validate incoming JSON.
+**Use Case**: Validating and saving incoming <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> data.
+* **Python**: Pydantic models automatically validate incoming <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
   ```python
   from pydantic import BaseModel
   class User(BaseModel): name: str
   @app.post("/users")
   def create(user: User): return {"msg": f"Created {user.name}"}
   ```
-* **Golang**: Manual JSON unmarshaling using struct tags.
+* **Golang**: Manual <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> unmarshaling using struct tags.
   ```go
   type User struct { Name string `json:"name"` }
   func createHandler(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +194,7 @@ sequenceDiagram
   ```
 
 #### 5. Graceful Error Handling
-**Use Case**: Returning a 200 OK with a specific error block in the JSON.
+**Use Case**: Returning a 200 OK with a specific error block in the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
 * **Python**:
   ```python
   @strawberry.field
@@ -210,9 +210,9 @@ sequenceDiagram
 
 ---
 
-## 3. Protocol Buffers & gRPC
+## 3. Protocol Buffers & <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>
 
-gRPC uses `.proto` files to serialize data into tiny binary payloads sent over HTTP/2.
+<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> uses `.proto` files to serialize data into tiny binary payloads sent over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2.
 
 ### Data Flow Visualization
 ```mermaid
@@ -227,7 +227,7 @@ sequenceDiagram
 ### Implementations (Python & Golang)
 *Assume a `.proto` file exists with `message Ping { string txt = 1; }`*
 
-#### 1. Unary RPC (Ping-Pong)
+#### 1. Unary <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> (Ping-Pong)
 **Use Case**: Standard request-response with binary speed.
 * **Python**:
   ```python
@@ -295,7 +295,7 @@ sequenceDiagram
   ```
 
 #### 5. Interceptors
-**Use Case**: Attaching authentication tokens to gRPC headers.
+**Use Case**: Attaching authentication tokens to <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> headers.
 * **Python**: Requires a custom `grpc.ServerInterceptor` class modifying `handler_call_details`.
 * **Golang**:
   ```go
@@ -309,7 +309,7 @@ sequenceDiagram
 
 ## 4. WebSockets
 
-WebSockets upgrade a standard HTTP connection into a persistent, stateful, full-duplex TCP connection. 
+WebSockets upgrade a standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> connection into a persistent, stateful, full-duplex <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection. 
 
 ### Data Flow Visualization
 ```mermaid
@@ -327,7 +327,7 @@ sequenceDiagram
 ### Implementations (Python & Golang)
 
 #### 1. Connection Handshake
-**Use Case**: Upgrading HTTP to WS.
+**Use Case**: Upgrading <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> to WS.
 * **Python (FastAPI)**:
   ```python
   from fastapi import WebSocket
@@ -382,7 +382,7 @@ sequenceDiagram
   ```
 
 #### 4. Ping/Pong (Heartbeats)
-**Use Case**: Detecting disconnected clients who lost internet without closing the TCP socket.
+**Use Case**: Detecting disconnected clients who lost internet without closing the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> socket.
 * **Python**: Handled natively by Starlette/FastAPI under the hood, but can be manually triggered.
 * **Golang**:
   ```go
@@ -414,20 +414,20 @@ sequenceDiagram
 
 When asked to design a system, your choice of <abbr title="Application Programming Interface">API</abbr> protocol dictates the entire architecture. Memorize these tradeoffs:
 
-### REST
-- **When to use**: Public APIs, simple CRUD, high cacheability.
-- **Pros**: Every CDN (Cloudflare, Fastly) knows how to cache standard HTTP GET requests out of the box. Extremely simple to debug.
+### <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>
+- **When to use**: Public APIs, simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr>, high cacheability.
+- **Pros**: Every <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> (Cloudflare, Fastly) knows how to cache standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> GET requests out of the box. Extremely simple to debug.
 - **Cons**: Over-fetching (getting 50 fields when you need 2) and Under-fetching (having to make 5 sequential <abbr title="Application Programming Interface">API</abbr> calls to get related data).
 
 ### GraphQL
 - **When to use**: Complex frontend UIs (React/Next.js) that need highly specific, deeply nested data from multiple microservices.
 - **Pros**: Solves over/under-fetching. Strongly typed schema.
-- **Cons**: Extremely hard to cache at the CDN level because every request is an `HTTP POST` to `/graphql`. Prone to the N+1 database query problem if resolvers aren't optimized with DataLoaders.
+- **Cons**: Extremely hard to cache at the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> level because every request is an `HTTP POST` to `/graphql`. Prone to the N+1 database query problem if resolvers aren't optimized with DataLoaders.
 
-### gRPC / Protobuf
+### <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> / Protobuf
 - **When to use**: Internal Microservice-to-Microservice communication (e.g., your <abbr title="Application Programming Interface">API</abbr> Gateway talking to an <abbr title="Artificial Intelligence">AI</abbr> inference engine).
-- **Pros**: Binary serialization is CPU-efficient and network-efficient. HTTP/2 multiplexing allows thousands of requests over a single TCP connection.
-- **Cons**: Not easily consumable by web browsers (requires gRPC-Web proxy). Hard to debug without specific CLI tools like `grpcurl`.
+- **Pros**: Binary serialization is <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-efficient and network-efficient. <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 multiplexing allows thousands of requests over a single <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection.
+- **Cons**: Not easily consumable by web browsers (requires <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Web proxy). Hard to debug without specific <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> tools like `grpcurl`.
 
 ### WebSockets
 - **When to use**: Real-time, bidirectional event streams (Chat apps, live stock tickers, multiplayer gaming).

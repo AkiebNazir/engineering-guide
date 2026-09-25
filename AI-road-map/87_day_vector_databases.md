@@ -2,7 +2,7 @@
 
 Welcome to Day 87. In Phase 3, we built <abbr title="Retrieval-Augmented Generation">RAG</abbr> using FAISS in memory. 
 
-But FAISS is just a C++ library. If your server crashes, the FAISS index is deleted from RAM. It also doesn't natively support advanced metadata filtering or multi-node clustering.
+But FAISS is just a C++ library. If your server crashes, the FAISS index is deleted from <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. It also doesn't natively support advanced metadata filtering or multi-node clustering.
 When building Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr>, you need a true **Vector Database**. Today, we evaluate the landscape and build a local database using Qdrant.
 
 ---
@@ -10,7 +10,7 @@ When building Enterprise <abbr title="Retrieval-Augmented Generation">RAG</abbr>
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. HNSW (Hierarchical Navigable Small World)
-FAISS uses IVF-PQ (Inverted File with Product Quantization) to search fast. 
+FAISS uses IVF-<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr> (Inverted File with Product Quantization) to search fast. 
 Modern Vector DBs (like Qdrant and Pinecone) use an algorithm called **HNSW**. 
 - Imagine the database is a map of a city. 
 - HNSW builds a multi-layered graph of vectors. 
@@ -18,7 +18,7 @@ Modern Vector DBs (like Qdrant and Pinecone) use an algorithm called **HNSW**.
 - The middle layer has more connections (Main streets). 
 - The bottom layer has massive connections (Local roads).
 When a query enters, it drops into the top layer, instantly travels down the "Highway" to the general vicinity of the answer, and then drops to the bottom layer to find the exact nearest neighbor. 
-**Trade-off:** HNSW achieves lightning-fast sub-millisecond search, but requires massive amounts of RAM to store all the graph connections.
+**Trade-off:** HNSW achieves lightning-fast sub-millisecond search, but requires massive amounts of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> to store all the graph connections.
 
 ### 2. The Vector Database Landscape
 - **FAISS:** Facebook's open-source library. Insanely fast, but requires custom engineering to persist to disk or scale across servers.
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Payload:** Notice how Qdrant stores the original `text` directly inside the database `payload`. This means you don't need a separate Postgres SQL database to hold your text! Qdrant acts as both the vector index and the document store.
+1. **The Payload:** Notice how Qdrant stores the original `text` directly inside the database `payload`. This means you don't need a separate Postgres <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database to hold your text! Qdrant acts as both the vector index and the document store.
 2. **The Pre-Filter:** Even though Document #1 ("Q3 earnings") might have a higher Cosine Similarity to the query, the DB strictly ignores it because its `year` payload is 2023. This is essential for access-control (e.g., `user_id = 99`).
 
 ---
@@ -154,7 +154,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - However, for 100M documents, operational complexity is a nightmare. You must manually write the C++ or Python code to shard the index across multiple machines, implement Raft consensus for high availability, and write custom metadata filtering logic. Not worth the engineering time.
 2. **The Pinecone Trade-off:**
    - Serverless and zero ops. You can launch 100M vectors tomorrow.
-   - However, it is insanely expensive at scale. You are locked into their proprietary ecosystem, and network latency is higher because you are making REST <abbr title="Application Programming Interface">API</abbr> calls across the public internet to their servers.
+   - However, it is insanely expensive at scale. You are locked into their proprietary ecosystem, and network latency is higher because you are making <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> calls across the public internet to their servers.
 3. **The Qdrant/Milvus Choice (The Sweet Spot):**
    - Propose using open-source Qdrant or Milvus deployed on your own Kubernetes cluster inside your own VPC. 
    - This provides the advanced HNSW and Pre-filtering features of Pinecone, with the sub-millisecond local network latency and absolute data-privacy of FAISS.

@@ -344,19 +344,19 @@ Task: Write is_palindrome(s) ...
 
 ### 2.3 Tool-calling mechanics: from schema to constrained decoding
 
-A tool schema (JSON Schema-like) is **serialized directly into the system prompt** as
+A tool schema (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema-like) is **serialized directly into the system prompt** as
 text — there is no separate "function calling channel" at the raw model level; even
 provider APIs that expose a `tools=[...]` parameter are, under the hood, injecting a
 formatted tool description into the prompt and applying constrained decoding on the
 output side. Two enforcement strategies exist:
 
 1. **Prompt-only (unconstrained)**: the schema is shown as an example/instruction; the
-   model is trusted to emit matching JSON. Fails whenever the model hallucinates a
-   field name, produces invalid JSON (trailing comma, unescaped quote), or emits
+   model is trusted to emit matching <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. Fails whenever the model hallucinates a
+   field name, produces invalid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> (trailing comma, unescaped quote), or emits
    free-text mixed with the structured block.
 2. **Grammar-constrained decoding**: the token sampling step itself (§2.4 of Module 1)
    is restricted at each position to only tokens that keep the output a valid parse
-   under a formal grammar (a JSON-Schema-derived context-free grammar, compiled to a
+   under a formal grammar (a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-Schema-derived context-free grammar, compiled to a
    pushdown automaton or regex-based token mask). At each decode step, invalid tokens
    are masked to $-\infty$ logits **before** sampling — structurally identical to the
    top-k/top-p masking mechanism in Module 1, except the mask is grammar-derived rather
@@ -412,17 +412,17 @@ The schema the model reads:
 | # | Model output | What the harness should do | Caught by |
 |---|---|---|---|
 | 1 | `{"city": "Paris"}` | ✔ run the tool | — |
-| 2 | `{"city": "Paris"` *(missing `}`)* | feed back `PARSE_ERROR: invalid JSON` | JSON parser / constrained decoding |
+| 2 | `{"city": "Paris"` *(missing `}`)* | feed back `PARSE_ERROR: invalid JSON` | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> parser / constrained decoding |
 | 3 | tool `get_forecast` *(doesn't exist)* | feed back `ERROR: unknown tool 'get_forecast'` | registry lookup |
 | 4 | `{"town": "Paris"}` | feed back `missing required field 'city'` | schema validation / constrained decoding |
 | 5 | `{"city": "Parsi"}` *(typo)* | tool returns "city not found" → feed that back | **nothing but the tool itself** |
 
-> ⚠️ Case 5 is the lesson: constrained decoding guarantees the output is **valid JSON of the
+> ⚠️ Case 5 is the lesson: constrained decoding guarantees the output is **valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> of the
 > right shape**. It cannot guarantee the **values are right**.
 
 #### 🧮 Worked example — constrained decoding, one token at a time
 
-The model has written `{"city": ` so far. The next token must start a JSON string. Before
+The model has written `{"city": ` so far. The next token must start a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> string. Before
 sampling, the grammar masks everything else:
 
 | Candidate next token | Model's probability | Allowed by grammar? | After mask + renormalise |
@@ -467,7 +467,7 @@ scarcest resource:
   of re-summarization.
 - **Hierarchical memory**: keep full detail for the last $k$ steps, summarized detail
   for older steps, and offload anything older still to episodic/semantic memory
-  retrievable on demand — the agentic analogue of CPU cache hierarchies (L1/L2/L3 vs.
+  retrievable on demand — the agentic analogue of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache hierarchies (L1/L2/L3 vs.
   disk).
 
 #### 🖼️ The four memories, as a person would have them
@@ -575,7 +575,7 @@ point.
 **Deadlock and termination**: without an explicit termination condition, multi-agent
 loops can cycle indefinitely (agent A waits on B's tool result, B's tool call depends
 on a state only A can set — logically identical to a circular-wait deadlock in
-concurrent systems). Standard fixes, direct analogues of OS/distributed-systems
+concurrent systems). Standard fixes, direct analogues of <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>/distributed-systems
 techniques:
 
 - **Hard step/round budget** (timeout-based deadlock breaking).
@@ -720,7 +720,7 @@ d7:L -> s1:L : "no: goto 1"
 - **Prompt-injection via tool output**: an observation returned from an external tool
   (e.g. a scraped webpage) is untrusted text fed straight back into the prompt — a
   malicious tool result can attempt to override the system prompt's instructions. This
-  is structurally identical to SQL injection: untrusted data crossing into a
+  is structurally identical to <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection: untrusted data crossing into a
   control-plane channel without escaping/sandboxing.
 
 ---
@@ -753,7 +753,7 @@ sequenceDiagram
     H->>MAIL: send (should never happen)
 ```
 
-It's SQL injection with words: data (the page) crosses into the control channel (the prompt).
+It's <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection with words: data (the page) crosses into the control channel (the prompt).
 There is no perfect filter, so defences are **layered** around the dispatcher:
 
 ```arch
@@ -1082,7 +1082,7 @@ number of steps (O(k²)).
 <details>
 <summary>3. Constrained decoding is on, yet the model called get_weather with city "Parsi". Why wasn't it prevented?</summary>
 
-Constrained decoding enforces *shape* (valid JSON, right fields, right types). "Parsi" is a perfectly
+Constrained decoding enforces *shape* (valid <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, right fields, right types). "Parsi" is a perfectly
 valid string. Wrong *values* can only be caught by the tool, validation logic, or the model's next step.
 
 </details>

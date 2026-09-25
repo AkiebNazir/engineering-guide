@@ -21,7 +21,7 @@ To fix this, we use **Self-Consistency**: We run the exact same CoT prompt 5 tim
 
 ### 3. Tree of Thought (ToT)
 CoT is strictly linear. Humans don't think linearly. We explore a path, realize it's a dead end, and backtrack.
-**Tree of Thought** allows the <abbr title="Large Language Model">LLM</abbr> to brainstorm 3 different possible *next steps*. We ask the <abbr title="Large Language Model">LLM</abbr> to "score" each step from 1 to 10. We use a standard computer science Breadth-First-Search (BFS) algorithm to navigate this "Tree" of logic, abandoning paths that score low!
+**Tree of Thought** allows the <abbr title="Large Language Model">LLM</abbr> to brainstorm 3 different possible *next steps*. We ask the <abbr title="Large Language Model">LLM</abbr> to "score" each step from 1 to 10. We use a standard computer science Breadth-First-Search (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>) algorithm to navigate this "Tree" of logic, abandoning paths that score low!
 
 ### 4. The ReAct Architecture (Reason + Act)
 The ultimate Agent paradigm. It merges Chain of Thought with Tool Use.

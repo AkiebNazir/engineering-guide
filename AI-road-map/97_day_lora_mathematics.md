@@ -135,7 +135,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Order of Operations:** Notice the code: `(x @ self.lora_A.T) @ self.lora_B.T`. You should *never* explicitly calculate $B \times A$ during training. Multiplying a `4096x8` matrix by an `8x4096` matrix creates a massive `4096x4096` matrix in RAM, destroying all memory savings! Instead, you multiply the tiny Input Vector `x` by $A$, and then multiply that tiny result by $B$. 
+1. **The Order of Operations:** Notice the code: `(x @ self.lora_A.T) @ self.lora_B.T`. You should *never* explicitly calculate $B \times A$ during training. Multiplying a `4096x8` matrix by an `8x4096` matrix creates a massive `4096x4096` matrix in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, destroying all memory savings! Instead, you multiply the tiny Input Vector `x` by $A$, and then multiply that tiny result by $B$. 
 2. **The Alpha Scaling:** The formula uses `alpha / rank`. If $r=8$ and $\alpha=16$, the scaling is $2.0$. This ensures that if you change the Rank later (e.g., to $r=32$), the magnitude of the adapter's impact on the model stays mathematically stable.
 
 ---
@@ -162,7 +162,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 1. **The Intrinsic Dimension:** 
    - State the Aghajanyan hypothesis: Pre-trained models already have massive knowledge. Fine-tuning is just "pointing" that knowledge in a specific direction. Pointing requires very little mathematical rank.
 2. **When Rank-4 Fails:**
-   - Explain that Rank-4 is only sufficient if the new task is *highly similar* to the pre-training data (e.g., teaching the model a specific format of JSON). 
+   - Explain that Rank-4 is only sufficient if the new task is *highly similar* to the pre-training data (e.g., teaching the model a specific format of <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>). 
    - If you are teaching the model an entirely new language (like Korean, or a custom Python library that was never in the pre-training data), the *Intrinsic Rank* of that knowledge is very high! 
    - You must increase the rank to $r=64$ or $r=128$ to give the $A$ and $B$ matrices enough mathematical capacity to memorize the new vocabulary!
 

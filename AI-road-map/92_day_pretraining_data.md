@@ -112,7 +112,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Scale Problem:** The Python `set()` is perfect for 100 documents. But if you have 10 Billion documents, the `unique_docs` set will consume Terabytes of RAM and crash the server. This is why Databricks/Spark and advanced algorithms like MinHash LSH (Locality-Sensitive Hashing) are mandatory.
+1. **The Scale Problem:** The Python `set()` is perfect for 100 documents. But if you have 10 Billion documents, the `unique_docs` set will consume Terabytes of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> and crash the server. This is why Databricks/Spark and advanced algorithms like MinHash LSH (Locality-Sensitive Hashing) are mandatory.
 2. **The "Copyright" Problem:** Notice how Document #1 and Document #3 both survived deduplication. Even though the core text ("Rome was founded...") is identical, the presence of the word "Copyright 2024" in Doc 3 made the strings officially different! Exact deduplication fails here. Only Fuzzy Deduplication (MinHash) catches this!
 
 ---
@@ -138,7 +138,7 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Pipeline Scale:** 
-   - State that you cannot run this on a single machine. You must use Apache Spark or Ray clusters to distribute the MinHash LSH and Quality Filtering logic across hundreds of CPU nodes.
+   - State that you cannot run this on a single machine. You must use Apache Spark or Ray clusters to distribute the MinHash LSH and Quality Filtering logic across hundreds of <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> nodes.
 2. **PII Scrubbing:**
    - Explain that LLMs memorize data. If a Social Security Number is in the dataset, the <abbr title="Large Language Model">LLM</abbr> might output it during a chat. You must use regex pipelines (like Microsoft's Presidio) to mask `[PHONE_NUMBER]` or `[EMAIL]` during the extraction phase.
 3. **Decontamination (The Holy Grail):**

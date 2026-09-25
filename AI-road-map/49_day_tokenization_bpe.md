@@ -11,7 +11,7 @@ If you do this incorrectly, your <abbr title="Artificial Intelligence">AI</abbr>
 ### 1. The Nightmare of Word-Level Tokenization
 The naive approach is to use `string.split(' ')`. 
 - **The Problem:** If your training data contains the word `"play"` and `"playing"`, the <abbr title="Artificial Intelligence">AI</abbr> treats them as two completely separate words. It doesn't realize they share the root "play". 
-- **The Fatal Flaw (OOV):** If a user types a brand new word that wasn't in the training data (e.g., *"ChatGPT"*), the <abbr title="Artificial Intelligence">AI</abbr> crashes. This is the **Out Of Vocabulary (OOV)** error. To prevent this, old AIs used massive dictionaries of 200,000 words, which wasted massive amounts of RAM.
+- **The Fatal Flaw (OOV):** If a user types a brand new word that wasn't in the training data (e.g., *"ChatGPT"*), the <abbr title="Artificial Intelligence">AI</abbr> crashes. This is the **Out Of Vocabulary (OOV)** error. To prevent this, old AIs used massive dictionaries of 200,000 words, which wasted massive amounts of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>.
 
 ### 2. The Nightmare of Character-Level Tokenization
 If Words are too big, what if we tokenize by single Letters? 

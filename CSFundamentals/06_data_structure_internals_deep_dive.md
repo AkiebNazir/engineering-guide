@@ -99,7 +99,7 @@ A hash map without values. Same complexity, same internals (CPython `set` is a s
 | C++ `std::vector` | Implementation-defined; commonly 2x (libstdc++) or 1.5x (MSVC) |
 
 Consequences:
-- **Insert/delete at the front or middle is O(n)** (shifts everything). `list.pop(0)` in a BFS loop is a quadratic trap; use `collections.deque`.
+- **Insert/delete at the front or middle is O(n)** (shifts everything). `list.pop(0)` in a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> loop is a quadratic trap; use `collections.deque`.
 - **Slicing copies** in Python (`a[1:]` is O(n) time and memory). Recursion that passes `nums[1:]` is O(n²).
 - **Go slice aliasing:** slices share a backing array; `append` may or may not reallocate, so two slices can silently overwrite each other (demonstrated live in `GoDSA/01_arrays_hashing/001`).
 - **Cache locality:** contiguous arrays are dramatically faster to scan than linked structures of the same Big-O.
@@ -108,15 +108,15 @@ Consequences:
 
 | Language | Mutability | Concatenation in a loop |
 |---|---|---|
-| Python `str` | Immutable (sequence of code points; compact 1/2/4-byte representation per string, PEP 393) | `s += x` is O(n) per step in general → O(n²) total; use `"".join(parts)`. (CPython sometimes resizes in place when the refcount is 1 — don't rely on it) |
-| Go `string` | Immutable bytes (UTF-8); `s[i]` is a byte, `range` yields runes | Use `strings.Builder` |
-| Java `String` | Immutable (UTF-16 or Latin-1 compact strings) | Use `StringBuilder` |
+| Python `str` | Immutable (sequence of code points; compact 1/2/4-byte representation per string, <abbr title="Python Enhancement Proposal. A design document providing information to the Python community, describing a new feature or its environment.">PEP</abbr> 393) | `s += x` is O(n) per step in general → O(n²) total; use `"".join(parts)`. (CPython sometimes resizes in place when the refcount is 1 — don't rely on it) |
+| Go `string` | Immutable bytes (<abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8); `s[i]` is a byte, `range` yields runes | Use `strings.Builder` |
+| Java `String` | Immutable (<abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-16 or Latin-1 compact strings) | Use `StringBuilder` |
 
 Unicode matters: `len("école")` is 5 in Python and 6 bytes in Go; indexing by position assumes a representation.
 
 ## 4. Linked Lists and Deques
 
-- Singly/doubly linked lists: O(1) insert/delete **given the node**, O(n) search, poor cache locality, per-node pointer overhead. In practice they win only when you already hold node references (LRU cache: hash map → node).
+- Singly/doubly linked lists: O(1) insert/delete **given the node**, O(n) search, poor cache locality, per-node pointer overhead. In practice they win only when you already hold node references (<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> cache: hash map → node).
 - **CPython `collections.deque`:** a doubly linked list of **fixed-size blocks** (64 slots each), so appends/pops at both ends are O(1) with decent locality; indexing the middle is O(n).
 - **Ring buffer (circular array):** fixed capacity, O(1) push/pop at both ends, excellent locality. Used in kernels (NIC queues, io_uring), logging, audio, and bounded queues.
 
@@ -135,18 +135,18 @@ Needed when you want ordered operations: floor/ceiling, range queries, min/max w
 
 | Structure | Balance rule | Where it's used |
 |---|---|---|
-| Red-black tree | Colors + rotations; height ≤ 2 log(n+1) | Java `TreeMap`, C++ `std::map`, Linux CFS run queue, Java HashMap treeified buckets |
-| AVL tree | Height difference ≤ 1; stricter, faster lookups, more rotations | Read-heavy in-memory indexes |
+| Red-black tree | Colors + rotations; height ≤ 2 log(n+1) | Java `TreeMap`, C++ `std::map`, Linux <abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr> run queue, Java HashMap treeified buckets |
+| <abbr title="Adelson-Velsky and Landis Tree. A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one.">AVL</abbr> tree | Height difference ≤ 1; stricter, faster lookups, more rotations | Read-heavy in-memory indexes |
 | B-tree / B+ tree | High fan-out nodes sized to a disk or cache page | Databases and filesystems (see `03_databases_deep_dive.md`); `absl::btree_map` in memory for cache locality |
 | Skip list | Randomized levels; expected O(log n) | **Redis sorted sets** (skip list + hash map), LevelDB/RocksDB MemTable — easy to make concurrent |
-| Treap | Random priorities + BST order | Competitive programming, simple balanced BSTs |
+| Treap | Random priorities + <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> order | Competitive programming, simple balanced BSTs |
 
-**Python has no built-in balanced BST.** Options in an interview: `bisect` on a sorted list (O(log n) search, O(n) insert/delete via memmove — often fine and fast for n up to ~10^5), a heap if you only need min/max, or say "I'd use `sortedcontainers.SortedList` in production."
+**Python has no built-in balanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>.** Options in an interview: `bisect` on a sorted list (O(log n) search, O(n) insert/delete via memmove — often fine and fast for n up to ~10^5), a heap if you only need min/max, or say "I'd use `sortedcontainers.SortedList` in production."
 
 ## 7. Tries and Radix Trees
 
 - Trie: one node per character; O(L) insert/search for a key of length L, independent of how many keys are stored. Memory-heavy (a dict or 26-slot array per node).
-- **Radix (compressed) trie:** chains of single-child nodes collapsed into one edge labeled with a substring. Used in routers (IP longest-prefix match), HTTP routers, and Linux's page cache (XArray).
+- **Radix (compressed) trie:** chains of single-child nodes collapsed into one edge labeled with a substring. Used in routers (<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> longest-prefix match), <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> routers, and Linux's page cache (XArray).
 - Store extra data at nodes for autocomplete (top-k suggestions, counts): `PyDSA/13_trie/007`.
 
 ## 8. Graph Representations
@@ -155,7 +155,7 @@ Needed when you want ordered operations: floor/ceiling, range queries, min/max w
 |---|---|---|---|---|
 | Adjacency list | O(V + E) | O(degree) | O(degree) | Sparse graphs (almost always) |
 | Adjacency matrix | O(V²) | O(1) | O(V) | Dense graphs, small V, Floyd-Warshall |
-| Edge list | O(E) | O(E) | O(E) | Kruskal's MST, Bellman-Ford |
+| Edge list | O(E) | O(E) | O(E) | Kruskal's <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr>, Bellman-Ford |
 | CSR (compressed sparse row) | O(V + E), contiguous | O(log degree) if sorted | O(degree), cache-friendly | Large static graphs, graph analytics |
 
 ## 9. Quick Reference: Big-O of Built-ins

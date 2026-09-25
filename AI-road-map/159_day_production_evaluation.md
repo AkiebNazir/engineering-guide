@@ -2,9 +2,9 @@
 
 Welcome to Day 159.
 
-When you deploy a standard REST <abbr title="Application Programming Interface">API</abbr>, you monitor strict metrics: Latency, Error Rate (HTTP 500s), and CPU usage. If latency spikes, you get an alert, and you fix it.
+When you deploy a standard <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr>, you monitor strict metrics: Latency, Error Rate (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> 500s), and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> usage. If latency spikes, you get an alert, and you fix it.
 But when you deploy an <abbr title="Large Language Model">LLM</abbr> <abbr title="Application Programming Interface">API</abbr>, these metrics are completely blind to **Quality Degradation**. 
-If your model suddenly starts hallucinating or leaking private data, the HTTP status code will still be `200 OK`. The latency will be perfect. From an infrastructure perspective, the server is healthy. From a business perspective, your company is on fire.
+If your model suddenly starts hallucinating or leaking private data, the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status code will still be `200 OK`. The latency will be perfect. From an infrastructure perspective, the server is healthy. From a business perspective, your company is on fire.
 
 Today, we learn **Online Evaluation**. We will learn how to monitor the *quality* of <abbr title="Large Language Model">LLM</abbr> outputs in real-time using Prometheus, Grafana, and <abbr title="Large Language Model">LLM</abbr>-as-a-Judge.
 

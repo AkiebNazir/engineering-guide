@@ -15,7 +15,7 @@ Today, we learn the brutal engineering of **Agent Cost Optimization**: Model Rou
 You do not need a Ferrari to go to the grocery store. You do not need GPT-4o for every task.
 **Model Routing** uses a tiny, hyper-fast classifier model at the very front of your <abbr title="Application Programming Interface">API</abbr>. 
 - If the user asks *"Summarize this paragraph"*, the Router sends the task to Llama-3 8B (Cost: $\$0.0001$).
-- If the user asks *"Migrate my SQL database"*, the Router sends the task to GPT-4o (Cost: $\$0.15$).
+- If the user asks *"Migrate my <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database"*, the Router sends the task to GPT-4o (Cost: $\$0.15$).
 
 ### 2. Semantic Caching
 Traditional caching looks for exact string matches. If User A asks *"How to reset password?"* and User B asks *"How to reset password?"*, the server returns the cached answer.

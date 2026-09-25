@@ -1,4 +1,4 @@
-# SQL Injection and Parameterized Queries
+# <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> Injection and Parameterized Queries
 
 This is a security-critical lesson. The exploit below is run for real, against the
 live lab database, so the failure is something you see happen — not something you
@@ -6,12 +6,12 @@ take on faith.
 
 ## The mental model
 
-SQL injection happens when untrusted input is spliced directly into a SQL string
+<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection happens when untrusted input is spliced directly into a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> string
 instead of being passed as data separate from the query's structure. The database
-has no way to tell "a value the user typed" from "a fragment of SQL syntax" once
+has no way to tell "a value the user typed" from "a fragment of <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> syntax" once
 they've been concatenated into the same string — from the database's point of view,
-it's all just SQL it was asked to run. A **parameterized query** fixes this at the
-protocol level: the SQL text and the values are sent to the database *separately*,
+it's all just <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> it was asked to run. A **parameterized query** fixes this at the
+protocol level: the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> text and the values are sent to the database *separately*,
 so a value can never be reinterpreted as part of the query's structure, no matter
 what characters it contains.
 
@@ -143,7 +143,7 @@ SELECT id, username, is_admin FROM users
 WHERE username = 'root' -- ' AND password_hash = 'irrelevant'
 ```
 
-`--` starts a SQL comment; everything after it on that line — including the entire
+`--` starts a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> comment; everything after it on that line — including the entire
 password check — is discarded before Postgres even parses it. The query becomes
 "find the user named root," full stop.
 
@@ -173,7 +173,7 @@ The `%s` placeholders are not string formatting — `psycopg` sends the query te
 `SELECT ... WHERE username = %s AND password_hash = %s` to Postgres as a prepared
 statement, then sends the two values separately over the wire protocol as literal
 data for the two parameter slots. There is no step where Postgres re-parses a value
-as SQL syntax, because the value is never part of the SQL text at all.
+as <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> syntax, because the value is never part of the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> text at all.
 
 **Go (`database/sql` + pgx):** the same fix, Go's placeholder syntax is positional
 (`$1`, `$2` — Postgres's native numbered-parameter style, which pgx uses directly;
@@ -241,10 +241,10 @@ payload2 as literal credentials: []
   values elsewhere. If a table/column name genuinely needs to be dynamic, validate
   it against an explicit allowlist of known-safe names, or use your driver's
   identifier-quoting helper (`psycopg.sql.Identifier`) — never string-format it in.
-- **Assuming an ORM makes this automatically safe.** Most ORMs parameterize
-  standard query-builder calls, but nearly all of them also offer a raw/literal SQL
+- **Assuming an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> makes this automatically safe.** Most ORMs parameterize
+  standard query-builder calls, but nearly all of them also offer a raw/literal <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
   escape hatch (`.raw()`, `.extra()`, string-built `WHERE` fragments) — and a raw
-  query built with an f-string through an ORM is exactly as vulnerable as the
+  query built with an f-string through an <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr> is exactly as vulnerable as the
   `vulnerable_login` function above.
 - **Trusting client-side validation.** Nothing stops an attacker from sending
   requests directly to your <abbr title="Application Programming Interface">API</abbr>, bypassing whatever a browser form does — the

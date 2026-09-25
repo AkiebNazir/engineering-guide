@@ -147,9 +147,9 @@ A "Strong Hire" candidate must articulate:
 1. **The Self-Service Pipeline:** Draw the UI uploading the CSV to S3. This triggers a serverless function that formats the data into JSONL.
 2. **The Orchestrator:** The serverless function triggers an Airflow/Dagster pipeline (Day 161). The pipeline spins up a Kubernetes job to run the <abbr title="Low-Rank Adaptation">LoRA</abbr> fine-tuning script.
 3. **The Model Registry:** Once training finishes, the Airflow job uploads the 100MB <abbr title="Low-Rank Adaptation">LoRA</abbr> adapter to the MLflow Model Registry (Day 163).
-4. **Dynamic Loading (Zero Downtime):** The Airflow job updates the `TENANT_DB` (PostgreSQL) to associate the new adapter ID with the PM's team. The PM immediately gets an email with their <abbr title="Application Programming Interface">API</abbr> key. When they use it, the GPU cluster pulls the adapter from the Registry directly into VRAM. No Docker containers had to be rebuilt!
+4. **Dynamic Loading (Zero Downtime):** The Airflow job updates the `TENANT_DB` (PostgreSQL) to associate the new adapter ID with the PM's team. The PM immediately gets an email with their <abbr title="Application Programming Interface">API</abbr> key. When they use it, the GPU cluster pulls the adapter from the Registry directly into VRAM. No <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> containers had to be rebuilt!
 
 ---
-**Task for the end of the day:** Review the concept of **Multi-Tenancy** in SaaS applications.
+**Task for the end of the day:** Review the concept of **Multi-Tenancy** in <abbr title="Software as a Service - A software licensing and delivery model in which software is licensed on a subscription basis and is centrally hosted.">SaaS</abbr> applications.
 
 Tomorrow, in **Day 176**, we design the final system of this curriculum: **A Document Intelligence Pipeline**. How do you process 100,000 messy, scanned legal PDFs a day and turn them into structured database rows using OCR and LLMs?

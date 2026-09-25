@@ -2,7 +2,7 @@
 
 > Recursion in Go looks identical to recursion in Python — a function calling
 > itself — but two things underneath are different: Go's compiler never turns
-> your recursion into a loop for you (no TCO), and the state you carry between
+> your recursion into a loop for you (no <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr>), and the state you carry between
 > calls is usually a **slice**, which means the aliasing rules from Topic 01
 > come back with a vengeance. Backtracking is where that bug bites hardest,
 > because backtracking's entire idea — mutate, recurse, undo — is a slice being
@@ -77,7 +77,7 @@ array, invisible to anything indexing through the shrunk header, but very
 much alive if something else still holds a longer slice or a raw pointer into
 that array. This is harmless for `int` elements (nothing to leak), but if
 `subset` held pointers or large structs, the "popped" element keeps whatever
-it pointed to reachable from the GC's perspective until the slot is
+it pointed to reachable from the <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>'s perspective until the slot is
 overwritten by the next push. For plain `[]int` backtracking state this is a
 non-issue — flagged here because the same slice mechanics reappear in
 Topic 06 (Stack) with real consequences.
@@ -89,7 +89,7 @@ Topic 06 (Stack) with real consequences.
 ### 2.1 Go's compiler will not turn your recursion into a loop
 
 Some languages (Scheme, and to varying degrees, functional languages compiled
-with TCO passes) detect that a recursive call is the *last* thing a function
+with <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr> passes) detect that a recursive call is the *last* thing a function
 does and rewrite it as a jump, reusing the current stack frame instead of
 pushing a new one. **The Go compiler does not do this**, by design and by
 explicit statement from the Go team — every recursive call, tail position or
@@ -109,7 +109,7 @@ function-call overhead, always. For `factorial`/`fibonacci`-shaped recursion
 (`recursion/factorial/factorial.go`, `recursion/fibonacci/fibonacci.go`) with
 `n <= 30`, this is irrelevant. It stops being irrelevant the moment recursion
 depth scales with input size in the thousands or more (deep linked-list
-recursion, an unbalanced BST, a poorly bounded search) — see 2.2.
+recursion, an unbalanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>, a poorly bounded search) — see 2.2.
 
 ### 2.2 Goroutine stacks are growable, but not infinite
 
@@ -243,7 +243,7 @@ used, to dedupe permutations of a list with repeats" — cuts real, often
 dramatic runtime in interviews and production, but for most of these
 problems the *worst-case* complexity is unaffected: a search space that is
 inherently `O(2^n)` or `O(n!)` stays that class unless the pruning is strong
-enough to change the recurrence itself (rare outside DP-shaped problems).
+enough to change the recurrence itself (rare outside <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>-shaped problems).
 State this precisely in interviews: "pruning helps the average/typical case
 substantially; the stated complexity is still the unpruned worst case" is the
 correct sentence, and it's a sentence interviewers listen for.
@@ -604,9 +604,9 @@ State it precisely: *"pruning cuts the typical case a lot; the worst-case class 
 
 Palindrome Partitioning re-tests substrings at every node. An `O(n²)` table `is[i][j] = s[i]==s[j] && (j-i < 2 || is[i+1][j-1])`
 makes each test O(1). The output is still exponential (`"aaaa"` has `2³ = 8` partitions); only the per-node cost drops.
-When a *sub-question* repeats, tabulate it — this is the bridge to DP.
+When a *sub-question* repeats, tabulate it — this is the bridge to <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>.
 
-### When the state repeats, backtracking becomes DP
+### When the state repeats, backtracking becomes <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 
 If different paths can reach the **same state** (`index`, `remaining`, a bitmask of used items) and the question is a
 count or a yes/no, memoise the state (Part 4 shows the map and slice forms; a `map[[2]int]int` keys on two ints).
@@ -629,7 +629,7 @@ For *listing every answer* memoisation cannot help — the output is the cost.
 | Follow-up | The answer |
 |---|---|
 | "Only count them / find one." | Count: return an `int` up the stack, store no path. Find one: return `true` up the stack and stop (the cascade return). |
-| "Better than exponential?" | Not for enumeration — the output is `2ⁿ` / `n!`. For counting or existence, look for repeated states (DP) or structure. |
+| "Better than exponential?" | Not for enumeration — the output is `2ⁿ` / `n!`. For counting or existence, look for repeated states (<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) or structure. |
 | "Too slow." | Prune before recursing, order the choices (sort, most-constrained first), bound the loop, use bitmasks, exploit symmetry (N-Queens: half the board, mirror). |
 | "Parallelise." | Split at the first level: each first choice is an independent subtree — one goroutine each, results merged through a channel. |
 | "Duplicates in the input." | Sort, skip equal *siblings* (`i > start`), never equal values across depths. |
@@ -645,7 +645,7 @@ Fourteen problems, five moves (memoisation as the bridge · the three base shape
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
-| [001 · Fibonacci Number](GoDSA/09_recursion_backtracking/001_fibonacci_number/solution.go) <br>LC 509 · Easy | The bridge to DP | A closure over `memo []int` (seed `-1` — `0` is a real Fibonacci value) or `map[int]int`; there is no `@lru_cache`. **Trap:** using `0` as "not computed"; naive recursion at `n = 50`. |
+| [001 · Fibonacci Number](GoDSA/09_recursion_backtracking/001_fibonacci_number/solution.go) <br>LC 509 · Easy | The bridge to <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> | A closure over `memo []int` (seed `-1` — `0` is a real Fibonacci value) or `map[int]int`; there is no `@lru_cache`. **Trap:** using `0` as "not computed"; naive recursion at `n = 50`. |
 | [002 · Subsets](GoDSA/09_recursion_backtracking/002_subsets/solution.go) <br>LC 78 · Medium | Subsets — every node is an answer | Shared `path`, push/pop, `res = append(res, slices.Clone(path))` at *every* node. **Trap:** `append(res, path)` — correct up to `n = 4`, silently wrong from `n = 5` (31 distinct of 32). |
 | [003 · Subsets II](GoDSA/09_recursion_backtracking/003_subsets_ii/solution.go) <br>LC 90 · Medium | Sort, then skip equal siblings | `slices.Sort(nums)`; `if i > start && nums[i] == nums[i-1] { continue }`. **Trap:** not sorting; `i > 0` instead of `i > start`. |
 | [004 · Permutations](GoDSA/09_recursion_backtracking/004_permutations/solution.go) <br>LC 46 · Medium | Permutations | `used := make([]bool, n)` (zero value already `false`); `path := make([]int, 0, n)`; clone at the leaf. **Trap:** appending the shared path; forgetting `used[i] = false` on the way out. |

@@ -449,7 +449,7 @@ fragmentation** as variable-length sequences finish and free memory in a way tha
 leaves unusable gaps between other sequences' contiguous buffers. Reported vLLM paper
 findings: 60–80% memory waste under naive contiguous allocation.
 
-**Mechanism**: PagedAttention borrows the OS virtual-memory paging idea. The KV cache
+**Mechanism**: PagedAttention borrows the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> virtual-memory paging idea. The KV cache
 for a sequence is split into fixed-size **blocks** (e.g. 16 tokens per block). A
 **block table** (per sequence, analogous to a page table) maps logical token positions
 to physical block addresses, which need not be contiguous in physical memory:
@@ -470,7 +470,7 @@ eliminating fragmentation. Benefits:
   sequences can reference the *same physical blocks* via their block tables (reference
   counted), only forking (copying) a block once a sequence actually diverges and writes
   to it — critical for prompt-prefix caching across concurrent requests.
-- **Preemption/swapping**: a sequence's block table can be evicted to CPU memory and
+- **Preemption/swapping**: a sequence's block table can be evicted to <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> memory and
   restored later without needing a contiguous GPU allocation on return.
 
 ---
@@ -512,7 +512,7 @@ b1 -> p4
 ```
 
 > 💡 This is exactly how an operating system's virtual memory works: page table → physical pages.
-> If you've learned paging in an OS course, you already understand vLLM.
+> If you've learned paging in an <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> course, you already understand vLLM.
 
 ---
 

@@ -22,31 +22,31 @@ E -> C : "Deserialize"
 ## 1. Core Architecture & System Design
 
 ### Deep Dive
-**Protocol Buffers (Protobuf)** is a language-neutral, platform-neutral extensible mechanism for serializing structured data developed by Google. Unlike JSON or XML which are text-based, Protobuf encodes data into a highly compressed binary format.
+**Protocol Buffers (Protobuf)** is a language-neutral, platform-neutral extensible mechanism for serializing structured data developed by Google. Unlike <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> or <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> which are text-based, Protobuf encodes data into a highly compressed binary format.
 - **Schema-First**: You define how you want your data to be structured in a `.proto` file.
 - **Compiler (`protoc`)**: This file is compiled to generate native source code (classes/structs) in your programming language of choice (Go, Python, Java, C++, etc.).
-- **Binary Encoding**: Under the hood, Protobuf uses Base-128 Varints to compress integers and assigns numeric tags (e.g., `= 1;`) to fields instead of sending the string field names (like `"user_id": 1` in JSON). This strips out massive amounts of metadata overhead.
+- **Binary Encoding**: Under the hood, Protobuf uses Base-128 Varints to compress integers and assigns numeric tags (e.g., `= 1;`) to fields instead of sending the string field names (like `"user_id": 1` in <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>). This strips out massive amounts of metadata overhead.
 
 ### Trade-offs
 **Pros:**
-- **Lightning Fast & Tiny Footprint**: Serialization/deserialization is CPU-efficient, and the resulting binary payload is exponentially smaller than JSON.
+- **Lightning Fast & Tiny Footprint**: Serialization/deserialization is <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-efficient, and the resulting binary payload is exponentially smaller than <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
 - **Strict Typing & Contracts**: No more guessing if a field is a string or an int. The generated code strictly enforces the schema.
 - **Forward & Backward Compatibility**: As long as you don't change the numeric tags of existing fields, you can add new fields or remove old ones without breaking legacy clients.
 
 **Cons:**
 - **Not Human-Readable**: You cannot simply `console.log` or Wireshark a Protobuf payload without the original `.proto` file to decode the binary tags.
-- **No Native Browser Support**: Browsers expect JSON. Protobuf requires additional JavaScript libraries to decode, which can inflate bundle sizes.
-- **No Dynamic Schemas**: If your data structure changes dynamically per request, JSON is much better. Protobuf requires predefined structures.
+- **No Native Browser Support**: Browsers expect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. Protobuf requires additional JavaScript libraries to decode, which can inflate bundle sizes.
+- **No Dynamic Schemas**: If your data structure changes dynamically per request, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is much better. Protobuf requires predefined structures.
 
 ### System Design Fit
 **Optimal Scenarios:**
-- **gRPC Payloads**: It is the default serialization mechanism for gRPC.
-- **Message Queues & Event Streaming**: Writing binary Protobuf to Kafka, RabbitMQ, or Redis Pub/Sub reduces storage costs and network I/O dramatically compared to JSON.
+- **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Payloads**: It is the default serialization mechanism for <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>.
+- **Message Queues & Event Streaming**: Writing binary Protobuf to Kafka, RabbitMQ, or Redis Pub/Sub reduces storage costs and network I/O dramatically compared to <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
 - **Data Storage**: Saving highly compressed data structures directly to databases or file systems (e.g., Parquet integrates well with Protobuf concepts).
 
 **Anti-Patterns:**
-- **Public REST APIs**: External consumers prefer JSON because it doesn't require downloading and compiling a `.proto` schema file.
-- **Configuration Files**: Use YAML or JSON for config files; Protobuf is for machine-to-machine data.
+- **Public <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs**: External consumers prefer <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> because it doesn't require downloading and compiling a `.proto` schema file.
+- **Configuration Files**: Use YAML or <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> for config files; Protobuf is for machine-to-machine data.
 
 ---
 
@@ -69,7 +69,7 @@ E -> C
 D -> E : "Tiny Binary Payload"
 ```
 
-### Animated Flow Visualization (JSON vs Protobuf Size Comparison)
+### Animated Flow Visualization (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> vs Protobuf Size Comparison)
 Save the block below as an HTML file (e.g. `protobuf-anim.html`) or paste it into a browser.
 
 ```html
@@ -133,7 +133,7 @@ message User {
 ---
 
 ### Use Case 1: Saving Binary State to Redis
-**System Design Fit:** Caching complex objects in Redis. Serializing to Protobuf saves massive amounts of RAM in Redis compared to storing stringified JSON.
+**System Design Fit:** Caching complex objects in Redis. Serializing to Protobuf saves massive amounts of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> in Redis compared to storing stringified <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
 
 #### Golang (Writing to Redis)
 ```go
@@ -187,7 +187,7 @@ read_from_cache()
 ---
 
 ### Use Case 2: Kafka Event Streaming
-**System Design Fit:** Microservices publishing events to Kafka. JSON schema evolution is messy; Protobuf guarantees schema enforcement across the event bus.
+**System Design Fit:** Microservices publishing events to Kafka. <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schema evolution is messy; Protobuf guarantees schema enforcement across the event bus.
 
 #### Golang (Producer)
 ```go
@@ -224,7 +224,7 @@ for msg in consumer:
 ---
 
 ### Use Case 3: Storing Data to Disk (File/Object Storage)
-**System Design Fit:** Writing millions of records to disk or AWS S3 for analytics. Protobuf files are vastly smaller than CSV or JSON Lines.
+**System Design Fit:** Writing millions of records to disk or AWS S3 for analytics. Protobuf files are vastly smaller than CSV or <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Lines.
 
 #### Golang (Writing binary file)
 ```go
@@ -284,10 +284,10 @@ def clone_user(original: models_pb2.User) -> models_pb2.User:
 
 ---
 
-### Use Case 5: Over UDP Protocol Data (Custom Networking)
-**System Design Fit:** Building a custom fast-paced multiplayer game protocol over UDP. You need payloads to be as small as possible to fit in MTU packets without fragmentation.
+### Use Case 5: Over <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr> Protocol Data (Custom Networking)
+**System Design Fit:** Building a custom fast-paced multiplayer game protocol over <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr>. You need payloads to be as small as possible to fit in MTU packets without fragmentation.
 
-#### Golang (Sending via UDP)
+#### Golang (Sending via <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr>)
 ```go
 import (
 	"net"
@@ -304,7 +304,7 @@ func sendUDP(user *pb.User) {
 }
 ```
 
-#### Python (Receiving via UDP)
+#### Python (Receiving via <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr>)
 ```python
 import socket
 import models_pb2

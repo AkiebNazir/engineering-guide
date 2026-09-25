@@ -15,11 +15,11 @@ Today, we learn the revolutionary open standard that solves this: **The Model Co
 
 ### 1. The $M \times N$ Integration Problem
 Before <abbr title="Model Context Protocol">MCP</abbr>, the <abbr title="Artificial Intelligence">AI</abbr> industry was highly fragmented.
-If a company used 5 <abbr title="Artificial Intelligence">AI</abbr> Clients (Claude Desktop, a custom LangGraph agent, Cursor IDE) and wanted them to access 5 Data Sources (GitHub, Postgres, Slack, Jira, Google Drive), engineers had to write **25 custom <abbr title="Application Programming Interface">API</abbr> integrations**. Every <abbr title="Large Language Model">LLM</abbr> required a different tool schema format.
+If a company used 5 <abbr title="Artificial Intelligence">AI</abbr> Clients (Claude Desktop, a custom LangGraph agent, Cursor <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr>) and wanted them to access 5 Data Sources (GitHub, Postgres, Slack, Jira, Google Drive), engineers had to write **25 custom <abbr title="Application Programming Interface">API</abbr> integrations**. Every <abbr title="Large Language Model">LLM</abbr> required a different tool schema format.
 
-### 2. The <abbr title="Model Context Protocol">MCP</abbr> Solution (HTTP for <abbr title="Artificial Intelligence">AI</abbr>)
+### 2. The <abbr title="Model Context Protocol">MCP</abbr> Solution (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> for <abbr title="Artificial Intelligence">AI</abbr>)
 Anthropic released <abbr title="Model Context Protocol">MCP</abbr> as an open standard to fix this. It is a Client-Server architecture.
-- **<abbr title="Model Context Protocol">MCP</abbr> Clients:** The <abbr title="Artificial Intelligence">AI</abbr> Agents (e.g., Claude Desktop or your LangGraph app). They don't know *how* to query a database or format a Slack message. They just know how to speak the "<abbr title="Model Context Protocol">MCP</abbr> Protocol" over JSON-RPC.
+- **<abbr title="Model Context Protocol">MCP</abbr> Clients:** The <abbr title="Artificial Intelligence">AI</abbr> Agents (e.g., Claude Desktop or your LangGraph app). They don't know *how* to query a database or format a Slack message. They just know how to speak the "<abbr title="Model Context Protocol">MCP</abbr> Protocol" over <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr>.
 - **<abbr title="Model Context Protocol">MCP</abbr> Servers:** Lightweight, secure microservices that sit right next to your data. You deploy an "<abbr title="Model Context Protocol">MCP</abbr> Postgres Server" inside your secure VPC. The server holds the database credentials. 
 
 ### 3. Capability Negotiation & The 3 Primitives
@@ -28,14 +28,14 @@ When an <abbr title="Model Context Protocol">MCP</abbr> Client connects to an <a
 2. **Resources:** Static data the Agent can read (e.g., `db://schema/users`).
 3. **Prompts:** Pre-written templates provided by the server.
 
-Because the Server generates the JSON schema and gives it to the Client dynamically, you write the Tool *once* on the Server, and *every* <abbr title="Artificial Intelligence">AI</abbr> Agent in the world can instantly use it!
+Because the Server generates the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schema and gives it to the Client dynamically, you write the Tool *once* on the Server, and *every* <abbr title="Artificial Intelligence">AI</abbr> Agent in the world can instantly use it!
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's simulate the JSON-RPC 2.0 message flow between an <abbr title="Model Context Protocol">MCP</abbr> Client (The Agent) and an <abbr title="Model Context Protocol">MCP</abbr> Server (The Data layer)!
-*(Note: Tomorrow we will use the actual FastMCP SDK, but today we look at the raw protocol to understand the magic).*
+Let's simulate the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> 2.0 message flow between an <abbr title="Model Context Protocol">MCP</abbr> Client (The Agent) and an <abbr title="Model Context Protocol">MCP</abbr> Server (The Data layer)!
+*(Note: Tomorrow we will use the actual FastMCP <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>, but today we look at the raw protocol to understand the magic).*
 
 Create a file named `mcp_architecture.py`:
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"<abbr title="Model Context Protocol">MCP</abbr> standardizes tool use for LLMs. Compare this architecture to native Function Calling in the OpenAI SDK. Discuss protocol design trade-offs, security implications, and ecosystem effects."*
+*"<abbr title="Model Context Protocol">MCP</abbr> standardizes tool use for LLMs. Compare this architecture to native Function Calling in the OpenAI <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>. Discuss protocol design trade-offs, security implications, and ecosystem effects."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -172,7 +172,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 ---
 **Task for the end of the day:** Commit your code to Git. 
 
-We understand the JSON-RPC architecture of <abbr title="Model Context Protocol">MCP</abbr>. 
-But writing JSON-RPC strings by hand is tedious. 
+We understand the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> architecture of <abbr title="Model Context Protocol">MCP</abbr>. 
+But writing <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> strings by hand is tedious. 
 
-Tomorrow, in **Day 126**, we conclude our 20-Day block by building a production <abbr title="Model Context Protocol">MCP</abbr> Server using the blazing fast **FastMCP Python SDK**!
+Tomorrow, in **Day 126**, we conclude our 20-Day block by building a production <abbr title="Model Context Protocol">MCP</abbr> Server using the blazing fast **FastMCP Python <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>**!

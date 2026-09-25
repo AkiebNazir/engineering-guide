@@ -7,7 +7,7 @@ same lesson, same demo shape, two languages side by side. Every file prints
 languages: `http.server` / `hmac` / `hashlib` in Python, `net/http` /
 `crypto/hmac` / `crypto/sha256` in Go - no dependencies to install.
 
-Start at level 00 with one idea: **a webhook is just you running a small REST
+Start at level 00 with one idea: **a webhook is just you running a small <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>
 server that someone else's system calls into, unprompted.** You never initiate
 the connection - you only have to be ready when it arrives. Everything after
 that is a consequence of that one flip.
@@ -17,7 +17,7 @@ Run any Go level:      `go run ./Webhooks/Foundation/golang/00_single_receiver_e
 
 | # | Level | The one new idea |
 |---|---|---|
-| 00 | Single receiver endpoint, explained end to end | What "a basic webhook receiver" actually is: one `POST /webhook`, a JSON body in, an immediate 200 out |
+| 00 | Single receiver endpoint, explained end to end | What "a basic webhook receiver" actually is: one `POST /webhook`, a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> body in, an immediate 200 out |
 | 01 | Event envelope + routing by type | `{"type", "id", "data"}`, and dispatching on the `type` FIELD instead of the URL path |
 | 02 | Payload validation + response codes | A public URL gets garbage: 400/413 for permanently bad, 500 for temporarily mine, never a hang |
 | 03 | Idempotency | At-least-once delivery is a promise, not a bug: dedupe by event id so a redelivery is harmless |

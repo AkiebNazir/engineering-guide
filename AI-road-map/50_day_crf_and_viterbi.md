@@ -137,7 +137,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The For Loop:** `for next_tag in range(num_tags):` and `torch.argmax(transition_scores)`. This is the core of dynamic programming. It calculates the scores for all paths leading to `next_tag`, and immediately throws away all of them except the `argmax`. It doesn't waste RAM remembering bad paths!
+1. **The For Loop:** `for next_tag in range(num_tags):` and `torch.argmax(transition_scores)`. This is the core of dynamic programming. It calculates the scores for all paths leading to `next_tag`, and immediately throws away all of them except the `argmax`. It doesn't waste <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> remembering bad paths!
 2. **The Backpointers:** You can't know the best path until you reach the end of the sentence. The `backpointers` array acts as a trail of breadcrumbs. Once we find the best final tag, we follow the breadcrumbs backwards to reconstruct the perfect sequence.
 
 ---

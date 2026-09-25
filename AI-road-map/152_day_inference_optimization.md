@@ -19,7 +19,7 @@ Today, we learn the dark arts of **Inference Optimization**. We will learn how t
 
 **Popular Quantization Formats:**
 - **GPTQ & AWQ:** The standard for GPU inference. Highly optimized for serving engines like vLLM.
-- **GGUF (llama.cpp):** The standard for CPU and Apple Mac (Metal) inference.
+- **GGUF (llama.cpp):** The standard for <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> and Apple Mac (Metal) inference.
 - **FP8:** The new native 8-bit float standard supported natively by NVIDIA H100 GPUs.
 
 ### 2. The KV-Cache Formula
@@ -133,4 +133,4 @@ A "Strong Hire" candidate must articulate:
 ---
 **Task for the end of the day:** Read up on the difference between GPTQ and AWQ quantization formats.
 
-Tomorrow, in **Day 153**, we step away from the GPU internals and move up the stack to **<abbr title="Application Programming Interface">API</abbr> Design**. We will learn how to wrap these engines into robust, OpenAI-Compatible APIs with SSE Streaming and rate limits!
+Tomorrow, in **Day 153**, we step away from the GPU internals and move up the stack to **<abbr title="Application Programming Interface">API</abbr> Design**. We will learn how to wrap these engines into robust, OpenAI-Compatible APIs with <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> Streaming and rate limits!

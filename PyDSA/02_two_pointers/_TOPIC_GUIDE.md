@@ -538,7 +538,7 @@ def longest_palindrome(s):
     return s[best[0]:best[1]]                          # "babad" -> "bab",  "cbbd" -> "bb"
 ```
 
-O(n²) time, **O(1) space** — the DP table and Manacher's algorithm are the alternatives; this is the one to
+O(n²) time, **O(1) space** — the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table and Manacher's algorithm are the alternatives; this is the one to
 write first. Forgetting the even centre (`expand(c, c + 1)`) is the classic miss: `"cbbd"` has no odd
 palindrome longer than 1.
 

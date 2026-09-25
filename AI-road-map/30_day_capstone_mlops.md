@@ -14,7 +14,7 @@ Today, we put the Math aside and learn the Software Engineering of <abbr title="
 
 ### 1. The <abbr title="Machine Learning">ML</abbr> System Design Pipeline
 An enterprise <abbr title="Artificial Intelligence">AI</abbr> system consists of 6 distinct phases:
-1. **Data Ingestion:** Automatically pulling daily data from an SQL database.
+1. **Data Ingestion:** Automatically pulling daily data from an <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database.
 2. **Feature Engineering:** Your `Pipeline` from Day 29 (Scaling, Imputing, Encoding).
 3. **Model Training:** Tuning hyperparameters and running XGBoost.
 4. **Evaluation:** Checking the accuracy against a Test set.
@@ -31,7 +31,7 @@ When trying to build the best model, you might run XGBoost 500 different times, 
 
 ### 4. Reproducibility & Environment Locking
 Setting `random_state=42` is not enough to guarantee your model will behave the exact same way on a server. If your laptop runs `scikit-learn v1.2` and the server runs `v1.3`, the underlying C++ math libraries might be slightly different! 
-You must **Lock the Environment** using Docker or a strict `requirements.txt` file, ensuring the server perfectly matches your laptop.
+You must **Lock the Environment** using <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> or a strict `requirements.txt` file, ensuring the server perfectly matches your laptop.
 
 ### 5. Concept Drift (The Silent Killer)
 You deploy an <abbr title="Artificial Intelligence">AI</abbr> that detects Credit Card Fraud with 99.9% accuracy. One year later, it starts failing. Why?

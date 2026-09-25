@@ -82,7 +82,7 @@ implicitly step 0.)
 
 | Step | Chapter | Read it for |
 |---|---|---|
-| 16 | `15_extended_principles_and_field_reference.md` | GRASP's four names SOLID doesn't cover (Creator, Information Expert, Pure Fabrication, Controller), the C4 model for drawing architecture at the right zoom level, and a topic index across every chapter |
+| 16 | `15_extended_principles_and_field_reference.md` | GRASP's four names <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> doesn't cover (Creator, Information Expert, Pure Fabrication, Controller), the C4 model for drawing architecture at the right zoom level, and a topic index across every chapter |
 
 ### LLD practice (in the editor)
 
@@ -92,7 +92,7 @@ solution and write the one design point you missed in **Notes**.
 
 | Steps | Set | Problems | Why this order |
 |---|---|---|---|
-| 17–19 | **Warm-up** | 008 Tic-tac-toe · 009 LRU/LFU cache · 003 Vending machine | Small; exercise invariants, data structures, and the State pattern |
+| 17–19 | **Warm-up** | 008 Tic-tac-toe · 009 <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>/<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> cache · 003 Vending machine | Small; exercise invariants, data structures, and the State pattern |
 | 20–24 | **Core set** | 001 Parking lot · 002 Elevator · 004 Movie booking · 005 Splitwise · 006 KV store with transactions | The most-asked LLD questions; each has a concurrency or consistency twist |
 | 25–28 | **Breadth** | 007 Logging framework · 010 Unix `find` · 011 Meeting rooms · 012 Rate limiter | Different shapes: pipelines, composites, intervals, time |
 | 29–33 | **Tier 2** | 013 Order book · 014 Task scheduler · 015 Library · 016 Food delivery lifecycle · 017 Text editor undo/redo | Longer, with harder follow-ups |

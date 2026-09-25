@@ -9,7 +9,7 @@ Security is not a module you add at the end. It is a property every boundary eit
 | Authentication (AuthN): who is making this call? | A verified identity — user, service, workload. | Anyone can claim to be anyone. |
 | Authorization (AuthZ): is this identity allowed to do this action on this resource? | Allow/deny against a policy tied to a specific resource. | Any authenticated caller can act on any object. |
 
-These are separate checks, and both must run on every request that crosses a trust boundary — not just at login and not just at the edge. A gateway that authenticates a JWT and forwards the request is not authorizing anything; each downstream service still owns "can this identity touch this resource."
+These are separate checks, and both must run on every request that crosses a trust boundary — not just at login and not just at the edge. A gateway that authenticates a <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> and forwards the request is not authorizing anything; each downstream service still owns "can this identity touch this resource."
 
 ## Re-check at every service boundary
 
@@ -31,7 +31,7 @@ sequenceDiagram
     A-->>Client: response
 ```
 
-Never trust a caller-supplied `tenant_id`, `user_id`, or role header as authorization input. If the client can set it, the client can forge it. Derive identity from a verified token/session at the boundary that terminates it, and propagate it downstream as a signed or otherwise trusted claim (e.g., a service-to-service JWT, mTLS identity) — not as a plain header a compromised upstream could tamper with. This is the direct mechanism behind IDOR (insecure direct object reference): `GET /orders/12345` returning order 12345 because the ID was well-formed, without checking that the caller's identity owns it.
+Never trust a caller-supplied `tenant_id`, `user_id`, or role header as authorization input. If the client can set it, the client can forge it. Derive identity from a verified token/session at the boundary that terminates it, and propagate it downstream as a signed or otherwise trusted claim (e.g., a service-to-service <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>, mTLS identity) — not as a plain header a compromised upstream could tamper with. This is the direct mechanism behind IDOR (insecure direct object reference): `GET /orders/12345` returning order 12345 because the ID was well-formed, without checking that the caller's identity owns it.
 
 ## Least privilege and resource-level checks
 
@@ -51,7 +51,7 @@ Never trust a caller-supplied `tenant_id`, `user_id`, or role header as authoriz
 
 ## Encryption
 
-- **In transit:** TLS between every hop that crosses a network boundary, including internal service-to-service traffic if that traffic can cross a host/zone boundary you do not fully control. Termination at a load balancer does not imply the hop behind it is safe by default — decide deliberately.
+- **In transit:** <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> between every hop that crosses a network boundary, including internal service-to-service traffic if that traffic can cross a host/zone boundary you do not fully control. Termination at a load balancer does not imply the hop behind it is safe by default — decide deliberately.
 - **At rest:** encrypt durable storage (database volumes, object storage, backups). This mainly protects against a stolen disk/snapshot/backup, not against a compromised application identity that already has legitimate query access — encryption at rest is not a substitute for authorization.
 
 ## Input validation is a security boundary, not just UX
@@ -60,14 +60,14 @@ Client-side validation improves the experience for honest clients. It does nothi
 
 - Reject malformed input rather than "helpfully" coercing it — coercion is where injection lives.
 - Bound sizes (payload size, array length, string length) so validation itself cannot be a resource-exhaustion vector.
-- Treat user-controlled strings used in a query, command, URL, or file path as adversarial by default: parameterize queries, never string-concatenate SQL; allowlist redirect targets and file paths; never let a server fetch a user-supplied URL without restricting destination (see SSRF below).
+- Treat user-controlled strings used in a query, command, URL, or file path as adversarial by default: parameterize queries, never string-concatenate <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>; allowlist redirect targets and file paths; never let a server fetch a user-supplied URL without restricting destination (see SSRF below).
 
 ## Threats worth naming explicitly in an interview
 
 | Threat | What it is | Primary defense |
 |---|---|---|
-| Injection (SQL, command, log) | Untrusted input is interpreted as code/structure instead of data. | Parameterized queries, strict input schemas, no string-built commands. |
-| SSRF (server-side request forgery) | Server is tricked into making a request to an internal/unintended target using attacker-supplied input (e.g., a "fetch this image URL" feature). | Allowlist destinations, block internal/metadata IP ranges, no redirects followed blindly. |
+| Injection (<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, command, log) | Untrusted input is interpreted as code/structure instead of data. | Parameterized queries, strict input schemas, no string-built commands. |
+| SSRF (server-side request forgery) | Server is tricked into making a request to an internal/unintended target using attacker-supplied input (e.g., a "fetch this image URL" feature). | Allowlist destinations, block internal/metadata <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> ranges, no redirects followed blindly. |
 | IDOR / broken object-level authorization | Caller accesses an object by guessing/changing an ID, without a per-resource ownership check. | Authorize every object access against the caller's identity, not just authenticate the caller. |
 | Secrets in logs | Tokens, passwords, or PII written to logs that are broadly readable/retained. | Structured logging with an explicit denylist/allowlist of loggable fields; scrub before write. |
 
@@ -88,15 +88,15 @@ External sharing:  does any third party receive this data, under what agreement?
 
 An interview answer that names encryption but skips deletion propagation (backups, caches, downstream analytics) has not actually closed the loop — "we deleted the row" is not true if three other copies still exist.
 
-## OAuth 2.0, OpenID Connect, and JWT trade-offs
+## OAuth 2.0, OpenID Connect, and <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> trade-offs
 
 These three are constantly conflated in interviews. Keep them apart:
 
 | Standard | Question it answers | Output |
 |---|---|---|
 | **OAuth 2.0** | *Authorization delegation:* may this app act on this user's resources, with this scope? | An **access token** (and optionally a refresh token) |
-| **OpenID Connect (OIDC)** | *Authentication* on top of OAuth: who is the user? | An **ID token** (a signed JWT with `sub`, `iss`, `aud`, `exp`) plus a `userinfo` endpoint |
-| **JWT** | A *token format*: a signed (JWS) or encrypted (JWE) JSON claim set | Used by both, but tokens can also be opaque strings |
+| **OpenID Connect (OIDC)** | *Authentication* on top of OAuth: who is the user? | An **ID token** (a signed <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> with `sub`, `iss`, `aud`, `exp`) plus a `userinfo` endpoint |
+| **<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>** | A *token format*: a signed (JWS) or encrypted (JWE) <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> claim set | Used by both, but tokens can also be opaque strings |
 
 **Flows to know:**
 - **Authorization Code + PKCE** — the default for web, mobile, and single-page apps. The browser gets a short-lived code; the client exchanges it (with the PKCE verifier) for tokens. Never put tokens in URLs.
@@ -104,16 +104,16 @@ These three are constantly conflated in interviews. Keep them apart:
 - **Device Authorization** — TVs and CLIs ("go to this URL and enter code ABCD").
 - Implicit flow and password grant are deprecated.
 
-**JWT access tokens vs opaque tokens:**
+**<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> access tokens vs opaque tokens:**
 
-| | Self-contained JWT | Opaque token + introspection |
+| | Self-contained <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> | Opaque token + introspection |
 |---|---|---|
 | Validation | Local signature check (fast, no network) | Call the auth server or a cache |
 | Revocation | Hard: valid until `exp` unless you keep a denylist | Immediate |
 | Size | Larger (claims in every request) | Small |
 | Typical choice | Short-lived access tokens (5-15 min) + refresh tokens | Sessions needing instant logout or high-risk scopes |
 
-JWT pitfalls to name: verify the signature with an allowlisted algorithm (reject `alg: none` and algorithm confusion), always check `iss`, `aud`, `exp`/`nbf`, rotate signing keys via a published JWKS with `kid`, don't put secrets or excessive PII in claims (JWS is signed, not encrypted), and store browser tokens in `HttpOnly`, `Secure`, `SameSite` cookies rather than `localStorage` to limit XSS token theft.
+<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> pitfalls to name: verify the signature with an allowlisted algorithm (reject `alg: none` and algorithm confusion), always check `iss`, `aud`, `exp`/`nbf`, rotate signing keys via a published JWKS with `kid`, don't put secrets or excessive PII in claims (JWS is signed, not encrypted), and store browser tokens in `HttpOnly`, `Secure`, `SameSite` cookies rather than `localStorage` to limit XSS token theft.
 
 ## Key management and envelope encryption
 
@@ -157,7 +157,7 @@ Implementation pattern: a **deletion orchestrator** (a saga) records the request
 ## Abuse and spam prevention
 
 Rate limiting stops volume; abuse systems stop *bad actors* who stay under the limits:
-- **Signals:** account age, device fingerprint, IP reputation and ASN, velocity (actions per minute per account/device/IP), graph signals (many accounts sharing devices or payment instruments), content classifiers.
+- **Signals:** account age, device fingerprint, <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> reputation and ASN, velocity (actions per minute per account/device/<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>), graph signals (many accounts sharing devices or payment instruments), content classifiers.
 - **Actions, graded:** allow → add friction (CAPTCHA, phone verification) → shadow-limit (content visible only to the sender) → block. Graded responses make it harder for attackers to learn thresholds.
 - **Architecture:** a synchronous low-latency risk check on the request path with a strict timeout and a fail-open or fail-closed policy per action, plus asynchronous deeper analysis that can retroactively remove content and ban accounts.
 - **Feedback loop:** user reports and reviewer decisions become labels for the classifiers.

@@ -32,7 +32,7 @@ To build a world-class model, you must use **Hard Negatives**.
 The model sees the words *"How to fix a flat"*, assumes they are similar, and gets penalized heavily by the Loss function! This forces the model to look deeper than just keyword matching and truly understand the semantic difference between rubber tires and glass TVs.
 
 ### 4. Matryoshka Representation Learning (MRL)
-Storing 100 Million 1024-dimensional vectors requires terabytes of expensive RAM. What if you could slice the vector in half to save space? Normally, slicing a vector destroys the math.
+Storing 100 Million 1024-dimensional vectors requires terabytes of expensive <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. What if you could slice the vector in half to save space? Normally, slicing a vector destroys the math.
 **Matryoshka Learning** (like Russian nesting dolls) is a brilliant trick. During training, we calculate the Contrastive Loss on the full 1024 dimensions. But we ALSO calculate the loss on the first 512 dimensions, the first 256, and the first 64!
 This mathematically forces the model to pack the most important semantic information into the *very first 64 numbers*! The remaining numbers just add fine details. 
 In production, you can literally slice `vector[:256]`, shrinking your database costs by 4x without retraining the model!

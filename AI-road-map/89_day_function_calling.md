@@ -2,29 +2,29 @@
 
 Welcome to Day 89. LLMs naturally generate unstructured conversational text (*"Sure, I'd be happy to help! Here is the data..."*). 
 
-But software engineering requires deterministic, structured data. If your Python backend expects a JSON object, and the <abbr title="Large Language Model">LLM</abbr> outputs conversation, your application crashes. 
-Today, we learn how to force an <abbr title="Large Language Model">LLM</abbr> to output 100% perfect JSON and how to give the <abbr title="Large Language Model">LLM</abbr> the ability to trigger real-world APIs via **Function Calling**.
+But software engineering requires deterministic, structured data. If your Python backend expects a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object, and the <abbr title="Large Language Model">LLM</abbr> outputs conversation, your application crashes. 
+Today, we learn how to force an <abbr title="Large Language Model">LLM</abbr> to output 100% perfect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> and how to give the <abbr title="Large Language Model">LLM</abbr> the ability to trigger real-world APIs via **Function Calling**.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. JSON Mode vs Function Calling
-- **JSON Mode:** You prompt the model: *"Output the result in JSON."* The model guarantees the output will have valid `{}` syntax, but it might invent random keys that your backend isn't expecting.
-- **Function Calling (Tool Use):** You provide the model with a strict **Schema** (e.g., "I need an object with `name` (string) and `age` (int)"). The model is guaranteed to output a JSON object that perfectly matches your schema.
+### 1. <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Mode vs Function Calling
+- **<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Mode:** You prompt the model: *"Output the result in <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>."* The model guarantees the output will have valid `{}` syntax, but it might invent random keys that your backend isn't expecting.
+- **Function Calling (Tool Use):** You provide the model with a strict **Schema** (e.g., "I need an object with `name` (string) and `age` (int)"). The model is guaranteed to output a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object that perfectly matches your schema.
 
 ### 2. How "Agentic" Tool Use Actually Works
 LLMs cannot browse the web or run code. They are just text predictors. "Tool Use" is just a clever sequence of parsing.
-1. **The Setup:** The User says *"What is the weather in Tokyo?"*. You send this prompt to the <abbr title="Large Language Model">LLM</abbr>, but you *also* pass a JSON Schema describing a function: `get_weather(location: string)`.
-2. **The <abbr title="Large Language Model">LLM</abbr> Decision:** The <abbr title="Large Language Model">LLM</abbr> realizes it doesn't know the weather. Instead of replying to the user, it outputs a raw JSON string: `{"tool": "get_weather", "args": {"location": "Tokyo"}}`.
-3. **The Python Bridge:** Your Python script detects that the <abbr title="Large Language Model">LLM</abbr> outputted a tool request. Your script pauses the <abbr title="Large Language Model">LLM</abbr>, parses the JSON, and runs the actual `requests.get()` Python code to fetch the weather.
+1. **The Setup:** The User says *"What is the weather in Tokyo?"*. You send this prompt to the <abbr title="Large Language Model">LLM</abbr>, but you *also* pass a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema describing a function: `get_weather(location: string)`.
+2. **The <abbr title="Large Language Model">LLM</abbr> Decision:** The <abbr title="Large Language Model">LLM</abbr> realizes it doesn't know the weather. Instead of replying to the user, it outputs a raw <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> string: `{"tool": "get_weather", "args": {"location": "Tokyo"}}`.
+3. **The Python Bridge:** Your Python script detects that the <abbr title="Large Language Model">LLM</abbr> outputted a tool request. Your script pauses the <abbr title="Large Language Model">LLM</abbr>, parses the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, and runs the actual `requests.get()` Python code to fetch the weather.
 4. **The Resolution:** Your Python script appends the raw weather data (`72 Degrees, Sunny`) back into the <abbr title="Large Language Model">LLM</abbr>'s conversation history and hits "Generate" again.
 5. **The Final Answer:** The <abbr title="Large Language Model">LLM</abbr> reads the weather data and finally replies to the user: *"It is currently 72 degrees in Tokyo!"*
 
 ### 3. Constrained Decoding (How it guarantees perfection)
-How does OpenAI *guarantee* the <abbr title="Large Language Model">LLM</abbr> outputs perfect JSON? They use **Constrained Decoding** (Grammar-guided generation).
+How does OpenAI *guarantee* the <abbr title="Large Language Model">LLM</abbr> outputs perfect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>? They use **Constrained Decoding** (Grammar-guided generation).
 Normally, the <abbr title="Large Language Model">LLM</abbr> outputs a probability distribution over 32,000 words. 
-If the JSON schema demands a boolean (`True` or `False`), the inference engine mathematically overrides the <abbr title="Large Language Model">LLM</abbr>'s logits. It forces the probability of 31,998 words to exactly `0.0`. The <abbr title="Large Language Model">LLM</abbr> is physically only allowed to predict the word `"True"` or `"False"`!
+If the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schema demands a boolean (`True` or `False`), the inference engine mathematically overrides the <abbr title="Large Language Model">LLM</abbr>'s logits. It forces the probability of 31,998 words to exactly `0.0`. The <abbr title="Large Language Model">LLM</abbr> is physically only allowed to predict the word `"True"` or `"False"`!
 
 ---
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **Pydantic Validation:** The <abbr title="Large Language Model">LLM</abbr>'s job is just to output text. Your Python backend's job is to run `json.loads()` and pass it into a `BaseModel`. If the <abbr title="Large Language Model">LLM</abbr> hallucinated the schema, your code will safely catch the Pydantic `ValidationError` instead of crashing your database.
-2. **Self-Correction:** In production pipelines (like the `instructor` library), if Pydantic throws an error, the library automatically sends the error message *back* to the <abbr title="Large Language Model">LLM</abbr> and says: *"You messed up the JSON. The 'age' field must be an Integer. Fix it."*
+2. **Self-Correction:** In production pipelines (like the `instructor` library), if Pydantic throws an error, the library automatically sends the error message *back* to the <abbr title="Large Language Model">LLM</abbr> and says: *"You messed up the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. The 'age' field must be an Integer. Fix it."*
 
 ---
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"You are building a data extraction pipeline that processes 1 Million unstructured resumes per day into a structured Postgres SQL database. Design the system, focusing on <abbr title="Large Language Model">LLM</abbr> constraint, validation, error handling, and human-in-the-loop review."*
+*"You are building a data extraction pipeline that processes 1 Million unstructured resumes per day into a structured Postgres <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database. Design the system, focusing on <abbr title="Large Language Model">LLM</abbr> constraint, validation, error handling, and human-in-the-loop review."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -138,7 +138,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Explain that LLMs will occasionally fail the schema. You must implement a retry loop with exponential backoff. If Pydantic throws a `ValidationError`, feed the stack trace back to the <abbr title="Large Language Model">LLM</abbr> up to 3 times to let it self-correct.
 3. **The Dead Letter Queue (Human Review):**
    - If the <abbr title="Large Language Model">LLM</abbr> fails 3 times, do NOT crash the pipeline. Send that specific resume to a **Dead Letter Queue (DLQ)**. 
-   - Build an internal UI where human reviewers can look at the DLQ, manually fix the JSON, and commit it to Postgres. This guarantees 100% data integrity for the 1 Million daily resumes.
+   - Build an internal UI where human reviewers can look at the DLQ, manually fix the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, and commit it to Postgres. This guarantees 100% data integrity for the 1 Million daily resumes.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

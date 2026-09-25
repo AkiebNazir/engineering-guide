@@ -6,14 +6,14 @@ In traditional software, when you push a code change to GitHub, an automated ser
 But if you do this for Machine Learning, you will cause a disaster.
 In <abbr title="Machine Learning">ML</abbr>, code is only 1/3 of the equation. A model can fail because the *code* is wrong, the *data* is biased, or the *weights* degraded. 
 
-Today, we learn **<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> for Machine Learning (CT/CD)**. We will learn how to test data, test models, and safely deploy them without terrifying the engineering team.
+Today, we learn **<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> for Machine Learning (CT/<abbr title="Continuous Deployment / Delivery. An approach in which software functionalities are delivered frequently and through automated deployments.">CD</abbr>)**. We will learn how to test data, test models, and safely deploy them without terrifying the engineering team.
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
 ### 1. The <abbr title="Machine Learning">ML</abbr> Testing Pyramid
-When you push an update to an <abbr title="Machine Learning">ML</abbr> codebase, the CI pipeline must run three distinct layers of tests before anyone is allowed to click "Merge":
+When you push an update to an <abbr title="Machine Learning">ML</abbr> codebase, the <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> pipeline must run three distinct layers of tests before anyone is allowed to click "Merge":
 1. **Unit Tests (The Code):** Does the `clean_text()` function successfully strip emojis?
 2. **Data Tests (The Fuel):** Is the training data formatted correctly? Are there 50,000 null values that will silently ruin the matrix math?
 3. **Model Tests (The Brain):** Train a tiny mock model. Does it overfit on 10 examples? Does its accuracy exceed the 85% threshold? Does it pass a Bias check?
@@ -39,7 +39,7 @@ If the New Model hits 100% rollout, and suddenly the Latency metric spikes to 5 
 Let's build a conceptual **GitHub Actions Workflow** (`.yml`) for an <abbr title="Machine Learning">ML</abbr> project, combined with a Python testing script that proves the model is safe to deploy!
 
 ### Step 1: The <abbr title="Machine Learning">ML</abbr> Test Suite (Python)
-This script runs automatically on the CI server. If any `assert` statement fails, the pipeline halts, and the GitHub Pull Request is blocked!
+This script runs automatically on the <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> server. If any `assert` statement fails, the pipeline halts, and the GitHub Pull Request is blocked!
 
 ```python
 # File: tests/test_model_pipeline.py
@@ -140,12 +140,12 @@ Only mathematically proven, safe code is allowed to trigger the expensive GPU tr
 ### 🛠️ The Challenge
 Currently, the pipeline triggers a training run. Once training is complete, the model goes to the Registry.
 How do you safely deploy that model to the <abbr title="Application Programming Interface">API</abbr> gateway? 
-**Your Task:** Research the **Seldon Core** or **KServe** Kubernetes frameworks. Understand how they allow you to deploy a model as a container and configure a `Canary` rollout (e.g., sending 5% of HTTP traffic to the new container automatically).
+**Your Task:** Research the **Seldon Core** or **KServe** Kubernetes frameworks. Understand how they allow you to deploy a model as a container and configure a `Canary` rollout (e.g., sending 5% of <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> traffic to the new container automatically).
 
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your team deploys <abbr title="Machine Learning">ML</abbr> models 5 times per week. Last week, a new model deployment caused a 30% revenue drop. The monitoring system didn't catch it because the latency and HTTP codes were perfectly fine (the model was just making terrible recommendations). Design the deployment safety system to prevent this."*
+*"Your team deploys <abbr title="Machine Learning">ML</abbr> models 5 times per week. Last week, a new model deployment caused a 30% revenue drop. The monitoring system didn't catch it because the latency and <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> codes were perfectly fine (the model was just making terrible recommendations). Design the deployment safety system to prevent this."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:

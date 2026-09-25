@@ -1,6 +1,6 @@
 # Topic 15 · Advanced Graphs — Go Deep Dive
 
-> Basic BFS/DFS answers "is there a path?" Weighted graphs ask "what's the
+> Basic <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> answers "is there a path?" Weighted graphs ask "what's the
 > *cheapest* path?" — and the cheapest path requires an ordering primitive.
 > Go's `container/heap` gives you that ordering, but it is a bare-bones
 > interface with none of the decrease-key convenience other languages' heap
@@ -130,8 +130,8 @@ trade-off if asked.
 
 ### 2.1 In-degree counting + a queue of zero-in-degree nodes
 
-A topological order only exists for a **DAG** (directed, acyclic). Kahn's
-algorithm is BFS-shaped: repeatedly remove nodes with no remaining incoming
+A topological order only exists for a **<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>** (directed, acyclic). Kahn's
+algorithm is <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>-shaped: repeatedly remove nodes with no remaining incoming
 edges.
 
 ```go
@@ -174,12 +174,12 @@ If the graph has a cycle, every node inside that cycle keeps `indeg > 0`
 forever — none of them are ever enqueued. `len(order) == n` is therefore a
 free correctness check: **fewer than `n` nodes emitted means a cycle exists**,
 directly reusing the directed-cycle-detection idea from the basic graphs
-topic, but without needing a separate visited/recursion-stack DFS pass.
+topic, but without needing a separate visited/recursion-stack <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> pass.
 
 > ✅ Kahn's algorithm gives you topological order **and** cycle detection in
-> one O(V+E) pass. The DFS-based alternative (post-order, then reverse the
+> one O(V+E) pass. The <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>-based alternative (post-order, then reverse the
 > finish order) is equally valid and sometimes preferred when you're already
-> running a DFS for another reason, but it needs a separate three-color
+> running a <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> for another reason, but it needs a separate three-color
 > (white/gray/black) visited scheme to detect cycles correctly — Kahn's is
 > usually the less error-prone default to reach for first.
 
@@ -385,7 +385,7 @@ if dist[u] != math.MaxInt && dist[u]+w < dist[v] { ... }   // ✅ never add to t
 | Priority queue | `heapq` (function-based, tuples) | `container/heap` (interface you implement) |
 | Decrease-key | Manual too (no true decrease-key in `heapq` either) | Same — lazy deletion is the shared idiom |
 | "Infinity" sentinel | `float('inf')` — genuinely never overflows | `math.MaxInt` — **overflows on addition**, use `/2` headroom |
-| Sorting edges | `sorted(edges, key=...)` — stable | `slices.SortFunc` — **not stable** (rarely matters for MST) |
+| Sorting edges | `sorted(edges, key=...)` — stable | `slices.SortFunc` — **not stable** (rarely matters for <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr>) |
 | Union-Find | Hand-rolled either way | Hand-rolled either way — no divergence here |
 | 2D distance matrix | List of lists, pointer-chasing either way | `[][]int` pointer-chasing, or flatten for O(V³) hot loops |
 
@@ -399,8 +399,8 @@ if dist[u] != math.MaxInt && dist[u]+w < dist[v] { ... }   // ✅ never add to t
 | Kahn's topological sort | O(V+E) | O(V+E) | LC 210 Course Schedule II |
 | Bellman-Ford | O(V·E) | O(V) | Cheapest Flights K Stops (LC 787, adapted) |
 | Floyd-Warshall | O(V³) | O(V²) | LC 1334 Find the City With the Smallest Number of Neighbors |
-| Kruskal's MST | O(E log E) | O(V) | LC 1584 Min Cost to Connect All Points |
-| Prim's MST | O(E log V) | O(V+E) | LC 1584 (alternate approach) |
+| Kruskal's <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> | O(E log E) | O(V) | LC 1584 Min Cost to Connect All Points |
+| Prim's <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> | O(E log V) | O(V+E) | LC 1584 (alternate approach) |
 
 ---
 
@@ -585,7 +585,7 @@ for k := 0; k < n; k++ { for i := 0; i < n; i++ { for j := 0; j < n; j++ {
 } } }
 ```
 
-O(V³) once, versus a BFS per query — decisive when `Q` is large.
+O(V³) once, versus a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per query — decisive when `Q` is large.
 
 ### Bridges (Tarjan) and articulation points
 
@@ -603,7 +603,7 @@ if disc[v] == -1 {
 
 Treating the parent edge as a back edge folds `disc[parent]` into `low[child]` and no bridge is ever found. An
 **articulation point** (cut *vertex*) uses `low[v] >= disc[u]` for non-roots, and the **root** is one iff it has two or
-more DFS children. Recursion depth is `n` on a path-shaped input (`n = 10⁵` is fine on Go's growable stack; the same input
+more <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> children. Recursion depth is `n` on a path-shaped input (`n = 10⁵` is fine on Go's growable stack; the same input
 raises `RecursionError` in CPython).
 
 ### Reconstruct Itinerary: Hierholzer's algorithm
@@ -644,19 +644,19 @@ group emails by root. Merging by **name** fuses two different Johns; a single pa
 `x / x` (unknown `x` is `-1`, not `1.0`), and mark visited to stop cycles. `[[a b] [b c]]`, `[2 3]` → `a/c = 6`,
 `b/a = 0.5`, `a/e = -1`, `a/a = 1`, `x/x = -1`.
 
-### Minimum Cost to Make a Valid Path: 0-1 BFS
+### Minimum Cost to Make a Valid Path: 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>
 
 Following an arrow costs 0; changing it costs 1. A deque replaces the heap: a 0-cost neighbour goes to the **front**, a
 1-cost neighbour to the **back**, and the deque stays ordered by distance — O(V + E). A `[]T` cannot push to the front in
 O(1); use topic 07's ring-buffer `Deque[T]`, or the two-slice trick (a *front* slice used as a stack and a *back* slice
-used as a queue). Plain BFS treats the grid as unweighted and finalises cells too early; pushing both kinds to the back is
+used as a queue). Plain <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> treats the grid as unweighted and finalises cells too early; pushing both kinds to the back is
 a correct-but-slower SPFA. `[[1 1 3] [3 2 2] [1 1 4]]` → 0, `[[1 2] [4 3]]` → 1.
 
 ### Find Critical and Pseudo-Critical Edges (LC 1489)
 
-For each edge, run Kruskal twice. **Exclude** it: if the MST weight rises *or the graph no longer connects all `n` nodes*,
-the edge is **critical**. **Include** it first: if the weight equals the true MST weight, it is at least
-**pseudo-critical** (used by some MST). Forgetting the connectivity check misses critical edges whose removal disconnects
+For each edge, run Kruskal twice. **Exclude** it: if the <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> weight rises *or the graph no longer connects all `n` nodes*,
+the edge is **critical**. **Include** it first: if the weight equals the true <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> weight, it is at least
+**pseudo-critical** (used by some <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr>). Forgetting the connectivity check misses critical edges whose removal disconnects
 the graph entirely.
 
 ### Go traps in this topic
@@ -688,7 +688,7 @@ the graph entirely.
 <!-- problem-map:start -->
 ## Part 11 · Every Problem in This Topic, by Pattern
 
-Fifteen problems, six moves (union-find · Dijkstra and its variants · Bellman-Ford · MST · bridges and Eulerian paths · weighted relations) — the Python guide's map in Go, with the Go-only traps. Topic 15's solutions are Python-first; the Go column is the plan you would write.
+Fifteen problems, six moves (union-find · Dijkstra and its variants · Bellman-Ford · <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> · bridges and Eulerian paths · weighted relations) — the Python guide's map in Go, with the Go-only traps. Topic 15's solutions are Python-first; the Go column is the plan you would write.
 
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
@@ -696,17 +696,17 @@ Fifteen problems, six moves (union-find · Dijkstra and its variants · Bellman-
 | [002 · Satisfiability of Equality Equations](GoDSA/15_advanced_graphs/002_satisfiability_of_equality_equations/solution.go) <br>LC 990 · Medium | Two passes over the equations | Union all `==` first, then verify every `!=` with `Find`. **Trap:** one interleaved pass; special-casing `a != a`. |
 | [003 · Network Delay Time](GoDSA/15_advanced_graphs/003_network_delay_time/solution.go) <br>LC 743 · Medium | Dijkstra; answer is the max | Generic `Heap[T]` or `container/heap`, `dist` slice, stale guard; the answer is the *max* distance (−1 if any is `inf`). **Trap:** no stale guard; summing. |
 | [004 · Cheapest Flights Within K Stops](GoDSA/15_advanced_graphs/004_cheapest_flights_within_k_stops/solution.go) <br>LC 787 · Medium | Bellman-Ford with a snapshot | `next := slices.Clone(dist)` each of `k+1` rounds. **Trap:** relaxing the live slice; Dijkstra without the stop count; `math.MaxInt + w` overflow. |
-| [005 · Min Cost to Connect All Points](GoDSA/15_advanced_graphs/005_min_cost_to_connect_all_points/solution.go) <br>LC 1584 · Medium | MST on a dense graph | Prim with an O(n²) array scan; `dist[v] = min(dist[v], manhattan)`. **Trap:** a heap by habit; treating it as a shortest-path problem. |
+| [005 · Min Cost to Connect All Points](GoDSA/15_advanced_graphs/005_min_cost_to_connect_all_points/solution.go) <br>LC 1584 · Medium | <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> on a dense graph | Prim with an O(n²) array scan; `dist[v] = min(dist[v], manhattan)`. **Trap:** a heap by habit; treating it as a shortest-path problem. |
 | [006 · Path With Minimum Effort](GoDSA/15_advanced_graphs/006_path_with_minimum_effort/solution.go) <br>LC 1631 · Medium | Minimax Dijkstra | `ne := max(cur.e, abs(diff))`. **Trap:** `+` instead of `max`; no stale guard. |
-| [007 · Course Schedule IV](GoDSA/15_advanced_graphs/007_course_schedule_iv/solution.go) <br>LC 1462 · Medium | Floyd–Warshall reachability | `[][]bool`, `k` outermost. **Trap:** `k` innermost; a BFS per query. |
+| [007 · Course Schedule IV](GoDSA/15_advanced_graphs/007_course_schedule_iv/solution.go) <br>LC 1462 · Medium | Floyd–Warshall reachability | `[][]bool`, `k` outermost. **Trap:** `k` innermost; a <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> per query. |
 | [008 · Swim in Rising Water](GoDSA/15_advanced_graphs/008_swim_in_rising_water/solution.go) <br>LC 778 · Hard | Dijkstra with node costs | Seed `best[0][0] = grid[0][0]`; `nt := max(cur.t, grid[nr][nc])`. **Trap:** seeding 0; height differences. |
 | [009 · Alien Dictionary](GoDSA/15_advanced_graphs/009_alien_dictionary/solution.go) <br>LC 269 · Hard | Topological sort from data | First differing letter only; register every letter; check the invalid prefix and `len(order) == len(alphabet)`. **Trap:** no prefix check; an edge per differing position. |
 | [010 · Reconstruct Itinerary](GoDSA/15_advanced_graphs/010_reconstruct_itinerary/solution.go) <br>LC 332 · Hard | Hierholzer's Eulerian path | Sort, reverse each list, pop from the end; commit at the dead end; `slices.Reverse(route)`. **Trap:** stopping at the first dead end; forgetting the reverse. |
-| [011 · Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree](GoDSA/15_advanced_graphs/011_find_critical_and_pseudo_critical_edges_in_minimum_spanning_tree/solution.go) <br>LC 1489 · Hard | MST probes per edge | Kruskal with an excluded edge (weight rises *or* disconnects ⇒ critical) and with an included edge. **Trap:** not checking that the excluded graph is still connected. |
+| [011 · Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree](GoDSA/15_advanced_graphs/011_find_critical_and_pseudo_critical_edges_in_minimum_spanning_tree/solution.go) <br>LC 1489 · Hard | <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> probes per edge | Kruskal with an excluded edge (weight rises *or* disconnects ⇒ critical) and with an included edge. **Trap:** not checking that the excluded graph is still connected. |
 | [012 · Critical Connections in a Network](GoDSA/15_advanced_graphs/012_critical_connections_in_a_network/solution.go) <br>LC 1192 · Hard | Tarjan's bridges | `low[v] > disc[u]`; skip the parent edge **once** (parallel edges are back edges). **Trap:** treating the parent edge as a back edge; forgetting depth on a path graph. |
 | [013 · Accounts Merge](GoDSA/15_advanced_graphs/013_accounts_merge/solution.go) <br>LC 721 · Medium | Union-find by shared email | `owner[email]` remembers the first account; union through emails; group by root. **Trap:** merging by name; a single pairwise pass. |
-| [014 · Evaluate Division](GoDSA/15_advanced_graphs/014_evaluate_division/solution.go) <br>LC 399 · Medium | A weighted graph | Edges `a → b (k)` and `b → a (1/k)`; DFS with a `seen` map and a running product. **Trap:** answering `x / x` before checking `x` exists; no reverse edges. |
-| [015 · Minimum Cost to Make at Least One Valid Path in a Grid](GoDSA/15_advanced_graphs/015_minimum_cost_to_make_at_least_one_valid_path_in_a_grid/solution.go) <br>LC 1368 · Hard | 0-1 BFS | A deque (ring buffer, or a front stack + back queue): 0-cost to the front, 1-cost to the back. **Trap:** plain BFS; both to the back (SPFA-like). |
+| [014 · Evaluate Division](GoDSA/15_advanced_graphs/014_evaluate_division/solution.go) <br>LC 399 · Medium | A weighted graph | Edges `a → b (k)` and `b → a (1/k)`; <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> with a `seen` map and a running product. **Trap:** answering `x / x` before checking `x` exists; no reverse edges. |
+| [015 · Minimum Cost to Make at Least One Valid Path in a Grid](GoDSA/15_advanced_graphs/015_minimum_cost_to_make_at_least_one_valid_path_in_a_grid/solution.go) <br>LC 1368 · Hard | 0-1 <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> | A deque (ring buffer, or a front stack + back queue): 0-cost to the front, 1-cost to the back. **Trap:** plain <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>; both to the back (SPFA-like). |
 
 ---
 <!-- problem-map:end -->
@@ -719,7 +719,7 @@ Fifteen problems, six moves (union-find · Dijkstra and its variants · Bellman-
 - [ ] Explain why Bellman-Ford's extra `Vth` round detects negative cycles
 - [ ] State why Floyd-Warshall's `k` loop must be outermost — and what breaks if it isn't
 - [ ] Know when to flatten a `[][]int` distance matrix to a 1D slice
-- [ ] Implement Kruskal's MST reusing a Union-Find structure
+- [ ] Implement Kruskal's <abbr title="Minimum Spanning Tree. A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight.">MST</abbr> reusing a Union-Find structure
 - [ ] Explain the `math.MaxInt` overflow trap and the `/2` headroom fix
 - [ ] Compare Dijkstra/Bellman-Ford/Floyd-Warshall by when each is the right choice
 - [ ] Change Dijkstra's cost function to `max` (minimax) or to a node cost, and seed the start correctly <!--ca-->

@@ -30,7 +30,7 @@ Take a pre-trained open-source Base Model that knows nothing about you. Fine-tun
 3. Save the final merged model to your hard drive.
 
 ### Step 4: Quantization and GGUF Conversion
-1. You now have a massive 16GB PyTorch model. You want to run this fast on your CPU or Mac.
+1. You now have a massive 16GB PyTorch model. You want to run this fast on your <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> or Mac.
 2. Clone the `llama.cpp` repository from GitHub.
 3. Use their provided Python script to convert your PyTorch `.safetensors` model into a compressed 4-bit `.gguf` file.
    - Command: `python convert_hf_to_gguf.py ./my-merged-model --outtype q4_k_m`

@@ -32,7 +32,7 @@ The true power of this architecture is Cross-Modal Reasoning. The Agent can tran
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a conceptual Omnimodal Agent loop. We will simulate an Agent receiving an image of a Bar Chart, using Vision to extract the data into JSON, and then using a Python tool to calculate the standard deviation!
+Let's build a conceptual Omnimodal Agent loop. We will simulate an Agent receiving an image of a Bar Chart, using Vision to extract the data into <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, and then using a Python tool to calculate the standard deviation!
 
 Create a file named `multimodal_agents.py`:
 
@@ -134,7 +134,7 @@ You want to build an Agent that tests your company's website every night.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design a document processing agent that handles enterprise PDFs containing mixed modalities: text, massive financial tables, bar charts, and handwritten notes. It must extract structured JSON with 99% accuracy. Discuss the architecture and fallback strategies."*
+*"Design a document processing agent that handles enterprise PDFs containing mixed modalities: text, massive financial tables, bar charts, and handwritten notes. It must extract structured <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> with 99% accuracy. Discuss the architecture and fallback strategies."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:

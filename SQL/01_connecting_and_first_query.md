@@ -2,12 +2,12 @@
 
 ## The mental model
 
-Before any SQL matters, you need to know what you're actually talking to. A running
-Postgres instance is one **server process** (`postgres`) that listens on a TCP port
+Before any <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> matters, you need to know what you're actually talking to. A running
+Postgres instance is one **server process** (`postgres`) that listens on a <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> port
 and manages one shared set of databases on disk. When a client connects, Postgres
 forks (or hands off to) a dedicated **backend process** for that one **connection** —
 this is Postgres's per-connection process model, and it's the reason connection
-pooling (level 13) matters at all: every connection is a real OS process with real
+pooling (level 13) matters at all: every connection is a real <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> process with real
 memory overhead, not a free abstraction.
 
 ```arch
@@ -40,7 +40,7 @@ yet.
 ## Connecting with `psql`
 
 `psql` is Postgres's official command-line client. It opens one connection, gives
-you an interactive SQL prompt, and is the fastest way to poke at a database by hand.
+you an interactive <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> prompt, and is the fastest way to poke at a database by hand.
 
 ```bash
 psql "postgresql://dsa:dsa@localhost:5544/dsa"
@@ -118,14 +118,14 @@ Go has no single official driver the way Python has `psycopg` — the ecosystem
 converged on two different, both-legitimate ways in:
 
 - **`database/sql`** — Go's standard library defines a generic `database/sql` <abbr title="Application Programming Interface">API</abbr>
-  that works against *any* SQL database, with the actual database-specific code living
+  that works against *any* <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database, with the actual database-specific code living
   in a separate driver package you import purely for its side effect of registering
   itself (the blank `_` import below). `github.com/lib/pq` was the traditional Postgres
   driver for this <abbr title="Application Programming Interface">API</abbr> for years and is still extremely common in existing codebases,
   but it's in maintenance mode (no new features) — `github.com/jackc/pgx/v5/stdlib`
   is the actively-maintained way to get a `database/sql`-compatible driver today,
   backed by pgx underneath. Reach for `database/sql` when you want your code portable
-  across SQL databases, or need to work with tooling built against the standard
+  across <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> databases, or need to work with tooling built against the standard
   interface (many ORMs, migration tools, and observability wrappers expect a
   `*sql.DB`).
 - **Native `pgx`** (`github.com/jackc/pgx/v5/pgxpool`) — bypasses `database/sql`
@@ -250,11 +250,11 @@ with psycopg.connect("postgresql://dsa:dsa@localhost:5544/dsa", autocommit=True)
 - **Opening a new connection per query in a loop.** Each connection is a real
   process fork on the server side with real setup cost — level 13 measures exactly
   how much this costs and what a connection pool buys you instead.
-- **Confusing `psql`'s `\q`/`\d` meta-commands with SQL.** They start with a
+- **Confusing `psql`'s `\q`/`\d` meta-commands with <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>.** They start with a
   backslash and are `psql`-specific; they are not valid inside a Python string
   passed to `execute()`.
 - **Assuming Go's `sql.Open` connected.** It doesn't — it just validates the DSN and
-  sets up the pool's bookkeeping; the actual TCP connection happens lazily on the
+  sets up the pool's bookkeeping; the actual <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection happens lazily on the
   first query. A typo'd host or a database that isn't up yet won't error until then,
   which surprises people expecting `sql.Open` to behave like `psycopg.connect` (which
   does connect immediately). Call `db.Ping()` right after `sql.Open` if you want to

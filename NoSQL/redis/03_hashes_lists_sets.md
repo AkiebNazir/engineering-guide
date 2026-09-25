@@ -9,7 +9,7 @@ all back."
 ## Hashes: model an object without serializing it
 
 A **hash** is a field → value map living under one key — like a mini row, or a small
-JSON object, except Redis knows about the individual fields, so you can read or update
+<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object, except Redis knows about the individual fields, so you can read or update
 one field without touching the rest.
 
 ```python
@@ -55,7 +55,7 @@ string `"7"`, same as `redis-py`'s behavior); Go has no dynamic typing to paper 
 this, so converting numeric fields is always an explicit `strconv.Atoi` in your own
 code, not something the client infers for you.
 
-**Hash vs. a JSON string in a plain key**: if you `SET user:42 '{"name": "Ana", ...}'`,
+**Hash vs. a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> string in a plain key**: if you `SET user:42 '{"name": "Ana", ...}'`,
 bumping `logins` means fetching the whole blob, parsing it in your app, incrementing, and
 writing the whole thing back — not atomic, and wasteful for a 1-field change on a large
 object. A hash lets `HINCRBY` touch just that field, atomically, in one round trip. Use a
@@ -68,7 +68,7 @@ A Redis **list** is a doubly-linked list of strings, with O(1) push/pop at *eith
 (`LPUSH`/`RPUSH`/`LPOP`/`RPOP`) and O(n) random access (`LRANGE`, `LINDEX`) — so use it
 for sequential access patterns, not as an array you index into randomly.
 
-**As a FIFO queue** (push at the tail, process from the head — first in, first out):
+**As a <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> queue** (push at the tail, process from the head — first in, first out):
 
 ```python
 r.rpush("lab03:queue", "job1", "job2", "job3")
@@ -76,7 +76,7 @@ r.lrange("lab03:queue", 0, -1)   # peek the whole list: ['job1', 'job2', 'job3']
 r.lpop("lab03:queue")            # 'job1' — process the oldest job first
 ```
 
-**As a LIFO stack** (push and pop from the same end — last in, first out):
+**As a <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> stack** (push and pop from the same end — last in, first out):
 
 ```python
 r.lpush("lab03:stack", "a", "b", "c")   # each LPUSH goes to the head, so order is reversed
@@ -179,7 +179,7 @@ app and intersecting them in a loop.
 
 - **Reaching for a list when you need random access.** `LINDEX`/`LSET` at an arbitrary
   offset are O(n) — a list is for sequential access at the ends, not an array.
-- **Storing a whole object as a JSON string when you only ever update one field.** That's
+- **Storing a whole object as a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> string when you only ever update one field.** That's
   what hashes are for — see the `HINCRBY` example above.
 - **`SMEMBERS` on a huge set.** It returns everything in one shot and blocks the single
   event-loop thread (level 00) for the duration. `SSCAN` cursors through a large

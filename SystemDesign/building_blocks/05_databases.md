@@ -19,7 +19,7 @@ The interview-quality version of this: don't jump to a schema diagram. Walk the 
 
 ## Primary keys
 
-Prefer a surrogate key (auto-increment, UUID, or a time-sortable ID like ULID/snowflake) over a natural key as the primary key, even when a natural key looks unique today. Natural keys change (emails get corrected, SKUs get reissued), and a primary key change cascades through every foreign key referencing it. Keep the natural key as a separate `UNIQUE` constraint instead.
+Prefer a surrogate key (auto-increment, <abbr title="Universally Unique Identifier - A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems.">UUID</abbr>, or a time-sortable ID like ULID/snowflake) over a natural key as the primary key, even when a natural key looks unique today. Natural keys change (emails get corrected, SKUs get reissued), and a primary key change cascades through every foreign key referencing it. Keep the natural key as a separate `UNIQUE` constraint instead.
 
 Sequential surrogate keys (auto-increment) give good B-tree insert locality but leak volume/order information and create write hotspots on the last page under very high insert concurrency. Random UUIDs avoid the hotspot and the leak but scatter inserts across the whole index, hurting cache locality and page-split behavior. Time-sortable IDs (ULID, snowflake) are the common middle ground: monotonic-ish for locality, opaque enough not to leak sequential meaning.
 
@@ -39,7 +39,7 @@ Query "all records after t5 across all users" → no usable prefix → full scan
 
 **When an index doesn't help:** low-selectivity columns (a boolean flag with 90% one value), queries that already return most of the table, or predicates the planner can't use because of a function wrapped around the column (`WHERE LOWER(email) = ?` needs an index on `LOWER(email)`, not on `email`).
 
-**Cost of over-indexing:** every additional index roughly multiplies write amplification — a single-row `INSERT` becomes N B-tree page writes for N indexes, plus more WAL volume and more pages that can become hot under concurrent writers. Index for the queries that exist, remove indexes nothing uses.
+**Cost of over-indexing:** every additional index roughly multiplies write amplification — a single-row `INSERT` becomes N B-tree page writes for N indexes, plus more <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> volume and more pages that can become hot under concurrent writers. Index for the queries that exist, remove indexes nothing uses.
 
 ## Covering indexes and index-only scans
 

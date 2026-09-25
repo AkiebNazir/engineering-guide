@@ -33,7 +33,7 @@ $$ \min \frac{1}{2}\|\mathbf{w}\|^2 \quad \text{subject to} \quad y_i(\mathbf{w}
 
 ### 3. The Kernel Trick (Warping the Universe)
 What if the red dots are in a circle, surrounded by a ring of blue dots? You *cannot* draw a straight line to separate them. A standard SVM fails.
-**The Kernel Trick** is a mathematical cheat code. Instead of trying to draw a curved line, the Kernel Trick mathematically warps the 2D universe, throwing all the dots into a 3D (or even infinitely dimensional) space where a perfectly flat plane *can* slice between them. It does this without ever actually calculating infinite dimensions, saving your CPU!
+**The Kernel Trick** is a mathematical cheat code. Instead of trying to draw a curved line, the Kernel Trick mathematically warps the 2D universe, throwing all the dots into a 3D (or even infinitely dimensional) space where a perfectly flat plane *can* slice between them. It does this without ever actually calculating infinite dimensions, saving your <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>!
 
 ---
 

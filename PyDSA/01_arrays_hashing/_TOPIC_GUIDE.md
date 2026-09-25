@@ -361,7 +361,7 @@ from collections import Counter, defaultdict, deque, OrderedDict
 | `Counter` | Frequency maps | `Counter(s)`, `.most_common(k)` (a heap, O(n log k)) |
 | `defaultdict(list)` | Grouping without `if key not in d` | Missing key auto-creates |
 | `deque` | Queues, sliding-window maxima | **O(1) `popleft()`** — a list's is O(n) |
-| `OrderedDict` | LRU caches | `.move_to_end()`, `.popitem(last=False)` |
+| `OrderedDict` | <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> caches | `.move_to_end()`, `.popitem(last=False)` |
 
 `Counter` comparison is a one-line anagram check: `Counter(a) == Counter(b)`.
 Interviewers often want the manual `dict` version too — know both.
@@ -549,7 +549,7 @@ write index (Remove Element, topic 02).
 ```
 
 `1 == 1.0 == True` and they hash the same, so the dict treats them as a single key: the **first key
-object is kept, the last value wins**. It bites when keys come from mixed sources (JSON numbers, a
+object is kept, the last value wins**. It bites when keys come from mixed sources (<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> numbers, a
 `bool` column, a `Counter` over mixed data).
 
 `float("nan")` is stranger: `nan != nan`, yet `{nan: 1}[nan]` succeeds, because CPython compares

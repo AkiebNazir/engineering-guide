@@ -45,7 +45,7 @@ node ret "Mailbox retrieval" at 2,2 in pre icon=search sub="per-user, ACL-filter
 group st "Stores" color=slate icon=db
 node cache "Response + prefix cache" at 2,3 in st icon=cache
 node logs "Usage, eval, cost" at 2,4 in st icon=logs sub="eval samples"
-ui -> gw : "SSE"
+ui -> gw : "<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>"
 gw -> orch
 orch:R -> guard_in:L
 orch:R -> policy:L
@@ -126,7 +126,7 @@ Trade-off to state: "I route most traffic to a small model and trim context aggr
 
 1. **Sizing only output tokens.** Prefill is about half the GPU bill, and KV-cache memory caps the batch. Size both.
 2. **Serving one request at a time, or with static batches.** GPUs idle while sequences finish. Use continuous batching with paged KV cache.
-3. **Not cancelling generation when the client disconnects.** The GPU keeps decoding for nobody. Propagate the SSE close to the scheduler.
+3. **Not cancelling generation when the client disconnects.** The GPU keeps decoding for nobody. Propagate the <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> close to the scheduler.
 4. **Stuffing whole threads or mailboxes into the prompt.** Cost and injection surface both grow. Retrieve a few messages and trim quotes and signatures.
 5. **Enforcing permissions only in the index, or after generation.** A revoked or unauthorised message can already be in the prompt. Check the source of truth before assembly.
 6. **A semantic response cache shared across users.** A near-match can return another user's private answer. Cache per user and thread version only.

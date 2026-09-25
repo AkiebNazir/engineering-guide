@@ -6,7 +6,7 @@
 `LIMIT`/`OFFSET` (or keyset pagination) decides which slice of that ordered set you
 actually see. These three combine into almost every "show me a page of results"
 query you'll ever write — and the difference between the naive and the correct way
-to do the third one is one of the most common real-world performance bugs in SQL.
+to do the third one is one of the most common real-world performance bugs in <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>.
 
 ## Setup used for this level
 

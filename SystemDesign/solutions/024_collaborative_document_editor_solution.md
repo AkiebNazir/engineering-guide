@@ -23,7 +23,7 @@ Client ↔ Server   {cursor: {user, position, selection}}                   # ep
 Client → Server   {resync: last_revision}                                 # after reconnect
 ```
 
-`op_id` is unique per client so resends after a reconnect are idempotent. The REST <abbr title="Application Programming Interface">API</abbr> handles everything that is not real time: create, list, share, fetch history, export.
+`op_id` is unique per client so resends after a reconnect are idempotent. The <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> handles everything that is not real time: create, list, share, fetch history, export.
 
 ## Session servers and connections
 

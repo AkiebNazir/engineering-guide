@@ -5,7 +5,7 @@
 > topics behind a clean <abbr title="Application Programming Interface">API</abbr>. Go has no classes, no constructors, and no
 > `private`/`protected` keywords, so "clean <abbr title="Application Programming Interface">API</abbr>" means something narrower and more
 > mechanical here than it does in Python or Java. This document is about that
-> narrower mechanism, not about re-deriving LRU caches from scratch again.
+> narrower mechanism, not about re-deriving <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> caches from scratch again.
 
 ---
 
@@ -102,7 +102,7 @@ func (c *LRUCache) Put(key, value int) {
 Go permits mixing value and pointer receivers on one type, but it splits the type's *method set*: the method set of `C` (a value) contains only the
 value-receiver methods, while `*C` has all of them. So with `func (c C) Get` and `func (c *C) Put`, this does not compile —
 `cannot use C{…} as Cache value in variable declaration: C does not implement Cache (method Put has pointer receiver)` (measured, Go 1.24). Even when it
-compiles, a value-receiver method runs on a **copy**: harmless for a pure read, but for anything that reorders (an LRU `Get` moves a node to the front) the write vanishes.
+compiles, a value-receiver method runs on a **copy**: harmless for a pure read, but for anything that reorders (an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> `Get` moves a node to the front) the write vanishes.
 And if the struct holds a `sync.Mutex`, `go vet` rejects the value receiver outright: `Read passes lock by value: C contains sync.Mutex`. **Pick pointer receivers for every method on a
 design-problem type, uniformly, and move on.**
 
@@ -143,7 +143,7 @@ won't enforce it as tightly as you might expect.
 Design problems are rarely new algorithms — they're compositions of topics 6,
 8, 10, and 12. Recognizing the composition is 80% of the problem.
 
-### 4.1 LRU Cache — hashmap + doubly linked list
+### 4.1 <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache — hashmap + doubly linked list
 
 Already built in full in **topic 8's "Building X From Scratch" section**
 (`08_linked_list/_TOPIC_GUIDE.md`) — a hand-rolled doubly linked list with
@@ -153,12 +153,12 @@ a `Constructor` per Part 1.2 above. **Go re-read that section rather than
 re-deriving it** — the reasoning about why you need *both* the map (O(1)
 lookup) and the list (O(1) reorder/evict) doesn't change.
 
-### 4.2 LFU Cache — one level harder: buckets of LRU lists, keyed by frequency
+### 4.2 <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache — one level harder: buckets of <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> lists, keyed by frequency
 
-LFU (Least Frequently Used) needs O(1) get/put too, but eviction must pick the
+<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> (Least Frequently Used) needs O(1) get/put too, but eviction must pick the
 *least-frequently-used* key, breaking ties by *least-recently-used within that
 frequency*. The standard structure is a hashmap of frequency → doubly-linked
-list (each such list is itself LRU-ordered):
+list (each such list is itself <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>-ordered):
 
 ```
 freqToList: map[int]*DList        keys := map[int]*node   minFreq int
@@ -241,7 +241,7 @@ doesn't lose track of the other still-present instance.
 Python has `__iter__`/`__next__`; Java has `Iterator<T>`. Go, before 1.23, has
 **no standard iterator interface** — `for range` works natively only on
 arrays, slices, strings, maps, channels, and integers. A custom "Design an
-Iterator" type (Flatten Nested List Iterator, BST Iterator) must expose its
+Iterator" type (Flatten Nested List Iterator, <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Iterator) must expose its
 own `HasNext() bool` / `Next() int` methods by convention, with no compiler-
 or stdlib-enforced shape.
 
@@ -289,7 +289,7 @@ func (c *LRUCache) Get(key int) int {
 }
 ```
 
-That's out of scope for the implementations here — but Part 11.3 measures what goes wrong without it and what the lock costs. Two details up front: an LRU `Get`
+That's out of scope for the implementations here — but Part 11.3 measures what goes wrong without it and what the lock costs. Two details up front: an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> `Get`
 *mutates* (it moves a node to the front), so it needs `Lock`, not `RLock` — a read-write mutex only helps structures whose reads truly do not write; and with a lock in place the
 measured overhead was small (57 ms against 52 ms for 2 million operations).
 
@@ -304,8 +304,8 @@ measured overhead was small (57 ms against 52 ms for 2 million operations).
 | Mutating state | Any method mutates `self` freely | **Must use a pointer receiver**, or writes vanish |
 | Encapsulation | `_name` / `__name` convention (weakly enforced) | Case of first letter, enforced **per package** |
 | Built-in iterator protocol | `__iter__`/`__next__`, universal | None before Go 1.23's `iter.Seq`; hand-roll `HasNext`/`Next` |
-| Ordered dict / LRU helper | `collections.OrderedDict` (stdlib, O(1) move-to-end) | No stdlib equivalent — hand-roll hashmap + linked list |
-| Thread-safety | The GIL does *not* make check-then-act atomic: an unsynchronised `OrderedDict` LRU raised 288 `KeyError`s across 4 threads × 100,000 operations (Python guide) | Nothing is safe: concurrent map writes are a fatal, unrecoverable error — add `sync.Mutex` explicitly |
+| Ordered dict / <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> helper | `collections.OrderedDict` (stdlib, O(1) move-to-end) | No stdlib equivalent — hand-roll hashmap + linked list |
+| Thread-safety | The <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr> does *not* make check-then-act atomic: an unsynchronised `OrderedDict` <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> raised 288 `KeyError`s across 4 threads × 100,000 operations (Python guide) | Nothing is safe: concurrent map writes are a fatal, unrecoverable error — add `sync.Mutex` explicitly |
 
 ---
 
@@ -313,15 +313,15 @@ measured overhead was small (57 ms against 52 ms for 2 million operations).
 
 | Structure | Get | Put/Push | Space | Problem |
 |---|:--:|:--:|:--:|---|
-| LRU Cache (map + DLL) | O(1) | O(1) | O(capacity) | LC 146 |
-| LFU Cache (map + freq-bucketed DLLs) | O(1) | O(1) | O(capacity) | LC 460 |
+| <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache (map + DLL) | O(1) | O(1) | O(capacity) | LC 146 |
+| <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache (map + freq-bucketed DLLs) | O(1) | O(1) | O(capacity) | LC 460 |
 | Min Stack (two stacks) | O(1) `GetMin` | O(1) `Push`/`Pop` | O(n) | LC 155 |
-| BST Iterator (lazy left-spine stack) | O(1) amortized `Next` | — | O(h) | LC 173 |
+| <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Iterator (lazy left-spine stack) | O(1) amortized `Next` | — | O(h) | LC 173 |
 | Flatten Nested List Iterator (eager) | O(1) `Next` | — | O(n) | LC 341 |
 
 ---
 
-## Part 9 · Building BST Iterator From Scratch (LC 173)
+## Part 9 · Building <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Iterator From Scratch (LC 173)
 
 The eager approach (flatten the whole tree via in-order traversal into a
 `[]int`, then walk it) is O(n) space and O(n) upfront time — correct, but it
@@ -718,7 +718,7 @@ func (g *SnakeGame) Move(dir byte) int {
 The tail leaves the slice and the occupancy set **before** the collision test, unless food was just eaten (then the tail stays and the snake grows) — moving into the cell your own tail is vacating this turn is legal. The class matched a brute-force simulation (a full body slice, testing
 `slices.Contains`) over 3,000 random games; a variant that tested collision *before* freeing the tail disagreed in **160 of 3,000** (games on boards up to 4 × 4). The LeetCode trace `R D R U L U` returns `0 0 1 1 2 -1`. A `[2]int` is comparable, so it is a valid map key and `food[fi] == nh` needs no helper.
 
-### 10.5 LRU and LFU (LC 146, 008)
+### 10.5 <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> and <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> (LC 146, 008)
 
 ```go
 type lruEntry struct{ key, val int }
@@ -811,8 +811,8 @@ func (c *LFUCache) Put(k, v int) {
 }
 ```
 
-`container/list` is Go's stdlib doubly linked list — the answer to "Go has no `OrderedDict`". `MoveToFront`, `PushFront`, `Back` and `Remove` are all O(1). Checked on 400 random sequences each against an order-list reference (LRU) and an O(n) scan reference that evicts by `(frequency, last use)` (LFU, including capacity 0).
-The LFU details are exactly the documented traps: `Put` on an existing key must also count as a use; `minFreq` advances only when the bucket you just emptied *was* the floor; a brand-new key resets it to 1; and empty buckets are deleted from the map so they do not accumulate.
+`container/list` is Go's stdlib doubly linked list — the answer to "Go has no `OrderedDict`". `MoveToFront`, `PushFront`, `Back` and `Remove` are all O(1). Checked on 400 random sequences each against an order-list reference (<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>) and an O(n) scan reference that evicts by `(frequency, last use)` (<abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>, including capacity 0).
+The <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> details are exactly the documented traps: `Put` on an existing key must also count as a use; `minFreq` advances only when the bucket you just emptied *was* the floor; a brand-new key resets it to 1; and empty buckets are deleted from the map so they do not accumulate.
 In a two-million-operation benchmark (capacity 1,000, 2,000 distinct keys) `container/list` took 59 ms and a hand-built typed list 52 ms — the boxing cost is small; use the standard list unless the interviewer asks for the list by hand.
 
 ### 10.6 In-Memory File System and Autocomplete (009, 010)
@@ -1022,7 +1022,7 @@ why the bug survives casual testing: half of the state still changes.
 
 ### 11.2 `container/list`, generics, and `iter.Seq2`
 
-`container/list` stores `any`, so every element is boxed and every access needs a type assertion (`el.Value.(*entry)`). For an LRU that cost was measurable but small: 59 ms against 52 ms for the same 2,000,000 operations on a hand-built typed list.
+`container/list` stores `any`, so every element is boxed and every access needs a type assertion (`el.Value.(*entry)`). For an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> that cost was measurable but small: 59 ms against 52 ms for the same 2,000,000 operations on a hand-built typed list.
 Since Go 1.23 a structure can expose iteration as a range-over-func — no `HasNext`/`Next` pair:
 
 ```go
@@ -1053,7 +1053,7 @@ type SafeLRU struct { mu sync.Mutex; c *LRU2 }
 func (s *SafeLRU) Get(k int) int { s.mu.Lock(); defer s.mu.Unlock(); return s.c.Get(k) }
 ```
 
-An LRU `Get` **writes** (it moves the node), so it takes `Lock`, never `RLock`. Uncontended, the wrapper cost almost nothing: 57 ms against 52 ms for 2,000,000 operations. For a cache with many readers and few writers, shard the keys across several locked caches rather than
+An <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> `Get` **writes** (it moves the node), so it takes `Lock`, never `RLock`. Uncontended, the wrapper cost almost nothing: 57 ms against 52 ms for 2,000,000 operations. For a cache with many readers and few writers, shard the keys across several locked caches rather than
 reaching for a read-write lock that cannot help. A struct holding a `sync.Mutex` must never be copied (`go vet` reports `passes lock by value`), which is one more reason for pointer receivers.
 
 ### 11.4 Testing a design class: differential testing in Go
@@ -1082,7 +1082,7 @@ for t := 0; t < 500; t++ {
 
 | Follow-up | The answer |
 |---|---|
-| "Make it goroutine-safe." | One `sync.Mutex` per structure, `defer Unlock`; `Lock` even for `Get` on an LRU. |
+| "Make it goroutine-safe." | One `sync.Mutex` per structure, `defer Unlock`; `Lock` even for `Get` on an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>. |
 | "Why pointer receivers?" | A value receiver mutates a copy; only maps and slices' *contents* survive. Mixed receivers also split the method set. |
 | "No `OrderedDict` in Go?" | `container/list` + a `map[K]*list.Element`, or a hand-built typed list. |
 | "Why is `Ls` non-deterministic?" | Map iteration order is random — collect the keys and sort. |
@@ -1121,18 +1121,18 @@ Thirteen problems, one move: pair a source of truth with the index each operatio
 - [ ] Write a `Constructor` function, not a struct literal, for LeetCode-style problems
 - [ ] Default to pointer receivers on every mutating method — explain why a value receiver silently drops writes
 - [ ] State Go's privacy rule correctly: case-based, scoped to the **package**, not the type
-- [ ] Recognize LRU Cache as "see topic 8" rather than re-deriving it
-- [ ] Explain the `minFreq`-as-floor trick in LFU Cache without scanning
+- [ ] Recognize <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> Cache as "see topic 8" rather than re-deriving it
+- [ ] Explain the `minFreq`-as-floor trick in <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> Cache without scanning
 - [ ] Implement Min Stack with the two-stacks (or paired-min) approach, `<=` not `<`
 - [ ] Explain why Go has no built-in iterator protocol before 1.23, and what fills the gap
-- [ ] Implement BST Iterator with a lazy left-spine stack and justify the O(1) amortized bound
+- [ ] Implement <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> Iterator with a lazy left-spine stack and justify the O(1) amortized bound
 - [ ] State plainly that none of this is goroutine-safe without an added `sync.Mutex`
 - [ ] Choose a prime bucket count, normalise a negative key (`((k % n) + n) % n`), and reproduce the 1,000-key chain with a round count <!--ca-->
 - [ ] Order `RandomizedSet.Remove` correctly: fix up the moved index, shrink, then delete — and explain what breaks if you delete first <!--ca-->
 - [ ] Free the snake's tail from the slice and the set before testing collision, unless it just ate <!--ca-->
-- [ ] Build LRU with `container/list` + `map[K]*list.Element`, and LFU with a list per frequency and a floor `minFreq` <!--ca-->
+- [ ] Build <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> with `container/list` + `map[K]*list.Element`, and <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr> with a list per frequency and a floor `minFreq` <!--ca-->
 - [ ] Sort `Ls` output because map iteration order is random <!--ca-->
 - [ ] Use `container/heap` with lazy validation for a max/min that can be corrected <!--ca-->
 - [ ] Use pointer receivers uniformly, and explain the method-set compile error and the `passes lock by value` vet error <!--ca-->
-- [ ] Explain `fatal error: concurrent map writes`, and why an LRU `Get` needs `Lock`, not `RLock` <!--ca-->
+- [ ] Explain `fatal error: concurrent map writes`, and why an <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> `Get` needs `Lock`, not `RLock` <!--ca-->
 - [ ] Differential-test a design class against a brute-force reference after every operation <!--ca-->

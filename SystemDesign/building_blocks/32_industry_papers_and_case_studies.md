@@ -46,27 +46,27 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 **Key decisions.**
 
 - **Haystack** appends photos into volume files of about 100 GB with an in-memory index of id to offset and size, so a read costs at most one disk operation (the paper reports about 10 bytes of memory per photo). Writes go to every physical volume of a logical volume, and deletes are flags reclaimed by compaction.
-- **f4** moves aged BLOBs to a warm store using erasure coding: Reed-Solomon(10,4) in a datacenter (`14/10 = 1.4×`) plus XOR across datacenters. Effective replication falls from Haystack's 3.6 (`3 × 1.2` for RAID-6) to 2.8 (`1.4 × 2`) or 2.1 (`(1.4 × 2 + 1.4) / 2`). The paper cites a three-month threshold for photos.
+- **f4** moves aged BLOBs to a warm store using erasure coding: Reed-Solomon(10,4) in a datacenter (`14/10 = 1.4×`) plus <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> across datacenters. Effective replication falls from Haystack's 3.6 (`3 × 1.2` for RAID-6) to 2.8 (`1.4 × 2`) or 2.1 (`(1.4 × 2 + 1.4) / 2`). The paper cites a three-month threshold for photos.
 
 **Trade-offs.** Index memory bounds a Haystack machine; f4 gives up throughput per byte and pays reconstruction reads, so it fits only immutable, low-request-rate data.
 
-**Where it shows up in an interview.** Photo, video and file storage: metadata separate from data, hot head on a cache or CDN, erasure-code what has gone cold. See [08_object_storage.md](08_object_storage.md).
+**Where it shows up in an interview.** Photo, video and file storage: metadata separate from data, hot head on a cache or <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, erasure-code what has gone cold. See [08_object_storage.md](08_object_storage.md).
 
 ## Gorilla (VLDB 2015)
 
 *Tuomas Pelkonen et al., "Gorilla: A Fast, Scalable, In-Memory Time Series Database", VLDB 2015.*
 
-**Problem.** In spring 2015 Facebook's monitoring produced over 2 billion series and about 12 million points per second, over 1 trillion a day. At 16 bytes each that is `10^12 × 16 B = 16 TB` of RAM per day. At least 85% of queries were for the last 26 hours.
+**Problem.** In spring 2015 Facebook's monitoring produced over 2 billion series and about 12 million points per second, over 1 trillion a day. At 16 bytes each that is `10^12 × 16 B = 16 TB` of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> per day. At least 85% of queries were for the last 26 hours.
 
 **Key decisions.**
 
 - Keep the latest **26 hours** in memory as a write-through cache in front of the long-term store.
-- **Compress by exploiting regularity**: delta-of-delta timestamps (about 96% compress to one bit) and XOR of consecutive values, averaging 1.37 bytes per point, a 12× cut (`16 / 1.37 ≈ 11.7`).
+- **Compress by exploiting regularity**: delta-of-delta timestamps (about 96% compress to one bit) and <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> of consecutive values, averaging 1.37 bytes per point, a 12× cut (`16 / 1.37 ≈ 11.7`).
 - Run instances in several regions, stream writes to each without guaranteeing consistency, and read from the closest.
 
-**Trade-offs.** Only the recent window is in RAM. Replicas can differ, which is fine for monitoring and wrong for money.
+**Trade-offs.** Only the recent window is in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. Replicas can differ, which is fine for monitoring and wrong for money.
 
-**Where it shows up in an interview.** Metrics platforms ([013](../solutions/013_metrics_platform_solution.md)): recent data in RAM, compressed, regional replicas, availability over consistency. Compare Google's [Monarch](24_google_papers.md#monarch-2020).
+**Where it shows up in an interview.** Metrics platforms ([013](../solutions/013_metrics_platform_solution.md)): recent data in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>, compressed, regional replicas, availability over consistency. Compare Google's [Monarch](24_google_papers.md#monarch-2020).
 
 ## Amazon Aurora (SIGMOD 2017)
 
@@ -82,11 +82,11 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 
 **Trade-offs.** One writer per cluster and a purpose-built storage tier.
 
-**Where it shows up in an interview.** "Highly available SQL": separate compute from storage, replicate the log not pages, and derive quorum sizes from failure domains ("survive an AZ plus one node" gives `V=6, Vw=4, Vr=3`). See [26_distributed_log_internals.md](26_distributed_log_internals.md), [06_database_internals.md](06_database_internals.md).
+**Where it shows up in an interview.** "Highly available <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>": separate compute from storage, replicate the log not pages, and derive quorum sizes from failure domains ("survive an AZ plus one node" gives `V=6, Vw=4, Vr=3`). See [26_distributed_log_internals.md](26_distributed_log_internals.md), [06_database_internals.md](06_database_internals.md).
 
 ## DynamoDB (USENIX ATC 2022) and S3's documented properties
 
-*Mostafa Elhemali et al., "Amazon DynamoDB: A Scalable, Predictably Performant, and Fully Managed NoSQL Database Service", USENIX ATC 2022.*
+*Mostafa Elhemali et al., "Amazon DynamoDB: A Scalable, Predictably Performant, and Fully Managed <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> Database Service", USENIX ATC 2022.*
 
 **Problem.** The paper says Dynamo ([24](24_google_papers.md#dynamo-amazon-2007)) was single-tenant with each team running its own installation, and that this burden limited adoption. DynamoDB is the multi-tenant managed successor aiming at predictable single-digit-millisecond latency.
 
@@ -111,7 +111,7 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 
 - A topic is split into **partitions**, each an append-only log of segment files, and a message is addressed by its **logical offset**, with no separate index.
 - **Consumers pull and keep their position.** Retention is time-based (typically 7 days), so a consumer can rewind and replay.
-- **Lean on the OS**: the page cache serves reads, plus batching and `sendfile`.
+- **Lean on the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>**: the page cache serves reads, plus batching and `sendfile`.
 
 **Trade-offs.** Order only within a partition, and at-least-once delivery. The 2011 paper describes no replication: unconsumed data on a failed broker is unavailable, and lost if the disk dies.
 
@@ -125,12 +125,12 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 
 **Key decisions.**
 
-- **Open Connect.** Netflix's own CDN: appliances (OCAs) inside ISP networks or at internet exchanges, pre-filled with content and refreshed nightly in off-peak fill windows, with ISPs steering traffic to them over BGP. A control plane in AWS picks the OCAs a client streams from by file availability, health and proximity.
+- **Open Connect.** Netflix's own <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>: appliances (OCAs) inside ISP networks or at internet exchanges, pre-filled with content and refreshed nightly in off-peak fill windows, with ISPs steering traffic to them over BGP. A control plane in AWS picks the OCAs a client streams from by file availability, health and proximity.
 - **Chaos engineering.** Define steady state by a business metric (the paper uses stream starts per second), hypothesise it holds under a real fault, run in production, minimise blast radius. The paper mentions "Chaos Kong" exercises that simulate losing an entire EC2 region.
-- **Bulkheads and limits.** Hystrix isolates each dependency call (thread or semaphore) behind a circuit breaker with fallback; it is now in maintenance mode. `concurrency-limits` adapts a cap on in-flight requests using TCP-congestion-control ideas and rejects work above it.
+- **Bulkheads and limits.** Hystrix isolates each dependency call (thread or semaphore) behind a circuit breaker with fallback; it is now in maintenance mode. `concurrency-limits` adapts a cap on in-flight requests using <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>-congestion-control ideas and rejects work above it.
 - **Eureka.** Heartbeats every 30 seconds; clients cache the registry and keep working "even when all of the eureka servers go down". One cluster per region. It favours availability.
 
-**Trade-offs.** A private CDN costs hardware and ISP relationships; production chaos needs strong observability; thread isolation spends threads per dependency.
+**Trade-offs.** A private <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> costs hardware and ISP relationships; production chaos needs strong observability; thread isolation spends threads per dependency.
 
 **Where it shows up in an interview.** Video delivery ([29_cdn_and_streaming_media.md](29_cdn_and_streaming_media.md)) and resilience ([12](12_application_resilience_patterns.md), [28](28_overload_control_and_graceful_degradation.md)): pre-position the head of the catalogue, keep the control plane small, rehearse the failures you claim to survive.
 
@@ -178,7 +178,7 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 **Key decisions.**
 
 - **Schema**: partition by channel plus a **bucket** (a static time window), ordered by Snowflake id.
-- **The move**: Cassandra hit hot partitions, compaction lag and GC pauses (12 nodes in 2017, 177 by early 2022). On ScyllaDB: 72 nodes, p99 reads 40-125 ms down to 15 ms, inserts 5-70 ms down to 5 ms.
+- **The move**: Cassandra hit hot partitions, compaction lag and <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pauses (12 nodes in 2017, 177 by early 2022). On ScyllaDB: 72 nodes, p99 reads 40-125 ms down to 15 ms, inserts 5-70 ms down to 5 ms.
 - **Rust data service** with **request coalescing** (concurrent requests for a row make one query) and consistent-hash routing by channel id so identical requests meet. A custom migrator ran at about 3.2 million messages per second, finishing in nine days against a three-month Spark estimate.
 
 **Trade-offs.** Buckets bound partitions but make a read span buckets; coalescing needs identical requests routed together.
@@ -195,7 +195,7 @@ Interviews at Meta, Netflix, Amazon and similar companies lean on a shared set o
 | Cells and blast radius | Aurora AZ quorum, Eureka per region, Gorilla regions, chaos limits | [27_multi_region_and_global_traffic.md](27_multi_region_and_global_traffic.md) |
 | Make retries safe | Stripe keys, Cadence activities, Kafka at-least-once | [04_api_design_low_level.md](04_api_design_low_level.md), [008](../solutions/008_checkout_solution.md) |
 | Protect the backend from misses | Leases and Gutter, Discord coalescing, concurrency limits, [hedging limits](24_google_papers.md#the-tail-at-scale-2013) | [28_overload_control_and_graceful_degradation.md](28_overload_control_and_graceful_degradation.md) |
-| Tier by temperature | Haystack to f4, Gorilla's 26 hours in RAM | [013](../solutions/013_metrics_platform_solution.md) |
+| Tier by temperature | Haystack to f4, Gorilla's 26 hours in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> | [013](../solutions/013_metrics_platform_solution.md) |
 | Availability where data is derived | Gorilla, Eureka, Monarch | [10_distributed_systems_theory.md](10_distributed_systems_theory.md) |
 | Quorums from failure domains | Aurora 4/6 and 3/6, DynamoDB Multi-Paxos | [19_consensus_and_coordination.md](19_consensus_and_coordination.md) |
 

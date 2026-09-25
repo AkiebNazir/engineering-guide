@@ -105,7 +105,7 @@ if __name__ == "__main__":
 Your task is to build the feedback loop.
 **Your Task:**
 1. Modify the `human_decision` logic. If the human rejects the action, force them to provide a `reason` (e.g., *"Customer account is flagged for fraud"*).
-2. Save that reason to a mock JSON file called `agent_memory.json`.
+2. Save that reason to a mock <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> file called `agent_memory.json`.
 3. Modify the agent so that at the very beginning of the function, it reads `agent_memory.json`.
 4. If it sees a rule about fraud, it should automatically reject future requests from that user without even bothering the human!
 
@@ -121,8 +121,8 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **State Persistence (The Architecture):** 
    - Explain that Agents must be stateful (using LangGraph Checkpointers or Temporal). When an Agent decides to "Deny" a claim, the graph pauses, saves the tensor state to Postgres, and drops a message into a Human Review Queue.
-2. **SLA Timeouts (Handling Delays):**
-   - Humans are slow. If the human doesn't review the claim within 48 hours (the SLA), the workflow engine must automatically "wake up" the Agent, trigger an SLA timeout node, and escalate the claim to a Senior Director's email.
+2. **<abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr> Timeouts (Handling Delays):**
+   - Humans are slow. If the human doesn't review the claim within 48 hours (the <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr>), the workflow engine must automatically "wake up" the Agent, trigger an <abbr title="Service Level Agreement - A commitment between a service provider and a client outlining expected performance metrics such as availability.">SLA</abbr> timeout node, and escalate the claim to a Senior Director's email.
 3. **Auditing & Compliance:**
    - Regulators require proof. Every single step the Agent took (the <abbr title="Large Language Model">LLM</abbr> prompt, the <abbr title="Application Programming Interface">API</abbr> responses, and the human's final 'Approve' click) must be cryptographically hashed and logged to an immutable Audit Table.
 

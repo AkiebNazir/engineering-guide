@@ -14,7 +14,7 @@ Today, we learn how to manage this chaos. We will build an **<abbr title="Model 
 If there are 100 internal <abbr title="Model Context Protocol">MCP</abbr> servers, how does the <abbr title="Artificial Intelligence">AI</abbr> Agent (the Client) know they exist? 
 You do not hardcode 100 URLs into the Agent's configuration file.
 Instead, you build an **<abbr title="Model Context Protocol">MCP</abbr> Registry**. The Registry is a central internal website (a Developer Portal). When the <abbr title="Artificial Intelligence">AI</abbr> Agent boots up, it pings the Registry: *"Hello, I am Agent 42. What servers do I have permission to see?"*
-The Registry returns a JSON list of Server URLs. The Agent dynamically connects to them!
+The Registry returns a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> list of Server URLs. The Agent dynamically connects to them!
 
 ### 2. Pipeline Composition
 Sometimes, tools from different servers must be chained together. 
@@ -125,7 +125,7 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Publishing Workflow (<abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>):** 
-   - State that teams cannot just push servers to the Registry. They must submit their FastMCP code to a central <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline. The pipeline runs automated AST scans (looking for hardcoded secrets) before approving the server for the Marketplace.
+   - State that teams cannot just push servers to the Registry. They must submit their FastMCP code to a central <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> pipeline. The pipeline runs automated <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> scans (looking for hardcoded secrets) before approving the server for the Marketplace.
 2. **Access Control (OAuth 2.0 Gateway):**
    - The Registry acts as an <abbr title="Application Programming Interface">API</abbr> Gateway. Every Agent must pass an OAuth Bearer token to the Registry. The Registry validates the token against Active Directory to ensure the Agent (and its human owner) has permission to access the requested <abbr title="Model Context Protocol">MCP</abbr> Server.
 3. **Usage Metering & Billing (FinOps):**

@@ -4,7 +4,7 @@ Welcome to Day 118. Frontier models (like GPT-4 and Llama 3 70B) are incredible,
 
 What if you are building an <abbr title="Artificial Intelligence">AI</abbr> assistant for a hospital, and strict privacy laws mean patient data *cannot leave the building*? What if you are building an <abbr title="Artificial Intelligence">AI</abbr> that must run on an iPhone without internet access?
 
-You cannot fit a 70B parameter model in an iPhone's 8GB of RAM. 
+You cannot fit a 70B parameter model in an iPhone's 8GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. 
 Today, we learn the art of **Small Language Models (SLMs)** and **On-Device Deployment**.
 
 ---
@@ -24,12 +24,12 @@ You pass the same input into your tiny 2B "Student" model. You mathematically fo
 
 ### 3. On-Device Constraints
 To run <abbr title="Artificial Intelligence">AI</abbr> on a smartphone, you face two massive bottlenecks:
-1. **Memory (RAM):** A 2B parameter model stored in 16-bit precision requires ~4GB of RAM. An iPhone has ~8GB of RAM. If your app takes 4GB, the iOS operating system will kill your app.
+1. **Memory (<abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>):** A 2B parameter model stored in 16-bit precision requires ~4GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. An iPhone has ~8GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. If your app takes 4GB, the iOS operating system will kill your app.
 2. **Battery & Heat:** Doing 2 Billion matrix multiplications per word drains mobile batteries instantly and overheats the phone.
 
 ### 4. Extreme Quantization (INT4 & CoreML)
 To solve the memory issue, we use **Extreme Quantization** (converting weights from 16-bit floats to 4-bit integers). This shrinks the 2B model from 4GB down to just **1.2GB**! 
-To solve the battery issue, we don't run the math on the phone's CPU. We compile the model into formats like **GGUF** (for llama.cpp) or **Core <abbr title="Machine Learning">ML</abbr>** (Apple), which hardware-accelerates the matrix math directly on the phone's Neural Processing Unit (NPU)!
+To solve the battery issue, we don't run the math on the phone's <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>. We compile the model into formats like **GGUF** (for llama.cpp) or **Core <abbr title="Machine Learning">ML</abbr>** (Apple), which hardware-accelerates the matrix math directly on the phone's Neural Processing Unit (NPU)!
 
 ---
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The Math of Shrinking:** An FP16 model uses 2 bytes per weight. $2B \times 2 = 4GB$. An INT4 model uses 0.5 bytes per weight. $2B \times 0.5 = 1GB$. We just made the model $4\times$ smaller!
-2. **Speed:** Because the INT4 model is so small, it easily fits entirely into the ultra-fast CPU cache (or NPU cache). This means the CPU doesn't have to wait for RAM fetches, making INT4 models actually *faster* to run than FP16 models!
+2. **Speed:** Because the INT4 model is so small, it easily fits entirely into the ultra-fast <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache (or NPU cache). This means the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> doesn't have to wait for <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> fetches, making INT4 models actually *faster* to run than FP16 models!
 
 ---
 
@@ -108,7 +108,7 @@ The open-source community relies entirely on one library to run models locally: 
 **Your Task:**
 1. Research how to install `llama-cpp-python`.
 2. Download a tiny GGUF model from HuggingFace (e.g., `Phi-3-mini-4k-instruct-q4.gguf`).
-3. Write a 10-line Python script that loads this model and generates text entirely offline on your local CPU!
+3. Write a 10-line Python script that loads this model and generates text entirely offline on your local <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>!
 
 ### 🎤 MAANG Technical Interview Prep
 
@@ -125,7 +125,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 2. **The Optimization Stack:**
    - **Step 1:** Start with a high-quality Small Language Model (like Phi-3 or Gemma-2B).
    - **Step 2:** Apply **Post-Training Quantization (PTQ)** to convert the weights to INT4. Mention AWQ or GPTQ to preserve accuracy during quantization.
-   - **Step 3:** Compile the model using Core <abbr title="Machine Learning">ML</abbr> (for iOS) or ExecuTorch (for Android) to ensure the matrix multiplications run on the hardware Neural Engine (NPU) rather than the CPU, which saves massive amounts of battery life!
+   - **Step 3:** Compile the model using Core <abbr title="Machine Learning">ML</abbr> (for iOS) or ExecuTorch (for Android) to ensure the matrix multiplications run on the hardware Neural Engine (NPU) rather than the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, which saves massive amounts of battery life!
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

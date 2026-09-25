@@ -18,7 +18,7 @@ error messages, and every human-readable log line in a Go program.
   reach for the lower-level `fmt.Formatter` interface only when you need to
   react to the verb itself (`%x` vs `%d` vs `%v`) or to flags/width.
 - Structured machine-readable output → `encoding/json`, not `fmt.Sprintf` with
-  hand-built JSON strings (out of scope here).
+  hand-built <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> strings (out of scope here).
 
 ## Gotchas
 

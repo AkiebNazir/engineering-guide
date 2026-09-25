@@ -14,8 +14,8 @@ Today, we build an **Autonomous Agent**. An agent is not a pipeline; it is a *St
 Agents are built on a variation of the military OODA Loop (Observe, Orient, Decide, Act). In <abbr title="Artificial Intelligence">AI</abbr>, we call this the **Perception-Reasoning-Action Loop**.
 1. **Observe:** Read the environment (e.g., Read a webpage, or read an error message).
 2. **Think:** Mathematically deduce the next logical step based on the observation.
-3. **Act:** Execute a Python Tool (e.g., Run a SQL query).
-4. **Reflect:** Look at the result of the SQL query. Did it work? If not, loop back to Step 2!
+3. **Act:** Execute a Python Tool (e.g., Run a <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> query).
+4. **Reflect:** Look at the result of the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> query. Did it work? If not, loop back to Step 2!
 
 ### 2. The ReAct Framework Formalization
 In Day 115, we touched on ReAct. Today we formalize it. To trap an <abbr title="Large Language Model">LLM</abbr> in a cognitive loop, you must enforce a strict parsing grammar. 
@@ -25,7 +25,7 @@ If the <abbr title="Large Language Model">LLM</abbr> outputs `Action: ...`, your
 ### 3. Agent Design Patterns
 When tasks become complex, one Agent is not enough. You must build an "Agency" using specific design patterns:
 - **The Router:** A fast, cheap <abbr title="Large Language Model">LLM</abbr> that reads the user's prompt and routes it to the correct specialist.
-- **The Planner:** An <abbr title="Large Language Model">LLM</abbr> that takes a massive goal (*"Build a website"*) and breaks it down into 10 smaller JSON tasks.
+- **The Planner:** An <abbr title="Large Language Model">LLM</abbr> that takes a massive goal (*"Build a website"*) and breaks it down into 10 smaller <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> tasks.
 - **The Executor:** The "blue-collar" Agent that actually runs the tools.
 - **The Critic:** The "manager" Agent that reviews the Executor's work before showing it to the user.
 
@@ -33,7 +33,7 @@ When tasks become complex, one Agent is not enough. You must build an "Agency" u
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a production-grade ReAct agent loop from scratch in pure Python. We will add structured JSON output for the Action so our parser never crashes!
+Let's build a production-grade ReAct agent loop from scratch in pure Python. We will add structured <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> output for the Action so our parser never crashes!
 
 Create a file named `agent_architecture.py`:
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
 ### Key Takeaways from Code:
 1. **The `PAUSE` Token:** This is the most important concept in raw agent building. If you do not explicitly instruct the <abbr title="Large Language Model">LLM</abbr> to `PAUSE`, it will hallucinate the `Observation` itself instead of waiting for your Python script to run the real tool!
-2. **Self-Correction:** Notice the `except` block. If the <abbr title="Large Language Model">LLM</abbr> outputs broken JSON, we don't crash the program. We literally inject an `Observation` telling the <abbr title="Large Language Model">LLM</abbr> it made a syntax error, and the <abbr title="Large Language Model">LLM</abbr> will fix its own mistake on the next loop!
+2. **Self-Correction:** Notice the `except` block. If the <abbr title="Large Language Model">LLM</abbr> outputs broken <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>, we don't crash the program. We literally inject an `Observation` telling the <abbr title="Large Language Model">LLM</abbr> it made a syntax error, and the <abbr title="Large Language Model">LLM</abbr> will fix its own mistake on the next loop!
 
 ---
 
@@ -155,9 +155,9 @@ Spend 15 minutes drafting a verbal answer to this question.
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Architecture (Supervisor Pattern):** 
-   - Propose a Multi-Agent system. A cheap `Router` agent classifies the user's intent. If it's a refund, it routes to a `Refund Agent` equipped with SQL tools. 
+   - Propose a Multi-Agent system. A cheap `Router` agent classifies the user's intent. If it's a refund, it routes to a `Refund Agent` equipped with <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> tools. 
 2. **Human-in-the-Loop (Safety):**
-   - State that autonomous agents must NEVER process financial transactions completely autonomously. The agent can draft the SQL and verify the user's eligibility, but the final execution requires a Human-in-the-Loop approval gate!
+   - State that autonomous agents must NEVER process financial transactions completely autonomously. The agent can draft the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> and verify the user's eligibility, but the final execution requires a Human-in-the-Loop approval gate!
 3. **Infinite Loop Prevention:**
    - Mention setting a hard `max_iterations=5` cap on the `while` loop. 
    - Propose using a fast, cheap model (GPT-4o-mini) for the intermediate Tool loops, and only using the expensive model (GPT-4o) for the final answer synthesis to optimize token costs.

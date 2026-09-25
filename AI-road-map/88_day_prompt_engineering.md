@@ -31,7 +31,7 @@ CoT has a flaw: LLMs hallucinate. What if it hallucinates an error on Step 2? Th
 
 ### 4. Tree of Thought (ToT)
 For extremely complex tasks (like writing an entire software application), even Self-Consistency fails because the sequence of steps is too long.
-**Tree of Thought** allows the <abbr title="Large Language Model">LLM</abbr> to explore multiple branches of logic simultaneously using Breadth-First Search (BFS) or Depth-First Search (DFS).
+**Tree of Thought** allows the <abbr title="Large Language Model">LLM</abbr> to explore multiple branches of logic simultaneously using Breadth-First Search (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>) or Depth-First Search (<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>).
 - The <abbr title="Large Language Model">LLM</abbr> generates 3 possible "Step 1" plans.
 - A secondary "Evaluator Prompt" grades the 3 plans. It deletes the bad plans, and keeps the best plan.
 - The <abbr title="Large Language Model">LLM</abbr> generates 3 possible "Step 2" plans based on the winning Step 1.
@@ -136,8 +136,8 @@ Instead of asking an <abbr title="Large Language Model">LLM</abbr> to do 3 thing
 **Your Task:**
 1. Conceptually design a 3-Step Prompt Chain.
 2. **Node 1 (Extraction):** Feed an article to Prompt 1: *"Extract all names mentioned in this text."*
-3. **Node 2 (Formatting):** Take the output of Node 1, and feed it into Prompt 2: *"Format these names as a JSON array."*
-4. **Node 3 (Validation):** Take the output of Node 2, and feed it into Prompt 3: *"Check if this JSON is valid. If yes, output the JSON. If no, fix it."*
+3. **Node 2 (Formatting):** Take the output of Node 1, and feed it into Prompt 2: *"Format these names as a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> array."*
+4. **Node 3 (Validation):** Take the output of Node 2, and feed it into Prompt 3: *"Check if this <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> is valid. If yes, output the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>. If no, fix it."*
 5. This is how production Agentic systems are built.
 
 ### 🎤 MAANG Technical Interview Prep
@@ -163,4 +163,4 @@ A "Strong Hire" candidate must articulate the following points clearly:
 **Task for the end of the day:** Commit your code to Git. 
 
 You have mastered the logic of Prompt Engineering. But parsing text like `split("Final Answer:")` is brittle and dangerous. 
-Tomorrow, in **Day 89**, we learn the holy grail of modern <abbr title="Artificial Intelligence">AI</abbr>: **Structured Output and Function Calling**. We will force the <abbr title="Large Language Model">LLM</abbr> to output perfect JSON every single time!
+Tomorrow, in **Day 89**, we learn the holy grail of modern <abbr title="Artificial Intelligence">AI</abbr>: **Structured Output and Function Calling**. We will force the <abbr title="Large Language Model">LLM</abbr> to output perfect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> every single time!

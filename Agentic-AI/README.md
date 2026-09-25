@@ -17,11 +17,11 @@ This guide is broken down into 5 core modules, each with deep-dive technical exp
 5. [**Graph Databases & GraphRAG: Knowledge Representation & Traversal**](05_graph_databases_and_graphrag.md)
    Master index-free adjacency and how to extract and traverse knowledge graphs for advanced reasoning tasks (GraphRAG).
 6. [**Protocol Buffers & gRPC: High-Speed Microservices**](06_protocol_buffers_and_grpc.md)
-   Learn the fundamentals of `.proto` files, binary serialization, and cross-language gRPC communication used in high-throughput <abbr title="Artificial Intelligence">AI</abbr> gateways.
+   Learn the fundamentals of `.proto` files, binary serialization, and cross-language <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> communication used in high-throughput <abbr title="Artificial Intelligence">AI</abbr> gateways.
 7. [**Multi-Agent Orchestration & MCP**](07_multi_agent_and_mcp.md)
    Scale up from a single agent to Swarm/LangGraph architectures, and learn how the Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>) standardizes enterprise tool connectivity.
 8. [**API Architectures: REST, GraphQL, and gRPC**](08_api_architectures_engineering_guide.md)
-   A detailed engineering guide comparing REST, GraphQL, and gRPC. Contains 5 distinct implementation examples for each technology in both Python and Golang.
+   A detailed engineering guide comparing <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, and <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>. Contains 5 distinct implementation examples for each technology in both Python and Golang.
 
 ## Practice Projects
 
@@ -47,7 +47,7 @@ For a more advanced challenge, consider exploring or building these enterprise-g
    - **Goal**: Develop Python-based <abbr title="Model Context Protocol">MCP</abbr> (Model Context Protocol) Servers to standardize connectivity between <abbr title="Artificial Intelligence">AI</abbr> Agents and backend systems (bridged via Golang). Architect a private inference layer using Python (vLLM) to host open-source models (DeepSeek-R1 / Hugging Face), ensuring secure and air-gapped <abbr title="Large Language Model">LLM</abbr> execution.
 
 2. **Secure <abbr title="Artificial Intelligence">AI</abbr> Gateway & Semantic Cache**
-   - **Goal**: Design a high-throughput <abbr title="Application Programming Interface">API</abbr> Gateway in Golang for <abbr title="Large Language Model">LLM</abbr> traffic to optimize cost and reduce latency. Implement gRPC communication and Semantic Caching using Redis and ChromaDB to intercept redundant prompts, returning cached responses for ~30% of traffic.
+   - **Goal**: Design a high-throughput <abbr title="Application Programming Interface">API</abbr> Gateway in Golang for <abbr title="Large Language Model">LLM</abbr> traffic to optimize cost and reduce latency. Implement <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> communication and Semantic Caching using Redis and ChromaDB to intercept redundant prompts, returning cached responses for ~30% of traffic.
 
 3. **Autonomous Multi-Agent Orchestration**
    - **Goal**: Engineer resilient agentic patterns using Python (OpenAI Swarm & CrewAI) to simulate complex decision-making pipelines, focusing on inter-agent hand-offs, shared state management, and error recovery.

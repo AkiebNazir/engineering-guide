@@ -11,9 +11,9 @@ LangChain is a framework for developing applications powered by Language Models.
 An <abbr title="Large Language Model">LLM</abbr> (like GPT-4 or Llama-3) is fundamentally just a text-prediction engine trapped in a box. 
 - It has **no memory** (if you ask it a question, it forgets it 2 seconds later).
 - It has **no internet access** (it only knows facts up until its training cut-off date).
-- It cannot **take actions** (it cannot run Python code, query an SQL database, or send an email).
+- It cannot **take actions** (it cannot run Python code, query an <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database, or send an email).
 
-LangChain provides standardized abstractions (Prompts, Memory, Document Loaders, and Output Parsers) to solve all these problems. It allows you to build a system where the <abbr title="Large Language Model">LLM</abbr> can read your private PDF documents, remember past conversations, and format its output perfectly as JSON.
+LangChain provides standardized abstractions (Prompts, Memory, Document Loaders, and Output Parsers) to solve all these problems. It allows you to build a system where the <abbr title="Large Language Model">LLM</abbr> can read your private PDF documents, remember past conversations, and format its output perfectly as <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
 
 ---
 
@@ -156,7 +156,7 @@ To fix this, I would use LangChain's `LongContextReorder` document transformer. 
 ### Scenario 2: Why LangChain is failing at Agents
 *Interviewer:* "We tried using standard LangChain's `AgentExecutor` to build an <abbr title="Artificial Intelligence">AI</abbr> that can write code, test it, and loop back to fix errors if the test fails. It keeps crashing. Why?"
 
-*Answer:* "Because LangChain's core architecture (LCEL) is built as a **Directed Acyclic Graph (DAG)**. Data flows strictly in one direction (A $\rightarrow$ B $\rightarrow$ C). Standard chains cannot handle cycles or loops (A $\rightarrow$ B $\rightarrow$ A $\rightarrow$ B). If you want an Agent to execute code, read the error log, and loop back to rewrite the code, a DAG is mathematically incapable of doing this. For cyclical, long-running agents, we must abandon standard LangChain and upgrade to **LangGraph**, which is specifically designed for stateful, cyclical graph architectures."
+*Answer:* "Because LangChain's core architecture (LCEL) is built as a **Directed Acyclic Graph (<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>)**. Data flows strictly in one direction (A $\rightarrow$ B $\rightarrow$ C). Standard chains cannot handle cycles or loops (A $\rightarrow$ B $\rightarrow$ A $\rightarrow$ B). If you want an Agent to execute code, read the error log, and loop back to rewrite the code, a <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> is mathematically incapable of doing this. For cyclical, long-running agents, we must abandon standard LangChain and upgrade to **LangGraph**, which is specifically designed for stateful, cyclical graph architectures."
 
 ---
 

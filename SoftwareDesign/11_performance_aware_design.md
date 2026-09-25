@@ -27,8 +27,8 @@ point.
 | Big-O, amortised analysis, hidden costs | `CSFundamentals/07_complexity_analysis_deep_dive.md` |
 | Cost of built-in operations per data structure | `CSFundamentals/06_data_structure_internals_deep_dive.md` §9 |
 | Profiling tools hands-on (cProfile, pprof, tracing) | `PyEngineering/22_profiling_optimization`, `GoEngineering/22_*`, `35_profiling_and_tracing` |
-| GC tuning, GIL, subinterpreters | `GoEngineering/28_scheduler_and_gc_tuning`, `PyEngineering/34_the_gil_and_subinterpreters` |
-| Caching tiers, CDN, load balancing, back-of-envelope estimation | `SystemDesign/building_blocks/07`, `11`, `18` |
+| <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> tuning, <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr>, subinterpreters | `GoEngineering/28_scheduler_and_gc_tuning`, `PyEngineering/34_the_gil_and_subinterpreters` |
+| Caching tiers, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, load balancing, back-of-envelope estimation | `SystemDesign/building_blocks/07`, `11`, `18` |
 | Bounded concurrency, single-flight | `07_designing_concurrent_code.md` §9–§10 |
 | Latency histograms and percentiles | `10_designing_observable_code.md` §4 |
 
@@ -82,7 +82,7 @@ Without a number, optimisation has no stopping point and no priority. With one, 
 - **Choose where to spend effort:** optimising the 5 ms auth check is pointless while
   candidate fetch takes 150 ms (Amdahl's law: speeding up a part that takes fraction *p* of
   the time by any amount saves at most *p*).
-- **Detect regressions in CI** with benchmark thresholds.
+- **Detect regressions in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>** with benchmark thresholds.
 
 Throughput and latency are different goals and sometimes conflict: batching raises
 throughput and adds latency to the first item in the batch; more concurrency raises
@@ -105,11 +105,11 @@ numbers every programmer should know" (Jeff Dean, updated for current hardware),
 | Mutex lock/unlock (uncontended) | ~20 ns | 20 |
 | Compress 1 KB (Snappy/zstd fast) | ~2 µs | 2,000 |
 | Read 1 MB sequentially from memory | ~50 µs | 50,000 |
-| SSD random read | ~20–100 µs | 100,000 |
+| <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> random read | ~20–100 µs | 100,000 |
 | Round trip within a datacenter | ~500 µs | 500,000 |
-| Read 1 MB sequentially from SSD | ~1 ms | 1,000,000 |
+| Read 1 MB sequentially from <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> | ~1 ms | 1,000,000 |
 | Round trip same region, different zone | ~1–2 ms | 2,000,000 |
-| Disk (HDD) seek | ~5–10 ms | 10,000,000 |
+| Disk (<abbr title="Hard Disk Drive - An electro-mechanical data storage device that stores and retrieves digital data using magnetic storage.">HDD</abbr>) seek | ~5–10 ms | 10,000,000 |
 | Round trip across a continent | ~50–80 ms | 80,000,000 |
 | Round trip transatlantic / transpacific | ~100–150 ms | 150,000,000 |
 
@@ -121,7 +121,7 @@ What to take from it:
 - **Memory access patterns matter within a process:** a cache-friendly array scan beats a
   pointer-chasing linked list by large constant factors even at the same Big-O.
 - **Python's per-operation overhead is ~50–100× native code.** Pure-Python inner loops over
-  millions of items are the wrong design; push the loop into C (built-ins, NumPy, SQL) (§10).
+  millions of items are the wrong design; push the loop into C (built-ins, NumPy, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>) (§10).
 
 ---
 
@@ -343,7 +343,7 @@ and the request takes an hour. A catalogue:
 | `list(dict.keys())[i]` / `len(list(generator))` | Materialises everything | Iterate once; keep a counter |
 | `re.compile` / `json` schema build inside a hot function | Rebuilt per call | Module-level constant |
 | `copy.deepcopy(big)` per request "to be safe" | O(size) allocation | Immutable data (`07` §6) |
-| `SELECT *` then filtering in Python | Transfers and parses every row | `WHERE` / `LIMIT` in SQL |
+| `SELECT *` then filtering in Python | Transfers and parses every row | `WHERE` / `LIMIT` in <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> |
 | Query in a loop | N round trips | Batch (§3) |
 | `COUNT(*)` on a huge table for a badge | Full scan per page view | Maintained counter, approximate count |
 | `OFFSET 100000 LIMIT 20` pagination | Database walks and discards 100,000 rows | Keyset/cursor pagination (`WHERE id > last_seen`) |
@@ -407,10 +407,10 @@ Streaming by layer:
 |---|---|---|
 | Python pipeline | `[f(x) for x in xs]` chained | Generator expressions, `itertools`, `yield` |
 | Files | `f.read()`, `f.readlines()` | `for line in f:` |
-| CSV / JSON Lines | `list(csv.reader(f))` | Iterate the reader; JSON Lines instead of one huge JSON array |
+| CSV / <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Lines | `list(csv.reader(f))` | Iterate the reader; <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Lines instead of one huge <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> array |
 | Database | `fetchall()` | Server-side cursors, `fetchmany(1000)`, keyset pages |
-| HTTP responses | Build full body | Chunked streaming responses, server-sent events |
-| HTTP clients | `resp.content` | `resp.iter_content()` / Go `io.Copy` |
+| <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> responses | Build full body | Chunked streaming responses, server-sent events |
+| <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> clients | `resp.content` | `resp.iter_content()` / Go `io.Copy` |
 | Go | `io.ReadAll`, `os.ReadFile` | `bufio.Scanner`, `io.Reader` composition, `json.Decoder` |
 
 Design implication: **accept iterables / `io.Reader`, not lists / `[]byte`**, in functions
@@ -695,7 +695,7 @@ Tail-tolerant design techniques:
 | **Tied requests** | Send to two replicas; the first to start processing cancels the other | Needs server-side cancellation |
 | **Reduce fan-out** | Precompute, denormalise, cache aggregate results | Staleness |
 | **Partial results / deadlines** | Return what arrived within the budget (search omits a slow shard) | Product must accept "good enough" |
-| **Remove variance at the source** | Separate batch from interactive workloads; tune GC; avoid cold caches (warm up); limit request size | Often the most effective |
+| **Remove variance at the source** | Separate batch from interactive workloads; tune <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>; avoid cold caches (warm up); limit request size | Often the most effective |
 | **Timeout budgets** | Per-call timeouts derived from the overall deadline (`06` §6) | Too tight → false failures |
 
 ---
@@ -721,7 +721,7 @@ is guessing.
 | Question | Python | Go |
 |---|---|---|
 | How long does this function take? | `timeit`, `pyperf`, `pytest-benchmark` | `go test -bench`, `benchstat` |
-| Where does CPU time go? | `cProfile` + `snakeviz`; **`py-spy`** (sampling, attach to a live process) | `pprof` CPU profile |
+| Where does <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> time go? | `cProfile` + `snakeviz`; **`py-spy`** (sampling, attach to a live process) | `pprof` <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> profile |
 | Where does memory go? | `tracemalloc`, `memray` | `pprof` heap/allocs profile, `-benchmem` |
 | Why is it waiting? | `py-spy dump`, asyncio debug mode | `pprof` block/mutex profiles, `go tool trace` |
 | Production, continuously | Continuous profilers (Pyroscope, Parca, Google Cloud Profiler) | Same; pprof endpoints |
@@ -733,7 +733,7 @@ is guessing.
 |---|---|---|
 | One run | Noise mistaken for signal | Many runs; report median and spread; `benchstat` for significance |
 | No warm-up | Measures imports, JIT, cold caches | Warm up; discard first iterations |
-| Laptop on battery / other apps running | CPU throttling, noisy neighbours | Quiet machine; pin CPU; compare on the same host |
+| Laptop on battery / other apps running | <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> throttling, noisy neighbours | Quiet machine; pin <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>; compare on the same host |
 | Tiny inputs | O(n²) looks fine at n = 100 | Benchmark at production sizes, and at 10× |
 | Benchmarking the wrong layer | 3× faster function, 0.1% faster request | Profile the whole request first |
 | Result unused | Compiler/runtime optimises the work away | Keep results alive (`sink` in §9) |
@@ -889,12 +889,12 @@ are fast. Performance design in Python is mostly about **moving loops out of Pyt
 |---|---|---|
 | Python loop summing/filtering numbers | `sum`, `min`, `max`, `any`, `sorted` with `key`, comprehensions | 2–10× |
 | Python loops over numeric arrays | NumPy vectorised operations | 10–100× |
-| Row-by-row data processing in Python | Polars / pandas / DuckDB, or SQL in the database | 10–100× |
+| Row-by-row data processing in Python | Polars / pandas / DuckDB, or <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> in the database | 10–100× |
 | Manual counting / grouping | `collections.Counter`, `defaultdict`, `itertools.groupby` | 2–5× |
 | Repeated attribute/global lookups in a hot loop | Local variable binding (only after profiling) | 10–30% |
 | Many small objects | `__slots__` / `@dataclass(slots=True)` — less memory, faster attribute access | Memory 40–60% less |
 | `json` for large payloads | `orjson` / `msgspec` | 3–10× |
-| CPU-bound work in threads | Processes, native extensions that release the GIL, or free-threaded 3.13t (`07` §13) | Scales with cores |
+| <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound work in threads | Processes, native extensions that release the <abbr title="Global Interpreter Lock. A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once.">GIL</abbr>, or free-threaded 3.13t (`07` §13) | Scales with cores |
 | Hot inner algorithm in pure Python | Cython, mypyc, Rust via PyO3 — as a last step | 10–100× |
 
 One row of that table, measured rather than asserted — a manual per-character loop
@@ -934,7 +934,7 @@ str.count():    0.626 ms   (29x faster)
 ```
 
 Same result, ~29× faster, with no algorithmic change at all — the loop moved from the
-Python bytecode interpreter into a C function that never leaves the CPU's cache-friendly
+Python bytecode interpreter into a C function that never leaves the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>'s cache-friendly
 inner loop. `sum`, `min`, `max`, `sorted`, comprehensions, NumPy, and a database's query
 engine are all the same move at different scales: get the per-element work out of Python.
 
@@ -943,9 +943,9 @@ Design rules:
 - **Data-oriented shapes beat object graphs for bulk data.** A million `Point` objects cost
   ~100+ bytes each and pointer-chasing; two NumPy arrays of floats cost 8 bytes per value
   and are processed in C.
-- **Let the database do set operations.** Joins, aggregates, and filters in SQL avoid moving
+- **Let the database do set operations.** Joins, aggregates, and filters in <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> avoid moving
   data into Python at all.
-- **asyncio helps I/O concurrency, not CPU.** Async code is not faster per request; it
+- **asyncio helps I/O concurrency, not <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>.** Async code is not faster per request; it
   handles more concurrent waiting requests per process.
 - **Import time is latency** for CLIs and serverless cold starts: `python -X importtime`;
   import heavy modules lazily.
@@ -979,7 +979,7 @@ Every optimisation costs something. Name the cost before paying it.
 - The interface shape determines round trips (§3).
 - Data volume will grow by orders of magnitude (streaming, pagination, indexes).
 - The code is a shared library or hot core path used by many teams.
-- The decision is expensive to reverse (data model, storage engine, sync vs. async <abbr title="Application Programming Interface">API</abbr>).
+- The decision is expensive to reverse (data model, storage engine, sync vs. async <abbr title="Application Programming Interface"><abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr></abbr>).
 
 Readable code that is fast enough beats clever code that is slightly faster. When an
 optimisation does make code harder to read, **leave a comment with the measurement** that
@@ -991,7 +991,7 @@ justified it — so the next engineer doesn't "simplify" it back.
 
 | Red flag | Problem | Fix |
 |---|---|---|
-| Database/HTTP call inside a loop | N+1 round trips | Batch-shaped port (§3) |
+| Database/<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> call inside a loop | N+1 round trips | Batch-shaped port (§3) |
 | Single-item-only repository/client interfaces | Forces N+1 on every caller | Add `get_many` |
 | `fetchall()` / `readlines()` / `io.ReadAll` on unbounded input | Memory proportional to input | Stream (§5) |
 | List endpoints without pagination | Unbounded response size and time | Cursor pagination |
@@ -1003,7 +1003,7 @@ justified it — so the next engineer doesn't "simplify" it back.
 | "Optimised" code with no benchmark or comment | Unverifiable; later reverted | Keep the benchmark; comment the measurement |
 | Benchmark run once on a laptop | Noise | Repeated runs + `benchstat` / `pyperf` |
 | `OFFSET` pagination on large tables | Linear scan per page | Keyset pagination |
-| CPU-bound work in asyncio or Python threads | No speed-up; blocked event loop | Processes / native code |
+| <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound work in asyncio or Python threads | No speed-up; blocked event loop | Processes / native code |
 | Micro-optimising before profiling | Effort in the wrong 97% | Profile first |
 
 ---
@@ -1018,15 +1018,15 @@ those deliberately up front and micro-optimise only what profiles show is hot.
 
 **Q: What is the N+1 query problem and how do you prevent it?**
 Fetching a list with one query and then related data with one query per item — N+1 round
-trips. Prevent it with batch-shaped interfaces (`get_many`), eager loading in the ORM, a
+trips. Prevent it with batch-shaped interfaces (`get_many`), eager loading in the <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>, a
 DataLoader that coalesces lookups, and tests that assert query counts.
 
 **Q: Your service's p99 latency is bad but the mean is fine. What do you do?**
 Look at what the slow requests have in common with traces and exemplars — a specific
-dependency, request size, tenant, instance, or GC pauses. If the service fans out, tail
+dependency, request size, tenant, instance, or <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pauses. If the service fans out, tail
 amplification is likely: reduce fan-out, set per-call deadlines, return partial results, or
 hedge idempotent reads after about the p95. Also remove variance at the source: separate
-batch traffic, warm caches, and tune GC.
+batch traffic, warm caches, and tune <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>.
 
 **Q: How do you benchmark correctly?**
 Define the metric and workload, warm up, run many iterations on a quiet machine, compare
@@ -1048,8 +1048,8 @@ list forces every caller to load everything first.
 
 **Q: How would you speed up a slow Python data-processing job?**
 Profile first. Usually the fix is moving loops out of Python: push filtering and aggregation
-into SQL or a columnar engine like Polars or DuckDB, vectorise numerics with NumPy, stream
-instead of loading, and batch I/O. For CPU-bound Python that remains, use multiple processes;
+into <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> or a columnar engine like Polars or DuckDB, vectorise numerics with NumPy, stream
+instead of loading, and batch I/O. For <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-bound Python that remains, use multiple processes;
 compile the hottest kernel with Cython or Rust only as a last step.
 
 ---
@@ -1075,4 +1075,4 @@ compile the hottest kernel with Cython or Rust only as a last step.
 - [ ] Optimisations are driven by profiles, not intuition.
 - [ ] Benchmarks use realistic sizes, repeated runs, and statistical comparison.
 - [ ] Justifying measurements are recorded in comments or benchmarks kept in the repo.
-- [ ] Query counts and key benchmarks are guarded in tests/CI.
+- [ ] Query counts and key benchmarks are guarded in tests/<abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>.

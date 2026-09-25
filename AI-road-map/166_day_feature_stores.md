@@ -4,7 +4,7 @@ Welcome to Day 166.
 
 Imagine you build a real-time Fraud Detection Agent. A user swipes their credit card. The Agent has 50 milliseconds to decide if it's fraud. 
 The Agent needs the user's `total_spend_last_30_days` to make a decision. 
-If the Agent has to run a massive SQL `GROUP BY` query across millions of rows to calculate that number right then and there, it will take 5 seconds. The transaction will time out. 
+If the Agent has to run a massive <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> `GROUP BY` query across millions of rows to calculate that number right then and there, it will take 5 seconds. The transaction will time out. 
 
 Today, we learn about **Feature Stores**. We will learn how to pre-calculate complex data, store it centrally, and serve it to Machine Learning models and LLMs in single-digit milliseconds.
 

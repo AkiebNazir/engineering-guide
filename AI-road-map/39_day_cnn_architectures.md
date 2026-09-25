@@ -131,14 +131,14 @@ However, for ResNet-50 and ResNet-152, that requires too much compute. They inve
    - A $1 \times 1$ conv (to shrink the channels, e.g., 256 down to 64).
    - A $3 \times 3$ conv (on the 64 channels).
    - A $1 \times 1$ conv (to expand the 64 channels back up to 256).
-3. By shrinking the channels *before* doing the expensive $3 \times 3$ convolution, ResNet-50 uses less RAM than ResNet-34! Implement this math.
+3. By shrinking the channels *before* doing the expensive $3 \times 3$ convolution, ResNet-50 uses less <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> than ResNet-34! Implement this math.
 
 ### 🎤 MAANG Technical Interview Prep
 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"We need to deploy a Computer Vision model on a cheap Mobile Device with only 2GB of RAM. We are currently using VGG-16. Walk through your specific architecture selection process to solve this, and explain how you would alter the weights before deployment."*
+*"We need to deploy a Computer Vision model on a cheap Mobile Device with only 2GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. We are currently using VGG-16. Walk through your specific architecture selection process to solve this, and explain how you would alter the weights before deployment."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:

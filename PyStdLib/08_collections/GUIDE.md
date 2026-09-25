@@ -25,7 +25,7 @@ into one view (`ChainMap`).
 - **A tiny immutable record** (2-6 fields, no methods needed) → `namedtuple`
   (or `typing.NamedTuple` for type hints) instead of a full class or a bare
   tuple where `row[2]` says nothing about what index 2 means.
-- **Layered configuration** (CLI args > env vars > file > defaults) →
+- **Layered configuration** (<abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> args > env vars > file > defaults) →
   `ChainMap`, not copying and merging dicts by hand.
 - **Ordered iteration** → a plain `dict` already preserves insertion order as
   of Python 3.7+; only reach for `OrderedDict` when you specifically need

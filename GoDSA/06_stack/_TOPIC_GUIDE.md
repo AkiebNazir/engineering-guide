@@ -208,7 +208,7 @@ map — the map is both shorter and O(1) instead of a chain of string compares.
 ### 3.2 The general "matching stack" shape
 
 Anything of the form *"does this later thing correctly close an earlier thing"*
-— parentheses, XML/HTML tags, a calculator's operator precedence, backtracking
+— parentheses, <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>/HTML tags, a calculator's operator precedence, backtracking
 "undo" logs — fits the same shape: push on open/commit, pop-and-compare on
 close/undo, fail fast on mismatch, and check for a clean empty stack at the end.
 
@@ -216,14 +216,14 @@ close/undo, fail fast on mismatch, and check for a clean empty stack at the end.
 
 ## Part 4 · Stacks vs. Recursion — Go-Specific Notes
 
-### 4.1 Go goroutine stacks are growable, unlike a fixed OS thread stack
+### 4.1 Go goroutine stacks are growable, unlike a fixed <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> thread stack
 
 Every goroutine starts with a **small** stack — **2 KB** is the floor (`stackMin = 2048` in `runtime/stack.go`),
-and since Go 1.19 the runtime adapts the *starting* size to the average stack use it observes at each GC. When a
+and since Go 1.19 the runtime adapts the *starting* size to the average stack use it observes at each <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>. When a
 call needs more room the runtime **allocates a bigger stack (double the size), copies the old one over and fixes up
 the pointers into it** — so growth is automatic and invisible. The ceiling is **1 GB on 64-bit platforms**
 (250 MB on 32-bit), adjustable with `debug.SetMaxStack`. This is different from an unconfigured POSIX thread (a
-fixed 1–8 MB) or a JVM thread with a small default `-Xss`: a naive recursive DFS in Go survives depths that would
+fixed 1–8 MB) or a <abbr title="Java Virtual Machine. An abstract computing machine that enables a computer to run a Java program.">JVM</abbr> thread with a small default `-Xss`: a naive recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> in Go survives depths that would
 blow a fixed C thread stack immediately.
 
 ⚠️ That ceiling is real, though. A pathologically unbalanced input — a million-node linked-list-shaped "tree", or an
@@ -244,7 +244,7 @@ the safer *and* frequently the faster choice — it also avoids per-call functio
 overhead (argument copying, defer bookkeeping if any) that the recursive
 version pays on every level.
 
-### 4.3 Iterative DFS shape
+### 4.3 Iterative <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> shape
 
 ```go
 func iterativeDFS(root *TreeNode) []int {
@@ -269,7 +269,7 @@ func iterativeDFS(root *TreeNode) []int {
 }
 ```
 
-The push order (`Right` then `Left`) is the whole trick: a LIFO stack pops
+The push order (`Right` then `Left`) is the whole trick: a <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> stack pops
 whatever was pushed last, so pushing `Right` first guarantees `Left` comes off
 first, matching recursive pre-order's `visit → left → right`.
 
@@ -300,7 +300,7 @@ first, matching recursive pre-order's `visit → left → right`.
 | Monotonic stack (2D histogram rows) | O(rows·cols) | O(cols) | LC 85 Maximal Rectangle |
 | Two-stack queue simulation | O(1) amortized/op | O(n) | LC 232 Implement Queue using Stacks |
 | Min-stack (aux stack for running min) | O(1)/op | O(n) | LC 155 Min Stack |
-| Iterative tree/graph DFS | O(V+E) | O(h) or O(V) | Any recursion-to-iteration conversion |
+| Iterative tree/graph <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> | O(V+E) | O(h) or O(V) | Any recursion-to-iteration conversion |
 | Operator-precedence / calculator evaluation | O(n) | O(n) | LC 150, 224, 227 |
 
 ---
@@ -696,7 +696,7 @@ for cur := root; cur != nil || len(st) > 0; {
 |---|---|
 | "Min Stack in O(1) extra space." | Store `value - min` instead of a second stack; fragile, and the subtraction can overflow. |
 | "Max Stack with `popMax`." | Two stacks give O(n) `popMax`; a heap with lazy deletion (or a linked list + ordered map) gives O(log n). |
-| "Thread-safe stack." | A `sync.Mutex` around the slice, or a channel (a buffered channel is a FIFO — not a stack). |
+| "Thread-safe stack." | A `sync.Mutex` around the slice, or a channel (a buffered channel is a <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> — not a stack). |
 | "Implement a queue with two stacks." | Topic 07 — amortised O(1). |
 | "No recursion allowed." | The explicit `[]T` stack above; Go's 1 GB stack ceiling is generous but not infinite. |
 | "Stream input." | A monotonic stack is already online (Stock Span). |
@@ -737,8 +737,8 @@ Fourteen problems, five moves (matching · deferred evaluation · monotonic stac
 - [ ] Trace a monotonic-stack problem by hand and show each element pushed/popped once
 - [ ] Explain why the nested while-loop is O(n) overall, not O(n²) (aggregate analysis)
 - [ ] Use `map[byte]byte` for bracket-pair lookups with an early-exit mismatch check
-- [ ] Explain why Go recursion is safer than a fixed-stack language but not TCO'd
-- [ ] Convert a recursive DFS to an iterative one with an explicit `[]T` stack
+- [ ] Explain why Go recursion is safer than a fixed-stack language but not <abbr title="Tail Call Optimization. A process by which a compiler or interpreter can optimize a tail call to avoid adding a new stack frame.">TCO</abbr>'d
+- [ ] Convert a recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> to an iterative one with an explicit `[]T` stack
 - [ ] Write Min Stack with a parallel running-minimum stack in under 10 minutes
 - [ ] Fill in the four-directions table (next/previous × greater/smaller) including the pop comparison <!--ca-->
 - [ ] Use a `-1` sentinel and a virtual final bar so the histogram loop has no special cases <!--ca-->

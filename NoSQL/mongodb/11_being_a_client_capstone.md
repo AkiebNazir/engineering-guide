@@ -120,7 +120,7 @@ Structurally identical to `NotesService` in Python — a struct instead of a cla
 
 ## Connection pooling: one `MongoClient`, reused, always
 
-`MongoClient` is not a single socket — it's a **connection pool** (default `maxPoolSize=100`, capped to 50 above) plus the driver's server-discovery/monitoring machinery. Constructing it does real work: DNS resolution, an initial handshake, and (for a replica set) discovering every member and which one is primary. **That cost should be paid once per process, not once per request.**
+`MongoClient` is not a single socket — it's a **connection pool** (default `maxPoolSize=100`, capped to 50 above) plus the driver's server-discovery/monitoring machinery. Constructing it does real work: <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> resolution, an initial handshake, and (for a replica set) discovering every member and which one is primary. **That cost should be paid once per process, not once per request.**
 
 Measured, 200 inserts each way, same instance:
 
@@ -145,7 +145,7 @@ for i in range(200):
 Per-call-client overhead: 5.2x slower than pooling
 ```
 
-**5.2x slower**, measured on this machine, purely from throwing away the connection pool and paying discovery/handshake overhead on every single call — and this is a *local* Docker container with near-zero network latency; the gap would be considerably larger against a real remote cluster, where each fresh handshake also pays real round-trip-time cost. The practical rule: construct one `MongoClient` at application startup (or one per process in a worker-pool architecture) and hand it — or a module-level singleton wrapping it, as `NotesService` does — to every request handler. `MongoClient` is explicitly documented as thread-safe for exactly this reason; you're meant to share it.
+**5.2x slower**, measured on this machine, purely from throwing away the connection pool and paying discovery/handshake overhead on every single call — and this is a *local* <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container with near-zero network latency; the gap would be considerably larger against a real remote cluster, where each fresh handshake also pays real round-trip-time cost. The practical rule: construct one `MongoClient` at application startup (or one per process in a worker-pool architecture) and hand it — or a module-level singleton wrapping it, as `NotesService` does — to every request handler. `MongoClient` is explicitly documented as thread-safe for exactly this reason; you're meant to share it.
 
 **Same comparison, in Go** — a shared `*mongo.Client` (Go's driver is explicitly documented as safe for concurrent use by multiple goroutines, the direct equivalent of pymongo's thread-safety guarantee) vs. a fresh `mongo.Connect` call per insert:
 
@@ -205,11 +205,11 @@ Real measured result: pointed at a port nothing is listening on, the call failed
 
 | Timeout | Governs |
 |---|---|
-| `serverSelectionTimeoutMS` | How long to search for *any* usable server (right host but nothing listening, DNS resolves but unreachable, entire replica set down). |
-| `connectTimeoutMS` | How long a single TCP connection attempt to a server that *is* reachable may take to establish. |
+| `serverSelectionTimeoutMS` | How long to search for *any* usable server (right host but nothing listening, <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> resolves but unreachable, entire replica set down). |
+| `connectTimeoutMS` | How long a single <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection attempt to a server that *is* reachable may take to establish. |
 | `socketTimeoutMS` | How long any individual already-connected network operation (a query, an insert) may take before being abandoned. |
 
-Leaving these at driver defaults (`serverSelectionTimeoutMS` defaults to 30 seconds) is a common production surprise: a struggling or partitioned database can leave application request threads blocked for 30 real seconds each before failing, which is often far longer than the timeout the calling HTTP request itself is willing to tolerate — set these deliberately, shorter than whatever timeout wraps the code calling them.
+Leaving these at driver defaults (`serverSelectionTimeoutMS` defaults to 30 seconds) is a common production surprise: a struggling or partitioned database can leave application request threads blocked for 30 real seconds each before failing, which is often far longer than the timeout the calling <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> request itself is willing to tolerate — set these deliberately, shorter than whatever timeout wraps the code calling them.
 
 ## Same timeout demo, and a genuine driver-design difference, in Go
 

@@ -136,7 +136,7 @@ The system above suffers from the "Echo Chamber" problem (it only shows the user
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Funnel Architecture:** Clearly draw the L0 (Candidate Generation) $\rightarrow$ L1 (Ranking) cascade on the whiteboard. Mention the 200ms latency budget constraint.
-2. **Feature Store Integration:** Explain how the Ranking model cannot query an SQL database. It must query a Redis Feature Store (Day 166) to get the user's real-time engagement history (e.g., "They just liked 3 dog videos 5 seconds ago").
+2. **Feature Store Integration:** Explain how the Ranking model cannot query an <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> database. It must query a Redis Feature Store (Day 166) to get the user's real-time engagement history (e.g., "They just liked 3 dog videos 5 seconds ago").
 3. **The Cold Start Problem:** If a new video is uploaded 1 second ago, it has zero views. It will never be ranked high! Propose a multi-armed bandit approach: force 5% of all user traffic to see brand-new videos, collect their engagement metrics, and use those metrics to jumpstart the video's ranking score.
 4. **Data Pipelining:** How do we train the models? Explain that the frontend logs stream into Kafka, which dumps into a Data Lake (Snowflake), which trains the Two-Tower model nightly via Airflow.
 

@@ -2,7 +2,7 @@
 
 Welcome to Day 116. Writing a 20-line Python function from scratch is easy for an <abbr title="Large Language Model">LLM</abbr>. 
 
-But what if you are building an IDE assistant like GitHub Copilot? You want the <abbr title="Large Language Model">LLM</abbr> to autocomplete a line of code exactly in the middle of a 500-line file. 
+But what if you are building an <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> assistant like GitHub Copilot? You want the <abbr title="Large Language Model">LLM</abbr> to autocomplete a line of code exactly in the middle of a 500-line file. 
 Furthermore, you want the <abbr title="Large Language Model">LLM</abbr> to automatically understand the 50 other files in your repository, knowing exactly which functions to import without you having to copy-paste the entire codebase into the prompt!
 
 Today, we learn the advanced architecture behind enterprise Code Assistants: **Fill-in-the-Middle (FIM)** and **Repository-Level Context**.
@@ -23,8 +23,8 @@ You cannot fit 10,000 files into a 128k context window. You must use <abbr title
 But standard semantic <abbr title="Retrieval-Augmented Generation">RAG</abbr> is terrible for code. If you search for "database connection", standard <abbr title="Retrieval-Augmented Generation">RAG</abbr> might pull a README file instead of the actual `db.py` connection pool.
 
 Instead of Semantic Search, Code Assistants use **Abstract Syntax Trees (ASTs)**. 
-An AST parser reads your codebase and builds a mathematical graph of dependencies. 
-If the user opens `auth.py` and types `verify_token()`, the IDE extension instantly queries the AST, finds the file where `verify_token()` is defined (`jwt_utils.py`), and silently injects the source code of `jwt_utils.py` into the <abbr title="Large Language Model">LLM</abbr>'s prompt!
+An <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> parser reads your codebase and builds a mathematical graph of dependencies. 
+If the user opens `auth.py` and types `verify_token()`, the <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> extension instantly queries the <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr>, finds the file where `verify_token()` is defined (`jwt_utils.py`), and silently injects the source code of `jwt_utils.py` into the <abbr title="Large Language Model">LLM</abbr>'s prompt!
 
 ### 3. Evaluation: HumanEval vs SWE-Bench
 - **HumanEval:** The old benchmark. 164 simple, isolated Python functions (e.g., *"Reverse a string"*). It is too easy for modern LLMs.
@@ -34,7 +34,7 @@ If the user opens `auth.py` and types `verify_token()`, the IDE extension instan
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's build a Python script that implements the FIM prompting format and simulates a naive AST parser retrieving repository context!
+Let's build a Python script that implements the FIM prompting format and simulates a naive <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> parser retrieving repository context!
 
 Create a file named `code_assistant.py`:
 
@@ -128,13 +128,13 @@ if __name__ == "__main__":
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: Test-Driven Development (TDD) Agent
+### 🛠️ The Challenge: Test-Driven Development (<abbr title="Test-Driven Development. A software development process relying on software requirements being converted to test cases before software is fully developed.">TDD</abbr>) Agent
 You can build an agent that never writes bad code.
 **Your Task:**
 1. Conceptually design a bash/Python script.
 2. The Agent generates a Python function and saves it to `script.py`.
 3. The Agent generates a `pytest` file and saves it to `test_script.py`.
-4. Your script runs `pytest test_script.py` in a secure Docker sandbox.
+4. Your script runs `pytest test_script.py` in a secure <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> sandbox.
 5. If the test fails, you capture the terminal `Traceback Error`, feed it *back* to the <abbr title="Large Language Model">LLM</abbr>, and prompt it: *"Your code failed with this error. Fix it."*
 6. Loop until the tests pass!
 
@@ -143,13 +143,13 @@ You can build an agent that never writes bad code.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design the architecture for an internal company 'Copilot'. Cover IDE integration, context selection, model serving, and how you will measure if it actually makes your developers more productive."*
+*"Design the architecture for an internal company 'Copilot'. Cover <abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> integration, context selection, model serving, and how you will measure if it actually makes your developers more productive."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
-1. **IDE Integration & Context:** 
-   - Propose building a VSCode Extension. When the user types, the extension extracts the Prefix/Suffix, uses an AST parser (like Tree-sitter) to find imported local files, and builds a massive prompt.
+1. **<abbr title="Integrated Development Environment. A software application that provides comprehensive facilities to computer programmers for software development.">IDE</abbr> Integration & Context:** 
+   - Propose building a VSCode Extension. When the user types, the extension extracts the Prefix/Suffix, uses an <abbr title="Abstract Syntax Tree. A tree representation of the abstract syntactic structure of source code written in a programming language.">AST</abbr> parser (like Tree-sitter) to find imported local files, and builds a massive prompt.
 2. **Model Serving (Latency is King):**
    - Emphasize that Autocomplete must be instant ($<200ms$). Propose deploying a highly quantized, specifically trained FIM model (like DeepSeek-Coder-7B or CodeLlama) using an optimized inference engine like vLLM. 
 3. **Measuring Productivity:**

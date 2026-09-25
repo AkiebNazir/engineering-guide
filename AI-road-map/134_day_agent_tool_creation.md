@@ -24,14 +24,14 @@ If a different Agent needs to parse a receipt tomorrow, it queries the Tool Libr
 ### 3. The Danger (Security Sandboxing)
 Allowing an <abbr title="Artificial Intelligence">AI</abbr> to write and execute raw Python code on your server is the most dangerous thing you can do in computer science. 
 If the Agent hallucinates and writes `os.system("rm -rf /")`, it will delete your entire server. 
-You MUST execute dynamically generated tools inside a **Docker Sandbox**, a secure `gVisor` container, or a strict **WebAssembly (WASM)** environment with zero network access and strict timeout limits.
+You MUST execute dynamically generated tools inside a **<abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> Sandbox**, a secure `gVisor` container, or a strict **WebAssembly (WASM)** environment with zero network access and strict timeout limits.
 
 ---
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
 Let's build a primitive LATM loop. The agent will realize it cannot count prime numbers, so it will write a custom Python function as a string, and we will use Python's `exec()` command to run it!
-*(⚠️ WARNING: This code uses `exec()`. Never run this on a production web server without a Docker sandbox!)*
+*(⚠️ WARNING: This code uses `exec()`. Never run this on a production web server without a <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> sandbox!)*
 
 Create a file named `agent_tool_creation.py`:
 
@@ -141,11 +141,11 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Sandbox (Defense in Depth):** 
    - State that `exec()` is unacceptable. 
-   - Propose using a serverless environment (like AWS Lambda) or ephemeral Docker containers with networking disabled. The code can only perform math or local text manipulation; it cannot access the internet to exfiltrate data.
+   - Propose using a serverless environment (like AWS Lambda) or ephemeral <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> containers with networking disabled. The code can only perform math or local text manipulation; it cannot access the internet to exfiltrate data.
 2. **The <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr> Workflow (Testing):**
    - The <abbr title="Large Language Model">LLM</abbr> must generate Unit Tests alongside the Tool. The Sandbox runs the Unit Tests. Only if the tests pass is the Tool added to the Registry.
 3. **The Human Approval Gate (What NOT to Auto-Generate):**
-   - State clearly: *Agents should never auto-generate tools that mutate external state.* (e.g., executing SQL `DELETE`, sending Emails, or calling Stripe APIs). 
+   - State clearly: *Agents should never auto-generate tools that mutate external state.* (e.g., executing <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> `DELETE`, sending Emails, or calling Stripe APIs). 
    - If an Agent generates a tool that requires network access or database mutation, it must trigger a Human-in-the-Loop breakpoint, requiring a Senior Engineer to code-review the generated Python before it is allowed to execute.
 
 ---

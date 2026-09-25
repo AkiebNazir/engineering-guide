@@ -183,7 +183,7 @@ func (h *IntHeap) Pop() any   { ... return v }
 > value that flows through `heap.Push`/`heap.Pop` gets **boxed** into an
 > interface value — for a small type like `int` this is a real, if small,
 > allocation/indirection on every push and a type assertion (`x.(int)`) on
-> every insert. For hot paths (competitive programming, high-QPS schedulers),
+> every insert. For hot paths (competitive programming, high-<abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> schedulers),
 > people hand-roll a specialized heap over a concrete slice to avoid this.
 > For interviews and most production code, the ergonomic win is worth it.
 
@@ -445,7 +445,7 @@ an unspecified order — heaps are **not stable**; carry an insertion counter or
 ### `heap.Fix` and `heap.Remove` — the operations a generic heap does not give you
 
 When you must **change a priority in place** or **delete an arbitrary item** (a cancelled task, Dijkstra's decrease-key,
-an LFU/LRU variant), use `container/heap` with an *index* stored in each item and kept current by `Swap`, `Push` and
+an <abbr title="Least Frequently Used. A cache replacement policy that discards the least frequently used items first.">LFU</abbr>/<abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> variant), use `container/heap` with an *index* stored in each item and kept current by `Swap`, `Push` and
 `Pop`:
 
 ```go
@@ -546,13 +546,13 @@ if bench != nil { h.Push(*bench); bench = nil }          // last round's letter 
 if cur.n > 0 { bench = &cur }                            // this round's letter sits out one placement
 ```
 
-### Sweep one axis, heap the other: IPO and Single-Threaded CPU
+### Sweep one axis, heap the other: IPO and Single-Threaded <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>
 
 **IPO (LC 502):** capital only rises, so the affordable set only grows. Sort the projects by required capital, sweep a
 pointer forward pushing profits into a max-heap, take the best each round. Capital is a **threshold, not a cost** — only
 the profit is added (`w += h.Pop()`); picking the *cheapest* project is wrong.
 
-**Single-Threaded CPU (LC 1834):** sort by enqueue time, heap the *available* tasks by `(processing time, index)`, and
+**Single-Threaded <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> (LC 1834):** sort by enqueue time, heap the *available* tasks by `(processing time, index)`, and
 when the heap is empty **jump the clock** to the next enqueue time instead of ticking:
 
 ```go

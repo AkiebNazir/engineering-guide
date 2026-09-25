@@ -2,7 +2,7 @@
 
 ## Goal and contract
 
-Two coupled systems. **Video:** every live frame reaches viewers as identical, cacheable HTTP segments within a latency tier (under 10 s standard, under 3 s low-latency), and the CDN, not the origin, carries the audience. **Chat:** a live conversation whose delivery cost is bounded by how fast a human reads, not by how fast people post.
+Two coupled systems. **Video:** every live frame reaches viewers as identical, cacheable <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> segments within a latency tier (under 10 s standard, under 3 s low-latency), and the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, not the origin, carries the audience. **Chat:** a live conversation whose delivery cost is bounded by how fast a human reads, not by how fast people post.
 
 - Video is at-least-once and self-healing: a viewer may see a lower rung or a short stall, never a wrong frame.
 - Chat is **at-most-once for display and durable for storage.** Accepted comments are logged. What viewers see is a sampled, sequenced feed that is identical for everyone in the room.
@@ -17,9 +17,9 @@ The hard decision is the comment fan-out. At 300K posts/s to 10M viewers, naive 
 | Ingest | 200K × 5 Mbps = **1 Tbps** (125 GB/s). 40 sites → 25 Gbps and 5,000 streams each. A server terminates 500 streams (2.5 Gbps, assumed): 10 per site, 20 with N+1 and skew | About 800 ingest servers in many small regional sites. Each stream is pinned to one server. |
 | Who gets a ladder | Zipf s = 1 over 200K channels, 5M viewers outside the big event: top 20K (10%) hold H(20K)/H(200K) = 10.5/12.8 = **82%** of viewers, and the 20,000th channel has about 20 | Ladder for the top 10% plus the event. The other 180K get source-only passthrough until they cross about 20 viewers. |
 | Transcode | 20K × 8 cores (assumed: decode plus 5 x264 rungs, fast preset) = 160K cores = 2,500 64-core servers. Hot standby for the top 500 = 4,000 cores | Ladders are compute per broadcaster. Transcoding all 200K would be 1.6M cores. |
-| Egress | Event 10M × 4 Mbps = **40 Tbps**. Others 5M × 3 Mbps = 15. Total 55 Tbps. Capping the 8 Mbps rung at 5 Mbps for 20% of viewers saves 0.6 of 4 Mbps = 15% = 6 Tbps | The event alone is 80% of the whole 50 Tbps network of [036](036_content_delivery_network_solution.md). Use multi-CDN, and keep a brownout rung. |
+| Egress | Event 10M × 4 Mbps = **40 Tbps**. Others 5M × 3 Mbps = 15. Total 55 Tbps. Capping the 8 Mbps rung at 5 Mbps for 20% of viewers saves 0.6 of 4 Mbps = 15% = 6 Tbps | The event alone is 80% of the whole 50 Tbps network of [036](036_content_delivery_network_solution.md). Use multi-<abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, and keep a brownout rung. |
 | Requests | 90% standard (2 s segments): 0.5 segment/s + 0.5 playlist/s = 1 rps → 9M. 10% low-latency (0.33 s parts): 3 + 3 blocking reloads = 6 rps → 6M. Total **15M rps** | LL costs 6× the requests per viewer and 1M held requests. Cap it to a share of viewers. |
-| Origin fan-out | Ladder 18.8 Mbps of unique bytes. 20 regional parents × 18.8 = 376 Mbps per CDN. 4 CDNs = **1.5 Gbps**. 40 Tbps ÷ 1.5 Gbps ≈ 26,600× | The origin is sized by CDN count, not viewers, if collapsing works. |
+| Origin fan-out | Ladder 18.8 Mbps of unique bytes. 20 regional parents × 18.8 = 376 Mbps per <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>. 4 CDNs = **1.5 Gbps**. 40 Tbps ÷ 1.5 Gbps ≈ 26,600× | The origin is sized by <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> count, not viewers, if collapsing works. |
 | Chat, naive | 300K × 10M = 3 × 10^12 deliveries/s × 150 B = 450 TB/s = **3,600 Tbps**, 90× the video | Impossible. Cap delivery by reading speed. |
 | Chat, sampled | 5 msgs/s × 10M = 50M/s × 150 B = 7.5 GB/s = **60 Gbps** (0.15% of video). 100K sockets per gateway → 100 gateways at 0.6 Gbps | The last hop is the cost. The feed itself is 750 B/s. |
 | Reactions | 2M taps/s. Client batches 1/s: uplink 40 MB/s, 20K msgs/s per gateway, 100 partial sums/s out. Downlink: 1 aggregate/s × 100 B × 10M = 8 Gbps | Aggregate, never sample. |
@@ -84,14 +84,14 @@ pl -> papi : "signed manifest"
 pl -> cg : "WebSocket"
 ```
 
-**Watch.** The player asks the playback <abbr title="Application Programming Interface">API</abbr>, which checks entitlement and picks a CDN by weight and health, then returns a signed manifest URL and chat details. The player fetches the playlist and parts from the CDN. **Go live.** The encoder connects to an ingest server. The ingest server demuxes, publishes the source rung to the packager immediately and hands frames to the transcoder. The packager cuts parts and segments on source-PTS boundaries and writes them to the object store and the shield. The segments are the DVR window and, later, the VOD. Chat is the second diagram.
+**Watch.** The player asks the playback <abbr title="Application Programming Interface">API</abbr>, which checks entitlement and picks a <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> by weight and health, then returns a signed manifest URL and chat details. The player fetches the playlist and parts from the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>. **Go live.** The encoder connects to an ingest server. The ingest server demuxes, publishes the source rung to the packager immediately and hands frames to the transcoder. The packager cuts parts and segments on source-PTS boundaries and writes them to the object store and the shield. The segments are the DVR window and, later, the VOD. Chat is the second diagram.
 
 ## Deep dive 1: Ingest and redundancy
 
 | Protocol | Gives | Costs |
 |---|---|---|
-| RTMP | Supported by every encoder, simple | TCP, so loss stalls the whole stream. Original codec support is H.264 and AAC |
-| SRT | UDP with retransmission and encryption, latency set to a few round trips (200 ms here) | Needs encoder support |
+| RTMP | Supported by every encoder, simple | <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>, so loss stalls the whole stream. Original codec support is H.264 and AAC |
+| SRT | <abbr title="User Datagram Protocol - A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees.">UDP</abbr> with retransmission and encryption, latency set to a few round trips (200 ms here) | Needs encoder support |
 | WebRTC via WHIP (RFC 9725, 2025) | Sub-second, browser capture, adapts to congestion | Newer, uneven encoder support |
 
 Accept all three and normalise at the ingest server, so downstream sees one internal format. The broadcaster gets the nearest site from a latency-ranked list. **Redundancy:** (1) *Reconnect.* The stream keeps its `stream_id` and `msn` sequence for a 30 s grace period. Detect 1 to 3 s, reconnect 2 s and wait for a keyframe up to 2 s, about **5 s**, against a 4 s player buffer, so standard viewers see a 1 to 2 s stall. (2) *Dual feed.* A professional encoder sends primary and backup streams (YouTube Live's help pages describe primary and backup ingest URLs), and the packager keeps the first complete copy of each `msn`, so failover costs 0 s at twice the uplink (10 Mbps). A dead ingest server drops 500 streams, and jittered reconnects across the other 9 servers in the site absorb it.
@@ -107,19 +107,19 @@ Accept all three and normalise at the ingest server, so downstream sees one inte
 | Transcode | 1.0 | 0.4 (frame-pipelined, no lookahead) |
 | Wait for segment or part | 2.0 (2 s segments) | 0.33 (parts) |
 | Package and publish | 0.2 | 0.05 |
-| CDN fill and playlist discovery | 0.3 + 0.5 | 0.2 (blocked request released) |
+| <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> fill and playlist discovery | 0.3 + 0.5 | 0.2 (blocked request released) |
 | Player buffer | 4.0 (2 segments) | 1.0 (3 parts, the LL-HLS hold-back minimum) |
 | Decode and render | 0.2 | 0.15 |
 | **Total** | **9.0** | **2.6** |
 
-The player buffer is 44% and 39% of the budget, and it is also the failure absorber, so shrinking it trades latency for stalls. Margins are 1.0 s and 0.4 s under the targets, which is thin for p95, so the LL player runs a conservative ABR. LL needs parts of about 0.33 s, blocking playlist reload, HTTP/2 and CDN request collapsing ([29](../building_blocks/29_cdn_and_streaming_media.md)). A transcoder that dies cold costs detect 2 s + schedule 1.5 s + next IDR 1 s + first segment 2 s = **6.5 s**, against the 4 s buffer.
+The player buffer is 44% and 39% of the budget, and it is also the failure absorber, so shrinking it trades latency for stalls. Margins are 1.0 s and 0.4 s under the targets, which is thin for p95, so the LL player runs a conservative ABR. LL needs parts of about 0.33 s, blocking playlist reload, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 and <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> request collapsing ([29](../building_blocks/29_cdn_and_streaming_media.md)). A transcoder that dies cold costs detect 2 s + schedule 1.5 s + next IDR 1 s + first segment 2 s = **6.5 s**, against the 4 s buffer.
 
-## Deep dive 3: CDN fan-out and origin protection for one mega-stream
+## Deep dive 3: <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> fan-out and origin protection for one mega-stream
 
-Mechanics are in [29](../building_blocks/29_cdn_and_streaming_media.md) and the CDN internals in [036](036_content_delivery_network_solution.md). Stream-specific decisions:
+Mechanics are in [29](../building_blocks/29_cdn_and_streaming_media.md) and the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> internals in [036](036_content_delivery_network_solution.md). Stream-specific decisions:
 
 - **Herd control.** Each new segment is wanted by every POP in the same instant. Collapsing at the edge, regional tier and shield turns 500 POPs × 6 rungs into 6 origin fetches per shield. The playlist has a 1 s TTL, and LL blocked reloads are held and released together (1M held requests).
-- **Multi-CDN.** Weighted steering at session start, with mid-stream switching by content steering (HLS Content Steering and DASH-IF content steering, both introduced around 2022) or manifest rewrite. Four CDNs with one failure tolerated means each carries 25%, and 33% if one dies, so each needs **1.33 × 10 = 13.3 Tbps** committed. Shift a failed CDN's load in steps of about 10% per minute so its share does not arrive on cold caches.
+- **Multi-<abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>.** Weighted steering at session start, with mid-stream switching by content steering (HLS Content Steering and DASH-IF content steering, both introduced around 2022) or manifest rewrite. Four CDNs with one failure tolerated means each carries 25%, and 33% if one dies, so each needs **1.33 × 10 = 13.3 Tbps** committed. Shift a failed <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>'s load in steps of about 10% per minute so its share does not arrive on cold caches.
 - **Brownout ladder** ([28](../building_blocks/28_overload_control_and_graceful_degradation.md)): cap the top rung (−6 Tbps), then drop 60 fps, then disable the LL tier. Each is a switch on the playback <abbr title="Application Programming Interface">API</abbr>.
 - **Pre-warm.** Before a scheduled event, open connections, warm the shield and ramp steering weights.
 
@@ -177,7 +177,7 @@ rx:B ..> rl:L : "1 aggregate per s"
 
 ## Recording, DVR and viewer counts
 
-The packager writes segments to the object store as they complete. The sliding playlist over them is the **DVR window** (2 h × 18.8 Mbps = 17 GB per ladder channel, 4.5 GB source-only). **VOD** is the same objects plus an end-of-list playlist and a chat-replay index, with no re-encode, so it is ready within 1 minute. A ladder is built later only for VODs that turn out popular ([016](016_video_on_demand_solution.md)). **Viewer counts:** each gateway reports local sockets every 2 s, video-only viewers send a heartbeat every 30 s (10M ÷ 30 = 333K/s), and sharded counters sum them, accurate to 1 to 2% and rounded above 10K. Payouts use CDN logs, not this number.
+The packager writes segments to the object store as they complete. The sliding playlist over them is the **DVR window** (2 h × 18.8 Mbps = 17 GB per ladder channel, 4.5 GB source-only). **VOD** is the same objects plus an end-of-list playlist and a chat-replay index, with no re-encode, so it is ready within 1 minute. A ladder is built later only for VODs that turn out popular ([016](016_video_on_demand_solution.md)). **Viewer counts:** each gateway reports local sockets every 2 s, video-only viewers send a heartbeat every 30 s (10M ÷ 30 = 333K/s), and sharded counters sum them, accurate to 1 to 2% and rounded above 10K. Payouts use <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> logs, not this number.
 
 ## Failure behaviour
 
@@ -187,7 +187,7 @@ The packager writes segments to the object store as they complete. The sliding p
 | Transcoder | Cold restart 6.5 s. Hot standby for the top 500, 0 s. The source rung is always packaged at ingest, so ABR steps up to it. |
 | Packager | Active-active with deterministic names. The shield retries the sibling. Lost LL parts fall back to whole segments (+2 s). |
 | Object store or shield partition | Edges keep serving the recent window from cache. DVR seek fails. |
-| One CDN degrades | Steer away at 10% per minute, the others hold 33% headroom. |
+| One <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> degrades | Steer away at 10% per minute, the others hold 33% headroom. |
 | Chat gateway | 100K reconnects jittered over 10 s across 99 gateways (about 10K/s), resume by `last_seq`. |
 | Sequencer | Standby takes over with a new epoch (fencing). Feed gap under 5 s, no duplicates. |
 | Region | Re-steer viewers, sequencer fails over to the second region, VOD store replicated asynchronously (RPO of seconds). |
@@ -195,18 +195,18 @@ The packager writes segments to the object store as they complete. The sliding p
 
 ## Observability and interview close
 
-SLIs: glass-to-glass by tier (timestamp in the stream plus player beacons), rebuffer ratio, start-up time, publish lag (publish time minus capture time), transcoder real-time ratio, per-CDN error rate, comment post-to-display p99, sequence gaps, moderation-action latency. **The one paging alert:** rebuffer ratio on the largest live stream above 1% for 2 minutes.
+SLIs: glass-to-glass by tier (timestamp in the stream plus player beacons), rebuffer ratio, start-up time, publish lag (publish time minus capture time), transcoder real-time ratio, per-<abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> error rate, comment post-to-display p99, sequence gaps, moderation-action latency. **The one paging alert:** rebuffer ratio on the largest live stream above 1% for 2 minutes.
 
 Trade-off to state: "I keep one sampled, sequenced comment feed per room so a 10M-viewer chat is one shared conversation whose cost is viewers × reading speed, 60 Gbps, and not the 3,600 Tbps of delivering every post. The cost is that most messages are never seen by others, and if the product wanted every message visible I would fall back to viewer-sharded pods and give up the shared room."
 
 ## Follow-ups the interviewer will ask
 
 1. **"How do you do multi-region?"** Ingest, transcode and packaging are regional, with segments replicated asynchronously to a second region for DVR and VOD. Chat rooms have a home-region sequencer, viewers connect to the nearest gateway, and only the 750 B/s feed crosses regions. Failover promotes a new sequencer epoch.
-2. **"What changes at 10× and 100×?"** 100M viewers on one event is 400 Tbps, more than any single CDN, so caches must live inside ISPs and ABR caps become policy. Chat stays cheap: gateways grow to 1,000 and last-hop traffic to 600 Gbps, while reactions and the feed are unchanged. Compute scales with broadcasters, not viewers.
+2. **"What changes at 10× and 100×?"** 100M viewers on one event is 400 Tbps, more than any single <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, so caches must live inside ISPs and ABR caps become policy. Chat stays cheap: gateways grow to 1,000 and last-hop traffic to 600 Gbps, while reactions and the feed are unchanged. Compute scales with broadcasters, not viewers.
 3. **"Every viewer must see an event at the same instant (a bet or auction)."** Put it in-band as timed metadata in the segments (ID3 or `emsg` events), so it is ordered with the video and delayed identically. The cost is video latency, and the event must be known at packaging time.
 4. **"What dominates cost?"** Egress: 40 Tbps for 2 hours is 36 PB. Levers are ABR caps, ladder trimming, peering and embedded caches, and LL only where it earns its 6× requests. Then recording (5.4 PB/day, so 14 to 7 days halves it). Chat is 0.15% of video traffic.
 5. **"How do you handle abuse?"** View-botting (count only sessions with playback progress and per-device caps), stream-key theft (short-lived keys, rotation), illegal content (frame sampling plus a kill switch that cuts ingest, revokes manifest URLs and purges cached segments through the [036](036_content_delivery_network_solution.md) path) and chat raids (slow mode and account gates).
-6. **"Use WebRTC for everyone, one second latency."** 40 Tbps ÷ 10 Gbps per SFU (assumed) is 4,000 nodes against about 570 edge servers at 70 Gbps, 7× more, with no shared cache. I would offer it to small interactive audiences and price it for the rest. LL-HLS gives 2.6 s over the CDN.
+6. **"Use WebRTC for everyone, one second latency."** 40 Tbps ÷ 10 Gbps per SFU (assumed) is 4,000 nodes against about 570 edge servers at 70 Gbps, 7× more, with no shared cache. I would offer it to small interactive audiences and price it for the rest. LL-HLS gives 2.6 s over the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>.
 
 ## Common mistakes
 
@@ -214,14 +214,14 @@ Trade-off to state: "I keep one sampled, sequenced comment feed per room so a 10
 2. **Transcoding every stream.** 1.6M cores against 160K. Ladder by audience, passthrough the rest.
 3. **Running transcoders at full utilisation.** A rung below real time drops frames. Provision headroom.
 4. **Treating low latency as free.** 6× the requests, a 1 s buffer, and a stall on any hiccup. Gate the tier.
-5. **One CDN for a marquee event, or an instant shift when it fails.** The others need 33% headroom and a ramp.
+5. **One <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> for a marquee event, or an instant shift when it fails.** The others need 33% headroom and a ramp.
 6. **Chat ahead of video.** Spoilers. Release by stream timestamp.
 7. **Heavy <abbr title="Machine Learning">ML</abbr> on every message.** 9,000 cores. Filter cheaply, moderate what is shown.
 
 ## Going from L5 to L6
 
-- **Phasing.** v1: RTMP, 2 s HLS, one CDN, unsampled chat with slow mode (fine to about 100K viewers). v2: ladders and multi-CDN. v3: LL tier and the sampled feed, which a room enters automatically once posts exceed about 5/s.
-- **Cost model.** Compute is per broadcaster-hour, egress per viewer-hour (4 Mbps × 3,600 s = 1.8 GB), so ladder only where viewers justify it, and buy CDN capacity while building ingest, packaging and chat.
+- **Phasing.** v1: RTMP, 2 s HLS, one <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, unsampled chat with slow mode (fine to about 100K viewers). v2: ladders and multi-<abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>. v3: LL tier and the sampled feed, which a room enters automatically once posts exceed about 5/s.
+- **Cost model.** Compute is per broadcaster-hour, egress per viewer-hour (4 Mbps × 3,600 s = 1.8 GB), so ladder only where viewers justify it, and buy <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> capacity while building ingest, packaging and chat.
 - **Blast radius.** Stream cells per region, a dedicated cell and change freeze for marquee events, and rooms as the unit of isolation for chat.
 - **Measure first.** Glass-to-glass and rebuffer per tier, transcoder real-time ratio, and the share of comments displayed.
 

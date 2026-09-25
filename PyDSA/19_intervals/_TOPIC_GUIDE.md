@@ -314,7 +314,7 @@ arrangement and correctly lets `[10,20)` and `[20,30)` coexist. The closed versi
 
 - **010 My Calendar I (no double booking).** Booked intervals are disjoint, so keep them sorted and
   check only the two neighbors of the insertion point (`bisect_right` on starts). Measured at 20,000
-  random bookings: linear scan ~2,000 ms, sorted list + bisect ~29 ms. A plain BST was faster still on
+  random bookings: linear scan ~2,000 ms, sorted list + bisect ~29 ms. A plain <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> was faster still on
   random input (~12 ms) but degrades to depth 1,000 on 1,000 sorted bookings.
 - **011 My Calendar II (no triple booking).** Keep `bookings` and `overlaps` (the double-booked
   regions). Reject if the new event touches an overlap; otherwise record its INTERSECTIONS with

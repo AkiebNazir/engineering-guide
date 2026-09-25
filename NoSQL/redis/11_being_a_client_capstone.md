@@ -2,7 +2,7 @@
 
 Every level so far assumed a single, already-open `redis.Redis(...)` object. Production
 code needs three more things this level puts together: a **connection pool** (so you're
-not opening a new TCP connection per request), **timeouts** (so a stalled Redis or a
+not opening a new <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection per request), **timeouts** (so a stalled Redis or a
 network partition doesn't hang your whole app), and **retries** (so a single transient
 blip doesn't fail a request that a 50ms retry would have served fine). This level combines
 all of that into one small service class implementing the session store (level 00/02), the
@@ -24,7 +24,7 @@ self.r = redis.Redis(connection_pool=self.pool)
 internally by default — but constructing the `ConnectionPool` explicitly is how you
 control its size and timeouts, and how multiple `Redis` client objects (e.g. one for
 regular commands, one dedicated to blocking commands like `BLPOP`) can share the same
-underlying pool of TCP connections instead of each opening their own. `max_connections`
+underlying pool of <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connections instead of each opening their own. `max_connections`
 caps how many concurrent connections your app will ever open to Redis — important because
 an unbounded pool under a traffic spike can overwhelm the Redis server's own client limit.
 
@@ -44,7 +44,7 @@ r := redis.NewClient(&redis.Options{
 ## Timeouts
 
 `socket_timeout` bounds how long a call waits for Redis to *respond*; `socket_connect_timeout`
-bounds how long establishing the TCP connection itself may take. Without these, a
+bounds how long establishing the <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> connection itself may take. Without these, a
 partitioned network or a wedged Redis process can hang a calling thread indefinitely —
 exactly the kind of failure that turns one slow dependency into a full outage upstream,
 because every thread waiting on it is a thread not serving other requests.
@@ -252,8 +252,8 @@ write, the session read, both cache calls, and all seven rate-limit checks, via
 `client.PoolStats().TotalConns`, `go-redis`'s equivalent of `redis-py`'s
 `created_connections`. Two small, honest differences from the Python output worth
 noting rather than hiding: `read back` prints Go's native `map[string]any` formatting
-(a JSON number decodes to `float64` in Go, hence `1.790179338e+09` instead of a plain
-integer timestamp — JSON itself has no separate integer type, and Go's `json` package
+(a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> number decodes to `float64` in Go, hence `1.790179338e+09` instead of a plain
+integer timestamp — <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> itself has no separate integer type, and Go's `json` package
 follows the spec literally where Python's happens to preserve the int), and a missing
 session prints as `map[]` rather than Python's `None` — a nil map and an empty map
 render identically via `fmt.Println` in Go, which is worth knowing before assuming

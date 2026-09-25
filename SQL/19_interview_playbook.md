@@ -1,4 +1,4 @@
-# Interview Playbook: SQL
+# Interview Playbook: <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
 
 This level is not new material — it's the ladder's content re-organized as the
 concrete questions an interviewer actually asks, with a precise answer for each, and a
@@ -9,11 +9,11 @@ first read.
 
 1. Write a query with a **join**, a **`GROUP BY` + `HAVING`**, and a **subquery or
    CTE** without hesitating over syntax (levels 06–08).
-2. State the four **ACID** properties and which Postgres mechanism provides each
+2. State the four **<abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr>** properties and which Postgres mechanism provides each
    (level 09).
 3. Read an **`EXPLAIN ANALYZE`** plan and say, from the plan alone, whether a query
    used an index and why (level 10).
-4. Explain **why a parameterized query prevents SQL injection** — not just "it's safer",
+4. Explain **why a parameterized query prevents <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection** — not just "it's safer",
    but *what specifically* changes about how the database treats the input (level 11).
 5. Name the difference between **normalization and denormalization** and give a real
    reason to choose each (level 16).
@@ -140,7 +140,7 @@ running total:
 
 **`database/sql` + pgx's stdlib driver, vs. native `pgxpool` — the real decision:**
 `database/sql` is the *portable* choice — the same interface works against MySQL,
-SQLite, or any other `database/sql` driver, and every Go ORM/migration tool assumes
+SQLite, or any other `database/sql` driver, and every Go <abbr title="Object-Relational Mapping - A programming technique for converting data between incompatible type systems using object-oriented programming languages.">ORM</abbr>/migration tool assumes
 it, at the cost of a thin adapter layer between your code and pgx's actual protocol
 implementation. Native `pgxpool` (used throughout levels 16-18) skips that adapter and
 exposes pgx's full feature set directly — batch queries, `COPY` for bulk loads,
@@ -189,11 +189,11 @@ change; (2) read replicas (level 17) if the bottleneck is read traffic; (3) part
 measured bottleneck — naming sharding first, before ruling out the cheaper three steps,
 reads as not having operated a real database under load.
 
-**"SQL vs. NoSQL — how do you choose?"** See `NoSQL/concepts/01_choosing_a_database_and_cap_theorem.md`
+**"<abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> vs. <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> — how do you choose?"** See `NoSQL/concepts/01_choosing_a_database_and_cap_theorem.md`
 for the full decision framework shared across both modules.
 
 ## What's next
 
-This closes the SQL ladder. `NoSQL/concepts/` has the equivalent playbook for the
-document/key-value side, plus the cross-cutting SQL-vs-NoSQL and CAP-theorem material
+This closes the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> ladder. `NoSQL/concepts/` has the equivalent playbook for the
+document/key-value side, plus the cross-cutting <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>-vs-<abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> and <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>-theorem material
 that applies to both.

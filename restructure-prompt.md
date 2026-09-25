@@ -28,9 +28,9 @@ Unchecked = not yet done.
       21 through problem 40 — currently stops at 21 despite being advertised
       as "a condensed pass across all 41 problems in one sitting." Missing:
       KV store, CRDT editor, web search, geo, ad-click streaming, leaderboard,
-      <abbr title="Large Language Model">LLM</abbr> systems, message queue, ranked feed, live streaming, maps/ETA, CDN,
+      <abbr title="Large Language Model">LLM</abbr> systems, message queue, ranked feed, live streaming, maps/ETA, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>,
       experimentation, video conferencing, social graph, lock service.
-- [ ] Link `best_practices/` (8 files, SOLID/GoF/architectural
+- [ ] Link `best_practices/` (8 files, <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr>/GoF/architectural
       patterns/anti-patterns) into the module's own navigation (README,
       playbook, or catalog) — it's currently unreachable except by browsing
       the directory, which contradicts README.md:14's claim that this content
@@ -80,8 +80,8 @@ Unchecked = not yet done.
 - [ ] Name and cover modern quantized/optimized serving formats and engines
       (GPTQ, AWQ, SGLang) — day 78 (quantization) and day 151 (serving)
       currently only mention vLLM/TGI/TensorRT-<abbr title="Large Language Model">LLM</abbr> and generic quantization.
-- [ ] Add coverage of computer-use / GUI-driving agents — only browser agents
-      (136) and code agents (135) exist today; screen/GUI agents are a
+- [ ] Add coverage of computer-use / <abbr title="Graphical User Interface. A form of user interface that allows users to interact with electronic devices through graphical icons.">GUI</abbr>-driving agents — only browser agents
+      (136) and code agents (135) exist today; screen/<abbr title="Graphical User Interface. A form of user interface that allows users to interact with electronic devices through graphical icons.">GUI</abbr> agents are a
       standard agentic pattern with no treatment.
 - [ ] Consider whether the two reallocated day-slots (from the duplicate
       merges above) should go toward the reasoning-model and modern-serving
@@ -130,15 +130,15 @@ Unchecked = not yet done.
 
 ## <abbr title="Application Programming Interface">API</abbr>/
 
-- [ ] Add OIDC (OpenID Connect) coverage — OAuth2 and JWT are covered well in
+- [ ] Add OIDC (OpenID Connect) coverage — OAuth2 and <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> are covered well in
       `Fundamentals/03`, but OIDC (the identity layer used for SSO) has zero
       mentions anywhere.
 - [ ] Add a hands-on <abbr title="Application Programming Interface">API</abbr> gateway lab (e.g. Kong/Envoy, rate-limiting at the
       edge) — "gateway" currently appears only in prose/comparison tables,
       never as an exercise.
-- [ ] Add contract testing (Pact/consumer-driven contracts) for REST and
-      GraphQL specifically — currently only Protobuf/gRPC (`buf breaking`)
-      and SOAP have contract-testing content.
+- [ ] Add contract testing (Pact/consumer-driven contracts) for <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> and
+      GraphQL specifically — currently only Protobuf/<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> (`buf breaking`)
+      and <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> have contract-testing content.
 - [ ] Confirm/build out GraphQL federation as a hands-on lab, not just prose
       in `GraphQL/Theory.md` — no Apollo Federation/schema-stitching exercise
       currently exists.
@@ -147,8 +147,8 @@ Unchecked = not yet done.
       (`Fundamentals/03` §11) and passing mentions elsewhere, no hands-on lab.
 - [ ] Extend Protobuf's Go Foundation track from level 06 up to parity with
       Python's 14 levels (oneof, protoc-vs-buf, generated-code-in-real-program,
-      cross-language interop, capstone, bridge-to-gRPC, wire-format bonus).
-- [ ] Fix the README's REST lab count for Go (says 5 labs; Go actually has 7,
+      cross-language interop, capstone, bridge-to-<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, wire-format bonus).
+- [ ] Fix the README's <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> lab count for Go (says 5 labs; Go actually has 7,
       including Gin/Echo framework examples) — not a gap, just an inaccurate
       claim.
 
@@ -166,9 +166,9 @@ Unchecked = not yet done.
       question (file 06); no guidance on reshaping a story's scope/ownership
       language across levels.
 
-## SQL/
+## <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>/
 
-- [ ] Add JSON/JSONB column type and querying as its own named topic (common
+- [ ] Add <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>/JSONB column type and querying as its own named topic (common
       in modern Postgres senior interviews) — currently only implied via
       schema-design tradeoffs, not called out directly.
 - [ ] Add coverage of finding slow queries in production at scale (e.g.
@@ -177,12 +177,12 @@ Unchecked = not yet done.
 - [ ] Optional: expand recursive-CTE depth/materialization-vs-inlining beyond
       the one example currently in file 08.
 
-## NoSQL/
+## <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr>/
 
 - [ ] Add at least a concepts-level graph database file with real modeling
       flavor (e.g. a taste of Cypher queries) — currently graph DBs are
       explicitly deferred to SystemDesign, but that treatment is system-
-      design-flavored, not NoSQL-modeling-flavored.
+      design-flavored, not <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr>-modeling-flavored.
 - [ ] Confirm (or add) a dedicated MongoDB sharding level — README's roadmap
       table doesn't clearly list sharding under files 07-11 ("replication and
       read scaling"); verify shard-key selection is actually covered, and add
@@ -206,8 +206,8 @@ Unchecked = not yet done.
 
 ## CSFundamentals/
 
-- [ ] Optional: add an explicit CAP-theorem framing section to file 03 —
-      Paxos/Raft/TrueTime are covered, but the CAP framing itself currently
+- [ ] Optional: add an explicit <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr>-theorem framing section to file 03 —
+      Paxos/Raft/TrueTime are covered, but the <abbr title="CAP Theorem - A concept stating that a distributed data store can only simultaneously provide two out of three guarantees: Consistency, Availability, and Partition tolerance.">CAP</abbr> framing itself currently
       lives only in `SystemDesign/building_blocks/10_distributed_systems_theory.md`,
       so a reader using only this module would miss it.
 - [ ] Optional: add a short security-fundamentals file (authn/authz,
@@ -219,7 +219,7 @@ Unchecked = not yet done.
 
 ## Already confirmed fine — no action needed
 
-<abbr title="Application Programming Interface">API</abbr>'s core structure, SQL's and NoSQL's core structure, CSFundamentals'
+<abbr title="Application Programming Interface">API</abbr>'s core structure, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>'s and <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr>'s core structure, CSFundamentals'
 core scope, PyStdLib/GoStdLib symmetry, PyDSA's 28-topic taxonomy and its
 question/solution pairing, <abbr title="Artificial Intelligence">AI</abbr>-road-map's day-numbering scaffolding and
 README-to-disk consistency (outside the two duplicate pairs above).

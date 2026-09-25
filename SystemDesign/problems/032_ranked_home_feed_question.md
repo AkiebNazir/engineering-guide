@@ -24,7 +24,7 @@ Design the ranking and serving pipeline behind the home feed of a large photo-an
 Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
-2. Back-of-envelope QPS, candidate counts per stage, compute, feature-fetch bandwidth, and log volume.
+2. Back-of-envelope <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, candidate counts per stage, compute, feature-fetch bandwidth, and log volume.
 3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and the request flow with its latency budget.
 5. The multi-stage cascade with per-stage counts and budget, feature serving and training/serving consistency, precompute versus on-demand with stable pagination, exploration and cold start, logging and feedback loops, and fallbacks when a stage is slow.

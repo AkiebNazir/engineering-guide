@@ -20,7 +20,7 @@ To train the model, we use techniques like SMOTE (Synthetic Minority Over-sampli
 
 ### 2. The Multi-Model Cascade
 Because we only have 50ms, we cannot run a massive <abbr title="Large Language Model">LLM</abbr> or a 100-layer Neural Network. We use a cascade:
-- **Layer 1 (The Rule Engine):** Takes 1ms. Hardcoded `if/else` rules written by humans. (e.g., *If transaction > $10,000 AND IP Address is from a sanctioned country $\rightarrow$ BLOCK*). If the rule triggers, the transaction is instantly denied.
+- **Layer 1 (The Rule Engine):** Takes 1ms. Hardcoded `if/else` rules written by humans. (e.g., *If transaction > $10,000 AND <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> Address is from a sanctioned country $\rightarrow$ BLOCK*). If the rule triggers, the transaction is instantly denied.
 - **Layer 2 (Gradient Boosting):** Takes 10ms. A lightning-fast <abbr title="Machine Learning">ML</abbr> model (like XGBoost or LightGBM). It looks at complex non-linear patterns (e.g., *User is in New York, but their phone's GPS is in London*). 
 - **Layer 3 (Asynchronous Graph / <abbr title="Large Language Model">LLM</abbr>):** Takes 2,000ms. This runs *after* the transaction is approved. It analyzes massive graph networks to find coordinated crime rings. If it finds fraud, it flags the account to be blocked before the *next* swipe.
 
@@ -135,7 +135,7 @@ When a transaction is approved, the `spend_last_10_min` feature in Redis must be
 A "Strong Hire" candidate must articulate:
 1. **The Architecture:** Draw the <abbr title="Application Programming Interface">API</abbr> Gateway routing to a highly available microservice. Explain the Rule Engine $\rightarrow$ <abbr title="Machine Learning">ML</abbr> Model cascade to meet latency constraints.
 2. **Feature Computation:** Differentiate between Batch Features (calculated nightly in Snowflake, like `average_monthly_spend`) and Streaming Features (calculated in real-time via Kafka/Flink, like `spend_last_5_minutes`). Both are served to the <abbr title="Machine Learning">ML</abbr> model via a Redis Feature Store.
-3. **Graph Analysis (Async):** Acknowledge that the real-time pipeline is blind to massive coordinated attacks. Propose a separate, asynchronous pipeline using a Graph Database (Neo4j) to detect rings of connected IP addresses and stolen devices.
+3. **Graph Analysis (Async):** Acknowledge that the real-time pipeline is blind to massive coordinated attacks. Propose a separate, asynchronous pipeline using a Graph Database (Neo4j) to detect rings of connected <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> addresses and stolen devices.
 4. **Human-in-the-Loop & Drift:** Fraudsters adapt daily. When the <abbr title="Machine Learning">ML</abbr> model flags a transaction with medium confidence (e.g., 60-80%), it routes to a human reviewer. The human's decision acts as Ground Truth data to continuously retrain the <abbr title="Machine Learning">ML</abbr> model (mitigating Concept Drift).
 
 ---

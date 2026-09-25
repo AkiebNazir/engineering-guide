@@ -1,4 +1,4 @@
-# CRUD Basics
+# <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> Basics
 
 Level 01 covered one insert and one read. This level fills out the rest of Create/Read/Update/Delete: inserting several documents at once, `find`'s filter+projection shape, and the four update/delete verbs. Every example below ran against the `lab_02_crud` database on the live `mongo:7` lab instance.
 
@@ -107,7 +107,7 @@ deleted_count: 2
 
 `delete_one` removed exactly one of the two `done: True` documents (which one, if several match, is unspecified — same "no order without an explicit sort" rule as `find_one`) — **one `done: True` document always survives** (Review PR and Deploy service are both `done: True` at this point; `delete_one` only ever removes one of them). `delete_many` then cleared out everything still `done: False`, leaving that one surviving `done: True` document behind — hence the final count of `1`, not `0`. The collection still exists either way — `drop()` (used at setup) is the only thing that removes the collection itself, along with its indexes.
 
-## The same CRUD flow in Go
+## The same <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> flow in Go
 
 ```go
 tasks := client.Database("lab_02_crud").Collection("tasks")

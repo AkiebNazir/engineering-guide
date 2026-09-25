@@ -11,10 +11,10 @@ In Day 129, we briefly touched on CrewAI's memory. Today, we dive into the deep 
 
 ### 1. The Taxonomy of <abbr title="Artificial Intelligence">AI</abbr> Memory
 Human brains have different storage mechanisms. <abbr title="Artificial Intelligence">AI</abbr> needs them too.
-- **Working Memory (RAM):** The <abbr title="Large Language Model">LLM</abbr>'s current Context Window (e.g., 128k tokens). It is instantly accessible but strictly limited by the <abbr title="Application Programming Interface">API</abbr>. If it overflows, the Agent crashes.
+- **Working Memory (<abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>):** The <abbr title="Large Language Model">LLM</abbr>'s current Context Window (e.g., 128k tokens). It is instantly accessible but strictly limited by the <abbr title="Application Programming Interface">API</abbr>. If it overflows, the Agent crashes.
 - **Short-Term Memory (L1 Cache):** The `ConversationBuffer` holding the last 10 messages of the *current* session. As new messages arrive, old ones are popped off the queue.
 - **Semantic Memory (Hard Drive):** General facts stored in a Vector DB. If the user says *"I am allergic to peanuts"*, the Agent extracts that fact and saves it. 
-- **Episodic Memory (The Diary):** Specific past interactions. *"Last Tuesday, the user asked me to debug their router, and we solved it by restarting the DNS."* This allows the Agent to perform Case-Based Reasoning (*"Oh, this error looks like the one we fixed last week!"*).
+- **Episodic Memory (The Diary):** Specific past interactions. *"Last Tuesday, the user asked me to debug their router, and we solved it by restarting the <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>."* This allows the Agent to perform Case-Based Reasoning (*"Oh, this error looks like the one we fixed last week!"*).
 
 ### 2. Memory Consolidation (The Sleep Cycle)
 If you chat with an Agent for 8 hours, the Short-Term memory buffer will overflow.
@@ -114,8 +114,8 @@ Your agent's short-term buffer is full. It is time for it to "sleep".
 **Your Task:**
 1. Conceptually define a `consolidate_memory()` function that runs as a background task.
 2. It takes the entire `short_term_buffer` (e.g., a 50-message debate about React vs Angular).
-3. It passes the buffer to an <abbr title="Large Language Model">LLM</abbr> with the prompt: *"Extract 3 permanent facts about the user from this transcript. Format as JSON."*
-4. It saves those JSON facts to the `semantic_db` and completely erases the `short_term_buffer`.
+3. It passes the buffer to an <abbr title="Large Language Model">LLM</abbr> with the prompt: *"Extract 3 permanent facts about the user from this transcript. Format as <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>."*
+4. It saves those <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> facts to the `semantic_db` and completely erases the `short_term_buffer`.
 
 ### 🎤 MAANG Technical Interview Prep
 

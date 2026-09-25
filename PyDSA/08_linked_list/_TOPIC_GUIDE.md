@@ -31,7 +31,7 @@ linked list's node at position `i` doesn't need anyone to move: inserting
 means allocating one new node and rewiring **two references**, regardless of
 how long the list is — *provided you already have a reference to the node
 before the insertion point*. That "provided" is the entire catch, and it's
-why linked lists are frequently combined with a hashmap (Part on LRU below)
+why linked lists are frequently combined with a hashmap (Part on <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> below)
 to convert "find the node" from O(n) into O(1).
 
 The flip side is real and worth saying out loud in an interview: **no random
@@ -734,7 +734,7 @@ Fifteen problems, six moves (reversal · dummy head · fast/slow · fixed gap ·
       new algorithms to memorise separately.
 - [ ] I compare nodes with `is`, never `==`/value equality, when the question
       is about identity (cycles, "is this the same node").
-- [ ] I can explain why LRU needs BOTH a hashmap and a doubly linked list,
+- [ ] I can explain why <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> needs BOTH a hashmap and a doubly linked list,
       and why singly linked isn't enough.
 - [ ] I know the O(n)-space (hashmap) vs. O(1)-space (interleave) solutions
       to "copy with random pointer" and can explain the ordering problem the

@@ -2,7 +2,7 @@
 
 ## 1. The Core Concept (What and Why)
 
-*Why is this tool relevant?* In Guide 11, we learned that standard LangChain (LCEL) is a **DAG (Directed Acyclic Graph)**. Data flows strictly from Left to Right. If you want an Agent to execute code, read the error message, and *loop back* to rewrite the code, standard LangChain crashes. **LangGraph** was built specifically to solve this. It replaces the old, broken `AgentExecutor` with a robust, cyclical graph architecture.
+*Why is this tool relevant?* In Guide 11, we learned that standard LangChain (LCEL) is a **<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> (Directed Acyclic Graph)**. Data flows strictly from Left to Right. If you want an Agent to execute code, read the error message, and *loop back* to rewrite the code, standard LangChain crashes. **LangGraph** was built specifically to solve this. It replaces the old, broken `AgentExecutor` with a robust, cyclical graph architecture.
 
 **What is it?**
 LangGraph is an extension of LangChain designed for building stateful, multi-actor applications. You model your application as a graph, where:
@@ -150,7 +150,7 @@ response = app_with_memory.invoke(new_input, config=config)
 
 ## 5. Pro Level: Human-in-the-Loop (Interrupts)
 
-You built an Agent that can execute SQL queries and drop production databases. You *do not* want the Agent to run this automatically. You need **Human-in-the-Loop** approval.
+You built an Agent that can execute <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> queries and drop production databases. You *do not* want the Agent to run this automatically. You need **Human-in-the-Loop** approval.
 
 Because LangGraph saves the State after every node, you can explicitly tell it to pause execution right before a dangerous node.
 

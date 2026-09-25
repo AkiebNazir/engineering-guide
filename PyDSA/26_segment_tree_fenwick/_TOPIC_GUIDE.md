@@ -146,7 +146,7 @@ A:R -> S:T : "no: min, max, gcd"
 
 | | Fenwick tree (BIT) | Segment tree |
 |---|---|---|
-| What it answers | Prefix-invertible aggregates only: sum, XOR — anything with a working inverse (`prefix(r) - prefix(l-1)`) | ANY associative aggregate: sum, min, max, gcd, "count in range" — no inverse needed |
+| What it answers | Prefix-invertible aggregates only: sum, <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> — anything with a working inverse (`prefix(r) - prefix(l-1)`) | ANY associative aggregate: sum, min, max, gcd, "count in range" — no inverse needed |
 | Range MIN/MAX | Cannot do it directly (no inverse: `min` has no "subtract") — needs a sparse table or segment tree instead | Native |
 | Code size | ~10 lines, one array, two tiny loops (`i & -i`) | ~40-60 lines: build/update/query, optionally lazy propagation |
 | Range update + range query | Needs a second BIT trick (difference-array BIT) to support both | Native with lazy propagation |
@@ -155,7 +155,7 @@ A:R -> S:T : "no: min, max, gcd"
 | When to reach for it | Range-SUM problems specifically (001, 002 here; also the BIT-based alternative for 003/004) | Range MIN/MAX/anything-non-invertible (005, 006 here) |
 
 **The one-line decision rule:** if the aggregate has an inverse (sum does,
-XOR does; min/max/gcd do NOT), a Fenwick tree is strictly simpler and
+<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> does; min/max/gcd do NOT), a Fenwick tree is strictly simpler and
 should be the default. If it doesn't (min/max, as in 005/006's "tallest
 building/tower so far"), you need a segment tree (or, for 005/006
 specifically, a cleverer sweep that avoids needing range-min/max at all).

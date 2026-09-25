@@ -81,7 +81,7 @@ order is just the grid's natural reading order.
 ### Shape 2 — Two strings, two indices (005, 009, 010, 012, 014)
 
 `dp[i][j]` = the answer comparing PREFIX `i` of one sequence against PREFIX
-`j` of another. This is the shape most people mean when they say "2D DP" in
+`j` of another. This is the shape most people mean when they say "2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>" in
 an interview. Both indices are prefix LENGTHS into two DIFFERENT strings —
 genuinely independent, because the two strings advance at unrelated rates.
 Fill row by row (outer = one string's prefix length, inner = the other's).
@@ -101,7 +101,7 @@ b -> d : "no"
 
 | # | Problem | `dp[i][j]` MEANS | Combinator |
 |---|---|---|---|
-| 005 | Longest Common Subsequence | LCS length of `s1[:i]`, `s2[:j]` | max (match: diag+1; else max of 2 neighbors) |
+| 005 | Longest Common Subsequence | <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> length of `s1[:i]`, `s2[:j]` | max (match: diag+1; else max of 2 neighbors) |
 | 009 | Interleaving String | can `s1[:i]`+`s2[:j]` interleave to `s3[:i+j]` | or (of 2 boolean AND-terms) |
 | 010 | Edit Distance | min edits to turn `w1[:i]` into `w2[:j]` | min (match: diag; else min of 3 neighbors + 1) |
 | 012 | Distinct Subsequences | count of `t[:j]` as a subsequence of `s[:i]` | sum (skip, plus use-if-match) |
@@ -111,7 +111,7 @@ b -> d : "no"
 and the question is about some relationship BETWEEN their prefixes
 (equal, edit into, interleave into, count matches of one in the other).
 
-### Shape 3 — Day × state (state-machine DP) (006)
+### Shape 3 — Day × state (state-machine <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) (006)
 
 `dp[day][state]` = the best value achievable ON this day, IN this state,
 where "state" is a small, FIXED, enumerable set (not a continuous or
@@ -128,7 +128,7 @@ independent growing quantities).
 transaction limits) — the restriction is naturally expressed as "which
 states can transition into which," not as an index relationship.
 
-### Shape 4 — Interval DP (013)
+### Shape 4 — Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (013)
 
 `dp[l][r]` = the answer for the RANGE `[l, r]`, where the two indices are
 the ENDPOINTS of a contiguous interval, not two independent positions or
@@ -151,9 +151,9 @@ trio. The state is a SPAN, and the recurrence always asks "what's the last
 
 **How to tell shapes 2 vs 4 apart when both show `dp[i][j]` on one string:**
 topic 16's palindrome problems (`dp[i][j]` = is `s[i..j]` a palindrome) LOOK
-like interval DP (both indices bound a span of the SAME string) but only
+like interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (both indices bound a span of the SAME string) but only
 ever read ONE smaller sub-interval (`dp[i+1][j-1]`, the immediate interior)
-— no split point `k` to search over. True interval DP (this topic's Shape
+— no split point `k` to search over. True interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (this topic's Shape
 4) searches over EVERY possible split point, which is what forces the O(n)
 inner loop and the resulting O(n^3) total complexity, versus topic 16's
 O(n^2).
@@ -200,7 +200,7 @@ diag -> cur
 
 ---
 
-## Part 2a · Memory layout and CPU cache-hit implications: 1D vs 2D
+## Part 2a · Memory layout and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache-hit implications: 1D vs 2D
 
 Fill order (Part 2) is a correctness constraint. This is the *performance*
 consequence of the same row-major reasoning, and it is worth being able to
@@ -217,7 +217,7 @@ range each value is its own separately-allocated `PyObject` (a 28-byte
 to find row `i`'s list object → dereference that row list's pointer array
 to find slot `j` → dereference that pointer to reach the actual int
 object's value.** Three pointer chases, not one array index — this is
-the concrete reason "Python is slow for numeric DP tables" is not vague
+the concrete reason "Python is slow for numeric <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> tables" is not vague
 folklore; boxing turns every cell access into a chain of cache-unfriendly
 indirections rather than a single offset computation.
 
@@ -248,7 +248,7 @@ dp = np.zeros((rows, cols), dtype=np.int64)  # ONE contiguous allocation, row-ma
 `numpy.zeros((rows, cols))` allocates one contiguous block and computes
 `dp[i, j]` as `base + (i*cols + j) * itemsize` — exactly the flattened-array
 arithmetic the Go guide shows explicitly, done for you. This is a genuine
-speedup on large grids evaluated in a hot loop, but for interview-sized DP
+speedup on large grids evaluated in a hot loop, but for interview-sized <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 tables (LeetCode constraints are rarely more than low-thousands per
 dimension) it is very rarely the right call to reach for mid-interview:
 plain nested lists are what interviewers expect, `numpy` pulls in a
@@ -275,9 +275,9 @@ in this entire topic, and it is NOT the same in every problem:
 
 | Sweep direction | Why | Problems |
 |---|---|---|
-| Left-to-right, reading the SAME row's already-updated left neighbor | recurrence intentionally reuses THIS row's own new value (unbounded reuse, or "reads left") | 001, 003 (rolling row `row[j] += row[j-1]`-style), 005/010 LCS/Edit-Distance's diagonal-preserving sweep, 007 Coin Change II (coin outer, amount ascending — unbounded knapsack) |
+| Left-to-right, reading the SAME row's already-updated left neighbor | recurrence intentionally reuses THIS row's own new value (unbounded reuse, or "reads left") | 001, 003 (rolling row `row[j] += row[j-1]`-style), 005/010 <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr>/Edit-Distance's diagonal-preserving sweep, 007 Coin Change II (coin outer, amount ascending — unbounded knapsack) |
 | Right-to-left (high-to-low), so the same row's value is NOT yet touched | recurrence must read the PREVIOUS row's value at a smaller column, and updating low-to-high would clobber it first | 008 Target Sum (0/1 knapsack — each number usable once), 012 Distinct Subsequences (must read `dp[i-1][j-1]` before it's overwritten by this row's `dp[i][j-1]`) |
-| Snapshot a scalar BEFORE overwriting (diagonal-preserving) | recurrence reads the diagonal `dp[i-1][j-1]`, which sits exactly where the in-place update is ABOUT to write `dp[i][j-1]` | 004 Maximal Square, 005 LCS, 010 Edit Distance |
+| Snapshot a scalar BEFORE overwriting (diagonal-preserving) | recurrence reads the diagonal `dp[i-1][j-1]`, which sits exactly where the in-place update is ABOUT to write `dp[i][j-1]` | 004 Maximal Square, 005 <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr>, 010 Edit Distance |
 
 **Getting 007 vs 008's direction backwards is the single most common,
 highest-stakes mistake in this entire topic** — both look like "iterate
@@ -304,19 +304,19 @@ reaching for a space optimization that doesn't exist for this shape.
 ## Part 4 · The Hard problems — why each one is harder than its Medium cousins
 
 **011 Longest Increasing Path in a Matrix** looks like Shape 1 (a grid) but
-is really a DAG shortest/longest-path problem in disguise: because every
+is really a <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> shortest/longest-path problem in disguise: because every
 move must go to a STRICTLY LARGER value, the "increasing move" graph has NO
-CYCLES by construction, which is what makes memoized DFS safe WITHOUT a
-separate visited set (contrast with topic 14's ungrided graph DFS, which
+CYCLES by construction, which is what makes memoized <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> safe WITHOUT a
+separate visited set (contrast with topic 14's ungrided graph <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, which
 DOES need one). The trap is recursion depth, not correctness: a
 sufficiently long increasing chain can exceed Python's default recursion
 limit even though the O(m*n) time complexity is fine — solved here by
-processing cells in decreasing-value order (a topological sort of the DAG)
+processing cells in decreasing-value order (a topological sort of the <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>)
 instead of recursing.
 
 **012 Distinct Subsequences** is Shape 2, but the combinator is SUM of two
 INDEPENDENT valid choices (skip vs. use), not a max/min pick-the-best like
-LCS or Edit Distance — the "skip" option is always available and must
+<abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> or Edit Distance — the "skip" option is always available and must
 always be added, even when a character match exists, because both are
 genuinely different subsequences that both need to be counted.
 
@@ -365,7 +365,7 @@ one at a time across repeated dp transitions). This dual dependency is why
    (like 011's implicit third-string position in 009, which is `i+j-1`, not
    a free index) or if the "second dimension" is actually independent
    linear sub-problems (like topic 16's House Robber II decomposing into
-   two 1D passes instead of one genuinely 2D one) — it might not be 2D DP
+   two 1D passes instead of one genuinely 2D one) — it might not be 2D <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
    at all. Confirming genuine independence between the two indices BEFORE
    writing `dp[i][j] = [[0]*n for _ in range(m)]` avoids over-engineering
    problems that are secretly 1D.
@@ -388,7 +388,7 @@ divergence — read those before an interview, not just the correct code.
 **Trap B — Shape 4's fill order is the one place in this whole topic (16 +
 17 combined) where row-major iteration is actively wrong, not just
 suboptimal.** Every other shape in both topics tolerates (even if it
-doesn't require) a row-major or index-ascending sweep. Interval DP does
+doesn't require) a row-major or index-ascending sweep. Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> does
 not: `dp[l][r]` needs sub-intervals with strictly smaller SPAN, which a
 row-major sweep does not guarantee are already computed. This is worth
 internalizing as a special case, precisely because everything else in two
@@ -397,7 +397,7 @@ as a safe default.
 
 ---
 
-## Part 7 · Bitmask DP — a fifth shape, for "which SUBSET have I used"
+## Part 7 · Bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> — a fifth shape, for "which SUBSET have I used"
 
 None of Shapes 1–4 fit a problem where the state is "which of up to ~20
 elements have I already used/visited," because the number of *subsets* is
@@ -424,7 +424,7 @@ def popcount(mask):     return bin(mask).count("1")   # Python 3.10+: mask.bit_c
 
 ### 7.2 State space and complexity — the exact bound, not a guess
 
-A bitmask-DP table over `n` elements has `2^n` masks. With an additional
+A bitmask-<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table over `n` elements has `2^n` masks. With an additional
 "last visited" dimension (the canonical Traveling Salesman Problem
 formulation, Held–Karp), the table is `dp[mask][i]` for `i` an element
 IN `mask` — `2^n * n` states, each transition trying up to `n` next
@@ -433,10 +433,10 @@ space. This is *exponentially* better than the `O(n!)` brute-force
 permutation search TSP naively implies — `n=15`: `15! ≈ 1.3 * 10^12`
 versus Held–Karp's `2^15 * 15^2 ≈ 7.4 * 10^6`, roughly five orders of
 magnitude fewer operations — but it is still exponential in `n`, which is
-why bitmask DP is only viable for `n` up to roughly 20–22 (`2^22 ≈ 4.2M`
+why bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> is only viable for `n` up to roughly 20–22 (`2^22 ≈ 4.2M`
 masks is already a lot of memory times an inner dimension; `2^25`+ is
 generally infeasible). **Recognizing "n ≤ ~20" in the constraints is
-itself the signal** that a problem wants bitmask DP — it is the
+itself the signal** that a problem wants bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> — it is the
 single most reliable tell for this shape, the way "sorted array" signals
 binary search.
 
@@ -502,13 +502,13 @@ def min_assignment_cost(cost: list[list[int]]) -> int:
     return dp[(1 << n) - 1]
 ```
 
-This is the pattern behind LC 1879 (Minimum XOR Sum of Two Arrays) and LC
+This is the pattern behind LC 1879 (Minimum <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> Sum of Two Arrays) and LC
 1947 (Maximum Compatibility Score Sum) — recognizing "assign each of N
 things to N slots, minimize/maximize a pairwise cost" as THIS shape (not
-Shape 1/2's grid-DP) is the transferable skill, not memorizing either
+Shape 1/2's grid-<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>) is the transferable skill, not memorizing either
 problem.
 
-### 7.5 Submask enumeration — the other bitmask-DP primitive
+### 7.5 Submask enumeration — the other bitmask-<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> primitive
 
 A second recurring technique: iterating every SUBSET of a given mask
 (not every mask), used when a state's transition depends on partitioning
@@ -533,36 +533,36 @@ which is `O(3^n)` — the standard "sum over subsets" identity (each of
 `n` bits is independently: absent from mask, present in mask but absent
 from submask, or present in both — three choices, hence `3^n`), a bound
 worth having cold since `3^n` for `n=20` (`3.5 * 10^9`) is where this
-technique stops being practical, well before plain bitmask DP's `2^n`
+technique stops being practical, well before plain bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>'s `2^n`
 ceiling.
 
 ### 7.6 Decision tell
 
 | Signal in the problem | Shape |
 |---|---|
-| `n ≤ ~20`, "visit/use/assign every element exactly once," minimize/count over all orderings or assignments | **Bitmask DP**, `dp[mask]` or `dp[mask][i]` |
-| Need to split a set into two (or more) parts and combine | Bitmask DP **with submask enumeration** |
+| `n ≤ ~20`, "visit/use/assign every element exactly once," minimize/count over all orderings or assignments | **Bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>**, `dp[mask]` or `dp[mask][i]` |
+| Need to split a set into two (or more) parts and combine | Bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> **with submask enumeration** |
 | `n` in the hundreds/thousands, sequence-position based | NOT bitmask — back to Shapes 1–4 or topic 16 |
 
 ---
 
-## Part 8 · Added Problems (015–018): Interval DP, State-Space BFS, and DIGIT DP
+## Part 8 · Added Problems (015–018): Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, State-Space <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>, and DIGIT <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>
 
 Added 16 Sep 2026 from the Google prep plan.
 
-### 015 Longest Palindromic Subsequence — interval DP and fill order
+### 015 Longest Palindromic Subsequence — interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> and fill order
 
 `dp[i][j]` over ranges. It reads `dp[i+1][...]`, so rows go from `n-1` DOWN to 0. Filling top-down
 reads rows that don't exist yet (the file runs that bug). Subsequence is not substring: `"bbbab"` is 4,
-not 3. Also LPS(s) = LCS(s, reversed(s)), and minimum insertions to make a palindrome = n - LPS.
+not 3. Also LPS(s) = <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr>(s, reversed(s)), and minimum insertions to make a palindrome = n - LPS.
 
-### 016 Shortest Path Visiting All Nodes — BFS over (node, mask)
+### 016 Shortest Path Visiting All Nodes — <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> over (node, mask)
 
-Section 7 covers bitmask DP and Held–Karp. This problem shows the BFS face of the same state space:
+Section 7 covers bitmask <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> and Held–Karp. This problem shows the <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> face of the same state space:
 state = (current node, visited mask), multi-source from every node, 12 * 4096 = 49,152 states. A
 visited set keyed by node alone can't re-enter the hub of a star graph and never finishes.
 
-### 017–018 · DIGIT DP — the template
+### 017–018 · DIGIT <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> — the template
 
 Count numbers in [1, n] whose digits satisfy a rule. Build the number from the most significant
 digit with state:
@@ -721,20 +721,20 @@ Eighteen problems, six shapes (grid position · two strings · day × state · k
 | [002 · Unique Paths II](PyDSA/17_dp_2d/002_unique_paths_ii_solution.py) <br>LC 63 · Medium | Grid with an obstacle override | 001's recurrence, with `dp = 0` on an obstacle. **Trap:** applying the start-cell check to the answer but not to `dp[0][0]`; reusing 001's "first row and column are all 1s" (false once an obstacle appears). |
 | [003 · Minimum Path Sum](PyDSA/17_dp_2d/003_minimum_path_sum_solution.py) <br>LC 64 · Medium | Grid: min of two, plus own cost | The same predecessor rule, but `dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])`. **Trap:** summing both predecessors out of habit; treating the first row/column as copies (they are *cumulative* sums). |
 | [004 · Maximal Square](PyDSA/17_dp_2d/004_maximal_square_solution.py) <br>LC 221 · Medium | Grid: side of the square ending here | `dp[i][j]` = the largest all-1s square whose **bottom-right corner** is `(i, j)`: `1 + min(up, left, diagonal)`. **Trap:** `max` instead of `min`; omitting the diagonal (that is the path recurrence). |
-| [005 · Longest Common Subsequence](PyDSA/17_dp_2d/005_longest_common_subsequence_solution.py) <br>LC 1143 · Medium | Two strings: LCS | `dp[i][j]` over *prefix lengths*: match → `dp[i-1][j-1] + 1`, else `max(dp[i-1][j], dp[i][j-1])`. **Trap:** comparing `a[i]` with `b[j]` instead of `a[i-1]` with `b[j-1]`; confusing subsequence with substring. |
+| [005 · Longest Common Subsequence](PyDSA/17_dp_2d/005_longest_common_subsequence_solution.py) <br>LC 1143 · Medium | Two strings: <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> | `dp[i][j]` over *prefix lengths*: match → `dp[i-1][j-1] + 1`, else `max(dp[i-1][j], dp[i][j-1])`. **Trap:** comparing `a[i]` with `b[j]` instead of `a[i-1]` with `b[j-1]`; confusing subsequence with substring. |
 | [006 · Best Time to Buy and Sell Stock with Cooldown](PyDSA/17_dp_2d/006_best_time_to_buy_and_sell_stock_with_cooldown_solution.py) <br>LC 309 · Medium | Day × state machine | Three states — held, just sold, resting — with all right-hand sides read from *yesterday*. **Trap:** buying from `sold` (violates the cooldown; it must come from `rest`); updating the rolling scalars in place in the wrong order. |
 | [007 · Coin Change II](PyDSA/17_dp_2d/007_coin_change_ii_solution.py) <br>LC 518 · Medium | Unbounded knapsack, combinations | `dp[a] += dp[a - c]` with **coins outermost** and amounts ascending. **Trap:** amounts outermost (counts permutations); scanning high to low (that is 0/1). |
 | [008 · Target Sum](PyDSA/17_dp_2d/008_target_sum_solution.py) <br>LC 494 · Medium | 0/1 knapsack via a reframe | Split into a positive subset `P` with `sum(P) = (target + total) / 2`, then count subsets, scanning **high to low**. **Trap:** scanning low to high; not guarding `(target + total)` odd or `\|target\| > total`. |
 | [009 · Interleaving String](PyDSA/17_dp_2d/009_interleaving_string_solution.py) <br>LC 97 · Medium | Two strings, interleaving | `dp[i][j]` = can `s1[:i]` and `s2[:j]` interleave to `s3[:i+j]` — the third index is *always* `i + j`. **Trap:** a third free dimension; `and` instead of `or` between the two sources. |
 | [010 · Edit Distance](PyDSA/17_dp_2d/010_edit_distance_solution.py) <br>LC 72 · Medium | Two strings, edit distance | Match → `dp[i-1][j-1]` (no `+1`); else `1 + min(replace, delete, insert)`. **Trap:** adding 1 on a match; losing the diagonal value in the rolling-row version. |
-| [011 · Longest Increasing Path in a Matrix](PyDSA/17_dp_2d/011_longest_increasing_path_in_a_matrix_solution.py) <br>LC 329 · Hard | Memoised DFS on a grid | `dp` = longest strictly increasing path *starting* here; the strict increase forbids cycles, so no `visited` set. **Trap:** `>=` (plateaus become "increasing"); a redundant, possibly shared `visited`. |
+| [011 · Longest Increasing Path in a Matrix](PyDSA/17_dp_2d/011_longest_increasing_path_in_a_matrix_solution.py) <br>LC 329 · Hard | Memoised <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> on a grid | `dp` = longest strictly increasing path *starting* here; the strict increase forbids cycles, so no `visited` set. **Trap:** `>=` (plateaus become "increasing"); a redundant, possibly shared `visited`. |
 | [012 · Distinct Subsequences](PyDSA/17_dp_2d/012_distinct_subsequences_solution.py) <br>LC 115 · Hard | Two strings, counting | When characters match, `dp[i-1][j-1] + dp[i-1][j]` — *use it* plus *skip it*, both valid and different. **Trap:** `max` instead of sum; dropping the always-allowed "skip" term on a match. |
-| [013 · Burst Balloons](PyDSA/17_dp_2d/013_burst_balloons_solution.py) <br>LC 312 · Hard | Interval DP: the *last* balloon | Choose which balloon bursts **last** in `(l, r)`, so the two sides are independent; pad with virtual `1`s. **Trap:** reasoning about the *first* burst (the neighbours become order-dependent); forgetting the padding. |
+| [013 · Burst Balloons](PyDSA/17_dp_2d/013_burst_balloons_solution.py) <br>LC 312 · Hard | Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: the *last* balloon | Choose which balloon bursts **last** in `(l, r)`, so the two sides are independent; pad with virtual `1`s. **Trap:** reasoning about the *first* burst (the neighbours become order-dependent); forgetting the padding. |
 | [014 · Regular Expression Matching](PyDSA/17_dp_2d/014_regular_expression_matching_solution.py) <br>LC 10 · Hard | Two strings, pattern-driven | Case on `p[j-1]`: a letter or `.` matches one character; `*` means zero-or-more of the previous element. **Trap:** no zero-occurrence branch; reading `dp[i-1][j-2]` instead of `dp[i-1][j]`. |
-| [015 · Longest Palindromic Subsequence](PyDSA/17_dp_2d/015_longest_palindromic_subsequence_solution.py) <br>LC 516 · Medium | Interval DP on a string | `dp[i][j] = dp[i+1][j-1] + 2` on matching ends, else `max(dp[i+1][j], dp[i][j-1])`; `dp[i][i] = 1`. **Trap:** solving the *substring* problem (`"bbbab"` → 3, not 4); filling `i` ascending (reads cells not yet computed). |
-| [016 · Shortest Path Visiting All Nodes](PyDSA/17_dp_2d/016_shortest_path_visiting_all_nodes_solution.py) <br>LC 847 · Hard | BFS over `(node, mask)` | Search *states*: revisiting a node is fine, revisiting a state never helps; start from *every* node at once. **Trap:** `visited` keyed by node alone; a single source at node 0. |
-| [017 · Numbers At Most N Given Digit Set](PyDSA/17_dp_2d/017_numbers_at_most_n_given_digit_set_solution.py) <br>LC 902 · Hard | Digit DP: shorter, then same length | Numbers shorter than `n` are all valid (`D^L` each); same length walks `n` while `tight`. **Trap:** forgetting to count `n` itself; forgetting the shorter lengths (`n = 100` returns 0 instead of 20). |
-| [018 · Count Special Integers](PyDSA/17_dp_2d/018_count_special_integers_solution.py) <br>LC 2376 · Hard | Digit DP with a used-digit mask | State `(pos, mask, tight, started)`; `started` makes leading zeros free padding. **Trap:** no `started` flag (`n = 100` gives 72, not 90); allowing `0` as the first digit of the same-length walk. |
+| [015 · Longest Palindromic Subsequence](PyDSA/17_dp_2d/015_longest_palindromic_subsequence_solution.py) <br>LC 516 · Medium | Interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> on a string | `dp[i][j] = dp[i+1][j-1] + 2` on matching ends, else `max(dp[i+1][j], dp[i][j-1])`; `dp[i][i] = 1`. **Trap:** solving the *substring* problem (`"bbbab"` → 3, not 4); filling `i` ascending (reads cells not yet computed). |
+| [016 · Shortest Path Visiting All Nodes](PyDSA/17_dp_2d/016_shortest_path_visiting_all_nodes_solution.py) <br>LC 847 · Hard | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> over `(node, mask)` | Search *states*: revisiting a node is fine, revisiting a state never helps; start from *every* node at once. **Trap:** `visited` keyed by node alone; a single source at node 0. |
+| [017 · Numbers At Most N Given Digit Set](PyDSA/17_dp_2d/017_numbers_at_most_n_given_digit_set_solution.py) <br>LC 902 · Hard | Digit <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: shorter, then same length | Numbers shorter than `n` are all valid (`D^L` each); same length walks `n` while `tight`. **Trap:** forgetting to count `n` itself; forgetting the shorter lengths (`n = 100` returns 0 instead of 20). |
+| [018 · Count Special Integers](PyDSA/17_dp_2d/018_count_special_integers_solution.py) <br>LC 2376 · Hard | Digit <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> with a used-digit mask | State `(pos, mask, tight, started)`; `started` makes leading zeros free padding. **Trap:** no `started` flag (`n = 100` gives 72, not 90); allowing `0` as the first digit of the same-length walk. |
 
 ---
 <!-- problem-map:end -->
@@ -742,8 +742,8 @@ Eighteen problems, six shapes (grid position · two strings · day × state · k
 
 ## Checklist Before Leaving This Topic <!--ca-->
 
-- [ ] Reconstruct an LCS string and an edit script by walking back from `dp[m][n]`, and say why rolling rows lose it <!--ca-->
-- [ ] Reduce shortest common supersequence, minimum deletions and palindromic subsequence to LCS <!--ca-->
+- [ ] Reconstruct an <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> string and an edit script by walking back from `dp[m][n]`, and say why rolling rows lose it <!--ca-->
+- [ ] Reduce shortest common supersequence, minimum deletions and palindromic subsequence to <abbr title="Longest Common Subsequence. The problem of finding the longest subsequence common to all sequences in a set of sequences.">LCS</abbr> <!--ca-->
 - [ ] Write the stock variants (cooldown, fee, k transactions) as state machines that read only *yesterday's* values <!--ca-->
 - [ ] Tell wildcard (`*` = any sequence) from regex (`*` = repeat the previous element) and write both recurrences <!--ca-->
-- [ ] Fill an interval DP by increasing length and name its O(n³) cost <!--ca-->
+- [ ] Fill an interval <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> by increasing length and name its O(n³) cost <!--ca-->

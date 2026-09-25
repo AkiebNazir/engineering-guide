@@ -8,7 +8,7 @@ Choosing "a database" is not enough in an interview. You need to know which fami
 |---|---|---|---|
 | Relational (PostgreSQL/MySQL) | Tables, joins, constraints, transactions. | Correctness and flexible query; excellent default. | Horizontal write scaling/cross-region coordination needs care. |
 | Key-value | `key → value`. | Very fast simple lookup and distribution. | Secondary queries, joins, and constraints are application work. |
-| Document | JSON-like aggregate documents. | Flexible evolving aggregate. | Cross-document joins/transactions/indexes vary; duplicate data. |
+| Document | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-like aggregate documents. | Flexible evolving aggregate. | Cross-document joins/transactions/indexes vary; duplicate data. |
 | Wide-column | Partitioned rows/columns designed around queries. | High throughput at scale. | Requires deliberate partition-key/query model. |
 | Graph | Nodes/edges/traversals. | Relationship-heavy traversal. | Operational/query complexity; ordinary adjacency often fits relational DB. |
 | Search engine | Inverted index/relevance. | Full text, faceting, ranking. | Derived index with eventual freshness; not source of truth. |
@@ -17,7 +17,7 @@ Choosing "a database" is not enough in an interview. You need to know which fami
 
 Pick by access pattern, not by hype: point lookups at massive scale → key-value; flexible per-record shape that evolves fast → document; relationship traversal is the primary query → graph; everything else that needs joins/constraints/transactions → relational, until a specific proven limit says otherwise.
 
-## Storage engine intuition: B-tree vs LSM tree
+## Storage engine intuition: B-tree vs <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree
 
 **B-tree** stores keys in sorted pages in place. A write finds the right page and updates it directly.
 
@@ -29,7 +29,7 @@ B-tree read:   walk root → internal → leaf, O(log n) page fetches
 - Read/range-scan friendly: data is already sorted on disk, so a range query walks contiguous pages.
 - Write cost: an update to a random key touches a random page — under heavy random writes this means a lot of random I/O and page fragmentation.
 
-**LSM tree (log-structured merge tree)** buffers writes in memory (memtable), flushes sorted immutable files (SSTables) sequentially, and merges them later in the background (compaction).
+**<abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree (log-structured merge tree)** buffers writes in memory (memtable), flushes sorted immutable files (SSTables) sequentially, and merges them later in the background (compaction).
 
 ```text
 LSM write:  append to memtable (in-memory) + WAL → sequential, fast
@@ -38,23 +38,23 @@ LSM write:  append to memtable (in-memory) + WAL → sequential, fast
 LSM read:   check memtable → check SSTables newest-to-oldest (bloom filter to skip files) → merge
 ```
 
-- Write-friendly: writes are always sequential appends, which is why LSM engines (RocksDB, Cassandra, LevelDB) dominate write-heavy workloads.
-- Read cost: a point read may have to check several SSTables before finding the latest version (read amplification), mitigated by bloom filters. Compaction itself burns background I/O and CPU (write amplification from rewriting data multiple times as it's merged down levels).
+- Write-friendly: writes are always sequential appends, which is why <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> engines (RocksDB, Cassandra, LevelDB) dominate write-heavy workloads.
+- Read cost: a point read may have to check several SSTables before finding the latest version (read amplification), mitigated by bloom filters. Compaction itself burns background I/O and <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> (write amplification from rewriting data multiple times as it's merged down levels).
 
-| | B-tree | LSM tree |
+| | B-tree | <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree |
 |---|---|---|
 | Write pattern | In-place, random I/O | Append-only, sequential I/O |
 | Write throughput | Lower under random writes | High |
 | Read (point) | Predictable O(log n) | Can require checking multiple SSTables |
 | Read (range scan) | Strong, data already sorted in place | Good, but merges multiple sorted runs |
-| Space | No compaction overhead | Extra space/CPU for compaction |
+| Space | No compaction overhead | Extra space/<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> for compaction |
 | Typical use | PostgreSQL/MySQL InnoDB | Cassandra, RocksDB, LevelDB, many wide-column stores |
 
-You don't need to implement either for an interview. You need to say "this workload is write-heavy with few range scans, so an LSM-based engine trades some read amplification for sequential write throughput" and mean it.
+You don't need to implement either for an interview. You need to say "this workload is write-heavy with few range scans, so an <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr>-based engine trades some read amplification for sequential write throughput" and mean it.
 
 ## Write-ahead log and crash recovery
 
-A **write-ahead log (WAL)** records the intent of a change durably *before* the corresponding data pages are updated. On crash, the database replays the WAL from the last checkpoint to reconstruct any changes that were committed but not yet flushed to the main data pages.
+A **write-ahead log (<abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr>)** records the intent of a change durably *before* the corresponding data pages are updated. On crash, the database replays the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> from the last checkpoint to reconstruct any changes that were committed but not yet flushed to the main data pages.
 
 ```mermaid
 %% caption: Durability is guaranteed the instant the WAL record is fsynced — not when the eventual data-page write happens.
@@ -73,11 +73,11 @@ sequenceDiagram
     WAL-->>Pages: durable state recovered
 ```
 
-This is why "durable" and "the data page is written" are different moments — durability is guaranteed the instant the WAL record is fsynced, not when the eventual page write happens.
+This is why "durable" and "the data page is written" are different moments — durability is guaranteed the instant the <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> record is fsynced, not when the eventual page write happens.
 
-## MVCC and the cost of long transactions
+## <abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr> and the cost of long transactions
 
-**Multi-version concurrency control (MVCC)** lets readers see a consistent snapshot of the database while writers keep working, by keeping multiple versions of a row instead of locking it for reads. A reader that started its transaction before a write commits keeps seeing the old version; it never blocks on a writer, and a writer never blocks on a reader.
+**Multi-version concurrency control (<abbr title="Multi-Version Concurrency Control. A concurrency control method commonly used by database management systems to provide concurrent access without locking.">MVCC</abbr>)** lets readers see a consistent snapshot of the database while writers keep working, by keeping multiple versions of a row instead of locking it for reads. A reader that started its transaction before a write commits keeps seeing the old version; it never blocks on a writer, and a writer never blocks on a reader.
 
 The cost: old row versions can't be garbage-collected until no open transaction still needs them. A long-running transaction (a forgotten open transaction, a slow analytical query in the same database) pins old versions in place — this is "table bloat" in PostgreSQL terms, or in general, a rising number of unreclaimed dead tuples that slow down every subsequent scan and inflate storage until a vacuum/compaction process catches up. Interview-relevant takeaway: keep transactions short, and never hold one open while waiting on a remote call (payment <abbr title="Application Programming Interface">API</abbr>, email service).
 
@@ -103,7 +103,7 @@ Consistent hash ring (virtual nodes):
    node B-v2        node A-v2
 ```
 
-A bad partition key creates a **hot partition**: one node absorbs disproportionate read/write/storage load while siblings sit idle. Common causes: a low-cardinality key (partition by `status` when 90% of rows are `active`), a monotonic key under range partitioning (partition by timestamp — all new writes land on the newest range), or a celebrity/viral key under hashing (one user ID gets 1000x normal traffic). Monitor per-partition QPS, storage size, and latency continuously, not just at launch — a key distribution can become hot months later as usage patterns shift. Don't shard preemptively; shard when a single node's proven read/write/storage limit is reached or clearly imminent.
+A bad partition key creates a **hot partition**: one node absorbs disproportionate read/write/storage load while siblings sit idle. Common causes: a low-cardinality key (partition by `status` when 90% of rows are `active`), a monotonic key under range partitioning (partition by timestamp — all new writes land on the newest range), or a celebrity/viral key under hashing (one user ID gets 1000x normal traffic). Monitor per-partition <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage size, and latency continuously, not just at launch — a key distribution can become hot months later as usage patterns shift. Don't shard preemptively; shard when a single node's proven read/write/storage limit is reached or clearly imminent.
 
 ## Replication modes
 

@@ -13,7 +13,7 @@ type coercion, subcommands, and mutually exclusive options are all built in.
 |---|---|
 | A script with a handful of flags, run by a human from a terminal | `argparse` |
 | Config that comes from environment variables or a TOML file | plain `os.environ` / `tomllib` (see `PyEngineering/08_config_loader`), not `argparse` |
-| A REST-style HTTP <abbr title="Application Programming Interface">API</abbr>'s request parameters | `urllib.parse` / the web framework's own parsing (see `API/`), not `argparse` |
+| A <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>-style <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> <abbr title="Application Programming Interface">API</abbr>'s request parameters | `urllib.parse` / the web framework's own parsing (see `API/`), not `argparse` |
 | A git-style tool with subcommands (`tool add`, `tool remove`) | `argparse` with `add_subparsers()` |
 | Extremely simple one-flag scripts where importing argparse feels heavy | manual `sys.argv` slicing is acceptable, but you lose `--help`, type errors, and usage text for free |
 
@@ -33,11 +33,11 @@ type coercion, subcommands, and mutually exclusive options are all built in.
 Levels 1–3 build up the basic surface: positional and optional arguments, then `type=` /
 `default=` / `choices=` together, then `nargs` (`'+'`, `'*'`, `'?'`) in a realistic
 multi-value example. Level 4 triggers argparse's real errors (`SystemExit`, bad `type=`
-coercion) and catches them properly. Level 5 builds a git-style CLI with
+coercion) and catches them properly. Level 5 builds a git-style <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> with
 `add_subparsers()`. Level 6 measures argparse's parsing overhead against a hand-rolled
-parser with real timings. Level 7 organizes a larger CLI's `--help` with
+parser with real timings. Level 7 organizes a larger <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr>'s `--help` with
 `argument_group()` and enforces exclusivity with `mutually_exclusive_group()`. Level 8
 captures the auto-generated `--help` text programmatically via `io`/`contextlib`. Level 9
 shows the real gotcha of a bad `type=` error message and fixes it with a custom `Action`
-subclass. Level 10 is a small capstone CLI combining subcommands, groups, and a custom
+subclass. Level 10 is a small capstone <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> combining subcommands, groups, and a custom
 action.

@@ -146,7 +146,7 @@ Three observations from these real numbers:
 - **The expand step is as cheap as the constant-default `ADD COLUMN`** — adding a
   nullable column with no default is also metadata-only, for the same reason.
 - **The backfill is the expensive step** (1.88 seconds here), but it's a plain
-  `UPDATE`, not a schema-locking DDL statement — it takes ordinary row locks as it
+  `UPDATE`, not a schema-locking <abbr title="Data Definition Language. Syntax for creating and modifying database objects such as tables, indices, and users.">DDL</abbr> statement — it takes ordinary row locks as it
   goes, not one blocking table-wide lock for its whole duration, and (more
   importantly) it can be broken into smaller batched `UPDATE ... WHERE id BETWEEN
   ...` transactions in production so no single statement holds anything for 1.88
@@ -192,7 +192,7 @@ ordinary row locks.
   planned for it or not.
 - **Running the backfill `UPDATE` as one giant statement on a large, live production
   table.** As measured above, this is where the real time goes — and one huge
-  `UPDATE` also generates one huge burst of WAL and holds row locks on everything it
+  `UPDATE` also generates one huge burst of <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> and holds row locks on everything it
   touches for the whole statement's duration, competing with live traffic. Batch it.
 - **Not noticing a default is volatile.** `DEFAULT now()` looks as innocuous as
   `DEFAULT 'free'` in a migration file; only one of them triggers a full table

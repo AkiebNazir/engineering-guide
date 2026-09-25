@@ -143,11 +143,11 @@ outputs = model.generate(
 
 ## 6. MAANG Interview Scenarios
 
-### Scenario 1: The Out-of-Memory (OOM) Disaster
+### Scenario 1: The Out-of-Memory (<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr>) Disaster
 *Interviewer:* "You are trying to load Llama-3-70B on a server with 24GB of VRAM. It crashes immediately. Why, and how do you fix it?"
 
 *Answer:* "A 70-Billion parameter model stored in standard 32-bit float (`fp32`) requires exactly 4 bytes per parameter. 70B * 4 bytes = 280 Gigabytes of VRAM just to load the model. It is mathematically impossible to fit it on a 24GB GPU. 
-To fix this, I would use Hugging Face's integration with `bitsandbytes` to load the model in **4-bit Quantization**. This reduces the memory footprint to roughly 0.5 bytes per parameter, shrinking the 280GB model down to 35GB. Then, I would use `device_map="auto"` from the `accelerate` library to load 24GB onto the GPU, and offload the remaining 11GB onto the system RAM."
+To fix this, I would use Hugging Face's integration with `bitsandbytes` to load the model in **4-bit Quantization**. This reduces the memory footprint to roughly 0.5 bytes per parameter, shrinking the 280GB model down to 35GB. Then, I would use `device_map="auto"` from the `accelerate` library to load 24GB onto the GPU, and offload the remaining 11GB onto the system <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>."
 
 ### Scenario 2: Left-Padding vs Right-Padding
 *Interviewer:* "You are doing batch generation with `model.generate()`. You passed 10 sentences of different lengths into the tokenizer. The model's outputs are completely corrupted and hallucinated. Why?"
@@ -167,5 +167,5 @@ If you manually pass `input_ids` to the model without passing the `attention_mas
 If you want to classify text as Positive/Negative, you cannot use `AutoModelForCausalLM`. Causal models (like GPT) are designed to generate text. You must use `AutoModelForSequenceClassification` (like BERT), which explicitly attaches a classification "head" to the top of the neural network.
 
 ### ⚠️ Pitfall 3: Not caching your downloads
-When you call `from_pretrained("gpt2")`, Hugging Face downloads 1GB of data to your hidden `~/.cache/huggingface` folder. If you run this in a Docker container that rebuilds every day, you will be downloading gigabytes of data every single day, destroying your bandwidth and delaying deployment. 
+When you call `from_pretrained("gpt2")`, Hugging Face downloads 1GB of data to your hidden `~/.cache/huggingface` folder. If you run this in a <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container that rebuilds every day, you will be downloading gigabytes of data every single day, destroying your bandwidth and delaying deployment. 
 *Fix:* In production, you download the model once to a local directory, and load it from disk: `AutoModelForCausalLM.from_pretrained("./local_model_folder")`.

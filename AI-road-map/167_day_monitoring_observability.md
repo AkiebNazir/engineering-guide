@@ -18,16 +18,16 @@ Today, we dive into **Distributed Tracing and Advanced Observability**. We will 
 
 ### 2. OpenTelemetry (OTel)
 Before 2019, if you wanted traces, you had to lock your entire company into proprietary tools like Datadog or New Relic. 
-**OpenTelemetry** is a massive open-source standard. You instrument your Python code *once* using the OTel SDK. OTel generates the traces and can export them to *any* backend (Jaeger, Datadog, Zipkin, or LangSmith). It is vendor-agnostic.
+**OpenTelemetry** is a massive open-source standard. You instrument your Python code *once* using the OTel <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>. OTel generates the traces and can export them to *any* backend (Jaeger, Datadog, Zipkin, or LangSmith). It is vendor-agnostic.
 
 ### 3. Service Level Indicators (SLIs) and Objectives (SLOs)
 You cannot just say "Make the <abbr title="Artificial Intelligence">AI</abbr> fast." You need mathematical contracts.
-- **SLI (Indicator):** What are we measuring? (e.g., *The percentage of <abbr title="Large Language Model">LLM</abbr> responses that return the first token in under 500ms*).
-- **SLO (Objective):** What is the goal? (e.g., *99% of requests over a 30-day window must meet the SLI*).
+- **<abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr> (Indicator):** What are we measuring? (e.g., *The percentage of <abbr title="Large Language Model">LLM</abbr> responses that return the first token in under 500ms*).
+- **<abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> (Objective):** What is the goal? (e.g., *99% of requests over a 30-day window must meet the <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr>*).
 - **Error Budget:** If you promise 99% uptime, you are mathematically allowed 1% downtime (about 7 hours a month). If your team burns through that Error Budget by pushing buggy prompts, the CTO freezes all new feature development until reliability improves.
 
 ### 4. Golden Signals of <abbr title="Artificial Intelligence">AI</abbr> Monitoring
-For standard REST APIs, we monitor Latency, Traffic, Errors, and Saturation (The 4 Golden Signals).
+For standard <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs, we monitor Latency, Traffic, Errors, and Saturation (The 4 Golden Signals).
 For <abbr title="Large Language Model">LLM</abbr> APIs, we must add:
 1. **Time-To-First-Token (TTFT):** Measures responsiveness.
 2. **Time-Per-Output-Token (TPOT):** Measures GPU saturation.
@@ -131,7 +131,7 @@ Research **OpenTelemetry Events**. Modify the `generate_llm_response` function s
 ### 🎤 MAANG Technical Interview Prep
 
 **The Question:**
-*"Your team's <abbr title="Large Language Model">LLM</abbr> product has an SLO of 99% availability and a TTFT (Time-To-First-Token) SLI of <800ms. Over the last week, your TTFT has degraded to 1,500ms, burning through your error budget. Walk me through your entire strategy for diagnosing and fixing this."*
+*"Your team's <abbr title="Large Language Model">LLM</abbr> product has an <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr> of 99% availability and a TTFT (Time-To-First-Token) <abbr title="Service Level Indicator - A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency.">SLI</abbr> of <800ms. Over the last week, your TTFT has degraded to 1,500ms, burning through your error budget. Walk me through your entire strategy for diagnosing and fixing this."*
 
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
@@ -142,7 +142,7 @@ A "Strong Hire" candidate must articulate:
    - *Traffic Spike:* The queue is too deep, causing requests to wait 700ms before processing even starts.
 4. **Remediation:** 
    - Short term: Horizontally scale the Kubernetes pods to reduce queue depth. 
-   - Long term: Implement strict `max_length` limits on the <abbr title="Application Programming Interface">API</abbr> gateway to prevent massive prompts from choking the system.
+   - Long term: Implement strict `max_length` limits on the <abbr title="Application Programming Interface"><abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr></abbr> gateway to prevent massive prompts from choking the system.
 
 ---
 **Task for the end of the day:** Read about the difference between **Logs** and **Traces**. Why are Traces necessary in a microservice architecture?

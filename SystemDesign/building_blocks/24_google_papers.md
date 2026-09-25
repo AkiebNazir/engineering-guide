@@ -1,6 +1,6 @@
 # The Papers Behind Google-Scale Systems
 
-You do not need to recite these papers in an interview. You do need the design *reasoning* in them: why GFS has a single master, why Bigtable is built on an LSM tree, why Spanner needs atomic clocks. Each summary below is the part worth carrying into a design discussion — the problem, the key decisions, the trade-offs, and where the idea shows up in today's systems.
+You do not need to recite these papers in an interview. You do need the design *reasoning* in them: why GFS has a single master, why Bigtable is built on an <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree, why Spanner needs atomic clocks. Each summary below is the part worth carrying into a design discussion — the problem, the key decisions, the trade-offs, and where the idea shows up in today's systems.
 
 > 💡 Read for the "why". When an interviewer asks you to justify a design choice, "this is the same trade-off GFS made: a single metadata master is simpler and fast enough because data never flows through it" is a strong answer.
 
@@ -16,7 +16,7 @@ You do not need to recite these papers in an interview. You do need the design *
 - Relaxed consistency: **atomic record append** with at-least-once semantics — applications tolerate duplicates and padding and use checksums and record IDs.
 - Operation log plus checkpoints for master recovery; shadow masters for read-only availability.
 
-**Trade-offs.** One master is simple and makes globally good placement decisions, but it limits the number of files (metadata must fit in RAM) and is a failover bottleneck. Its successor, Colossus, distributes the metadata into Bigtable. (Google Cloud's 2021 blog post "A peek behind Colossus" describes a metadata service made of many horizontally scalable curators that keep file metadata in Bigtable, with clients reading and writing data directly to the network-attached "D" disk servers and background custodians doing repair and rebalancing; it reports the Bigtable-backed metadata scaling over 100× beyond the largest GFS clusters.)
+**Trade-offs.** One master is simple and makes globally good placement decisions, but it limits the number of files (metadata must fit in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>) and is a failover bottleneck. Its successor, Colossus, distributes the metadata into Bigtable. (Google Cloud's 2021 blog post "A peek behind Colossus" describes a metadata service made of many horizontally scalable curators that keep file metadata in Bigtable, with clients reading and writing data directly to the network-attached "D" disk servers and background custodians doing repair and rebalancing; it reports the Bigtable-backed metadata scaling over 100× beyond the largest GFS clusters.)
 
 **Today.** HDFS copied the design; object stores and Colossus evolved it.
 
@@ -36,7 +36,7 @@ You do not need to recite these papers in an interview. You do need the design *
 
 - Data model: a sparse, sorted, multi-dimensional map `(row key, column family:qualifier, timestamp) → value`.
 - Rows are sorted lexicographically and split into **tablets** (row ranges), the unit of distribution and load balancing. Row-key design therefore controls locality (e.g. reversed domain names keep a site's pages together).
-- Storage is an **LSM tree**: a commit log, an in-memory memtable, immutable SSTables in GFS, with minor and major compactions and per-SSTable **Bloom filters**.
+- Storage is an **<abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree**: a commit log, an in-memory memtable, immutable SSTables in GFS, with minor and major compactions and per-SSTable **Bloom filters**.
 - **Chubby** holds the master lock and bootstrap location; tablet servers can die and their tablets are reassigned.
 - Transactions only within a single row.
 
@@ -52,7 +52,7 @@ You do not need to recite these papers in an interview. You do need the design *
 
 ## Spanner (2012)
 
-**Problem.** A globally distributed database with SQL, strong consistency, and cross-region transactions — for applications (like Ads) that cannot tolerate eventual consistency.
+**Problem.** A globally distributed database with <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, strong consistency, and cross-region transactions — for applications (like Ads) that cannot tolerate eventual consistency.
 
 **Key decisions.**
 
@@ -65,7 +65,7 @@ You do not need to recite these papers in an interview. You do need the design *
 
 ## Dremel (2010)
 
-**Problem.** Interactive SQL over trillions of rows of nested data in seconds.
+**Problem.** Interactive <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> over trillions of rows of nested data in seconds.
 
 **Key decisions.** **Columnar storage for nested records** (repetition and definition levels encode structure per column), so a query reads only the columns it touches and compresses them well; a **multi-level serving tree** that fans a query out to thousands of leaf servers and aggregates partial results upward; tolerating a small fraction of slow leaves by returning results once most data is scanned.
 
@@ -125,7 +125,7 @@ You do not need to recite these papers in an interview. You do need the design *
 
 **Trade-offs.** Hedging spends extra capacity to buy latency: if you hedge at the p95, roughly 5% of requests get a second copy, which is cheap only while the system is not overloaded. If slowness is caused by overload rather than by one bad machine, a hedge adds load to the thing that is already struggling, so hedges need a budget and must be paired with the limits in [28_overload_control_and_graceful_degradation.md](28_overload_control_and_graceful_degradation.md) and [12_application_resilience_patterns.md](12_application_resilience_patterns.md). Hedging is safe by default for reads; for writes it needs idempotency keys.
 
-**Today.** The techniques are standard options: gRPC's retry design includes a hedging policy, Envoy supports hedging on per-try timeouts, and Cassandra exposes a `speculative_retry` table setting.
+**Today.** The techniques are standard options: <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>'s retry design includes a hedging policy, Envoy supports hedging on per-try timeouts, and Cassandra exposes a `speculative_retry` table setting.
 
 **Use it in an interview.** Whenever a design fans a query out to `N` shards, compute `1 − (1 − p)^N` before claiming a p99 target, then say what you will do about it: fewer shards per query, hedged reads after the p95, and micro-partitions so hot shards can be split. See also [25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md).
 
@@ -137,7 +137,7 @@ You do not need to recite these papers in an interview. You do need the design *
 
 **Key decisions.**
 
-- Each virtual IP (VIP) is announced by all Maglev machines, and the upstream router spreads packets across them with **ECMP** (equal-cost multi-path). The load-balancing tier therefore scales out with no central coordinator.
+- Each virtual <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> (VIP) is announced by all Maglev machines, and the upstream router spreads packets across them with **ECMP** (equal-cost multi-path). The load-balancing tier therefore scales out with no central coordinator.
 - Each Maglev machine keeps a **connection-tracking table** keyed by the connection's five-tuple, so established connections stay on their backend. For a new connection it picks the backend from a **consistent-hashing lookup table**.
 - **Maglev hashing.** The lookup table has `M` entries, where `M` is a prime much larger than the number of backends `N`. Each backend has its own pseudo-random preference order over the table's slots, and backends take turns claiming their next unclaimed slot until every slot is filled. Lookup is then `table[hash(five-tuple) mod M]`, O(1). The paper's point is that this gives a near-equal share to every backend and limited disruption when the backend set changes.
 - Packets reach the backend encapsulated (GRE) and the backend replies directly to the client, so the response traffic does not pass through Maglev (**direct server return**).
@@ -145,7 +145,7 @@ You do not need to recite these papers in an interview. You do need the design *
 
 **Trade-offs.** The lookup table exists because ECMP is not sticky: when the set of Maglev machines changes, the router may send later packets of a connection to a different machine that has no tracking entry, and hashing the same five-tuple into the same table usually lands on the same backend. "Usually" is the cost: tables can briefly disagree, and changes to the backend set can remap some flows, so a few connections may break. Compared with ring-based consistent hashing (see [25_partitioning_and_hot_keys.md](25_partitioning_and_hot_keys.md)), Maglev hashing favours even balance over minimal disruption. It is a layer-4 balancer: it sees connections, not requests, so request-level routing happens in a layer-7 tier behind it.
 
-**Today.** The paper says Maglev has served Google's traffic since 2008 and also provides network load balancing for Google Cloud Platform. Envoy ships a `MAGLEV` load-balancing policy that uses this table construction. For the whole path from DNS to backend see [13_scaling_and_load_balancing.md](13_scaling_and_load_balancing.md) and [02_networking.md](02_networking.md).
+**Today.** The paper says Maglev has served Google's traffic since 2008 and also provides network load balancing for Google Cloud Platform. Envoy ships a `MAGLEV` load-balancing policy that uses this table construction. For the whole path from <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> to backend see [13_scaling_and_load_balancing.md](13_scaling_and_load_balancing.md) and [02_networking.md](02_networking.md).
 
 **Use it in an interview.** When asked "how does the load balancer itself scale and stay up?", answer with ECMP across active balancers plus a consistent-hash table so any balancer picks the same backend for a flow, and say what breaks (a few flows) during changes.
 
@@ -157,8 +157,8 @@ You do not need to recite these papers in an interview. You do need the design *
 
 **Key decisions.**
 
-- A **trace** is a tree of **spans**. Each span carries a trace id, its own span id, its parent's id, a name and timestamps; RPC client and server sides each record their part of a span. **Annotations** (timestamped text or key-value pairs) let developers attach their own context to a span.
-- **Transparency through shared libraries.** Dapper instruments the common threading, control-flow and RPC libraries, so the trace context (trace id and span id) follows a request without application changes.
+- A **trace** is a tree of **spans**. Each span carries a trace id, its own span id, its parent's id, a name and timestamps; <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> client and server sides each record their part of a span. **Annotations** (timestamped text or key-value pairs) let developers attach their own context to a span.
+- **Transparency through shared libraries.** Dapper instruments the common threading, control-flow and <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> libraries, so the trace context (trace id and span id) follows a request without application changes.
 - **Sampling** keeps overhead low. The first production version sampled uniformly, averaging one trace in 1,024, which the paper found effective for high-throughput services because notable patterns recur often. Low-traffic services need higher rates, which led to **adaptive sampling** by a target number of sampled traces per unit time. A second sampling stage at collection hashes the trace id, so whole traces are kept or dropped, never single spans.
 - **Out-of-band collection.** Spans are written to local log files, pulled off the machines by daemons and collectors, and stored in Bigtable with one row per trace, so collection is never on the request path.
 
@@ -194,7 +194,7 @@ You do not need to recite these papers in an interview. You do need the design *
 |---|---|
 | GFS | Separate metadata from data; design for constant failure; relax consistency where apps can cope. |
 | MapReduce | Restartable tasks and data locality make huge jobs routine; stragglers matter. |
-| Bigtable | LSM tree + sorted row ranges; row-key design is performance design. |
+| Bigtable | <abbr title="Log-Structured Merge-tree. A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume.">LSM</abbr> tree + sorted row ranges; row-key design is performance design. |
 | Chubby | A lock service with leases and sequencers; coarse-grained coordination only. |
 | Spanner | Paxos per shard + 2PC + TrueTime = global external consistency, paid for in commit latency. |
 | Dremel | Columnar + fan-out tree = interactive analytics at trillions of rows. |

@@ -22,7 +22,7 @@ When an <abbr title="Artificial Intelligence">AI</abbr> goes rogue, you follow a
 5. **Postmortem:** A blameless meeting where the team discusses *why* the system allowed the failure, and what safeguards will be built to prevent it.
 
 ### 2. Runbooks (The SRE Bible)
-When you are woken up at 3:00 AM, your brain does not work. You cannot remember AWS CLI commands. 
+When you are woken up at 3:00 AM, your brain does not work. You cannot remember AWS <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> commands. 
 A **Runbook** is a step-by-step markdown document that tells a sleep-deprived engineer exactly what to type to mitigate a specific alert.
 *Example:* `Runbook: AI_Hallucination_Alert.md`
 `Step 1: Go to AWS API Gateway. Step 2: Change routing rule X to point to Fallback Model Y.`

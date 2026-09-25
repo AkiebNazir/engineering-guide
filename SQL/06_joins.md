@@ -149,7 +149,7 @@ instead of showing her with a blank manager column. Table aliases (`e`, `m`) are
 mandatory here — without them, `SELECT name FROM employees JOIN employees ...` is
 ambiguous about which `employees.name` you mean.
 
-**Go — the nullable-column gotcha:** a Go `string` cannot hold SQL `NULL`; scanning
+**Go — the nullable-column gotcha:** a Go `string` cannot hold <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> `NULL`; scanning
 `manager` (which is `NULL` for Grace) directly into a `string` panics at runtime the
 first time a row actually has no manager. `database/sql` provides `sql.NullString`
 for exactly this:
@@ -181,7 +181,7 @@ employee=Jai manager=Huan
 ```
 
 (Native `pgxpool` has the same requirement — it just uses `*string` or `pgtype.Text`
-instead of `sql.NullString`; the underlying issue, a nullable SQL column has no direct
+instead of `sql.NullString`; the underlying issue, a nullable <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> column has no direct
 Go primitive equivalent, is identical regardless of driver.)
 
 ## A wrong join, live: forgetting the join condition

@@ -197,7 +197,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Define a neural network as a computation graph. Backpropagation is the application of the Matrix Chain Rule starting from the Loss scalar back to the first layer's weights.
    - Explain that passing the error backwards involves multiplying the incoming error vector by the **Transpose of the Local Jacobian** of the current layer.
 2. **Caching Forward Activations:** 
-   - Mention that to compute the local Jacobian during the backward pass, we almost always need the $x$ values (activations) from the forward pass. This is why training a model requires so much VRAM *(Video RAM on the GPU)*—you must cache all forward activations in memory until the backward pass is complete.
+   - Mention that to compute the local Jacobian during the backward pass, we almost always need the $x$ values (activations) from the forward pass. This is why training a model requires so much VRAM *(Video <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> on the GPU)*—you must cache all forward activations in memory until the backward pass is complete.
 3. **Vanishing Gradients (The Instability):** 
    - The Matrix Chain Rule means we are multiplying matrices together $L$ times (where $L$ is the number of layers).
    - If the eigenvalues of those Jacobian matrices are consistently less than $1.0$ (often caused by saturating activation functions like Sigmoid or Tanh, whose derivatives max out at 0.25), multiplying fractions by fractions 100 times causes the gradient to mathematically collapse to $0.0000001$. 

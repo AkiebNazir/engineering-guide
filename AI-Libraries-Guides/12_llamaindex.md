@@ -5,7 +5,7 @@
 *Why is this tool relevant?* In 2023, naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> (Retrieval-Augmented Generation) meant chunking a PDF, putting it in a database, and doing a simple similarity search. Today, naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> fails in production. If a user asks, "Compare the Q3 revenue of Apple and Microsoft," naive <abbr title="Retrieval-Augmented Generation">RAG</abbr> retrieves random paragraphs with the word "revenue." **LlamaIndex** is the modern, state-of-the-art framework that solves this. It replaces older, simplistic vector scripts with advanced routing, sub-queries, and knowledge graphs.
 
 **What is it?**
-LlamaIndex is a data framework specifically designed to connect custom data sources (PDFs, SQL, Notion, Slack) to LLMs. While LangChain is great for general logic and memory, LlamaIndex is the undisputed king of Data Ingestion and <abbr title="Retrieval-Augmented Generation">RAG</abbr>.
+LlamaIndex is a data framework specifically designed to connect custom data sources (PDFs, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, Notion, Slack) to LLMs. While LangChain is great for general logic and memory, LlamaIndex is the undisputed king of Data Ingestion and <abbr title="Retrieval-Augmented Generation">RAG</abbr>.
 
 ---
 

@@ -282,11 +282,11 @@ func toLower(b byte) byte {
 ```
 
 > ⚠️ **Indexing `s[i]` on a `string` gives a `byte`, and byte-indexing walks
-> UTF-8 code units, not characters.** For LC 125's ASCII-only test data this is
+> <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 code units, not characters.** For LC 125's ASCII-only test data this is
 > fine and is also the *fastest* option — no decode, no allocation. But the
 > moment a problem statement allows non-ASCII letters (accented characters,
 > non-Latin scripts), indexing bytes from both ends can land you **inside** a
-> multi-byte UTF-8 sequence, comparing garbage halves of two different
+> multi-byte <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 sequence, comparing garbage halves of two different
 > codepoints. The fix is the same one from Topic 01 §2.6:
 > ```go
 > r := []rune(s)              // O(n) decode once, up front
@@ -661,7 +661,7 @@ version — but knowing the library form, and that difference, is a strong signa
 | Trying to shrink the caller's slice | The header is copied into your function; `nums = nums[:k]` changes only your copy. | Return `k` (LC 26/27 do) or return the new slice. |
 | A pointer index that is a `uint` | `hi--` at 0 wraps to `18446744073709551615`, and the loop runs on. | Keep indices `int` — `len()` already returns one. |
 | Substring cost | **In Go, `s[i:j]` is O(1)** — a new header over the same bytes. Python's slice copies, which is why its guide calls slicing the #1 hidden O(n²). | `isPalindrome(s[l+1:r+1])` is cheap in Go. Still avoid it if you also mutate the bytes. |
-| Byte vs rune | `s[i]` walks UTF-8 code units; from both ends you can land *inside* a multi-byte character. | ASCII contract → bytes; otherwise `[]rune(s)` once, up front. |
+| Byte vs rune | `s[i]` walks <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 code units; from both ends you can land *inside* a multi-byte character. | ASCII contract → bytes; otherwise `[]rune(s)` once, up front. |
 | `abs` | Go has no integer `abs` (`math.Abs` takes a `float64`). | Write `if d < 0 { d = -d }`, or a two-line helper. |
 | `range` re-evaluated? | The `range` expression is evaluated **once**: `for i := range nums` fixes the count at the start. | Compacting in place inside it is fine; *appending* inside it is not what you want. |
 | `sort.Slice` is not stable | Irrelevant for 3Sum, but wrong for "sort people by weight, ties by arrival". | `slices.SortStableFunc`, or `sort.SliceStable`. |

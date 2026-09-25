@@ -30,7 +30,7 @@ If a bug is found in the `Trained Model`, **Data Lineage** allows you to trace t
 
 ### 3. LakeFS (Git for Data Lakes)
 If your company is massive, you don't use <abbr title="Data Version Control">DVC</abbr>. You use **LakeFS** or **Delta Lake**.
-LakeFS provides Git-like branching for massive Data Lakes. You can literally run `lakefs branch create my_experiment`. You can modify petabytes of data on your branch, test a model, and if it works, run a "Data Merge" back into the `main` production branch, complete with ACID transactions!
+LakeFS provides Git-like branching for massive Data Lakes. You can literally run `lakefs branch create my_experiment`. You can modify petabytes of data on your branch, test a model, and if it works, run a "Data Merge" back into the `main` production branch, complete with <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr> transactions!
 
 ### 4. Data Governance & Compliance
 If you build a model for a bank, and a customer asks "Why was I denied a loan?", GDPR and CCPA laws dictate you must be able to explain the decision. You must prove the model was not trained on discriminatory features (like Race or Religion). 

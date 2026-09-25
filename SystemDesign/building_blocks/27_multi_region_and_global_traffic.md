@@ -2,7 +2,7 @@
 
 "Now make it multi-region" is the follow-up that separates a design that survives a zone failure from one that survives a region failure, and it is not one feature. It is four decisions: where each piece of state lives, how users reach a region, how data gets between regions, and what you do when a region is lost. Each has a cost in latency, money or complexity, and the physics of distance sets a floor you cannot engineer away.
 
-> 🎯 Say the topology and its numbers: "Regional ownership: each user has a home region that owns their writes. Data replicates asynchronously with a 1 to 5 s lag, so RPO is seconds. DNS steering with a 60 s TTL moves stateless traffic in about 90 s. A human approves promoting stateful primaries. Three regions at 60% utilisation absorb the loss of one at 90%."
+> 🎯 Say the topology and its numbers: "Regional ownership: each user has a home region that owns their writes. Data replicates asynchronously with a 1 to 5 s lag, so RPO is seconds. <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> steering with a 60 s TTL moves stateless traffic in about 90 s. A human approves promoting stateful primaries. Three regions at 60% utilisation absorb the loss of one at 90%."
 
 ## Why go multi-region, and what it costs
 
@@ -71,10 +71,10 @@ H ..> S
 
 | Mechanism | How it works | Failover | Limits |
 |---|---|---|---|
-| GeoDNS or latency DNS | Resolver gets the address of the closest healthy region (Route 53 latency routing uses measured latency between the user's network and each region). | Detection plus TTL: AWS recommends TTL of 60 s or less and documents a 110 s example (60 s TTL, 10 s checks, threshold 5). | Clients and resolvers may cache beyond TTL, so plan a tail; the resolver's location, not the user's, is what DNS sees. |
-| Anycast | Many edge sites announce one IP; BGP delivers to a nearby site, which forwards to a region. | AWS Global Accelerator redirects new connections when health checks fail, described as tens of seconds. | BGP path is usually, not always, the nearest; existing connections to a dead region still break. |
-| Global L7 LB | One anycast VIP terminates connections at the edge and proxies to the closest healthy backend with capacity (Google Cloud's global external Application Load Balancer; Maglev, NSDI 2016, describes the software LB fleet). | Health-check interval and retries. | The LB is a shared dependency; keep it static-stable (last section). |
-| Client-side | SDK holds several endpoints and retries the next on failure. | One timeout. | Needs a client rollout to change; hard to control fleet-wide. |
+| GeoDNS or latency <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> | Resolver gets the address of the closest healthy region (Route 53 latency routing uses measured latency between the user's network and each region). | Detection plus TTL: AWS recommends TTL of 60 s or less and documents a 110 s example (60 s TTL, 10 s checks, threshold 5). | Clients and resolvers may cache beyond TTL, so plan a tail; the resolver's location, not the user's, is what <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> sees. |
+| Anycast | Many edge sites announce one <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>; BGP delivers to a nearby site, which forwards to a region. | AWS Global Accelerator redirects new connections when health checks fail, described as tens of seconds. | BGP path is usually, not always, the nearest; existing connections to a dead region still break. |
+| Global L7 <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> | One anycast VIP terminates connections at the edge and proxies to the closest healthy backend with capacity (Google Cloud's global external Application Load Balancer; Maglev, NSDI 2016, describes the software <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> fleet). | Health-check interval and retries. | The <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr> is a shared dependency; keep it static-stable (last section). |
+| Client-side | <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> holds several endpoints and retries the next on failure. | One timeout. | Needs a client rollout to change; hard to control fleet-wide. |
 
 Failover time is `interval x threshold + TTL + client tail`. Use hysteresis (do not flap on one failed probe), probe the real dependency chain from outside the region, and never let automation fail over stateful tiers without a fence.
 
@@ -147,9 +147,9 @@ CP:R ..> CN:B : "then"
 ## Global control planes are hidden single points of failure
 
 - **Global replication of a bad input.** Google's 12 June 2025 incident report: a policy change with blank fields "was replicated globally within seconds", crash-looped Service Control in every region for about 3 hours, and the code "was not feature flag protected". Remediations named: audit consumers of globally replicated data and propagate it incrementally with time to detect issues.
-- **A dependency under recovery tooling.** AWS's post-event summary for the 19 to 20 October 2025 us-east-1 DynamoDB DNS failure lists EC2 instance launches and console sign-in among the affected operations. Lesson from AWS's multi-region guidance: initiate failover from the healthy region and rely on data-plane operations, not on making changes in the impaired one (static stability, Builders' Library).
+- **A dependency under recovery tooling.** AWS's post-event summary for the 19 to 20 October 2025 us-east-1 DynamoDB <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> failure lists EC2 instance launches and console sign-in among the affected operations. Lesson from AWS's multi-region guidance: initiate failover from the healthy region and rely on data-plane operations, not on making changes in the impaired one (static stability, Builders' Library).
 
-**Rules:** stage every global push with soak time; cache last-known-good config; keep runbooks, dashboards and paging outside the region they diagnose; inventory every global dependency (DNS, identity, CDN, secrets, flags, <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>).
+**Rules:** stage every global push with soak time; cache last-known-good config; keep runbooks, dashboards and paging outside the region they diagnose; inventory every global dependency (<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>, identity, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr>, secrets, flags, <abbr title="Continuous Integration and Continuous Deployment">CI/CD</abbr>).
 
 ## Testing: game days and failback
 
@@ -157,7 +157,7 @@ Drill failover at production traffic on a schedule (Google's DiRT, Netflix's Cha
 
 ## Worked example: a failover timeline
 
-Assumptions (ours): 3 regions at 60% steady utilisation; Route 53 fast checks every 10 s with threshold 3; DNS TTL 60 s; async DB replication with 1 s median and 5 s p99 lag; 5,000 writes/s in the failed region; 95% cache hit rate; a human approves database promotion.
+Assumptions (ours): 3 regions at 60% steady utilisation; Route 53 fast checks every 10 s with threshold 3; <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> TTL 60 s; async DB replication with 1 s median and 5 s p99 lag; 5,000 writes/s in the failed region; 95% cache hit rate; a human approves database promotion.
 
 | Time | Event | Derived number |
 |---|---|---|
@@ -201,14 +201,14 @@ Compute is `peak x N/(N-1)`: 1.5x for three regions, against 1x for one, plus `s
 | Feed ([007](../solutions/007_news_feed_solution.md)) | Read-local, write from the author's home | Posts and graph replicate, feeds stay regional and rebuild | Replication lag adds to the freshness budget. |
 | Payments ([017](../solutions/017_payment_ledger_solution.md)) | Single home or strongly consistent store | Synchronous quorum, RPO 0 | Latency of the quorum; idempotency across failover. |
 | KV store ([023](../solutions/023_distributed_key_value_store_solution.md)) | Per-key choice: quorum across regions or async | Tunable consistency per table | Conflict rule if multi-writer. |
-| Video ([016](../solutions/016_video_on_demand_solution.md)) | Regional origins, CDN pull-through | Object storage replicated to two regions | Cold-region origin cost and latency. |
+| Video ([016](../solutions/016_video_on_demand_solution.md)) | Regional origins, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> pull-through | Object storage replicated to two regions | Cold-region origin cost and latency. |
 
 ## Interview angles
 
 - **"Make it multi-region."** Strong answer: name the driver, pick a pattern from the table, name each record's writer, give RPO and RTO as numbers.
 - **"How fast is failover?"** `interval x threshold + TTL + tail` for reads; a human-gated promotion for writes.
 - **"Why not active-active everywhere?"** Cost, conflicts, and a shared control plane that defeats isolation.
-- **"What can still take you down?"** Global config or deploy pushes, identity, DNS, the tooling you would use to recover.
+- **"What can still take you down?"** Global config or deploy pushes, identity, <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>, the tooling you would use to recover.
 - **"How do you fail back?"** Reconcile the un-replicated set, warm caches, shift in steps.
 
 ## Related building blocks

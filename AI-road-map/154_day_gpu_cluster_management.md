@@ -31,11 +31,11 @@ Today, we learn how to slice LLMs into pieces and spread them across massive GPU
 To train or serve massive models (like GPT-4), MAANG companies combine three strategies:
 1. **Tensor Parallelism (TP=8):** Split layers across 8 GPUs inside a single physical server (node).
 2. **Pipeline Parallelism (PP=4):** String 4 physical servers together, passing the computation down the line.
-3. **Data Parallelism (DP=10):** Clone that entire 32-GPU setup 10 times, so you can serve 10 different users at once.
+3. **Data Parallelism (<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>=10):** Clone that entire 32-GPU setup 10 times, so you can serve 10 different users at once.
 
 ### 4. CUDA Graphs
-When running TP, the CPU must send thousands of tiny instructions ("Kernels") to the GPUs. For fast models, the CPU is too slow to send these instructions, causing the GPU to wait.
-**CUDA Graphs** record the entire sequence of GPU instructions *once*, and then replay them instantly from the GPU's own memory, completely bypassing the CPU overhead!
+When running TP, the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> must send thousands of tiny instructions ("Kernels") to the GPUs. For fast models, the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> is too slow to send these instructions, causing the GPU to wait.
+**CUDA Graphs** record the entire sequence of GPU instructions *once*, and then replay them instantly from the GPU's own memory, completely bypassing the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> overhead!
 
 ---
 
@@ -73,7 +73,7 @@ python -m vllm.entrypoints.openai.api_server \
 Under the hood, vLLM automatically invokes **Ray** (a distributed computing framework) or **PyTorch NCCL** to spawn 4 processes, shard the model weights, place a quarter of the model on each GPU VRAM, and orchestrate the matrix multiplications.
 
 ### Step 3: Integrating with the Python Client
-Once the massive cluster is running on port 8000, your code doesn't change at all! The <abbr title="Application Programming Interface">API</abbr> Gateway we built on Day 153 just forwards standard HTTP requests to it.
+Once the massive cluster is running on port 8000, your code doesn't change at all! The <abbr title="Application Programming Interface">API</abbr> Gateway we built on Day 153 just forwards standard <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> requests to it.
 
 ```python
 import openai

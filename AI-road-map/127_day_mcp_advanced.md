@@ -10,15 +10,15 @@ Today, we dive into the advanced mechanics of <abbr title="Model Context Protoco
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. Advanced Transports (SSE & HTTP)
-<abbr title="Model Context Protocol">MCP</abbr> Clients and Servers communicate via JSON-RPC, but the *Transport Layer* can vary:
+### 1. Advanced Transports (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> & <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>)
+<abbr title="Model Context Protocol">MCP</abbr> Clients and Servers communicate via <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr>, but the *Transport Layer* can vary:
 - **stdio:** The Client spawns the Server locally. Perfect for local IDEs (like Cursor).
-- **SSE (Server-Sent Events):** The Server lives on the internet (e.g., AWS). The Client connects via HTTP. The Server uses SSE to push messages *down* to the Client asynchronously. 
-- **Streamable HTTP:** The newest standard. It supports bidirectional streaming, allowing massive files (like gigabyte PDFs) to be streamed from the Server to the Client in chunks.
+- **<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> (Server-Sent Events):** The Server lives on the internet (e.g., AWS). The Client connects via <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>. The Server uses <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> to push messages *down* to the Client asynchronously. 
+- **Streamable <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>:** The newest standard. It supports bidirectional streaming, allowing massive files (like gigabyte PDFs) to be streamed from the Server to the Client in chunks.
 
 ### 2. Authentication & Authorization
 The <abbr title="Model Context Protocol">MCP</abbr> protocol *itself* does not define authentication. It relies on the Transport layer.
-If you deploy an <abbr title="Model Context Protocol">MCP</abbr> server using SSE, you secure it using standard web protocols (like **OAuth 2.0**). The <abbr title="Artificial Intelligence">AI</abbr> Client must send an `Authorization: Bearer <token>` header. 
+If you deploy an <abbr title="Model Context Protocol">MCP</abbr> server using <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>, you secure it using standard web protocols (like **OAuth 2.0**). The <abbr title="Artificial Intelligence">AI</abbr> Client must send an `Authorization: Bearer <token>` header. 
 The Server validates the token, extracts the `user_id`, and enforces **Authorization** (e.g., *"Does User 42 have permission to execute this Jira tool?"*).
 
 ### 3. Server Composition (The Proxy Pattern)
@@ -35,7 +35,7 @@ The Server can pause its execution, send a `sampling/createMessage` request *bac
 
 ## 🕒 HOUR 2: GUIDED CODE-ALONG (THE APPLIED WAY)
 
-Let's conceptually build a Secure <abbr title="Model Context Protocol">MCP</abbr> Proxy Server using Python. We will mock the HTTP headers to demonstrate how authentication and routing work in an enterprise <abbr title="Model Context Protocol">MCP</abbr> gateway.
+Let's conceptually build a Secure <abbr title="Model Context Protocol">MCP</abbr> Proxy Server using Python. We will mock the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> headers to demonstrate how authentication and routing work in an enterprise <abbr title="Model Context Protocol">MCP</abbr> gateway.
 
 Create a file named `mcp_advanced.py`:
 
@@ -147,16 +147,16 @@ You are building an <abbr title="Model Context Protocol">MCP</abbr> Server that 
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"An <abbr title="Model Context Protocol">MCP</abbr> server has access to your production Postgres database via a `run_query` tool. How do you prevent SQL injection through <abbr title="Large Language Model">LLM</abbr>-generated queries, prevent unauthorized data access, and prevent accidental data modification? Design the complete security model."*
+*"An <abbr title="Model Context Protocol">MCP</abbr> server has access to your production Postgres database via a `run_query` tool. How do you prevent <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injection through <abbr title="Large Language Model">LLM</abbr>-generated queries, prevent unauthorized data access, and prevent accidental data modification? Design the complete security model."*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **Preventing Modification (Read-Only Replicas):** 
    - State that the <abbr title="Model Context Protocol">MCP</abbr> server MUST connect to a strictly read-only database replica. Never allow a generic `run_query` tool to connect to the master write-database.
-2. **Preventing SQL Injection (No Raw SQL):**
-   - Emphasize that exposing raw SQL execution to an <abbr title="Large Language Model">LLM</abbr> is a fatal flaw. 
-   - Propose abstracting the tool: Instead of `run_query(sql_string)`, the tool should be `get_users_by_status(status: str)`. The <abbr title="Model Context Protocol">MCP</abbr> server uses parameterized SQL internally (e.g., `SELECT * FROM users WHERE status = ?`), completely neutralizing SQL injections.
+2. **Preventing <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> Injection (No Raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>):**
+   - Emphasize that exposing raw <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> execution to an <abbr title="Large Language Model">LLM</abbr> is a fatal flaw. 
+   - Propose abstracting the tool: Instead of `run_query(sql_string)`, the tool should be `get_users_by_status(status: str)`. The <abbr title="Model Context Protocol">MCP</abbr> server uses parameterized <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> internally (e.g., `SELECT * FROM users WHERE status = ?`), completely neutralizing <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> injections.
 3. **Preventing Unauthorized Access (Row-Level Security):**
    - The <abbr title="Model Context Protocol">MCP</abbr> Server must extract the `user_id` from the OAuth Bearer token.
    - The server must inject that `user_id` into every database query (e.g., `AND owner_id = 42`) to enforce Multi-Tenant Row-Level Security, ensuring the <abbr title="Large Language Model">LLM</abbr> can only query data belonging to the user making the request.

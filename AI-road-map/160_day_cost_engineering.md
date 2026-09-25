@@ -3,7 +3,7 @@
 Welcome to Day 160.
 
 <abbr title="Artificial Intelligence">AI</abbr> is the most expensive software paradigm in history.
-If you build an image resizer, it costs a fraction of a cent in CPU compute. If you build an <abbr title="Large Language Model">LLM</abbr> Agent that loops 15 times parsing a 50-page PDF, it can easily cost $2.00 *per click*. If a malicious user writes a script to click that button 10,000 times while you sleep, you wake up to a $20,000 AWS bill.
+If you build an image resizer, it costs a fraction of a cent in <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> compute. If you build an <abbr title="Large Language Model">LLM</abbr> Agent that loops 15 times parsing a 50-page PDF, it can easily cost $2.00 *per click*. If a malicious user writes a script to click that button 10,000 times while you sleep, you wake up to a $20,000 AWS bill.
 
 Today, we learn **FinOps (Financial Operations)**. We will learn how to aggressively monitor costs, attribute them to specific teams, and implement **Cascade Routing** to slash your OpenAI bill by 80%.
 
@@ -15,7 +15,7 @@ Today, we learn **FinOps (Financial Operations)**. We will learn how to aggressi
 Unlike traditional APIs, LLMs charge per **Token**.
 - **Input Tokens (Cheap):** The prompt you send.
 - **Output Tokens (Expensive):** The text the model generates. Output tokens are often 3x to 5x more expensive because of the memory-bound decoding bottleneck.
-*Rule of Thumb:* Never ask the <abbr title="Large Language Model">LLM</abbr> to output massive blocks of text if you just need a Boolean `True/False` or a tiny JSON object. Use `max_tokens` aggressively.
+*Rule of Thumb:* Never ask the <abbr title="Large Language Model">LLM</abbr> to output massive blocks of text if you just need a Boolean `True/False` or a tiny <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> object. Use `max_tokens` aggressively.
 
 ### 2. Cascade Routing (The 80% Cost Saver)
 *Analogy:* If you need to solve $5 + 5$, you don't hire a PhD Mathematician ($500/hour). You hire a high school student ($15/hour). If you need to invent a new quantum algorithm, *then* you hire the PhD.
@@ -144,7 +144,7 @@ A "Strong Hire" candidate must articulate:
 2. **Immediate Optimization (Caching & Routing):** 
    - Deploy a Semantic Cache (Saves 30-40% instantly on redundant queries).
    - Implement Cascade Routing (Route simple queries to Llama-3-8B hosted internally on cheap hardware, saving 80% on <abbr title="Application Programming Interface">API</abbr> costs).
-3. **Long-Term Optimization (Fine-Tuning):** If the highest cost is a massive 5,000-token prompt for JSON extraction, we should collect 10,000 logs of GPT-4 doing this perfectly. We then Fine-Tune a tiny 3B parameter model on that dataset. The tiny model can now do the extraction perfectly with zero prompting, cutting costs by 99% and latency by 80%.
+3. **Long-Term Optimization (Fine-Tuning):** If the highest cost is a massive 5,000-token prompt for <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> extraction, we should collect 10,000 logs of GPT-4 doing this perfectly. We then Fine-Tune a tiny 3B parameter model on that dataset. The tiny model can now do the extraction perfectly with zero prompting, cutting costs by 99% and latency by 80%.
 4. **Safety Mechanisms:** Hard rate limits per user, circuit breakers, and automated PagerDuty alerts if spend velocity exceeds $X per hour.
 
 ---

@@ -136,8 +136,8 @@ Modify the script so that before transitioning to Production, the code fetches t
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Central Truth:** A centralized Registry (like AWS SageMaker Model Registry) acts as the single source of truth.
-2. **Deployment Triggers:** When an <abbr title="Machine Learning">ML</abbr> Engineer clicks "Approve for Production" in the Registry UI, it triggers an AWS EventBridge webhook. This webhook fires a GitHub Actions pipeline that builds a new Docker container with the new model weights baked in.
-3. **Rollback Procedures:** Because previous versions are marked as `Archived` in the registry (never deleted), a rollback is as simple as clicking the previous version and changing its tag back to `Production`. The webhook refires and automatically reverts the Docker containers.
+2. **Deployment Triggers:** When an <abbr title="Machine Learning">ML</abbr> Engineer clicks "Approve for Production" in the Registry UI, it triggers an AWS EventBridge webhook. This webhook fires a GitHub Actions pipeline that builds a new <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container with the new model weights baked in.
+3. **Rollback Procedures:** Because previous versions are marked as `Archived` in the registry (never deleted), a rollback is as simple as clicking the previous version and changing its tag back to `Production`. The webhook refires and automatically reverts the <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> containers.
 4. **Compliance (Model Cards):** For highly regulated industries (Finance/Health), the Registry must enforce hard constraints. A model *cannot* be transitioned to Staging unless all 5 fields of the Model Card are filled out and an automated Fairness/Bias audit report is attached as an artifact.
 
 ---

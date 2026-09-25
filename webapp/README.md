@@ -146,7 +146,7 @@ four review intervals. Same bar as `master_dsa_plan.md`.
 - **Offline:** the code editor and markdown renderer load from cdnjs. Without a
   connection the app still works — the editor falls back to a plain textarea.
 - **Theme:** the toggle cycles **system → light → dark**. `system` follows the
-  OS and flips live. The choice is mirrored to `localStorage` so a reload paints
+  <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> and flips live. The choice is mirrored to `localStorage` so a reload paints
   the right ground before first paint — no flash. The editor is a port of
   VS Code's own default themes; every syntax colour clears 4.5:1 against its
   ground in both modes, so nothing is a squint in either.

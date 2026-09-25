@@ -191,7 +191,7 @@ boilerplate.
   O(m+n), not O(log(mn)). Confusing the two — trying to flatten-and-
   binary-search a matrix that's only row/column-sorted independently —
   is the single most common mistake on this problem.
-- **007's neighbor-counting loop ↔ topic 14 (Graphs, grid BFS/flood
+- **007's neighbor-counting loop ↔ topic 14 (Graphs, grid <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/flood
   fill)**: both iterate a cell's 4- or 8-directional neighbors with the
   same `0 <= nr < m and 0 <= nc < n` bounds-check idiom. The difference
   is what the neighbor scan is FOR — flood fill spreads a REGION outward

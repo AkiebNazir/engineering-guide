@@ -122,7 +122,7 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **The Ecosystem:** Training a model is only $20\%$ of the work. The other $80\%$ is building the infrastructure (Guardrails, Speculative Drafting, JSON FSM constraints) to make the model usable in production.
+1. **The Ecosystem:** Training a model is only $20\%$ of the work. The other $80\%$ is building the infrastructure (Guardrails, Speculative Drafting, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> FSM constraints) to make the model usable in production.
 2. **Zero Trust:** The pipeline operates on a Zero Trust architecture. We don't trust the User (Input Scanner), and we don't trust our own Model (Output Scanner)!
 
 ---

@@ -149,7 +149,7 @@ fib(n) naive:            fib(5)
 | Linear recursion f(n-1) | n | O(1) | O(n) | O(n) |
 | Binary tree traversal | n nodes | O(1) | O(n) | O(h): O(log n) balanced, O(n) skewed |
 | Naive Fibonacci | ~φ^n | O(1) | O(φ^n) | O(n) |
-| Memoized DP with S states | S | O(transitions) | O(S × transitions) | O(S) cache + O(depth) stack |
+| Memoized <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> with S states | S | O(transitions) | O(S × transitions) | O(S) cache + O(depth) stack |
 | Subsets (include/exclude) | 2^n leaves | O(n) to copy each subset | O(n · 2^n) | O(n) |
 | Permutations | n! leaves | O(n) copy | O(n · n!) | O(n) |
 | N-Queens / sudoku backtracking | exponential, pruned | — | state the unpruned bound, mention pruning | O(n) |

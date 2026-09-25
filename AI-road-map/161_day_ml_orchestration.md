@@ -5,7 +5,7 @@ Welcome to Day 161.
 We are entering the final weeks of the 180-day roadmap. It is time to learn **MLOps (Machine Learning Operations)**.
 If you manually run a Jupyter Notebook to download data, clean it, and train a model, you are not doing MLOps. What happens if the data download fails halfway through? What happens when the model needs to be retrained every Sunday at 3:00 AM?
 
-Today, we learn how to automate the entire lifecycle of an <abbr title="Machine Learning">ML</abbr> project using **DAG Orchestrators**. We will learn how to build pipelines that are fault-tolerant, retryable, and heavily monitored.
+Today, we learn how to automate the entire lifecycle of an <abbr title="Machine Learning">ML</abbr> project using **<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> Orchestrators**. We will learn how to build pipelines that are fault-tolerant, retryable, and heavily monitored.
 
 ---
 
@@ -16,16 +16,16 @@ Today, we learn how to automate the entire lifecycle of an <abbr title="Machine 
 CRON jobs run based on *time*. If step 1 fails, step 2 will still run, causing catastrophic data corruption.
 
 ### 2. DAGs (Directed Acyclic Graphs)
-A **DAG** runs based on *dependencies*. Step B cannot run until Step A is 100% complete. 
+A **<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>** runs based on *dependencies*. Step B cannot run until Step A is 100% complete. 
 If Step A fails, the Orchestrator pauses the entire graph, automatically retries Step A three times, and if it still fails, it sends an alert to your phone. Step B safely waits.
 
 ### 3. The Big Three Orchestrators
 1. **Apache Airflow:** The undisputed industry standard. Built by Airbnb. It is massive, robust, and slightly archaic. It treats code as "Tasks" that don't easily pass data between each other.
 2. **Prefect:** The modern, Pythonic alternative. It feels exactly like writing normal Python code with `@task` decorators.
-3. **Dagster:** The future. Built around "Software-Defined Assets". Instead of defining *tasks* (e.g., "Run SQL Script"), you define the *asset* (e.g., "Clean User Table"), and Dagster figures out how to build it and track its lineage.
+3. **Dagster:** The future. Built around "Software-Defined Assets". Instead of defining *tasks* (e.g., "Run <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> Script"), you define the *asset* (e.g., "Clean User Table"), and Dagster figures out how to build it and track its lineage.
 
 ### 4. The Anatomy of an <abbr title="Machine Learning">ML</abbr> Pipeline
-A production MLOps pipeline generally follows this DAG:
+A production MLOps pipeline generally follows this <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>:
 1. **Extract:** Pull 10GB of raw logs from Snowflake.
 2. **Validate (Data Quality):** Check if there are null values or weird anomalies. (If yes, HALT).
 3. **Preprocess:** Tokenize text, normalize vectors.
@@ -142,8 +142,8 @@ Modify the Dagster configuration to add a **Schedule**. Configure the pipeline t
 #### 📝 Strong Hire Rubric:
 A "Strong Hire" candidate must articulate:
 1. **The Orchestrator:** Propose Airflow (for stability) or Dagster (for data lineage). Explain that the orchestrator itself does NOT do the heavy lifting; it just acts as the traffic cop.
-2. **Resource Management:** When Airflow triggers the `Train_Model` task, it should use the `KubernetesPodOperator`. Airflow tells <abbr title="Kubernetes">K8s</abbr>: "Spin up a pod with 4 GPUs, run this Docker container, and destroy the pod when it finishes." This keeps the Airflow server extremely lightweight.
-3. **Multi-Tenancy:** 50 engineers means 50 different projects. Create isolated "Workspaces" in Dagster or separate DAG folders in Airflow, ensuring Team A's broken code cannot crash Team B's production pipeline.
+2. **Resource Management:** When Airflow triggers the `Train_Model` task, it should use the `KubernetesPodOperator`. Airflow tells <abbr title="Kubernetes">K8s</abbr>: "Spin up a pod with 4 GPUs, run this <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> container, and destroy the pod when it finishes." This keeps the Airflow server extremely lightweight.
+3. **Multi-Tenancy:** 50 engineers means 50 different projects. Create isolated "Workspaces" in Dagster or separate <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> folders in Airflow, ensuring Team A's broken code cannot crash Team B's production pipeline.
 4. **Data Lineage:** If the Fraud Model starts hallucinating, we must trace the error backward. The orchestrator must track exactly which version of the dataset was used, which version of the Git code executed the training, and which Git commit caused the failure.
 
 ---

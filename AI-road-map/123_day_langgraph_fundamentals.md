@@ -2,7 +2,7 @@
 
 Welcome to Day 123. 
 
-Yesterday, we mastered LangChain (LCEL). But LCEL has a fatal flaw: it is a Directed Acyclic Graph (DAG). It flows from left to right and stops. 
+Yesterday, we mastered LangChain (LCEL). But LCEL has a fatal flaw: it is a Directed Acyclic Graph (<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>). It flows from left to right and stops. 
 Real <abbr title="Artificial Intelligence">AI</abbr> agents require **Cyclic** logic. If an agent writes code, tests it, and fails, it must loop *backwards* to rewrite the code.
 
 **LangGraph** is the solution. It is a framework for building highly controllable, stateful, cyclic graphs. This guide is an exhaustive reference for LangGraph's core primitives.

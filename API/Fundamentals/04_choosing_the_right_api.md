@@ -1,6 +1,6 @@
 ---
 title: "4. Choosing the Right <abbr title="Application Programming Interface">API</abbr>"
-description: "Side-by-side comparison of REST, GraphQL, gRPC, WebSockets, Webhooks and SOAP, a decision tree, a full e-commerce architecture using all of them, interview questions and a capstone."
+description: "Side-by-side comparison of <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, WebSockets, Webhooks and <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>, a decision tree, a full e-commerce architecture using all of them, interview questions and a capstone."
 ---
 
 # Choosing the Right <abbr title="Application Programming Interface">API</abbr> Style
@@ -9,21 +9,21 @@ There is no best <abbr title="Application Programming Interface">API</abbr> styl
 
 ## 1. The Big Comparison
 
-| Dimension | REST | GraphQL | gRPC | WebSockets | Webhooks | SOAP |
+| Dimension | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> | GraphQL | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> | WebSockets | Webhooks | <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Model** | Resources + verbs | Query a graph | Call a remote function | Persistent message channel | Server calls *your* URL | Call an operation with XML |
+| **Model** | Resources + verbs | Query a graph | Call a remote function | Persistent message channel | Server calls *your* URL | Call an operation with <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> |
 | **Who initiates** | Client | Client | Client (both when streaming) | Either side | Server | Client |
-| **Payload** | JSON | JSON | Protobuf | Text / binary | JSON | XML |
+| **Payload** | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | Protobuf | Text / binary | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr> |
 | **Payload size** | Medium | Exactly what you ask | Smallest | Your choice | Small | Largest |
 | **Latency per call** | Medium | Medium | Lowest | Lowest (no per-message handshake) | Async | Highest |
-| **Streaming** | No (SSE aside) | Subscriptions | Native, 3 kinds | Native | No | No |
+| **Streaming** | No (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> aside) | Subscriptions | Native, 3 kinds | Native | No | No |
 | **Strong typing** | Optional (OpenAPI) | Yes (schema) | Yes (`.proto`) | No | No | Yes (WSDL/XSD) |
-| **HTTP caching** | Excellent | Poor | None | None | n/a | None |
-| **Browser support** | Native | Native | gRPC-Web + proxy | Native | n/a | Poor |
+| **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching** | Excellent | Poor | None | None | n/a | None |
+| **Browser support** | Native | Native | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Web + proxy | Native | n/a | Poor |
 | **Learning curve** | Low | Medium | Medium | Medium | Low | High |
 | **Tooling maturity** | Huge | Large | Large | Medium | Growing | Large but legacy |
-| **Scaling difficulty** | Easy (stateless) | Medium (query cost) | Medium (long-lived HTTP/2 LB) | **Hard (stateful)** | Medium (retries, queues) | Medium |
-| **Best fit** | Public APIs, CRUD | Many client types, nested data | Internal microservices | Chat, live dashboards, games | Payment / CI / SaaS events | Banks, insurers, ERP |
+| **Scaling difficulty** | Easy (stateless) | Medium (query cost) | Medium (long-lived <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 <abbr title="Load Balancer - A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability.">LB</abbr>) | **Hard (stateful)** | Medium (retries, queues) | Medium |
+| **Best fit** | Public APIs, <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> | Many client types, nested data | Internal microservices | Chat, live dashboards, games | Payment / <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> / <abbr title="Software as a Service - A software licensing and delivery model in which software is licensed on a subscription basis and is centrally hosted.">SaaS</abbr> events | Banks, insurers, ERP |
 
 ## 2. Decision Tree
 
@@ -60,12 +60,12 @@ gqlq -> rest : "no"
 
 ### Rules of thumb
 
-*   **Default to REST.** It is the cheapest to build, cache, debug and hand to a stranger.
-*   **Add gRPC** between your own backend services when you need typed contracts, speed, or streaming.
+*   **Default to <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>.** It is the cheapest to build, cache, debug and hand to a stranger.
+*   **Add <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>** between your own backend services when you need typed contracts, speed, or streaming.
 *   **Add GraphQL** as a client-facing layer (a "backend for frontend") when several clients need different slices of the same data.
 *   **Add WebSockets** only when you truly need low-latency, two-way, continuous messages. Polling every few seconds is often good enough and far easier to scale.
 *   **Add Webhooks** whenever another system must learn about your events. Offer polling as a fallback for reconciliation.
-*   **Use SOAP** only because someone else requires it. Wrap it behind an adapter so the rest of your system never sees XML.
+*   **Use <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>** only because someone else requires it. Wrap it behind an adapter so the rest of your system never sees <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>.
 
 > 🎯 **Interview angle:** Interviewers rarely want "X is better than Y". They want to hear the *dimensions* you weigh (who the clients are, latency needs, payload shape, team skills, caching, evolution) and a justified choice under stated assumptions.
 
@@ -107,37 +107,37 @@ orders -> erp : "SOAP adapter"
 | Link | Style | Why |
 | :--- | :--- | :--- |
 | Web / mobile -> gateway | **GraphQL** | One request returns the product, reviews, stock and recommendations each screen needs. |
-| Partners -> public <abbr title="Application Programming Interface">API</abbr> | **REST** | Universal, cacheable, documented with OpenAPI, easy to try with `curl`. |
-| Service -> service | **gRPC** | Typed contracts, small binary payloads, deadlines that propagate, streaming. |
+| Partners -> public <abbr title="Application Programming Interface">API</abbr> | **<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>** | Universal, cacheable, documented with OpenAPI, easy to try with `curl`. |
+| Service -> service | **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>** | Typed contracts, small binary payloads, deadlines that propagate, streaming. |
 | Payment provider -> you | **Webhook** | The bank confirms asynchronously, minutes after the request. Polling would be wasteful. |
 | Order status -> browser | **WebSocket** | "Your parcel is out for delivery" appears instantly. |
-| You -> legacy ERP | **SOAP** | The ERP only speaks SOAP; an adapter isolates it. |
+| You -> legacy ERP | **<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>** | The ERP only speaks <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>; an adapter isolates it. |
 
 Walk through one order:
 
-1.  The web app sends a GraphQL `mutation placeOrder`. The gateway calls `Order.Create` over **gRPC**.
-2.  The Order service calls `Inventory.Reserve` (gRPC) and `Payment.Charge` (gRPC) with a **deadline** and an **idempotency key**.
-3.  The Payment service calls the provider's **REST** <abbr title="Application Programming Interface">API</abbr>. The response is `processing`.
+1.  The web app sends a GraphQL `mutation placeOrder`. The gateway calls `Order.Create` over **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>**.
+2.  The Order service calls `Inventory.Reserve` (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>) and `Payment.Charge` (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>) with a **deadline** and an **idempotency key**.
+3.  The Payment service calls the provider's **<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>** <abbr title="Application Programming Interface">API</abbr>. The response is `processing`.
 4.  Minutes later the provider sends a **webhook**. The receiver verifies the signature, dedupes on the event id, and emits an internal event.
-5.  The Order service marks the order paid, calls the ERP through a **SOAP** adapter, and pushes the new state over a **WebSocket** to the customer's open tab.
+5.  The Order service marks the order paid, calls the ERP through a **<abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>** adapter, and pushes the new state over a **WebSocket** to the customer's open tab.
 
 ## 4. Migration Paths
 
 | From -> To | Approach |
 | :--- | :--- |
-| REST -> GraphQL | Put a GraphQL gateway in front. Resolvers call the existing REST endpoints. Migrate clients screen by screen. |
-| REST -> gRPC (internal) | Define `.proto`, run both. Expose gRPC-Gateway / Connect to keep the REST facade for outside users. |
-| Polling -> WebSockets | Add a push channel for the hot path; keep the REST endpoint as fallback and for reconnect sync. |
+| <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> -> GraphQL | Put a GraphQL gateway in front. Resolvers call the existing <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> endpoints. Migrate clients screen by screen. |
+| <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> -> <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> (internal) | Define `.proto`, run both. Expose <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Gateway / Connect to keep the <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> facade for outside users. |
+| Polling -> WebSockets | Add a push channel for the hot path; keep the <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> endpoint as fallback and for reconnect sync. |
 | Polling -> Webhooks | Offer webhook registration; keep a `GET /events` endpoint for reconciliation. |
-| SOAP -> REST | Build a facade with the same business logic. Run in parallel. Retire SOAP when partners have moved. |
+| <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> -> <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> | Build a facade with the same business logic. Run in parallel. Retire <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> when partners have moved. |
 
 ## 5. Common Mistakes
 
-1.  **GraphQL everywhere.** GraphQL between two backend services adds a query engine you do not need. Use gRPC or REST.
-2.  **WebSockets for request/response.** If every message expects a reply, you rebuilt HTTP without caching or status codes.
-3.  **gRPC to the browser without a plan.** Browsers cannot speak native gRPC; you need gRPC-Web with a proxy or Connect.
+1.  **GraphQL everywhere.** GraphQL between two backend services adds a query engine you do not need. Use <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> or <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>.
+2.  **WebSockets for request/response.** If every message expects a reply, you rebuilt <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> without caching or status codes.
+3.  **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> to the browser without a plan.** Browsers cannot speak native <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>; you need <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Web with a proxy or Connect.
 4.  **Webhooks without retries or dedupe on the receiver.** Delivery is at-least-once; you *will* get duplicates.
-5.  **REST with verbs in URLs** (`/getUser`, `/createOrder`). Use nouns and HTTP methods, or admit you want RPC and pick gRPC.
+5.  **<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> with verbs in URLs** (`/getUser`, `/createOrder`). Use nouns and <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> methods, or admit you want <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> and pick <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>.
 6.  **Ignoring versioning until the first breaking change.**
 7.  **Exposing the database schema as the <abbr title="Application Programming Interface">API</abbr>.** The <abbr title="Application Programming Interface">API</abbr> is a product with its own lifecycle.
 
@@ -145,20 +145,20 @@ Walk through one order:
 
 > ❓ **Q1. Design the <abbr title="Application Programming Interface">API</abbr> for a food-delivery app: customers browse restaurants, place orders, and watch the courier on a map.**
 >
-> ❓ **Q2. Your public REST <abbr title="Application Programming Interface">API</abbr> returns a 40-field user object and the mobile app needs 3 fields. What are your options?**
+> ❓ **Q2. Your public <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> <abbr title="Application Programming Interface">API</abbr> returns a 40-field user object and the mobile app needs 3 fields. What are your options?**
 >
-> ❓ **Q3. You are migrating 30 internal REST services to gRPC. What can go wrong?**
+> ❓ **Q3. You are migrating 30 internal <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> services to <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>. What can go wrong?**
 >
-> ❓ **Q4. A partner says they will only integrate with SOAP. How do you protect the rest of your architecture?**
+> ❓ **Q4. A partner says they will only integrate with <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>. How do you protect the rest of your architecture?**
 >
 > ❓ **Q5. Your chat service has 200k WebSocket connections and you need to deploy a new version. How?**
 
 **Sketch answers**
 
-1.  Browse and search: **REST** (cacheable, CDN friendly). Place order: `POST /orders` with an `Idempotency-Key`. Courier location: **WebSocket** (or SSE) pushing `{lat, lng}` every few seconds to the customer, fed by a pub/sub topic per order. Payment confirmation: **webhook** from the payment provider.
+1.  Browse and search: **<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>** (cacheable, <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> friendly). Place order: `POST /orders` with an `Idempotency-Key`. Courier location: **WebSocket** (or <abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>) pushing `{lat, lng}` every few seconds to the customer, fed by a pub/sub topic per order. Payment confirmation: **webhook** from the payment provider.
 2.  Sparse fieldsets (`?fields=id,name,avatar`), a dedicated lightweight endpoint or a mobile BFF, or GraphQL if this problem is widespread across many screens. Weigh the caching loss of GraphQL against the cost of maintaining many bespoke endpoints.
-3.  Load balancing (HTTP/2 connections are long-lived, so an L4 balancer pins all traffic to one backend; use L7 or client-side balancing), debugging (binary payloads, need `grpcurl` and reflection), browser clients, contract governance (`buf breaking` in CI), retries and deadlines needing explicit configuration, and mixed-version rollout order.
-4.  Build an **anti-corruption adapter**: a small service that owns the WSDL client, translates to your internal model, and exposes it as REST/gRPC. Keep XML, WS-Security and SOAP faults inside it. Add timeouts and a circuit breaker because SOAP backends are often slow.
+3.  Load balancing (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 connections are long-lived, so an L4 balancer pins all traffic to one backend; use L7 or client-side balancing), debugging (binary payloads, need `grpcurl` and reflection), browser clients, contract governance (`buf breaking` in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>), retries and deadlines needing explicit configuration, and mixed-version rollout order.
+4.  Build an **anti-corruption adapter**: a small service that owns the WSDL client, translates to your internal model, and exposes it as <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>/<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>. Keep <abbr title="Extensible Markup Language - A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable.">XML</abbr>, WS-Security and <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> faults inside it. Add timeouts and a circuit breaker because <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> backends are often slow.
 5.  Graceful shutdown: stop accepting new connections, send a close frame (`1001 Going Away`) or an application-level "reconnect" message, and let clients reconnect with **jittered backoff** to the new pods. Spread the drain over minutes so 200k reconnects do not arrive in one second. Clients must resume from the last message id they saw.
 
 ## 7. Capstone Project
@@ -167,9 +167,9 @@ Build a **mini order platform** that uses at least four of the six styles. It is
 
 | Step | Deliverable | Style | Skills exercised |
 | :---: | :--- | :--- | :--- |
-| 1 | `POST /orders`, `GET /orders/{id}`, `GET /orders?cursor=` with validation and proper status codes | REST | resources, status codes, pagination |
-| 2 | Add `Idempotency-Key` handling and `ETag` / `If-Match` on updates | REST | idempotency, concurrency |
-| 3 | Write `pricing.proto` with `Quote(Cart) returns (Price)` and call it from the order service with a 500 ms deadline | gRPC + Protobuf | contracts, deadlines |
+| 1 | `POST /orders`, `GET /orders/{id}`, `GET /orders?cursor=` with validation and proper status codes | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> | resources, status codes, pagination |
+| 2 | Add `Idempotency-Key` handling and `ETag` / `If-Match` on updates | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> | idempotency, concurrency |
+| 3 | Write `pricing.proto` with `Quote(Cart) returns (Price)` and call it from the order service with a 500 ms deadline | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> + Protobuf | contracts, deadlines |
 | 4 | A `/graphql` endpoint exposing `order { items { product { name } } customer { name } }` with a DataLoader | GraphQL | resolvers, N+1 |
 | 5 | Fake payment provider that POSTs signed `payment.succeeded` events (with retries) to your receiver; receiver verifies HMAC + timestamp and dedupes | Webhooks | signatures, retries, idempotency |
 | 6 | A `/ws/orders/{id}` endpoint that pushes status changes; client reconnects with backoff and resumes from last event id | WebSockets | heartbeats, reconnection |
@@ -181,12 +181,12 @@ Do it once in Python and once in Go, using the labs listed in `03_cross_cutting_
 
 | If you hear... | Think... |
 | :--- | :--- |
-| "Public <abbr title="Application Programming Interface">API</abbr> for third-party developers" | REST + OpenAPI, versioned, rate limited, <abbr title="Application Programming Interface">API</abbr> keys / OAuth |
+| "Public <abbr title="Application Programming Interface">API</abbr> for third-party developers" | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> + OpenAPI, versioned, rate limited, <abbr title="Application Programming Interface">API</abbr> keys / OAuth |
 | "Mobile app is slow: too many calls / too much data" | GraphQL BFF, or purpose-built endpoints |
-| "Microservices talking to each other, latency matters" | gRPC + Protobuf, mTLS, deadlines |
+| "Microservices talking to each other, latency matters" | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> + Protobuf, mTLS, deadlines |
 | "Live prices, chat, presence, multiplayer" | WebSockets (+ Redis pub/sub to scale) |
 | "Tell me when the payment / build / shipment completes" | Webhooks: HMAC, retries, idempotent receiver |
-| "Bank / insurer / government / SAP integration" | SOAP: WSDL first, WS-Security, adapter layer |
+| "Bank / insurer / government / SAP integration" | <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr>: WSDL first, WS-Security, adapter layer |
 | "Binary format, schema evolution" | Protobuf: never reuse or renumber a field |
 | "A retry charged the customer twice" | Idempotency key |
 | "A million clients retry at once after an outage" | Exponential backoff with jitter, circuit breaker |

@@ -1,37 +1,37 @@
 ---
-title: "gRPC Theory"
-description: "Master gRPC: RPC vs REST, HTTP/2 framing, the four call types, status codes, metadata, deadlines, retries, interceptors, mTLS, load balancing, health, reflection and graceful shutdown, with Python and Go labs."
+title: "<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Theory"
+description: "Master <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>: <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> vs <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 framing, the four call types, status codes, metadata, deadlines, retries, interceptors, mTLS, load balancing, health, reflection and graceful shutdown, with Python and Go labs."
 ---
 
-# gRPC Theory
+# <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Theory
 
 <div data-viz="api-grpc"></div>
 
-## What is gRPC?
-gRPC (gRPC Remote Procedure Call) is a modern open-source high-performance RPC framework developed by Google. Instead of mapping actions to HTTP verbs like REST, gRPC maps actions directly to function calls (`GetUser(...)`).
+## What is <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>?
+<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Remote Procedure Call) is a modern open-source high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework developed by Google. Instead of mapping actions to <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> verbs like <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> maps actions directly to function calls (`GetUser(...)`).
 
-It natively uses **Protocol Buffers (Protobuf)** as both its Interface Definition Language (IDL) and its underlying message interchange format, making payloads smaller and faster to serialize than JSON (see `Protobuf/`). It runs over **HTTP/2**, enabling multiplexing and bidirectional streaming.
+It natively uses **Protocol Buffers (Protobuf)** as both its Interface Definition Language (IDL) and its underlying message interchange format, making payloads smaller and faster to serialize than <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> (see `Protobuf/`). It runs over **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2**, enabling multiplexing and bidirectional streaming.
 
-> **Analogy:** REST is sending letters to addresses ("`GET /users/7`"). gRPC is picking up a phone that is already connected and *calling a function on the other computer*: `userService.GetUser(7)`. The call looks local; the framework handles the network.
+> **Analogy:** <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> is sending letters to addresses ("`GET /users/7`"). <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> is picking up a phone that is already connected and *calling a function on the other computer*: `userService.GetUser(7)`. The call looks local; the framework handles the network.
 
-The idea of remote procedure calls is old (1980s). gRPC's contribution is a modern, cross-language, streaming-capable version with strong tooling: one `.proto` file generates typed clients and servers in more than ten languages.
+The idea of remote procedure calls is old (1980s). <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>'s contribution is a modern, cross-language, streaming-capable version with strong tooling: one `.proto` file generates typed clients and servers in more than ten languages.
 
-### REST vs gRPC
-| | REST + JSON | gRPC + Protobuf |
+### <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> vs <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>
+| | <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> + <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> | <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> + Protobuf |
 | :--- | :--- | :--- |
-| **Format** | JSON (text) | Protobuf (binary) |
-| **Transport** | HTTP/1.1 or HTTP/2 | HTTP/2 only |
+| **Format** | <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> (text) | Protobuf (binary) |
+| **Transport** | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 or <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 only |
 | **<abbr title="Application Programming Interface">API</abbr> model** | Resources + verbs (`GET /users/7`) | Functions (`GetUser`) |
 | **Contract** | OpenAPI (optional, often drifts) | `.proto` (mandatory, generates code) |
-| **Streaming** | No (SSE / WebSockets bolted on) | First-class, 4 shapes |
-| **Errors** | HTTP status + JSON body | 17 gRPC status codes + typed details |
+| **Streaming** | No (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> / WebSockets bolted on) | First-class, 4 shapes |
+| **Errors** | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status + <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> body | 17 <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> status codes + typed details |
 | **Deadlines** | You implement | Built in, propagate across services |
-| **Browser** | Native | Needs gRPC-Web or Connect |
-| **Caching** | HTTP caches, CDNs | None built in |
+| **Browser** | Native | Needs <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Web or Connect |
+| **Caching** | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caches, CDNs | None built in |
 | **Debugging** | `curl`, browser | `grpcurl`, needs tooling |
 | **Best for** | Public APIs | Internal service-to-service |
 
-> ⚠️ Claims like "gRPC is 10x faster" are marketing. The gain depends on payload shape and language (see the measurements in `Protobuf/Theory.md`). The reliable wins are the **typed contract**, **streaming**, **deadlines** and **generated clients**.
+> ⚠️ Claims like "<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> is 10x faster" are marketing. The gain depends on payload shape and language (see the measurements in `Protobuf/Theory.md`). The reliable wins are the **typed contract**, **streaming**, **deadlines** and **generated clients**.
 
 ## The Big Picture
 
@@ -54,7 +54,7 @@ ch <-> sv : "binary frames over TCP + TLS"
 sv -> ss -> impl
 ```
 
-Your code calls a method on a **stub** (a generated client). The stub serialises the request with Protobuf and sends it through a **channel** (one long-lived HTTP/2 connection). The server's generated code deserialises it and calls **your implementation**.
+Your code calls a method on a **stub** (a generated client). The stub serialises the request with Protobuf and sends it through a **channel** (one long-lived <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 connection). The server's generated code deserialises it and calls **your implementation**.
 
 ## Defining a Service
 
@@ -76,7 +76,7 @@ message GetProductRequest { int64 id = 1; }
 
 Design habits that pay off later:
 
-*   **Every RPC gets its own request and response message**, even if empty (`GetProductRequest`), so you can add fields without breaking anyone.
+*   **Every <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> gets its own request and response message**, even if empty (`GetProductRequest`), so you can add fields without breaking anyone.
 *   **Version the package** (`shop.v1`); a breaking redesign becomes `shop.v2` served side by side.
 *   **Money as integers** (`price_cents`), never floats.
 *   Use `google.protobuf.Timestamp` / `Duration` for time, `FieldMask` for partial updates.
@@ -138,9 +138,9 @@ for i := 1; i <= 1000; i++ {
 summary, err := up.CloseAndRecv() // half-close and wait for the ONE response
 ```
 
-## How It Works on the Wire (HTTP/2)
+## How It Works on the Wire (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2)
 
-A gRPC call is one **HTTP/2 stream** inside a long-lived connection. HTTP/2 multiplexes many streams on one connection, which is why one channel can carry thousands of concurrent calls.
+A <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> call is one **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 stream** inside a long-lived connection. <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 multiplexes many streams on one connection, which is why one channel can carry thousands of concurrent calls.
 
 ```mermaid
 sequenceDiagram
@@ -158,16 +158,16 @@ Key facts:
 
 *   Always **`POST`** to `/<package>.<Service>/<Method>`. The URL is the method name.
 *   **Every message is framed** with 5 bytes: a 1-byte compressed flag and a 4-byte big-endian length. That is how many messages share one stream (streaming) and how a receiver knows where each ends.
-*   The **HTTP status is nearly always 200**. The real result is in the **trailers**: `grpc-status` and `grpc-message`. That is why gRPC needs HTTP/2 (HTTP/1.1 has no trailers on streams) and why browsers cannot call gRPC directly.
+*   The **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> status is nearly always 200**. The real result is in the **trailers**: `grpc-status` and `grpc-message`. That is why <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> needs <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 (<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 has no trailers on streams) and why browsers cannot call <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> directly.
 *   **Metadata** are the headers (request) and the initial/trailing headers (response).
 *   **Deadlines** travel as the `grpc-timeout` header.
-*   **Flow control** is inherited from HTTP/2: a slow receiver makes the sender's `Send` block. Go lab 2 measures it (a slow client held the server only 6 messages ahead out of 200).
+*   **Flow control** is inherited from <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2: a slow receiver makes the sender's `Send` block. Go lab 2 measures it (a slow client held the server only 6 messages ahead out of 200).
 
 ## Status Codes
 
-gRPC has its own error vocabulary. Clients receive a `code` (0-16), a `message`, and optionally typed **details**.
+<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> has its own error vocabulary. Clients receive a `code` (0-16), a `message`, and optionally typed **details**.
 
-| Code | Name | Meaning | HTTP-ish | Retry? |
+| Code | Name | Meaning | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>-ish | Retry? |
 | :---: | :--- | :--- | :---: | :--- |
 | 0 | `OK` | Success | 200 | |
 | 1 | `CANCELLED` | Caller cancelled | 499 | no |
@@ -193,7 +193,7 @@ gRPC has its own error vocabulary. Clients receive a `code` (0-16), a `message`,
 
 ## Metadata
 
-Key-value pairs, like HTTP headers: `authorization`, `x-request-id`, `traceparent`. Keys are lower-case. Three places:
+Key-value pairs, like <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> headers: `authorization`, `x-request-id`, `traceparent`. Keys are lower-case. Three places:
 
 | Direction | Go | Python |
 | :--- | :--- | :--- |
@@ -203,7 +203,7 @@ Key-value pairs, like HTTP headers: `authorization`, `x-request-id`, `traceparen
 
 ## Deadlines, Cancellation and Cascades
 
-> **Rule zero of gRPC: every call has a deadline.** A call without one can hang forever and pin a thread, a connection and memory.
+> **Rule zero of <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>: every call has a deadline.** A call without one can hang forever and pin a thread, a connection and memory.
 
 A **timeout** is what you set (`timeout=2` in Python, `context.WithTimeout` in Go); the **deadline** is the absolute point in time it implies. It is sent to the server, and both sides enforce it.
 
@@ -241,7 +241,7 @@ A client **service config** can retry declaratively:
 *   Backoff with jitter; cap attempts. Otherwise a struggling server gets a retry storm (see `Fundamentals/03_cross_cutting_concerns.md`).
 *   `wait_for_ready` queues calls while the channel is connecting, instead of failing instantly.
 
-## Interceptors: gRPC's Middleware
+## Interceptors: <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>'s Middleware
 
 Code that wraps every call: authentication, logging, metrics, rate limiting, panic recovery, tracing. There are **unary** and **stream** variants on both client and server, and you need both, or a check on unary calls leaves streaming methods wide open.
 
@@ -276,14 +276,14 @@ s := grpc.NewServer(
 
 | Layer | What it gives you |
 | :--- | :--- |
-| **TLS** | Encryption + server identity. Mandatory outside localhost. |
+| **<abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>** | Encryption + server identity. Mandatory outside localhost. |
 | **mTLS** | The client also presents a certificate, so identity is in the connection itself (Go lab 4 builds a CA, issues certs and shows four ways a handshake is refused). |
-| **Per-RPC credentials** | A token (JWT / OAuth) in metadata `authorization: Bearer ...`, checked by an interceptor. |
+| **Per-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> credentials** | A token (<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> / OAuth) in metadata `authorization: Bearer ...`, checked by an interceptor. |
 | **Authorization** | Per-method and per-object policy inside interceptors/handlers. |
 
 *   Identity from mTLS: `peer.FromContext(ctx)` gives the certificate's Common Name / SPIFFE ID.
 *   Use **short-lived certificates** with automatic rotation (service meshes, SPIFFE/SPIRE, cert-manager).
-*   Never send credentials over an insecure channel; most libraries refuse per-RPC credentials on plaintext.
+*   Never send credentials over an insecure channel; most libraries refuse per-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> credentials on plaintext.
 
 ## Load Balancing: the Trap
 
@@ -301,10 +301,10 @@ lb ..> s2 : "idle"
 lb ..> s3 : "idle"
 ```
 
-An ordinary (L4) load balancer spreads **connections**. gRPC opens **one** connection and multiplexes every call over it, so all traffic lands on a single backend. Two fixes:
+An ordinary (L4) load balancer spreads **connections**. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> opens **one** connection and multiplexes every call over it, so all traffic lands on a single backend. Two fixes:
 
 1.  **Client-side load balancing**: the client resolves all backends and rotates (`round_robin` in the service config). Python lab 5 shows the default `pick_first` sending 30/30 calls to one server and `round_robin` spreading them across all three backends (about 10 each), and re-spreading when a backend dies.
-2.  **A gRPC-aware (L7) proxy**: Envoy, NGINX, a service mesh (Istio, Linkerd), or a cloud gRPC load balancer, which balances **per call**.
+2.  **A <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-aware (L7) proxy**: Envoy, NGINX, a service mesh (Istio, Linkerd), or a cloud <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> load balancer, which balances **per call**.
 
 In Kubernetes a plain ClusterIP service has exactly this problem; use a **headless service** plus client-side balancing, or a mesh.
 
@@ -320,26 +320,26 @@ In Kubernetes a plain ClusterIP service has exactly this problem; use a **headle
 *   **Message size limits**: default receive limit is 4 MB. Stream large data instead of raising limits.
 *   **Concurrency**: Python's sync server uses one thread per in-flight call; the asyncio server handles thousands of I/O-bound calls on one thread (Python lab 5: 20 slow calls took 1.03 s on 4 threads vs 0.21 s with asyncio).
 
-## Calling gRPC From Everywhere
+## Calling <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> From Everywhere
 
 | Client | How |
 | :--- | :--- |
 | Another backend | Generated stubs |
-| **Browser** | **gRPC-Web** (a modified protocol + proxy such as Envoy) or **Connect** (works over plain HTTP/1.1 and HTTP/2, speaks gRPC, gRPC-Web and its own JSON-friendly protocol) |
-| **REST clients** | **gRPC-Gateway** / `google.api.http` annotations generate a JSON REST facade from the same `.proto` |
-| CLI | `grpcurl`, `grpcui` |
-| Mobile | Native gRPC libraries for Android/iOS |
+| **Browser** | **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Web** (a modified protocol + proxy such as Envoy) or **Connect** (works over plain <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 and <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2, speaks <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Web and its own <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-friendly protocol) |
+| **<abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> clients** | **<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-Gateway** / `google.api.http` annotations generate a <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> facade from the same `.proto` |
+| <abbr title="Command-Line Interface. A text-based user interface used to view and manage computer files.">CLI</abbr> | `grpcurl`, `grpcui` |
+| Mobile | Native <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> libraries for Android/iOS |
 
 ## Testing
 
 *   **In-process**: Go's `bufconn` gives a listener without a network; Python tests can start a server on port `0` (any free port), as every lab does.
 *   **Interceptors and error paths** deserve tests as much as happy paths: unauthenticated, permission denied, deadline exceeded, server down.
-*   **Contract tests**: `buf breaking` in CI to stop incompatible `.proto` changes.
+*   **Contract tests**: `buf breaking` in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr> to stop incompatible `.proto` changes.
 *   Manual: `grpcurl -plaintext -d '{"id": 1}' localhost:50051 shop.v1.Catalog/GetProduct`.
 
 ## Real-World Scenario & Architecture
 
-**Scenario:** A Microservices architecture where an <abbr title="Application Programming Interface">API</abbr> Gateway (acting as a gRPC client) calls a User Microservice (gRPC Server) to fetch data extremely fast.
+**Scenario:** A Microservices architecture where an <abbr title="Application Programming Interface">API</abbr> Gateway (acting as a <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> client) calls a User Microservice (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> Server) to fetch data extremely fast.
 
 ```mermaid
 sequenceDiagram
@@ -355,15 +355,15 @@ sequenceDiagram
     Gateway-->>WebClient: 200 OK (JSON)
 ```
 
-## When to Use gRPC (and When Not To)
+## When to Use <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> (and When Not To)
 
 | Use it when | Avoid it when |
 | :--- | :--- |
 | Many internal services call each other | The main audience is third-party developers or browsers |
-| You want typed contracts and generated clients in several languages | You need HTTP caching / CDN for reads |
-| Streaming or bidirectional flows | Your team cannot operate HTTP/2-aware infrastructure yet |
+| You want typed contracts and generated clients in several languages | You need <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> caching / <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> for reads |
+| Streaming or bidirectional flows | Your team cannot operate <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2-aware infrastructure yet |
 | Low latency and small payloads matter | Debuggability with plain `curl` is a top priority |
-| Deadlines and cancellation must span services | A simple CRUD app with one client |
+| Deadlines and cancellation must span services | A simple <abbr title="Create, Read, Update, Delete - The four basic functions of persistent storage operations, commonly used in database and <abbr title="Application Programming Interface - A set of rules and protocols that allows different software applications to communicate with each other.">API</abbr> design.">CRUD</abbr> app with one client |
 
 ## Common Pitfalls
 
@@ -380,9 +380,9 @@ sequenceDiagram
 
 ## Check Yourself
 
-> ❓ **Question 1:** A unary call fails and the HTTP response status was `200`. Where is the real error, and why is it there?
+> ❓ **Question 1:** A unary call fails and the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> response status was `200`. Where is the real error, and why is it there?
 >
-> ❓ **Question 2:** You deployed three gRPC servers behind an L4 load balancer and two of them sit idle. Why, and what are your options?
+> ❓ **Question 2:** You deployed three <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> servers behind an L4 load balancer and two of them sit idle. Why, and what are your options?
 >
 > ❓ **Question 3:** A Go client's `stream.Send` starts returning `io.EOF`. What happened and what do you call to learn the real error?
 >
@@ -392,8 +392,8 @@ sequenceDiagram
 
 **Answers**
 
-1.  In the HTTP/2 **trailers** (`grpc-status`, `grpc-message`) that follow the response body. Trailers let a server report the outcome after streaming data, which HTTP/1.1 cannot do.
-2.  gRPC keeps one long-lived HTTP/2 connection per client and multiplexes all calls on it; an L4 balancer distributes connections, not calls. Use client-side balancing (`round_robin` over all backends) or an L7 gRPC-aware proxy / mesh.
+1.  In the <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 **trailers** (`grpc-status`, `grpc-message`) that follow the response body. Trailers let a server report the outcome after streaming data, which <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/1.1 cannot do.
+2.  <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> keeps one long-lived <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>/2 connection per client and multiplexes all calls on it; an L4 balancer distributes connections, not calls. Use client-side balancing (`round_robin` over all backends) or an L7 <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>-aware proxy / mesh.
 3.  The server terminated the stream (with an error or normally) before the client finished sending. Call `CloseAndRecv()` (client streaming) or `Recv()` to retrieve the actual status.
 4.  The remaining time (slightly less, to leave room for its own work). Otherwise B keeps working after A has already given up.
 5.  Retry `UNAVAILABLE` (and `DEADLINE_EXCEEDED` if the call is idempotent) with exponential backoff and jitter. Do not retry `INVALID_ARGUMENT`, `NOT_FOUND`, `PERMISSION_DENIED`, `UNAUTHENTICATED`; the same request fails identically. Do not retry non-idempotent calls without an idempotency key.
@@ -417,7 +417,7 @@ Setup from the `API/` folder: `pip install -r requirements.txt`. The generated s
 | 1 | `01_unary_rich_errors_metadata` | `grpc.NewClient`, `status` errors, typed error details (`BadRequest`), header/trailer metadata, deadlines |
 | 2 | `02_streaming_flow_control_cancellation` | Measured back-pressure, cancellation seen by the server, the `io.EOF` trap, bidirectional goroutines |
 | 3 | `03_interceptor_chain` | Unary + stream interceptor chains, per-method access policy (secure by default), wrapping streams, panic recovery, client interceptors |
-| 4 | `04_mtls_service_identity` | A private CA with `crypto/x509`, mutual TLS, identity from `peer`, four refused handshakes |
+| 4 | `04_mtls_service_identity` | A private CA with `crypto/x509`, mutual <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr>, identity from `peer`, four refused handshakes |
 | 5 | `05_health_reflection_graceful_shutdown` | `grpc.health.v1` Check/Watch, a reflection client, idle connections, `GracefulStop` then forced `Stop` |
 
 ```bash
@@ -427,7 +427,7 @@ go run ./gRPC/labs/golang/04_mtls_service_identity
 
 ## Exercises
 
-1.  Add a `Rating` message and `RateProduct` unary RPC to `shop.proto`, regenerate, and implement it in both languages.
+1.  Add a `Rating` message and `RateProduct` unary <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> to `shop.proto`, regenerate, and implement it in both languages.
 2.  Add a **metrics interceptor** (calls per method, latency histogram) to Python lab 3 and Go lab 3.
 3.  Make Go lab 4's server accept a caller only if the certificate carries a SPIFFE URI SAN, not just a CN.
 4.  Turn Python lab 4's retry config into an idempotency-key scheme so `CreateOrder` can be retried safely (`Fundamentals/03_cross_cutting_concerns.md`).
@@ -436,6 +436,6 @@ go run ./gRPC/labs/golang/04_mtls_service_identity
 
 ## Where To Go Next
 
-*   **`Protobuf/`**: the wire format and schema-evolution rules every gRPC service depends on.
+*   **`Protobuf/`**: the wire format and schema-evolution rules every <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> service depends on.
 *   **`WebSockets/`**: when you need browser-native bidirectional streaming.
-*   **`Fundamentals/04_choosing_the_right_api.md`**: decision tree and the full e-commerce architecture using gRPC internally.
+*   **`Fundamentals/04_choosing_the_right_api.md`**: decision tree and the full e-commerce architecture using <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> internally.

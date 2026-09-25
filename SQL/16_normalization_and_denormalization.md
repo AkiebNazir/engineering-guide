@@ -246,7 +246,7 @@ trades back the other way, on purpose, for a specific measured reason:
 - **A hot, narrow read path.** Caching a computed or joined value (order count on the
   customer row, updated by trigger or application code on write) avoids a join on
   every read of a page that's viewed far more often than it's written.
-- **Deliberate redundancy in NoSQL document design.** `NoSQL/mongodb/04_embedding_vs_referencing.md`
+- **Deliberate redundancy in <abbr title="Not Only SQL - A broad class of database management systems that differ from the classic relational model, designed for distributed data stores.">NoSQL</abbr> document design.** `NoSQL/mongodb/04_embedding_vs_referencing.md`
   covers the document-model version of exactly this tradeoff — embedding is
   denormalization by another name, chosen because MongoDB has no cheap join.
 

@@ -27,7 +27,7 @@ All scale inputs beyond the question's five constraints are assumptions, labelle
   - 10% lost to fragmentation or overhead (0.73B): **95.4%**
   - half the capacity, i.e. one full replica of everything (0.4B): **92.8%**
 
-  Each 10% of memory lost costs about 0.5 point, and the whole budget has about 1 point of slack. Real LRU sits a few points below the ideal. So we need: **no blanket replication** (it halves capacity and breaks the 5% budget), tight allocator waste, and an admission policy so scans cannot pollute the cache.
+  Each 10% of memory lost costs about 0.5 point, and the whole budget has about 1 point of slack. Real <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr> sits a few points below the ideal. So we need: **no blanket replication** (it halves capacity and breaks the 5% budget), tight allocator waste, and an admission policy so scans cannot pollute the cache.
 - **Blast radius.** One node is 0.2% of keys, so a node loss adds ~0.2% × 2M = **4k req/s** to the source, 4% of the budget: absorbable. A whole zone (1/3 of the fleet) adds **~670k req/s**, 6.7× the entire steady-state budget: not absorbable. And if you pack 25 of these 2 GB shards onto each of 20 hosts, one host loss removes 5% of the keys, **100k req/s**, the entire budget. So we need cross-zone copies of the hottest keys plus load shedding at the source, and at least ~100 hosts (host loss ≤ 1% of keys) even though 500 nodes is the nominal count.
 - **Bandwidth.** 2M × ~1.05 KB ≈ 2.1 GB/s ≈ **17 Gbps** in aggregate, ≈ 34 Mbps per node. So bandwidth is not a constraint; large values and multi-get fan-out hurt the tail long before the NIC.
 - **Connections.** Assume 20k client processes: 20k × 500 nodes = **10M connections**, 20k per node. Fine for an epoll server but a reconnect storm after a failover is real. So we pool connections, and offer a proxy tier for thin clients.
@@ -363,4 +363,4 @@ Named assertions:
 - `test_single_flight_one_source_call`: 100 concurrent misses on one key produce one source read.
 - `test_jitter_spreads_expiry`: expire 1M keys written in one second with ±10% jitter and assert the peak per-second expiry is under 1% of the cohort.
 - `test_returned_node_wipes_reassigned_slots`: fail a node, reassign its slots, bring it back with old data, and assert none of that data is served.
-- `test_tinylfu_scan_resistance`: run a Zipf workload with an interleaved one-time scan and assert the hit ratio with admission is higher than plain LRU.
+- `test_tinylfu_scan_resistance`: run a Zipf workload with an interleaved one-time scan and assert the hit ratio with admission is higher than plain <abbr title="Least Recently Used - A cache replacement policy that discards the least recently used items first when the cache reaches its capacity.">LRU</abbr>.

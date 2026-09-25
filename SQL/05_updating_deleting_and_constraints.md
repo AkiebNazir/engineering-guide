@@ -192,7 +192,7 @@ orders after customer 1 deleted: 0
 ```
 
 The SQLSTATE codes (`23505` = unique_violation, `23514` = check_violation, `23503` =
-foreign_key_violation) are part of the SQL standard, not Postgres- or driver-specific —
+foreign_key_violation) are part of the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> standard, not Postgres- or driver-specific —
 they're the same three codes `psycopg`'s exception classes wrap on the Python side,
 just surfaced as a string field instead of a distinct exception type.
 

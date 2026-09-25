@@ -1,11 +1,11 @@
 # Operating Systems & Hardware Symbiosis
 
-Every program you run eventually becomes instructions competing for a CPU, some RAM,
+Every program you run eventually becomes instructions competing for a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, some <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>,
 and a disk or network card that hundreds of other programs also want. This chapter
 starts from first principles — what an operating system actually is, what its major
 components are, and how they work together — then goes as deep as a Senior Software
 Engineer (L5) interview loop expects: how your application's architecture interacts
-with the kernel's scheduler, CPU caches, and virtual memory subsystem. Interviewers
+with the kernel's scheduler, <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> caches, and virtual memory subsystem. Interviewers
 at that level rarely ask "what is a thread" — they ask precise follow-ups, and this
 file corrects several popular myths along the way; each correction is marked
 **Precision note**. A side-by-side breakdown of what Junior through Staff+ engineers
@@ -20,18 +20,18 @@ The earliest computers ran one program at a time, start to finish, loaded by an
 operator who physically fed it in. There was nothing to "share" — one program, one
 machine, no other programs waiting. That stopped working the moment computers became
 expensive enough that idling them between programs was wasteful, and popular enough
-that many people wanted to use one at once. Two ideas fixed this, and the modern OS
+that many people wanted to use one at once. Two ideas fixed this, and the modern <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>
 is built on both of them:
 
 - **Multiprogramming** — keep several programs loaded in memory at once, and while
-  one waits for slow I/O (a disk read, say), let another use the CPU instead of
+  one waits for slow I/O (a disk read, say), let another use the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> instead of
   sitting idle. This is the ancestor of everything in §1 (scheduling) and §4 (I/O
   models) below.
 - **Time-sharing** — go further and give each program (and each user) the illusion
   of having the machine to itself, by rapidly switching between them many times a
   second. This is the ancestor of §5 (virtual memory) and §6 (processes/containers):
-  the *illusion* of a private machine is the OS's central trick, applied to memory,
-  to the CPU, and eventually to entire environments (containers, VMs).
+  the *illusion* of a private machine is the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>'s central trick, applied to memory,
+  to the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, and eventually to entire environments (containers, VMs).
 
 Every idea in this file is really a more precise version of one of those two moves:
 *share a physical resource among many programs*, and *make each program feel like it
@@ -39,13 +39,13 @@ has that resource to itself*.
 
 ### What an Operating System Actually Is
 
-An **operating system (OS)** is the program that runs first when a machine boots,
+An **operating system (<abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>)** is the program that runs first when a machine boots,
 and it does two jobs at once:
 
-1. **Resource manager** — your CPU can only run one instruction stream at a time per
-   core, RAM is one shared array of bytes, and there's usually one disk and one
-   network card. The OS decides, continuously, who gets to use each of these next.
-2. **Abstraction layer** — the OS hides the ugly, hardware-specific reality
+1. **Resource manager** — your <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> can only run one instruction stream at a time per
+   core, <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> is one shared array of bytes, and there's usually one disk and one
+   network card. The <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> decides, continuously, who gets to use each of these next.
+2. **Abstraction layer** — the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> hides the ugly, hardware-specific reality
    underneath a much simpler interface. You don't calculate which physical disk
    sectors to write; you call `write()` on a **file**. You don't manage raw physical
    memory addresses; your program gets an **address space** it can pretend is all
@@ -55,17 +55,17 @@ and it does two jobs at once:
 
 ### The Core Components of an Operating System
 
-An OS isn't one monolithic blob of logic — it's a handful of cooperating subsystems,
+An <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> isn't one monolithic blob of logic — it's a handful of cooperating subsystems,
 each responsible for one resource:
 
 | Component | What it's responsible for | Covered deeper in |
 |---|---|---|
 | **Kernel** | The privileged core; the only code allowed to talk to hardware directly | Throughout this file |
-| **Process & thread manager + scheduler** | Creates and destroys processes/threads; decides which one runs on which CPU core, and when | §1 (scheduling), §6 (processes vs. threads) |
-| **Memory manager** | Gives every process the illusion of its own private, contiguous memory; maps that illusion onto real, shared RAM | §5 |
+| **Process & thread manager + scheduler** | Creates and destroys processes/threads; decides which one runs on which <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> core, and when | §1 (scheduling), §6 (processes vs. threads) |
+| **Memory manager** | Gives every process the illusion of its own private, contiguous memory; maps that illusion onto real, shared <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> | §5 |
 | **File system** | Organizes persistent storage into files and directories; turns raw disk blocks into `open()`/`read()`/`write()` | §5 (page cache), §7 (I/O path) |
 | **I/O manager & device drivers** | Talks to disks, network cards, keyboards, and every other device through vendor-specific driver code, behind one uniform interface | §4, §7 |
-| **Network stack** | Implements TCP/IP (and friends) so a process can exchange bytes with a process on another machine | §7 here; the full treatment is `02_networking_deep_dive.md` |
+| **Network stack** | Implements <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>/<abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr> (and friends) so a process can exchange bytes with a process on another machine | §7 here; the full treatment is `02_networking_deep_dive.md` |
 | **Inter-process communication (IPC)** | Controlled channels for processes to exchange data: pipes, sockets, shared memory, signals | §6 |
 | **Security & access control** | Users, permissions, and isolation boundaries — decides *who* is allowed to do *what* to which resource | §6 (namespaces, cgroups, containers) |
 
@@ -113,12 +113,12 @@ net -> nic
 ### Kernel Space vs. User Space
 
 The **kernel** is the only code allowed to talk to hardware directly; it runs in a
-privileged CPU mode (ring 0 on x86). Your program runs in **user space**, a
+privileged <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> mode (ring 0 on x86). Your program runs in **user space**, a
 deliberately restricted mode, and asks the kernel for things — read a file, send a
 packet, allocate memory — through a **system call (syscall)**: a controlled,
 validated door between your code and the hardware. Every "expensive" operation
 you'll read about below (a context switch, a page fault, a blocking read) is
-expensive largely *because* it crosses that door: the CPU has to switch privilege
+expensive largely *because* it crosses that door: the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> has to switch privilege
 modes, and the kernel has to validate and act on the request.
 
 ### Process vs. Thread — the Distinction the Rest of This File Assumes
@@ -139,19 +139,19 @@ the deep-dive sections below — each is a direct consequence of "one shared res
 many programs that want it":
 
 - **Scheduling** exists because a typical machine has far more runnable threads than
-  CPU cores. The **scheduler** (§1) decides, many times a second, which thread runs
+  <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cores. The **scheduler** (§1) decides, many times a second, which thread runs
   on which core next. Switching a core from one thread to another is a **context
   switch**: the kernel saves that thread's registers and loads the next thread's —
   not free, which is why §1 cares about *how many* threads you create, not just how
   you use them.
-- **Virtual memory** exists because letting programs address real RAM directly would
+- **Virtual memory** exists because letting programs address real <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> directly would
   mean any bug in one program could overwrite another program's data. So the memory
   manager gives every process the *illusion* of owning all of memory, and translates
-  each program's addresses to real physical RAM behind the scenes (§5). "Memory
-  address" in your program is never the literal RAM location.
-- **CPU caches** exist because RAM is slow compared to a modern CPU core — hundreds
+  each program's addresses to real physical <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> behind the scenes (§5). "Memory
+  address" in your program is never the literal <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> location.
+- **<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> caches** exist because <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> is slow compared to a modern <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> core — hundreds
   of cycles away. Every core has small, fast caches (L1, L2, often a shared L3) that
-  hold recently-used data so the core doesn't wait on RAM for every access. §2 covers
+  hold recently-used data so the core doesn't wait on <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> for every access. §2 covers
   what happens when *two* cores cache the *same* data.
 - **Blocking** is the simplest possible answer to "what happens while I wait for
   something slow" (a disk read, a network reply): your thread stops running until the
@@ -160,7 +160,7 @@ many programs that want it":
 
 ### Kernel Design Philosophies
 
-Not every OS draws the kernel-space/user-space line in the same place. This matters
+Not every <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> draws the kernel-space/user-space line in the same place. This matters
 because it trades performance against fault isolation:
 
 | Design | Where subsystems live | Trade-off | Examples |
@@ -178,13 +178,13 @@ kernel space at full privilege, unlike a true microkernel's user-space servers.
 
 | Term | One-line meaning |
 |---|---|
-| Kernel | The part of the OS allowed to touch hardware directly |
+| Kernel | The part of the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> allowed to touch hardware directly |
 | Syscall | A controlled request from your program to the kernel, crossing the user/kernel boundary |
 | Process | A running program with its own private memory |
 | Thread | A unit of execution sharing its process's memory with other threads |
 | Context switch | The kernel swapping which thread a core is running |
 | Virtual memory | The illusion that each process owns all of memory |
-| Cache line | The chunk (usually 64 bytes) a CPU cache moves and tracks at a time |
+| Cache line | The chunk (usually 64 bytes) a <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cache moves and tracks at a time |
 | Blocking call | A syscall that pauses your thread until it completes |
 | IPC | A controlled channel for processes to exchange data (pipes, sockets, shared memory, signals) |
 | Monolithic / microkernel | Whether subsystems run inside the privileged kernel, or as isolated user-space services |
@@ -195,10 +195,10 @@ picks a thread, how caches actually stay consistent across cores, and so on.
 
 ## 1. Deep Linux Internals: The Scheduler
 
-For most of the last 15 years the default Linux scheduler was the **Completely Fair Scheduler (CFS)**. Since Linux 6.6 (late 2023) the fair class uses **EEVDF** (Earliest Eligible Virtual Deadline First), which keeps CFS's virtual-runtime accounting but picks tasks by virtual deadline to give latency-sensitive tasks better treatment. The CFS model below is still the right mental model and what most interview answers reference.
+For most of the last 15 years the default Linux scheduler was the **Completely Fair Scheduler (<abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr>)**. Since Linux 6.6 (late 2023) the fair class uses **EEVDF** (Earliest Eligible Virtual Deadline First), which keeps <abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr>'s virtual-runtime accounting but picks tasks by virtual deadline to give latency-sensitive tasks better treatment. The <abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr> model below is still the right mental model and what most interview answers reference.
 
-### How CFS Works
-CFS does not use strict fixed timeslices (e.g., "every thread gets 10ms"). Instead, it tracks the "virtual runtime" (`vruntime`) of every runnable thread in a **Red-Black Tree**.
+### How <abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr> Works
+<abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr> does not use strict fixed timeslices (e.g., "every thread gets 10ms"). Instead, it tracks the "virtual runtime" (`vruntime`) of every runnable thread in a **Red-Black Tree**.
 
 ```arch
 %% caption: CFS keeps runnable threads in a red-black tree keyed by vruntime and always runs the leftmost one.
@@ -217,27 +217,27 @@ s -> ll : "Always picks leftmost"
 ```
 *   **The Algorithm:** The scheduler picks the runnable thread with the smallest `vruntime` (the leftmost node, cached so the pick is O(1); insert/remove are O(log n)).
 *   **Weighting (Niceness):** High-priority tasks don't get *more* slices in a fixed sense; their `vruntime` advances *slower* than low-priority tasks, so they are picked more often and run longer in total.
-*   **L5 Implication:** If you spawn 10,000 OS threads that are mostly blocked on I/O, the cost is not the red-black tree (log2 of 10,000 is about 13). The costs are **context switches** (saving/restoring registers, kernel entry/exit), **cold CPU caches** after every switch, **memory** for each thread's kernel structures and stack, and **lock contention** when many runnable threads wake together. That is why high-concurrency runtimes (Go, Node.js, Java virtual threads, Rust async) multiplex many lightweight tasks onto a small pool of OS threads (M:N scheduling).
+*   **L5 Implication:** If you spawn 10,000 <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> threads that are mostly blocked on I/O, the cost is not the red-black tree (log2 of 10,000 is about 13). The costs are **context switches** (saving/restoring registers, kernel entry/exit), **cold <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> caches** after every switch, **memory** for each thread's kernel structures and stack, and **lock contention** when many runnable threads wake together. That is why high-concurrency runtimes (Go, Node.js, Java virtual threads, Rust async) multiplex many lightweight tasks onto a small pool of <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> threads (M:N scheduling).
 
 ### Scheduling vocabulary worth knowing
 
 | Term | Meaning | Why it matters |
 |---|---|---|
-| Run queue | Per-CPU set of runnable tasks | Load balancing migrates tasks between CPUs, which costs cache warmth |
-| Preemption | Kernel takes the CPU from a running task | Latency-sensitive services care about scheduler latency, not just throughput |
-| CPU affinity / pinning | Restrict a thread to specific cores | Keeps caches warm; used by databases, packet processing, and NUMA-aware services |
-| cgroups CPU quota | Limit a container to N CPU-seconds per period | A container throttled mid-period shows latency spikes even at low average CPU. Classic Kubernetes p99 problem |
+| Run queue | Per-<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> set of runnable tasks | Load balancing migrates tasks between CPUs, which costs cache warmth |
+| Preemption | Kernel takes the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> from a running task | Latency-sensitive services care about scheduler latency, not just throughput |
+| <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> affinity / pinning | Restrict a thread to specific cores | Keeps caches warm; used by databases, packet processing, and NUMA-aware services |
+| cgroups <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> quota | Limit a container to N <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>-seconds per period | A container throttled mid-period shows latency spikes even at low average <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>. Classic Kubernetes p99 problem |
 | Priority inversion | Low-priority task holds a lock a high-priority task needs | Solved with priority inheritance in real-time systems |
 
 ### Scheduling Classes, Briefly
 
-CFS/EEVDF is only the *default* ("fair") scheduling class. Linux actually offers
+<abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr>/EEVDF is only the *default* ("fair") scheduling class. Linux actually offers
 several, and the kernel always prefers a higher class over a lower one:
 
 | Class | Policy | Used for |
 |---|---|---|
 | Real-time (highest) | `SCHED_FIFO` (runs until it blocks or yields), `SCHED_RR` (round-robin among equal priority) | Latency-critical system tasks; almost never used by application code |
-| Fair (default) | `SCHED_NORMAL`/`SCHED_OTHER` — CFS or EEVDF | Essentially everything you write |
+| Fair (default) | `SCHED_NORMAL`/`SCHED_OTHER` — <abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr> or EEVDF | Essentially everything you write |
 | Idle (lowest) | `SCHED_IDLE` | Background work that should never delay anything else |
 
 **Order of magnitude worth knowing:** a context switch on Linux is commonly cited in
@@ -249,7 +249,7 @@ than the O(log n) scheduler data structure ever would.
 
 ## 2. Concurrency at the Hardware Level (MESI)
 
-When two threads run on different CPU cores, they each have their own L1/L2 caches. If they share a variable, how do the caches stay consistent?
+When two threads run on different <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> cores, they each have their own L1/L2 caches. If they share a variable, how do the caches stay consistent?
 
 ### The MESI Protocol (Cache Coherence)
 Cache coherence protocols in the MESI family track the state of each **cache line** (usually 64 bytes on x86 and most ARM servers):
@@ -297,17 +297,17 @@ type PaddedCounters struct {
 }
 ```
 
-## 3. Atomic Instructions (CAS)
+## 3. Atomic Instructions (<abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr>)
 
-How do mutexes avoid race conditions themselves? They rely on hardware atomic instructions, specifically **Compare-And-Swap (CAS)** (`LOCK CMPXCHG` on x86, `LDREX/STREX` or `CMPXCHG`-style ops on ARM).
+How do mutexes avoid race conditions themselves? They rely on hardware atomic instructions, specifically **Compare-And-Swap (<abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr>)** (`LOCK CMPXCHG` on x86, `LDREX/STREX` or `CMPXCHG`-style ops on ARM).
 
-A CAS takes 3 arguments: a memory location, an expected old value, and a new value. It writes the new value only if the location still holds the expected value, and reports whether it did, as one indivisible operation.
-*   **Precision note:** Modern x86 does **not** lock the memory bus for `LOCK CMPXCHG` (that was true of very old CPUs). The `LOCK` prefix makes the instruction atomic with respect to other cores via cache-line ownership; it is not a single "clock cycle" either. What matters for the interview: CAS is atomic, lock-free, and can fail and be retried.
+A <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> takes 3 arguments: a memory location, an expected old value, and a new value. It writes the new value only if the location still holds the expected value, and reports whether it did, as one indivisible operation.
+*   **Precision note:** Modern x86 does **not** lock the memory bus for `LOCK CMPXCHG` (that was true of very old CPUs). The `LOCK` prefix makes the instruction atomic with respect to other cores via cache-line ownership; it is not a single "clock cycle" either. What matters for the interview: <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> is atomic, lock-free, and can fail and be retried.
 *   **Spinlocks:** A spinlock is essentially `while (!CAS(&lock, 0, 1)) pause();`. Good when critical sections are tiny and on other cores; terrible when the lock holder can be descheduled.
-*   **Futex-based mutexes:** The uncontended path is a single CAS in user space with no syscall. Only when the CAS fails does the thread call `futex(FUTEX_WAIT)` to sleep in a kernel wait queue; the unlocker calls `futex(FUTEX_WAKE)` if there are waiters. Many mutexes spin briefly before sleeping (adaptive mutexes).
-*   **ABA problem:** a CAS-based lock-free stack can see value A, get preempted while another thread pops A, pushes B, pushes A back, and then succeed incorrectly. Fixes: tagged pointers / version counters, hazard pointers, epoch-based reclamation, or a GC.
+*   **Futex-based mutexes:** The uncontended path is a single <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> in user space with no syscall. Only when the <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> fails does the thread call `futex(FUTEX_WAIT)` to sleep in a kernel wait queue; the unlocker calls `futex(FUTEX_WAKE)` if there are waiters. Many mutexes spin briefly before sleeping (adaptive mutexes).
+*   **ABA problem:** a <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr>-based lock-free stack can see value A, get preempted while another thread pops A, pushes B, pushes A back, and then succeed incorrectly. Fixes: tagged pointers / version counters, hazard pointers, epoch-based reclamation, or a <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>.
 
-**A lock-free counter, to make CAS concrete:**
+**A lock-free counter, to make <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> concrete:**
 
 ```go
 // Retry loop: read, compute, try to swap in — retry if another thread won the race.
@@ -322,7 +322,7 @@ func increment(counter *int64) {
 }
 ```
 No lock is ever held; under contention some goroutines simply retry. This is the
-same shape every lock-free data structure uses, and it's why CAS retries — rather
+same shape every lock-free data structure uses, and it's why <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr> retries — rather
 than blocking — are the right mental model for "lock-free."
 
 ## 4. Advanced I/O Models
@@ -351,7 +351,7 @@ b1 -> b2 : "O(N) scan ALL fds"
 c1 -> c2 : "O(ready) list"
 d1 -> d2 : "Batched or no syscalls"
 ```
-1.  **Thread-per-connection (classic Apache prefork/worker):** Each connection blocks in `read()` on its own thread or process. The limits are memory and context switching. **Precision note:** a thread's stack is *reserved virtual memory* (8 MB default on Linux glibc, configurable), and only touched pages consume RAM. So "10k x 2MB = 20GB of RAM" is wrong; real RSS per idle thread is tens of KB of stack plus kernel structures. The real problems are scheduler/context-switch overhead under load, per-thread memory at 100k+ connections, and lock contention.
+1.  **Thread-per-connection (classic Apache prefork/worker):** Each connection blocks in `read()` on its own thread or process. The limits are memory and context switching. **Precision note:** a thread's stack is *reserved virtual memory* (8 MB default on Linux glibc, configurable), and only touched pages consume <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. So "10k x 2MB = 20GB of <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>" is wrong; real RSS per idle thread is tens of KB of stack plus kernel structures. The real problems are scheduler/context-switch overhead under load, per-thread memory at 100k+ connections, and lock contention.
 2.  **`select()` / `poll()`:** One thread passes the full set of descriptors to the kernel on every call; the kernel scans all of them. O(N) per call, and `select` is also capped at `FD_SETSIZE` (usually 1024).
 3.  **`epoll` (Linux) / `kqueue` (BSD, macOS):** Interest is registered once. The kernel maintains a ready list; `epoll_wait()` returns only descriptors that are ready. Cost per call is **O(number of ready events)**, independent of the total number of watched connections. Go's netpoller, Node's libuv, Nginx, and Redis all sit on this.
 4.  **`io_uring` (Linux 5.1+):** Two ring buffers shared between user space and kernel: a Submission Queue and a Completion Queue. The application writes many requests and submits them with one `io_uring_enter` call (batching), or with `SQPOLL` a kernel thread polls the queue so steady-state I/O needs no syscalls at all. It also supports true async file I/O, which `epoll` never did. Trade-off: a large attack surface; several distributions and Google's own production kernels have restricted it for security reasons.
@@ -372,7 +372,7 @@ above, not on magic:
 
 | Language / runtime | What it actually sits on |
 |---|---|
-| Go | Its own M:N scheduler + a netpoller built on `epoll`/`kqueue` — goroutines that block on I/O don't block an OS thread |
+| Go | Its own M:N scheduler + a netpoller built on `epoll`/`kqueue` — goroutines that block on I/O don't block an <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> thread |
 | Python `asyncio` | An event loop built on `select`/`epoll`/`kqueue` (via `selectors`) |
 | Node.js | `libuv`, which wraps `epoll`/`kqueue`/IOCP per platform |
 | Java NIO / virtual threads (21+) | `epoll`-based selectors historically; virtual threads add M:N scheduling on top |
@@ -384,7 +384,7 @@ same question with a different label on top.
 
 ## 5. Virtual Memory & NUMA
 
-*   **Page tables and the TLB:** Translating a virtual address walks a multi-level page table (4 levels on x86-64, 5 with LA57). The **TLB** caches recent translations. A TLB miss costs a page walk (several memory accesses).
+*   **Page tables and the <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr>:** Translating a virtual address walks a multi-level page table (4 levels on x86-64, 5 with LA57). The **<abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr>** caches recent translations. A <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr> miss costs a page walk (several memory accesses).
 
 ```arch
 %% caption: A TLB hit translates in one lookup; a miss walks the page table and then fills the TLB.
@@ -400,12 +400,12 @@ tlb -> walk : "Miss"
 walk -> fill
 fill -> pa
 ```
-*   **Context switch cost:** Switching between *processes* changes the address space. **Precision note:** with PCID (x86) / ASID (ARM), the kernel tags TLB entries per address space and does not have to flush the whole TLB on every switch, though entries for the old process stop being useful. Switching between *threads* of the same process keeps the address space and its TLB entries.
-*   **Huge pages:** 2 MB (or 1 GB) pages mean one TLB entry covers far more memory, cutting TLB misses for large heaps (databases, JVMs). Transparent Huge Pages can cause latency spikes during compaction; many databases recommend disabling THP and using explicit huge pages.
+*   **Context switch cost:** Switching between *processes* changes the address space. **Precision note:** with PCID (x86) / ASID (ARM), the kernel tags <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr> entries per address space and does not have to flush the whole <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr> on every switch, though entries for the old process stop being useful. Switching between *threads* of the same process keeps the address space and its <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr> entries.
+*   **Huge pages:** 2 MB (or 1 GB) pages mean one <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr> entry covers far more memory, cutting <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr> misses for large heaps (databases, JVMs). Transparent Huge Pages can cause latency spikes during compaction; many databases recommend disabling THP and using explicit huge pages.
 *   **Page faults:** a *minor* fault maps a page already in memory (e.g., first touch of allocated memory, copy-on-write after `fork`); a *major* fault reads from disk (swap or a memory-mapped file) and costs milliseconds.
-*   **The page cache:** Linux uses free RAM to cache file contents. `read()` of a hot file never touches disk. `write()` normally lands in the page cache and returns before data is durable; **only `fsync()`/`fdatasync()` makes it durable**. This is why databases call `fsync` on their WAL and why "we wrote it" is not "it survived a power loss."
-*   **OOM killer:** when memory is exhausted, Linux kills a process chosen by a badness score. In containers, exceeding the cgroup memory limit gets the container killed (exit code 137) even if the host has free memory.
-*   **NUMA (Non-Uniform Memory Access):** On multi-socket servers, each CPU has its own local RAM. Accessing another socket's memory goes over the interconnect and is slower. High-performance databases pin threads to cores and allocate memory on the local NUMA node (`numactl`, `libnuma`).
+*   **The page cache:** Linux uses free <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> to cache file contents. `read()` of a hot file never touches disk. `write()` normally lands in the page cache and returns before data is durable; **only `fsync()`/`fdatasync()` makes it durable**. This is why databases call `fsync` on their <abbr title="Write-Ahead Logging. A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied.">WAL</abbr> and why "we wrote it" is not "it survived a power loss."
+*   **<abbr title="Out of Memory - An undesired state of computer operation where no additional memory can be allocated for use by programs.">OOM</abbr> killer:** when memory is exhausted, Linux kills a process chosen by a badness score. In containers, exceeding the cgroup memory limit gets the container killed (exit code 137) even if the host has free memory.
+*   **NUMA (Non-Uniform Memory Access):** On multi-socket servers, each <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> has its own local <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. Accessing another socket's memory goes over the interconnect and is slower. High-performance databases pin threads to cores and allocate memory on the local NUMA node (`numactl`, `libnuma`).
 
 <div class="lab" data-viz="flow-page-fault"></div>
 
@@ -416,10 +416,10 @@ fill -> pa
 | Process | Separate address space | `fork`+`exec`; COW makes `fork` cheap until pages are written | Pipes, sockets, shared memory, signals |
 | Thread | Shared address space | Cheaper (clone with shared memory) | Shared memory + locks |
 | Goroutine / green thread | Scheduled by a runtime | ~2-8 KB initial stack, growable | Channels, shared memory |
-| Container | Same kernel; isolated by **namespaces** (pid, net, mount, user, uts, ipc) and limited by **cgroups** (CPU, memory, I/O) | Process start + namespace setup | Network or volumes |
-| VM | Separate kernel on a hypervisor | Seconds | Virtual network |
+| Container | Same kernel; isolated by **namespaces** (pid, net, mount, user, uts, ipc) and limited by **cgroups** (<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>, memory, I/O) | Process start + namespace setup | Network or volumes |
+| <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> | Separate kernel on a hypervisor | Seconds | Virtual network |
 
-Interview-ready one-liner: **a container is a process with namespaces for isolation and cgroups for limits; it is not a lightweight VM.** Google's Borg (and its paper, see `SystemDesign/building_blocks/24_google_papers.md`) is where much of the cgroups work originated.
+Interview-ready one-liner: **a container is a process with namespaces for isolation and cgroups for limits; it is not a lightweight <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr>.** Google's Borg (and its paper, see `SystemDesign/building_blocks/24_google_papers.md`) is where much of the cgroups work originated.
 
 ### Why `fork()` Is Cheap: Copy-on-Write
 
@@ -455,7 +455,7 @@ sb -> tcp -> ip -> nic
 nic -> wire : "DMA"
 ```
 
-`write()` succeeding only means the bytes reached the kernel. If the send buffer is full, a blocking socket sleeps and a non-blocking socket returns `EAGAIN` (that is **backpressure** at the OS level). Zero-copy paths (`sendfile`, `splice`, `MSG_ZEROCOPY`) skip the user-to-kernel copy for large transfers such as serving files or video segments.
+`write()` succeeding only means the bytes reached the kernel. If the send buffer is full, a blocking socket sleeps and a non-blocking socket returns `EAGAIN` (that is **backpressure** at the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> level). Zero-copy paths (`sendfile`, `splice`, `MSG_ZEROCOPY`) skip the user-to-kernel copy for large transfers such as serving files or video segments.
 
 ## What Each Engineering Level Should Know
 
@@ -470,12 +470,12 @@ where a real interview would place you).
 
 | Topic in this chapter | Junior / New Grad (Google L3) | Mid-Level (Google L4) | Senior (Google L5) | Staff+ (Google L6–L7) |
 |---|---|---|---|---|
-| **Core vocabulary & components** (Foundations) | Can define process, thread, kernel vs. user space, and syscall in plain language | Can explain how the OS's components work together (the Foundations diagram) and why each exists | Connects the vocabulary across subsystems unprompted — e.g. can give §7's full `write()` walkthrough | Can explain kernel design trade-offs (monolithic vs. microkernel vs. hybrid) and how that choice shapes an entire platform's reliability story |
-| **Processes, threads & scheduling** (§1, §6) | Knows a process has its own memory and a thread shares it; knows "the OS shares the CPU" | Knows a context switch has a cost and that creating too many threads is bad, without naming the specific mechanism | Explains CFS/EEVDF's `vruntime` mechanism precisely and corrects the "2MB × 10k threads = 20GB" myth | Weighs M:N scheduling (Go goroutines, Java virtual threads) against raw OS threads for a real workload, and reasons about scheduler-latency SLOs at fleet scale |
+| **Core vocabulary & components** (Foundations) | Can define process, thread, kernel vs. user space, and syscall in plain language | Can explain how the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>'s components work together (the Foundations diagram) and why each exists | Connects the vocabulary across subsystems unprompted — e.g. can give §7's full `write()` walkthrough | Can explain kernel design trade-offs (monolithic vs. microkernel vs. hybrid) and how that choice shapes an entire platform's reliability story |
+| **Processes, threads & scheduling** (§1, §6) | Knows a process has its own memory and a thread shares it; knows "the <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> shares the <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr>" | Knows a context switch has a cost and that creating too many threads is bad, without naming the specific mechanism | Explains <abbr title="Completely Fair Scheduler. A process scheduler, implemented in the Linux kernel, that maximizes overall CPU utilization while also maximizing interactive performance.">CFS</abbr>/EEVDF's `vruntime` mechanism precisely and corrects the "2MB × 10k threads = 20GB" myth | Weighs M:N scheduling (Go goroutines, Java virtual threads) against raw <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr> threads for a real workload, and reasons about scheduler-latency SLOs at fleet scale |
 | **Hardware-level concurrency** (§2–§3) | Aware that two cores can see stale data without synchronization | Knows locks/atomics fix races; hasn't necessarily seen MESI by name | Explains MESI's four states, diagnoses false sharing, and fixes it with padding | Predicts false sharing in a design review before anyone measures it, and knows when a lock-free structure is (and isn't) worth the ABA-problem complexity |
 | **I/O models** (§4) | Knows "blocking" vs. "non-blocking" as terms | Knows `epoll`/`kqueue` exist and roughly why they beat `select`/`poll` | Derives epoll's O(ready events) advantage from first principles and compares it precisely to `io_uring` | Makes the actual production adoption call — `io_uring`'s throughput win against its larger attack surface — for a real fleet |
-| **Memory management** (§5) | Knows RAM is shared and programs never see real physical addresses | Knows what a page fault is, without necessarily distinguishing minor from major | Explains the TLB, huge pages, and why `fsync` — not `write()` — is what actually makes data durable | Diagnoses a NUMA-related latency regression or a Transparent-Huge-Page-induced p99 spike from symptoms alone |
-| **Containers & isolation** (§6) | Believes "a container is a lightweight VM" (a common oversimplification) | Knows containers share a kernel and cost less overhead than VMs, without the precise mechanism | Corrects the VM myth precisely: namespaces for isolation, cgroups for limits, same kernel | Explains the cgroup-quota-throttling p99 problem from first principles and designs around it (e.g. CPU limits vs. requests in Kubernetes) |
+| **Memory management** (§5) | Knows <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> is shared and programs never see real physical addresses | Knows what a page fault is, without necessarily distinguishing minor from major | Explains the <abbr title="Translation Lookaside Buffer. A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval.">TLB</abbr>, huge pages, and why `fsync` — not `write()` — is what actually makes data durable | Diagnoses a NUMA-related latency regression or a Transparent-Huge-Page-induced p99 spike from symptoms alone |
+| **Containers & isolation** (§6) | Believes "a container is a lightweight <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr>" (a common oversimplification) | Knows containers share a kernel and cost less overhead than VMs, without the precise mechanism | Corrects the <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> myth precisely: namespaces for isolation, cgroups for limits, same kernel | Explains the cgroup-quota-throttling p99 problem from first principles and designs around it (e.g. <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> limits vs. requests in Kubernetes) |
 
 **Reading this table as a study plan:** if you're aiming at a Senior/L5 bar, your
 target is the whole "Senior" column — which is exactly what the numbered sections (1–7)
@@ -487,11 +487,11 @@ conversation, not a substitute for having had it.
 
 ## Interview checklist
 
-- [ ] I can name an OS's core components (scheduler, memory manager, file system, I/O manager, network stack, IPC, security) and what each owns.
+- [ ] I can name an <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>'s core components (scheduler, memory manager, file system, I/O manager, network stack, IPC, security) and what each owns.
 - [ ] I can explain the kernel/user-space boundary and why crossing it (a syscall) isn't free.
 - [ ] I can explain why 10k blocked threads hurt, without the "2MB x 10k = 20GB" myth.
 - [ ] I can explain false sharing and name one detection tool and one fix.
-- [ ] I can explain CAS, futexes, and the ABA problem.
+- [ ] I can explain <abbr title="Compare-And-Swap. An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location.">CAS</abbr>, futexes, and the ABA problem.
 - [ ] I can compare select/poll, epoll, and io_uring with correct complexity.
 - [ ] I can explain the page cache and why `fsync` matters for durability.
 - [ ] I can explain why `fork()` is cheap (copy-on-write) and when it stops being cheap.

@@ -60,7 +60,7 @@ Embeddings turn users, items, queries, and documents into vectors where similar 
 |---|---|---|
 | HNSW | Multi-layer proximity graph; search greedily walks from coarse to fine layers. | Excellent recall and latency; memory-hungry; slower to build and update. |
 | IVF (inverted file) | Cluster vectors with k-means; search only the few nearest clusters. | Memory-efficient; recall depends on how many clusters you probe. |
-| Product quantization (PQ) | Compress vectors into short codes; compare compressed distances. | Huge memory savings; some accuracy loss. Often combined with IVF. |
+| Product quantization (<abbr title="Priority Queue. An abstract data type similar to a regular queue or stack in which each element additionally has a priority associated with it.">PQ</abbr>) | Compress vectors into short codes; compare compressed distances. | Huge memory savings; some accuracy loss. Often combined with IVF. |
 | ScaNN (Google) | Anisotropic quantization tuned for maximum inner product search. | State-of-the-art speed/recall for dot-product similarity at Google scale. |
 
 Operational points: shard the index (by item partition) and fan out queries; rebuild or incrementally update as items change; filter (e.g. "in stock, in region") either before search with partitioned indexes or after with over-fetching.
@@ -69,7 +69,7 @@ Operational points: shard the index (by item partition) and fan out queries; reb
 
 - **Latency budget first**: decide how much of the request's p99 the model may use, and choose model size, hardware, and caching to fit.
 - **Batching**: GPUs and TPUs are efficient only when they process many inputs at once. A serving system collects requests for a few milliseconds and runs them as one batch — trading a small, bounded latency increase for several times the throughput.
-- **CPU vs accelerator**: small ranking models often run on CPU next to the service; large models need GPUs/TPUs in a dedicated serving tier.
+- **<abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> vs accelerator**: small ranking models often run on <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> next to the service; large models need GPUs/TPUs in a dedicated serving tier.
 - **Caching**: cache predictions for repeated inputs (popular queries, logged-out homepages) and cache embeddings for items that rarely change.
 - **Fallbacks**: if the model is slow or down, serve a cheaper model, a cached result, or a heuristic (most popular). A recommender that times out should still show a page.
 - **Rollout**: shadow traffic, then canary, then an A/B test on online metrics — offline metrics alone do not decide a launch.
@@ -85,7 +85,7 @@ Key techniques to name:
 
 | Technique | What it does | Why it matters |
 |---|---|---|
-| Token streaming (SSE) | Send tokens as they are produced. | Perceived latency drops to time-to-first-token. |
+| Token streaming (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>) | Send tokens as they are produced. | Perceived latency drops to time-to-first-token. |
 | Continuous batching | Add new requests to the running batch as soon as any sequence finishes. | Several times higher throughput than static batching (vLLM, TGI). |
 | PagedAttention | Allocate KV cache in fixed-size blocks instead of one contiguous region per request. | Near-zero fragmentation → more concurrent sequences per GPU. |
 | Prefix (prompt) caching | Reuse the KV cache for a shared prefix such as a long system prompt or document. | Cuts prefill cost and latency for repeated context. |

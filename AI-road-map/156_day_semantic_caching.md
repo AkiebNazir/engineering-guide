@@ -13,7 +13,7 @@ Today, we learn how to slash <abbr title="Application Programming Interface">API
 
 ### 1. The Exact Match Cache (The Legacy Way)
 In traditional software, we use tools like Redis to cache database queries. 
-If `query == "SELECT * FROM users"`, Redis returns the cached JSON instantly. 
+If `query == "SELECT * FROM users"`, Redis returns the cached <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> instantly. 
 This is an **Exact Match Cache**. It hashes the exact string. If the user types *"SELECT * from users "* (with a trailing space), the hash changes, it misses the cache, and the database is queried.
 **This fails for LLMs.** Users never type the exact same string. "How do I reset my password?" and "I forgot my password, how do I change it?" have completely different string hashes but require the exact same answer.
 

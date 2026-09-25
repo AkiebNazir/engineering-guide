@@ -38,9 +38,9 @@ Why it works: map tasks are embarrassingly parallel and restartable; outputs are
 | Engine | What it improved | When to name it |
 |---|---|---|
 | MapReduce / Hadoop | The original model; disk between every stage. | Historical context, very large simple jobs. |
-| Spark | Keeps intermediate data in memory (RDDs/DataFrames), optimises whole pipelines, SQL interface. | Iterative jobs, <abbr title="Machine Learning">ML</abbr> feature pipelines, interactive analysis. |
+| Spark | Keeps intermediate data in memory (RDDs/DataFrames), optimises whole pipelines, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> interface. | Iterative jobs, <abbr title="Machine Learning">ML</abbr> feature pipelines, interactive analysis. |
 | Dataflow / Apache Beam | One programming model for batch *and* streaming, with windows and triggers. | "Same logic for backfill and real time." |
-| BigQuery / Dremel | Columnar storage plus massively parallel SQL over it; no cluster to manage. | Ad-hoc analytics over petabytes. |
+| BigQuery / Dremel | Columnar storage plus massively parallel <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr> over it; no cluster to manage. | Ad-hoc analytics over petabytes. |
 
 Batch is the **source of correctness**: it reads complete, deduplicated data and can be re-run from raw logs when logic changes.
 

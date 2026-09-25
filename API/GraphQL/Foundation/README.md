@@ -5,10 +5,10 @@ tiny, self-contained, runnable file in **both** `python/` and `golang/` -
 same lesson, same demo shape, two languages side by side. Every file prints
 `OK` when it passes its own built-in checks.
 
-Levels 00-10 call the schema **directly, in this process** - no HTTP server,
+Levels 00-10 call the schema **directly, in this process** - no <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> server,
 no port, no curl - so you study GraphQL itself without transport noise in the
 way. Level 11 puts the same schema behind a real `POST /graphql` endpoint,
-level 12 calls one, and the bonus level 13 does it with nothing but a TCP
+level 12 calls one, and the bonus level 13 does it with nothing but a <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr>
 socket, to prove GraphQL has no special wire format at all.
 
 Run any Python level:  `python GraphQL/Foundation/python/00_single_field_and_how_it_works.py`
@@ -29,7 +29,7 @@ Run any Go level:      `go run ./GraphQL/Foundation/golang/00_single_field_and_h
 | 10 | Authorization | "What may they do?" - a role check on one mutation, `FORBIDDEN` (the 403), kept distinct from 401 |
 | 11 | Complete, protected endpoint | Everything above behind a real `POST /graphql`: public query, authenticated mutation, admin-only mutation |
 | 12 | Being a client | Calling a GraphQL <abbr title="Application Programming Interface">API</abbr> by hand: `{query, variables}` + Bearer header, retry a 503, never retry a 200 |
-| 13 | Bonus: raw HTTP over TCP | Optional deep dive - a GraphQL request typed byte by byte over a socket (read any time after level 11) |
+| 13 | Bonus: raw <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> over <abbr title="Transmission Control Protocol - A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes.">TCP</abbr> | Optional deep dive - a GraphQL request typed byte by byte over a socket (read any time after level 11) |
 
 **Where to go next:** level 11 is the same shape as
 `../labs/python/01_schema_queries_variables.py` and
@@ -39,5 +39,5 @@ Foundation stops, with dataloaders and the N+1 problem, Relay cursor
 pagination, depth/complexity limits, persisted queries, field-level
 permissions and masking, and subscriptions over WebSockets.
 `../Theory.md` covers the *why* (schema design, nullability as a contract,
-the single-endpoint trade-off, caching without HTTP verbs, federation)
+the single-endpoint trade-off, caching without <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> verbs, federation)
 behind everything these files do in code.

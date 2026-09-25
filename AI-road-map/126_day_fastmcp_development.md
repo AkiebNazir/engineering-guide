@@ -2,26 +2,26 @@
 
 Welcome to Day 126. This is the final day of your current 20-day learning block!
 
-Yesterday, we learned the raw JSON-RPC 2.0 architecture of the Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>). Writing raw JSON strings by hand is tedious.
-Today, we learn the **FastMCP Python SDK**. Just as `FastAPI` revolutionized web development by using Python type hints to automatically generate OpenAPI documentation, `FastMCP` automatically generates <abbr title="Model Context Protocol">MCP</abbr> Schemas!
+Yesterday, we learned the raw <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> 2.0 architecture of the Model Context Protocol (<abbr title="Model Context Protocol">MCP</abbr>). Writing raw <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> strings by hand is tedious.
+Today, we learn the **FastMCP Python <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>**. Just as `FastAPI` revolutionized web development by using Python type hints to automatically generate OpenAPI documentation, `FastMCP` automatically generates <abbr title="Model Context Protocol">MCP</abbr> Schemas!
 
 ---
 
 ## 🕒 HOUR 1: DEEP THEORY & ANALOGIES
 
-### 1. The FastMCP SDK
-FastMCP is the official Python SDK built by Anthropic. It allows you to expose enterprise data and tools to *any* <abbr title="Artificial Intelligence">AI</abbr> Agent with just a few lines of code.
+### 1. The FastMCP <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr>
+FastMCP is the official Python <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> built by Anthropic. It allows you to expose enterprise data and tools to *any* <abbr title="Artificial Intelligence">AI</abbr> Agent with just a few lines of code.
 
 ### 2. The Magic of Decorators
-You do not write JSON schemas in FastMCP. You just write standard Python functions!
-- **`@mcp.tool()`:** You add this decorator above a Python function. FastMCP uses Python's `inspect` module to read your function's signature and docstring, and automatically generates the perfect JSON Schema for the <abbr title="Large Language Model">LLM</abbr>!
+You do not write <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schemas in FastMCP. You just write standard Python functions!
+- **`@mcp.tool()`:** You add this decorator above a Python function. FastMCP uses Python's `inspect` module to read your function's signature and docstring, and automatically generates the perfect <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema for the <abbr title="Large Language Model">LLM</abbr>!
 - **`@mcp.resource()`:** You use this to expose static data (like a log file or a database table). You assign it a URI like `logs://app/system.log`.
 - **`@mcp.prompt()`:** You use this to define complex, pre-written prompt templates that the <abbr title="Large Language Model">LLM</abbr> Client can pull from the server.
 
 ### 3. Transports (How they talk)
 How does the Claude Desktop app actually talk to your FastMCP server?
-- **stdio (Standard I/O):** The easiest method. The <abbr title="Large Language Model">LLM</abbr> Client physically spawns your Python script as a subprocess on your local machine and sends JSON messages via the terminal's standard input/output.
-- **SSE (Server-Sent Events) over HTTP:** The production method. You deploy the FastMCP server to the cloud. The <abbr title="Large Language Model">LLM</abbr> Client connects over the internet using a persistent HTTP connection.
+- **stdio (Standard I/O):** The easiest method. The <abbr title="Large Language Model">LLM</abbr> Client physically spawns your Python script as a subprocess on your local machine and sends <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> messages via the terminal's standard input/output.
+- **<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr> (Server-Sent Events) over <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>:** The production method. You deploy the FastMCP server to the cloud. The <abbr title="Large Language Model">LLM</abbr> Client connects over the internet using a persistent <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> connection.
 
 ---
 
@@ -114,15 +114,15 @@ if __name__ == "__main__":
 ```
 
 ### Key Takeaways from Code:
-1. **Developer Experience (DX):** Notice how clean the code is. You did not write a single line of JSON-RPC routing logic. FastMCP handles the entire networking layer for you.
-2. **Type Hints are Mandatory:** FastMCP strictly requires Python Type Hints (`query: str`, `limit: int`). If you do not provide them, FastMCP cannot generate the JSON schema, and the <abbr title="Large Language Model">LLM</abbr> will not know what arguments to pass!
+1. **Developer Experience (DX):** Notice how clean the code is. You did not write a single line of <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>-<abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> routing logic. FastMCP handles the entire networking layer for you.
+2. **Type Hints are Mandatory:** FastMCP strictly requires Python Type Hints (`query: str`, `limit: int`). If you do not provide them, FastMCP cannot generate the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schema, and the <abbr title="Large Language Model">LLM</abbr> will not know what arguments to pass!
 
 ---
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
 ### 🛠️ The Challenge: The GitHub Wrapper Server
-You can build an <abbr title="Model Context Protocol">MCP</abbr> Server that wraps third-party REST APIs.
+You can build an <abbr title="Model Context Protocol">MCP</abbr> Server that wraps third-party <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> APIs.
 **Your Task:**
 1. Conceptually design an <abbr title="Model Context Protocol">MCP</abbr> Server for GitHub.
 2. Define a `@mcp.tool()` called `create_issue(repo: str, title: str, body: str)`.
@@ -141,7 +141,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
 
 1. **The Server Registry:** 
    - Propose an internal Developer Portal where teams register their <abbr title="Model Context Protocol">MCP</abbr> Servers. Clients ping the Registry to dynamically discover new servers.
-2. **Authentication (SSE/HTTP):**
+2. **Authentication (<abbr title="Server-Sent Events - A standard describing how servers can initiate data transmission towards clients once an initial connection is established.">SSE</abbr>/<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr>):**
    - State that `stdio` transport is useless for a massive company. You must deploy the servers using `SSE (Server-Sent Events)`.
    - Propose using standard OAuth 2.0. The <abbr title="Artificial Intelligence">AI</abbr> Agent must pass a Bearer Token when connecting to the <abbr title="Model Context Protocol">MCP</abbr> Server.
 3. **Rate Limiting & Blast Radius:**

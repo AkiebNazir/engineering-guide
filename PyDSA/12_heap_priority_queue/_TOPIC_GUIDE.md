@@ -274,12 +274,12 @@ input as a heap — it discards non-contenders immediately.
 
 ---
 
-## Part 4 · Heap vs BST for "kth smallest so far"
+## Part 4 · Heap vs <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> for "kth smallest so far"
 
-Topic 11's BST-based solutions (`PyDSA/11_binary_search_tree/007_kth_smallest_element_in_a_bst_*`
-and the BST-iterator problem `008_binary_search_tree_iterator_*`) answer a
-related-but-different question: given a **static** BST that already
-respects the BST invariant (left < node < right, recursively), an in-order
+Topic 11's <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>-based solutions (`PyDSA/11_binary_search_tree/007_kth_smallest_element_in_a_bst_*`
+and the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>-iterator problem `008_binary_search_tree_iterator_*`) answer a
+related-but-different question: given a **static** <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> that already
+respects the <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> invariant (left < node < right, recursively), an in-order
 traversal visits nodes in fully sorted order for free, so the kth-smallest
 query is answered by walking that traversal k steps (O(h + k) with an
 explicit-stack iterator that yields one value at a time, O(h) space).
@@ -454,11 +454,11 @@ Lazy deletion reappears in Stock Price Fluctuation (25_design/013) and Dijkstra'
 Every snippet below was run against known answers while writing this section.
 
 ```arch
-%% caption: Why a heap and not a sorted list or a BST. The heap wins when you only ever need the extreme, and the data keeps changing.
+%% caption: Why a heap and not a sorted list or a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>. The heap wins when you only ever need the extreme, and the data keeps changing.
 grid 300x100
 node Q "Repeatedly need the min or max" at 0,0 shape=pill
 node A "Full order, or predecessor / rank queries?" at 0,1 shape=diamond color=amber
-node B "sort once, or a balanced BST" at 1,1 color=green sub="topic 11"
+node B "sort once, or a balanced <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>" at 1,1 color=green sub="topic 11"
 node C "Does the data change between queries?" at 0,2 shape=diamond color=amber
 node D "sorted() / min() / quickselect" at 1,2 color=green sub="no heap needed"
 node E "heap" at 0,3 shape=card icon=sort color=amber w=240 sub="O(log n) push and pop, O(1) peek"
@@ -625,7 +625,7 @@ Twelve problems, five moves (size-k heap · max-heap by negation · merge and fr
 ## Checklist Before Leaving This Topic <!--ca-->
 
 - [ ] Explain lazy deletion and use it for "change a priority" (Dijkstra) and "cancel a task" <!--ca-->
-- [ ] Add a counter tiebreaker to a heap of unorderable payloads, and say it also gives FIFO order on ties <!--ca-->
+- [ ] Add a counter tiebreaker to a heap of unorderable payloads, and say it also gives <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> order on ties <!--ca-->
 - [ ] Expand a frontier from a heap (K smallest pairs) instead of building all pairs <!--ca-->
 - [ ] Write in-place heapsort, and say why quicksort usually beats it <!--ca-->
-- [ ] Choose between `min`, `nlargest`, quickselect, a heap and a BST for a given access pattern <!--ca-->
+- [ ] Choose between `min`, `nlargest`, quickselect, a heap and a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr> for a given access pattern <!--ca-->

@@ -1,13 +1,13 @@
 # 036 — Design a Content Delivery Network
 
-Design the CDN itself, in the spirit of Akamai, Cloudflare, Fastly or Netflix Open Connect: a global network of edge caches that serves other companies' web assets, downloads and video segments close to their users and shields their origin servers.
+Design the <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> itself, in the spirit of Akamai, Cloudflare, Fastly or Netflix Open Connect: a global network of edge caches that serves other companies' web assets, downloads and video segments close to their users and shields their origin servers.
 
 ## Functional requirements
 
-- Serve HTTPS `GET`/`HEAD` (including range requests) for customer hostnames from the nearest healthy POP, fetching from the customer's origin on a miss.
+- Serve <abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr> `GET`/`HEAD` (including range requests) for customer hostnames from the nearest healthy POP, fetching from the customer's origin on a miss.
 - Per-customer caching rules: TTLs, cache-key normalisation (query parameters, headers), `stale-while-revalidate` and `stale-if-error`.
 - Purge by URL, prefix and tag, visible worldwide in seconds.
-- TLS for every hostname, including customer-supplied and automatically issued and renewed certificates.
+- <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> for every hostname, including customer-supplied and automatically issued and renewed certificates.
 - Per-customer analytics and billing (bytes, requests, hit ratio, status codes) within minutes.
 - Absorb volumetric and application-layer DDoS without taking customers or their origins down.
 
@@ -24,10 +24,10 @@ Design the CDN itself, in the spirit of Akamai, Cloudflare, Fastly or Netflix Op
 Spend 45 minutes and produce:
 
 1. Clarifying questions and assumptions.
-2. Back-of-envelope QPS, storage, and bandwidth estimates.
+2. Back-of-envelope <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr>, storage, and bandwidth estimates.
 3. <abbr title="Application Programming Interface">API</abbr> contracts and core data model.
 4. Baseline architecture and read/write flows.
-5. Request steering (DNS versus anycast), the cache hierarchy with placement inside a POP and hot-object handling, cache-key design and request collapsing, purge at scale, TLS and certificate management, and the split between control plane and data plane, including origin-failure behaviour.
+5. Request steering (<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> versus anycast), the cache hierarchy with placement inside a POP and hot-object handling, cache-key design and request collapsing, purge at scale, <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> and certificate management, and the split between control plane and data plane, including origin-failure behaviour.
 6. Cache, scale, abuse, failure, and observability plan.
 7. One explicit trade-off you would revisit at 100× traffic or multi-region.
 

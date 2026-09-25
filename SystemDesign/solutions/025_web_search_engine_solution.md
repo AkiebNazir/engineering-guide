@@ -87,7 +87,7 @@ rerank:T -> fe:L
 | Stage | ms |
 |---|---|
 | Frontend, normalisation, cache lookup | 20 |
-| Root fan-out RPC | 5 |
+| Root fan-out <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> | 5 |
 | Leaves: retrieve and score, with a hard deadline (hedge at their p95, about 40) | 100 |
 | Root merge, ~400K candidates to ~1,000 | 10 |
 | Second-stage ranking of ~1,000 | 60 |
@@ -126,7 +126,7 @@ The leaf deadline is the lever: it is the largest slice and the only one that ca
 | Whole shard unavailable | Partial results without that shard; alert. |
 | Bad index build | Quality metrics on a canary slice fail → keep serving the previous shard version. |
 | Crawler backlog | Freshness degrades; serving unaffected. Prioritise news and high-importance hosts. |
-| Region outage | Anycast / DNS routes queries to other regions, which hold full index replicas. |
+| Region outage | Anycast / <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> routes queries to other regions, which hold full index replicas. |
 
 ## Observability and interview close
 
@@ -137,17 +137,17 @@ Trade-off to state: "A tiered index lets me serve fresh pages from a small, freq
 ## Follow-ups the interviewer will ask
 
 1. **"How does this work across regions?"** Crawl and build once, then ship immutable shard files to each serving region, where full index copies answer queries locally. A full 200 TB push per day is 200 TB ÷ 86,400 s = 2.3 GB/s (18.5 Gbps) per region sustained, so ship the base tier weekly (0.33 GB/s) and stream only the fresh tier and the suppression list. Regions are eventually consistent by design, so the same query can differ slightly between regions for hours. I accept that for ranking but not for removals (item 3).
-2. **"What changes at 10× and 100×?"** At 500B pages there are about 40,000 shards, and a flat fan-out that wide leaves no query without a slow leaf (0.999^40,000 is about 10⁻¹⁸). Add a mixer tree (root, intermediate mixers, leaves) so no node fans out to more than a few hundred, and tier the index so most queries touch only a high-quality tier (say 10% of documents) and escalate only when it returns too few good results. 10× QPS is mostly more replicas and a better cache.
+2. **"What changes at 10× and 100×?"** At 500B pages there are about 40,000 shards, and a flat fan-out that wide leaves no query without a slow leaf (0.999^40,000 is about 10⁻¹⁸). Add a mixer tree (root, intermediate mixers, leaves) so no node fans out to more than a few hundred, and tier the index so most queries touch only a high-quality tier (say 10% of documents) and escalate only when it returns too few good results. 10× <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> is mostly more replicas and a better cache.
 3. **"What if removals must take effect in seconds, everywhere?"** A legal takedown cannot wait for an index rebuild or for eventually consistent regions. Keep the suppression list (millions of URLs, tens of MB) as a versioned set in a strongly consistent store, pushed to every root within seconds, and filter merged results against it before snippets. Each root reports the version it holds, and one that falls too far behind stops serving the affected content class (fail closed).
 4. **"What does it cost?"** The leaf fleet dominates: 8,000 machines (above) at an assumed $1,000 per machine-month is about $8M a month, against crawl bandwidth of 2 GB/s that is small by comparison. The levers are cache hit rate, tiering and posting compression, so I would track cost per 1,000 queries, and re-derive the fleet whenever the hit rate moves.
-5. **"How do you handle abuse?"** Search spam (link farms, keyword stuffing, cloaking that shows the crawler different content) is met with spam classifiers and link-graph demotion as offline signals, and with a second fetch using a browser-like profile to catch cloaking. Scrapers get rate limits and challenges. As a crawler we must not be abusive: honour robots.txt and per-host politeness, and publish a verifiable crawler identity (reverse-DNS check) so sites can tell us from impostors.
+5. **"How do you handle abuse?"** Search spam (link farms, keyword stuffing, cloaking that shows the crawler different content) is met with spam classifiers and link-graph demotion as offline signals, and with a second fetch using a browser-like profile to catch cloaking. Scrapers get rate limits and challenges. As a crawler we must not be abusive: honour robots.txt and per-host politeness, and publish a verifiable crawler identity (reverse-<abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr> check) so sites can tell us from impostors.
 6. **"Why shard by document and fan out to everything? Term sharding avoids that."** A common term's posting list covers about 30% of 50B documents (15B postings, roughly 15 GB at an assumed ~1 byte each), and a multi-term query would have to ship those lists across the network to intersect them; common terms also make hot shards. Document sharding keeps every intersection local and pays with fan-out, which tiering, hedging and deadlines tame. If the interviewer insists, I would use term partitioning only for a small side index of rare terms.
 7. **"How do you roll out a ranking change safely?"** Evaluate offline on a judged query set (NDCG) and click logs, then serve a canary slice with interleaving (results from old and new rankers mixed in one page) and guardrails on latency, click-through and abandonment before ramping. Model version and index version are independent, so a bad model rolls back without a rebuild.
 
 ## Common mistakes
 
 1. **Sharding the index by term.** Common words create giant hot shards and multi-term queries become cross-shard joins. Shard by document.
-2. **Ignoring tail latency across thousands of leaves.** The query waits for the slowest leaf. Use hedged requests, a hard leaf deadline and partial results, and keep leaf CPU below saturation.
+2. **Ignoring tail latency across thousands of leaves.** The query waits for the slowest leaf. Use hedged requests, a hard leaf deadline and partial results, and keep leaf <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> below saturation.
 3. **A global crawl rate limit instead of per-host politeness.** One host can receive thousands of concurrent fetches and block you. Queue per host with next-allowed times, and cache robots.txt.
 4. **Treating URL dedup and content dedup as one problem.** A seen-set catches repeated URLs, not mirrors or parameter variants. Add content hashes for exact copies and SimHash for near-duplicates.
 5. **Updating index shards in place.** A bad build then cannot be rolled back and readers see torn state. Ship immutable versioned shards, canary them, and switch atomically.
@@ -157,7 +157,7 @@ Trade-off to state: "A tiered index lets me serve fresh pages from a small, freq
 ## Going from L5 to L6
 
 - **Migration and rollout.** Treat index and model versions as immutable artifacts: canary a shard version on a traffic slice against quality metrics, and when the index format changes let leaves read both formats during the transition so any step can roll back.
-- **Cost model.** The serving fleet is the cost, so the levers are cache hit rate, tiering (touch about 10% of shards for most queries), compression and SSD versus RAM. Report cost per 1,000 queries and the marginal cost of one more fresh document.
+- **Cost model.** The serving fleet is the cost, so the levers are cache hit rate, tiering (touch about 10% of shards for most queries), compression and <abbr title="Solid-State Drive - A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times.">SSD</abbr> versus <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>. Report cost per 1,000 queries and the marginal cost of one more fresh document.
 - **Ownership and blast radius.** Crawl, index and serve are separate teams joined by durable-storage contracts, so a crawler backlog never slows queries. A bad shard version affects about 1/4,000 of documents, and a query of death should be isolated per replica group.
 - **Build versus buy.** Build retrieval and ranking, since they are the product; reuse object storage and batch and streaming frameworks. For a corpus under about a billion documents an off-the-shelf engine such as OpenSearch is the right buy; 50B pages is well beyond it.
 - **Phased evolution and what to measure first.** Start with one base tier and a cache, then add the fresh tier, then the high-quality tier and the mixer tree. Measure first: the query frequency distribution (cache hit rate by TTL), the per-leaf latency distribution, and index freshness by domain.

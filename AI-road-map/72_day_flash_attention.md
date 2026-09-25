@@ -11,7 +11,7 @@ The Self-Attention mechanism scales quadratically $O(N^2)$. But the bottleneck i
 ### 1. The GPU Memory Wall (SRAM vs HBM)
 To understand Flash Attention, you must understand physical GPU memory. An NVIDIA A100 GPU has two types of memory:
 1. **HBM (High Bandwidth Memory):** This is the "Main Drive" of the GPU. It is massive (40GB or 80GB), but physically far from the compute cores. Reading/Writing to HBM is incredibly slow.
-2. **SRAM (Static RAM):** This is the "L1 Cache" directly on the compute cores. It is lightning fast, but incredibly tiny (only 20 Megabytes!).
+2. **SRAM (Static <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>):** This is the "L1 Cache" directly on the compute cores. It is lightning fast, but incredibly tiny (only 20 Megabytes!).
 
 ### 2. The Flaw of Standard Attention
 Standard PyTorch Attention calculates $S = \text{Softmax}(Q \times K^T) \times V$.

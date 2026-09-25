@@ -59,7 +59,7 @@ client B tries to acquire same lock while held -> false
 
 ## Releasing safely: don't just `DEL`
 
-The naive release is `r.delete(lock_key)`. The bug: if your process was slow (a GC pause,
+The naive release is `r.delete(lock_key)`. The bug: if your process was slow (a <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pause,
 a network stall) and the lock's TTL already expired, releasing by plain `DEL` might delete
 a lock that a *different* client has since legitimately acquired — you'd release someone
 else's lock, and now two clients both believe they hold it.
@@ -155,10 +155,10 @@ Martin Kleppmann published a widely-discussed critique of Redlock's *safety* cla
   execution behaving within bounds.
 - In the real world, that assumption can break in two independent ways:
   1. **Clock jumps.** If a node's system clock jumps forward (NTP correction, manual
-     admin action, a VM being paused and resumed), a lock can appear expired to the
+     admin action, a <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> being paused and resumed), a lock can appear expired to the
      algorithm sooner than the holder's actual elapsed wall-clock work — the lock frees up
      while the original holder is still working under the assumption it's still valid.
-  2. **Process pauses.** A GC pause, a disk stall, a hypervisor CPU steal, or just an OS
+  2. **Process pauses.** A <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pause, a disk stall, a hypervisor <abbr title="Central Processing Unit - The primary component of a computer that acts as its 'brain', executing instructions of a computer program.">CPU</abbr> steal, or just an <abbr title="Operating System. System software that manages computer hardware, software resources, and provides common services for computer programs.">OS</abbr>
      scheduling a process out for longer than expected can freeze a client between "I
      confirmed I hold the lock" and "I actually perform the protected action." The lock's
      TTL can expire *during that pause*, another client acquires it and starts working,
@@ -188,7 +188,7 @@ where "this happened exactly once" is a hard business invariant. In those cases:
 
 - Use a **fencing token**: every lock acquisition returns a strictly increasing number,
   and the *protected resource itself* rejects any write tagged with an older token than
-  one it's already seen. This defends against the exact GC-pause scenario above — even if
+  one it's already seen. This defends against the exact <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>-pause scenario above — even if
   a paused client wakes up and acts late, its stale token gets rejected by the resource,
   not just by the lock.
 - Or push the mutual-exclusion requirement into the system that must already be

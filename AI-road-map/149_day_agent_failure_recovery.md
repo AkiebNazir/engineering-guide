@@ -173,7 +173,7 @@ Add a `loop_count` to your `AgentState`. In your router function, if `loop_count
 A "Strong Hire" candidate must articulate:
 1. **Multi-Provider Failover:** LCEL `.with_fallbacks()` routing from GPT-4 to Claude 3 to Gemini.
 2. **Local Fallback:** If all external providers go down, route to an on-premise `vLLM` server hosting Llama-3-70B.
-3. **Queue Backpressure:** Do not accept HTTP requests if the Redis queue exceeds 10,000 tasks. Return `503 Service Unavailable` immediately.
+3. **Queue Backpressure:** Do not accept <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> requests if the Redis queue exceeds 10,000 tasks. Return `503 Service Unavailable` immediately.
 4. **Token Rate Limiting (Token Bucket):** Throttle the agent workers locally so they never actually hit the OpenAI rate limit. 
 5. **Graceful Degradation of Features:** If the <abbr title="Large Language Model">LLM</abbr> is down, disable the "Chat" feature in the frontend, but keep the core application functional.
 

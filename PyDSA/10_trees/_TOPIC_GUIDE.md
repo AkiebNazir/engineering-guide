@@ -5,7 +5,7 @@
 > "next" means "follow a reference", and there are TWO of them at every node.
 > That single change is why trees need their own vocabulary: preorder vs
 > inorder vs postorder (which reference do you follow, and when do you look
-> at the current node?), DFS vs BFS (do you go deep before wide, or wide
+> at the current node?), <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> vs <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (do you go deep before wide, or wide
 > before deep?), and a whole family of "return something up the call stack
 > while a side channel tracks something else" patterns that arrays never
 > needed. This guide is the mechanism; see the Go guide
@@ -41,9 +41,9 @@ everything below is what you do with it.
 
 ---
 
-## Part 2 · DFS — Three Orders, Two Implementations Each
+## Part 2 · <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> — Three Orders, Two Implementations Each
 
-DFS commits to one branch and goes all the way down before backing up. The
+<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> commits to one branch and goes all the way down before backing up. The
 three "orders" differ only in WHEN, relative to the two recursive calls, you
 visit the current node.
 
@@ -100,7 +100,7 @@ postorder : 4 5 2 6 3 1      (root last, always)
 - *Preorder* reproduces a tree from a stream top-down (LC 297, problem 019
   here — the root must be read before you know where its subtrees start).
 - *Inorder* on a **binary search tree** yields sorted order — the one order
-  worth memorizing cold, and it is why topic 11 (BST) exists as its own
+  worth memorizing cold, and it is why topic 11 (<abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>) exists as its own
   topic.
 - *Postorder* is "children before parent" — the shape every bottom-up
   aggregate needs (height, diameter, balance, max path sum — Part 3).
@@ -119,7 +119,7 @@ shows the iterative fix. **Recognize the shape "chain-like tree, N up to
 10^4-10^5" as a cue to reach for an iterative traversal**, not because
 recursion is "slow", but because it can crash outright.
 
-### 2.3 Iterative DFS with an explicit stack
+### 2.3 Iterative <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> with an explicit stack
 
 The call stack IS a stack — an iterative traversal just makes that stack a
 Python list you control, so its size lives on the heap instead of counting
@@ -198,12 +198,12 @@ def postorder_iterative(root):          # trick 1: reversed modified-preorder
 
 ---
 
-## Part 3 · BFS — Level Order, Built on `collections.deque`
+## Part 3 · <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> — Level Order, Built on `collections.deque`
 
-DFS goes deep first; BFS goes wide first — it visits every node at distance
+<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> goes deep first; <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> goes wide first — it visits every node at distance
 `k` from the root before any node at distance `k+1`. This needs a **queue**,
-not a stack: the whole reason DFS/BFS produce different orders is that one
-structure is LIFO and the other is FIFO. Topic 07's guide
+not a stack: the whole reason <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>/<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> produce different orders is that one
+structure is <abbr title="Last-In, First-Out. A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures.">LIFO</abbr> and the other is <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr>. Topic 07's guide
 (`PyDSA/07_queue_deque/_TOPIC_GUIDE.md`) covers the container in full — this
 is the specific way trees use it.
 
@@ -266,7 +266,7 @@ level_size=3: pop 4, pop 5, pop 6              result=[[1],[2,3],[4,5,6]]
 queue=[]  -> done
 ```
 
-### 3.1 DFS space is O(height); BFS space is O(width) — and these differ a lot
+### 3.1 <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> space is O(height); <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> space is O(width) — and these differ a lot
 
 ```
 DFS (recursive or iterative-with-stack): the stack holds at most one path
@@ -277,14 +277,14 @@ bottom level has ceil(n/2) nodes -> O(n) space in the worst case, which can
 be far larger than O(h) = O(log n) for that same tree.
 ```
 
-For a WIDE, shallow tree (e.g. a nearly-complete tree), BFS's queue can hold
-almost the whole tree at once while DFS's stack never exceeds `O(log n)`.
-For a NARROW, deep tree (a chain), DFS's stack is `O(n)` too — so DFS is
-never worse than BFS on space, but it can tie it. **When memory is the
-binding constraint and the tree may be wide, prefer DFS with an explicit
+For a WIDE, shallow tree (e.g. a nearly-complete tree), <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>'s queue can hold
+almost the whole tree at once while <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>'s stack never exceeds `O(log n)`.
+For a NARROW, deep tree (a chain), <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>'s stack is `O(n)` too — so <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> is
+never worse than <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> on space, but it can tie it. **When memory is the
+binding constraint and the tree may be wide, prefer <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> with an explicit
 stack.** When you need "process level by level" as the actual requirement
 (shortest path in an unweighted structure, right-side view, level averages),
-BFS is not optional — it is the only order that groups nodes by depth.
+<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> is not optional — it is the only order that groups nodes by depth.
 
 ---
 
@@ -353,7 +353,7 @@ answers, not its ancestors'.
 > ANCESTORS (pass it down as a parameter), or does it require knowing
 > something about its DESCENDANTS (return it up from the children)?**
 
-Some problems need both directions at once (LCA-with-values, or "maximum
+Some problems need both directions at once (<abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr>-with-values, or "maximum
 difference between a node and an ancestor") — that is the advanced case, not
 the default one. Start every new tree problem by asking this question before
 writing a line of code.
@@ -371,9 +371,9 @@ two-sided "through" value, which can never be extended further and so is
 never returned — recording it is a dead end for the recursion, but exactly
 what the caller ultimately wants).
 
-This is a **graph/DP problem wearing a tree costume**: it is really "find
+This is a **graph/<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> problem wearing a tree costume**: it is really "find
 the best value over all possible split points", computed with a bottom-up
-DP where each node's DP table has exactly one useful entry (`height`, or
+<abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> where each node's <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> table has exactly one useful entry (`height`, or
 `best downward gain`) but the ANSWER draws from a different, larger
 quantity (`left_height + right_height`, or `left_gain + right_gain +
 node.val`) that never gets carried forward. Recognizing that split — "the
@@ -499,16 +499,16 @@ this folder lead with.
 Trees are also the surface where several OTHER topics' techniques first show
 up wearing tree syntax:
 
-- **It's really DP with a postorder recurrence** whenever a node's answer is
+- **It's really <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> with a postorder recurrence** whenever a node's answer is
   a function of its children's answers computed bottom-up and there's no
   cross-subtree combination beyond addition/max (height, diameter, balance,
   subtree sum, max path sum — Part 5). The "state" is implicit in the call
   stack instead of a table.
 - **It's really a graph problem** whenever the structure loses the strict
   "one parent" property — a tree with parent pointers added, or a problem
-  that needs to move UPWARD as well as downward (LCA via parent chains,
+  that needs to move UPWARD as well as downward (<abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> via parent chains,
   "distance between two nodes" without a designated root) is better modeled
-  as an undirected graph and solved with graph BFS/DFS (topic 14), not
+  as an undirected graph and solved with graph <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>/<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (topic 14), not
   tree-specific recursion.
 - **It's really topic 04 (prefix sum) with a hashmap**, applied along
   root-to-leaf paths: "count downward paths summing to target, not
@@ -525,7 +525,7 @@ up wearing tree syntax:
 
 The tell in all four cases: strip away the `TreeNode` class and ask what the
 recursion is actually computing. If it's "best answer over all split
-points, built from children's answers" → DP. If it needs to walk to a
+points, built from children's answers" → <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>. If it needs to walk to a
 non-descendant → graph. If it's "does some contiguous stretch sum to K" →
 prefix sum + hashmap. If it enumerates every path → backtracking.
 
@@ -557,16 +557,16 @@ C -> D : "no"
 | Question | Tool |
 |---|---|
 | Need every node's value in root/left/right visit order? | Preorder (recursive or iterative, §2.1/§2.3) |
-| Need sorted order out of a BST? | Inorder (§2.1) — the one order worth memorizing |
+| Need sorted order out of a <abbr title="Binary Search Tree. A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node.">BST</abbr>? | Inorder (§2.1) — the one order worth memorizing |
 | Need children's answers before the parent's? | Postorder (§2.1/§2.3) |
-| Need "level by level" grouping, or shortest-path-in-unweighted-tree? | BFS with `collections.deque` (Part 3) |
+| Need "level by level" grouping, or shortest-path-in-unweighted-tree? | <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> with `collections.deque` (Part 3) |
 | Tree might be a long chain / N up to 10^4-10^5? | Iterative, not recursive — Python's recursion limit is real (§2.2) |
-| Memory-constrained AND tree could be wide? | DFS (O(h) space) over BFS (O(w) space) — §3.1 |
+| Memory-constrained AND tree could be wide? | <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (O(h) space) over <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> (O(w) space) — §3.1 |
 | Node's answer depends on its ANCESTORS? | Carry state DOWN as a parameter (§4.1) |
 | Node's answer depends on its DESCENDANTS? | Return the value UP the call stack (§4.2) |
 | Need a running max/best that ISN'T what gets returned? | `nonlocal` closure (§5.2) or a mutable box (§5.3) |
 | Need EVERY root-to-leaf path listed? | Backtracking: build, append at leaf, pop on return (Part 6) |
-| "Count paths summing to K, not from the root"? | Prefix sum + hashmap along the DFS path (Part 6, LC 437) |
+| "Count paths summing to K, not from the root"? | Prefix sum + hashmap along the <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> path (Part 6, LC 437) |
 | Need to move to a NON-descendant (uncle, sibling's subtree)? | This is a graph problem now — topic 14 |
 
 ---
@@ -575,9 +575,9 @@ C -> D : "no"
 
 | Operation | Time | Space | Note |
 |---|:--:|:--:|---|
-| Recursive DFS (any order) | O(n) | O(h) | h = height; O(log n) balanced, **O(n)** skewed |
-| Iterative DFS, explicit stack | O(n) | O(h) | Same space bound, immune to `RecursionError` |
-| BFS / level order | O(n) | **O(w)** | w = max width; can far exceed O(h) — §3.1 |
+| Recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> (any order) | O(n) | O(h) | h = height; O(log n) balanced, **O(n)** skewed |
+| Iterative <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, explicit stack | O(n) | O(h) | Same space bound, immune to `RecursionError` |
+| <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> / level order | O(n) | **O(w)** | w = max width; can far exceed O(h) — §3.1 |
 | Postorder aggregate + `nonlocal` | O(n) | O(h) | one pass, one closure variable |
 | Top-down with a parameter | O(n) | O(h) | no aggregation needed beyond the boolean/value itself |
 | `collections.deque.popleft()` | O(1) | — | vs. `list.pop(0)`'s O(n) — topic 07 §3.0 |
@@ -586,7 +586,7 @@ C -> D : "no"
 
 ## Part 9 · Common Mistakes Across This Topic
 
-1. Using `list.pop(0)` instead of `collections.deque.popleft()` for BFS —
+1. Using `list.pop(0)` instead of `collections.deque.popleft()` for <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> —
    correct answer, quadratic in practice on wide trees (topic 07 §3.0).
 2. Forgetting `level_size = len(queue)` before the inner loop, so levels
    bleed into each other instead of staying separate (§3, Part 3).
@@ -638,14 +638,14 @@ C -> D : "no"
 closure idiom (§5.2), 011 is the top-down parameter idiom's other half
 (§4.1), 012 is two-pointer recursion across ONE tree's mirrored halves
 (compare 007's two-tree version), and 019 is the reconstruction problem this
-whole part-2 DFS discussion was building toward — preorder plus null markers
+whole part-2 <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> discussion was building toward — preorder plus null markers
 is exactly enough information to rebuild the tree, and inorder alone is not
 (see 019's solution file for why).
 
 ---
 
 <!-- block:10_py_1_beyond -->
-## Part 11 · Shapes Beyond the Twenty: O(1)-Space Traversal, Tree DP and Level Variants
+## Part 11 · Shapes Beyond the Twenty: O(1)-Space Traversal, Tree <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> and Level Variants
 
 The twenty problems teach the recursion design pattern (down via parameters, up via returns). These are the shapes
 interviews ask next. Every snippet below was run against LeetCode's own examples while writing this section.
@@ -721,7 +721,7 @@ def path_sum_iii(root, target):
 O(n) instead of the O(n·h) of "start a fresh path search at every node". The seed `{0: 1}` and the un-increment are the
 two places this goes wrong.
 
-### 11.4 Tree DP: return a *pair* (House Robber III, LC 337)
+### 11.4 Tree <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>: return a *pair* (House Robber III, LC 337)
 
 When a node's best answer depends on a *choice* that constrains its children, return a tuple of "best if I take this"
 and "best if I skip this". No `nonlocal` needed — the parent combines two numbers per child:
@@ -737,7 +737,7 @@ def rob(root):
 ```
 
 The same "return a small state tuple" idea solves Binary Tree Cameras (states: uncovered / covered / has camera) and
-Longest Univalue Path. It is the tree version of the DP topics (16/17): the recursion *is* the table.
+Longest Univalue Path. It is the tree version of the <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> topics (16/17): the recursion *is* the table.
 
 ### 11.5 Rewiring in place: Flatten (LC 114) and Next Pointers (LC 116/117)
 
@@ -771,7 +771,7 @@ while head:
 
 ### 11.6 Level-order variants
 
-| Problem | The change to the BFS template |
+| Problem | The change to the <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> template |
 |---|---|
 | Zigzag Level Order (LC 103) | Collect the level normally; reverse every other level (`[::-1]`) — do not mutate the queue. `[3,9,20,None,None,15,7]` → `[[3],[20,9],[15,7]]`. |
 | Vertical Order (LC 314) | Carry a **column index** with each node (`left: c-1`, `right: c+1`); group by column, read columns left to right. `[3,9,20,None,None,15,7]` → `[[9],[3,15],[20],[7]]`. (LC 987 adds a row-then-value sort within a cell.) |
@@ -818,8 +818,8 @@ because it needs no padding.
 |---|---|
 | "Do it without recursion." | Explicit stack (Part 2.3); for O(1) space, Morris (11.1). |
 | "What if the tree is a straight line?" | Depth `n`: CPython raises `RecursionError` near 1000 frames; convert to an explicit stack. |
-| "It is not binary." | Replace `left`/`right` by a `children` list; every pattern carries over (DFS returns aggregate over children). |
-| "There are parent pointers." | Then it is a graph: walk up and down (LCA via two pointers, distance-K without a parent map). |
+| "It is not binary." | Replace `left`/`right` by a `children` list; every pattern carries over (<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> returns aggregate over children). |
+| "There are parent pointers." | Then it is a graph: walk up and down (<abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr> via two pointers, distance-K without a parent map). |
 | "The tree is huge / on disk." | Streaming serialization in preorder; recursion-free traversals; B-trees for disk (topic 11 / SD). |
 | "Concurrent modification?" | Traversal needs a snapshot or a lock; Morris is unsafe under concurrency. |
 | "Return the *path*, not the sum." | Carry the path list down with push/pop (backtracking), copy at the leaf. |
@@ -847,28 +847,28 @@ Twenty problems, six moves (traversal orders · postorder aggregates · two-tree
 | [011 · Path Sum](PyDSA/10_trees/011_path_sum_solution.py) <br>LC 112 · Easy | Down via a parameter | Carry `remaining` *down* (return values only go up); test at **leaves**, after subtracting the node's value. **Trap:** checking `remaining == 0` at any node; subtracting after the leaf test. |
 | [012 · Symmetric Tree](PyDSA/10_trees/012_symmetric_tree_solution.py) <br>LC 101 · Easy | Crossed two-tree recursion | Symmetric = left and right subtrees are *mirrors*: compare `left.left` with `right.right` and `left.right` with `right.left`. **Trap:** reusing 007 (`same(left, right)`) — same-side pairing is stricter than mirroring. |
 | [013 · Binary Tree Level Order Traversal](PyDSA/10_trees/013_binary_tree_level_order_traversal_solution.py) <br>LC 102 · Medium | Level-size loop | A queue already visits in level order; the invariant is "at the top of each outer iteration the queue holds exactly one level". **Trap:** an inner `while q:` (children are drained into the same level); re-reading `len(q)` inside the loop. |
-| [014 · Binary Tree Right Side View](PyDSA/10_trees/014_binary_tree_right_side_view_solution.py) <br>LC 199 · Medium | Last node per level | The answer is a *level* property, not a pointer property: the last node of each level (BFS), or DFS right-first recording the first arrival per depth. **Trap:** following `.right` from the root (fails `[1,2,3,4]`); left-first DFS gives the *left* view. |
+| [014 · Binary Tree Right Side View](PyDSA/10_trees/014_binary_tree_right_side_view_solution.py) <br>LC 199 · Medium | Last node per level | The answer is a *level* property, not a pointer property: the last node of each level (<abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr>), or <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> right-first recording the first arrival per depth. **Trap:** following `.right` from the root (fails `[1,2,3,4]`); left-first <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> gives the *left* view. |
 | [015 · Count Good Nodes in Binary Tree](PyDSA/10_trees/015_count_good_nodes_in_binary_tree_solution.py) <br>LC 1448 · Medium | Max-so-far down the path | "Good" is a property of a node's ancestors, so pass the path maximum down as a parameter. **Trap:** `>` instead of `>=` (an equal value is still good); comparing with the *parent* instead of the path maximum. |
 | [016 · Construct Binary Tree from Preorder and Inorder Traversal](PyDSA/10_trees/016_construct_binary_tree_from_preorder_and_inorder_traversal_solution.py) <br>LC 105 · Medium | Split by the root | Preorder's first element is the root; its position in inorder splits the two subtrees; use an index map for O(n). **Trap:** `preorder[1:k]` instead of `[1:k+1]`; using the inorder index `k` to slice preorder without re-basing. |
-| [017 · Lowest Common Ancestor of a Binary Tree](PyDSA/10_trees/017_lowest_common_ancestor_of_a_binary_tree_solution.py) <br>LC 236 · Medium | Overloaded return value | The recursion returns "p or q found below me", and the first node that sees both sides is the LCA. **Trap:** only handling p and q in *different* subtrees (fails when one is the other's ancestor); comparing values instead of identity. |
+| [017 · Lowest Common Ancestor of a Binary Tree](PyDSA/10_trees/017_lowest_common_ancestor_of_a_binary_tree_solution.py) <br>LC 236 · Medium | Overloaded return value | The recursion returns "p or q found below me", and the first node that sees both sides is the <abbr title="Lowest Common Ancestor. In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants.">LCA</abbr>. **Trap:** only handling p and q in *different* subtrees (fails when one is the other's ancestor); comparing values instead of identity. |
 | [018 · Binary Tree Maximum Path Sum](PyDSA/10_trees/018_binary_tree_maximum_path_sum_solution.py) <br>LC 124 · Hard | Gain vs through-value | A path is a "V" with one turning point: **record** `val + left + right`, **return** `val + max(left, right)`, and clamp negative gains to 0. **Trap:** returning the through-value (a fork that does not exist); recording the gain (never sees a V — `[1,2,3]` gives 3, not 6). |
 | [019 · Serialize and Deserialize Binary Tree](PyDSA/10_trees/019_serialize_and_deserialize_binary_tree_solution.py) <br>LC 297 · Hard | Preorder with null markers | Preorder plus explicit nulls is unambiguous; deserialize by consuming tokens from an iterator. **Trap:** no null markers (`[1,2]` and `[1,null,2]` collide); a delimiter that can appear in the data. |
-| [020 · All Nodes Distance K in Binary Tree](PyDSA/10_trees/020_all_nodes_distance_k_in_binary_tree_solution.py) <br>LC 863 · Medium | Tree as an undirected graph | Add the upward edges with a parent map, then BFS from the target for exactly `k` levels. **Trap:** BFS without a `visited` set (walks target → child → parent back to target); draining all nodes in one loop and losing the distance. |
+| [020 · All Nodes Distance K in Binary Tree](PyDSA/10_trees/020_all_nodes_distance_k_in_binary_tree_solution.py) <br>LC 863 · Medium | Tree as an undirected graph | Add the upward edges with a parent map, then <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> from the target for exactly `k` levels. **Trap:** <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> without a `visited` set (walks target → child → parent back to target); draining all nodes in one loop and losing the distance. |
 
 ---
 <!-- problem-map:end -->
 
 ## Checklist Before Leaving This Topic
 
-- [ ] I can write all three DFS orders recursively from memory, and state in
+- [ ] I can write all three <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> orders recursively from memory, and state in
       one sentence what distinguishes each (§2.1).
 - [ ] I can write inorder traversal iteratively with an explicit stack,
       without looking it up (§2.3).
 - [ ] I know Python's recursion limit is a real, hittable constraint on
       skewed trees, and I know the iterative fix (§2.2).
-- [ ] I can write level-order BFS using `collections.deque`, including the
+- [ ] I can write level-order <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> using `collections.deque`, including the
       `level_size` snapshot trick (Part 3).
-- [ ] I can state why BFS space is O(width) while DFS space is O(height),
+- [ ] I can state why <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> space is O(width) while <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> space is O(height),
       and that these can differ by orders of magnitude (§3.1).
 - [ ] Before writing any tree recursion, I ask: does this node's answer
       depend on ancestors (parameter, down) or descendants (return value,
@@ -878,14 +878,14 @@ Twenty problems, six moves (traversal orders · postorder aggregates · two-tree
       `UnboundLocalError` specifically (§5.1-§5.2).
 - [ ] I can name the two alternatives to `nonlocal` (mutable box, tuple
       return) and state one tradeoff each (§5.3-§5.4).
-- [ ] I can recognize when a "tree" problem is secretly DP, a graph problem,
+- [ ] I can recognize when a "tree" problem is secretly <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr>, a graph problem,
       a prefix-sum problem, or a backtracking problem, from the shape of
       what the recursion computes (Part 6).
 </content>
 - [ ] Write Morris inorder and say what it costs (temporary mutation, not concurrency-safe) <!--ca-->
 - [ ] Write a genuinely bottom-up iterative postorder with a `last` pointer <!--ca-->
 - [ ] Solve Path Sum III with a prefix-sum map, including the un-increment on the way up <!--ca-->
-- [ ] Return a *pair* for a tree DP (House Robber III) and explain the two states <!--ca-->
+- [ ] Return a *pair* for a tree <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (House Robber III) and explain the two states <!--ca-->
 - [ ] Build from inorder + postorder, and say why the **right** child is built first <!--ca-->
 
 ---
@@ -908,10 +908,10 @@ edges exist, `target -> child -> parent` returns to target. Without it the examp
 itself at "distance 2".
 
 The Go version keys the map by `*TreeNode` (pointer identity) and reads a missing parent as `nil` for
-free (zero values). The recursive DFS alternative runs fine on a 200,000-deep path in Go (growable
+free (zero values). The recursive <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> alternative runs fine on a 200,000-deep path in Go (growable
 goroutine stacks) — the same recursion raises RecursionError in CPython past ~1000 frames.
 
 ### Checklist additions
 
-- [ ] I can convert a tree to an undirected graph with a parent map and BFS by levels.
+- [ ] I can convert a tree to an undirected graph with a parent map and <abbr title="Breadth-First Search. An algorithm for traversing or searching tree or graph data structures level by level.">BFS</abbr> by levels.
 - [ ] I can explain why visited is required once parent edges are added.

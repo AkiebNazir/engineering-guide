@@ -112,7 +112,7 @@ window[s[r]]++
 > ✅ **Default to `[128]int` or `[256]int` for byte-indexed ASCII problems.**
 > It is strictly faster than `map[byte]int` — no hash computation, no bucket
 > lookup (Topic 01 Part 2.1), just a direct array index — and it lives on the
-> stack if the array doesn't escape, so there's no GC pressure at all. Only
+> stack if the array doesn't escape, so there's no <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pressure at all. Only
 > reach for a map when the key space is genuinely large or the keys aren't
 > small integers (e.g. windows over `[]int` with values in `[-10⁹, 10⁹]`).
 
@@ -388,7 +388,7 @@ func minWindow(s, t string) string {
 }
 ```
 
-> ⚠️ `[128]int` assumes ASCII: a byte ≥ 128 (any UTF-8 multi-byte character) makes `need[t[i]]` panic with
+> ⚠️ `[128]int` assumes ASCII: a byte ≥ 128 (any <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 multi-byte character) makes `need[t[i]]` panic with
 > `index out of range`. LeetCode guarantees English letters here; otherwise use `[256]int` over bytes or a
 > `map[rune]int` over `[]rune(s)`.
 
@@ -574,7 +574,7 @@ constraint, not the wording, picks the tool.
 | Symptom | Right tool |
 |---|---|
 | Values may be negative, aggregate is a sum | prefix sums + map (topic 04) |
-| Subsequence, not subarray | DP (topics 16/17) |
+| Subsequence, not subarray | <abbr title="Dynamic Programming. A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results.">DP</abbr> (topics 16/17) |
 | Sorted array, want a pair | converging two pointers (topic 02) |
 | k-th largest / median across the window | heaps with lazy deletion (topic 12) |
 | Many arbitrary ranges queried later | prefix sums / segment tree (topics 04, 26) |

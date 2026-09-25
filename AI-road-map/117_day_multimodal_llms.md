@@ -124,7 +124,7 @@ You have a photo of a restaurant receipt.
 Spend 15 minutes drafting a verbal answer to this question.
 
 **The Question:**
-*"Design an <abbr title="Artificial Intelligence">AI</abbr> system for an insurance company that processes car crash claims automatically. The system receives a raw PDF containing photos of the damaged car, scanned repair shop receipts, and handwritten notes. How do you design the multimodal architecture to output a structured JSON estimate?"*
+*"Design an <abbr title="Artificial Intelligence">AI</abbr> system for an insurance company that processes car crash claims automatically. The system receives a raw PDF containing photos of the damaged car, scanned repair shop receipts, and handwritten notes. How do you design the multimodal architecture to output a structured <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> estimate?"*
 
 #### 📝 Strong Hire Rubric (Evaluate your answer against this):
 A "Strong Hire" candidate must articulate the following points clearly:
@@ -135,7 +135,7 @@ A "Strong Hire" candidate must articulate the following points clearly:
    - Propose using a Vision-Language Model (like GPT-4o or a fine-tuned LLaVA).
    - Emphasize the need for **Dynamic High-Resolution Crops**. The receipts contain tiny text. If you compress the receipt to $224 \times 224$, the text becomes unreadable. You must split the receipt into high-res tiles!
 3. **Structured Output:**
-   - Propose using **Constrained Decoding** (from Day 112) on the output of the LMM to guarantee the final repair estimate is returned as perfectly valid, database-ready JSON.
+   - Propose using **Constrained Decoding** (from Day 112) on the output of the LMM to guarantee the final repair estimate is returned as perfectly valid, database-ready <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>.
 
 ---
 **Task for the end of the day:** Commit your code to Git. 

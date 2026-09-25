@@ -13,7 +13,7 @@ Today, we learn advanced planning architectures: **Plan-and-Execute**, and paral
 
 ### 1. The Plan-and-Execute Pattern
 Instead of interleaving thinking and acting, we completely separate them into two different Agents!
-1. **The Planner:** Reads the user's prompt and generates a strict, step-by-step JSON array of instructions (The Plan).
+1. **The Planner:** Reads the user's prompt and generates a strict, step-by-step <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> array of instructions (The Plan).
 2. **The Executor:** Takes The Plan, blindly executes Step 1, records the result, executes Step 2, and so on.
 Because the Planner generates the entire 20-step map upfront, the agent never gets lost!
 
@@ -21,11 +21,11 @@ Because the Planner generates the entire 20-step map upfront, the agent never ge
 What if the Planner says *Step 3: Download the file*, but the file server is offline? The Executor will crash.
 To fix this, we use **Re-Planning**. If the Executor encounters an error on Step 3, it stops, bundles the error log, and sends it *back* to the Planner. The Planner reads the error, dynamically deletes Steps 3-20, and writes a brand new set of steps to recover from the failure!
 
-### 3. Task DAG Generation & LLMCompiler
+### 3. Task <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr> Generation & LLMCompiler
 A linear step-by-step plan is slow. 
 What if the user asks: *"What is the stock price of Apple, Microsoft, and Google?"*
 A linear agent searches Apple, waits 2 seconds. Searches Microsoft, waits 2 seconds. Searches Google, waits 2 seconds.
-**LLMCompiler** is a revolutionary framework where the Planner generates a **Directed Acyclic Graph (DAG)** of tasks. It realizes that searching Apple, Microsoft, and Google are *independent* tasks, and the Executor runs all three <abbr title="Application Programming Interface">API</abbr> calls **in parallel** concurrently! This cuts latency by 66%!
+**LLMCompiler** is a revolutionary framework where the Planner generates a **Directed Acyclic Graph (<abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>)** of tasks. It realizes that searching Apple, Microsoft, and Google are *independent* tasks, and the Executor runs all three <abbr title="Application Programming Interface">API</abbr> calls **in parallel** concurrently! This cuts latency by 66%!
 
 ---
 
@@ -126,10 +126,10 @@ if __name__ == "__main__":
 
 ## 🕒 HOUR 3: SOLO BUILD CHALLENGE & MAANG INTERVIEW
 
-### 🛠️ The Challenge: Parallel Execution DAG
+### 🛠️ The Challenge: Parallel Execution <abbr title="Directed Acyclic Graph. A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another.">DAG</abbr>
 Your task is to implement the **LLMCompiler** pattern.
 **Your Task:**
-1. Modify the JSON schema of the Planner. Instead of just returning a list of tasks, it must return a list of tasks where each task has a `depends_on` array.
+1. Modify the <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> schema of the Planner. Instead of just returning a list of tasks, it must return a list of tasks where each task has a `depends_on` array.
    *(e.g., Task 3 depends_on [Task 1, Task 2]).*
 2. Use Python's `asyncio` or `concurrent.futures.ThreadPoolExecutor` to loop through the plan.
 3. If Task 1 and Task 2 both have `depends_on: []` (no dependencies), fire them off to the Executor concurrently! 

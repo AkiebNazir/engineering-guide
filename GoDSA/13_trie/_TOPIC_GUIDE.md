@@ -57,7 +57,7 @@ type TrieNode struct {
 - Costs more per node: a map lookup hashes the key and walks a bucket
   (Topic 1 Part 2.1) instead of doing raw pointer arithmetic — slower and less
   cache-friendly than the array.
-- For `rune` keys (multi-byte UTF-8 characters), the map is close to
+- For `rune` keys (multi-byte <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8 characters), the map is close to
   mandatory — you cannot size a fixed array to "all Unicode code points."
 
 > ⚠️ **Don't default to the map out of habit.** Go engineers coming from
@@ -215,7 +215,7 @@ cannot do without scanning.
 
 ### 5.1 Word Search II — trie + backtracking on a grid (LC 212)
 
-Build one trie from the whole word list, then DFS/backtrack from every grid
+Build one trie from the whole word list, then <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>/backtrack from every grid
 cell, walking the trie in lockstep with the grid path instead of re-checking
 each candidate word from scratch. This reuses the Topic 9 choose→recurse→
 un-choose template: "choose" a cell, recurse into the trie node one level
@@ -248,7 +248,7 @@ func dfs(board [][]byte, r, c int, node *TrieNode, path []byte, found *[]string)
 
 > ⚠️ Note `string(path)` — not `append(result, path)`. This is Topic 1 Part
 > 1.2's aliasing warning wearing a trie costume: `path` is a `[]byte` mutated
-> in place across the whole DFS, so appending it *directly* to the result
+> in place across the whole <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, so appending it *directly* to the result
 > would alias one shared backing array across every match. `string(path)`
 > allocates and copies the bytes at the moment of the match, which is exactly
 > the fix the exemplar prescribes (`cp := make(...); copy(...)`), just spelled
@@ -268,7 +268,7 @@ integers instead of characters: a trie of depth 32 (or 64) where each node has
 exactly 2 children (`children [2]*TrieNode`, bit 0 or bit 1). Inserting all
 numbers and then, for a query `x`, greedily walking the *opposite* bit at each
 level maximizes `x XOR (something in the trie)` in O(32) — the standard
-"Maximum XOR of Two Numbers in an Array" technique. Same array-vs-map
+"Maximum <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> of Two Numbers in an Array" technique. Same array-vs-map
 reasoning applies, but here the branching factor is always 2, so the array
 choice is never in question.
 
@@ -280,7 +280,7 @@ choice is never in question.
 |---|---|---|
 | Node children | `dict` (or `defaultdict(dict)`) — always a hash map | Choose `[26]*TrieNode` (array) or `map[rune]*TrieNode` — a real design decision |
 | Zero-value child | `dict.get(c)` returns `None` for free | `nil` pointer for an untouched array slot — same idea, no setup needed |
-| Node allocation | One object per node, GC-managed like everything else | One allocation per node with the array design; two with the slice-field design (Part 2) |
+| Node allocation | One object per node, <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>-managed like everything else | One allocation per node with the array design; two with the slice-field design (Part 2) |
 | String building for matches | `''.join(path)` — implicit copy on join | `string(path)` — implicit copy on conversion; forgetting this aliases (Part 5.1) |
 | Alphabet flexibility | `dict` handles any hashable key with zero code change | Switching alphabets means switching node representation entirely |
 
@@ -293,7 +293,7 @@ choice is never in question.
 | Trie insert / search / startsWith | O(L) | O(ALPHABET·N·L) worst | LC 208 Implement Trie |
 | Trie + backtracking grid search | O(rows·cols·4^L) bounded by trie pruning | O(N·L) for the trie | LC 212 Word Search II |
 | Shortest-prefix root lookup | O(L) per word | O(ALPHABET·N·L) | LC 648 Replace Words |
-| Binary (XOR) trie | O(32) per query | O(32·N) | LC 421 Maximum XOR of Two Numbers |
+| Binary (<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr>) trie | O(32) per query | O(32·N) | LC 421 Maximum <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> of Two Numbers |
 | Prefix-count trie (augmented with a counter) | O(L) | O(ALPHABET·N·L) | LC 677 Map Sum Pairs |
 
 ---
@@ -392,7 +392,7 @@ e -> h : "an aggregate"
 
 ### Wildcards (LC 211): a method on a `nil` receiver
 
-`Add` is Insert unchanged. `Search` becomes a DFS where `.` tries every live child. Go lets you call a method on a `nil`
+`Add` is Insert unchanged. `Search` becomes a <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> where `.` tries every live child. Go lets you call a method on a `nil`
 pointer, so the "dead branch" guard can live at the *top* of `Search` — the recursive call needs no `if child != nil`:
 
 ```go
@@ -424,7 +424,7 @@ for i := 0; i < len(key); i++ { n = n.children[key[i]-'a'] /* create if nil */; 
 
 `insert("apple",3)`, `sum("ap") = 3`; `insert("app",2)`, `sum("ap") = 5`; `insert("apple",2)` → `sum("ap") = 4`.
 
-### Maximum XOR (LC 421): a trie over bits, **most significant first**
+### Maximum <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> (LC 421): a trie over bits, **most significant first**
 
 ```go
 type bitNode struct{ ch [2]*bitNode }
@@ -464,7 +464,7 @@ O(n log n) once, then O(log n + 3) per prefix, with no extra structure.
 
 Keep the **whole word** on its end node (`word string`), so no path buffer is needed and no `string(path)` copy. Take it
 once (`node.word = ""` after appending — this also dedupes) and, when a node has no word and no children left after its
-DFS, **cut it from its parent** so later searches never enter it:
+<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>, **cut it from its parent** so later searches never enter it:
 
 ```go
 if node.word != "" { res = append(res, node.word); node.word = "" }      // take it ONCE
@@ -472,7 +472,7 @@ if node.word != "" { res = append(res, node.word); node.word = "" }      // take
 if prune && node.word == "" && isEmpty(node) { parent.children[ch-'a'] = nil }   // exhausted: cut it off
 ```
 
-On a random 6×6 grid over `{a, b}` with 200 words of length 3–8, both versions returned the same 126 words, but DFS visits
+On a random 6×6 grid over `{a, b}` with 200 words of length 3–8, both versions returned the same 126 words, but <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> visits
 fell from **13,005 to 569** (about 23×). The gain grows with how many words get found. Restore `board[r][c]` after
 every call, and mark cells with the in-place `'#'` sentinel rather than a `visited` set.
 
@@ -501,7 +501,7 @@ func (n *Node) delete(w string, i int) (empty bool) {
 | **Radix / Patricia tree** | Collapse single-child chains into one labelled edge | Far fewer nodes on sparse data; routing tables. |
 | **Ternary search tree** | Three pointers per node (`<`, `=`, `>`) | Compact and ordered for any alphabet. |
 | **DAWG / DAFSA** | Merge identical *suffixes* too | The smallest exact word-set automaton (dictionaries, Scrabble). |
-| **Aho–Corasick** | A trie plus failure links (KMP's idea, topic 23) | All occurrences of many patterns in one pass. |
+| **Aho–Corasick** | A trie plus failure links (<abbr title="Knuth-Morris-Pratt. A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time.">KMP</abbr>'s idea, topic 23) | All occurrences of many patterns in one pass. |
 | **Suffix trie / tree / array** | Index every suffix of a text | Substring search, longest repeated substring. |
 
 ### Go traps in this topic
@@ -520,7 +520,7 @@ func (n *Node) delete(w string, i int) (empty bool) {
 | Follow-up | The answer |
 |---|---|
 | "Delete a word." | Unmark, then prune bottom-up only nodes that are childless and not words. |
-| "Top-k suggestions." | Precompute the top-k per node at insert time (O(k) per node), or DFS the subtree with a heap. |
+| "Top-k suggestions." | Precompute the top-k per node at insert time (O(k) per node), or <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> the subtree with a heap. |
 | "Unicode / case-insensitive." | `map[rune]*Node` and normalise first (`strings.ToLower`, `golang.org/x/text/unicode/norm`). |
 | "Doesn't fit in memory." | Radix tree / DAFSA, shard by first letter, or an on-disk index. |
 | "Count words with a prefix." | A `pass` count on each node. |
@@ -537,7 +537,7 @@ Seven problems, four moves (the basic trie · wildcards · augmenting nodes · a
 | Problem | Move | The idea — and the trap it sets |
 |---|---|---|
 | [001 · Implement Trie (Prefix Tree)](GoDSA/13_trie/001_implement_trie_prefix_tree/solution.go) <br>LC 208 · Medium | The basic trie | `children [26]*TrieNode` (one allocation per node) and `isEnd`; a shared `walk` for `Search` and `StartsWith`. **Trap:** `Search` without the `isEnd` check (`"app"` after inserting `"apple"`); a `[]*TrieNode` field (two allocations). |
-| [002 · Design Add and Search Words Data Structure](GoDSA/13_trie/002_design_add_and_search_words_data_structure/solution.go) <br>LC 211 · Medium | Wildcard search by DFS | A method with a `nil`-receiver guard at the top; `.` loops over the children; check `len(w) == 0` before `isEnd`. **Trap:** checking `isEnd` too early; no nil guard (panic on `t.children`). |
+| [002 · Design Add and Search Words Data Structure](GoDSA/13_trie/002_design_add_and_search_words_data_structure/solution.go) <br>LC 211 · Medium | Wildcard search by <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> | A method with a `nil`-receiver guard at the top; `.` loops over the children; check `len(w) == 0` before `isEnd`. **Trap:** checking `isEnd` too early; no nil guard (panic on `t.children`). |
 | [003 · Replace Words](GoDSA/13_trie/003_replace_words/solution.go) <br>LC 648 · Medium | First hit is the shortest | One trie of the roots; stop at the first `isEnd`; return `w[:j+1]` (no copy). **Trap:** continuing to the longest match; rebuilding per word. |
 | [004 · Map Sum Pairs](GoDSA/13_trie/004_map_sum_pairs/solution.go) <br>LC 677 · Medium | Augmented nodes | A `sum` per node plus a `map[string]int` of last values; add the **delta** `val - m.vals[key]` (a missing key reads 0). **Trap:** adding `val` on a re-insert (double-counts). |
 | [005 · Maximum XOR of Two Numbers in an Array](GoDSA/13_trie/005_maximum_xor_of_two_numbers_in_an_array/solution.go) <br>LC 421 · Medium | A bit trie | `children [2]*bitNode`, bits 31→0, prefer the *opposite* bit. **Trap:** LSB-first; a variable bit width per number. |
@@ -553,11 +553,11 @@ Seven problems, four moves (the basic trie · wildcards · augmenting nodes · a
 - [ ] Explain why an array field is one allocation but a slice field is two
 - [ ] State the `Search` vs `StartsWith` distinction (`isEnd` check) without hesitating
 - [ ] Explain why trie lookup is O(L), independent of dictionary size N
-- [ ] Trace the Word Search II grid-DFS-with-trie-pruning approach, including why `string(path)` (not appending the mutating slice) avoids aliasing
-- [ ] Know at least one non-string trie application (binary/XOR trie) and why the branching factor forces the array design
+- [ ] Trace the Word Search II grid-<abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr>-with-trie-pruning approach, including why `string(path)` (not appending the mutating slice) avoids aliasing
+- [ ] Know at least one non-string trie application (binary/<abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> trie) and why the branching factor forces the array design
 - [ ] Write Insert/Search/StartsWith with lazy node creation in under 10 minutes
 - [ ] Quote the array-vs-map trie trade-off with numbers: ~10× faster lookups, but *more* memory on sparse data <!--ca-->
-- [ ] Use a nil-receiver guard so a wildcard DFS needs no `if child != nil` <!--ca-->
+- [ ] Use a nil-receiver guard so a wildcard <abbr title="Depth-First Search. An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking.">DFS</abbr> needs no `if child != nil` <!--ca-->
 - [ ] Store the word at its end node, take it once, and prune exhausted branches in Word Search II <!--ca-->
-- [ ] Add the delta (not the value) in Map Sum Pairs, and walk bits MSB-first in Max XOR <!--ca-->
+- [ ] Add the delta (not the value) in Map Sum Pairs, and walk bits MSB-first in Max <abbr title="Exclusive OR. A bitwise operation that evaluates to true if and only if its arguments differ.">XOR</abbr> <!--ca-->
 - [ ] Delete a word and prune only childless non-word nodes <!--ca-->

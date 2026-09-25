@@ -125,7 +125,7 @@ sort.Slice(tasks, func(i, j int) bool { return tasks[i].Priority < tasks[j].Prio
 
 > ⚠️ If a later step in your algorithm depends on "elements with equal keys
 > keep their input order" — e.g. you sorted by priority and now rely on
-> insertion order as a tiebreak for FIFO processing — using `sort.Slice`
+> insertion order as a tiebreak for <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> processing — using `sort.Slice`
 > instead of `sort.SliceStable` is a real, silent correctness bug. Python's
 > `list.sort()`/`sorted()` (Timsort) is *always* stable, so this class of bug
 > does not exist when porting from Python — it is introduced by moving to Go.

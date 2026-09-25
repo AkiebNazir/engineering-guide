@@ -9,7 +9,7 @@ are expected to design systems that span multiple teams and evolve safely over
 years. Design patterns (Factory, Singleton) are table stakes; this file covers
 macro-architecture: boundaries, events, distributed transactions, and <abbr title="Application Programming Interface">API</abbr> evolution.
 
-For the micro level (complexity, deep modules, naming, errors), read `SoftwareDesign/01_philosophy_of_software_design.md`. For SOLID and patterns, read `SystemDesign/best_practices/`.
+For the micro level (complexity, deep modules, naming, errors), read `SoftwareDesign/01_philosophy_of_software_design.md`. For <abbr title="Five core design principles intended to make software designs more understandable, flexible, and maintainable (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion).">SOLID</abbr> and patterns, read `SystemDesign/best_practices/`.
 
 ## Foundations — Start Here If You're New to Software Architecture
 
@@ -39,7 +39,7 @@ breaking the programs that already depend on it.
 
 **Why "it works with one service" gets hard with several.** A single database gives
 you a transaction: multiple writes that all succeed or all fail together (see
-`03_databases_deep_dive.md`'s ACID). Once "reserve inventory" and "charge a card" are
+`03_databases_deep_dive.md`'s <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr>). Once "reserve inventory" and "charge a card" are
 two *different* services with two different databases, there's no single transaction
 that covers both — §3 is entirely about how to still make that operation safe.
 
@@ -163,7 +163,7 @@ L5 engineers don't break their clients, and they remember that mobile apps may r
 *   **Additive changes are safe:** new optional fields, new endpoints, new enum values *if* clients tolerate unknown values.
 *   **Breaking changes:** removing or renaming a field, changing a type or meaning, making an optional field required, tightening validation.
 *   **Tolerant Reader:** clients ignore fields they don't recognize and don't depend on field order.
-*   **Protocol Buffers rules:** never reuse or renumber a field tag; mark removed fields `reserved`; renaming is wire-safe but breaks JSON mappings and generated code; changing `int32` to `string` is breaking. Google publishes these practices as the **<abbr title="Application Programming Interface">API</abbr> Improvement Proposals (aip.dev)**.
+*   **Protocol Buffers rules:** never reuse or renumber a field tag; mark removed fields `reserved`; renaming is wire-safe but breaks <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> mappings and generated code; changing `int32` to `string` is breaking. Google publishes these practices as the **<abbr title="Application Programming Interface">API</abbr> Improvement Proposals (aip.dev)**.
 *   **Deprecation cycle:** when a break is unavoidable, add `v2` alongside `v1`, measure who still calls `v1`, migrate them, announce a sunset date, and delete `v1` only when traffic is zero (or contractually allowed).
 *   **Expand-and-contract for schema changes:** add the new column/field → dual-write → backfill → switch reads → stop writing the old one → drop it. Every step is independently deployable and reversible.
 

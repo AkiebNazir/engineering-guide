@@ -8,7 +8,7 @@
 ChromaDB is an open-source, <abbr title="Artificial Intelligence">AI</abbr>-native vector database. It is designed to be the default embedded database for <abbr title="Artificial Intelligence">AI</abbr> apps (often acting as the memory engine under the hood for LangChain, LlamaIndex, and CrewAI).
 
 **Why does it exist?**
-It exists for developer velocity. You don't have to manually call OpenAI to get embeddings, and you don't have to manage complex ID mappings. You just hand Chroma a list of English text documents, and it automatically embeds them, stores them, and allows you to search them using both vector similarity *and* traditional SQL-like metadata filtering simultaneously.
+It exists for developer velocity. You don't have to manually call OpenAI to get embeddings, and you don't have to manage complex ID mappings. You just hand Chroma a list of English text documents, and it automatically embeds them, stores them, and allows you to search them using both vector similarity *and* traditional <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>-like metadata filtering simultaneously.
 
 ---
 
@@ -115,7 +115,7 @@ collection = client.get_or_create_collection(
 ### Scenario 1: ChromaDB vs Pinecone
 *Interviewer:* "We are building an internal <abbr title="Retrieval-Augmented Generation">RAG</abbr> tool for 5 developers. You chose ChromaDB. But our enterprise architect is demanding we buy Pinecone Enterprise instead. Defend your choice."
 
-*Answer:* "Pinecone is a managed cloud SaaS. It is fantastic for massive global scale, but it introduces network latency on every single search request, requires managing <abbr title="Application Programming Interface">API</abbr> keys, and has steep monthly costs. ChromaDB can run entirely embedded (like SQLite) within our Python backend. For an internal tool with only a few gigabytes of text, Chroma provides zero network latency, zero monthly cost, and absolute data privacy since the vectors never leave our local server. If we eventually outgrow the embedded architecture, we can instantly migrate to Chroma's Client/Server mode via Docker without rewriting our application logic."
+*Answer:* "Pinecone is a managed cloud <abbr title="Software as a Service - A software licensing and delivery model in which software is licensed on a subscription basis and is centrally hosted.">SaaS</abbr>. It is fantastic for massive global scale, but it introduces network latency on every single search request, requires managing <abbr title="Application Programming Interface">API</abbr> keys, and has steep monthly costs. ChromaDB can run entirely embedded (like SQLite) within our Python backend. For an internal tool with only a few gigabytes of text, Chroma provides zero network latency, zero monthly cost, and absolute data privacy since the vectors never leave our local server. If we eventually outgrow the embedded architecture, we can instantly migrate to Chroma's Client/Server mode via <abbr title="A set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.">Docker</abbr> without rewriting our application logic."
 
 ### Scenario 2: The Update / Upsert Problem
 *Interviewer:* "A user uploaded a PDF to our Chroma database. An hour later, they edited the PDF and uploaded it again. If we run `collection.add()`, we now have duplicate semantic data in the database, ruining our <abbr title="Retrieval-Augmented Generation">RAG</abbr> results. How do we fix this?"
@@ -137,5 +137,5 @@ import chromadb
 ```
 
 ### ⚠️ Pitfall 2: Memory Leaks in Jupyter Notebooks
-If you instantiate `chromadb.Client()` (which defaults to the totally Ephemeral, in-memory mode) in a Jupyter Notebook cell, and you re-run that cell 50 times while debugging, you are creating 50 phantom database connections in RAM.
+If you instantiate `chromadb.Client()` (which defaults to the totally Ephemeral, in-memory mode) in a Jupyter Notebook cell, and you re-run that cell 50 times while debugging, you are creating 50 phantom database connections in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr>.
 *Fix:* Always use `chromadb.PersistentClient(path="./db")` so the data safely serializes to disk, or explicitly run `client.reset()` to wipe the memory if you are prototyping.

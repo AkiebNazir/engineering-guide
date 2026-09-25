@@ -81,7 +81,7 @@ Write a doc when the work has any of:
 - More than ~2 engineer-weeks of effort, or more than one team involved.
 - A change that is **hard to reverse**: data models, public APIs, storage engines,
   security boundaries, vendor commitments (§10).
-- A change to an SLO, cost profile, or on-call burden.
+- A change to an <abbr title="Service Level Objective - A specific target level for the reliability of a service, usually defined by a numerical goal for a metric.">SLO</abbr>, cost profile, or on-call burden.
 - Meaningful security, privacy, legal, or compliance implications.
 - A decision people will disagree about.
 
@@ -400,7 +400,7 @@ A design that can't be planned can't be delivered. The doc should make the plan 
 |---|---|---|---|---|---|
 | Fingerprint false positives from SDK field ordering | Medium | High (legit charges blocked) | Canonical JSON; SDK compatibility tests in M1 | you | Any 422 from official SDKs in canary |
 | Payments DB write latency | Low | Medium | Load test at 2× peak before Phase 2 | SRE | p99 insert > 5 ms |
-| SDK team capacity | Medium | Medium (delays G1) | Agreed dates; we contribute PRs | SDK TL | M2 slip > 1 week |
+| <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> team capacity | Medium | Medium (delays G1) | Agreed dates; we contribute PRs | <abbr title="Software Development Kit. A collection of software development tools in one installable package.">SDK</abbr> TL | M2 slip > 1 week |
 
 ---
 
@@ -757,7 +757,7 @@ Structure the answer like a design doc, out loud:
 | Design doc section | Interview step | What to say |
 |---|---|---|
 | Context, goals, non-goals | Requirements | "Functional requirements are…; I'll treat X as out of scope unless you'd like it." |
-| Capacity (§4.4) | Estimation | "At 20k QPS writes and 1 KB per record, that's ~1.7 TB/day…" |
+| Capacity (§4.4) | Estimation | "At 20k <abbr title="Queries Per Second - A common metric used to measure the rate of traffic passing through a particular server or system.">QPS</abbr> writes and 1 KB per record, that's ~1.7 TB/day…" |
 | Detailed design (<abbr title="Application Programming Interface">API</abbr>, data model) | <abbr title="Application Programming Interface">API</abbr> and schema | "The core <abbr title="Application Programming Interface">API</abbr> is… The key access pattern is… so the primary key is…" |
 | Overview diagram | High-level design | Draw the main path end to end before any deep dive |
 | Hard parts | Deep dives | "The hardest part is the crash window between the charge and the key write…" |

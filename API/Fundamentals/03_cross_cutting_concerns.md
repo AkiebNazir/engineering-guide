@@ -5,21 +5,21 @@ description: "Authentication, authorization, versioning, errors, idempotency, ra
 
 # Cross-Cutting Concerns
 
-Whether you build REST, GraphQL, gRPC or Webhooks, you will hit the same production problems. This guide is the shared toolbox. Each protocol guide links back here.
+Whether you build <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>, GraphQL, <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> or Webhooks, you will hit the same production problems. This guide is the shared toolbox. Each protocol guide links back here.
 
 ## 1. Authentication: "Who Are You?"
 
 | Method | How it works | Use when | Watch out |
 | :--- | :--- | :--- | :--- |
 | **<abbr title="Application Programming Interface">API</abbr> key** | Static secret in a header (`X-API-Key`) | Server-to-server, simple public APIs | Identifies an *app*, not a user. Rotate, never put in URLs or front-end code. |
-| **HTTP Basic** | `Authorization: Basic base64(user:pass)` | Internal tools, legacy | Base64 is **not** encryption. HTTPS mandatory. |
-| **Bearer token (JWT)** | Signed token, verified locally | Stateless microservices, mobile apps | Cannot be revoked before expiry unless you keep a denylist. Keep it short-lived. |
+| **<abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> Basic** | `Authorization: Basic base64(user:pass)` | Internal tools, legacy | Base64 is **not** encryption. <abbr title="Hypertext Transfer Protocol Secure - An extension of HTTP that uses encryption for secure communication over a computer network.">HTTPS</abbr> mandatory. |
+| **Bearer token (<abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>)** | Signed token, verified locally | Stateless microservices, mobile apps | Cannot be revoked before expiry unless you keep a denylist. Keep it short-lived. |
 | **Opaque token** | Random string, looked up server-side | Need instant revocation | Every request costs a lookup (cache it). |
 | **OAuth 2.0** | Delegated access: user grants an app limited scopes | "Sign in with Google", third-party apps | Complex. Use a library and the PKCE flow for public clients. |
 | **mTLS** | Both sides present certificates | Service-to-service in a zero-trust network | Certificate rotation is an operational task. |
 | **HMAC signature** | Sender signs the body with a shared secret | Webhooks, AWS-style request signing | Sign the *raw bytes*, include a timestamp. |
 
-### Anatomy of a JWT
+### Anatomy of a <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>
 
 ```
 eyJhbGciOiJIUzI1NiJ9 . eyJzdWIiOiI0MiIsInNjb3BlIjoib3JkZXJzOnJlYWQiLCJleHAiOjE3MDAwMDAwMDB9 . <signature>
@@ -30,7 +30,7 @@ eyJhbGciOiJIUzI1NiJ9 . eyJzdWIiOiI0MiIsInNjb3BlIjoib3JkZXJzOnJlYWQiLCJleHAiOjE3M
 { "sub": "42", "scope": "orders:read", "exp": 1700000000, "iss": "https://auth.shop.com" }
 ```
 
-A JWT is **signed, not encrypted**: anyone can read the payload. Never store secrets in it. A server must check the signature, `exp`, `iss` and `aud`, and must reject `alg: none`.
+A <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> is **signed, not encrypted**: anyone can read the payload. Never store secrets in it. A server must check the signature, `exp`, `iss` and `aud`, and must reject `alg: none`.
 
 ### OAuth 2.0 authorization code + PKCE in one picture
 
@@ -100,7 +100,7 @@ Content-Type: application/problem+json
 Good error design:
 
 *   A **machine-readable code** (`type`) so clients can branch, and a **human message** for developers.
-*   **Never leak internals** (stack traces, SQL, hostnames).
+*   **Never leak internals** (stack traces, <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>, hostnames).
 *   Include a **request id** the user can quote to support.
 *   Tell clients whether it is **retryable** (`429`, `503` + `Retry-After`).
 
@@ -108,10 +108,10 @@ How each style reports errors:
 
 | Style | Success | Error |
 | :--- | :--- | :--- |
-| REST | `2xx` | `4xx` / `5xx` + problem JSON |
+| <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> | `2xx` | `4xx` / `5xx` + problem <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> |
 | GraphQL | `200` + `data` | `200` + `errors[]` (transport ok, field failed) |
-| gRPC | status `OK` (0) | status code 1-16 + message in trailers |
-| SOAP | `200` + Body | `500` + `<soap:Fault>` |
+| <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> | status `OK` (0) | status code 1-16 + message in trailers |
+| <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> | `200` + Body | `500` + `<soap:Fault>` |
 | Webhooks | receiver returns `2xx` | receiver returns non-`2xx` -> sender retries |
 
 ## 5. Idempotency: Making Retries Safe
@@ -202,9 +202,9 @@ RateLimit-Remaining: 0
 RateLimit-Reset: 12
 ```
 
-Count per **<abbr title="Application Programming Interface">API</abbr> key / user / IP**, not globally. In a multi-server deployment keep counters in a shared store (Redis, with atomic `INCR` or a Lua script), or enforce the limit at the <abbr title="Application Programming Interface">API</abbr> gateway. Runnable versions: `REST/labs/golang/04_rate_limit_middleware` (per-client token bucket as `net/http` middleware with an injectable clock, `429` + `Retry-After`, and a measured comparison with a fixed window) and `gRPC/labs/python/03_interceptors_auth_logging_ratelimit.py` (a per-client bucket as a gRPC interceptor).
+Count per **<abbr title="Application Programming Interface">API</abbr> key / user / <abbr title="Internet Protocol. The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries.">IP</abbr>**, not globally. In a multi-server deployment keep counters in a shared store (Redis, with atomic `INCR` or a Lua script), or enforce the limit at the <abbr title="Application Programming Interface">API</abbr> gateway. Runnable versions: `REST/labs/golang/04_rate_limit_middleware` (per-client token bucket as `net/http` middleware with an injectable clock, `429` + `Retry-After`, and a measured comparison with a fixed window) and `gRPC/labs/python/03_interceptors_auth_logging_ratelimit.py` (a per-client bucket as a <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> interceptor).
 
-For GraphQL, count **query cost**, not requests. For gRPC and WebSockets, limit **messages per second per connection**.
+For GraphQL, count **query cost**, not requests. For <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> and WebSockets, limit **messages per second per connection**.
 
 ## 7. Timeouts, Retries and Backoff
 
@@ -229,7 +229,7 @@ def call_with_retries(fn, attempts=5, base=0.1, cap=10.0):
 *   Retry **only idempotent** calls, or calls carrying an idempotency key.
 *   Retry only **transient** failures: network errors, `429`, `502`, `503`, `504`. Honour `Retry-After`.
 *   **Circuit breaker:** after N consecutive failures, stop calling for a cool-down period and fail fast instead of piling on.
-*   **Deadline propagation:** if the user waits 2 s in total, downstream calls must share that budget (gRPC does this natively).
+*   **Deadline propagation:** if the user waits 2 s in total, downstream calls must share that budget (<abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> does this natively).
 
 ## 8. Pagination and Filtering
 
@@ -241,7 +241,7 @@ Never return an unbounded collection.
 | **Page number** | `?page=3&per_page=20` | Familiar | Same as offset |
 | **Cursor / keyset** | `?limit=20&after=eyJpZCI6NDJ9` | Stable, fast at any depth | No jumping to an arbitrary page |
 
-Keyset in SQL: `WHERE id > :last_id ORDER BY id LIMIT 20`. The cursor is just the last seen key, usually base64 encoded so clients treat it as opaque.
+Keyset in <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>: `WHERE id > :last_id ORDER BY id LIMIT 20`. The cursor is just the last seen key, usually base64 encoded so clients treat it as opaque.
 
 ```json
 {
@@ -258,11 +258,11 @@ GraphQL standardises this as **Relay connections** (`edges`, `node`, `pageInfo {
 | Layer | Mechanism | Typical use |
 | :--- | :--- | :--- |
 | **Browser / client** | `Cache-Control: max-age=60` | Static or slow-changing reads |
-| **CDN / reverse proxy** | `Cache-Control: public, s-maxage=300` | Public GET endpoints |
+| **<abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> / reverse proxy** | `Cache-Control: public, s-maxage=300` | Public GET endpoints |
 | **Validation** | `ETag` + `If-None-Match` -> `304` | Save bandwidth when data may not have changed |
 | **Application** | Redis / in-process | Expensive queries, computed results |
 
-*   Only `GET` (and `HEAD`) responses are cached by HTTP infrastructure. This is REST's big advantage over GraphQL (single `POST` endpoint) and gRPC.
+*   Only `GET` (and `HEAD`) responses are cached by <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> infrastructure. This is <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr>'s big advantage over GraphQL (single `POST` endpoint) and <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr>.
 *   Use `Cache-Control: private` for per-user data and `no-store` for sensitive data.
 *   Cache invalidation is the hard part: prefer short TTLs plus `ETag` validation before building clever invalidation.
 
@@ -270,27 +270,27 @@ GraphQL standardises this as **Relay connections** (`edges`, `node`, `pageInfo {
 
 | Style | Contract format | Generates |
 | :--- | :--- | :--- |
-| REST | **OpenAPI** (YAML/JSON) | Docs (Swagger UI), client SDKs, mock servers, validators |
+| <abbr title="Representational State Transfer - An architectural style for distributed hypermedia systems, commonly used for creating interactive web services.">REST</abbr> | **OpenAPI** (YAML/<abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr>) | Docs (Swagger UI), client SDKs, mock servers, validators |
 | GraphQL | **SDL** + introspection | GraphiQL explorer, typed clients |
-| gRPC / Protobuf | **`.proto`** | Client and server stubs in 10+ languages |
-| SOAP | **WSDL + XSD** | Client proxies |
-| Async / events | **AsyncAPI**, JSON Schema | Docs and validators for WebSockets / Webhooks |
+| <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> / Protobuf | **`.proto`** | Client and server stubs in 10+ languages |
+| <abbr title="Simple Object Access Protocol - A messaging protocol specification for exchanging structured information in the implementation of web services.">SOAP</abbr> | **WSDL + XSD** | Client proxies |
+| Async / events | **AsyncAPI**, <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> Schema | Docs and validators for WebSockets / Webhooks |
 
-A contract-first workflow (write the contract, generate code, test against it) catches breaking changes in CI. For Protobuf use `buf breaking`; for OpenAPI use a diff tool such as `oasdiff`.
+A contract-first workflow (write the contract, generate code, test against it) catches breaking changes in <abbr title="Continuous Integration. The practice of merging all developers' working copies to a shared mainline several times a day.">CI</abbr>. For Protobuf use `buf breaking`; for OpenAPI use a diff tool such as `oasdiff`.
 
 ## 11. Observability
 
-*   **Structured logs**: one JSON line per request with `request_id`, `method`, `path`, `status`, `duration_ms`, `user_id`.
+*   **Structured logs**: one <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> line per request with `request_id`, `method`, `path`, `status`, `duration_ms`, `user_id`.
 *   **Metrics (RED)**: **R**ate, **E**rrors, **D**uration (p50 / p95 / p99). Alert on percentiles, not averages.
 *   **Distributed tracing**: propagate the W3C `traceparent` header (`00-<trace-id>-<span-id>-01`) through every hop so you can see one request across ten services.
-*   **Health endpoints**: `/healthz` (process alive) and `/readyz` (dependencies ready) for orchestrators. gRPC has a standard health-checking protocol.
+*   **Health endpoints**: `/healthz` (process alive) and `/readyz` (dependencies ready) for orchestrators. <abbr title="gRPC Remote Procedure Call - A modern, open-source, high-performance <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> framework that can run in any environment.">gRPC</abbr> has a standard health-checking protocol.
 
 ## 12. Security Checklist
 
-*   TLS everywhere; HSTS on browser-facing hosts.
+*   <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> everywhere; HSTS on browser-facing hosts.
 *   Validate **every** input: types, ranges, lengths, enum membership. Reject unknown fields if the contract is strict.
 *   Limit body sizes and depths (`http.MaxBytesReader` in Go).
-*   Authorise per object (BOLA), per property (mass assignment: do not bind request JSON straight onto a database model), per function (admin endpoints).
+*   Authorise per object (BOLA), per property (mass assignment: do not bind request <abbr title="JavaScript Object Notation - A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate.">JSON</abbr> straight onto a database model), per function (admin endpoints).
 *   Never accept credentials in query strings; URLs end up in logs.
 *   Prevent SSRF when your server fetches user-supplied URLs (Webhook senders!): block private and link-local addresses.
 *   Return generic auth failures ("invalid credentials") and rate-limit login endpoints.
@@ -302,7 +302,7 @@ A contract-first workflow (write the contract, generate code, test against it) c
 >
 > ❓ **Question 2:** Why is exponential backoff without jitter still dangerous at scale?
 >
-> ❓ **Question 3:** Your JWT lifetime is 24 hours and a user reports their laptop was stolen. What are your options to cut off access now?
+> ❓ **Question 3:** Your <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr> lifetime is 24 hours and a user reports their laptop was stolen. What are your options to cut off access now?
 >
 > ❓ **Question 4:** Offset pagination is returning duplicate rows on page 2 while data is being inserted. Why, and what is the fix?
 
@@ -317,7 +317,7 @@ A contract-first workflow (write the contract, generate code, test against it) c
 
 | Concern | Labs |
 | :--- | :--- |
-| JWT, scopes, BOLA | `REST/labs/python/03_jwt_auth_and_scopes.py` |
+| <abbr title="JSON Web Token - A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication.">JWT</abbr>, scopes, BOLA | `REST/labs/python/03_jwt_auth_and_scopes.py` |
 | <abbr title="Application Programming Interface">API</abbr> keys: hashing, constant-time compare, ownership | `REST/labs/golang/05_api_key_auth_and_ownership` |
 | Auth in GraphQL (context, field- and object-level) | `GraphQL/labs/python/04_auth_permissions_and_masking.py` |
 | mTLS service identity | `gRPC/labs/golang/04_mtls_service_identity` |

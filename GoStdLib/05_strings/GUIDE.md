@@ -3,7 +3,7 @@
 `strings` operates on Go's immutable `string` type: searching, splitting,
 joining, trimming, replacing, comparing. It is the first place to look before
 reaching for `regexp` (heavier, slower, only needed for real patterns) or
-manual byte-index loops (error-prone with UTF-8).
+manual byte-index loops (error-prone with <abbr title="Unicode Transformation Format. A family of character encodings capable of encoding all possible Unicode code points.">UTF</abbr>-8).
 
 ## When to reach for it vs alternatives already in this repo
 
