@@ -6,6 +6,22 @@ good pattern — for **one process**. This level builds the same idea shared acr
 process in your fleet, and is explicit about exactly where the in-memory version stops
 working.
 
+```arch
+%% caption: Distributed Rate Limiting via Shared Redis State
+node client "Client User" at 0,1 icon=client
+node lb "Load Balancer" at 1,1 icon=lb
+group apps "App Servers" color=slate style=dashed
+node app1 "Instance 1" at 2,0 in apps icon=server color=blue
+node app2 "Instance 2" at 2,2 in apps icon=server color=blue
+node redis "Redis (Shared State)" at 4,1 icon=redis color=red
+
+client -> lb
+lb -> app1
+lb -> app2
+app1 <..> redis : "Check limit"
+app2 <..> redis : "Check limit"
+```
+
 ## Why an in-memory limiter breaks with more than one app server
 
 The Go limiter's state lives in that one process's heap. The moment you run **two**

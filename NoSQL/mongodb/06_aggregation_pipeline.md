@@ -2,6 +2,22 @@
 
 `find` answers "which documents match, shaped how." The **aggregation pipeline** answers a bigger question: "transform, group, and combine documents through a sequence of stages," each stage feeding its output to the next — the same mental model as a Unix pipe, applied to documents instead of text lines.
 
+```arch
+%% caption: MongoDB Aggregation Pipeline Flow
+node in "Input Documents" at 0,0 shape=pill
+node m "$match" at 1,0 shape=box icon=filter color=blue
+node g "$group" at 2,0 shape=box icon=group color=purple
+node p "$project" at 3,0 shape=box icon=check color=green
+node s "$sort" at 4,0 shape=box icon=sort color=amber
+node out "Output Results" at 5,0 shape=pill
+
+in -> m
+m -> g
+g -> p
+p -> s
+s -> out
+```
+
 ## The problem this level solves
 
 Two collections:

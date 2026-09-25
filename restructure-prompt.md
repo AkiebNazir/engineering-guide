@@ -35,7 +35,7 @@ deep dive and the SD solutions:
 - [x] ~~**SystemDesign/solutions/** — 2 solutions still have zero arch diagrams:~~
       `017_payment_ledger_solution.md`, `019_feature_flags_solution.md`.
 - [x] ~~**SQL/** — only 2 of 21 files had arch diagrams. (Added to 09, 10, 17, 18).~~
-- [ ] **NoSQL/** — most files lack arch diagrams. Only 4 out of 28 NoSQL files
+- [x] ~~**NoSQL/**~~ — most files lack arch diagrams. Only 4 out of 28 NoSQL files
       have them (`mongodb/04_embedding_vs_referencing.md`, `mongodb/10_replication_and_write_read_concern.md`,
       `redis/00_the_key_value_model.md`, `redis/05_caching_patterns.md`).
       Key gaps: `redis/08_distributed_locking.md`, `redis/10_persistence_rdb_aof.md`,
@@ -66,7 +66,7 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 **Modules with ZERO interactive labs:**
 
 - [ ] **SQL/** — no visualization or flow labs whatsoever.
-- [ ] **NoSQL/** — no visualization or flow labs.
+- [x] ~~**NoSQL/**~~ — no visualization or flow labs.
 - [ ] **SoftwareDesign/** — no visualization or flow labs.
 - [ ] **GoEngineering/PyEngineering/** — no visualization or flow labs.
 - [ ] **GoStdLib/PyStdLib/** — no visualization or flow labs.
@@ -292,7 +292,7 @@ arch diagrams. Modules 6–8 are 60–435 lines with 0 arch diagrams:
 
 ## NoSQL/
 
-- [ ] Add arch diagrams to the 24 files that currently have none.
+- [x] ~~Add arch diagrams to the 24 files that currently have none.~~
       Priority: `redis/08_distributed_locking.md`, `redis/10_persistence_rdb_aof.md`,
       `mongodb/09_transactions_in_mongodb.md`, `mongodb/05_indexes_in_mongodb.md`.
 - [ ] Add interactive visualization/flow labs to the webapp — currently

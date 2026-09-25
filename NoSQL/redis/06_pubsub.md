@@ -5,6 +5,22 @@ Redis pub/sub is a message broadcast primitive: a publisher sends a message to a
 nothing to do with the key-value store — messages are not stored as keys, don't show up
 in `KEYS`, and aren't affected by `maxmemory-policy`.
 
+```arch
+%% caption: Redis Pub/Sub Broadcast Pattern
+node pub1 "Publisher 1" at 0,0 icon=client
+node pub2 "Publisher 2" at 0,2 icon=client
+node chan "Channel:\nupdates" at 2,1 shape=pill color=pink
+node sub1 "Subscriber A" at 4,0 icon=worker
+node sub2 "Subscriber B" at 4,1 icon=worker
+node sub3 "Subscriber C" at 4,2 icon=worker
+
+pub1 -> chan : "PUBLISH"
+pub2 -> chan : "PUBLISH"
+chan -> sub1 : "broadcast"
+chan -> sub2 : "broadcast"
+chan -> sub3 : "broadcast"
+```
+
 ## `PUBLISH` / `SUBSCRIBE`
 
 ```bash

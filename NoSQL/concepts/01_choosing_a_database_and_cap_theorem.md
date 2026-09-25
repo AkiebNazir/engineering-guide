@@ -10,6 +10,22 @@ level's job is narrower and more practical: given the four real systems this rep
 DynamoDB from `concepts/00`), which concrete, nameable setting expresses that choice in
 each one, and how an engineer actually decides which database to reach for.
 
+```arch
+%% caption: Database Selection Decision Tree
+node q1 "Require ACID\n& Relational?" at 1,0 shape=diamond color=amber
+node rdbms "Relational (SQL)" at 0,1 shape=card icon=db color=blue
+node q2 "Flexible Schema?" at 2,1 shape=diamond color=amber
+node doc "Document (MongoDB)" at 1,2 shape=card icon=mongodb-icon color=green
+node q3 "Fast Key Access?" at 3,2 shape=diamond color=amber
+node kv "Key-Value (Redis)" at 3,3 shape=card icon=redis color=red
+
+q1 -> rdbms : "yes"
+q1 -> q2 : "no"
+q2 -> doc : "yes"
+q2 -> q3 : "no"
+q3 -> kv : "yes"
+```
+
 ## The decision framework, in the order a working engineer actually applies it
 
 **1. Does the data have relationships that need enforcing, and does the workload need
