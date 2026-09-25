@@ -388,12 +388,7 @@ interactive webapp labs:
 - [ ] **Data Engineering Module**: Missing hands-on coverage of batch/stream
       processing fundamentals (Apache Spark, Airflow DAGs, dbt models, data
       warehouse modeling — star schema, slowly changing dimensions).
-- [ ] **Machine Learning System Design (MLOps)**: Needs a dedicated module
-      focused on interviewing and architecting ML systems in production
-      (Recommendation Systems, Fraud Detection, Search Ranking, Ad Click
-      Prediction, MLOps pipelines — feature stores, model registry, A/B
-      testing, model monitoring), distinct from the existing `AI-road-map`
-      and `Agentic-AI` theory paths.
+- [x] ~~**Machine Learning System Design (MLOps)**: Needs a dedicated module focused on interviewing and architecting ML systems in production (Recommendation Systems, Fraud Detection, Search Ranking, Ad Click Prediction, MLOps pipelines — feature stores, model registry, A/B testing, model monitoring).~~
 - [ ] **Unified Testing & Quality Module**: Missing a dedicated deep dive into
       testing strategies: Unit testing best practices, Integration testing,
       E2E testing, TDD, Property-based testing, Mutation testing, Contract
