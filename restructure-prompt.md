@@ -32,13 +32,9 @@ deep dive and the SD solutions:
       `11_performance_aware_design.md`.
 - [x] ~~**SystemDesign/building_blocks/** — 20 of 33 files had zero arch diagrams. (All identified key files now have arch diagrams).~~
 
-- [ ] **SystemDesign/solutions/** — 2 solutions still have zero arch diagrams:
+- [x] ~~**SystemDesign/solutions/** — 2 solutions still have zero arch diagrams:~~
       `017_payment_ledger_solution.md`, `019_feature_flags_solution.md`.
-- [ ] **SQL/** — only 2 of 21 files have arch diagrams
-      (`01_connecting_and_first_query.md`, `15_bonus_how_postgres_executes_a_query.md`).
-      The remaining 19 files have zero. Key gaps: `09_transactions_and_isolation_levels.md`,
-      `10_indexing_and_query_planning.md`, `17_replication_and_high_availability.md`,
-      `18_sharding_and_horizontal_scaling.md`.
+- [x] ~~**SQL/** — only 2 of 21 files had arch diagrams. (Added to 09, 10, 17, 18).~~
 - [ ] **NoSQL/** — most files lack arch diagrams. Only 4 out of 28 NoSQL files
       have them (`mongodb/04_embedding_vs_referencing.md`, `mongodb/10_replication_and_write_read_concern.md`,
       `redis/00_the_key_value_model.md`, `redis/05_caching_patterns.md`).

@@ -142,6 +142,21 @@ part that doesn't change is *which plan* Postgres picks, because that decision i
 entirely inside the database, before a single row is sent back to whichever client
 asked for it.
 
+```arch
+%% caption: A sequential scan reads every page of the table; an index scan traverses a B-tree to read only the few pages containing the match.
+group seq "Sequential Scan (No Index)" color=red style=dashed
+node full "Table Data\n(Reads 3,000+ pages)" at 0,0 in seq icon=db
+node filter "Filter Rows\n(Discards 299,999)" at 0,1 in seq icon=filter
+
+full -> filter : "scan all"
+
+group idx "Index Scan (With Index)" color=green style=dashed
+node btree "B-Tree Index\n(Reads 3 pages)" at 3,0 in idx icon=tree
+node targeted "Table Data\n(Reads 1 page)" at 3,1 in idx icon=db
+
+btree -> targeted : "pointer"
+```
+
 ## Composite index column order matters
 
 A composite (multi-column) index `(a, b)` is only usable, as an index, for

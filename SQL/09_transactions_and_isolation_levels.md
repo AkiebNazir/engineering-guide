@@ -25,6 +25,21 @@ UPDATE accounts SET balance = balance + 50 WHERE id = 2;
 COMMIT;   -- or ROLLBACK to undo both if something went wrong
 ```
 
+```arch
+%% caption: A transaction groups multiple statements into a single atomic unit that either entirely succeeds or entirely rolls back.
+group txn "Transaction (BEGIN)" color=blue
+node s1 "Statement 1\n(UPDATE A)" at 0,0 in txn icon=db
+node s2 "Statement 2\n(UPDATE B)" at 2,0 in txn icon=db
+
+node commit "COMMIT\n(Permanent)" at 4,-1 icon=check color=green
+node rb "ROLLBACK\n(Undo all)" at 4,1 icon=error color=red
+
+s1 -> s2 : "success"
+s2 -> commit : "success"
+s2 -> rb : "error/abort"
+s1 -> rb : "error/abort"
+```
+
 ## <abbr title="Atomicity, Consistency, Isolation, Durability - A set of properties of database transactions intended to guarantee data validity despite errors.">ACID</abbr>, precisely
 
 | Property | Means | Postgres mechanism |

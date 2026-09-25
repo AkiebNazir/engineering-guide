@@ -182,6 +182,28 @@ changes if the primary dies before they ship (a "durability gap" measured in the
 number above); synchronous replication closes that gap at the cost of every write now
 depending on the replica being reachable and healthy.
 
+```arch
+%% caption: Synchronous replication guarantees durability by waiting for the replica; Asynchronous returns immediately, risking recent writes if the primary dies.
+group async "Asynchronous (Default)" color=slate style=dashed
+node ca "Client" at 0,0 in async icon=client color=blue
+node pa "Primary DB" at 2,0 in async icon=db color=green
+node ra "Replica DB" at 2,2 in async icon=replica color=amber
+
+ca -> pa : "1. COMMIT"
+pa ..> ca : "2. OK (Fast)"
+pa ..> ra : "3. WAL async"
+
+group sync "Synchronous" color=slate style=dashed
+node cs "Client" at 4,0 in sync icon=client color=blue
+node ps "Primary DB" at 6,0 in sync icon=db color=green
+node rs "Replica DB" at 6,2 in sync icon=replica color=amber
+
+cs -> ps : "1. COMMIT"
+ps -> rs : "2. WAL sync"
+rs ..> ps : "3. ACK"
+ps ..> cs : "4. OK (Slower)"
+```
+
 ## Failover, honestly
 
 Postgres does not fail over automatically on its own — a promoted-on-crash primary is
