@@ -59,17 +59,20 @@ outputs shown are real (timestamps and random IDs removed where noted).
 
 The debugging workflow uses them in sequence:
 
-```
- ALERT (metric)            →  "p99 latency on /checkout crossed 800 ms at 14:02"
-   │  slice by labels            region=br, version=1.4.2 — only there
-   ▼
- EXEMPLAR / TRACE          →  a slow request: payments.charge = 790 ms of 840 ms
-   │  follow trace_id
-   ▼
- LOGS for that trace_id    →  "retrying charge attempt=3 error=timeout provider=acme-br"
-   │
-   ▼
- PROFILE / CODE            →  connection pool to acme-br exhausted after 1.4.2 lowered max size
+```arch
+%% caption: The standard observability workflow moves from aggregate metrics down to specific traces, logs, and code.
+node metric "ALERT (Metric)\n'p99 latency > 800ms'" at 0,0 icon=chart color=red
+node slice "Slice by Labels\n'region=br, version=1.4'" at 2,0 icon=filter color=grey style=dashed
+node trace "EXEMPLAR / TRACE\n'payments = 790ms'" at 0,1 icon=search color=yellow
+node traceid "Follow trace_id" at 2,1 icon=link color=grey style=dashed
+node log "LOGS (for trace_id)\n'retrying charge...'" at 0,2 icon=file color=blue
+node code "PROFILE / CODE\n'connection pool exhausted'" at 0,3 icon=code color=green
+
+metric -> trace : "slice\nby labels"
+metric ..> slice : "insight"
+trace -> log : "follow\ntrace_id"
+trace ..> traceid : "insight"
+log -> code
 ```
 
 This only works if the three signals **share identifiers**: the same `route`, `version`,

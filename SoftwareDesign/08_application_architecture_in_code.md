@@ -82,20 +82,16 @@ architectural problem.
 
 The classic arrangement (also called n-tier):
 
-```
- ┌──────────────────────────────┐
- │ Presentation (HTTP, CLI, UI) │
- └──────────────┬───────────────┘
-                │ depends on
- ┌──────────────▼───────────────┐
- │ Business / service layer     │
- └──────────────┬───────────────┘
-                │ depends on
- ┌──────────────▼───────────────┐
- │ Data access (ORM, SQL)       │
- └──────────────┬───────────────┘
-                ▼
-            Database
+```arch
+%% caption: In a traditional layered architecture, dependencies point downward toward the database.
+node pres "Presentation\n(HTTP, CLI, UI)" at 0,0 icon=globe color=blue
+node biz "Business / service layer" at 0,1 icon=app color=green
+node data "Data access\n(ORM, SQL)" at 0,2 icon=db color=yellow
+node db "Database" at 0,3 icon=db color=grey
+
+pres -> biz : "depends on"
+biz -> data : "depends on"
+data -> db
 ```
 
 - **Strict layering:** each layer may call only the one directly below. Safe, but
@@ -151,26 +147,27 @@ The trick that makes it possible is **dependency inversion**: when the core need
 something from the outside (store an order, charge a card), the core **defines an
 interface in its own vocabulary**, and the outside **implements** it.
 
-```
-                 DRIVING side                                  DRIVEN side
-            (things that call us)                         (things we call)
+```arch
+%% caption: In a clean/hexagonal architecture, dependencies point inward. The domain is at the center, isolated from I/O.
+group drv "Driving Side (Calls us)" color=blue
+node http "HTTP handler" at 0,0 in drv icon=globe
+node q "Queue consumer" at 0,2 in drv icon=queue
 
-  ┌────────────┐   ┌────────────┐                     ┌────────────┐   ┌────────────┐
-  │ HTTP       │   │ Queue      │                     │ SQLite /   │   │ Stripe     │
-  │ handler    │   │ consumer   │                     │ Postgres   │   │ client     │
-  └─────┬──────┘   └─────┬──────┘                     └─────▲──────┘   └─────▲──────┘
-        │ calls          │ calls                 implements │    implements  │
-  ══════╪════════════════╪══════ ADAPTERS ═════════════════╪════════════════╪═══════
-        ▼                ▼                                  │                │
-  ┌──────────────────────────────┐          ┌──────────────┴────────────────┴─────┐
-  │ Driving port: the use case   │ ───uses─▶│ Driven ports: OrderRepository,      │
-  │ PlaceOrder(cmd) -> order_id  │          │ PaymentGateway, Clock  (interfaces) │
-  └──────────────┬───────────────┘          └─────────────────────────────────────┘
-                 │ uses
-         ┌───────▼────────┐
-         │ DOMAIN         │   Order, Money, Line, rules, domain errors
-         │ (pure Python)  │   imports nothing outside the standard library
-         └────────────────┘
+group dpt "Driven Side (We call)" color=yellow
+node pg "SQLite / Postgres" at 4,0 in dpt icon=db
+node st "Stripe client" at 4,2 in dpt icon=app
+
+group core "Core / Domain" color=green
+node uc "Driving Port\n(Use Case)" at 2,1 in core icon=function
+node pt "Driven Ports\n(Interfaces)" at 3,1 in core icon=code style=dashed
+node dom "DOMAIN\n(Pure logic)" at 2,3 in core icon=cube
+
+http -> uc : "calls"
+q -> uc : "calls"
+uc -> dom : "uses"
+uc -> pt : "uses"
+pg ..> pt : "implements"
+st ..> pt : "implements"
 ```
 
 Vocabulary:
@@ -991,11 +988,22 @@ construction, and pressure to add display-only getters to domain objects.
 
 **CQRS-lite:** keep one database, but split the code path.
 
-```
- Commands (writes)                         Queries (reads)
- ─────────────────                         ───────────────
- HTTP ─▶ use case ─▶ domain ─▶ repository  HTTP ─▶ query service ─▶ SQL ─▶ DTO
-          (rules, UoW, events)                     (no domain objects, no UoW)
+```arch
+%% caption: CQRS-lite splits the read path (optimized for display) from the write path (optimized for domain rules).
+group w "Commands (Writes)" color=red
+node h1 "HTTP" at 0,0 in w icon=globe
+node uc "Use Case\n(Rules, UoW)" at 1,0 in w icon=function
+node dom "Domain" at 2,0 in w icon=cube
+node repo "Repository" at 3,0 in w icon=db
+
+group r "Queries (Reads)" color=green
+node h2 "HTTP" at 0,1 in r icon=globe
+node qs "Query Service\n(No UoW)" at 1,1 in r icon=search
+node sql "SQL\n(No domain objs)" at 2,1 in r icon=db
+node dto "DTO" at 3,1 in r icon=file
+
+h1 -> uc -> dom -> repo
+h2 -> qs -> sql -> dto
 ```
 
 ```python

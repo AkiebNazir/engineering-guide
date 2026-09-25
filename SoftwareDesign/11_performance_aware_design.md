@@ -133,6 +133,23 @@ most common performance bug in business software.
 
 The shape of the problem, minimal, before a real database enters the picture:
 
+```arch
+%% caption: An interface designed for single items forces N+1 network calls; a batch interface pays the network tax only once.
+group bad "Chatty Interface (N+1)" color=red
+node c1 "Client" at 0,0 in bad icon=app
+node s1 "Server" at 2,0 in bad icon=server
+
+c1 -> s1 : "fetch(1)"
+c1 -> s1 : "fetch(2)"
+c1 -> s1 : "fetch(N)"
+
+group good "Batch Interface (1 call)" color=green
+node c2 "Client" at 4,0 in good icon=app
+node s2 "Server" at 6,0 in good icon=server
+
+c2 ==> s2 : "fetch([1, 2, ..., N])"
+```
+
 ```python
 import time
 

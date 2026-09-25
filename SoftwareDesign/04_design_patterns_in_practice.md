@@ -134,6 +134,20 @@ Use this as the definitions table; the last column says where the pattern is wor
 
 **Force:** a behaviour varies independently of the code that uses it.
 
+```arch
+%% caption: The Context delegates to an abstract Strategy interface, and the exact algorithm is injected at runtime.
+node ctx "Context\n(ParkingLot)" at 0,0 icon=app color=blue
+node iface "IPricingRule" at 2,0 icon=code color=yellow style=dashed
+group strat "Concrete Strategies" color=green style=solid
+node s1 "HourlyPricing" at 4,-1 in strat icon=function
+node s2 "FlatPricing" at 4,1 in strat icon=function
+
+ctx -> iface : "delegates to"
+iface ..> s1 : "implements"
+iface ..> s2 : "implements"
+```
+
+
 ```python
 from typing import Callable, Protocol
 
@@ -424,6 +438,22 @@ allow tests to inject a different one."
 
 **Force:** when something happens, a changing set of other parties must react, and the
 source shouldn't know who they are.
+
+```arch
+%% caption: The Subject publishes an event to an abstract bus, keeping the core domain decoupled from the side-effect handlers.
+node sub "Subject" at 0,0 icon=server color=blue
+node bus "EventBus" at 2,0 icon=queue color=yellow
+group obs "Observers" style=dashed color=green
+node o1 "Logger" at 4,-1 in obs icon=file
+node o2 "EmailNotifier" at 4,0 in obs icon=email
+node o3 "MetricCounter" at 4,1 in obs icon=chart
+
+sub -> bus : "change(42)"
+bus -> o1 : "notify"
+bus -> o2 : "notify"
+bus -> o3 : "notify"
+```
+
 
 The core of it is a list of callbacks:
 
