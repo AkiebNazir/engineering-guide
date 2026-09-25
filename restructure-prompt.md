@@ -98,13 +98,13 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
       KV store, CRDT editor, web search, geo, ad-click streaming, leaderboard,
       LLM systems, message queue, ranked feed, live streaming, maps/ETA, CDN,
       experimentation, video conferencing, social graph, lock service.
-- [ ] Link `best_practices/` (8 files, SOLID/GoF/architectural
+- [x] ~~Link `best_practices/` (8 files, SOLID/GoF/architectural
       patterns/anti-patterns) into the module's own navigation (README,
       playbook, or catalog) — it's currently unreachable except by browsing
       the directory, which contradicts README.md:14's claim that this content
       "lives in the separate Software Design module, not here." Either fold
       it into the learning path with a stated rationale, or move it out.
-- [ ] Add interactive flow labs for the 9 solutions that currently lack them
+- [x] ~~Add interactive flow labs for the 9 solutions that currently lack them
       (033_live_streaming, 037_experimentation_platform, and verify 031–040
       mapping is complete in `sd-flow.js`).
 
