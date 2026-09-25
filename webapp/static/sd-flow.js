@@ -322,11 +322,18 @@ function mountFlow(L, spec) {
       }
       // keep the tag clear of both cards on this hop: above them, or below if
       // that would run into the lane headers
+      // keep the tag clear of every card: try just above/below the dot, then
+      // above/below the cards on this hop; never into the lane headers
+      const tw = +rect.getAttribute('width') || 60;
       const A = box(s.path[k]), B = box(s.path[k + 1]);
-      const near = [A, B].filter(b => Math.abs(b.x - x) < b.w / 2 + 70);
+      const near = [A, B].filter(b => Math.abs(b.x - x) < b.w / 2 + tw / 2);
       const top = Math.min(y - 16, ...near.map(b => b.y - b.h / 2 - 6));
       const bot = Math.max(y + 16, ...near.map(b => b.y + b.h / 2 + 6));
-      const ty = top - 24 >= 40 ? top - 24 : bot;
+      const clear = ty => ty >= 40 && ty + 22 <= (spec.h || FLOW_H) - 6 && !Object.keys(nodes).some(id => {
+        const [x0, y0, x1, y1] = rectOf(id);
+        return x - tw / 2 < x1 + 3 && x + tw / 2 > x0 - 3 && ty < y1 + 3 && ty + 22 > y0 - 3;
+      });
+      const ty = [y - 38, y + 16, top - 24, bot, top - 50, bot + 26].find(clear) ?? (top - 24 >= 40 ? top - 24 : bot);
       tag.setAttribute('transform', `translate(0 ${Math.round(ty - y)})`);
       tag.style.opacity = f > .8 && k === hops - 1 ? 0 : 1;          // don't cover the node it lands on
     }
