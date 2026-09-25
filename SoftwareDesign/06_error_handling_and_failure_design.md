@@ -172,6 +172,25 @@ the code at that point does one of four things:
 | **3. Add context** — then re-raise | "while importing row 1,832 of users.csv" |
 | **4. Boundary** — the top of a request, job, thread, or task: log once, respond, keep the process alive | <abbr title="Hypertext Transfer Protocol - The foundation of data communication for the World Wide Web, operating on a client-server model.">HTTP</abbr> middleware → 500; worker loop → mark job failed, continue with the next |
 
+```arch
+%% caption: Error Handling Architecture Boundaries
+group bnd "4. Boundary Layer (HTTP/Job)" color=blue style=dashed
+node ctrl "HTTP Controller\n(returns 500 / logs)" at 1,0 in bnd icon=api
+
+group domain "3. Domain / Use Case Layer" color=green style=dashed
+node usecase "User Onboarding\n(adds context)" at 1,1 in domain icon=process
+
+group adapt "2. Adapter Layer" color=amber style=dashed
+node repo "SQL Repository\n(translates error)" at 1,2 in adapt icon=database
+
+node db "Database\n(throws IntegrityError)" at 1,3 icon=db color=slate
+
+db -> repo : "throw"
+repo -> usecase : "throw\nDuplicateEmail"
+usecase -> ctrl : "throw\n(with note)"
+ctrl -> ctrl : "log\n& stop"
+```
+
 Everything else should let the error propagate.
 
 ```python
@@ -895,6 +914,18 @@ Details that separate a correct implementation from a naive one:
 
 A multi-step operation that is not wrapped in one transaction can fail halfway. The
 question is not "how do I catch the error" but **"what state does the world end up in?"**
+
+```arch
+%% caption: Partial Failure Compensation Flow (Saga Pattern)
+node client "Client" at 0,1 icon=client
+node s1 "Step 1\n(Reserve Inventory)" at 1,0 icon=box color=blue
+node s2 "Step 2\n(Charge Card)" at 2,1 icon=payment color=amber
+node comp "Compensate\n(Release Inventory)" at 1,2 icon=undo color=red
+
+client -> s1 : "1. do()"
+client -> s2 : "2. do() [fails]"
+s2 -> comp : "3. error triggers undo()"
+```
 
 ### Order the steps
 

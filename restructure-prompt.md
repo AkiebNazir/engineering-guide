@@ -67,7 +67,7 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 
 - [x] ~~**SQL/** — no visualization or flow labs whatsoever.~~
 - [x] ~~**NoSQL/**~~ — no visualization or flow labs.
-- [ ] **SoftwareDesign/** — no visualization or flow labs.
+- [x] ~~**SoftwareDesign/** — no visualization or flow labs.~~
 - [ ] **GoEngineering/PyEngineering/** — no visualization or flow labs.
 - [ ] **GoStdLib/PyStdLib/** — no visualization or flow labs.
 - [ ] **GoogleBehavioral/** — no visualization or flow labs (may not need them).
@@ -248,14 +248,14 @@ arch diagrams. Modules 6–8 are 60–435 lines with 0 arch diagrams:
 
 ## SoftwareDesign/
 
-- [ ] Add arch diagrams across the module — **all 16 files (00–15) currently
+- [x] ~~Add arch diagrams across the module — **all 16 files (00–15) currently
       have zero arch diagrams**. This is the largest module entirely without
       visual architecture content. Priority targets:
       `04_design_patterns_in_practice.md` (1,417 lines),
       `08_application_architecture_in_code.md` (1,487 lines),
       `06_error_handling_and_failure_design.md` (1,431 lines),
       `07_designing_concurrent_code.md` (1,350 lines).
-- [ ] Add interactive visualization labs to the webapp for this module —
+- [x] ~~Add interactive visualization labs to the webapp for this module —
       currently zero. Pattern/architecture diagrams would benefit greatly
       from animated "request walks through layers" style labs.
 

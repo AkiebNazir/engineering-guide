@@ -485,6 +485,23 @@ Instead of many threads locking shared state, **one thread owns the state and pr
 messages one at a time.** No locks around the state at all — sequential code, sequentially
 correct.
 
+```arch
+%% caption: Actor Model Pattern (Single Writer)
+node t1 "Thread A" at 0,0 icon=process color=blue
+node t2 "Thread B" at 1,0 icon=process color=blue
+node t3 "Thread C" at 2,0 icon=process color=blue
+
+node q "Message Queue\n(Inbox)" at 1,1 shape=card icon=queue color=amber
+node actor "Actor Thread\n(State Owner)" at 1,2 icon=process color=green
+node state "Mutable State" at 1,3 shape=circle icon=database color=red
+
+t1 -> q : "push"
+t2 -> q : "push"
+t3 -> q : "push"
+q -> actor : "pop (sequential)"
+actor -> state : "mutate\n(no locks!)"
+```
+
 The smallest version: one thread owns a plain list, everyone else sends it messages
 through a queue instead of touching the list directly.
 
@@ -821,7 +838,26 @@ Two design points:
 ## 10 · Single-flight: collapsing duplicate work
 
 When a popular cache key expires, 1,000 concurrent requests all miss and all query the
-database — a **cache stampede** (thundering herd). Single-flight makes concurrent callers
+database — a **cache stampede** (thundering herd). ```arch
+%% caption: Single-flight Cache Pattern
+node c1 "Client 1" at 0,0 icon=client color=blue
+node c2 "Client 2" at 1,0 icon=client color=blue
+node c3 "Client 3" at 2,0 icon=client color=blue
+
+node cache "Single-Flight\nCache" at 1,1 shape=card icon=cache color=green
+node db "Database" at 1,2 shape=cyl icon=db color=slate
+
+c1 -> cache : "1. miss (leader)"
+c2 -> cache : "2. miss (wait)"
+c3 -> cache : "3. miss (wait)"
+cache ==> db : "4. single fetch"
+db ==> cache : "5. result"
+cache -> c1 : "6. return"
+cache -> c2 : "6. return"
+cache -> c3 : "6. return"
+```
+
+Single-flight makes concurrent callers
 for the same key share one in-flight load.
 
 ```python
