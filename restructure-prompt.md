@@ -379,34 +379,7 @@ dedicated modules mirroring the depth of existing tracks, complete with
 basic-to-advanced progression, code examples, static `arch` diagrams, and
 interactive webapp labs:
 
-- [ ] **Backend Tool-Kit Module**: A hands-on module dedicated to mastering
-      essential backend and infrastructure technologies. Needs deep-dive
-      topics covering:
-      - **Containerization & Orchestration**: Docker (images, Dockerfile best
-        practices, multi-stage builds, volumes, networking), Kubernetes (pods,
-        services, deployments, ConfigMaps, Secrets, Helm charts, HPA, RBAC),
-        Helm.
-      - **Version Control**: Git deep dive (internals, rebase vs merge, cherry-pick,
-        bisect, reflog, hooks), GitHub (pull request workflows, code review
-        best practices, branch protection, GitHub Actions).
-      - **Messaging & Event Streaming**: Kafka (producers, consumers, partitions,
-        consumer groups, exactly-once semantics, schema registry), RabbitMQ
-        (exchanges, queues, routing, dead-letter queues).
-      - **Observability & Monitoring**: Prometheus (metrics, PromQL, alerting),
-        Grafana (dashboards, alerting), OpenTelemetry (traces, spans, context
-        propagation), ELK Stack (Elasticsearch, Logstash, Kibana).
-      - **CLI & Linux Mastery**: Bash scripting, `curl`, `jq`, core utilities
-        (`grep`, `awk`, `sed`, `find`, `xargs`), process management (`systemd`,
-        `supervisord`), Linux networking (`ss`, `netstat`, `tcpdump`, `iptables`).
-      - **Infrastructure as Code (IaC)**: Terraform (providers, state, modules,
-        workspaces, drift detection), Ansible (playbooks, roles, inventory).
-      - **Web Servers & Proxies**: Nginx (reverse proxy, load balancing, SSL
-        termination, rate limiting), Envoy (service mesh, xDS, circuit breaking),
-        HAProxy.
-      - **Performance & Load Testing**: k6 (scripting, thresholds, scenarios),
-        wrk, benchmarking methodology.
-      - **Secret Management**: HashiCorp Vault, AWS Secrets Manager patterns.
-      - **Service Mesh**: Istio / Linkerd basics, mTLS, traffic management.
+- [x] ~~**Backend Tool-Kit Module**: A hands-on module dedicated to mastering essential backend and infrastructure technologies. Needs deep-dive topics covering Docker, Kubernetes, Git, Kafka, RabbitMQ, Observability, CLI, IaC, Web Proxies, Perf Testing, Secrets, and Service Mesh.~~
 - [ ] **CI/CD & Deployment Strategies**: A dedicated topic/module focusing
       purely on Continuous Integration, Continuous Deployment, automation
       pipelines (GitHub Actions deep dive, Jenkins, ArgoCD), and deployment
