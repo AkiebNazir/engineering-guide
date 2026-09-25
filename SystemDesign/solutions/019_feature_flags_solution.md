@@ -67,19 +67,19 @@ POST /sdk/eval                  { context } → { flags:{key:{value, variation, 
 
 ## Architecture and data flow
 
-```text
-engineer ──change flag rule/rollout──► control plane (RBAC, versioned, audited)
-                        │ validate + version bump + audit event (one transaction)
-                        ▼
-           snapshot builder ──► regional relays (in-memory snapshot + SSE fan-out + ETag polling, persisted to disk)
-                        │
-SDK (per service) ──stream/poll──► local cache: last snapshot + received_at (also persisted to disk)
-                        │
-request ──► SDK.evaluate(flag, context, default)
-                        │ hash/rule match against LOCAL snapshot only
-                        │ if snapshot stale beyond threshold ──► apply flag's safe default
-                        ▼
-                     decision (no network call on this path)
+```arch
+%% caption: Feature flag evaluation happens entirely locally in the SDK, using rules distributed from the Control Plane via Relays.
+node eng "Engineer" at 0,0 icon=user color=blue
+node cp "Control Plane\n(Validation, RBAC, DB)" at 2,0 icon=server color=grey
+node relay "Regional Relays\n(SSE Fan-out / Polling)" at 4,0 icon=globe color=yellow
+group svc "Application Service" color=green style=dashed
+node sdk "Feature Flag SDK\n(Local Rule Cache)" at 4,2 in svc icon=code
+node eval "evaluate(context)\n-> decision" at 2,2 in svc icon=function
+
+eng -> cp : "update\nrule"
+cp -> relay : "push\nsnapshot"
+relay ..> sdk : "stream/poll\nrules"
+sdk -> eval : "local\ndecision"
 ```
 
 ```mermaid

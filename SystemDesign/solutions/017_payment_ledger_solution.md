@@ -90,6 +90,24 @@ POST /internal/settlement-events                { provider, provider_ref, amount
 
 ## Architecture and data flow
 
+```arch
+%% caption: The Transfer API coordinates a cross-shard transfer by writing to the source shard locally, then calling the destination shard.
+node client "Client" at 0,0 icon=laptop color=blue
+node api "Transfer API" at 2,0 icon=server color=grey
+group sA "Shard A (Source)" color=yellow style=dashed
+node tblA "Accounts A" at 4,-1 in sA icon=db
+node clA "Clearing A->B" at 4,0 in sA icon=db
+group sB "Shard B (Destination)" color=green style=dashed
+node tblB "Accounts B" at 6,1 in sB icon=db
+node clB "Clearing B->A" at 6,2 in sB icon=db
+
+client -> api : "POST /transfers"
+api -> tblA : "1. debit\nsource"
+api -> clA : "1. credit\nclearing"
+api -> clB : "2. debit\nclearing"
+api -> tblB : "2. credit\ndest"
+```
+
 ```mermaid
 %% caption: A cross-shard transfer is two local double-entry transactions joined by inter-shard clearing accounts, so every step balances and a failed credit is undone by a reversing entry.
 sequenceDiagram
