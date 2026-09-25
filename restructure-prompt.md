@@ -76,19 +76,19 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 
 ## SystemDesign/
 
-- [ ] Fix 9 dead links pointing at `06_spoken_walkthroughs.md` (referenced in
+- [x] ~~Fix 9 dead links pointing at `06_spoken_walkthroughs.md` (referenced in
       `README.md:12`, `01_company_interview_guide.md:137`,
       `02_problem_catalog.md:74/77`) — file does not exist. Either write it or
       remove the references.
-- [ ] Fix dead links to `problems/035_distributed_object_store_question.md` +
+- [x] ~~Fix dead links to `problems/035_distributed_object_store_question.md` +
       `solutions/035_distributed_object_store_solution.md` (referenced in
       `00_google_l5_playbook.md:171`, `02_problem_catalog.md:55`) — disk jumps
       034 → 036. Either write problem 035 or remove the references.
-- [ ] Fix dead links to `problems/041_email_service_question.md` +
+- [x] ~~Fix dead links to `problems/041_email_service_question.md` +
       `solutions/041_email_service_solution.md` (referenced in
       `00_google_l5_playbook.md:177`, `02_problem_catalog.md:61`) — disk stops
       at 040. Either write problem 041 or remove the references.
-- [ ] Reconcile the "41 problems" claim throughout README/catalog with the
+- [x] ~~Reconcile the "41 problems" claim throughout README/catalog with the
       actual 39 on disk (either write the 2 missing problems above and keep
       41, or renumber the claim to 39 everywhere it appears).
 - [ ] Extend the condensed review layer (`03_practice_prompts.md`,

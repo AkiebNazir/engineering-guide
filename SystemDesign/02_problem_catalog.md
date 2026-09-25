@@ -52,13 +52,11 @@ The problem families the first 30 do not cover: log/queue infrastructure, rankin
 | 032 | Ranked Home Feed | Retrieval → ranking cascade, feature serving, session-stable pagination, exploration | [Question](problems/032_ranked_home_feed_question.md) · [Solution](solutions/032_ranked_home_feed_solution.md) |
 | 033 | Live Streaming and Comments | Ingest, real-time transcode, low-latency packaging, mega-stream <abbr title="Content Delivery Network - A geographically distributed network of proxy servers and their data centers used to deliver content with low latency.">CDN</abbr> fan-out, comment fan-out | [Question](problems/033_live_streaming_and_comments_question.md) · [Solution](solutions/033_live_streaming_and_comments_solution.md) |
 | 034 | Maps Routing and ETA | Contraction hierarchies, graph sharding, live traffic weights, map matching, ETA models | [Question](problems/034_maps_routing_and_eta_question.md) · [Solution](solutions/034_maps_routing_and_eta_solution.md) |
-| 035 | Distributed Object Store | Erasure coding and durability math, metadata index, repair, <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, LIST at scale | [Question](problems/035_distributed_object_store_question.md) · [Solution](solutions/035_distributed_object_store_solution.md) |
 | 036 | Content Delivery Network | Steering, cache hierarchy, hot objects, purge, <abbr title="Transport Layer Security - A cryptographic protocol designed to provide communications security over a computer network.">TLS</abbr> at the edge, ISP-embedded caches | [Question](problems/036_content_delivery_network_question.md) · [Solution](solutions/036_content_delivery_network_solution.md) |
 | 037 | Experimentation Platform | Hash bucketing, layers, exposure logging, SRM, power and CUPED, guardrails | [Question](problems/037_experimentation_platform_question.md) · [Solution](solutions/037_experimentation_platform_solution.md) |
 | 038 | Video Conferencing | SFU vs MCU, WebRTC signaling, simulcast, congestion control, cascaded SFUs | [Question](problems/038_video_conferencing_question.md) · [Solution](solutions/038_video_conferencing_solution.md) |
 | 039 | Social Graph Service | Objects and associations, cache tiers, hot edge lists, 2-hop queries, privacy checks | [Question](problems/039_social_graph_service_question.md) · [Solution](solutions/039_social_graph_service_solution.md) |
 | 040 | Distributed Lock Service | Consensus state machine, sessions and leases, fencing, watches, client caching | [Question](problems/040_distributed_lock_service_question.md) · [Solution](solutions/040_distributed_lock_service_solution.md) |
-| 041 | Email Service | SMTP ingest, spam pipeline, mailbox storage, per-user search, sync cursors, deliverability | [Question](problems/041_email_service_question.md) · [Solution](solutions/041_email_service_solution.md) |
 
 Every full solution now ends with **Follow-ups the interviewer will ask**, **Common mistakes**, and **Going from L5 to L6**. Use them after your timed attempt: answer the follow-ups aloud before you read the model answers.
 
@@ -66,11 +64,10 @@ For every catalog item, solve the question independently before opening the solu
 
 ## Faster review pass
 
-For a condensed pass across all 41 problems in one sitting (prompt, reference answer, one-paragraph blueprint), use:
+For a condensed pass across all 39 problems in one sitting (prompt, reference answer, one-paragraph blueprint), use:
 
 - [Practice prompts](03_practice_prompts.md): one paragraph per problem, with the constraints that matter.
 - [Condensed reference answers](04_practice_answers.md): the design in one paragraph each.
 - [Architecture blueprints](05_architecture_blueprints.md): source of truth, contract, flow, hard part, scale trigger, and the one thing never to do, per problem. Good for a pre-mock refresher.
-- [Spoken walkthroughs](06_spoken_walkthroughs.md): full 45-minute answers written the way you would say them aloud, with the clock.
 
 Preparing for a specific company? Start with the [company interview guide](01_company_interview_guide.md), which maps each company's typical questions onto this catalog.

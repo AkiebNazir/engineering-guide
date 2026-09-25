@@ -68,7 +68,7 @@ Confirm the level first: a design that is excellent for L4 or SDE II is too narr
 
 **Commonly reported.** A 45-minute open-ended round whose notes a committee reads later, so *saying* your reasoning matters. The interviewer mostly reacts; you propose.
 
-**Problem families → this module.** Storage and lookup: 001, 003, 023, 018, 022. Search and text: 009, 025. Collaboration and storage products: 015, 024, 035. Video and maps: 016, 026, 034. Counting and streams: 027, 028, 029, 031. Coordination: 040.
+**Problem families → this module.** Storage and lookup: 001, 003, 023, 018, 022. Search and text: 009, 025. Collaboration and storage products: 015, 024. Video and maps: 016, 026, 034. Counting and streams: 027, 028, 029, 031. Coordination: 040.
 
 **Depth areas commonly probed.**
 - **Scale arithmetic** that turns into decisions ([18](building_blocks/18_back_of_envelope_estimation.md)).
@@ -110,7 +110,7 @@ Confirm the level first: a design that is excellent for L4 or SDE II is too narr
 
 **Commonly reported.** Loops of several roughly hour-long interviews, each mixing behavioral questions tied to Amazon's published Leadership Principles with technical content; one interviewer is commonly described as a "Bar Raiser". Design depth grows with level.
 
-**Problem families → this module.** Commerce and money: 008, 010, 017. Messaging and workflow: 004, 012, 031, 041. Platform: 002, 021. Storage and data: 023, 035, 018.
+**Problem families → this module.** Commerce and money: 008, 010, 017. Messaging and workflow: 004, 012, 031. Platform: 002, 021. Storage and data: 023, 018.
 
 **Depth areas commonly probed.**
 - **Operational excellence**: alarms, dashboards, runbooks, deployment safety, on-call ([15](building_blocks/15_observability_and_reliability.md)).
@@ -129,12 +129,12 @@ Planning assumption: one problem is a 45-minute timed attempt plus about 30 minu
 
 | Company | Blocks (~h) | Problems in order (count × 1.25 h) | Mocks and redo | Total |
 |---|---|---|---|---|
-| Google | [playbook](00_google_l5_playbook.md), B10, 18, 19, 24, 25, 27, 28 (~12) | 007, 018, 023, 009, 025, 026, 028, 027, 024, 015, 016, 035, 034, 040 (14 × 1.25 = 17.5) | 8 | about 38 h |
+| Google | [playbook](00_google_l5_playbook.md), B10, 18, 19, 24, 25, 27, 28 (~12) | 007, 018, 023, 009, 025, 026, 028, 027, 024, 015, 016, 034, 040 (14 × 1.25 = 17.5) | 8 | about 38 h |
 | Meta | B07, 09, 22, 25, 29, 30, 31 (~11) | 007, 039, 032, 006, 005, 033, 004, 009, 026, 028, 018, 037, 027 (13 × 1.25 = 16.25) | 8 | about 35 h |
 | Netflix | B12, 15, 21, 27, 28, 29, 31, 32 (~12) | 016, 036, 033, 032, 037, 019, 031, 013, 021, 012, 018, 027 (12 × 1.25 = 15) | 8 | about 35 h; also prep two stories of systems you ran, one a failure |
-| Amazon | B11, 12, 15, 27, 28, 32 (~10) | 008, 010, 017, 004, 002, 021, 012, 023, 035, 031, 041, 018 (12 × 1.25 = 15) | 8 + 4 for the story bank | about 37 h |
+| Amazon | B11, 12, 15, 27, 28, 32 (~10) | 008, 010, 017, 004, 002, 021, 012, 023, 031, 018 (12 × 1.25 = 15) | 8 + 4 for the story bank | about 37 h |
 
-> 💡 The four lists overlap heavily. Their union is 32 distinct problems, so preparing for all four is not four times the work. Do the shared core first (007, 018, 023, 028, 031), then your target company's remainder. For faster passes use [practice prompts](03_practice_prompts.md), [blueprints](05_architecture_blueprints.md) and [spoken walkthroughs](06_spoken_walkthroughs.md).
+> 💡 The four lists overlap heavily. Their union is 32 distinct problems, so preparing for all four is not four times the work. Do the shared core first (007, 018, 023, 028, 031), then your target company's remainder. For faster passes use [practice prompts](03_practice_prompts.md), [blueprints](05_architecture_blueprints.md).
 
 ---
 
