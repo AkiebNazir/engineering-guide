@@ -294,15 +294,18 @@ function passes(p, q = query) {
    page → its cards. Typing in the search box turns the module list into one
    flat result list across the whole library.
    ========================================================================= */
-const SECTIONS = ['dsa', 'sd', 'swd', 'go', 'py', 'roadmap', 'library', 'agentic', 'csfund', 'behavioral', 'api', 'sql', 'nosql', 'pystdlib', 'gostdlib'];
+const SECTIONS = ['dsa', 'sd', 'swd', 'go', 'py', 'roadmap', 'toolkit', 'cicd', 'library', 'agentic', 'csfund', 'behavioral', 'api', 'sql', 'nosql', 'pystdlib', 'gostdlib'];
 
 const SECTION_ICON = {
+  cicd: '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
+
   dsa: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/>',
   sd: '<rect x="3" y="3" width="7" height="6" rx="1.5"/><rect x="14" y="3" width="7" height="6" rx="1.5"/><rect x="8.5" y="15" width="7" height="6" rx="1.5"/><path d="M6.5 9v2.5h11V9M12 11.5V15"/>',
   swd: '<rect x="3" y="3" width="8" height="7" rx="1.5"/><rect x="13" y="14" width="8" height="7" rx="1.5"/><path d="M3 6.5h8M13 17.5h8M7 10v7.5h6"/>',
   go: '<path d="M4 17V7a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M8 10l2 2-2 2M13 14h3"/>',
   py: '<path d="M4 17V7a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M8 10l2 2-2 2M13 14h3"/>',
   roadmap: '<path d="M5 19c4 0 3-6 7-6s3-6 7-6"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="7" r="2"/>',
+  toolkit: '<path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>',
   library: '<path d="M4 4h4v16H4zM10 4h4v16h-4zM16.2 4.6l3.8-1 4 15.5-3.9 1z"/>',
   agentic: '<path d="M20 12a8 8 0 01-13.7 5.6M4 12a8 8 0 0113.7-5.6"/><path d="M17.5 2.5v4h-4M6.5 21.5v-4h4"/><circle cx="12" cy="12" r="2.5"/>',
   csfund: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
@@ -1311,7 +1314,8 @@ let curView = '';
 function showView(name) {
   curView = name;
   for (const [n, sel] of Object.entries(VIEWS)) $(sel).hidden = n !== name;
-  if (name !== 'doc-reader') { curDoc = null; $('#app').classList.remove('reading-focus'); }
+  if (name !== 'doc-reader') { curDoc = null; $('#app').classList.remove('reading-focus'); $('#toggleRightSidebar').style.display = 'none'; }
+  else { $('#toggleRightSidebar').style.display = ''; }
   $('#navDashboard').classList.toggle('is-on', name === 'dashboard');
   $('#navReview').classList.toggle('is-on', name === 'review');
   if (name !== 'dsa-topic') dsaTopicId = null;
@@ -1403,6 +1407,7 @@ function wireUI() {
   };
   $('#toggleCode').onclick = () => setCodeOpen(!codeOpen());
   $('#toggleSidebar').onclick = () => setSidebarOpen($('#app').classList.contains('sidebar-hidden'));
+  $('#toggleRightSidebar').onclick = () => $('#app').classList.toggle('rail-hidden');
   $('#sidebarBackdrop').onclick = () => setSidebarOpen(false);
   wirePalette();
   MOBILE_MQ.addEventListener('change', syncSidebarForViewport);

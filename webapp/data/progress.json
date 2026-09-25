@@ -402,7 +402,9 @@
       "pos": 0.7837
     },
     "sd:building_blocks/00_overview": {
-      "last": 1790178028374
+      "last": 1790347848566,
+      "pct": 90,
+      "pos": 0.0464
     },
     "sd:building_blocks/01_operating_systems": {
       "last": 1790326178034,
@@ -420,9 +422,9 @@
       "pos": 0.7978
     },
     "sd:building_blocks/04_api_design_low_level": {
-      "last": 1790326293756,
-      "pct": 71,
-      "pos": 0
+      "last": 1790346993626,
+      "pct": 100,
+      "pos": 0.9078
     },
     "sd:building_blocks/13_scaling_and_load_balancing": {
       "last": 1789507035681
@@ -622,6 +624,45 @@
     },
     "swd:README": {
       "last": 1789899802551,
+      "pos": 0
+    },
+    "toolkit:02_kubernetes_and_helm": {
+      "last": 1790347898230,
+      "pct": 100,
+      "pos": 0.7443
+    },
+    "toolkit:12_service_mesh": {
+      "last": 1790345193420,
+      "pct": 43,
+      "pos": 0
+    },
+    "toolkit:Docker": {
+      "last": 1790345476519,
+      "pct": 100,
+      "pos": 0.9591
+    },
+    "toolkit:Docker_and_Containers/01_Introduction": {
+      "last": 1790343345638,
+      "pos": 0
+    },
+    "toolkit:Git_and_Workflows": {
+      "last": 1790349774627,
+      "pct": 100,
+      "pos": 0.8075
+    },
+    "toolkit:Kafka": {
+      "last": 1790349608517,
+      "pct": 100,
+      "pos": 0.938
+    },
+    "toolkit:Kubernetes_and_Helm": {
+      "last": 1790349608036,
+      "pct": 100,
+      "pos": 0.9491
+    },
+    "toolkit:README": {
+      "last": 1790349543679,
+      "pct": 100,
       "pos": 0
     }
   },

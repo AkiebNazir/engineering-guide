@@ -1,0 +1,14 @@
+[Unit]
+Description=My Simple Python Web Server
+After=network.target
+
+[Service]
+# Adjust the path to match where your script is located
+ExecStart=/usr/bin/python3 /opt/my-app/server.py
+WorkingDirectory=/opt/my-app
+Restart=always
+User=nobody
+Group=nogroup
+
+[Install]
+WantedBy=multi-user.target

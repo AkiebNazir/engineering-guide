@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-test-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-test
+  template:
+    metadata:
+      labels:
+        app: config-test
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command: ["/bin/sh", "-c", "env && cat /etc/config/app_settings.json && sleep 3600"]
+        env:
+        # Inject single variable from ConfigMap
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: LOG_LEVEL
+        # Inject all keys from Secret as environment variables
+        envFrom:
+        - secretRef:
+            name: db-credentials
+        # Mount the JSON file from the ConfigMap as a physical file volume
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: app-config
+          items:
+          - key: app_settings.json
+            path: app_settings.json

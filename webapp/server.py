@@ -48,9 +48,11 @@ ROADMAP_DIR = ROOT / "AI-road-map"
 LIBRARY_GUIDES_DIR = ROOT / "AI-Libraries-Guides"
 AGENTIC_AI_DIR = ROOT / "Agentic-AI"
 CS_FUNDAMENTALS_DIR = ROOT / "CSFundamentals"
+CICD_DIR = ROOT / "CICD"
 GOOGLE_BEHAVIORAL_DIR = ROOT / "GoogleBehavioral"
 SOFTWARE_DESIGN_DIR = ROOT / "SoftwareDesign"
 API_DIR = ROOT / "API"
+TOOL_KIT_DIR = ROOT / "Tool-Kit"
 SQL_DIR = ROOT / "SQL"
 NOSQL_DIR = ROOT / "NoSQL"
 STDLIB_ROOTS = {"py": ROOT / "PyStdLib", "go": ROOT / "GoStdLib"}
@@ -593,6 +595,27 @@ def load_library_guides() -> list[dict]:
     return load_numbered_md_collection(LIBRARY_GUIDES_DIR)
 
 
+def load_toolkit() -> list[dict]:
+    if not TOOL_KIT_DIR.exists():
+        return []
+    items = []
+    for path in sorted(TOOL_KIT_DIR.glob("*.md")):
+        if path.name == "README.md": continue
+        items.append({
+            "id": path.stem,
+            **doc_meta(path, path.stem.replace("_", " ").title()),
+            "path": str(path.relative_to(TOOL_KIT_DIR))
+        })
+    for path in sorted(TOOL_KIT_DIR.iterdir()):
+        if path.is_dir() and (path / f"{path.name}.md").exists():
+            main_doc = path / f"{path.name}.md"
+            items.append({
+                "id": path.name,
+                **doc_meta(main_doc, path.name.replace("_", " ").title()),
+                "path": str(main_doc.relative_to(TOOL_KIT_DIR))
+            })
+    return items
+
 
 def load_api() -> list[dict]:
     if not API_DIR.exists():
@@ -610,6 +633,24 @@ def load_api() -> list[dict]:
 
 def load_agentic_ai() -> list[dict]:
     return load_numbered_md_collection(AGENTIC_AI_DIR)
+
+
+def load_cicd() -> list[dict]:
+    if not CICD_DIR.exists():
+        return []
+    items = []
+    for path in sorted(CICD_DIR.iterdir()):
+        if path.is_dir() and re.match(r"^\d+-", path.name):
+            md_file = path / f"{path.name}.md"
+            if md_file.exists():
+                num = path.name.split('-')[0]
+                items.append({
+                    "id": path.name,
+                    "num": num,
+                    **doc_meta(md_file, path.name.replace("-", " ").title())
+                })
+    return items
+
 
 
 def load_cs_fundamentals() -> list[dict]:
@@ -1582,6 +1623,21 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"items": load_library_guides()})
         elif p == "/api/library-guide-doc":
             self._json(read_markdown(safe_md(LIBRARY_GUIDES_DIR, q.get("id", [""])[0])))
+        elif p == "/api/tool-kit":
+            self._json({"items": load_toolkit()})
+        elif p == "/api/tool-kit-doc":
+            req_id = q.get("id", [""])[0]
+            if req_id:
+                p1 = TOOL_KIT_DIR / req_id / f"{req_id}.md"
+                p2 = TOOL_KIT_DIR / f"{req_id}.md"
+                if p1.exists():
+                    self._json(read_markdown(p1))
+                elif p2.exists():
+                    self._json(read_markdown(p2))
+                else:
+                    self._json({"content": "Not found", "title": "Not Found"})
+            else:
+                self._json({"content": "Not found", "title": "Not Found"})
         elif p == "/api/apis":
             self._json({"items": load_api()})
         elif p == "/api/apis-doc":
@@ -1604,6 +1660,25 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"items": load_agentic_ai()})
         elif p == "/api/agentic-ai-doc":
             self._json(read_markdown(safe_md(AGENTIC_AI_DIR, q.get("id", [""])[0])))
+
+        elif p == "/api/cicd":
+            self._json({"items": load_cicd()})
+        elif p == "/api/cicd-doc":
+            doc_id = q.get("id", [""])[0]
+            if not doc_id or "/" in doc_id or "\\" in doc_id:
+                self._json({"exists": False})
+            else:
+                path = CICD_DIR / doc_id / f"{doc_id}.md"
+                out = read_markdown(path)
+                exercises_dir = CICD_DIR / doc_id / "exercises"
+                if out["exists"] and exercises_dir.exists():
+                    exercises_content = []
+                    for ex_path in sorted(exercises_dir.glob("*.md")):
+                        exercises_content.append(ex_path.read_text())
+                    if exercises_content:
+                        out["markdown"] += "\n\n---\n\n# Exercises\n\n" + "\n\n---\n\n".join(exercises_content)
+                self._json(out)
+
         elif p == "/api/cs-fundamentals":
             self._json({"items": load_cs_fundamentals()})
         elif p == "/api/cs-fundamentals-doc":

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  haproxy:
+    image: haproxy:alpine
+    ports:
+      - "8083:80"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - web1
+      - web2
+      - web3
+
+  web1:
+    image: traefik/whoami
+  web2:
+    image: traefik/whoami
+  web3:
+    image: traefik/whoami

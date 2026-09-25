@@ -380,10 +380,10 @@
 .pop-keys kbd { margin-right: 3px; }
 
 .reader-grid {
-  display: grid; grid-template-columns: minmax(0, 1fr) 244px; gap: 52px;
-  max-width: 1200px; margin: 0 auto; padding: 40px 40px 120px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 40px;
+  max-width: 1600px; margin: 0 auto; padding: 40px 40px 120px;
 }
-.doc { min-width: 0; width: 100%; max-width: var(--read-measure); margin: 0 auto; font-size: var(--read-size); }
+.doc { min-width: 0; width: 100%; max-width: 1200px; margin: 0 auto; font-size: var(--read-size); }
 
 /* --- hero: the one orchestrated entrance on the page ---------------------- */
 .doc-hero { padding-bottom: 28px; margin-bottom: 34px; border-bottom: 1px solid var(--border); }
@@ -410,7 +410,7 @@
 /* --- prose ---------------------------------------------------------------- */
 .doc-prose { max-width: none; font-family: var(--read-face); font-size: 1em; line-height: 1.74; color: var(--text-body); }
 .reader[data-face="serif"] .doc-prose { line-height: 1.8; }
-.doc-prose p, .doc-prose li { font-size: 1em; color: var(--text-body); line-height: inherit; }
+.doc-prose p, .doc-prose li { font-size: 1em; color: var(--text-body); line-height: inherit; max-width: 120ch; }
 .doc-prose p { margin: 0 0 1.05em; }
 .doc-prose strong { color: var(--text); font-weight: 600; }
 .doc-prose em { color: var(--text); }
@@ -578,16 +578,16 @@
     var(--surface);
   text-align: center;
 }
-.diagram-canvas { overflow-x: auto; cursor: zoom-in; }
-.diagram-canvas svg { display: block; width: 100%; height: auto; min-width: min(720px, 100%); max-width: 100%; margin: 0 auto; }
+.diagram-canvas { overflow-x: auto; cursor: zoom-in; text-align: center; }
+.diagram-canvas svg { display: inline-block; width: auto; height: auto; min-width: min(720px, 100%); max-width: 100%; margin: 0 auto; }
 /* Topic-guide diagrams are small and many: keep each at its natural size instead of
    stretching a five-node tree to the full column. */
 .reader[data-mod="dsaguide"] .diagram-canvas svg,
-.reader[data-mod="dsaguidego"] .diagram-canvas svg { width: 100%; min-width: 0; max-width: var(--nat, 100%); }
+.reader[data-mod="dsaguidego"] .diagram-canvas svg { width: auto; min-width: 0; max-width: var(--nat, 100%); }
 /* arch diagrams: never stretched past their true size, and never shrunk below
    720px either — a wide one scrolls sideways (or opens in Expand) instead of
    turning its labels into specks */
-.diagram[data-kind="arch"] .diagram-canvas > svg { width: 100%; min-width: min(720px, var(--nat, 100%)); max-width: var(--nat, 100%); }
+.diagram[data-kind="arch"] .diagram-canvas > svg { width: auto; min-width: min(720px, var(--nat, 100%)); max-width: var(--nat, 100%); }
 .diagram figcaption { margin: 12px auto 2px; max-width: 60ch; font: italic 400 .88em/1.5 var(--serif); color: var(--text-dim); }
 .diagram-zoom {
   position: absolute; top: 9px; right: 9px; display: inline-flex; align-items: center; gap: 5px;
@@ -845,8 +845,10 @@ mark.hl.flash { animation: hl-flash 1.3s ease; }
 /* --- focus mode ------------------------------------------------------------ */
 .app.reading-focus { grid-template-columns: 0 1fr; }
 .app.reading-focus .sidebar { transform: translateX(-100%); border-right-color: transparent; }
-.app.reading-focus .doc-rail { display: none; }
-.app.reading-focus .reader-grid { grid-template-columns: minmax(0, 1fr); }
+/* Note: reading-focus used to hide the right rail; now they are independent */
+
+.app.rail-hidden .doc-rail { display: none; }
+.app.rail-hidden .reader-grid { grid-template-columns: minmax(0, 1fr); }
 
 /* ================================================= engineering workspace == */
 .eng-doc { margin: -20px -24px 0; }
@@ -930,3 +932,19 @@ mark.hl.flash { animation: hl-flash 1.3s ease; }
 a.guide-lang-btn:hover { background: var(--surface-2); color: var(--text); }
 .guide-lang-btn.is-on { background: var(--surface-2); border-color: var(--border); color: var(--text); cursor: default; }
 .guide-lang-btn.is-off { opacity: .4; cursor: not-allowed; }
+
+/* Nice table styling for tool-kit docs */
+.doc-prose table {
+  width: 100%; border-collapse: collapse; margin: 2em 0;
+  text-align: left; font-size: 14.5px;
+  box-shadow: 0 0 0 1px var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.doc-prose th, .doc-prose td {
+  padding: 12px 16px; border-bottom: 1px solid var(--border-soft);
+}
+.doc-prose th {
+  font-weight: 600; color: var(--text); background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+.doc-prose tr:last-child td { border-bottom: 0; }

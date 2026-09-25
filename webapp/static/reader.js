@@ -32,6 +32,17 @@ const ENG_GROUPS = [
 const groupFor = (table, num) => (table.find(([max]) => +num <= max) || table[table.length - 1])[1];
 
 const MODULES = {
+
+  cicd: {
+    hash: 'cicd', nav: 'navCICD', name: 'CI/CD & DevOps', noun: 'chapters', motif: 'agentic',
+    list: '/api/cicd', doc: '/api/cicd-doc',
+    tagline: 'Continuous Integration and Continuous Delivery end-to-end: pipelines, tools, gitops, and advanced deployment strategies.',
+    group: () => 'Chapters',
+    label: it => `Chapter ${+it.num}`,
+    kicker: it => `Chapter ${+it.num} of 16`,
+    clean: t => t.replace(/^\d+-\w+-\w+/i, ''),
+  },
+
   api: {
     hash: 'apis', nav: 'navApis', name: 'API Technologies', noun: 'technologies', motif: 'api',
     list: '/api/apis', doc: '/api/apis-doc',
@@ -39,6 +50,14 @@ const MODULES = {
     group: it => it.id.split('/')[0],
     label: it => it.id.split('/')[0],
     kicker: it => `API Technology · ${it.id.split('/')[0]}`,
+  },
+  toolkit: {
+    hash: 'tool-kit', nav: 'navToolKit', name: 'DevOps & Tool Kit', noun: 'tools', motif: 'go',
+    list: '/api/tool-kit', doc: '/api/tool-kit-doc',
+    tagline: 'A comprehensive, ground-zero to senior-level guide to the core infrastructure and DevOps tools: Docker, Kubernetes, CI/CD, Kafka, and more.',
+    group: it => 'Technologies',
+    label: it => it.title,
+    kicker: it => `Tool Kit · ${it.title}`,
   },
   sd: {
     hash: 'system-design', nav: 'navSystemDesign', name: 'System Design', noun: 'chapters', motif: 'sd',

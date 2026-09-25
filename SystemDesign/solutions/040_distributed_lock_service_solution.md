@@ -21,11 +21,11 @@ Question constraints are the contract; (assumed) marks our numbers, to be load-t
 | Read misses | 200 writes/s × ~10 cachers = 2,000 refetches/s, + 17 × 30 cold reads = 500/s | 2,500/s (2.5% of 100,000) | A client cache: uncached, 100,000/s is 3.3× a master's assumed 30,000 RPCs/s. |
 | Master load | 3,000 + 2,500 + 200 | 5,700/s = 19% of 30,000 | About 5× headroom. |
 | Reconnect storm | 30,000 × ~6 RPCs = 180,000: in 5 s 36,000/s (120%), in 15 s 12,000/s + 5,700 = 17,700/s (59%) | Spread over ≥ 15 s | Jittered backoff and a cap of 2,000 new sessions/s: 30,000 re-admit in 15 s, inside the 45 s grace. |
-| State and log | 200,000 × (2 KB + ~0.5 KB metadata) = 500 MB. Log 200/s × 500 B = 100 KB/s = 8.6 GB/day | Tree in <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> on every replica | Snapshot at a 1 GB log (every 2.8 h): 500 MB at 200 MB/s = 2.5 s, replica catch-up at 100 MB/s = 5 s. fsync latency, not bandwidth, bounds writes. |
+| State and log | 200,000 × (2 KB + ~0.5 KB metadata) = 500 MB. Log 200/s × 500 B = 100 KB/s = 8.6 GB/day | Tree in RAM on every replica | Snapshot at a 1 GB log (every 2.8 h): 500 MB at 200 MB/s = 2.5 s, replica catch-up at 100 MB/s = 5 s. fsync latency, not bandwidth, bounds writes. |
 | Hot-node fan-out | 30,000 events / 30,000 sends/s | 1.0 s at the master | The whole 1 s budget: fan out via 300 proxies × 100 clients: 300 sends = 10 ms, then 100 each = 3 ms. |
 | Failover budget | Election 1 to 2 s + wait out old leases 12 s | ~14 s | Survivable window 12 s + 45 s grace = 57 s: 4× margin. |
 
-## <abbr title="Application Programming Interface">API</abbr>
+## API
 
 Every write carries `(session_id, seq)`; the master keeps the last `seq` and response per session and replays it on a retry (client sessions, Ongaro's Raft dissertation, 2014), so retries across a master change are idempotent.
 
@@ -47,7 +47,7 @@ Errors: `SESSION_EXPIRED` (terminal), `IN_JEOPARDY` (retryable), `NOT_MASTER{hin
 
 | Entity | Fields | Where it lives |
 |---|---|---|
-| Node and lock | `path` (key), `data ≤ 256 KB`, `version`, `create_rev`, `mod_rev`, `acl`, `type`, `owner_session`, lock `mode`, `holders`, `token`, <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> `waiters` by commit index | Raft log + snapshot (source of truth), <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> tree |
+| Node and lock | `path` (key), `data ≤ 256 KB`, `version`, `create_rev`, `mod_rev`, `acl`, `type`, `owner_session`, lock `mode`, `holders`, `token`, FIFO `waiters` by commit index | Raft log + snapshot (source of truth), RAM tree |
 | Session | `session_id`, `client_id`, `epoch`, ephemeral paths | Create and close in the log |
 | Lease deadlines, watch table, cacher sets | per-session timers, `path → sessions`, `node → caching sessions` | Master memory only, rebuilt from client re-registration after failover |
 
@@ -81,7 +81,7 @@ C1 -> R : "write + token"
 
 **Write walk (`Set` on a file cached by 10 clients).** The master (1) checks the session and dedup table, (2) sends invalidations to the 10 cachers on their parked KeepAlive replies and waits for acks or lease expiry, (3) appends, fsyncs, replicates and commits at 3 of 5, (4) applies to the tree, queues watch events and replies. Invalidating first means an aborted write costs only a harmless re-read.
 
-**Read walk.** The library answers from cache while its session is safe and no invalidation has arrived: zero RPCs. On a miss the master answers from <abbr title="Random Access Memory - A form of computer memory that can be read and changed in any order, typically used to store working data.">RAM</abbr> under its master lease (no log round), records the session as a cacher, and returns `{data, rev}`.
+**Read walk.** The library answers from cache while its session is safe and no invalidation has arrived: zero RPCs. On a miss the master answers from RAM under its master lease (no log round), records the session as a cacher, and returns `{data, rev}`.
 
 ## Deep dive 1: the consensus core and the replica count
 
@@ -129,7 +129,7 @@ In jeopardy a passive reader keeps its last config (fail static); a **leader** s
 
 ## Deep dive 3: locks, the paused holder, and fencing
 
-**Problem.** The lease can lapse while the holder is frozen (stop-the-world <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr>, <abbr title="Virtual Machine. The virtualization/emulation of a computer system.">VM</abbr> live migration, `SIGSTOP`); it then writes believing it still holds the lock. "Am I still the holder?" and the write are not atomic, so no timeout fixes it. Sequencers are in the Chubby paper and the pattern is argued in Kleppmann's 2016 essay; the generic mechanism is in [block 19](../building_blocks/19_consensus_and_coordination.md), so here is this service's version.
+**Problem.** The lease can lapse while the holder is frozen (stop-the-world GC, VM live migration, `SIGSTOP`); it then writes believing it still holds the lock. "Am I still the holder?" and the write are not atomic, so no timeout fixes it. Sequencers are in the Chubby paper and the pattern is argued in Kleppmann's 2016 essay; the generic mechanism is in [block 19](../building_blocks/19_consensus_and_coordination.md), so here is this service's version.
 
 ```mermaid
 %% caption: The paused holder wakes up and writes with token 812 but the resource has already seen 907 and rejects it.
@@ -155,18 +155,18 @@ sequenceDiagram
 | Protection | Correct when | Cost |
 |---|---|---|
 | Token compared at the resource | Resource can persist and compare | One field |
-| `CheckSequencer` <abbr title="Remote Procedure Call - A protocol that allows one program to request a service from a program located in another computer on a network.">RPC</abbr> per write | Rare writes | An RTT and cell load per protected write |
+| `CheckSequencer` RPC per write | Rare writes | An RTT and cell load per protected write |
 | Lock-delay (paper: up to a minute) | Legacy resource cannot check | Safe only if the worst pause is under the delay, and every crash release waits |
 
 Decision: token check by default with lock-delay 0; legacy resources get 60 s, a minute of unavailability per crash for partial protection.
 
-**Waiters and the herd.** With 5,000 candidates on one election lock, waking everyone means 5,000 write attempts / 2,000 writes/s = 2.5 s of write queue for everyone else. Instead waiters queue <abbr title="First-In, First-Out. A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures.">FIFO</abbr> by commit index (etcd's mutex waits on the key just before its own, and the ZooKeeper recipe watches only its predecessor), so a release wakes **one** waiter after checking its session is alive. **Election** is a lock plus a file: the winner writes `{address, token}` to `/svc/leader`; others read it from cache and watch it.
+**Waiters and the herd.** With 5,000 candidates on one election lock, waking everyone means 5,000 write attempts / 2,000 writes/s = 2.5 s of write queue for everyone else. Instead waiters queue FIFO by commit index (etcd's mutex waits on the key just before its own, and the ZooKeeper recipe watches only its predecessor), so a release wakes **one** waiter after checking its session is alive. **Election** is a lock plus a file: the winner writes `{address, token}` to `/svc/leader`; others read it from cache and watch it.
 
 ## Deep dive 4: client caching, watches, and ordering
 
 | Model | Staleness | Server cost | Used by |
 |---|---|---|---|
-| TTL cache | Up to the TTL (12 s) | None | <abbr title="Domain Name System - A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet.">DNS</abbr>-like lookups |
+| TTL cache | Up to the TTL (12 s) | None | DNS-like lookups |
 | Invalidate, then write | None while the session is valid | Write waits for every ack or lease expiry: worst case 12 s | Chubby (paper) |
 | Watch and re-read | Event delay | No blocking, fan-out only | ZooKeeper, etcd |
 
@@ -227,7 +227,7 @@ Trade-off to state: "I chose a Chubby-style coarse-grained lock service on a 5-r
 4. **"What does this cost?"** Five machines per cell plus one proxy per 500 clients (0.2% of the fleet); the real cost is operating cells. Non-production can run 3 replicas.
 5. **"How do you stop abuse?"** The quotas above, enforced at the master with a weighted fair queue so a burst queues behind its own limit, plus use-case review: teams misuse coordination services as stores or event buses (the Chubby paper reports similar experience).
 6. **"Why not `SET key NX PX 10000` in Redis?"** Fine as an efficiency lock. For correctness it issues no monotonic token from a consensus log and a paused holder still writes, so you would still need something that issues fencing tokens, which is this service.
-7. **"Why not a 2 s lease so crashes are found sooner?"** KeepAlives become 30,000 / 1.5 = 20,000/s (67% of a master) and every <abbr title="Garbage Collection. A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program.">GC</abbr> pause over 2 s loses a session. Leaders live for hours, so 12 s is cheap stability.
+7. **"Why not a 2 s lease so crashes are found sooner?"** KeepAlives become 30,000 / 1.5 = 20,000/s (67% of a master) and every GC pause over 2 s loses a session. Leaders live for hours, so 12 s is cheap stability.
 
 ## Common mistakes
 
@@ -254,5 +254,3 @@ Build a fake-clock simulation of a lock cell (sessions, leases, tokens), a clien
 - `test_token_strictly_increases_across_failover`: tokens never repeat or decrease across grants or a master change.
 - `test_failover_under_grace_keeps_session_and_locks`: a 15 s gap yields jeopardy then safe with locks intact, and a 60 s gap yields `SESSION_EXPIRED`.
 - `test_release_wakes_only_head_waiter`: 1,000 waiters, one release, exactly one wake-up and grant.
-- `test_write_blocks_until_cache_invalidated`: a cacher withholds its ack, the write completes only at ack or lease expiry, and no read returns stale data.
-- `test_watch_order_and_resume`: a watcher never reads new data before its event, and resume from `rev` replays every event once.

@@ -1,0 +1,13 @@
+# A "Headless" Service (ClusterIP: None) is required for StatefulSets.
+# It doesn't load balance; it just creates DNS entries for the pods (postgres-db-0.postgres).
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    name: postgres

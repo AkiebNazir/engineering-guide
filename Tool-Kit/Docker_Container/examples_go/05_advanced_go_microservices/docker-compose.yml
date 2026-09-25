@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: userdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend_net
+
+  userservice:
+    build:
+      context: ./user_service
+    environment:
+      - DB_DSN=postgres://user:password@database:5432/userdb?sslmode=disable
+    depends_on:
+      - database
+    networks:
+      - backend_net
+      - frontend_net
+
+  api_gateway:
+    build:
+      context: ./api_gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - USER_SERVICE_URL=http://userservice:9090
+    depends_on:
+      - userservice
+    networks:
+      - frontend_net
+
+volumes:
+  pgdata:
+
+networks:
+  frontend_net:
+  backend_net:

@@ -1,0 +1,11 @@
+# Simulates requesting a 1GB block storage volume from the cloud provider (AWS EBS / GCP Persistent Disk)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

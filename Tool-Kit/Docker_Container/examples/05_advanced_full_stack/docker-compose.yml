@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: devdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  api:
+    image: node:18-alpine
+    command: sh -c "echo 'API running on 3001' && sleep infinity"
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+    networks:
+      - frontend
+      - backend
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    networks:
+      - frontend
+
+volumes:
+  pgdata:
+
+networks:
+  frontend:
+  backend:

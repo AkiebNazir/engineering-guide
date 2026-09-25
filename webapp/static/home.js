@@ -20,6 +20,8 @@ const HOME_GROUPS = [
     mods: ['sql', 'nosql', 'api'] },
   { name: 'AI engineering', note: 'From the maths to agents in production',
     mods: ['roadmap', 'library', 'agentic'] },
+  { name: 'Infrastructure & Tools', note: 'Deploying, monitoring, and scaling applications',
+    mods: ['toolkit', 'cicd'] },
 ];
 
 const HOME_BLURB = {
@@ -38,6 +40,8 @@ const HOME_BLURB = {
   roadmap: () => 'A day-by-day path from vectors and probability to fine-tuning, agents and LLMs in production.',
   library: () => 'The tools you will actually import, one deep dive each: core API and the traps.',
   agentic: () => 'How LLM systems work underneath: the agent loop, retrieval, vector search and GraphRAG.',
+  toolkit: () => 'A comprehensive guide to Docker, Kubernetes, Kafka, and core DevOps tools.',
+  cicd: () => 'Continuous Integration and Continuous Delivery end-to-end: pipelines, GitOps, and deployment strategies.',
 };
 
 const HOME_STEPS = [
