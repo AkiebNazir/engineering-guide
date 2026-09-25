@@ -65,7 +65,7 @@ The webapp has interactive flow labs (`defineFlow`) and static visualizations
 
 **Modules with ZERO interactive labs:**
 
-- [ ] **SQL/** — no visualization or flow labs whatsoever.
+- [x] ~~**SQL/** — no visualization or flow labs whatsoever.~~
 - [x] ~~**NoSQL/**~~ — no visualization or flow labs.
 - [ ] **SoftwareDesign/** — no visualization or flow labs.
 - [ ] **GoEngineering/PyEngineering/** — no visualization or flow labs.

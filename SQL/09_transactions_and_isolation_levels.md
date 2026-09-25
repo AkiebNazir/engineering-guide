@@ -72,6 +72,8 @@ reference, since the rest of this level assumes you know these terms:
 **Postgres-specific facts worth knowing precisely:**
 
 - Postgres's default isolation level is **`READ COMMITTED`**.
+
+<div class="lab" data-viz="flow-sql-isolation"></div>
 - Postgres has no separate "repeatable read" implementation distinct from snapshot
   isolation — requesting `REPEATABLE READ` in Postgres gives you full snapshot
   isolation for the whole transaction, which is actually *stronger* than the <abbr title="Structured Query Language. A standard language for storing, manipulating and retrieving data in databases.">SQL</abbr>
