@@ -1,41 +1,47 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/robfig/cron/v3"
 )
 
-func dataPull() {
-	fmt.Printf("[%s] Pulling data from source...\n", time.Now().Format("2006-01-02 15:04:05"))
-	time.Sleep(1 * time.Second)
-	fmt.Printf("[%s] Data pull complete.\n", time.Now().Format("2006-01-02 15:04:05"))
-}
-
-func runScheduler(interval time.Duration, duration time.Duration) {
-	fmt.Printf("Starting cron scheduler (interval: %v, duration: %v)\n", interval, duration)
-	
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	
-	timer := time.NewTimer(duration)
-	defer timer.Stop()
-
-	// Run initially
-	go dataPull()
-
-	for {
-		select {
-		case <-ticker.C:
-			go dataPull()
-		case <-timer.C:
-			fmt.Println("Scheduler finished.")
-			// Small delay to allow the last routine to finish if it just started
-			time.Sleep(2 * time.Second)
-			return
-		}
-	}
+func runDataPipeline(pipelineName string) {
+	log.Printf("Executing pipeline: %s", pipelineName)
+	// In a real scenario, this would trigger actual data extraction and loading
 }
 
 func main() {
-	runScheduler(3*time.Second, 10*time.Second)
+	log.Println("Starting cron job scheduler...")
+
+	// Create a new cron instance
+	// We use the standard cron syntax
+	c := cron.New()
+
+	// Add a job using standard cron syntax
+	// "* * * * *" runs at the beginning of every minute
+	_, err := c.AddFunc("* * * * *", func() {
+		runDataPipeline("Hourly_Sales_Aggregation")
+	})
+	if err != nil {
+		log.Fatalf("Failed to schedule job: %v", err)
+	}
+
+	// Start the cron scheduler in its own goroutine
+	c.Start()
+
+	log.Println("Scheduler is running. Press Ctrl+C to exit.")
+
+	// Set up a channel to listen for interrupt signals to gracefully shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Block until a signal is received
+	<-sigChan
+
+	log.Println("Shutting down scheduler...")
+	c.Stop()
 }

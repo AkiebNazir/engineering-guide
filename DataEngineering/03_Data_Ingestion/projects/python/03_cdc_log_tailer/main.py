@@ -1,34 +1,69 @@
-import time
 import os
+import json
+import logging
+from confluent_kafka import Consumer, KafkaException, KafkaError
 
-LOG_FILE = "cdc_mock.log"
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def create_mock_log():
-    if not os.path.exists(LOG_FILE):
-        with open(LOG_FILE, 'w') as f:
-            f.write("INIT: server started\n")
+def create_consumer(brokers: str, group_id: str) -> Consumer:
+    """Create and return a Kafka Consumer instance."""
+    conf = {
+        'bootstrap.servers': brokers,
+        'group.id': group_id,
+        'auto.offset.reset': 'earliest',
+        'enable.auto.commit': False
+    }
+    return Consumer(conf)
 
-def tail_log(filepath):
-    with open(filepath, 'r') as f:
-        f.seek(0, 2)
-        while True:
-            line = f.readline()
-            if not line:
-                time.sleep(0.5)
-                continue
-            yield line
+def process_cdc_event(event_value: bytes):
+    """Process a single CDC event."""
+    try:
+        payload = json.loads(event_value.decode('utf-8'))
+        op = payload.get("op") # typical Debezium op code: 'c' (create), 'u' (update), 'd' (delete)
+        if op in ['c', 'u']:
+            logging.info(f"Event detected (INSERT/UPDATE): {payload}")
+        elif op == 'd':
+            logging.info(f"Event detected (DELETE): {payload}")
+    except json.JSONDecodeError:
+        logging.warning(f"Could not parse event as JSON: {event_value}")
 
 def main():
-    print('Starting Data Engineering Project: 03_cdc_log_tailer')
-    create_mock_log()
-    print(f"Tailing {LOG_FILE} for INSERT/UPDATE events (Ctrl+C to stop)...")
+    logging.info('Starting Data Engineering Project: 03_cdc_log_tailer (Kafka Consumer)')
+    
+    brokers = os.getenv("KAFKA_BROKERS", "localhost:9092")
+    topic = os.getenv("KAFKA_CDC_TOPIC", "dbserver1.inventory.customers")
+    group_id = os.getenv("KAFKA_GROUP_ID", "cdc-tailer-group")
+    
+    consumer = create_consumer(brokers, group_id)
+    consumer.subscribe([topic])
+    
+    logging.info(f"Subscribed to topic {topic}. Waiting for events...")
     
     try:
-        for line in tail_log(LOG_FILE):
-            if "INSERT" in line or "UPDATE" in line:
-                print(f"Event detected: {line.strip()}")
+        while True:
+            msg = consumer.poll(timeout=1.0)
+            if msg is None:
+                continue
+            
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    # End of partition
+                    continue
+                else:
+                    raise KafkaException(msg.error())
+            
+            # Process event
+            process_cdc_event(msg.value())
+            
+            # Commit offsets manually after processing for at-least-once delivery
+            consumer.commit(asynchronous=False)
+            
     except KeyboardInterrupt:
-        print("Stopped log tailing.")
+        logging.info("Stopping CDC consumer...")
+    except Exception as e:
+        logging.error("Consumer error", exc_info=True)
+    finally:
+        consumer.close()
 
 if __name__ == '__main__':
     main()

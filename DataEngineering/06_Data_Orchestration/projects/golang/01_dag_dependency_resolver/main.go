@@ -2,66 +2,62 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"log"
+
+	"gonum.org/v1/gonum/graph/simple"
+	"gonum.org/v1/gonum/graph/topo"
 )
 
-func topologicalSort(dag map[string][]string) ([]string, error) {
-	inDegree := make(map[string]int)
-	for u, neighbors := range dag {
-		if _, exists := inDegree[u]; !exists {
-			inDegree[u] = 0
-		}
-		for _, v := range neighbors {
-			inDegree[v]++
-		}
-	}
+// TaskNode represents a task in our DAG, implementing graph.Node
+type TaskNode struct {
+	id   int64
+	name string
+}
 
-	var queue []string
-	for u, degree := range inDegree {
-		if degree == 0 {
-			queue = append(queue, u)
-		}
-	}
-
-	var order []string
-	for len(queue) > 0 {
-		u := queue[0]
-		queue = queue[1:]
-		order = append(order, u)
-
-		for _, v := range dag[u] {
-			inDegree[v]--
-			if inDegree[v] == 0 {
-				queue = append(queue, v)
-			}
-		}
-	}
-
-	if len(order) == len(inDegree) {
-		return order, nil
-	}
-	return nil, fmt.Errorf("graph has a cycle")
+func (n TaskNode) ID() int64 {
+	return n.id
 }
 
 func main() {
-	dag := map[string][]string{
-		"A": {"B", "C"},
-		"B": {"D"},
-		"C": {"D"},
-		"D": {"E"},
-		"E": {},
-	}
+	// Initialize a directed graph
+	dag := simple.NewDirectedGraph()
 
-	fmt.Println("DAG:")
-	for k, v := range dag {
-		fmt.Printf("  %s -> %v\n", k, v)
-	}
+	// Create nodes (Tasks)
+	taskA := TaskNode{id: 1, name: "Task_A"}
+	taskB := TaskNode{id: 2, name: "Task_B"}
+	taskC := TaskNode{id: 3, name: "Task_C"}
+	taskD := TaskNode{id: 4, name: "Task_D"}
+	taskE := TaskNode{id: 5, name: "Task_E"}
 
-	fmt.Println("\nExecution Order:")
-	order, err := topologicalSort(dag)
+	// Add nodes to the DAG
+	dag.AddNode(taskA)
+	dag.AddNode(taskB)
+	dag.AddNode(taskC)
+	dag.AddNode(taskD)
+	dag.AddNode(taskE)
+
+	// Define dependencies: A -> B, A -> C, B -> D, C -> D, D -> E
+	dag.SetEdge(simple.Edge{F: taskA, T: taskB})
+	dag.SetEdge(simple.Edge{F: taskA, T: taskC})
+	dag.SetEdge(simple.Edge{F: taskB, T: taskD})
+	dag.SetEdge(simple.Edge{F: taskC, T: taskD})
+	dag.SetEdge(simple.Edge{F: taskD, T: taskE})
+
+	fmt.Println("Attempting topological sort of the DAG...")
+
+	// Perform topological sort using gonum's graph library
+	sortedNodes, err := topo.Sort(dag)
 	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println(strings.Join(order, " -> "))
+		log.Fatalf("Failed to resolve DAG dependencies: %v", err)
 	}
+
+	fmt.Println("Execution Order:")
+	for i, node := range sortedNodes {
+		task := node.(TaskNode)
+		if i > 0 {
+			fmt.Print(" -> ")
+		}
+		fmt.Print(task.name)
+	}
+	fmt.Println()
 }

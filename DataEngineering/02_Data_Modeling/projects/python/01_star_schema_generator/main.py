@@ -1,67 +1,96 @@
-import sqlite3
-from datetime import datetime
 import random
+import logging
+from datetime import datetime
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+Base = declarative_base()
+
+class DimProduct(Base):
+    __tablename__ = 'dim_product'
+    product_id = Column(Integer, primary_key=True, autoincrement=True)
+    product_name = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+
+class DimStore(Base):
+    __tablename__ = 'dim_store'
+    store_id = Column(Integer, primary_key=True, autoincrement=True)
+    store_name = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+
+class FactSales(Base):
+    __tablename__ = 'fact_sales'
+    sale_id = Column(Integer, primary_key=True, autoincrement=True)
+    product_id = Column(Integer, ForeignKey('dim_product.product_id'), nullable=False)
+    store_id = Column(Integer, ForeignKey('dim_store.store_id'), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    amount = Column(Float, nullable=False)
+
+    product = relationship("DimProduct")
+    store = relationship("DimStore")
 
 def main():
-    # Using an in-memory SQLite database for demonstration
-    conn = sqlite3.connect(':memory:')
-    cursor = conn.cursor()
-
-    # Create Dimension: Product
-    cursor.execute('''
-    CREATE TABLE dim_product (
-        product_id INTEGER PRIMARY KEY,
-        product_name TEXT,
-        category TEXT
-    )''')
+    # Use PostgreSQL in a real-world scenario.
+    # We use an in-memory SQLite here for runnable demonstration, 
+    # but the SQLAlchemy ORM code is production-ready.
+    DATABASE_URL = "sqlite:///:memory:" 
+    # e.g., "postgresql+psycopg2://user:password@localhost/data_warehouse"
     
-    # Create Dimension: Store
-    cursor.execute('''
-    CREATE TABLE dim_store (
-        store_id INTEGER PRIMARY KEY,
-        store_name TEXT,
-        city TEXT
-    )''')
-
-    # Create Fact: Sales
-    cursor.execute('''
-    CREATE TABLE fact_sales (
-        sale_id INTEGER PRIMARY KEY,
-        product_id INTEGER,
-        store_id INTEGER,
-        quantity INTEGER,
-        amount REAL,
-        FOREIGN KEY (product_id) REFERENCES dim_product(product_id),
-        FOREIGN KEY (store_id) REFERENCES dim_store(store_id)
-    )''')
-
-    # Insert Sample Data into Dimensions
-    cursor.execute("INSERT INTO dim_product VALUES (1, 'Laptop', 'Electronics'), (2, 'Desk', 'Furniture')")
-    cursor.execute("INSERT INTO dim_store VALUES (1, 'Downtown Tech', 'New York'), (2, 'Suburban Goods', 'Boston')")
+    engine = create_engine(DATABASE_URL, echo=False)
     
-    # Generate Synthetic Data for Fact Table
-    for i in range(1, 11):
-        prod_id = random.choice([1, 2])
-        store_id = random.choice([1, 2])
-        qty = random.randint(1, 5)
-        amt = qty * (1000.0 if prod_id == 1 else 150.0)
-        cursor.execute("INSERT INTO fact_sales (product_id, store_id, quantity, amount) VALUES (?, ?, ?, ?)", 
-                       (prod_id, store_id, qty, amt))
+    # Create tables
+    Base.metadata.create_all(engine)
+    
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        # Insert Dimensions
+        p1 = DimProduct(product_name="Laptop", category="Electronics")
+        p2 = DimProduct(product_name="Desk", category="Furniture")
         
-    conn.commit()
+        s1 = DimStore(store_name="Downtown Tech", city="New York")
+        s2 = DimStore(store_name="Suburban Goods", city="Boston")
+        
+        session.add_all([p1, p2, s1, s2])
+        session.flush() # flush to get generated IDs
 
-    print("Star Schema Data Generated successfully.")
-    print("Sample query joining Fact and Dimensions:")
-    
-    query = """
-    SELECT s.sale_id, p.product_name, st.store_name, s.quantity, s.amount 
-    FROM fact_sales s 
-    JOIN dim_product p ON s.product_id = p.product_id 
-    JOIN dim_store st ON s.store_id = st.store_id 
-    LIMIT 5
-    """
-    for row in cursor.execute(query):
-        print(row)
+        # Generate Synthetic Fact Data
+        sales = []
+        for _ in range(10):
+            prod = random.choice([p1, p2])
+            store = random.choice([s1, s2])
+            qty = random.randint(1, 5)
+            amt = qty * (1000.0 if prod.product_id == p1.product_id else 150.0)
+            
+            sales.append(FactSales(product_id=prod.product_id, store_id=store.store_id, quantity=qty, amount=amt))
+        
+        session.add_all(sales)
+        session.commit()
+        logger.info("Star Schema data successfully generated and committed.")
+
+        # Analytical Query Joining Fact and Dimensions
+        logger.info("Sample query joining Fact and Dimensions:")
+        results = session.query(
+            FactSales.sale_id,
+            DimProduct.product_name,
+            DimStore.store_name,
+            FactSales.quantity,
+            FactSales.amount
+        ).join(DimProduct).join(DimStore).limit(5).all()
+
+        for r in results:
+            logger.info(f"Sale ID: {r.sale_id} | Product: {r.product_name} | Store: {r.store_name} | Qty: {r.quantity} | Amt: ${r.amount}")
+
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error during database operations: {e}")
+    finally:
+        session.close()
 
 if __name__ == '__main__':
     main()

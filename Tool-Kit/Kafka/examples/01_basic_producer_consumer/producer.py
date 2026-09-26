@@ -7,15 +7,13 @@ def delivery_report(err, msg):
     else:
         print(f"Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
 
-p = Producer({'bootstrap.servers': 'localhost:9092'})
+conf = {'bootstrap.servers': 'localhost:9092'}
+producer = Producer(conf)
 
-for i in range(5):
-    # Trigger any available delivery report callbacks from previous produce() calls
-    p.poll(0)
-    data = f"Hello Kafka {i}"
-    # Asynchronously produce a message. The delivery report callback will be triggered when the message has been successfully delivered or failed permanently.
-    p.produce('basic-topic', data.encode('utf-8'), callback=delivery_report)
-    time.sleep(1)
+for i in range(10):
+    data = f"Message {i}"
+    producer.produce('basic-topic', key=str(i), value=data, callback=delivery_report)
+    producer.poll(0)
+    time.sleep(0.5)
 
-# Wait for any outstanding messages to be delivered and delivery report callbacks to be triggered.
-p.flush()
+producer.flush()

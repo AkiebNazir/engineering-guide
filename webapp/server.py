@@ -290,6 +290,22 @@ def load_eng_curriculum(lang: str) -> list[dict]:
 
 
 def read_eng_problem(lang: str, topic: str, kind: str) -> dict:
+    if lang in ("de-py", "de-go"):
+        topic_level, project_id = topic.split("/")
+        l = "python" if lang == "de-py" else "golang"
+        proj_dir = DATA_ENGINEERING_DIR / topic_level / "projects" / l / project_id
+        doc_path = proj_dir / "README.md"
+        code_path = proj_dir / ("main.py" if lang == "de-py" else "main.go")
+        
+        doc = doc_path.read_text() if doc_path.exists() else ""
+        code = code_path.read_text() if code_path.exists() else ""
+        
+        return {
+            "exists": doc_path.exists() or code_path.exists(),
+            "doc": doc, "code": code,
+            "path": str(proj_dir.relative_to(ROOT)) if proj_dir.exists() else ""
+        }
+
     path = eng_file(lang, topic, kind)
     if not path.exists():
         return {"exists": False, "doc": "", "code": "", "path": ""}
@@ -345,6 +361,52 @@ def run_eng(lang: str, topic: str, code: str) -> dict:
     if not code.strip():
         return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
                 "stderr": "Nothing to run — the editor is empty."}
+
+    if lang in ("de-py", "de-go"):
+        topic_level, project_id = topic.split("/")
+        l = "python" if lang == "de-py" else "golang"
+        proj_dir = DATA_ENGINEERING_DIR / topic_level / "projects" / l / project_id
+        target = proj_dir / ("main.py" if lang == "de-py" else "main.go")
+        
+        if not proj_dir.exists():
+            return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0, "stderr": "Project not found."}
+            
+        with _eng_run_lock:
+            original = target.read_text() if target.exists() else ""
+            started = time.perf_counter()
+            try:
+                target.write_text(code)
+                if lang == "de-go":
+                    proc = subprocess.run(
+                        [go_bin(), "run", target.name],
+                        capture_output=True, text=True,
+                        timeout=RUN_TIMEOUT_ENG_GO, cwd=str(target.parent),
+                        env={**os.environ, "GOFLAGS": "-mod=mod"},
+                    )
+                else:
+                    proc = subprocess.run(
+                        [eng_python_bin(), target.name],
+                        capture_output=True, text=True,
+                        timeout=RUN_TIMEOUT_ENG_PY, cwd=str(target.parent),
+                    )
+                return {
+                    "ok": proc.returncode == 0,
+                    "stdout": proc.stdout, "stderr": proc.stderr,
+                    "exitCode": proc.returncode,
+                    "ms": round((time.perf_counter() - started) * 1000),
+                }
+            except subprocess.TimeoutExpired:
+                timeout = RUN_TIMEOUT_ENG_GO if lang == "de-go" else RUN_TIMEOUT_ENG_PY
+                return {
+                    "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
+                    "stderr": f"Timed out after {timeout}s",
+                    "ms": timeout * 1000,
+                }
+            finally:
+                if original:
+                    target.write_text(original)
+                else:
+                    target.unlink()
 
     expl = eng_file(lang, topic, "explanation")
     sol = eng_file(lang, topic, "solution")
@@ -664,6 +726,8 @@ def load_data_engineering() -> list[dict]:
                       **doc_meta(readme, "Start here")})
     for path in sorted(DATA_ENGINEERING_DIR.iterdir()):
         if path.is_dir() and re.match(r"^\d+_", path.name):
+            topic_name = path.name.replace("_", " ").title()
+            group_name = f"Chapter: {topic_name}"
             md_file = path / f"{path.name}.md"
             if md_file.exists():
                 num = path.name.split('_')[0]
@@ -671,8 +735,8 @@ def load_data_engineering() -> list[dict]:
                     "id": path.name,
                     "num": num,
                     "kind": "level",
-                    "group": "Levels",
-                    **doc_meta(md_file, path.name.replace("_", " ").title())
+                    "group": group_name,
+                    **doc_meta(md_file, f"Theory: {topic_name}")
                 })
     return items
 
@@ -1654,10 +1718,31 @@ class Handler(BaseHTTPRequestHandler):
             if req_id:
                 p1 = TOOL_KIT_DIR / req_id / f"{req_id}.md"
                 p2 = TOOL_KIT_DIR / f"{req_id}.md"
-                if p1.exists():
-                    self._json(read_markdown(p1))
-                elif p2.exists():
-                    self._json(read_markdown(p2))
+                doc_path = p1 if p1.exists() else (p2 if p2.exists() else None)
+                if doc_path:
+                    res = read_markdown(doc_path)
+                    
+                    topic_dir = doc_path.parent
+                    examples = []
+                    
+                    for ex_dir in sorted(topic_dir.glob("examples/*")):
+                        if ex_dir.is_dir():
+                            files = []
+                            for f in sorted(ex_dir.rglob("*")):
+                                if f.is_file() and not f.name.startswith("."):
+                                    files.append({"name": str(f.relative_to(ex_dir)), "content": f.read_text(errors='replace')})
+                            examples.append({"id": ex_dir.name, "lang": "python", "files": files})
+                            
+                    for ex_dir in sorted(topic_dir.glob("examples_go/*")):
+                        if ex_dir.is_dir():
+                            files = []
+                            for f in sorted(ex_dir.rglob("*")):
+                                if f.is_file() and not f.name.startswith("."):
+                                    files.append({"name": str(f.relative_to(ex_dir)), "content": f.read_text(errors='replace')})
+                            examples.append({"id": ex_dir.name, "lang": "go", "files": files})
+                            
+                    res["examples"] = examples
+                    self._json(res)
                 else:
                     self._json({"content": "Not found", "title": "Not Found"})
             else:
@@ -1695,7 +1780,21 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(read_markdown(DATA_ENGINEERING_DIR / "README.md"))
             else:
                 path = DATA_ENGINEERING_DIR / doc_id / f"{doc_id}.md"
-                self._json(read_markdown(path))
+                data = read_markdown(path)
+                if data.get("exists"):
+                    projects_html = ["\n<hr>\n<h2>Interactive Code Examples</h2>\n<div class='de-code-examples'>"]
+                    for lang, dlang in [("python", "de-py"), ("golang", "de-go")]:
+                        proj_dir = DATA_ENGINEERING_DIR / doc_id / "projects" / lang
+                        if proj_dir.exists():
+                            for pdir in sorted(proj_dir.iterdir()):
+                                if pdir.is_dir() and re.match(r"^\d+_", pdir.name):
+                                    name = pdir.name.replace("_", " ").title()
+                                    link = f"#/eng/{dlang}/{doc_id}/{pdir.name}"
+                                    projects_html.append(f"<a href='{link}' class='btn mod-btn de-btn-{lang}'>💻 Run {lang.capitalize()}: {name}</a>")
+                    projects_html.append("</div>")
+                    if len(projects_html) > 2:
+                        data["html"] += "\n".join(projects_html)
+                self._json(data)
 
         elif p == "/api/cicd":
             self._json({"items": load_cicd()})

@@ -1,43 +1,61 @@
-import pandas as pd
-import sqlite3
 import os
+import logging
+import pandas as pd
+from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 
-def create_sample_csv(filename):
-    data = {
-        'id': [1, 2, 2, 3, 4, 5, None],
-        'name': ['Alice', 'Bob', 'Bob', 'Charlie', None, 'Eve', 'Frank'],
-        'age': [25, 30, 30, 35, 28, None, 40]
-    }
-    df = pd.DataFrame(data)
-    df.to_csv(filename, index=False)
-    print(f"Sample data created at {filename}")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def etl(csv_filename, db_filename):
-    # Extract
-    print(f"Reading from {csv_filename}...")
-    df = pd.read_csv(csv_filename)
-    
-    # Transform
-    print("Cleaning data...")
+def extract_data(file_path: str) -> pd.DataFrame:
+    """Extract data from a CSV file."""
+    logging.info(f"Extracting data from {file_path}...")
+    try:
+        df = pd.read_csv(file_path)
+        logging.info(f"Successfully loaded {len(df)} rows.")
+        return df
+    except Exception as e:
+        logging.error(f"Error reading {file_path}: {e}")
+        raise
+
+def transform_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean and transform the data."""
+    logging.info("Starting data transformation...")
     # Drop rows with any null values
-    df_cleaned = df.dropna()
+    df_cleaned = df.dropna().copy()
+    
     # Deduplicate
     df_cleaned = df_cleaned.drop_duplicates()
-    # Convert types if necessary
-    df_cleaned['id'] = df_cleaned['id'].astype(int)
     
-    print(f"Data transformed. {len(df_cleaned)} rows remaining.")
+    # Type conversion
+    if 'id' in df_cleaned.columns:
+        df_cleaned['id'] = df_cleaned['id'].astype(int)
+        
+    logging.info(f"Transformation complete. {len(df_cleaned)} rows remaining.")
+    return df_cleaned
+
+def load_data(df: pd.DataFrame, db_url: str, table_name: str):
+    """Load the data into a PostgreSQL database using SQLAlchemy."""
+    logging.info(f"Loading data into {table_name} table...")
+    try:
+        # Create an engine with connection pooling
+        engine = create_engine(db_url, pool_size=5, max_overflow=10)
+        df.to_sql(table_name, engine, if_exists='replace', index=False)
+        logging.info("Data successfully loaded into PostgreSQL.")
+    except SQLAlchemyError as e:
+        logging.error(f"Database error occurred: {e}")
+        raise
+
+def main():
+    logging.info("Starting Data Engineering Project: 01_beginner_pandas_etl")
+    csv_file = os.getenv("INPUT_CSV_PATH", "sample_data.csv")
+    db_url = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/etl_db")
     
-    # Load
-    print(f"Loading data into {db_filename}...")
-    conn = sqlite3.connect(db_filename)
-    df_cleaned.to_sql('users', conn, if_exists='replace', index=False)
-    conn.close()
-    print("ETL process completed successfully.")
+    try:
+        df_raw = extract_data(csv_file)
+        df_clean = transform_data(df_raw)
+        load_data(df_clean, db_url, "users_cleaned")
+    except Exception as e:
+        logging.error("ETL pipeline failed.", exc_info=True)
 
 if __name__ == "__main__":
-    csv_file = "sample_data.csv"
-    db_file = "output.db"
-    
-    create_sample_csv(csv_file)
-    etl(csv_file, db_file)
+    main()

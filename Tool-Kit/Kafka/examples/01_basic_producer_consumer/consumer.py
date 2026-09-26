@@ -1,23 +1,27 @@
-from confluent_kafka import Consumer
+from confluent_kafka import Consumer, KafkaError
 
-c = Consumer({
+conf = {
     'bootstrap.servers': 'localhost:9092',
-    'group.id': 'mygroup',
-    'auto.offset.reset': 'earliest' # Start reading from the beginning if no offset is stored
-})
+    'group.id': 'basic-group',
+    'auto.offset.reset': 'earliest'
+}
 
-c.subscribe(['basic-topic'])
+consumer = Consumer(conf)
+consumer.subscribe(['basic-topic'])
 
 try:
     while True:
-        msg = c.poll(1.0)
+        msg = consumer.poll(1.0)
         if msg is None:
             continue
         if msg.error():
-            print(f"Consumer error: {msg.error()}")
-            continue
-        print(f"Received message: {msg.value().decode('utf-8')}")
+            if msg.error().code() == KafkaError._PARTITION_EOF:
+                continue
+            else:
+                print(msg.error())
+                break
+        print(f"Received message: {msg.value().decode('utf-8')} (key: {msg.key().decode('utf-8')})")
 except KeyboardInterrupt:
     pass
 finally:
-    c.close()
+    consumer.close()

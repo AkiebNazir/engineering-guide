@@ -1,11 +1,12 @@
 import pika
-import sys, os
+import sys
+import os
 
 def main():
-    credentials = pika.PlainCredentials('user', 'password')
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', credentials=credentials))
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
 
+    # Declare queue (idempotent, ensures it exists)
     channel.queue_declare(queue='hello')
 
     def callback(ch, method, properties, body):
@@ -21,7 +22,4 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print('Interrupted')
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+        sys.exit(0)\n

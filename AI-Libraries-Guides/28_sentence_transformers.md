@@ -10,8 +10,7 @@ While massive LLMs (like GPT-4) generate text, smaller models (like Sentence-Tra
 
 ### 1. What is an Embedding?
 If I ask a computer if "Dog" and "Puppy" are similar, a standard string comparison (`"Dog" == "Puppy"`) returns `False`.
-An embedding model converts "Dog" into a 768-dimensional coordinate in space: `[0.12, -0.45, 0.89...]`. It converts "Puppy" into `[0.15, -0.42, 0.81...]`. 
-Because the coordinates are extremely close to each other in mathematical space, the computer now knows the words are semantically related!
+An embedding model converts "Dog" into a 768-dimensional coordinate in space: `[0.12, -0.45, 0.89...]`. It converts "Puppy" into `[0.15, -0.42, 0.81...]`. al space, the computer now knows the words are semantically related!
 
 ### 2. Sentence-Transformers (The Library)
 While OpenAI provides an Embedding API, you often want to run embeddings locally to save money and ensure privacy. 
@@ -49,6 +48,7 @@ def run_semantic_search():
         "A man is eating food.",
         "A man is eating a piece of bread.",
         "The girl is carrying a baby.",
+Because the coordinates are extremely close to each other in mathematic
         "A man is riding a horse.",
         "A woman is playing violin.",
         "Two men pushed carts through the woods.",

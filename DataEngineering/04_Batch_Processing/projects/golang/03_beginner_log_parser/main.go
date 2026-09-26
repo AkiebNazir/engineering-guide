@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,53 +11,57 @@ import (
 )
 
 func main() {
-	// Create sample log file
-	logFilename := "sample.log"
-	createSampleLog(logFilename)
+	inPath := flag.String("in", "application.log", "Input log file")
+	workers := flag.Int("workers", 4, "Number of worker goroutines")
+	flag.Parse()
 
-	file, err := os.Open(logFilename)
+	file, err := os.Open(*inPath)
 	if err != nil {
-		log.Fatalf("Failed to open log file: %v", err)
+		log.Printf("Failed to open %s: %v. Please provide a valid log file.", *inPath, err)
+		return
 	}
 	defer file.Close()
 
-	// Regex to extract error messages
-	errRegex := regexp.MustCompile(`ERROR:\s+(.*)`)
+	// Regex to extract error messages, accommodating variations in log format
+	errRegex := regexp.MustCompile(`(?:ERROR|ERR)[\s:]+(.+)`)
 
-	linesChan := make(chan string, 100)
-	errChan := make(chan string, 100)
+	linesChan := make(chan string, 1000)
+	errChan := make(chan string, 1000)
 
 	var wg sync.WaitGroup
-	// Start 4 worker goroutines for log parsing
-	for i := 0; i < 4; i++ {
+
+	// Start worker goroutines
+	for i := 0; i < *workers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for line := range linesChan {
-				matches := errRegex.FindStringSubmatch(line)
-				if len(matches) > 1 {
-					errChan <- matches[1] // Extract the actual error message
+				if matches := errRegex.FindStringSubmatch(line); len(matches) > 1 {
+					errChan <- matches[1]
 				}
 			}
 		}()
 	}
 
-	// Read lines and distribute to workers
+	// Read lines concurrently
 	go func() {
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			linesChan <- scanner.Text()
 		}
+		if err := scanner.Err(); err != nil {
+			log.Printf("Error reading file: %v", err)
+		}
 		close(linesChan)
 	}()
 
-	// Wait for workers to finish
+	// Close error channel when all workers finish
 	go func() {
 		wg.Wait()
 		close(errChan)
 	}()
 
-	// Aggregate error counts
+	// Aggregate errors
 	errorCounts := make(map[string]int)
 	for errMsg := range errChan {
 		errorCounts[errMsg]++
@@ -64,19 +69,6 @@ func main() {
 
 	fmt.Println("Error Summary:")
 	for msg, count := range errorCounts {
-		fmt.Printf("- %s: %d\n", msg, count)
+		fmt.Printf("[%d times] %s\n", count, msg)
 	}
-}
-
-func createSampleLog(filename string) {
-	content := `INFO: Application started
-ERROR: Connection timeout
-INFO: User logged in
-ERROR: Database unreachable
-WARN: High memory usage
-ERROR: Connection timeout
-INFO: Job completed
-ERROR: Database unreachable
-ERROR: Database unreachable`
-	os.WriteFile(filename, []byte(content), 0644)
 }

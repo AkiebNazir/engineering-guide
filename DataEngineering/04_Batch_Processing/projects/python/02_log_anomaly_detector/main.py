@@ -1,33 +1,67 @@
-import re
-from collections import defaultdict
+import argparse
+import logging
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, regexp_extract, count, when
 
-def generate_logs(filename="server.log"):
-    logs = [
-        "192.168.1.1 - - [10/Oct/2023:13:55:36 -0700] \"GET /index.html HTTP/1.1\" 200 2326\n",
-        "10.0.0.5 - - [10/Oct/2023:13:55:37 -0700] \"GET /missing.html HTTP/1.1\" 404 232\n",
-    ] * 100
-    logs.extend(["10.0.0.5 - - [10/Oct/2023:13:56:00 -0700] \"GET /missing2.html HTTP/1.1\" 404 232\n"] * 50)
-    with open(filename, "w") as f:
-        f.writelines(logs)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def detect_anomalies(filename="server.log", threshold=10):
-    error_counts = defaultdict(int)
-    log_pattern = re.compile(r'(\d+\.\d+\.\d+\.\d+).*" \w+ .* HTTP/1.\d" (\d{3})')
-    
-    with open(filename, "r") as f:
-        for line in f:
-            match = log_pattern.search(line)
-            if match:
-                ip = match.group(1)
-                status = match.group(2)
-                if status == '404':
-                    error_counts[ip] += 1
-                    
-    print("Anomalous IPs (high 404 rate):")
-    for ip, count in error_counts.items():
-        if count > threshold:
-            print(f"{ip}: {count} errors")
+def main(input_path: str, output_path: str, threshold: int):
+    """
+    Detect anomalies in logs based on high 404 error rates per IP.
+    """
+    logger.info("Initializing SparkSession...")
+    spark = SparkSession.builder \
+        .appName("LogAnomalyDetector") \
+        .getOrCreate()
+        
+    logger.info(f"Reading raw log lines from {input_path}...")
+    try:
+        # Read raw text lines
+        raw_logs = spark.read.text(input_path)
+    except Exception as e:
+        logger.error(f"Failed to read input data: {e}")
+        spark.stop()
+        return
+
+    # Extract IP and HTTP status code using regex
+    # Common Apache/Nginx format: 192.168.1.1 - - [10/Oct/... "GET /..." 404 232
+    ip_pattern = r'^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+    status_pattern = r'"\s+(\d{3})\s+'
+
+    df = raw_logs.select(
+        regexp_extract(col("value"), ip_pattern, 1).alias("ip"),
+        regexp_extract(col("value"), status_pattern, 1).alias("status")
+    )
+
+    # Filter out unparsed lines (where IP or status could not be extracted)
+    df = df.filter((col("ip") != "") & (col("status") != ""))
+
+    logger.info("Aggregating 404 errors by IP...")
+    # Count occurrences of 404 status per IP
+    error_counts = df.filter(col("status") == "404") \
+        .groupBy("ip") \
+        .agg(count("*").alias("error_count"))
+
+    logger.info(f"Filtering IPs with error count > {threshold}...")
+    anomalous_ips = error_counts.filter(col("error_count") > threshold)
+
+    logger.info(f"Writing anomalous IPs to {output_path}...")
+    try:
+        anomalous_ips.write \
+            .mode("overwrite") \
+            .csv(output_path, header=True)
+        logger.info("Anomaly detection completed successfully.")
+    except Exception as e:
+        logger.error(f"Failed to write output data: {e}")
+        
+    spark.stop()
 
 if __name__ == "__main__":
-    generate_logs()
-    detect_anomalies()
+    parser = argparse.ArgumentParser(description="Log Anomaly Detector")
+    parser.add_argument("--input-path", required=True, help="S3 URI for input raw logs (Text)")
+    parser.add_argument("--output-path", required=True, help="S3 URI for anomalous IPs output (CSV)")
+    parser.add_argument("--threshold", type=int, default=10, help="Error count threshold to flag as anomaly")
+    args = parser.parse_args()
+    
+    main(args.input_path, args.output_path, args.threshold)

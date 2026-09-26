@@ -1,0 +1,387 @@
+/* =========================================================================
+   Data Engineering: Modern Layout & Design
+   ========================================================================= */
+
+#app[data-module="dataengineering"] {
+  --read-face: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --display: 'Inter', system-ui, sans-serif;
+  --sans: 'Inter', system-ui, sans-serif;
+}
+
+/* --- Module Home (Topics Page) Modernization --- */
+
+/* Add a subtle background radial gradient that feels high-tech */
+#app[data-module="dataengineering"] #viewModuleHome {
+  background: 
+    radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 40%);
+}
+
+#app[data-module="dataengineering"] .mod-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+#app[data-module="dataengineering"] .mcard {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s, opacity 0.3s, filter 0.3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 150px;
+}
+
+/* Hover Interaction across the grid */
+#app[data-module="dataengineering"] .mod-grid:has(.mcard:hover) .mcard:not(:hover) {
+  opacity: 0.65;
+  filter: grayscale(40%) blur(1px);
+  transform: scale(0.98);
+}
+
+#app[data-module="dataengineering"] .mcard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--accent) 15%, rgba(0,0,0,0.1));
+  border-color: var(--accent);
+}
+
+/* --- Document Reader Content Modernization --- */
+
+#app[data-module="dataengineering"] #viewDocReader {
+  background: var(--surface-bg);
+}
+
+#app[data-module="dataengineering"] .doc-prose {
+  font-family: var(--sans);
+  font-size: 1.05em;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+
+#app[data-module="dataengineering"] .doc-prose h2 {
+  font-family: var(--display);
+  font-size: 2.2em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 1.8em 0 1em;
+  text-wrap: balance;
+  background: linear-gradient(135deg, var(--text), color-mix(in srgb, var(--accent) 80%, var(--text)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border-bottom: none;
+  position: relative;
+  padding-bottom: 0.2em;
+}
+
+#app[data-module="dataengineering"] .doc-prose h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 60px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+#app[data-module="dataengineering"] .doc-prose h3 {
+  font-family: var(--sans);
+  font-size: 1.35em;
+  font-weight: 700;
+  text-wrap: pretty;
+  color: var(--text);
+  margin: 1.8em 0 0.8em;
+}
+#app[data-module="dataengineering"] .doc-prose h3::before { display: none; }
+
+#app[data-module="dataengineering"] .doc-prose p {
+  text-wrap: pretty;
+}
+
+/* Beautiful Blockquotes */
+#app[data-module="dataengineering"] .doc-prose blockquote.quote {
+  border-left: 4px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  border-radius: 0 12px 12px 0;
+  padding: 1.2em 1.5em;
+  margin: 2em 0;
+  font-style: normal;
+  color: var(--text);
+}
+#app[data-module="dataengineering"] .doc-prose blockquote.quote p { margin: 0; }
+
+/* Callouts / Admonitions */
+#app[data-module="dataengineering"] .callout {
+  border-radius: 12px;
+  border-left: 4px solid var(--c);
+  border-top: 1px solid color-mix(in srgb, var(--c) 20%, var(--border-soft));
+  border-right: 1px solid color-mix(in srgb, var(--c) 20%, var(--border-soft));
+  border-bottom: 1px solid color-mix(in srgb, var(--c) 20%, var(--border-soft));
+  box-shadow: 0 8px 24px rgba(0,0,0,0.02);
+}
+
+/* Modernized Code Blocks */
+#app[data-module="dataengineering"] .doc-prose .code,
+#app[data-module="dataengineering"] .doc-prose pre {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-soft);
+}
+
+/* Data Tables */
+#app[data-module="dataengineering"] .doc-prose table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+  margin: 2em 0;
+  border: 1px solid var(--border-soft);
+}
+#app[data-module="dataengineering"] .doc-prose th {
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 0.05em;
+}
+
+/* Images */
+#app[data-module="dataengineering"] .doc-prose img {
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  margin: 2.5em 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#app[data-module="dataengineering"] .doc-prose img:hover {
+  transform: scale(1.02);
+}
+
+/* Refine Article Reading Experience */
+#app[data-module="dataengineering"] .doc {
+  max-width: 860px; /* Narrower width for better reading */
+}
+
+#app[data-module="dataengineering"] .doc-hero {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 2em;
+}
+
+#app[data-module="dataengineering"] .doc-title {
+  font-family: var(--display);
+  font-size: clamp(36px, 3.5vw, 64px);
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--text), color-mix(in srgb, var(--accent) 70%, var(--text)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Modernize Card Internals */
+#app[data-module="dataengineering"] .mcard-num {
+  font-family: var(--sans);
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+#app[data-module="dataengineering"] .mcard-title {
+  font-family: var(--display);
+  font-weight: 750;
+  font-size: 1.3em;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin-top: 4px;
+}
+
+#app[data-module="dataengineering"] .mcard-sum {
+  font-family: var(--sans);
+  line-height: 1.6;
+  color: var(--text-dim);
+  font-size: 0.95em;
+  margin-top: 6px;
+}
+
+#app[data-module="dataengineering"] .mcard-foot {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--border-soft) 50%, transparent);
+  font-family: var(--mono);
+  font-size: 0.85em;
+}
+
+#app[data-module="dataengineering"] .mod-group-head h2 {
+  font-family: var(--display);
+  font-size: 2.2em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Modern Custom Scrollbar for Data Engineering */
+#app[data-module="dataengineering"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+#app[data-module="dataengineering"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+#app[data-module="dataengineering"] ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border-strong) 60%, transparent);
+  border-radius: 5px;
+  border: 2px solid var(--surface-bg);
+}
+#app[data-module="dataengineering"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+
+/* Distinctive Layouts for Theory vs Projects */
+/* Theory Cards */
+#app[data-module="dataengineering"] .mcard[href*="#/data-engineering/"] {
+  border-top: 4px solid var(--accent);
+}
+#app[data-module="dataengineering"] .mcard[href*="#/data-engineering/"]::before {
+  content: "📖 Theory";
+  display: inline-block;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+/* Project Cards */
+#app[data-module="dataengineering"] .mcard[href*="#/eng/de-"] {
+  border-top: 4px solid var(--ok);
+  background: color-mix(in srgb, var(--ok-wash) 40%, transparent);
+}
+#app[data-module="dataengineering"] .mcard[href*="#/eng/de-"]::before {
+  content: "💻 Project";
+  display: inline-block;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ok);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+#app[data-module="dataengineering"] .mcard[href*="#/eng/de-go"]::before {
+  content: "💻 Project (Go)";
+}
+#app[data-module="dataengineering"] .mcard[href*="#/eng/de-py"]::before {
+  content: "💻 Project (Python)";
+}
+
+/* Modern Workspace for Data Engineering */
+#app[data-module="dataengineering"] .eng-grid {
+  gap: 20px;
+  padding: 0 24px 24px;
+}
+#app[data-module="dataengineering"] .eng-prose {
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+  background: var(--surface);
+  overflow: hidden;
+}
+#app[data-module="dataengineering"] .prose-tabs {
+  background: color-mix(in srgb, var(--surface-2) 40%, transparent);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 8px 16px 0;
+  gap: 8px;
+}
+#app[data-module="dataengineering"] .prose-tabs .tab {
+  border-radius: 8px 8px 0 0;
+  padding: 10px 20px;
+  font-weight: 600;
+  color: var(--text-faint);
+  transition: background 0.2s, color 0.2s;
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+#app[data-module="dataengineering"] .prose-tabs .tab:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+#app[data-module="dataengineering"] .prose-tabs .tab.is-on {
+  background: var(--surface);
+  color: var(--accent);
+  border-color: var(--border-soft);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
+}
+#app[data-module="dataengineering"] .prose-body {
+  padding: 32px;
+}
+#app[data-module="dataengineering"] .eng-editor {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  border: 1px solid var(--border-soft);
+}
+#app[data-module="dataengineering"] .ed-toolbar {
+  background: var(--surface-1);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* MCard Top Layout */
+#app[data-module="dataengineering"] .mcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#app[data-module="dataengineering"] .mod-group {
+  background: var(--surface-bg);
+  border: 1px solid var(--border-soft);
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: inset 0 2px 20px rgba(0,0,0,0.01);
+  margin-bottom: 40px;
+}
+
+/* Code Examples Container inside Theory */
+#app[data-module="dataengineering"] .de-code-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+#app[data-module="dataengineering"] .btn.mod-btn.de-btn-python,
+#app[data-module="dataengineering"] .btn.mod-btn.de-btn-golang {
+  display: inline-block;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1.1em;
+  text-decoration: none;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  color: var(--bg);
+}
+#app[data-module="dataengineering"] .btn.mod-btn.de-btn-python {
+  background: linear-gradient(135deg, #3776ab, #2b5b84);
+  box-shadow: 0 4px 12px rgba(55, 118, 171, 0.3);
+}
+#app[data-module="dataengineering"] .btn.mod-btn.de-btn-python:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(55, 118, 171, 0.4);
+}
+#app[data-module="dataengineering"] .btn.mod-btn.de-btn-golang {
+  background: linear-gradient(135deg, #00add8, #0087a8);
+  box-shadow: 0 4px 12px rgba(0, 173, 216, 0.3);
+}
+#app[data-module="dataengineering"] .btn.mod-btn.de-btn-golang:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 173, 216, 0.4);
+}

@@ -3,35 +3,88 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 )
 
-func flatten(prefix string, nested map[string]interface{}, flat map[string]interface{}) {
+// Flattener provides mechanisms to flatten deeply nested JSON structures.
+type Flattener struct {
+	Separator string
+}
+
+// NewFlattener creates a new Flattener with a specified separator.
+func NewFlattener(separator string) *Flattener {
+	return &Flattener{
+		Separator: separator,
+	}
+}
+
+// FlattenMap takes a nested map and flattens it.
+func (f *Flattener) FlattenMap(prefix string, nested map[string]interface{}, flat map[string]interface{}) {
 	for k, v := range nested {
 		newKey := k
 		if prefix != "" {
-			newKey = prefix + "_" + k
+			newKey = prefix + f.Separator + k
 		}
-		
+
 		switch child := v.(type) {
 		case map[string]interface{}:
-			flatten(newKey, child, flat)
+			f.FlattenMap(newKey, child, flat)
+		case []interface{}:
+			for i, item := range child {
+				arrKey := fmt.Sprintf("%s%s%d", newKey, f.Separator, i)
+				switch arrChild := item.(type) {
+				case map[string]interface{}:
+					f.FlattenMap(arrKey, arrChild, flat)
+				default:
+					flat[arrKey] = arrChild
+				}
+			}
 		default:
 			flat[newKey] = v
 		}
 	}
 }
 
-func main() {
-	raw := `{"user_id": 1, "profile": {"name": "Alice", "age": 30}}`
+// FlattenJSONBytes takes a raw JSON byte slice and returns a flattened map.
+func (f *Flattener) FlattenJSONBytes(data []byte) (map[string]interface{}, error) {
 	var nested map[string]interface{}
-	json.Unmarshal([]byte(raw), &nested)
+	if err := json.Unmarshal(data, &nested); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
 
 	flat := make(map[string]interface{})
-	flatten("", nested, flat)
+	f.FlattenMap("", nested, flat)
+	return flat, nil
+}
 
-	fmt.Println("Flattened Map:")
-	for k, v := range flat {
-		fmt.Printf("%s: %v
-", k, v)
+func main() {
+	rawJSON := []byte(`{
+		"user_id": 1024,
+		"profile": {
+			"name": "Alice",
+			"age": 30,
+			"contact": {
+				"email": "alice@example.com",
+				"phone": "555-1234"
+			}
+		},
+		"tags": ["premium", "active"]
+	}`)
+
+	flattener := NewFlattener("_")
+	
+	flatData, err := flattener.FlattenJSONBytes(rawJSON)
+	if err != nil {
+		log.Fatalf("Error flattening JSON: %v", err)
 	}
+
+	output, err := json.MarshalIndent(flatData, "", "  ")
+	if err != nil {
+		log.Fatalf("Error marshaling flattened data: %v", err)
+	}
+
+	fmt.Println("Flattened JSON Output:")
+	os.Stdout.Write(output)
+	fmt.Println()
 }

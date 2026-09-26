@@ -1,69 +1,124 @@
-import sqlite3
+import logging
+from datetime import datetime
+from sqlalchemy import create_engine, Column, Integer, String, Numeric, Date, ForeignKey, select
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-def build_data_warehouse():
-    # Connect to in-memory SQLite database
-    conn = sqlite3.connect(':memory:')
-    cursor = conn.cursor()
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+Base = declarative_base()
+
+# ==========================================
+# Schema Definitions (Star Schema)
+# ==========================================
+
+class DimDate(Base):
+    __tablename__ = 'dim_date'
     
-    print("Building Data Warehouse Schema...")
+    date_id = Column(Integer, primary_key=True, autoincrement=True)
+    full_date = Column(Date, nullable=False, unique=True)
+    year = Column(Integer, nullable=False)
+    month = Column(Integer, nullable=False)
+    day = Column(Integer, nullable=False)
+
+class DimProduct(Base):
+    __tablename__ = 'dim_product'
     
-    # Dimension Table: Date
-    cursor.execute('''
-    CREATE TABLE dim_date (
-        date_id INTEGER PRIMARY KEY,
-        full_date TEXT,
-        year INTEGER,
-        month INTEGER,
-        day INTEGER
-    )
-    ''')
+    product_id = Column(Integer, primary_key=True)
+    product_name = Column(String(100), nullable=False)
+    category = Column(String(50), nullable=False)
+    price = Column(Numeric(10, 2), nullable=False)
+
+class FactSales(Base):
+    __tablename__ = 'fact_sales'
     
-    # Dimension Table: Product
-    cursor.execute('''
-    CREATE TABLE dim_product (
-        product_id INTEGER PRIMARY KEY,
-        product_name TEXT,
-        category TEXT,
-        price REAL
-    )
-    ''')
+    sale_id = Column(Integer, primary_key=True, autoincrement=True)
+    date_id = Column(Integer, ForeignKey('dim_date.date_id'), nullable=False)
+    product_id = Column(Integer, ForeignKey('dim_product.product_id'), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    total_amount = Column(Numeric(12, 2), nullable=False)
+
+    # Relationships for easier ORM traversal
+    date = relationship("DimDate")
+    product = relationship("DimProduct")
+
+# ==========================================
+# Operations
+# ==========================================
+
+def build_and_populate_warehouse(engine):
+    """Creates tables and populates them with initial dimensions and facts."""
+    logger.info("Creating database schema...")
+    Base.metadata.create_all(engine)
     
-    # Fact Table: Sales
-    cursor.execute('''
-    CREATE TABLE fact_sales (
-        sale_id INTEGER PRIMARY KEY,
-        date_id INTEGER,
-        product_id INTEGER,
-        quantity INTEGER,
-        total_amount REAL,
-        FOREIGN KEY(date_id) REFERENCES dim_date(date_id),
-        FOREIGN KEY(product_id) REFERENCES dim_product(product_id)
-    )
-    ''')
+    Session = sessionmaker(bind=engine)
     
-    print("Tables created successfully.")
+    with Session() as session:
+        try:
+            logger.info("Inserting dimension data...")
+            # Insert Dimensions
+            dt = datetime(2023, 10, 1).date()
+            d_date = DimDate(full_date=dt, year=dt.year, month=dt.month, day=dt.day)
+            
+            d_prod = DimProduct(product_id=101, product_name='Enterprise Database Server', category='Hardware', price=15000.00)
+            
+            session.add_all([d_date, d_prod])
+            session.flush() # Flush to get the auto-generated date_id
+            
+            logger.info("Inserting fact data...")
+            # Insert Facts
+            f_sales = FactSales(
+                date_id=d_date.date_id, 
+                product_id=d_prod.product_id, 
+                quantity=3, 
+                total_amount=d_prod.price * 3
+            )
+            session.add(f_sales)
+            
+            session.commit()
+            logger.info("Data committed successfully.")
+            
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Error populating data warehouse: {e}")
+            raise
+
+def analyze_sales(engine):
+    """Demonstrates querying the star schema."""
+    logger.info("Running analytical query on Star Schema...")
+    Session = sessionmaker(bind=engine)
     
-    # Insert Sample Data
-    print("Inserting sample data...")
-    cursor.execute("INSERT INTO dim_date VALUES (1, '2023-10-01', 2023, 10, 1)")
-    cursor.execute("INSERT INTO dim_product VALUES (101, 'Laptop', 'Electronics', 1200.00)")
-    cursor.execute("INSERT INTO fact_sales VALUES (1001, 1, 101, 2, 2400.00)")
-    conn.commit()
-    
-    # Query the Star Schema
-    print("\nQuerying Data (Star Schema Join):")
-    cursor.execute('''
-    SELECT d.full_date, p.product_name, f.quantity, f.total_amount
-    FROM fact_sales f
-    JOIN dim_date d ON f.date_id = d.date_id
-    JOIN dim_product p ON f.product_id = p.product_id
-    ''')
-    
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
+    with Session() as session:
+        # Constructing the JOIN query using SQLAlchemy 2.0 select syntax
+        stmt = (
+            select(
+                DimDate.full_date,
+                DimProduct.product_name,
+                FactSales.quantity,
+                FactSales.total_amount
+            )
+            .select_from(FactSales)
+            .join(DimDate, FactSales.date_id == DimDate.date_id)
+            .join(DimProduct, FactSales.product_id == DimProduct.product_id)
+        )
         
-    conn.close()
+        results = session.execute(stmt).fetchall()
+        
+        print("\n--- Sales Analysis Report ---")
+        print(f"{'Date':<15} | {'Product Name':<30} | {'Qty':<5} | {'Total Amount'}")
+        print("-" * 75)
+        for row in results:
+            print(f"{str(row.full_date):<15} | {row.product_name:<30} | {row.quantity:<5} | ${row.total_amount:,.2f}")
+        print("-" * 75)
 
 if __name__ == "__main__":
-    build_data_warehouse()
+    # In production, this would be a Postgres/Snowflake/Redshift URI
+    # e.g. "postgresql://user:pass@host:5432/warehouse"
+    db_uri = "sqlite:///:memory:"
+    
+    # Create SQLAlchemy engine
+    engine = create_engine(db_uri, echo=False)
+    
+    build_and_populate_warehouse(engine)
+    analyze_sales(engine)

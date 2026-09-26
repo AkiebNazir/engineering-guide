@@ -29,7 +29,9 @@
       "pos": 0.8118
     },
     "api:Fundamentals/04_choosing_the_right_api": {
-      "last": 1790006173477
+      "last": 1790438858915,
+      "pct": 42,
+      "pos": 0.3855
     },
     "api:GraphQL/Theory": {
       "last": 1790102632570,
@@ -86,7 +88,9 @@
       "last": 1790006202156
     },
     "api:gRPC/Theory": {
-      "last": 1790006237872
+      "last": 1790438849417,
+      "pct": 99,
+      "pos": 0.9525
     },
     "api:gRPC/gRPC_Guide": {
       "last": 1789925731470,
@@ -101,6 +105,11 @@
     "behavioral:02_star_method_blueprints": {
       "last": 1789500235413,
       "pos": 0
+    },
+    "cicd:14-Advanced-CICD-Patterns": {
+      "last": 1790440633483,
+      "pct": 53,
+      "pos": 0.506
     },
     "csfund:01_operating_systems_deep_dive": {
       "last": 1790264243160,
@@ -121,6 +130,9 @@
       "last": 1790264250957,
       "pos": 0
     },
+    "dataengineering:01_Architecture_and_Storage": {
+      "last": 1790438729422
+    },
     "dataengineering:04_Batch_Processing": {
       "last": 1790376580776,
       "pct": 100,
@@ -130,6 +142,16 @@
       "last": 1790376600473,
       "pct": 54,
       "pos": 0.4606
+    },
+    "dataengineering:08_Data_Governance_and_Quality": {
+      "last": 1790438724161,
+      "pct": 100,
+      "pos": 0.6327
+    },
+    "dataengineering:README": {
+      "last": 1790440646206,
+      "pct": 100,
+      "pos": 0
     },
     "dsaguide:01_arrays_hashing": {
       "last": 1790240260057,
@@ -400,6 +422,11 @@
       "pct": 55,
       "pos": 0
     },
+    "roadmap:82_day_multimodal_llava": {
+      "last": 1790438719904,
+      "pct": 100,
+      "pos": 0.8896
+    },
     "sd:00_google_l5_playbook": {
       "last": 1789621956624,
       "pct": 100,
@@ -420,9 +447,9 @@
       "pos": 0
     },
     "sd:05_architecture_blueprints": {
-      "last": 1789674815559,
+      "last": 1790438660397,
       "pct": 95,
-      "pos": 0.5082
+      "pos": 0.3565
     },
     "sd:best_practices/07_anti_patterns_and_code_smells": {
       "last": 1789622058241,
@@ -586,6 +613,11 @@
       "revealedAt": 1790177561337,
       "reveals": 5
     },
+    "sd:problem/029_realtime_leaderboard": {
+      "last": 1790438664345,
+      "pct": 100,
+      "pos": 0.7374
+    },
     "sd:problem/030_llm_assistant_feature": {
       "last": 1790174743361,
       "pct": 100,
@@ -652,9 +684,9 @@
       "pos": 0
     },
     "swd:01_philosophy_of_software_design": {
-      "last": 1789899822835,
+      "last": 1790438692761,
       "pct": 71,
-      "pos": 0.6923
+      "pos": 0.0205
     },
     "swd:02_oop_and_domain_modeling": {
       "last": 1790265115050,
@@ -685,6 +717,11 @@
       "pct": 100,
       "pos": 0.9591
     },
+    "toolkit:Docker_Container": {
+      "last": 1790439712687,
+      "pct": 97,
+      "pos": 0
+    },
     "toolkit:Docker_and_Containers/01_Introduction": {
       "last": 1790343345638,
       "pos": 0
@@ -695,9 +732,9 @@
       "pos": 0.8075
     },
     "toolkit:Kafka": {
-      "last": 1790349608517,
+      "last": 1790438876127,
       "pct": 100,
-      "pos": 0.938
+      "pos": 0.9743
     },
     "toolkit:Kubernetes_and_Helm": {
       "last": 1790349608036,
@@ -707,6 +744,10 @@
     "toolkit:README": {
       "last": 1790349543679,
       "pct": 100,
+      "pos": 0
+    },
+    "toolkit:Secret_Management": {
+      "last": 1790438781789,
       "pos": 0
     }
   },
@@ -793,14 +834,14 @@
       "timeSpent": 0
     },
     "01_arrays_hashing/008": {
-      "attempts": 1,
+      "attempts": 2,
       "drafts": {
         "go": "package main\n\nfunc main() {\n}\n",
         "py": "from typing import List\n\n\nclass Solution:\n    def topKFrequent(self, nums: List[int], k: int) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 008_top_k_frequent_elements_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([1, 1, 1, 2, 2, 3], 2, [1, 2]),\n        ([1], 1, [1]),\n        ([1, 2], 2, [1, 2]),\n        ([4, 4, 4, 4], 1, [4]),\n        ([5, 5, 4, 4, 3, 3, 2, 1], 3, [3, 4, 5]),\n        ([-1, -1, -1, 0, 0, 7], 2, [-1, 0]),\n        ([3, 0, 1, 0], 1, [0]),\n    ]\n    passed = 0\n    for nums, k, expected in cases:\n        got = sol.topKFrequent(list(nums), k)\n        ok = got is not None and sorted(got) == sorted(expected)\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums={nums} k={k} -> {got} (want {expected})\")\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
       },
       "nextReview": null,
       "solvedAt": null,
-      "status": "todo",
+      "status": "attempting",
       "timeSpent": 0
     },
     "01_arrays_hashing/009": {
@@ -1056,6 +1097,15 @@
       },
       "timeSpent": 0
     },
+    "08_linked_list/009": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import Optional\n\n\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\n\nclass Solution:\n    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TEST HELPERS\n# ==============================================================================\ndef build(values):\n    dummy = ListNode()\n    curr = dummy\n    for v in values:\n        curr.next = ListNode(v)\n        curr = curr.next\n    return dummy.next\n\n\ndef to_list(head):\n    out = []\n    while head:\n        out.append(head.val)\n        head = head.next\n    return out\n\n\nCASES = [\n    ([1, 2, 3, 4, 5], 2, [1, 2, 3, 5]),\n    ([1], 1, []),\n    ([1, 2], 1, [1]),\n    ([1, 2], 2, [2]),\n    ([1, 2, 3, 4, 5], 5, [2, 3, 4, 5]),\n]\n\n\ndef run_tests() -> None:\n    sol = Solution()\n    all_ok = True\n    for values, n, expected in CASES:\n        head = build(values)\n        got = to_list(sol.removeNthFromEnd(head, n))\n        ok = got == expected\n        all_ok &= ok\n        print(f\"{'PASS' if ok else 'FAIL'}  values={values!r:<20} n={n} -> {got}  (want {expected})\")\n    print(f\"\\n{'ALL PASSED' if all_ok else 'FAILURES PRESENT'}\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
+      "runs": 1,
+      "status": "attempting",
+      "timeSpent": 0
+    },
     "09_recursion_backtracking/001": {
       "attempts": 1,
       "drafts": {
@@ -1279,6 +1329,42 @@
       "status": "attempting",
       "timeSpent": 0
     },
+    "de-go-eng/06_Data_Orchestration/05_sensor_wait_condition": {
+      "attempts": 1,
+      "drafts": {
+        "de-go": "package main\n\nimport (\n\t\"fmt\"\n\t\"os\"\n\t\"time\"\n)\n\nfunc simulateFileCreation(filePath string, delay time.Duration) {\n\tfmt.Printf(\"Simulation: File will be created in %v...\\n\", delay)\n\ttime.Sleep(delay)\n\t\n\tfile, err := os.Create(filePath)\n\tif err == nil {\n\t\tfile.WriteString(\"data\")\n\t\tfile.Close()\n\t\tfmt.Printf(\"Simulation: File '%s' created.\\n\", filePath)\n\t}\n}\n\nfunc fileSensor(filePath string, checkInterval time.Duration, timeout time.Duration) bool {\n\tfmt.Printf(\"Sensor: Waiting for file '%s' to appear...\\n\", filePath)\n\tstart := time.Now()\n\t\n\tfor {\n\t\tif _, err := os.Stat(filePath); err == nil {\n\t\t\tfmt.Printf(\"Sensor: File '%s' detected!\\n\", filePath)\n\t\t\treturn true\n\t\t}\n\t\t\n\t\tif time.Since(start) > timeout {\n\t\t\tfmt.Printf(\"Sensor: Timeout reached. File '%s' not found.\\n\", filePath)\n\t\t\treturn false\n\t\t}\n\t\t\n\t\ttime.Sleep(checkInterval)\n\t}\n}\n\nfunc main() {\n\ttargetFile := \"trigger.txt\"\n\t\n\t// Clean up if it exists\n\tos.Remove(targetFile)\n\t\n\t// Start file creation simulation\n\tgo simulateFileCreation(targetFile, 4*time.Second)\n\t\n\t// Run the sensor\n\tif fileSensor(targetFile, 1*time.Second, 10*time.Second) {\n\t\tfmt.Println(\"Executing next task: Processing data...\")\n\t} else {\n\t\tfmt.Println(\"Pipeline aborted due to missing file.\")\n\t}\n\t\n\t// Clean up afterwards\n\tos.Remove(targetFile)\n}\n"
+      },
+      "lastOpened": 1790439777613,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "de-go-eng/07_Data_Transformation/02_json_flattening_script": {
+      "attempts": 1,
+      "drafts": {
+        "de-go": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n)\n\nfunc flatten(prefix string, nested map[string]interface{}, flat map[string]interface{}) {\n\tfor k, v := range nested {\n\t\tnewKey := k\n\t\tif prefix != \"\" {\n\t\t\tnewKey = prefix + \"_\" + k\n\t\t}\n\t\t\n\t\tswitch child := v.(type) {\n\t\tcase map[string]interface{}:\n\t\t\tflatten(newKey, child, flat)\n\t\tdefault:\n\t\t\tflat[newKey] = v\n\t\t}\n\t}\n}\n\nfunc main() {\n\traw := `{\"user_id\": 1, \"profile\": {\"name\": \"Alice\", \"age\": 30}}`\n\tvar nested map[string]interface{}\n\tjson.Unmarshal([]byte(raw), &nested)\n\n\tflat := make(map[string]interface{})\n\tflatten(\"\", nested, flat)\n\n\tfmt.Println(\"Flattened Map:\")\n\tfor k, v := range flat {\n\t\tfmt.Printf(\"%s: %v\n\", k, v)\n\t}\n}\n"
+      },
+      "lastOpened": 1790439780817,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "de-py-eng/01_Architecture_and_Storage/01_local_data_lake_simulation": {
+      "attempts": 1,
+      "drafts": {
+        "de-py": "import os\nimport json\nimport random\nfrom datetime import datetime, timedelta\n\ndef generate_dummy_data(num_records=100):\n    data = []\n    start_date = datetime(2023, 1, 1)\n    for i in range(num_records):\n        date = start_date + timedelta(days=random.randint(0, 365))\n        record = {\n            \"id\": i,\n            \"event\": random.choice([\"login\", \"logout\", \"purchase\", \"view\"]),\n            \"timestamp\": date.isoformat(),\n            \"year\": date.year,\n            \"month\": date.month,\n            \"day\": date.day\n        }\n        data.append(record)\n    return data\n\ndef ingest_to_data_lake(data, base_dir=\"data_lake/raw\"):\n    for record in data:\n        # Create partition directory\n        partition_path = os.path.join(\n            base_dir,\n            f\"year={record['year']}\",\n            f\"month={record['month']:02d}\",\n            f\"day={record['day']:02d}\"\n        )\n        os.makedirs(partition_path, exist_ok=True)\n        \n        # Write record to file\n        file_path = os.path.join(partition_path, f\"event_{record['id']}.json\")\n        with open(file_path, \"w\") as f:\n            json.dump(record, f)\n\nif __name__ == \"__main__\":\n    print(\"Generating dummy data...\")\n    dummy_data = generate_dummy_data(100)\n    print(\"Ingesting data to local data lake...\")\n    ingest_to_data_lake(dummy_data)\n    print(\"Data ingestion complete. Check the 'data_lake/raw' directory.\")\n"
+      },
+      "lastOpened": 1790439449277,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "de-py-eng/03_Data_Ingestion/02_web_scraper_to_db": {
+      "attempts": 1,
+      "drafts": {
+        "de-py": "import sqlite3\nimport re\n\nMOCK_HTML = \"\"\"\n<html>\n    <head><title>Mock Webpage</title></head>\n    <body>\n        <h1>Breaking News</h1>\n        <div class=\"article\"><h2>Python 3.12 Released!</h2></div>\n        <div class=\"article\"><h2>Data Engineering is Awesome</h2></div>\n        <div class=\"article\"><h2>PostgreSQL vs SQLite</h2></div>\n    </body>\n</html>\n\"\"\"\n\ndef init_db(db_name=\"scraper.db\"):\n    conn = sqlite3.connect(db_name)\n    cursor = conn.cursor()\n    cursor.execute('''\n        CREATE TABLE IF NOT EXISTS titles (\n            id INTEGER PRIMARY KEY AUTOINCREMENT,\n            title TEXT\n        )\n    ''')\n    conn.commit()\n    return conn\n\ndef extract_titles(html):\n    pattern = r\"<h2>(.*?)</h2>\"\n    return re.findall(pattern, html)\n\ndef save_titles(conn, titles):\n    cursor = conn.cursor()\n    for title in titles:\n        cursor.execute('INSERT INTO titles (title) VALUES (?)', (title,))\n    conn.commit()\n\ndef main():\n    print('Starting Data Engineering Project: 02_web_scraper_to_db')\n    conn = init_db()\n    \n    print(\"Extracting titles from mock HTML...\")\n    titles = extract_titles(MOCK_HTML)\n    \n    print(f\"Extracted {len(titles)} titles. Saving to database...\")\n    save_titles(conn, titles)\n    \n    print(\"Titles saved successfully.\")\n    conn.close()\n\nif __name__ == '__main__':\n    main()\n"
+      },
+      "lastOpened": 1790439784471,
+      "status": "attempting",
+      "timeSpent": 0
+    },
     "go-eng/01_rest_api_service": {
       "attempts": 1,
       "drafts": {
@@ -1297,6 +1383,42 @@
       "status": "attempting",
       "timeSpent": 0
     },
+    "go-eng/27_cgo_and_unsafe": {
+      "attempts": 1,
+      "drafts": {
+        "go": "package cgounsafe\n\n/*\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n\nstatic int add(int a, int b) { return a + b; }\n\nstatic void upper_inplace(char *s) {\n    for (; *s; s++) *s = (char)toupper((unsigned char)*s);\n}\n\nstatic int64_t sum_int32(const int32_t *xs, size_t n) {\n    int64_t total = 0;\n    for (size_t i = 0; i < n; i++) total += xs[i];\n    return total;\n}\n\nstatic void touch(void *p) { (void)p; }\n*/\nimport \"C\"\n\nimport \"unsafe\"\n\n// PtrSize is the size of a pointer on this platform (8 on 64-bit).\nconst PtrSize = unsafe.Sizeof(uintptr(0))\n\n// ============================================================================\n// 1. cgo wrappers\n// ============================================================================\n\n// CAdd calls the C function add.\nfunc CAdd(a, b int) int {\n\t// TODO: return int(C.add(C.int(a), C.int(b)))\n\tpanic(\"not implemented\")\n}\n\n// CStrlen returns C's strlen of s (a byte count).\nfunc CStrlen(s string) int {\n\t// TODO: cs := C.CString(s); defer C.free(unsafe.Pointer(cs)); return int(C.strlen(cs))\n\tpanic(\"not implemented\")\n}\n\n// CUpper upper-cases ASCII letters of s using C.\nfunc CUpper(s string) string {\n\t// TODO: C.CString \u2192 C.upper_inplace \u2192 C.GoString (BEFORE free) \u2192 free.\n\tpanic(\"not implemented\")\n}\n\n// SumInt32 sums xs in a single C call over the Go slice's own memory.\nfunc SumInt32(xs []int32) int64 {\n\t// TODO: guard empty; pass (*C.int32_t)(unsafe.Pointer(&xs[0])), C.size_t(len(xs)).\n\tpanic(\"not implemented\")\n}\n\n// CheckPointerRule passes C a pointer to Go memory that itself contains a Go\n// pointer, and returns the runtime's panic as an error.\nfunc CheckPointerRule() (err error) {\n\t// TODO: recover into err; holder := struct{ p *int }{p: new(int)};\n\t// C.touch(unsafe.Pointer(&holder))\n\tpanic(\"not implemented\")\n}\n\n// ============================================================================\n// 2. Memory layout\n// ============================================================================\n\n// Padded declares fields in an order that wastes space.\ntype Padded struct {\n\tActive bool\n\tID     int64\n\tFlags  uint16\n\tScore  float64\n\tKind   uint8\n}\n\n// Packed holds the same fields ordered largest-alignment first.\ntype Packed struct {\n\t// TODO: reorder Padded's fields to minimise padding.\n}\n\n// FieldInfo describes one struct field's placement in memory.\ntype FieldInfo struct {\n\tName   string\n\tOffset uintptr\n\tSize   uintptr\n\tAlign  uintptr\n}\n\n// Layout reports the size of struct value v and the placement of each field.\nfunc Layout(v any) (size uintptr, fields []FieldInfo) {\n\t// TODO: t := reflect.TypeOf(v); panic if not a struct;\n\t// for each field: Name, Offset, Type.Size(), uintptr(Type.Align()).\n\tpanic(\"not implemented\")\n}\n\n// ============================================================================\n// 3. Zero-copy conversions and pointer arithmetic\n// ============================================================================\n\n// BytesToString returns a string sharing b's memory. b must not be modified\n// afterwards.\nfunc BytesToString(b []byte) string {\n\t// TODO: unsafe.String(unsafe.SliceData(b), len(b)); handle len 0.\n\tpanic(\"not implemented\")\n}\n\n// StringToBytes returns a slice sharing s's memory. The result must never be\n// written to.\nfunc StringToBytes(s string) []byte {\n\t// TODO: unsafe.Slice(unsafe.StringData(s), len(s)); nil for \"\".\n\tpanic(\"not implemented\")\n}\n\n// Int64At returns xs[i] using pointer arithmetic, with manual bounds checks.\nfunc Int64At(xs []int64, i int) (int64, bool) {\n\t// TODO: bounds check; unsafe.Add(unsafe.Pointer(unsafe.SliceData(xs)), i*int(unsafe.Sizeof(int64(0)))).\n\tpanic(\"not implemented\")\n}\n"
+      },
+      "lastOpened": 1790438699665,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "lld-eng/006_kv_store_transactions": {
+      "attempts": 1,
+      "drafts": {
+        "lld": "from __future__ import annotations\n\n\nclass NoTransaction(Exception): ...\n\n\nclass KVStore:\n    \"\"\"Design B: write in place, undo log per transaction.\"\"\"\n\n    def __init__(self) -> None:\n        # YOUR CODE HERE\n        raise NotImplementedError\n\n    def get(self, key): raise NotImplementedError\n    def set(self, key, value) -> None: raise NotImplementedError\n    def delete(self, key) -> bool: raise NotImplementedError\n    def count(self, value) -> int: raise NotImplementedError\n    def begin(self) -> None: raise NotImplementedError\n    def rollback(self) -> None: raise NotImplementedError\n    def commit(self) -> None: raise NotImplementedError\n\n    @property\n    def depth(self) -> int: raise NotImplementedError\n\n    def __len__(self) -> int: raise NotImplementedError\n\n\nclass LayeredKVStore:\n    \"\"\"Design A: stack of write-set layers with tombstones.\"\"\"\n\n    def __init__(self) -> None:\n        # YOUR CODE HERE\n        raise NotImplementedError\n\n    def get(self, key): raise NotImplementedError\n    def set(self, key, value) -> None: raise NotImplementedError\n    def delete(self, key) -> bool: raise NotImplementedError\n    def count(self, value) -> int: raise NotImplementedError\n    def begin(self) -> None: raise NotImplementedError\n    def rollback(self) -> None: raise NotImplementedError\n    def commit(self) -> None: raise NotImplementedError\n\n    @property\n    def depth(self) -> int: raise NotImplementedError\n\n    def __len__(self) -> int: raise NotImplementedError\n\n\n# ===================================================================== TESTS ==\n# Identical to the solution file's tests. Make them all PASS.\ndef _check(label: str, ok: bool) -> bool:\n    print(f\"{'PASS' if ok else 'FAIL'}  {label}\")\n    return ok\n\n\ndef _raises(exc, fn) -> bool:\n    try:\n        fn()\n    except exc:\n        return True\n    return False\n\n\ndef run_contract(make) -> bool:\n    all_ok = True\n    name = make.__name__\n    s = make()\n    s.set(\"a\", 10)\n    s.set(\"b\", 10)\n    all_ok &= _check(f\"[{name}] get / count\", s.get(\"a\") == 10 and s.count(10) == 2)\n    s.set(\"b\", 10)\n    all_ok &= _check(f\"[{name}] re-setting the same value doesn't double count\", s.count(10) == 2)\n    all_ok &= _check(f\"[{name}] delete existing -> True, missing -> False\",\n                     s.delete(\"b\") is True and s.delete(\"zz\") is False and s.count(10) == 1)\n    all_ok &= _check(f\"[{name}] missing key -> None\", s.get(\"b\") is None)\n\n    s.begin()\n    s.set(\"a\", 20)\n    s.set(\"c\", 20)\n    all_ok &= _check(f\"[{name}] read-your-writes inside a transaction\",\n                     s.get(\"a\") == 20 and s.count(20) == 2 and s.count(10) == 0)\n    s.rollback()\n    all_ok &= _check(f\"[{name}] rollback restores values, removes created keys, fixes counts\",\n                     s.get(\"a\") == 10 and s.get(\"c\") is None and s.count(10) == 1 and s.count(20) == 0)\n\n    s.begin()\n    s.delete(\"a\")\n    all_ok &= _check(f\"[{name}] delete inside tx hides the value\", s.get(\"a\") is None and s.count(10) == 0)\n    s.rollback()\n    all_ok &= _check(f\"[{name}] ...rollback brings it back\", s.get(\"a\") == 10 and s.count(10) == 1)\n\n    print(f\"--- [{name}] nesting (the docstring trace) ---\")\n    s = make()\n    s.set(\"a\", 10)\n    s.begin()\n    s.set(\"a\", 20)\n    s.set(\"a\", 30)\n    s.begin()\n    s.delete(\"a\")\n    s.set(\"b\", 1)\n    s.commit()\n    all_ok &= _check(f\"[{name}] after inner commit: a deleted, b=1, depth 1\",\n                     s.get(\"a\") is None and s.get(\"b\") == 1 and s.depth == 1)\n    s.rollback()\n    all_ok &= _check(f\"[{name}] parent rollback undoes the committed child too\",\n                     s.get(\"a\") == 10 and s.get(\"b\") is None and s.depth == 0 and len(s) == 1)\n\n    s.begin()\n    s.begin()\n    s.set(\"x\", 5)\n    s.commit()\n    s.commit()\n    all_ok &= _check(f\"[{name}] two commits persist to the store\",\n                     s.get(\"x\") == 5 and s.depth == 0 and s.count(5) == 1)\n    all_ok &= _check(f\"[{name}] commit / rollback without a transaction -> NoTransaction\",\n                     _raises(NoTransaction, s.commit) and _raises(NoTransaction, s.rollback)\n                     and s.get(\"x\") == 5)\n    all_ok &= _check(f\"[{name}] None is not storable\", _raises(ValueError, lambda: s.set(\"k\", None)))\n    return all_ok\n\n\ndef run_tests() -> bool:\n    print(\"--- contract tests run against BOTH designs ---\")\n    ok = run_contract(KVStore)\n    print()\n    ok &= run_contract(LayeredKVStore)\n    return ok\n# ================================================================= END TESTS ==\n\n\nif __name__ == \"__main__\":\n    ok = run_tests()\n    print(\"\\nALL PASSED\" if ok else \"\\nFAILURES PRESENT\")\n"
+      },
+      "lastOpened": 1790438667286,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "lld-eng/010_unix_find": {
+      "attempts": 1,
+      "drafts": {
+        "lld": "from __future__ import annotations\n\nfrom dataclasses import dataclass\nfrom typing import Callable, Iterator\n\n\nclass FindError(Exception): ...\n\n\nclass Node:\n    def __init__(self, name: str, modified: float = 0.0) -> None:\n        self.name = name\n        self.modified = modified\n        self.parent: Directory | None = None\n\n    @property\n    def path(self) -> str:\n        raise NotImplementedError\n\n    @property\n    def is_dir(self) -> bool:\n        return False\n\n\nclass File(Node):\n    def __init__(self, name: str, size: int, modified: float = 0.0) -> None:\n        super().__init__(name, modified)\n        self.size = size\n\n\nclass Directory(Node):\n    def __init__(self, name: str, modified: float = 0.0) -> None:\n        super().__init__(name, modified)\n        self.children: dict[str, Node] = {}\n\n    @property\n    def is_dir(self) -> bool:\n        return True\n\n    def add(self, node: Node) -> Node:\n        raise NotImplementedError\n\n\nclass FileSystem:\n    def __init__(self) -> None:\n        self.root = Directory(\"\")\n\n    def get(self, path: str) -> Node: raise NotImplementedError\n    def mkdir(self, path: str) -> Directory: raise NotImplementedError\n    def add_file(self, path: str, size: int, modified: float = 0.0) -> File: raise NotImplementedError\n\n\nclass Spec:\n    def matches(self, node: Node) -> bool: raise NotImplementedError\n    def __and__(self, other: Spec) -> Spec: raise NotImplementedError\n    def __or__(self, other: Spec) -> Spec: raise NotImplementedError\n    def __invert__(self) -> Spec: raise NotImplementedError\n\n\n@dataclass(frozen=True)\nclass And(Spec):\n    left: Spec\n    right: Spec\n\n\n@dataclass(frozen=True)\nclass Or(Spec):\n    left: Spec\n    right: Spec\n\n\n@dataclass(frozen=True)\nclass Not(Spec):\n    inner: Spec\n\n\n@dataclass(frozen=True)\nclass Name(Spec):\n    pattern: str\n    ignore_case: bool = False\n\n\n@dataclass(frozen=True)\nclass Ext(Spec):\n    extension: str\n\n\n@dataclass(frozen=True)\nclass TypeIs(Spec):\n    kind: str\n\n\n@dataclass(frozen=True)\nclass SizeGt(Spec):\n    bytes_: int\n\n\n@dataclass(frozen=True)\nclass SizeLt(Spec):\n    bytes_: int\n\n\n@dataclass(frozen=True)\nclass SizeEq(Spec):\n    bytes_: int\n\n\n@dataclass(frozen=True)\nclass ModifiedAfter(Spec):\n    timestamp: float\n\n\n@dataclass(frozen=True)\nclass Empty(Spec):\n    pass\n\n\n@dataclass(frozen=True)\nclass Where(Spec):\n    predicate: Callable[[Node], bool]\n    label: str = \"where\"\n\n\ndef name(pattern: str) -> Spec: return Name(pattern)\ndef iname(pattern: str) -> Spec: return Name(pattern, ignore_case=True)\ndef ext(extension: str) -> Spec: return Ext(extension)\ndef is_file() -> Spec: return TypeIs(\"f\")\ndef is_dir() -> Spec: return TypeIs(\"d\")\ndef size_gt(n: int) -> Spec: return SizeGt(n)\ndef size_lt(n: int) -> Spec: return SizeLt(n)\ndef modified_after(t: float) -> Spec: return ModifiedAfter(t)\ndef empty() -> Spec: return Empty()\n\n\ndef find(start: Node, spec: Spec | None = None, max_depth: int | None = None,\n         prune: Spec | None = None) -> Iterator[Node]:\n    raise NotImplementedError\n\n\ndef parse(tokens: list[str]) -> Spec:\n    raise NotImplementedError\n\n\n# ===================================================================== TESTS ==\n# Identical to the solution file's tests. Make them all PASS.\ndef _check(label: str, ok: bool) -> bool:\n    print(f\"{'PASS' if ok else 'FAIL'}  {label}\")\n    return ok\n\n\ndef _raises(exc, fn) -> bool:\n    try:\n        fn()\n    except exc:\n        return True\n    return False\n\n\ndef _sample() -> FileSystem:\n    fs = FileSystem()\n    fs.add_file(\"/src/app.py\", 1200, modified=50)\n    fs.add_file(\"/src/util.py\", 0, modified=10)\n    fs.add_file(\"/src/test_app.py\", 800, modified=60)\n    fs.add_file(\"/src/README.MD\", 300, modified=20)\n    fs.add_file(\"/data/big.csv\", 5 * 1024 * 1024, modified=100)\n    fs.add_file(\"/data/archive/old.csv\", 2048, modified=1)\n    fs.mkdir(\"/empty_dir\")\n    fs.add_file(\"/node_modules/lib/index.js\", 100, modified=30)\n    return fs\n\n\ndef _paths(nodes) -> list[str]:\n    return [n.path for n in nodes]\n\n\ndef run_tests() -> bool:\n    all_ok = True\n    fs = _sample()\n    print(\"--- composite tree ---\")\n    all_ok &= _check(\"paths resolve\", fs.get(\"/data/archive/old.csv\").size == 2048\n                     and fs.get(\"/data/archive\").path == \"/data/archive\")\n    all_ok &= _check(\"duplicate file rejected\", _raises(FindError, lambda: fs.add_file(\"/src/app.py\", 1)))\n    all_ok &= _check(\"path through a file rejected\", _raises(FindError, lambda: fs.add_file(\"/src/app.py/x\", 1)))\n    all_ok &= _check(\"missing path\", _raises(FindError, lambda: fs.get(\"/nope\")))\n\n    print(\"\\n--- specifications ---\")\n    py_not_tests = ext(\".py\") & ~name(\"test_*\")\n    all_ok &= _check(\"python files that aren't tests, pre-order, sorted by name\",\n                     _paths(find(fs.root, py_not_tests)) == [\"/src/app.py\", \"/src/util.py\"])\n    big_or_old = is_file() & (size_gt(1024 * 1024) | ~modified_after(5))\n    all_ok &= _check(\"files over 1 MB OR modified at/before t=5\",\n                     _paths(find(fs.root, big_or_old)) == [\"/data/archive/old.csv\", \"/data/big.csv\"])\n    all_ok &= _check(\"iname is case-insensitive, name is not\",\n                     _paths(find(fs.root, iname(\"readme.md\"))) == [\"/src/README.MD\"]\n                     and list(find(fs.root, name(\"readme.md\"))) == [])\n    all_ok &= _check(\"empty matches the empty dir and the zero-byte file\",\n                     _paths(find(fs.root, empty())) == [\"/empty_dir\", \"/src/util.py\"])\n    all_ok &= _check(\"custom predicate via Where\",\n                     _paths(find(fs.root, Where(lambda n: n.name.startswith(\"in\"), \"starts-in\")))\n                     == [\"/node_modules/lib/index.js\"])\n    all_ok &= _check(\"specs are data: equal ASTs compare equal\",\n                     (ext(\".py\") & ~name(\"t*\")) == And(Ext(\".py\"), Not(Name(\"t*\"))))\n\n    print(\"\\n--- traversal options ---\")\n    all_ok &= _check(\"start node included when it matches; max_depth=1\",\n                     _paths(find(fs.get(\"/data\"), is_dir(), max_depth=1)) == [\"/data\", \"/data/archive\"])\n    all_ok &= _check(\"max_depth=0 -> only the start\", _paths(find(fs.root, max_depth=0)) == [\"/\"])\n    all_ok &= _check(\"prune skips node_modules entirely\",\n                     \"/node_modules/lib/index.js\" not in _paths(find(fs.root, prune=name(\"node_modules\")))\n                     and len(list(find(fs.root, prune=name(\"node_modules\")))) == 11)\n    gen = find(fs.root, is_file())\n    all_ok &= _check(\"find is lazy (a generator)\", next(gen).path == \"/data/archive/old.csv\")\n\n    print(\"\\n--- parser (interpreter) ---\")\n    all_ok &= _check(\"OR binds looser than implicit AND; ! binds tightest\",\n                     parse([\"-name\", \"*.py\", \"-o\", \"-type\", \"d\", \"!\", \"-empty\"])\n                     == Or(Name(\"*.py\"), And(TypeIs(\"d\"), Not(Empty()))))\n    all_ok &= _check(\"parentheses override precedence\",\n                     parse([\"(\", \"-name\", \"*.py\", \"-o\", \"-type\", \"d\", \")\", \"-a\", \"!\", \"-empty\"])\n                     == And(Or(Name(\"*.py\"), TypeIs(\"d\")), Not(Empty())))\n    all_ok &= _check(\"-size +1M / -2k / 300 exact\",\n                     parse([\"-size\", \"+1M\"]) == SizeGt(1024 ** 2) and parse([\"-size\", \"-2k\"]) == SizeLt(2048)\n                     and parse([\"-size\", \"300\"]) == SizeEq(300))\n    all_ok &= _check(\"parsed query runs: python files or non-empty dirs, excluding node_modules\",\n                     _paths(find(fs.root, parse([\"-name\", \"*.py\", \"-o\", \"-type\", \"d\", \"!\", \"-empty\"]),\n                                 prune=name(\"node_modules\")))\n                     == [\"/\", \"/data\", \"/data/archive\", \"/src\", \"/src/app.py\", \"/src/test_app.py\", \"/src/util.py\"])\n    for bad in ([\"(\", \"-name\", \"x\"], [\"-name\"], [\"-bogus\"], [\"-type\", \"x\"], [\"-size\", \"+zz\"], [\"-name\", \"a\", \")\"]):\n        all_ok &= _check(f\"parse error: {' '.join(bad)}\", _raises(FindError, lambda b=bad: parse(b)))\n    return all_ok\n# ================================================================= END TESTS ==\n\n\nif __name__ == \"__main__\":\n    ok = run_tests()\n    print(\"\\nALL PASSED\" if ok else \"\\nFAILURES PRESENT\")\n"
+      },
+      "lastOpened": 1790438595939,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "lld-eng/015_library_management": {
+      "attempts": 1,
+      "drafts": {
+        "lld": "from __future__ import annotations\n\nimport time\nfrom dataclasses import dataclass\nfrom enum import Enum\nfrom typing import Callable\n\nDAY = 86_400.0\n\n\nclass LibraryError(Exception): ...\nclass NotFound(LibraryError): ...\nclass NotAvailable(LibraryError): ...\nclass LimitReached(LibraryError): ...\nclass UnpaidFines(LibraryError): ...\nclass AlreadyBorrowed(LibraryError): ...\nclass NotOnLoan(LibraryError): ...\nclass RenewalDenied(LibraryError): ...\nclass ReservationDenied(LibraryError): ...\n\n\n@dataclass(frozen=True, slots=True)\nclass MembershipPolicy:\n    name: str\n    max_loans: int\n    loan_days: int\n    max_renewals: int\n\n\nSTANDARD = MembershipPolicy(\"standard\", max_loans=3, loan_days=14, max_renewals=1)\nPREMIUM = MembershipPolicy(\"premium\", max_loans=10, loan_days=28, max_renewals=3)\n\n\nclass PerDayFine:\n    def __init__(self, cents_per_day: int, cap_cents: int) -> None:\n        raise NotImplementedError\n\n    def fine(self, days_late: int) -> int:\n        raise NotImplementedError\n\n\nclass GracePeriod:\n    def __init__(self, inner, days: int) -> None:\n        raise NotImplementedError\n\n    def fine(self, days_late: int) -> int:\n        raise NotImplementedError\n\n\n@dataclass(frozen=True, slots=True)\nclass Book:\n    isbn: str\n    title: str\n    authors: tuple[str, ...]\n\n\nclass CopyStatus(Enum):\n    AVAILABLE = \"available\"\n    ON_LOAN = \"on_loan\"\n    ON_HOLD = \"on_hold\"\n    LOST = \"lost\"\n\n\n@dataclass(slots=True)\nclass BookCopy:\n    barcode: str\n    isbn: str\n    status: CopyStatus = CopyStatus.AVAILABLE\n    hold_for: str | None = None\n    hold_until: float = 0.0\n\n\n@dataclass(slots=True)\nclass Member:\n    id: str\n    name: str\n    policy: MembershipPolicy = STANDARD\n    balance_cents: int = 0\n\n\n@dataclass(slots=True)\nclass Loan:\n    id: int\n    member_id: str\n    barcode: str\n    isbn: str\n    borrowed_at: float\n    due_at: float\n    returned_at: float | None = None\n    renewals: int = 0\n    fine_cents: int = 0\n\n\n@dataclass(frozen=True, slots=True)\nclass ReturnReceipt:\n    loan: Loan\n    fine_cents: int\n    held_for: str | None\n\n\nclass Library:\n    def __init__(self, fines=None, clock: Callable[[], float] = time.time) -> None:\n        # YOUR CODE HERE\n        raise NotImplementedError\n\n    def add_book(self, book: Book) -> None: raise NotImplementedError\n    def add_copy(self, isbn: str, barcode: str) -> BookCopy: raise NotImplementedError\n    def register(self, member: Member) -> Member: raise NotImplementedError\n    def search(self, text: str) -> list[Book]: raise NotImplementedError\n    def checkout(self, member_id: str, barcode: str) -> Loan: raise NotImplementedError\n    def return_copy(self, barcode: str) -> ReturnReceipt: raise NotImplementedError\n    def renew(self, loan_id: int) -> float: raise NotImplementedError\n    def reserve(self, member_id: str, isbn: str) -> int: raise NotImplementedError\n    def mark_lost(self, barcode: str) -> int: raise NotImplementedError\n    def pay(self, member_id: str, cents: int) -> int: raise NotImplementedError\n    def copy(self, barcode: str) -> BookCopy: raise NotImplementedError\n    def loans_of(self, member_id: str) -> list[Loan]: raise NotImplementedError\n\n\n# ===================================================================== TESTS ==\n# Identical to the solution file's tests. Make them all PASS.\nclass FakeClock:\n    def __init__(self) -> None:\n        self.t = 0.0\n\n    def __call__(self) -> float:\n        return self.t\n\n\ndef _check(label: str, ok: bool) -> bool:\n    print(f\"{'PASS' if ok else 'FAIL'}  {label}\")\n    return ok\n\n\ndef _raises(exc, fn) -> bool:\n    try:\n        fn()\n    except exc:\n        return True\n    return False\n\n\ndef _library(clock: FakeClock) -> Library:\n    lib = Library(PerDayFine(25, cap_cents=2_000), clock)\n    lib.add_book(Book(\"111\", \"Designing Data-Intensive Applications\", (\"Martin Kleppmann\",)))\n    lib.add_book(Book(\"222\", \"A Philosophy of Software Design\", (\"John Ousterhout\",)))\n    lib.add_copy(\"111\", \"D1\")\n    lib.add_copy(\"111\", \"D2\")\n    lib.add_copy(\"222\", \"P1\")\n    for mid in (\"ann\", \"bob\", \"cat\"):\n        lib.register(Member(mid, mid.title()))\n    lib.register(Member(\"vip\", \"Vip\", PREMIUM))\n    return lib\n\n\ndef run_tests() -> bool:\n    all_ok = True\n    print(\"--- catalogue ---\")\n    clock = FakeClock()\n    lib = _library(clock)\n    all_ok &= _check(\"search by title or author, case-insensitive\",\n                     [b.isbn for b in lib.search(\"design\")] == [\"222\", \"111\"]\n                     and [b.isbn for b in lib.search(\"kleppmann\")] == [\"111\"])\n\n    print(\"\\n--- checkout rules ---\")\n    loan = lib.checkout(\"ann\", \"D1\")\n    all_ok &= _check(\"standard loan is 14 days; copy ON_LOAN\",\n                     loan.due_at == 14 * DAY and lib.copy(\"D1\").status is CopyStatus.ON_LOAN)\n    all_ok &= _check(\"same copy can't be borrowed twice\", _raises(NotAvailable, lambda: lib.checkout(\"bob\", \"D1\")))\n    all_ok &= _check(\"same member can't hold two copies of one ISBN\",\n                     _raises(AlreadyBorrowed, lambda: lib.checkout(\"ann\", \"D2\")))\n    lib.add_book(Book(\"333\", \"Refactoring\", (\"Martin Fowler\",)))\n    lib.add_copy(\"333\", \"R0\")\n    lib.checkout(\"bob\", \"R0\")\n    lib.add_book(Book(\"444\", \"Clean Architecture\", (\"Robert Martin\",)))\n    lib.add_copy(\"444\", \"C1\")\n    lib.add_book(Book(\"555\", \"SICP\", (\"Abelson\", \"Sussman\")))\n    lib.add_copy(\"555\", \"S1\")\n    lib.checkout(\"bob\", \"C1\")\n    lib.checkout(\"bob\", \"S1\")\n    all_ok &= _check(\"standard members stop at 3 loans\", _raises(LimitReached, lambda: lib.checkout(\"bob\", \"P1\")))\n\n    print(\"\\n--- return, fines ---\")\n    clock.t = 14 * DAY\n    r = lib.return_copy(\"D1\")\n    all_ok &= _check(\"returned exactly at due time -> no fine\", r.fine_cents == 0 and r.held_for is None)\n    all_ok &= _check(\"double scan -> NotOnLoan\", _raises(NotOnLoan, lambda: lib.return_copy(\"D1\")))\n    lib.checkout(\"cat\", \"D1\")                                    # due at 28 days\n    clock.t = 28 * DAY + 1\n    all_ok &= _check(\"one second late -> one day's fine (25)\", lib.return_copy(\"D1\").fine_cents == 25)\n    lib.checkout(\"cat\", \"D1\")\n    clock.t = 28 * DAY + 1 + 200 * DAY\n    all_ok &= _check(\"fine capped at 2000\", lib.return_copy(\"D1\").fine_cents == 2_000)\n    all_ok &= _check(\"member over the fine threshold can't borrow\",\n                     _raises(UnpaidFines, lambda: lib.checkout(\"cat\", \"D1\")))\n    lib.pay(\"cat\", 2_000)\n    all_ok &= _check(\"after paying they can\", lib.checkout(\"cat\", \"D1\").member_id == \"cat\")\n    graced = GracePeriod(PerDayFine(25, 2_000), days=2)\n    all_ok &= _check(\"grace period decorator: 2 days free, day 3 costs 25\",\n                     (graced.fine(2), graced.fine(3)) == (0, 25))\n\n    print(\"\\n--- reservations and holds ---\")\n    clock = FakeClock()\n    lib = _library(clock)\n    lib.checkout(\"ann\", \"P1\")\n    all_ok &= _check(\"can't reserve while a copy is on the shelf\",\n                     _raises(ReservationDenied, lambda: lib.reserve(\"bob\", \"111\")))\n    all_ok &= _check(\"FIFO positions\", lib.reserve(\"bob\", \"222\") == 1 and lib.reserve(\"cat\", \"222\") == 2)\n    all_ok &= _check(\"no duplicate reservation\", _raises(ReservationDenied, lambda: lib.reserve(\"bob\", \"222\")))\n    all_ok &= _check(\"can't renew while others wait\", _raises(RenewalDenied, lambda: lib.renew(lib.loans_of(\"ann\")[0].id)))\n    receipt = lib.return_copy(\"P1\")\n    all_ok &= _check(\"returned copy goes on hold for bob\", receipt.held_for == \"bob\"\n                     and lib.copy(\"P1\").status is CopyStatus.ON_HOLD)\n    all_ok &= _check(\"cat can't take bob's hold\", _raises(NotAvailable, lambda: lib.checkout(\"cat\", \"P1\")))\n    clock.t = 3 * DAY\n    all_ok &= _check(\"bob's hold expires after 3 days -> passes to cat\", lib.copy(\"P1\").hold_for == \"cat\")\n    all_ok &= _check(\"cat checks it out\", lib.checkout(\"cat\", \"P1\").barcode == \"P1\")\n\n    print(\"\\n--- renewals and lost copies ---\")\n    clock = FakeClock()\n    lib = _library(clock)\n    vip_loan = lib.checkout(\"vip\", \"D1\")\n    all_ok &= _check(\"premium: 28-day loan, renew extends by 28 days\",\n                     vip_loan.due_at == 28 * DAY and lib.renew(vip_loan.id) == 56 * DAY)\n    std = lib.checkout(\"ann\", \"D2\")\n    lib.renew(std.id)\n    all_ok &= _check(\"standard: only one renewal\", _raises(RenewalDenied, lambda: lib.renew(std.id)))\n    clock.t = 100 * DAY\n    all_ok &= _check(\"overdue can't renew\", _raises(RenewalDenied, lambda: lib.renew(vip_loan.id)))\n    all_ok &= _check(\"lost copy: replacement 3000 + 44 days late x 25; loan closed\",\n                     lib.mark_lost(\"D1\") == 3_000 + 44 * 25 and lib.copy(\"D1\").status is CopyStatus.LOST\n                     and lib.loans_of(\"vip\") == [])\n    return all_ok\n# ================================================================= END TESTS ==\n\n\nif __name__ == \"__main__\":\n    ok = run_tests()\n    print(\"\\nALL PASSED\" if ok else \"\\nFAILURES PRESENT\")\n"
+      },
+      "lastOpened": 1790438642280,
+      "status": "attempting",
+      "timeSpent": 0
+    },
     "py-eng/01_rest_api_service": {
       "attempts": 1,
       "drafts": {
@@ -1311,6 +1433,16 @@
         "py": "from typing import Any, Type, Dict, Callable\n\n# ============================================================================\n# 1. Class Decorator\n# ============================================================================\ndef singleton(cls: Type[Any]) -> Type[Any]:\n    \"\"\"\n    TODO: Implement the singleton class decorator.\n    It should return a wrapper that intercepts class instantiation and returns\n    the same instance if it was already created.\n    \"\"\"\n    pass\n\n@singleton\nclass DatabaseConnection:\n    def __init__(self):\n        self.connected = True\n\n# ============================================================================\n# 2. Descriptors\n# ============================================================================\nclass ValidatedField:\n    \"\"\"\n    TODO: Implement the descriptor protocol (__get__, __set__, __set_name__).\n    - __set_name__ should store the name of the attribute.\n    - __get__ should return the value from the instance's __dict__.\n    - __set__ should enforce that the value is of the correct type (int) and > 0.\n    \"\"\"\n    def __init__(self, expected_type: Type, min_value: Any = None):\n        pass\n        \n    def __set_name__(self, owner: Type, name: str):\n        pass\n        \n    def __get__(self, instance: Any, owner: Type) -> Any:\n        pass\n        \n    def __set__(self, instance: Any, value: Any):\n        pass\n\nclass UserAccount:\n    age = ValidatedField(int, min_value=18)\n    \n    def __init__(self, age: int):\n        self.age = age\n\n# ============================================================================\n# 3. Metaclasses\n# ============================================================================\n# Global registry for our metaclass\nCOMPONENT_REGISTRY: Dict[str, Type] = {}\n\nclass RegistryMeta(type):\n    \"\"\"\n    TODO: Implement the __new__ or __init__ method for this metaclass.\n    Whenever a new class is defined using this metaclass, it should automatically\n    be added to the COMPONENT_REGISTRY dictionary with its class name as the key.\n    \"\"\"\n    pass\n\nclass BaseComponent(metaclass=RegistryMeta):\n    pass\n    \nclass EmailComponent(BaseComponent):\n    pass\n\nclass SMSComponent(BaseComponent):\n    pass\n\nif __name__ == \"__main__\":\n    print(\"Run the solution file to see the working implementation!\")\n"
       },
       "lastOpened": 1789655084176,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "py-eng/27_asyncio_deep_dive_event_loop": {
+      "attempts": 1,
+      "drafts": {
+        "py": "import asyncio\nimport time\nimport uuid\nimport contextvars\nfrom concurrent.futures import ProcessPoolExecutor\n\n# ============================================================================\n# 1. ThreadPools / ProcessPools for Blocking Tasks\n# ============================================================================\ndef heavy_computation(x: int) -> int:\n    \"\"\"A blocking, CPU-bound task. DO NOT CHANGE THIS FUNCTION.\"\"\"\n    # Simulate heavy work\n    time.sleep(1)\n    return x * x\n\nasync def process_data(x: int) -> int:\n    \"\"\"\n    TODO: Call `heavy_computation(x)` safely without blocking the event loop.\n    Hint: Use asyncio.get_running_loop() and loop.run_in_executor().\n    Since this is CPU bound, a ProcessPoolExecutor is better than ThreadPool.\n    \"\"\"\n    pass\n\n# ============================================================================\n# 2. ContextVars for Implicit State\n# ============================================================================\n# TODO: Define a ContextVar named 'request_id_var' with a default of 'N/A'\nrequest_id_var: contextvars.ContextVar[str] = None # type: ignore\n\ndef log(msg: str):\n    \"\"\"\n    TODO: Read the current request ID from request_id_var and print the message.\n    Format: [req-id] msg\n    \"\"\"\n    pass\n\nasync def handle_request(req_id: str):\n    \"\"\"\n    TODO: Set the request_id_var to the provided req_id for the current context.\n    Then call `do_work()` which will eventually call `log()`.\n    \"\"\"\n    pass\n\nasync def do_work():\n    # Simulate some async work\n    await asyncio.sleep(0.1)\n    log(\"Work started\")\n    await asyncio.sleep(0.1)\n    log(\"Work finished\")\n\nif __name__ == \"__main__\":\n    print(\"Run the solution file to see the working implementation!\")\n"
+      },
+      "lastOpened": 1790438707204,
+      "runs": 1,
       "status": "attempting",
       "timeSpent": 0
     },

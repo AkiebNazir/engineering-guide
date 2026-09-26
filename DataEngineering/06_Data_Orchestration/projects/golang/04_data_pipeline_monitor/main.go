@@ -2,63 +2,92 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
+	"net/http"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-type TaskStatus struct {
-	TaskName string
-	Status   string
-	Duration time.Duration
-	ErrorMsg string
+var (
+	pipelineDuration = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name: "pipeline_processing_seconds",
+			Help: "Time spent processing pipeline tasks",
+		},
+		[]string{"task_name"},
+	)
+	pipelineStatus = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "pipeline_task_status_total",
+			Help: "Count of pipeline task statuses",
+		},
+		[]string{"task_name", "status"},
+	)
+)
+
+func init() {
+	// Register metrics with Prometheus's default registry.
+	prometheus.MustRegister(pipelineDuration)
+	prometheus.MustRegister(pipelineStatus)
 }
 
-func runTask(name string, statusChan chan<- TaskStatus) {
+func executeTask(taskName string) error {
+	log.Printf("Executing task: %s\n", taskName)
+
 	start := time.Now()
-	
-	// Simulate work
-	sleepTime := time.Duration(500+rand.Intn(1000)) * time.Millisecond
-	time.Sleep(sleepTime)
-	
-	duration := time.Since(start)
-	
-	if name == "Transform" && rand.Float64() < 0.5 {
-		statusChan <- TaskStatus{name, "FAILED", duration, "Data validation error during transformation"}
-		return
+	defer func() {
+		pipelineDuration.WithLabelValues(taskName).Observe(time.Since(start).Seconds())
+	}()
+
+	// Simulate processing time
+	time.Sleep(time.Duration(500+rand.Intn(1500)) * time.Millisecond)
+
+	// Simulate occasional failures
+	if rand.Float32() < 0.2 {
+		pipelineStatus.WithLabelValues(taskName, "failed").Inc()
+		log.Printf("Task failed: %s\n", taskName)
+		return fmt.Errorf("task %s encountered an error", taskName)
 	}
-	
-	statusChan <- TaskStatus{name, "SUCCESS", duration, ""}
+
+	pipelineStatus.WithLabelValues(taskName, "success").Inc()
+	log.Printf("Task completed: %s\n", taskName)
+	return nil
+}
+
+func runPipeline() {
+	tasks := []string{"Extract", "Transform", "Load"}
+	for _, task := range tasks {
+		err := executeTask(task)
+		if err != nil {
+			log.Printf("Pipeline halted due to error: %v\n", err)
+			break
+		}
+	}
+	log.Println("Pipeline run finished.")
 }
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+
+	// Expose the registered metrics via HTTP.
+	// Data Engineers use Prometheus + Grafana to scrape these metrics
+	http.Handle("/metrics", promhttp.Handler())
 	
-	tasks := []string{"Extract", "Transform", "Load"}
-	statusChan := make(chan TaskStatus)
-	
-	var logs []TaskStatus
-	
-	fmt.Println("Starting pipeline execution...")
-	
-	for _, task := range tasks {
-		go runTask(task, statusChan)
-		
-		status := <-statusChan
-		logs = append(logs, status)
-		
-		timestamp := time.Now().Format(time.RFC3339)
-		fmt.Printf("[%s] Task '%s': %s (%.2fs)\n", timestamp, status.TaskName, status.Status, status.Duration.Seconds())
-		
-		if status.Status == "FAILED" {
-			fmt.Printf("\n[ALERT] Pipeline failed at task '%s'\n", status.TaskName)
-			fmt.Printf("Reason: %s\n", status.ErrorMsg)
-			fmt.Println("Summary of execution:")
-			for _, log := range logs {
-				fmt.Printf("  - %s: %s (%.2fs)\n", log.TaskName, log.Status, log.Duration.Seconds())
-			}
-			return
+	// Start metrics server in a goroutine
+	go func() {
+		log.Println("Starting Prometheus metrics server on :8000")
+		if err := http.ListenAndServe(":8000", nil); err != nil {
+			log.Fatalf("Error starting HTTP server: %v", err)
 		}
+	}()
+
+	// Continuously run pipeline to generate metrics
+	for {
+		runPipeline()
+		log.Println("Sleeping before next pipeline run...")
+		time.Sleep(5 * time.Second)
 	}
-	
-	fmt.Println("\nPipeline completed successfully!")
 }

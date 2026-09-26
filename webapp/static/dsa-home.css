@@ -157,7 +157,13 @@
   display: grid; grid-template-columns: auto 1fr auto; align-items: center;
   gap: 4px 12px; padding: 16px 18px; border-radius: 16px;
   background: var(--surface); border: 1px solid var(--border);
-  transition: border-color var(--t), transform var(--t), box-shadow var(--t);
+  transition: border-color var(--t), transform var(--t), box-shadow var(--t), opacity var(--t), filter var(--t);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 70px;
+}
+.dsa-grid:has(.dsa-card:hover) .dsa-card:not(:hover) {
+  opacity: 0.6;
+  filter: grayscale(30%);
 }
 .dsa-card:hover { border-color: var(--accent-line); transform: translateY(-3px); box-shadow: var(--shadow); }
 .dsa-card.st-done { border-color: color-mix(in srgb, var(--ok) 32%, var(--border)); }

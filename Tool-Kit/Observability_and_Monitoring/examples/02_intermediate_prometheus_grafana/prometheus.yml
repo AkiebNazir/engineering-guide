@@ -1,7 +1,0 @@
-global:
-  scrape_interval: 5s # How often to pull metrics
-
-scrape_configs:
-  - job_name: 'go-app'
-    static_configs:
-      - targets: ['go-app:8080'] # DNS resolves to the Docker container

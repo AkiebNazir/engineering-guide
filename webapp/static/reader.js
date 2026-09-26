@@ -203,12 +203,13 @@ const DSA_GUIDE_ROOT = { dsaguide: 'PyDSA', dsaguidego: 'GoDSA' };
 const isDsaGuide = mod => Object.hasOwn(DSA_GUIDE_ROOT, mod);
 const modTitle = (m, it) => (m.clean ? m.clean(it.title) : it.title);
 // LLD problems live inside Software Design but open in the code workspace.
-const isWorkspaceItem = (mod, it) => !!MODULES[mod].eng || it.kind === 'lld';
-const engRecId = (mod, it) => `${it.kind === 'lld' ? 'lld' : mod}-eng/${it.id}`;
+const isWorkspaceItem = (mod, it) => !!MODULES[mod].eng || it.kind === 'lld' || it.kind === 'project';
+const engRecId = (mod, it) => `${it.kind === 'lld' ? 'lld' : it.kind === 'project' ? it.lang : mod}-eng/${it.id}`;
 // stdlib-practice.js: a package is a ladder of levels (like an API type), not a
 // single workspace item — its progress is the fraction of levels solved.
 const stdlibRecId = (lang, pkg, level) => `stdlib/${lang}/${pkg}/${level}`;
 const itemHref = (mod, it) => it.kind === 'lld' ? `#/eng/lld/${it.id}`
+  : it.kind === 'project' ? `#/eng/${it.lang}/${it.id}`
   : MODULES[mod].eng ? `#/eng/${mod}/${it.id}`
   : MODULES[mod].stdlibLang ? `#/stdlib-pkg/${MODULES[mod].stdlibLang}/${it.id}`
   : `#/${MODULES[mod].hash}/${it.id}`;
@@ -384,7 +385,7 @@ function renderModGrid(mod) {
   const live = groups.filter(g => g.items.some(it => modPasses(mod, it)));
 
   host.innerHTML = `
-    ${mod === 'api' ? apiPracticeStrip() : ''}
+    ${mod === 'api' ? apiPracticeStrip() : (mod === 'toolkit' ? toolkitPracticeStrip() : '')}
     <div class="mod-toolbar">
       <div class="seg" role="group" aria-label="Show">
         ${Object.entries(FILTERS).map(([f, l]) =>
@@ -939,6 +940,9 @@ async function renderReader(mod, id) {
   await Promise.allSettled(Object.keys(MODULES).filter(k => MODULES[k].list).map(k => modItems(k)));
   if (!curDoc || curDoc.key !== key) return;
   prose.innerHTML = renderMarkdown(md);
+  if (mod === 'toolkit' && doc.examples) {
+    prose.insertAdjacentHTML('beforeend', renderToolkitExamples(doc.examples));
+  }
   const h1 = prose.firstElementChild;
   if (h1 && h1.tagName === 'H1') h1.remove();
   $$(':scope > h1', prose).forEach(h => { const h2 = document.createElement('h2'); h2.append(...h.childNodes); h.replaceWith(h2); });

@@ -1,27 +1,14 @@
-# 01 Basic Queue
+# 01 Basic Queue (Python)
 
-**Goal:** Demonstrates the simplest form of RabbitMQ messaging with a single producer sending a message to a single consumer via a direct queue.
+**Goal:** Demonstrates the simplest form of RabbitMQ messaging with a single producer sending a message to a single consumer via a default exchange and a named queue.
 
-**Key Concepts:** [Queues and Publishers](file:///Users/njasm/Njasm/AI/engineering-guide/Tool-Kit/RabbitMQ/RabbitMQ.md)
+**Deep Concept Explanation:**
+In RabbitMQ, a producer never sends messages directly to a queue. It sends messages to an *exchange*. However, in this basic example, we use the default exchange (identified by an empty string `""`). The default exchange implicitly routes messages to the queue with the exact name specified in the routing key.
 
 **Prerequisites:** 
-- RabbitMQ running (e.g., via `docker-compose up -d` in the `examples/` root)
-- Python 3 and `pika` library installed (`pip install pika`)
+- RabbitMQ running: `docker run -d --name rabbitmq -p 5672:5672 rabbitmq`
+- Python installed. Initialize: `pip install pika`
 
-**Step-by-Step Execution:** 
-1. Open a terminal and start the consumer:
-   ```bash
-   python consumer.py
-   ```
-   *Expected output: `[*] Waiting for messages. To exit press CTRL+C`*
-2. Open a second terminal and run the producer:
-   ```bash
-   python producer.py
-   ```
-   *Expected output: `[x] Sent 'Hello World!'`*
-3. Check the first terminal.
-   *Expected output: `[x] Received b'Hello World!'`*
-
-**Try it yourself:** Modify `producer.py` to send a different message or send multiple messages in a loop.
-
-**Teardown:** Stop the consumer with `CTRL+C`. Stop RabbitMQ if no longer needed.
+**Execution:** 
+1. Start the consumer: `python consumer.py`
+2. Run the producer: `python producer.py`\n

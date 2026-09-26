@@ -1,53 +1,76 @@
 package main
 
 import (
-	"bufio"
+	"context"
 	"fmt"
-	"io"
 	"log"
-	"os"
-	"strings"
+	"os/signal"
+	"syscall"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
-const logFile = "cdc_mock.log"
-
-func createMockLog() {
-	if _, err := os.Stat(logFile); os.IsNotExist(err) {
-		err := os.WriteFile(logFile, []byte("INIT: server started\n"), 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-}
-
 func main() {
-	fmt.Println("Starting Data Engineering Project: 03_cdc_log_tailer")
-	createMockLog()
+	log.Println("Starting Data Engineering Project: 03_cdc_log_tailer (Kafka Consumer)")
 
-	file, err := os.Open(logFile)
-	if err != nil {
-		log.Fatal(err)
+	brokers := os.Getenv("KAFKA_BROKERS")
+	if brokers == "" {
+		brokers = "localhost:9092"
 	}
-	defer file.Close()
 
-	file.Seek(0, io.SeekEnd)
-	reader := bufio.NewReader(file)
+	topic := os.Getenv("KAFKA_CDC_TOPIC")
+	if topic == "" {
+		topic = "dbserver1.inventory.customers"
+	}
 
-	fmt.Printf("Tailing %s for INSERT/UPDATE events (Ctrl+C to stop)...\n", logFile)
+	groupID := os.Getenv("KAFKA_GROUP_ID")
+	if groupID == "" {
+		groupID = "cdc-tailer-group"
+	}
+
+	// Setup Kafka Reader
+	reader := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:        []string{brokers},
+		GroupID:        groupID,
+		Topic:          topic,
+		MinBytes:       10e3, // 10KB
+		MaxBytes:       10e6, // 10MB
+		CommitInterval: time.Second,
+		StartOffset:    kafka.FirstOffset,
+	})
+	defer reader.Close()
+
+	log.Printf("Subscribed to topic %s. Waiting for events...", topic)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigs
+		log.Println("Shutting down consumer...")
+		cancel()
+	}()
 
 	for {
-		line, err := reader.ReadString('\n')
+		m, err := reader.FetchMessage(ctx)
 		if err != nil {
-			if err == io.EOF {
-				time.Sleep(500 * time.Millisecond)
-				continue
+			if ctx.Err() != nil {
+				break // Shutdown gracefully
 			}
-			log.Fatal(err)
+			log.Printf("Failed to fetch message: %v", err)
+			time.Sleep(1 * time.Second)
+			continue
 		}
 
-		if strings.Contains(line, "INSERT") || strings.Contains(line, "UPDATE") {
-			fmt.Printf("Event detected: %s", line)
+		fmt.Printf("CDC Event Detected at offset %d: key=%s value=%s\n", m.Offset, string(m.Key), string(m.Value))
+
+		if err := reader.CommitMessages(ctx, m); err != nil {
+			log.Printf("Failed to commit message: %v", err)
 		}
 	}
+	log.Println("Consumer stopped cleanly.")
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -18,17 +19,20 @@ type Record struct {
 }
 
 func main() {
-	// Open input file (mocked by creating a sample file)
-	createSampleCSV("input.csv")
+	inPath := flag.String("in", "input.csv", "Input CSV file path")
+	outPath := flag.String("out", "output.csv", "Output CSV file path")
+	threshold := flag.Int("threshold", 50, "Score threshold to keep records")
+	workers := flag.Int("workers", 4, "Number of worker goroutines")
+	flag.Parse()
 
-	inputFile, err := os.Open("input.csv")
+	inputFile, err := os.Open(*inPath)
 	if err != nil {
-		log.Fatalf("Failed to open input file: %v", err)
+		log.Printf("Failed to open input file %s: %v. Please provide a valid input.", *inPath, err)
+		return
 	}
 	defer inputFile.Close()
 
-	// Create output file
-	outputFile, err := os.Create("output.csv")
+	outputFile, err := os.Create(*outPath)
 	if err != nil {
 		log.Fatalf("Failed to create output file: %v", err)
 	}
@@ -38,32 +42,34 @@ func main() {
 	writer := csv.NewWriter(outputFile)
 	defer writer.Flush()
 
-	// Read header
+	// Read and write header
 	header, err := reader.Read()
 	if err != nil {
 		log.Fatalf("Failed to read header: %v", err)
 	}
-	writer.Write(header)
+	if err := writer.Write(header); err != nil {
+		log.Fatalf("Failed to write header: %v", err)
+	}
 
-	// Channels for concurrency
-	recordsChan := make(chan Record, 100)
-	filteredChan := make(chan Record, 100)
+	recordsChan := make(chan Record, 1000)
+	filteredChan := make(chan Record, 1000)
 
 	var wg sync.WaitGroup
-	// Start 4 worker goroutines to filter records (Score > 50)
-	for i := 0; i < 4; i++ {
+
+	// Start worker goroutines
+	for i := 0; i < *workers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for rec := range recordsChan {
-				if rec.Score > 50 {
+				if rec.Score > *threshold {
 					filteredChan <- rec
 				}
 			}
 		}()
 	}
 
-	// Goroutine to read CSV and send to recordsChan
+	// Goroutine to read CSV
 	go func() {
 		for {
 			row, err := reader.Read()
@@ -75,29 +81,33 @@ func main() {
 				continue
 			}
 			
-			score, _ := strconv.Atoi(row[2])
+			score, err := strconv.Atoi(row[2])
+			if err != nil {
+				log.Printf("Invalid score for ID %s: %v", row[0], err)
+				continue
+			}
+			
 			recordsChan <- Record{ID: row[0], Name: row[1], Score: score}
 		}
 		close(recordsChan)
 	}()
 
-	// Goroutine to wait for workers and close filteredChan
+	// Wait for workers to finish
 	go func() {
 		wg.Wait()
 		close(filteredChan)
 	}()
 
-	// Read filtered records and write to output
+	// Write filtered records
+	writtenCount := 0
 	for rec := range filteredChan {
 		err := writer.Write([]string{rec.ID, rec.Name, strconv.Itoa(rec.Score)})
 		if err != nil {
 			log.Printf("Error writing row: %v", err)
+		} else {
+			writtenCount++
 		}
 	}
-	fmt.Println("Processing complete. Check output.csv")
-}
-
-func createSampleCSV(filename string) {
-	content := "ID,Name,Score\n1,Alice,85\n2,Bob,45\n3,Charlie,92\n4,Dave,30\n"
-	os.WriteFile(filename, []byte(content), 0644)
+	
+	fmt.Printf("Processing complete. Wrote %d records to %s\n", writtenCount, *outPath)
 }

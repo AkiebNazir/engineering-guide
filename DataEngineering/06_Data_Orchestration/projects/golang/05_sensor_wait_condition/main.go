@@ -1,58 +1,85 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
-func simulateFileCreation(filePath string, delay time.Duration) {
-	fmt.Printf("Simulation: File will be created in %v...\n", delay)
-	time.Sleep(delay)
-	
-	file, err := os.Create(filePath)
-	if err == nil {
-		file.WriteString("data")
-		file.Close()
-		fmt.Printf("Simulation: File '%s' created.\n", filePath)
+func waitForFile(watchDir, targetFilename string, timeout time.Duration) bool {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatalf("Failed to create watcher: %v", err)
+	}
+	defer watcher.Close()
+
+	// Watch the specified directory
+	err = watcher.Add(watchDir)
+	if err != nil {
+		log.Fatalf("Failed to add watch directory: %v", err)
+	}
+
+	log.Printf("Starting sensor on directory '%s' for file '%s'", watchDir, targetFilename)
+
+	timeoutChan := time.After(timeout)
+
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return false
+			}
+			// Check if the event is a creation or write and matches our target file
+			if event.Op&fsnotify.Create == fsnotify.Create || event.Op&fsnotify.Write == fsnotify.Write {
+				if filepath.Base(event.Name) == targetFilename {
+					log.Printf("Detected trigger file: %s", event.Name)
+					return true
+				}
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return false
+			}
+			log.Printf("Watcher error: %v", err)
+		case <-timeoutChan:
+			log.Println("Sensor timed out waiting for the file.")
+			return false
+		}
 	}
 }
 
-func fileSensor(filePath string, checkInterval time.Duration, timeout time.Duration) bool {
-	fmt.Printf("Sensor: Waiting for file '%s' to appear...\n", filePath)
-	start := time.Now()
-	
-	for {
-		if _, err := os.Stat(filePath); err == nil {
-			fmt.Printf("Sensor: File '%s' detected!\n", filePath)
-			return true
-		}
-		
-		if time.Since(start) > timeout {
-			fmt.Printf("Sensor: Timeout reached. File '%s' not found.\n", filePath)
-			return false
-		}
-		
-		time.Sleep(checkInterval)
+func simulateUpstreamSystem(dir, filename string, delay time.Duration) {
+	time.Sleep(delay)
+	filePath := filepath.Join(dir, filename)
+	log.Printf("Upstream system creating file: %s", filePath)
+	file, err := os.Create(filePath)
+	if err != nil {
+		log.Printf("Failed to create simulated file: %v", err)
+		return
 	}
+	file.WriteString("ready")
+	file.Close()
 }
 
 func main() {
-	targetFile := "trigger.txt"
-	
-	// Clean up if it exists
-	os.Remove(targetFile)
-	
-	// Start file creation simulation
-	go simulateFileCreation(targetFile, 4*time.Second)
-	
-	// Run the sensor
-	if fileSensor(targetFile, 1*time.Second, 10*time.Second) {
-		fmt.Println("Executing next task: Processing data...")
+	watchDir := "."
+	triggerFile := "data_ready.trigger"
+
+	// Ensure a clean state for the demo
+	os.Remove(triggerFile)
+
+	// Simulate an external system dropping a file after some delay
+	go simulateUpstreamSystem(watchDir, triggerFile, 5*time.Second)
+
+	// Run the sensor using fsnotify instead of busy polling
+	if waitForFile(watchDir, triggerFile, 15*time.Second) {
+		log.Println("Sensor condition met! Triggering downstream pipeline...")
+		// Clean up afterwards
+		os.Remove(triggerFile)
 	} else {
-		fmt.Println("Pipeline aborted due to missing file.")
+		log.Println("Pipeline aborted due to missing file.")
 	}
-	
-	// Clean up afterwards
-	os.Remove(targetFile)
 }

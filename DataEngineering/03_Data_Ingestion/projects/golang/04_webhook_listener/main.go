@@ -1,58 +1,93 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 )
 
-const payloadDir = "payloads"
+type WebhookHandler struct {
+	S3Client *s3.Client
+	Bucket   string
+}
 
-func webhookHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read body", http.StatusInternalServerError)
 		return
 	}
 	defer r.Body.Close()
 
-	err = os.MkdirAll(payloadDir, 0755)
-	if err != nil {
-		http.Error(w, "Failed to create dir", http.StatusInternalServerError)
+	if len(body) == 0 {
+		http.Error(w, "Empty payload", http.StatusBadRequest)
 		return
 	}
 
-	filename := fmt.Sprintf("payload_%d.json", time.Now().UnixNano())
-	filepath := filepath.Join(payloadDir, filename)
+	key := fmt.Sprintf("webhooks/%s_%s.json", time.Now().Format("20060102150405"), uuid.New().String())
 
-	err = os.WriteFile(filepath, body, 0644)
+	_, err = h.S3Client.PutObject(r.Context(), &s3.PutObjectInput{
+		Bucket:      aws.String(h.Bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(body),
+		ContentType: aws.String("application/json"),
+	})
+
 	if err != nil {
-		http.Error(w, "Failed to write file", http.StatusInternalServerError)
+		log.Printf("Failed to upload to S3: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Printf("Received webhook, saved to %s\n", filepath)
+	log.Printf("Received webhook, saved to s3://%s/%s", h.Bucket, key)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status": "success"}`))
 }
 
 func main() {
-	fmt.Println("Starting Data Engineering Project: 04_webhook_listener")
-	http.HandleFunc("/webhook", webhookHandler)
+	log.Println("Starting Data Engineering Project: 04_webhook_listener (AWS S3 Backend)")
 
-	fmt.Println("Listening for webhooks on port 8080...")
-	err := http.ListenAndServe(":8080", nil)
+	bucket := os.Getenv("S3_BUCKET")
+	if bucket == "" {
+		bucket = "my-webhook-payloads"
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
+		log.Fatalf("unable to load SDK config, %v", err)
+	}
+
+	s3Client := s3.NewFromConfig(cfg)
+
+	handler := &WebhookHandler{
+		S3Client: s3Client,
+		Bucket:   bucket,
+	}
+
+	http.Handle("/webhook", handler)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Listening for webhooks on port %s...", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
 }

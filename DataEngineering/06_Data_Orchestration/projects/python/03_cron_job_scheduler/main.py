@@ -1,20 +1,38 @@
 import time
-from datetime import datetime
+import logging
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
-def data_pull():
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Pulling data from source...")
-    time.sleep(1)
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Data pull complete.")
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
-def run_scheduler(interval_seconds, duration_seconds):
-    print(f"Starting cron scheduler (interval: {interval_seconds}s, duration: {duration_seconds}s)")
-    start_time = time.time()
-    
-    while time.time() - start_time < duration_seconds:
-        data_pull()
-        time.sleep(interval_seconds)
-        
-    print("Scheduler finished.")
+def run_data_pipeline(pipeline_name: str):
+    logger.info(f"Starting pipeline: {pipeline_name}")
+    # Simulate pipeline execution
+    time.sleep(2)
+    logger.info(f"Completed pipeline: {pipeline_name}")
 
 if __name__ == "__main__":
-    run_scheduler(interval_seconds=3, duration_seconds=10)
+    # Initialize the scheduler
+    scheduler = BackgroundScheduler()
+
+    # Schedule a task to run every minute
+    scheduler.add_job(
+        run_data_pipeline,
+        trigger=CronTrigger(minute="*"), # Equivalent to cron '* * * * *'
+        args=["Hourly_Sales_Aggregation"],
+        id="sales_pipeline_job",
+        replace_existing=True
+    )
+
+    logger.info("Starting scheduler. Press Ctrl+C to exit.")
+    scheduler.start()
+
+    try:
+        # Keep the main thread alive to allow background jobs to run
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Shutting down scheduler...")
+        scheduler.shutdown()

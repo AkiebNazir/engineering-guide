@@ -1117,13 +1117,13 @@ function setDsaTabs() {
 }
 // LLD problems (Software Design) have no separate test file: the tests are at the
 // bottom of the brief's own file, so the tab bar drops "Test".
-const engTabs = lang => lang === 'lld' ? ['explanation', 'solution', 'notes'] : ['explanation', 'solution', 'test', 'notes'];
+const engTabs = lang => lang === 'lld' ? ['explanation', 'solution', 'notes'] : lang.startsWith('de-') ? ['explanation', 'notes'] : ['explanation', 'solution', 'test', 'notes'];
 const ENG_TAB_LABEL = { explanation: 'Explanation', solution: 'Solution', test: 'Test', notes: 'Notes' };
 const ENG_NAMES = { go: 'Go Engineering', py: 'Py Engineering', lld: 'Software Design · LLD practice' };
 
 function setEngTabs(lang) {
   $('#proseTabs').innerHTML = engTabs(lang).map((t, i) =>
-    `<button class="tab${i ? '' : ' is-on'}" data-tab="${t}">${lang === 'lld' && t === 'explanation' ? 'Brief' : ENG_TAB_LABEL[t]}</button>`).join('');
+    `<button class="tab${i ? '' : ' is-on'}" data-tab="${t}">${lang === 'lld' && t === 'explanation' ? 'Brief' : lang.startsWith('de-') && t === 'explanation' ? 'README' : ENG_TAB_LABEL[t]}</button>`).join('');
   curTab = 'explanation';
 }
 
@@ -1192,26 +1192,34 @@ async function loadEngEditor() {
 }
 
 async function openEngTopic(lang, topicId) {
-  const list = DATA.engTopics[lang] || [];
+  let list = DATA.engTopics[lang] || [];
+  if (lang.startsWith('de-')) {
+    const deItems = await modItems('dataengineering');
+    list = deItems ? deItems.filter(x => x.lang === lang) : [];
+  }
   const t = list.find(x => x.id === topicId);
-  if (!t) { location.hash = lang === 'lld' ? '#/software-design' : `#/eng/${lang}`; return; }
+  if (!t) { location.hash = lang === 'lld' ? '#/software-design' : lang.startsWith('de-') ? '#/data-engineering' : `#/eng/${lang}`; return; }
 
   await flushDraft();
   cur = null;
   mode = 'eng';
   curLang = lang;
   curEng = { ...t, lang, recId: `${lang}-eng/${t.id}` };
-  curModule = lang === 'lld' ? 'swd' : lang;
+  curModule = lang === 'lld' ? 'swd' : lang.startsWith('de-') ? 'dataengineering' : lang;
 
   showView('problem');
   setEngTabs(lang);
-  $('#crumb').textContent = ENG_NAMES[lang] || lang;
+  const crumbHref = lang === 'lld' ? '#/software-design' : lang.startsWith('de-') ? `#/data-engineering/${topic.split('/')[0]}` : `#/eng/${lang}`;
+  const crumbText = ENG_NAMES[lang] || (lang.startsWith('de-') ? `Data Engineering › ${topic.split('/')[0].replace(/_/g, ' ')}` : lang);
+  $('#crumb').innerHTML = `<a href="${crumbHref}">${crumbText}</a>`;
   $('#problemTitle').innerHTML = `<span class="lc-num">${t.num}</span>${esc(t.title)}`;
   $('#diffPill').hidden = true;
   $('#lcLink').hidden = true;
   $('#langSwitch').hidden = true;
-  $('#esLang').textContent = lang === 'go' ? 'Go' : 'Python';
-  if (editor) editor.setOption('mode', lang === 'go' ? 'go' : 'python');
+  
+  const isGo = lang === 'go' || lang === 'de-go';
+  $('#esLang').textContent = isGo ? 'Go' : 'Python';
+  if (editor) editor.setOption('mode', isGo ? 'go' : 'python');
   $('#timer').hidden = false;
 
   const r = rec(curEng.recId);
@@ -1346,7 +1354,7 @@ async function route() {
     await leaveWorkspace(); curModule = null;
     showView('dsa-topic'); renderDsaTopic(parts[1]); renderSidebar();
   } else if (parts[0] === 'eng' && parts.length >= 3) {
-    await openEngTopic(parts[1], parts[2]);
+    await openEngTopic(parts[1], parts.slice(2).join('/'));
   } else if (parts[0] === 'api-type' && parts.length >= 2) {
     await leaveWorkspace(); curModule = 'api';
     showView('api-type'); renderApiType(parts[1]); renderSidebar();

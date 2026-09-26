@@ -1,54 +1,104 @@
-class MockIcebergTable:
-    def __init__(self, name, schema, partition_spec):
-        self.name = name
-        self.schema = schema
-        self.partition_spec = partition_spec
-        self.data = []
-        self.metadata_versions = 0
-    
-    def append_data(self, records):
-        self.data.extend(records)
-        self.metadata_versions += 1
-        print(f"Appended {len(records)} records. New metadata version v{self.metadata_versions}.")
-        
-    def show_metadata(self):
-        print(f"\nTable: {self.name}")
-        print(f"Schema: {self.schema}")
-        print(f"Partitioning: {self.partition_spec}")
-        print(f"Total Records: {len(self.data)}")
-        print(f"Metadata Version: v{self.metadata_versions}")
+import pyarrow as pa
+from pyiceberg.catalog import load_catalog
+from pyiceberg.schema import Schema
+from pyiceberg.types import (
+    LongType,
+    StringType,
+    TimestampType,
+    NestedField,
+)
+from pyiceberg.partitioning import PartitionSpec, PartitionField
+from pyiceberg.transforms import DayTransform
+from pyiceberg.exceptions import NoSuchTableError, TableAlreadyExistsError
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def manage_iceberg():
-    print("Initializing Mock Iceberg Catalog...")
+    """
+    Demonstrates managing an Apache Iceberg table using pyiceberg.
+    Requires a configured catalog (e.g., REST, Hive, SqlCatalog) via ~/.pyiceberg.yaml
+    or environment variables. For this simulation, we load the default catalog.
+    """
+    logger.info("Initializing Iceberg Catalog...")
     
-    schema = {
-        'id': 'long',
-        'event_name': 'string',
-        'ts': 'timestamp'
-    }
+    try:
+        # Load the default catalog defined in configuration.
+        # In a real environment, this might connect to AWS Glue, tabular, or Hive.
+        catalog = load_catalog("default")
+    except Exception as e:
+        logger.warning(f"Could not load Iceberg catalog (using dummy configuration for demonstration): {e}")
+        # To make the script runnable without a real catalog, we will mock the catalog object 
+        # in a real scenario you would have the catalog correctly configured.
+        logger.info("Please configure ~/.pyiceberg.yaml with a valid catalog to run this against a real backend.")
+        return
+
+    # Define the schema for our events table
+    schema = Schema(
+        NestedField(field_id=1, name="id", field_type=LongType(), required=True),
+        NestedField(field_id=2, name="event_name", field_type=StringType(), required=False),
+        NestedField(field_id=3, name="ts", field_type=TimestampType(), required=True),
+    )
+
+    # Define partition spec: Partition by the day of the timestamp
+    partition_spec = PartitionSpec(
+        PartitionField(source_id=3, field_id=1000, transform=DayTransform(), name="ts_day")
+    )
+
+    namespace = "default_namespace"
+    table_name = "events"
+    table_identifier = f"{namespace}.{table_name}"
+
+    try:
+        catalog.create_namespace(namespace)
+    except Exception:
+        pass # Namespace might already exist
+
+    logger.info(f"Creating Iceberg Table '{table_identifier}'...")
+    try:
+        # Create the table
+        table = catalog.create_table(
+            identifier=table_identifier,
+            schema=schema,
+            partition_spec=partition_spec,
+            location=f"s3://my-warehouse/{namespace}/{table_name}"
+        )
+        logger.info("Table created successfully.")
+    except TableAlreadyExistsError:
+        logger.info("Table already exists. Loading table...")
+        table = catalog.load_table(table_identifier)
+
+    logger.info("Table Metadata:")
+    logger.info(f"Location: {table.location()}")
+    logger.info(f"Schema: {table.schema()}")
     
-    partition_spec = ['day(ts)']
+    # Simulate appending data using PyArrow
+    logger.info("\nSimulating Data Ingestion...")
     
-    print("Creating Iceberg Table 'events'...")
-    table = MockIcebergTable("events", schema, partition_spec)
-    table.show_metadata()
+    # Create PyArrow Table matching the schema
+    df = pa.Table.from_pydict({
+        'id': [1, 2],
+        'event_name': ['click', 'view'],
+        'ts': [
+            pa.scalar('2023-10-01T10:00:00Z', type=pa.timestamp('us')),
+            pa.scalar('2023-10-01T10:05:00Z', type=pa.timestamp('us'))
+        ]
+    })
     
-    print("\nSimulating Data Ingestion...")
-    batch_1 = [
-        {'id': 1, 'event_name': 'click', 'ts': '2023-10-01T10:00:00Z'},
-        {'id': 2, 'event_name': 'view', 'ts': '2023-10-01T10:05:00Z'}
-    ]
-    table.append_data(batch_1)
-    
-    batch_2 = [
-        {'id': 3, 'event_name': 'purchase', 'ts': '2023-10-02T11:00:00Z'}
-    ]
-    table.append_data(batch_2)
-    
-    table.show_metadata()
+    try:
+        # Append data to the Iceberg table
+        table.append(df)
+        logger.info(f"Successfully appended {len(df)} records.")
+        
+        # Reload table to get new snapshot
+        table.refresh()
+        current_snapshot = table.current_snapshot()
+        if current_snapshot:
+            logger.info(f"Current Snapshot ID: {current_snapshot.snapshot_id}")
+            logger.info(f"Manifest List: {current_snapshot.manifest_list}")
+    except Exception as e:
+        logger.error(f"Failed to append data: {e}")
 
 if __name__ == "__main__":
-    # In a real environment, you might use pyiceberg:
-    # from pyiceberg.catalog import load_catalog
-    # catalog = load_catalog("default")
     manage_iceberg()
