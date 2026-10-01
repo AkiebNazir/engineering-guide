@@ -1,0 +1,192 @@
+/* ============================================================================
+   Problem documents (Question / Solution tabs) — markup from problem-doc.js.
+
+   This pane is ~46% of the window, so the measure is short and the rhythm is
+   tight: prose in the sans face, monospace only where alignment carries
+   meaning (code, traces, grids), and every structural element earning its
+   place — example cards, constraint chips, complexity badges.
+   ========================================================================= */
+
+.pd {
+  max-width: 68ch;
+  font-size: 14px; line-height: 1.68; color: var(--text-dim);
+  animation: pd-in .3s var(--ease, cubic-bezier(.22, .8, .24, 1)) both;
+}
+@keyframes pd-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* context strip — the workspace header already carries title and link, so this
+   only says what kind of document you are looking at */
+.pd-strip {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 22px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.pd-kind {
+  font: 600 10.5px/1 var(--mono); letter-spacing: .09em; text-transform: uppercase;
+  padding: 5px 9px; border-radius: 99px;
+  color: var(--accent); background: var(--accent-wash);
+}
+.pd-solution .pd-kind { color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); }
+.pd-diff {
+  font: 600 10.5px/1 var(--mono); letter-spacing: .04em;
+  padding: 5px 9px; border-radius: 99px; color: var(--text-dim); background: var(--surface-2);
+}
+.pd-diff.is-easy { color: var(--ok); }
+.pd-diff.is-medium { color: var(--accent); }
+.pd-diff.is-hard { color: var(--err); }
+.pd-topic { font-size: 12px; color: var(--text-faint); }
+
+/* --- headings ---------------------------------------------------------------- */
+.pd-h2 {
+  display: flex; align-items: baseline; gap: 11px;
+  margin: 40px 0 16px; padding-top: 22px;
+  border-top: 1px solid var(--border);
+  font-size: 17px; font-weight: 650; line-height: 1.3; letter-spacing: -.02em;
+  color: var(--text);
+}
+.pd-h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.pd-h2-badge {
+  flex: none; display: grid; place-items: center;
+  width: 24px; height: 24px; border-radius: 8px;
+  font: 600 12px/1 var(--mono); color: var(--accent-ink); background: var(--accent);
+}
+.pd-h2.is-approach { align-items: center; }
+
+.pd-h3 {
+  display: flex; align-items: center; gap: 8px;
+  margin: 30px 0 12px;
+  font: 600 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.pd-h3:first-child { margin-top: 0; }
+.pd-h3 svg {
+  width: 13px; height: 13px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.pd-h3::after {
+  content: ""; flex: 1; height: 1px; background: var(--border-soft);
+}
+.pd-label {
+  margin: 26px 0 10px;
+  font: 600 12px/1.4 var(--sans); letter-spacing: .01em; color: var(--text);
+}
+
+/* --- prose ------------------------------------------------------------------- */
+.pd-p { margin: 0 0 14px; }
+.pd code {
+  font: 500 12.5px/1.5 var(--mono);
+  padding: 1.5px 5px; border-radius: 5px;
+  background: var(--surface-2); color: var(--text);
+}
+.pd a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; word-break: break-word; }
+.pd-o { font: 500 12.5px/1 var(--mono); color: var(--text); white-space: nowrap; }
+
+.pd-note {
+  position: relative; margin: 18px 0; padding: 12px 14px 12px 16px;
+  border-radius: 12px; border-left: 2.5px solid var(--accent);
+  background: var(--accent-wash); color: var(--text);
+  font-size: 13.4px; line-height: 1.6;
+}
+
+/* --- example cards ----------------------------------------------------------- */
+.pd-example {
+  margin: 0 0 12px; padding: 14px 16px;
+  border-radius: 14px; background: var(--surface); border: 1px solid var(--border);
+  transition: border-color var(--t, .18s ease);
+}
+.pd-example:hover { border-color: var(--border-strong); }
+.pd-example figcaption {
+  font: 600 10.5px/1 var(--mono); letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 11px;
+}
+.pd-ex-row {
+  display: grid; grid-template-columns: 74px minmax(0, 1fr);
+  gap: 10px; align-items: baseline; padding: 4px 0;
+}
+.pd-ex-row.is-multi { grid-template-columns: 1fr; gap: 5px; }
+.pd-ex-label {
+  font: 600 10.5px/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.pd-ex-row.is-output .pd-ex-label { color: var(--ok); }
+.pd-ex-row code {
+  background: transparent; padding: 0; color: var(--text);
+  font-size: 12.8px; word-break: break-word;
+}
+.pd-ex-row.is-output code { color: var(--ok); font-weight: 600; }
+.pd-ex-row.is-explanation { color: var(--text-dim); }
+.pd-ex-row pre, .pd-art {
+  margin: 0; overflow-x: auto;
+  font: 400 12px/1.55 var(--mono); color: var(--text-dim);
+  padding: 9px 11px; border-radius: 9px; background: var(--bg);
+}
+.pd-art { margin-top: 10px; color: var(--text-faint); }
+
+/* --- constraints as chips ---------------------------------------------------- */
+.pd-chips {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin: 0 0 16px; padding: 0; list-style: none;
+}
+.pd-chips li {
+  padding: 6px 11px; border-radius: 99px;
+  background: var(--surface); border: 1px solid var(--border);
+  font: 400 12px/1.35 var(--mono); color: var(--text-dim);
+}
+.pd-chips li code { background: transparent; padding: 0; font-size: 12px; }
+
+/* --- code and traces --------------------------------------------------------- */
+.pd-pre { margin: 0 0 16px; }
+/* the code card sits on the page ground, not the editor's: --ed-bg is white in
+   the light theme, which would vanish against the surface behind it */
+.pd .code {
+  border-radius: 12px; overflow: hidden;
+  background: var(--bg); border: 1px solid var(--border);
+}
+.pd .code-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 7px 12px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.pd .code-lang {
+  font: 600 10px/1 var(--mono); letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.pd .code-copy {
+  font: 500 11px/1 var(--mono); color: var(--text-faint);
+  padding: 4px 8px; border-radius: 6px;
+  transition: color .18s ease, background .18s ease;
+}
+.pd .code-copy:hover { color: var(--text); background: var(--surface-2); }
+.pd .code-copy.is-done { color: var(--ok); }
+.pd .code pre {
+  margin: 0; padding: 12px 14px; overflow-x: auto;
+  font: 400 12.4px/1.62 var(--mono);
+}
+.pd .code.is-plain pre { color: var(--text-dim); }
+
+/* --- complexity badges ------------------------------------------------------- */
+.pd-cx { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.pd-cx-item {
+  display: inline-flex; align-items: baseline; gap: 7px;
+  padding: 6px 11px; border-radius: 10px;
+  background: var(--surface-2);
+  font: 500 12px/1.3 var(--mono); color: var(--text);
+}
+.pd-cx-item b {
+  font: 600 10px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.pd-cx-item.is-time b { color: var(--accent); }
+.pd-cx-item.is-space b { color: var(--series-4, var(--text-faint)); }
+.pd-cx-item .pd-o { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pd { animation: none; }
+  .pd-example, .pd .code-copy { transition: none; }
+}
+
+/* a sentence that was merely indented in the source file */
+.pd-inset {
+  padding-left: 14px; border-left: 2px solid var(--border);
+  color: var(--text-dim);
+}

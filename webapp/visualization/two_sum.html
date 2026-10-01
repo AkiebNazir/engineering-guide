@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260917-05-f0c5fe2","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YACgEZulLoA,0","Arial Narrow":"YAGyDvJ_4Ts,0","Arial Rounded MT Bold":"YAFcfoaHu-s,0","Arial":"YAGyDvJ_4Ts,0","Avenir Next":"YAFcfmNq6UY,0","Baloo 2":"YADK30bC6HQ,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Broken Glyph":"YADZ-exUkv0,0","Canva Sans":"YAFdJjTk5UU,1","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAFcfvtOAUY,1","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","Courier Prime":"YAD1aFjegN8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAFdJpU7Kkk,0","Georgia":"YAGzXkO0pEM,0","Ghost Mono":"YAHQutsX00Q,0","Hanken Grotesk":"YAFcfhwp99E,0","Helvetica Neue":"YAFcf6CtJfI,0","Helvetica":"YAFcf6CtJfI,0","IBM Plex Mono":"YAFdJkmvhGI,0","Impact":"YAFcfnjI7Vk,0","Instrument Serif":"YAHFeOnZNEk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YADK3zbC6RM,0","JetBrains Mono":"YAFdJksXcAk,0","Josefin Sans":"YAFdJjvw9Ps,0","Lato":"YAFdJuFCnaw,0","Libre Baskerville":"YACgEUFdPdA,0","Lobster":"YAD8SnSjSFI,0","Lora":"YACgEXvxf8Q,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YAFdtQi73Xs,0","Nunito":"YAFdJoNRMmU,1","Oleo Script":"YACgEQQ14jI,0","Oswald":"YACgEQY10lw,0","Pacifico":"YADLjORQ1u4,0","Phantom Sans":"YAFdJvgJ5TU,0","Playfair Display":"YAFdJhem5V8,1","Plus Jakarta Sans":"YAGvf3_u0_Q,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YAFdJpYtCxE,1","Raleway":"YAFdJhmxbVQ,1","Roboto Slab":"YAFdJswIKAg,0","Rockwell":"YAFcfyVZnN0,0","Rye":"YACgEdQP21k,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Source Serif 4":"YACgEfdj394,0","Space Grotesk":"YADZ-dYEmhg,0","Space Mono":"YADW1-vpsoc,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Trebuchet MS":"YAFcfrglpVA,0","UV Display":"YAEdVfSSpYo,0","UV Sans":"YAFdJvgJ5TU,0","Ubuntu":"YACgERDU--Q,0","Verdana":"YAGzXTctYtQ,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YAD1aFjegN8,0","ui-sans-serif":"YACkoD1yZN0,0"}}');</script>
+    <script src="/_sdk/83d6dfdadcd4750a.telemetry_sdk.js"
+        integrity="sha512-XS4Dvzp6vbagZS9vFErihvr8aO3S0tH78KWUefn06fmL4WYqryBtZj/IOLITYj7dFA4gPVvPg1W/JB1DK3uLNQ=="></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Sum Interactive Visualizer</title>
+    <script src="/_sdk/8de366929c5f3b48.data_sdk.js"
+        integrity="sha512-TyQ8k8cZj66xe/aENmn6RyZpdOFZXbAo5+KBG3PeFM+Q4qMTHU8xAqmq4ADClNfPrstgQYV6OzZHwLTnElzB2g=="></script>
+    <script src="/_sdk/22383239e6d7279e.editing_sdk.js"
+        integrity="sha512-qvtUeUgPbBuWkcjob5tx6AGU1PQHkx4zgZWqqpaXOQqF0FGg35lPkDg2Eh+f2u6Np/H74EENvDhGRPcQgwZA+Q=="></script>
+    <style>
+        :root {
+            --navy: #07162d;
+            --navy-deep: #041024;
+            --panel: #0d2342;
+            --panel-2: #102b50;
+            --line: #24466d;
+            --blue: #36a8ff;
+            --mint: #54e1b3;
+            --yellow: #ffd166;
+            --white: #f6fbff;
+            --muted: #a9bfd6;
+            --danger: #ff8798;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            background: var(--navy-deep);
+        }
+
+        body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            color: var(--white);
+            font-family: "Work Sans", sans-serif;
+            background-color: var(--navy-deep);
+            background-image:
+                linear-gradient(rgba(67, 151, 221, .08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 151, 221, .08) 1px, transparent 1px),
+                radial-gradient(circle at 78% 0%, rgba(54, 168, 255, .15), transparent 32rem);
+            background-size: 28px 28px, 28px 28px, auto;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .42;
+        }
+
+        button:focus-visible,
+        input:focus-visible {
+            outline: 3px solid var(--yellow);
+            outline-offset: 3px;
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 22px 48px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: end;
+            margin-bottom: 24px;
+            animation: enter .5s ease both;
+        }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            color: var(--mint);
+            font-family: "Courier New", monospace;
+            font-size: .77rem;
+            font-weight: 700;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            max-width: 760px;
+            font-size: clamp(2rem, 5vw, 3.7rem);
+            line-height: 1.04;
+            letter-spacing: -.055em;
+        }
+
+        .hero-copy {
+            max-width: 680px;
+            margin: 13px 0 0;
+            color: var(--muted);
+            font-size: 1.02rem;
+            line-height: 1.55;
+        }
+
+        .algorithm-badge {
+            border: 1px solid rgba(84, 225, 179, .45);
+            border-radius: 999px;
+            color: var(--mint);
+            background: rgba(84, 225, 179, .09);
+            padding: 9px 13px;
+            white-space: nowrap;
+            font-family: "Courier New", monospace;
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(16, 43, 80, .96), rgba(7, 22, 45, .96));
+            box-shadow: 0 16px 36px rgba(0, 0, 0, .18);
+        }
+
+        .input-panel {
+            padding: 18px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(150px, .65fr) auto auto;
+            gap: 13px;
+            align-items: end;
+            animation: enter .55s .08s ease both;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--muted);
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #345b87;
+            border-radius: 11px;
+            padding: 12px 13px;
+            color: var(--white);
+            background: #06172f;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(54, 168, 255, .16);
+        }
+
+        .button {
+            min-height: 45px;
+            border: 1px solid transparent;
+            border-radius: 11px;
+            padding: 11px 16px;
+            color: var(--white);
+            font-weight: 750;
+            transition: transform .16s ease, filter .16s ease, border-color .16s ease;
+        }
+
+        .button:hover:not(:disabled) {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .button-primary {
+            background: #167ed0;
+        }
+
+        .button-muted {
+            border-color: #3a5d84;
+            background: #102947;
+        }
+
+        .button-play {
+            min-width: 122px;
+            color: #06172f;
+            background: var(--mint);
+        }
+
+        .button-pause {
+            color: #352700;
+            background: var(--yellow);
+        }
+
+        .validation {
+            grid-column: 1 / -1;
+            min-height: 0;
+            margin: 0;
+            color: var(--danger);
+            font-size: .87rem;
+        }
+
+        .validation:empty {
+            display: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 16px 18px;
+            margin-top: 18px;
+            animation: enter .6s .14s ease both;
+        }
+
+        .step-readout {
+            margin-left: auto;
+            color: var(--muted);
+            font-family: "Courier New", monospace;
+            font-size: .87rem;
+            font-weight: 700;
+        }
+
+        .status {
+            flex-basis: 100%;
+            margin: 0;
+            color: var(--white);
+            line-height: 1.45;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1.55fr) minmax(280px, .8fr);
+            gap: 18px;
+            margin-top: 18px;
+            animation: enter .65s .18s ease both;
+        }
+
+        .main-column,
+        .side-column {
+            display: grid;
+            gap: 18px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin: 0 0 16px;
+            font-size: 1rem;
+        }
+
+        .panel-heading span {
+            color: var(--mint);
+            font-family: "Courier New", monospace;
+            font-size: .74rem;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+        }
+
+        .array-panel {
+            padding: 20px;
+        }
+
+        .array-row {
+            display: flex;
+            gap: 11px;
+            overflow-x: auto;
+            padding: 10px 2px 5px;
+            scrollbar-color: var(--line) transparent;
+        }
+
+        .array-cell {
+            position: relative;
+            flex: 0 0 82px;
+            min-height: 91px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #345775;
+            border-radius: 15px;
+            color: var(--white);
+            background: #081c36;
+            transition: background .2s ease, border-color .2s ease, transform .2s ease;
+        }
+
+        .array-cell .index {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            color: var(--muted);
+            font-family: "Courier New", monospace;
+            font-size: .68rem;
+        }
+
+        .array-cell .value {
+            font-size: 1.48rem;
+            font-weight: 800;
+        }
+
+        .array-cell.current {
+            border-color: var(--blue);
+            background: rgba(54, 168, 255, .17);
+            transform: translateY(-5px);
+        }
+
+        .array-cell.complement {
+            border-color: var(--yellow);
+            background: rgba(255, 209, 102, .14);
+        }
+
+        .array-cell.paired {
+            border-color: var(--mint);
+            background: rgba(84, 225, 179, .18);
+            box-shadow: 0 0 22px rgba(84, 225, 179, .15);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 13px;
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: .78rem;
+        }
+
+        .legend b {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            margin-right: 5px;
+            border-radius: 50%;
+        }
+
+        .blue-dot {
+            background: var(--blue);
+        }
+
+        .yellow-dot {
+            background: var(--yellow);
+        }
+
+        .mint-dot {
+            background: var(--mint);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .detail-panel {
+            padding: 19px;
+            min-height: 175px;
+        }
+
+        .code-value {
+            margin: 15px 0 0;
+            color: var(--yellow);
+            font-family: "Courier New", monospace;
+            font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+            font-weight: 700;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .detail-copy {
+            margin: 11px 0 0;
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: .9rem;
+        }
+
+        .map-panel,
+        .pseudo-panel,
+        .result-panel,
+        .complexity-panel {
+            padding: 20px;
+        }
+
+        .map-list {
+            display: grid;
+            gap: 9px;
+        }
+
+        .map-entry {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 11px;
+            border: 1px solid #2e5279;
+            border-radius: 9px;
+            color: var(--mint);
+            background: #071a34;
+            font-family: "Courier New", monospace;
+            font-size: .89rem;
+        }
+
+        .empty-copy {
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.5;
+            font-size: .9rem;
+        }
+
+        .result-box {
+            min-height: 92px;
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #345775;
+            border-radius: 13px;
+            background: #071a34;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .result-box.success {
+            border-color: var(--mint);
+            color: var(--mint);
+            background: rgba(84, 225, 179, .09);
+        }
+
+        .result-box.no-solution {
+            border-color: var(--yellow);
+            color: var(--yellow);
+            background: rgba(255, 209, 102, .08);
+        }
+
+        .complexity-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .complexity-chip {
+            padding: 12px;
+            border-radius: 12px;
+            background: #071a34;
+        }
+
+        .complexity-chip strong {
+            display: block;
+            color: var(--blue);
+            font-family: "Courier New", monospace;
+            font-size: 1.04rem;
+        }
+
+        .complexity-chip span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: .78rem;
+        }
+
+        .pseudo {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: lines;
+        }
+
+        .pseudo li {
+            counter-increment: lines;
+            position: relative;
+            padding: 7px 8px 7px 38px;
+            border-radius: 7px;
+            color: var(--muted);
+            font-family: "Courier New", monospace;
+            font-size: .77rem;
+            line-height: 1.38;
+            white-space: pre-wrap;
+            transition: color .16s ease, background .16s ease;
+        }
+
+        .pseudo li::before {
+            content: counter(lines);
+            position: absolute;
+            left: 9px;
+            color: #547696;
+        }
+
+        .pseudo li.active {
+            color: #06172f;
+            background: var(--yellow);
+            font-weight: 700;
+        }
+
+        .pseudo li.active::before {
+            color: #5c4800;
+        }
+
+        @keyframes enter {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero {
+                align-items: start;
+                flex-direction: column;
+            }
+
+            .input-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .input-panel .field:first-child,
+            .validation {
+                grid-column: 1 / -1;
+            }
+
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .app-shell {
+                padding: 20px 14px 32px;
+            }
+
+            .input-panel,
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-panel .field:first-child {
+                grid-column: auto;
+            }
+
+            .input-panel .button {
+                width: 100%;
+            }
+
+            .controls {
+                align-items: stretch;
+            }
+
+            .controls .button {
+                flex: 1 1 calc(50% - 8px);
+            }
+
+            .step-readout {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .complexity-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+    <script src="/_sdk/a558f474cd01d324.resizing_sdk.js" type="text/javascript"
+        integrity="sha512-evIEjzvRDdaV6tHT4THeYa18+ppfgUj4Zpx5W8R1gaF2VKcOba7TPP4x2YYqsfThPwuC5NaBFyUH6V81c3i8kA=="></script>
+</head>
+
+<body data-template-id="__page-root" style="background: rgb(4, 16, 36);">
+    <div class="app-shell">
+        <header class="hero">
+            <div>
+                <p data-template-id="eyebrow" class="canva-text eyebrow"
+                    style="color: rgb(84, 225, 179); font-weight: 700; font-style: normal; font-size: 12px; letter-spacing: 0.12rem;">
+                    JavaScript algorithm lab</p>
+                <h1 data-template-id="page-title" class="canva-text"
+                    style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 32px;">Two Sum —
+                    Interactive Visualizer</h1>
+                <p data-template-id="page-subtitle" class="canva-text hero-copy"
+                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.55;">
+                    See how a hash map finds two values that add up to your target — one deliberate step at a time.</p>
+            </div>
+            <div data-template-id="algorithm-badge" class="canva-tag algorithm-badge"
+                style="background: rgba(84, 225, 179, 0.09); color: rgb(84, 225, 179); font-weight: 700; font-style: normal; font-size: 13px;">
+                HASH MAP • O(n)</div>
+        </header>
+        <main>
+            <section data-template-id="input-panel" class="canva-panel panel input-panel"
+                aria-labelledby="input-heading" style="background: rgb(13, 35, 66);">
+                <div class="field">
+                    <label data-template-id="array-label" class="canva-text" id="input-heading" for="array-input"
+                        style="color: rgb(169, 191, 214); font-weight: 700; font-style: normal; font-size: 13px;">Integer
+                        array</label> <input id="array-input" class="canva-input" type="text" value="[2, 7, 11, 15]"
+                        autocomplete="off" inputmode="text">
+                </div>
+                <div class="field">
+                    <label data-template-id="target-label" class="canva-text" for="target-input"
+                        style="color: rgb(169, 191, 214); font-weight: 700; font-style: normal; font-size: 13px;">Target</label>
+                    <input id="target-input" class="canva-input" type="text" value="9" autocomplete="off"
+                        inputmode="numeric">
+                </div><button id="apply-button" data-template-id="apply-button"
+                    class="canva-button button button-primary" type="button"
+                    style="background: rgb(22, 126, 208); color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Apply
+                    input</button> <button id="reset-button" data-template-id="reset-button"
+                    class="canva-button button button-muted" type="button"
+                    style="background: rgb(16, 41, 71); color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Reset</button>
+                <p id="validation-message" class="validation" role="alert" aria-live="polite"></p>
+            </section>
+            <section data-template-id="control-panel" class="canva-panel panel controls"
+                aria-label="Simulation controls" style="background: rgb(13, 35, 66);">
+                <button id="play-button" data-template-id="play-button" class="canva-button button button-play"
+                    type="button"
+                    style="background: rgb(84, 225, 179); color: rgb(6, 23, 47); font-weight: 700; font-style: normal; font-size: 16px;">Play</button>
+                <button id="pause-button" data-template-id="pause-button" class="canva-button button button-pause"
+                    type="button" disabled=""
+                    style="background: rgb(255, 209, 102); color: rgb(53, 39, 0); font-weight: 700; font-style: normal; font-size: 15px;">Pause</button>
+                <button id="previous-button" data-template-id="previous-button" class="canva-button button button-muted"
+                    type="button"
+                    style="background: rgb(16, 41, 71); color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Previous</button>
+                <button id="next-button" data-template-id="next-button" class="canva-button button button-primary"
+                    type="button"
+                    style="background: rgb(22, 126, 208); color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 15px;">Next</button>
+                <span id="step-counter" class="step-readout" aria-live="polite"></span>
+                <p id="status-message" class="status" aria-live="polite"></p>
+            </section>
+            <section class="workspace" aria-label="Algorithm visualization">
+                <div class="main-column">
+                    <section data-template-id="array-panel" class="canva-panel panel array-panel"
+                        style="background: rgb(13, 35, 66);">
+                        <h2 data-template-id="array-heading" class="canva-text panel-heading"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                            Array scan</h2>
+                        <div id="array-row" class="array-row" aria-label="Input array visualization"></div>
+                        <div class="legend" aria-label="Highlight legend">
+                            <span class="canva-text"><b class="blue-dot"></b><span data-template-id="legend-current"
+                                    class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 13px;">Current
+                                    value</span></span> <span class="canva-text"><b class="yellow-dot"></b><span
+                                    data-template-id="legend-complement" class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 13px;">Complement
+                                    in map</span></span> <span class="canva-text"><b class="mint-dot"></b><span
+                                    data-template-id="legend-pair" class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 13px;">Matching
+                                    pair</span></span>
+                        </div>
+                    </section>
+                    <div class="detail-grid">
+                        <section data-template-id="calculation-panel" class="canva-panel panel detail-panel"
+                            style="background: rgb(13, 35, 66);">
+                            <h2 data-template-id="calculation-heading" class="canva-text panel-heading"
+                                style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                                Complement calculation</h2>
+                            <p id="calculation-value" class="code-value" aria-live="polite"></p>
+                            <p id="calculation-copy" class="detail-copy"></p>
+                        </section>
+                        <section data-template-id="result-panel" class="canva-panel panel detail-panel"
+                            style="background: rgb(13, 35, 66);">
+                            <h2 data-template-id="result-heading" class="canva-text panel-heading"
+                                style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                                Result</h2>
+                            <div id="result-box" class="result-box" aria-live="polite"></div>
+                        </section>
+                    </div>
+                </div>
+                <aside class="side-column">
+                    <section data-template-id="map-panel" class="canva-panel panel map-panel"
+                        style="background: rgb(13, 35, 66);">
+                        <h2 data-template-id="map-heading" class="canva-text panel-heading"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                            Hash map</h2>
+                        <div id="map-list" class="map-list" aria-live="polite"></div>
+                    </section>
+                    <section data-template-id="complexity-panel" class="canva-panel panel complexity-panel"
+                        style="background: rgb(13, 35, 66);">
+                        <h2 data-template-id="complexity-heading" class="canva-text panel-heading"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                            Complexity</h2>
+                        <div class="complexity-row">
+                            <div class="complexity-chip">
+                                <strong data-template-id="time-complexity" class="canva-text"
+                                    style="color: rgb(54, 168, 255); font-weight: 700; font-style: normal; font-size: 17px;">O(n)</strong>
+                                <span data-template-id="time-copy" class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">Time
+                                    — scan once</span>
+                            </div>
+                            <div class="complexity-chip">
+                                <strong data-template-id="space-complexity" class="canva-text"
+                                    style="color: rgb(54, 168, 255); font-weight: 700; font-style: normal; font-size: 17px;">O(n)</strong>
+                                <span data-template-id="space-copy" class="canva-text"
+                                    style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">Space
+                                    — hash map</span>
+                            </div>
+                        </div>
+                    </section>
+                    <section data-template-id="pseudo-panel" class="canva-panel panel pseudo-panel"
+                        style="background: rgb(13, 35, 66);">
+                        <h2 data-template-id="pseudo-heading" class="canva-text panel-heading"
+                            style="color: rgb(246, 251, 255); font-weight: 700; font-style: normal; font-size: 24px;">
+                            Pseudocode</h2>
+                        <ol class="pseudo" aria-label="Two Sum pseudocode">
+                            <li data-template-id="code-line-1" class="canva-text" data-line="1"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                map = {}</li>
+                            <li data-template-id="code-line-2" class="canva-text" data-line="2"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                for each (value, index) in array:</li>
+                            <li data-template-id="code-line-3" class="canva-text" data-line="3"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                complement = target - value</li>
+                            <li data-template-id="code-line-4" class="canva-text" data-line="4"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                if complement exists in map:</li>
+                            <li data-template-id="code-line-5" class="canva-text" data-line="5"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                return [map[complement], index]</li>
+                            <li data-template-id="code-line-6" class="canva-text" data-line="6"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                map[value] = index</li>
+                            <li data-template-id="code-line-7" class="canva-text" data-line="7"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                continue until array is scanned</li>
+                            <li data-template-id="code-line-8" class="canva-text" data-line="8"
+                                style="color: rgb(169, 191, 214); font-weight: 400; font-style: normal; font-size: 12px;">
+                                return no solution</li>
+                        </ol>
+                    </section>
+                </aside>
+            </section>
+        </main>
+    </div>
+    <script>
+        (() => {
+            const els = {
+                arrayInput: document.getElementById("array-input"),
+                targetInput: document.getElementById("target-input"),
+                apply: document.getElementById("apply-button"),
+                reset: document.getElementById("reset-button"),
+                play: document.getElementById("play-button"),
+                pause: document.getElementById("pause-button"),
+                previous: document.getElementById("previous-button"),
+                next: document.getElementById("next-button"),
+                validation: document.getElementById("validation-message"),
+                stepCounter: document.getElementById("step-counter"),
+                status: document.getElementById("status-message"),
+                arrayRow: document.getElementById("array-row"),
+                mapList: document.getElementById("map-list"),
+                calculationValue: document.getElementById("calculation-value"),
+                calculationCopy: document.getElementById("calculation-copy"),
+                result: document.getElementById("result-box"),
+                codeLines: [...document.querySelectorAll(".pseudo li")]
+            };
+
+            let values = [2, 7, 11, 15];
+            let target = 9;
+            let states = [];
+            let currentStep = 0;
+            let playTimer = null;
+            let record = null;
+            let initialized = false;
+            let saveTimer = null;
+
+            function parseInputs() {
+                const rawArray = els.arrayInput.value.trim();
+                const rawTarget = els.targetInput.value.trim();
+
+                if (!rawArray) return { error: "Enter at least one integer in the array." };
+                if (!rawTarget) return { error: "Enter a target number." };
+
+                const cleaned = rawArray.replace(/^\[|\]$/g, "").trim();
+                const parts = cleaned.split(",").map(item => item.trim());
+
+                if (!parts.length || parts.some(item => item === "" || !/^-?\d+$/.test(item))) {
+                    return { error: "Use comma-separated whole numbers, for example: 2, 7, 11, 15." };
+                }
+                if (!/^-?\d+$/.test(rawTarget)) {
+                    return { error: "The target must be a whole number." };
+                }
+
+                return { values: parts.map(Number), target: Number(rawTarget) };
+            }
+
+            function cloneMap(map) {
+                return Object.entries(map).map(([number, index]) => ({ number: Number(number), index }));
+            }
+
+            function buildStates(numbers, goal) {
+                const sequence = [{
+                    kind: "start",
+                    currentIndex: null,
+                    currentValue: null,
+                    complement: null,
+                    map: [],
+                    line: 1,
+                    status: "Ready. Start scanning from left to right with an empty hash map.",
+                    result: null
+                }];
+
+                const map = {};
+                for (let i = 0; i < numbers.length; i++) {
+                    const value = numbers[i];
+                    const complement = goal - value;
+                    const before = cloneMap(map);
+
+                    sequence.push({
+                        kind: "inspect",
+                        currentIndex: i,
+                        currentValue: value,
+                        complement,
+                        map: before,
+                        line: 3,
+                        status: `Inspect index ${i}: value ${value}. We need ${complement} to reach ${goal}.`,
+                        result: null
+                    });
+
+                    if (Object.prototype.hasOwnProperty.call(map, complement)) {
+                        sequence.push({
+                            kind: "found",
+                            currentIndex: i,
+                            currentValue: value,
+                            complement,
+                            map: before,
+                            line: 5,
+                            status: `Match found: ${complement} was already stored at index ${map[complement]}.`,
+                            result: { firstIndex: map[complement], secondIndex: i, firstValue: complement, secondValue: value }
+                        });
+                        return sequence;
+                    }
+
+                    map[value] = i;
+                    sequence.push({
+                        kind: "stored",
+                        currentIndex: i,
+                        currentValue: value,
+                        complement,
+                        map: cloneMap(map),
+                        line: 6,
+                        status: `No match yet. Store ${value} → ${i} in the hash map.`,
+                        result: null
+                    });
+                }
+
+                sequence.push({
+                    kind: "no-solution",
+                    currentIndex: null,
+                    currentValue: null,
+                    complement: null,
+                    map: cloneMap(map),
+                    line: 8,
+                    status: "Finished scanning every value. No two numbers add up to the target.",
+                    result: null
+                });
+
+                return sequence;
+            }
+
+            function renderArray(state) {
+                els.arrayRow.replaceChildren();
+                values.forEach((value, index) => {
+                    const cell = document.createElement("div");
+                    cell.className = "array-cell";
+                    if (state.currentIndex === index) cell.classList.add("current");
+
+                    if (state.kind === "found" && state.result &&
+                        (index === state.result.firstIndex || index === state.result.secondIndex)) {
+                        cell.classList.add("paired");
+                    } else if (state.currentIndex !== index && state.complement === value &&
+                        state.map.some(entry => entry.number === value)) {
+                        cell.classList.add("complement");
+                    }
+
+                    const indexTag = document.createElement("span");
+                    indexTag.className = "index";
+                    indexTag.textContent = `i: ${index}`;
+                    const valueTag = document.createElement("span");
+                    valueTag.className = "value";
+                    valueTag.textContent = value;
+                    cell.append(indexTag, valueTag);
+                    els.arrayRow.appendChild(cell);
+                });
+            }
+
+            function renderMap(entries) {
+                els.mapList.replaceChildren();
+                if (!entries.length) {
+                    const empty = document.createElement("p");
+                    empty.className = "empty-copy";
+                    empty.textContent = "The hash map is empty.";
+                    els.mapList.appendChild(empty);
+                    return;
+                }
+                entries.forEach(entry => {
+                    const row = document.createElement("div");
+                    row.className = "map-entry";
+                    const left = document.createElement("span");
+                    const right = document.createElement("span");
+                    left.textContent = entry.number;
+                    right.textContent = `→ ${entry.index}`;
+                    row.append(left, right);
+                    els.mapList.appendChild(row);
+                });
+            }
+
+            function renderCalculation(state) {
+                if (state.currentValue === null) {
+                    els.calculationValue.textContent = "complement = target − current";
+                    els.calculationCopy.textContent = "Choose a step to calculate the number we need.";
+                    return;
+                }
+                els.calculationValue.textContent = `${target} − ${state.currentValue} = ${state.complement}`;
+                els.calculationCopy.textContent = `Complement = ${state.complement}. Check whether it already exists in the hash map.`;
+            }
+
+            function renderResult(state) {
+                els.result.className = "result-box";
+                if (state.kind === "found") {
+                    const r = state.result;
+                    els.result.classList.add("success");
+                    els.result.textContent = `Found pair: [${r.firstValue}, ${r.secondValue}] at indices [${r.firstIndex}, ${r.secondIndex}].`;
+                } else if (state.kind === "no-solution") {
+                    els.result.classList.add("no-solution");
+                    els.result.textContent = "No solution: no pair in this array reaches the target.";
+                } else {
+                    els.result.textContent = "No result yet — keep stepping through the scan.";
+                }
+            }
+
+            function renderControls(state) {
+                const isFinal = currentStep === states.length - 1;
+                els.previous.disabled = currentStep === 0;
+                els.next.disabled = isFinal;
+                els.play.disabled = !states.length || isFinal || Boolean(playTimer);
+                els.pause.disabled = !playTimer;
+                els.stepCounter.textContent = `STEP ${currentStep + 1} / ${states.length}`;
+                els.status.textContent = state.status;
+            }
+
+            function render() {
+                if (!states.length) return;
+                const state = states[currentStep];
+                renderArray(state);
+                renderMap(state.map);
+                renderCalculation(state);
+                renderResult(state);
+                renderControls(state);
+                els.codeLines.forEach(line => line.classList.toggle("active", Number(line.dataset.line) === state.line));
+            }
+
+            function stopPlaying() {
+                if (playTimer) {
+                    clearInterval(playTimer);
+                    playTimer = null;
+                }
+            }
+
+            function saveState() {
+                if (!initialized) return;
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(async () => {
+                    const payload = {
+                        array_input: els.arrayInput.value,
+                        target_input: els.targetInput.value,
+                        current_step: currentStep,
+                        simulator_state: JSON.stringify({
+                            valid: states.length > 0,
+                            value_count: values.length,
+                            target
+                        })
+                    };
+
+                    if (!record && !payload.array_input.trim()) return;
+                    const result = record
+                        ? await window.dataSdk.update({ ...record, ...payload })
+                        : await window.dataSdk.create(payload);
+
+                    if (result.isOk && !record) {
+                        // The change callback provides the backend ID for future updates.
+                    }
+                }, 650);
+            }
+
+            function applyInput() {
+                stopPlaying();
+                const parsed = parseInputs();
+                if (parsed.error) {
+                    els.validation.textContent = parsed.error;
+                    states = [];
+                    els.arrayRow.replaceChildren();
+                    els.mapList.replaceChildren();
+                    els.calculationValue.textContent = "";
+                    els.calculationCopy.textContent = "";
+                    els.result.className = "result-box";
+                    els.result.textContent = "Apply valid input to begin.";
+                    els.status.textContent = "Waiting for valid input.";
+                    els.stepCounter.textContent = "STEP —";
+                    els.play.disabled = true;
+                    els.previous.disabled = true;
+                    els.next.disabled = true;
+                    els.pause.disabled = true;
+                    els.codeLines.forEach(line => line.classList.remove("active"));
+                    saveState();
+                    return;
+                }
+
+                els.validation.textContent = "";
+                values = parsed.values;
+                target = parsed.target;
+                states = buildStates(values, target);
+                currentStep = 0;
+                render();
+                saveState();
+            }
+
+            function resetSimulation() {
+                if (!states.length) {
+                    applyInput();
+                    return;
+                }
+                stopPlaying();
+                currentStep = 0;
+                render();
+                saveState();
+            }
+
+            function moveStep(delta) {
+                if (!states.length) return;
+                stopPlaying();
+                currentStep = Math.max(0, Math.min(states.length - 1, currentStep + delta));
+                render();
+                saveState();
+            }
+
+            function playSimulation() {
+                if (!states.length || currentStep >= states.length - 1) return;
+                playTimer = setInterval(() => {
+                    if (currentStep >= states.length - 1) {
+                        stopPlaying();
+                        render();
+                        saveState();
+                        return;
+                    }
+                    currentStep++;
+                    render();
+                    if (currentStep >= states.length - 1) {
+                        stopPlaying();
+                        render();
+                        saveState();
+                    }
+                }, 1050);
+                render();
+            }
+
+            els.apply.addEventListener("click", applyInput);
+            els.reset.addEventListener("click", resetSimulation);
+            els.previous.addEventListener("click", () => moveStep(-1));
+            els.next.addEventListener("click", () => moveStep(1));
+            els.play.addEventListener("click", playSimulation);
+            els.pause.addEventListener("click", () => {
+                stopPlaying();
+                render();
+                saveState();
+            });
+
+            els.arrayInput.addEventListener("change", saveState);
+            els.targetInput.addEventListener("change", saveState);
+
+            const handler = {
+                onDataChanged(data) {
+                    if (!data.length) return;
+                    record = data[data.length - 1];
+
+                    if (!initialized) {
+                        initialized = true;
+                        if (record.array_input) els.arrayInput.value = record.array_input;
+                        if (record.target_input) els.targetInput.value = record.target_input;
+
+                        const parsed = parseInputs();
+                        if (!parsed.error) {
+                            values = parsed.values;
+                            target = parsed.target;
+                            states = buildStates(values, target);
+                            currentStep = Math.max(0, Math.min(Number(record.current_step) || 0, states.length - 1));
+                            render();
+                        } else {
+                            applyInput();
+                        }
+                    }
+                }
+            };
+
+            async function init() {
+                const initResult = await window.dataSdk.init(handler);
+                if (!initResult.isOk) {
+                    initialized = true;
+                    applyInput();
+                    els.validation.textContent = "Your simulator is ready, but saved progress is unavailable right now.";
+                    return;
+                }
+
+                window.setTimeout(() => {
+                    if (!initialized) {
+                        initialized = true;
+                        applyInput();
+                    }
+                }, 700);
+            }
+
+            init();
+        })();
+    </script>
+
+</body>
+
+</html>

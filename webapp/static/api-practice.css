@@ -1,0 +1,62 @@
+/* ============================================================================
+   API practice — markup from api-practice.js.
+
+   Reuses dsa-topic.css's .tp-* classes wholesale for the type page (crumb,
+   hero, gauge, list, row, prev/next cards) — same shape as a DSA pattern
+   page, same tokens, so it needed no re-styling of its own. This file adds
+   only what is genuinely new: the module-home "practice" strip, the two
+   ladder section headers (Foundation vs labs), and the Theory-page CTA.
+   ========================================================================= */
+
+/* --- module-home strip (reader.js renderModGrid, mod === 'api') --------- */
+.aps {
+  margin: 22px 0 30px; padding: 20px 22px; border-radius: 20px;
+  background: var(--accent-wash); border: 1px solid var(--accent-line);
+}
+.aps-head h2 { margin: 0; font: 700 17px/1.2 var(--display); letter-spacing: -.01em; color: var(--text); }
+.aps-head p { margin: 6px 0 0; max-width: 62ch; font-size: 13px; line-height: 1.5; color: var(--text-dim); }
+.aps-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px; margin-top: 16px;
+}
+.aps-card {
+  display: flex; flex-direction: column; gap: 8px; padding: 13px 14px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: border-color var(--t), transform var(--t), box-shadow var(--t);
+}
+.aps-card:hover { border-color: var(--accent-line); transform: translateY(-2px); box-shadow: var(--shadow); }
+.aps-card-name { font: 650 14.5px/1.2 var(--display); color: var(--text); letter-spacing: -.01em; }
+.aps-card-counts { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--text-faint); }
+.aps-card-counts b { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.aps-card svg {
+  width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round; color: var(--text-faint);
+  align-self: flex-end; margin-top: -4px; transition: transform var(--t), color var(--t);
+}
+.aps-card:hover svg { transform: translateX(2px); color: var(--accent); }
+
+/* --- Theory-page CTA (reader.js renderReader, doc-hero) ------------------ */
+.doc-practice-cta {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
+  padding: 9px 16px; border-radius: 12px;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 10px 24px -16px var(--accent);
+  transition: transform var(--t), filter var(--t), box-shadow var(--t);
+}
+.doc-practice-cta:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 30px -14px var(--accent); }
+.doc-practice-cta svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+
+/* --- type page: two ladders instead of one list -------------------------- */
+.atpage .tp-hero { margin-top: 14px; }
+.at-section { margin-top: 36px; }
+.at-section-title {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin: 0 0 4px; font: 700 18px/1.2 var(--display); letter-spacing: -.01em; color: var(--text);
+}
+.at-section-title span { font: 400 12.5px/1.4 var(--sans, inherit); color: var(--text-faint); }
+
+@media (max-width: 720px) {
+  .aps { padding: 16px 16px; margin: 16px 0 22px; }
+  .aps-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}

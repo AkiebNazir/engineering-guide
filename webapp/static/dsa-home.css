@@ -1,0 +1,237 @@
+/* ============================================================================
+   DSA home (#/dsa) — markup from dsa-home.js.
+   ========================================================================= */
+
+/* registering --p lets every conic progress ring in the app animate its fill
+   instead of snapping; without this the browser treats it as an opaque string */
+@property --p {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+.dsa-page { max-width: 1180px; margin: 0 auto; padding: 34px 40px 96px; }
+
+/* --- hero -------------------------------------------------------------------- */
+.dsa-hero {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: 48px; align-items: center;
+  padding-bottom: 34px; border-bottom: 1px solid var(--border);
+}
+.dsa-eyebrow {
+  margin: 0 0 10px; font: 500 12px/1 var(--mono); color: var(--accent);
+}
+.dsa-title {
+  margin: 0; font: 700 clamp(30px, 4.6vw, 46px)/1.04 var(--display);
+  letter-spacing: -.03em; text-wrap: balance;
+}
+.dsa-tagline {
+  margin: 16px 0 0; max-width: 48ch;
+  font-size: 15.5px; line-height: 1.6; color: var(--text-dim);
+}
+.dsa-facts { display: flex; flex-wrap: wrap; gap: 26px; margin: 26px 0 0; }
+.dsa-facts div { display: flex; flex-direction: column-reverse; gap: 4px; }
+.dsa-facts dt { font-size: 12px; color: var(--text-faint); }
+.dsa-facts dd {
+  margin: 0; font: 500 26px/1 var(--mono); letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa-resume {
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  gap: 2px 16px; margin-top: 28px; padding: 15px 20px; border-radius: 16px;
+  background: var(--accent); color: var(--accent-ink);
+  box-shadow: 0 10px 26px -16px var(--accent);
+  transition: transform var(--t), box-shadow var(--t), filter var(--t);
+}
+.dsa-resume:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 32px -14px var(--accent); }
+.dsa-resume-kicker { font-size: 11.5px; font-weight: 500; opacity: .8; }
+.dsa-resume-title { grid-row: 2; font-weight: 650; font-size: 15px; }
+.dsa-resume-meta { grid-row: 3; font-size: 11.5px; opacity: .78; }
+.dsa-resume svg {
+  grid-row: 1 / 4; grid-column: 2; width: 19px; height: 19px;
+  fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  transition: transform var(--t);
+}
+.dsa-resume:hover svg { transform: translateX(3px); }
+
+/* --- the pattern lattice ----------------------------------------------------- */
+.dsa-lattice {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
+  align-self: center;
+}
+.dsa-cell {
+  position: relative; aspect-ratio: 1; border-radius: 11px;
+  display: grid; place-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: transform .2s var(--ease), border-color var(--t), box-shadow var(--t);
+}
+/* the fill is a conic sweep clipped to the tile, so a half-solved topic reads
+   as a half-lit cell rather than a number you have to parse */
+.dsa-cell::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: conic-gradient(from 180deg, var(--accent) calc(var(--p) * 1%), transparent 0);
+  opacity: .30;
+  transition: --p 1.1s cubic-bezier(.22, .68, .36, 1);
+  transition-delay: calc(var(--i) * 22ms);
+}
+.dsa-cell.st-done::before { background: var(--ok); opacity: .42; }
+.dsa-cell i {
+  position: relative; font: 500 11px/1 var(--mono); font-style: normal;
+  color: var(--text-faint); font-variant-numeric: tabular-nums;
+}
+.dsa-cell.st-done i, .dsa-cell.st-active i { color: var(--text); }
+.dsa-cell:hover { transform: translateY(-2px) scale(1.04); border-color: var(--accent-line); box-shadow: var(--shadow-sm); }
+/* family tints: the lattice has a readable shape before a single problem is
+   solved, and the progress sweep paints over the tint as topics complete */
+.dsa-cell[data-fam="scan"]   { --fam: var(--series-0); }
+.dsa-cell[data-fam="linear"] { --fam: var(--series-5); }
+.dsa-cell[data-fam="tree"]   { --fam: var(--series-2); }
+.dsa-cell[data-fam="graph"]  { --fam: var(--series-4); }
+.dsa-cell[data-fam="dp"]     { --fam: var(--series-1); }
+.dsa-cell[data-fam="craft"]  { --fam: var(--series-6); }
+.dsa-cell[data-fam="design"] { --fam: var(--series-3); }
+.dsa-cell { background: color-mix(in srgb, var(--fam, var(--accent)) 13%, var(--surface)); }
+.dsa-cell:hover { border-color: var(--fam, var(--accent-line)); }
+
+.dsa-legend {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px;
+  margin: 10px 0 0; padding: 0; list-style: none;
+}
+.dsa-legend li {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--text-faint);
+}
+.dsa-legend li::before {
+  content: ""; width: 9px; height: 9px; border-radius: 3px;
+  background: color-mix(in srgb, var(--fam) 62%, transparent);
+}
+.dsa-legend li[data-fam="scan"]   { --fam: var(--series-0); }
+.dsa-legend li[data-fam="linear"] { --fam: var(--series-5); }
+.dsa-legend li[data-fam="tree"]   { --fam: var(--series-2); }
+.dsa-legend li[data-fam="graph"]  { --fam: var(--series-4); }
+.dsa-legend li[data-fam="dp"]     { --fam: var(--series-1); }
+.dsa-legend li[data-fam="craft"]  { --fam: var(--series-6); }
+.dsa-legend li[data-fam="design"] { --fam: var(--series-3); }
+
+.dsa-tile-name {
+  font: 650 19px/1.25 var(--sans); color: var(--text);
+  /* pattern names run long ("Recursion Mastery (Progressive Ladder)"), so let
+     the title take a second line rather than ellipsing the useful half away */
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.dsa-tile-wide { grid-column: span 1; }
+
+/* --- quick tiles ------------------------------------------------------------- */
+.dsa-rail {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px; margin-top: 30px;
+}
+.dsa-tile {
+  display: grid; gap: 3px; padding: 18px 20px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: border-color var(--t), transform var(--t), box-shadow var(--t);
+}
+.dsa-tile:hover { border-color: var(--accent-line); transform: translateY(-2px); box-shadow: var(--shadow); }
+.dsa-tile-num {
+  font: 500 30px/1 var(--mono); letter-spacing: -.04em; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.dsa-tile-num em { font-style: normal; font-size: 17px; color: var(--text-faint); }
+.dsa-tile.is-hot .dsa-tile-num { color: var(--accent); }
+.dsa-tile-label { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.dsa-tile-foot { font-size: 12px; line-height: 1.5; color: var(--text-faint); }
+
+/* --- toolbar + grid ---------------------------------------------------------- */
+.dsa-toolbar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 34px 0 14px;
+}
+.dsa-shown { font-size: 12.5px; color: var(--text-faint); }
+.dsa-empty { margin: 30px 0; color: var(--text-faint); font-size: 13.5px; }
+
+.dsa-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 14px;
+}
+.dsa-card {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+  gap: 4px 12px; padding: 16px 18px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: border-color var(--t), transform var(--t), box-shadow var(--t);
+}
+.dsa-card:hover { border-color: var(--accent-line); transform: translateY(-3px); box-shadow: var(--shadow); }
+.dsa-card.st-done { border-color: color-mix(in srgb, var(--ok) 32%, var(--border)); }
+.dsa-card-num {
+  font: 500 11px/1 var(--mono); color: var(--text-faint);
+  padding: 4px 6px; border-radius: 6px; background: var(--surface-2);
+}
+.dsa-card-title {
+  margin: 0; font-size: 14.5px; font-weight: 650; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dsa-ring {
+  grid-row: 1 / 3; grid-column: 3; position: relative;
+  width: 44px; height: 44px; display: grid; place-items: center;
+}
+.dsa-ring::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--border) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent 76%, #000 79%);
+          mask: radial-gradient(farthest-side, transparent 76%, #000 79%);
+  transition: --p 1s cubic-bezier(.22, .68, .36, 1);
+  transition-delay: calc(var(--i) * 26ms);
+}
+.dsa-ring.done::before { background: var(--ok); }
+.dsa-ring b {
+  font: 500 12px/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--text);
+}
+.dsa-ring b span { color: var(--text-faint); font-size: 10px; }
+.dsa-card-diffs { grid-column: 1 / 3; display: flex; gap: 10px; margin-top: 6px; }
+.dsa-diff { display: inline-flex; align-items: center; gap: 4px; }
+.dsa-diff em {
+  font: 400 11px/1 var(--mono); font-style: normal; color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.dsa-diff.mastered { color: var(--accent); font-size: 11px; }
+.dsa-card-next {
+  grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-soft);
+  font-size: 12.3px; color: var(--text-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dsa-card-next em {
+  flex: none; font: 400 11px/1 var(--mono); font-style: normal; color: var(--text-faint);
+}
+.dsa-card.st-done .dsa-card-next { color: var(--ok); }
+
+/* --- arrival ----------------------------------------------------------------- */
+.dsa-page .dsa-card, .dsa-page .dsa-tile, .dsa-page .dsa-resume {
+  opacity: 0; transform: translateY(10px);
+}
+.dsa-page.is-in .dsa-card, .dsa-page.is-in .dsa-tile, .dsa-page.is-in .dsa-resume {
+  opacity: 1; transform: none;
+  transition: opacity .42s var(--ease), transform .42s var(--ease);
+  transition-delay: calc(var(--i, 0) * 28ms + 60ms);
+}
+.dsa-page .dsa-cell { opacity: 0; transform: scale(.82); }
+.dsa-page.is-in .dsa-cell {
+  opacity: 1; transform: none;
+  transition: opacity .34s var(--ease), transform .34s var(--ease),
+              border-color var(--t), box-shadow var(--t);
+  transition-delay: calc(var(--i) * 16ms);
+}
+
+@media (max-width: 960px) {
+  .dsa-hero { grid-template-columns: 1fr; gap: 30px; }
+  .dsa-lattice { max-width: 420px; }
+}
+@media (max-width: 720px) {
+  .dsa-page { padding: 24px 18px 72px; }
+  .dsa-lattice { grid-template-columns: repeat(7, 1fr); gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dsa-page .dsa-card, .dsa-page .dsa-tile, .dsa-page .dsa-resume,
+  .dsa-page .dsa-cell { opacity: 1; transform: none; transition: none; }
+  .dsa-cell::before, .dsa-ring::before { transition: none; }
+  .dsa-card:hover, .dsa-tile:hover, .dsa-cell:hover, .dsa-resume:hover { transform: none; }
+}

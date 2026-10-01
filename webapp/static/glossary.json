@@ -1,0 +1,798 @@
+{
+ "2PC": {
+  "name": "Two-Phase Commit",
+  "def": "A protocol that makes several participants all commit a transaction or all abort it: prepare, then commit."
+ },
+ "ABAC": {
+  "name": "Attribute-Based Access Control",
+  "def": "Authorization decided by rules over attributes of the user, resource and context."
+ },
+ "ACID": {
+  "name": "Atomicity, Consistency, Isolation, Durability",
+  "def": "A set of properties of database transactions intended to guarantee data validity despite errors."
+ },
+ "AI": {
+  "name": "Artificial Intelligence",
+  "def": "Software that performs tasks that normally need human judgment, such as understanding language or recognising images."
+ },
+ "ALU": {
+  "name": "Arithmetic Logic Unit",
+  "def": "The circuit in a CPU core that performs integer arithmetic, comparisons and bitwise operations."
+ },
+ "ANS": {
+  "name": "Asymmetric Numeral Systems",
+  "def": "An entropy-coding method that approaches the Shannon limit with fractional bits per symbol; used in zstd."
+ },
+ "API": {
+  "name": "Application Programming Interface",
+  "def": "A contract that lets one program call another: the operations, inputs, outputs and errors it promises."
+ },
+ "AST": {
+  "name": "Abstract Syntax Tree",
+  "def": "A tree representation of the abstract syntactic structure of source code written in a programming language."
+ },
+ "AUC": {
+  "name": "Area Under the ROC Curve",
+  "def": "The chance a model scores a random positive example above a random negative one; 0.5 is guessing, 1.0 is perfect."
+ },
+ "AVL": {
+  "name": "Adelson-Velsky and Landis Tree",
+  "def": "A self-balancing binary search tree where the heights of the two child subtrees of any node differ by at most one."
+ },
+ "AVX": {
+  "name": "Advanced Vector Extensions",
+  "def": "x86 SIMD instructions that operate on 256- or 512-bit registers holding several values at once."
+ },
+ "BASE": {
+  "name": "Basically Available, Soft state, Eventual consistency",
+  "def": "A consistency model used by many NoSQL databases, prioritizing availability over strict consistency."
+ },
+ "BDP": {
+  "name": "Bandwidth-Delay Product",
+  "def": "Bandwidth × round-trip time: how much data must be in flight, unacknowledged, to keep a network path fully busy."
+ },
+ "BFS": {
+  "name": "Breadth-First Search",
+  "def": "An algorithm for traversing or searching tree or graph data structures level by level."
+ },
+ "BPE": {
+  "name": "Byte Pair Encoding",
+  "def": "A tokenizer that starts from bytes and repeatedly merges the most frequent adjacent pair into a new token."
+ },
+ "BST": {
+  "name": "Binary Search Tree",
+  "def": "A node-based binary tree data structure where the left subtree has smaller values and the right subtree has larger values than the parent node."
+ },
+ "CAP": {
+  "name": "CAP theorem",
+  "def": "When a network partition splits a distributed store, it must choose between Consistency (every read sees the latest write) and Availability (every request gets an answer). Without a partition you can have both."
+ },
+ "CAS": {
+  "name": "Compare-And-Swap",
+  "def": "An atomic instruction used in multithreading to achieve synchronization by comparing and potentially modifying a memory location."
+ },
+ "CD": {
+  "name": "Continuous Delivery / Deployment",
+  "def": "Every change that passes the pipeline is releasable (delivery) or released automatically (deployment)."
+ },
+ "CDC": {
+  "name": "Change Data Capture",
+  "def": "Streaming a database's committed changes out of its log so other systems can react to them."
+ },
+ "CDN": {
+  "name": "Content Delivery Network",
+  "def": "A geographically distributed network of proxy servers and their data centers used to deliver content with low latency."
+ },
+ "CFS": {
+  "name": "Completely Fair Scheduler",
+  "def": "The Linux process scheduler from 2.6.23 to 6.5: it runs the task with the least virtual runtime. Linux 6.6 replaced it with EEVDF."
+ },
+ "CI": {
+  "name": "Continuous Integration",
+  "def": "The practice of merging all developers' working copies to a shared mainline several times a day."
+ },
+ "CI/CD": {
+  "name": "Continuous Integration / Continuous Delivery",
+  "def": "Every change is built and tested automatically (CI) and kept releasable, or released, through an automated pipeline (CD)."
+ },
+ "CLI": {
+  "name": "Command-Line Interface",
+  "def": "A text interface where you type commands, such as a shell or a tool like git or kubectl."
+ },
+ "CLT": {
+  "name": "Central Limit Theorem",
+  "def": "The average of many independent samples is approximately normally distributed, with spread σ/√n."
+ },
+ "CMOV": {
+  "name": "Conditional Move",
+  "def": "An x86 instruction that copies a value only if a condition holds, letting compilers remove a branch."
+ },
+ "CNN": {
+  "name": "Convolutional Neural Network",
+  "def": "A neural network that slides small learned filters over its input; the classic architecture for images."
+ },
+ "CPU": {
+  "name": "Central Processing Unit",
+  "def": "The primary component of a computer that acts as its 'brain', executing instructions of a computer program."
+ },
+ "CRC": {
+  "name": "Cyclic Redundancy Check",
+  "def": "An error-detecting code computed as a polynomial remainder over bits; catches burst errors, not tampering."
+ },
+ "CRDT": {
+  "name": "Conflict-free Replicated Data Type",
+  "def": "A data structure whose replicas can be updated independently and always merge to the same state without coordination."
+ },
+ "CRT": {
+  "name": "Chinese Remainder Theorem",
+  "def": "Remainders modulo pairwise coprime numbers determine a number uniquely modulo their product."
+ },
+ "CRUD": {
+  "name": "Create, Read, Update, Delete",
+  "def": "The four basic functions of persistent storage operations, commonly used in database and API design."
+ },
+ "CSP": {
+  "name": "Content Security Policy",
+  "def": "A browser header listing which scripts and resources a page may load, blocking most injected scripts."
+ },
+ "CSRF": {
+  "name": "Cross-Site Request Forgery",
+  "def": "An attack that makes a logged-in user's browser send an unwanted request to a site that trusts its cookies."
+ },
+ "DAG": {
+  "name": "Directed Acyclic Graph",
+  "def": "A directed graph with no directed cycles, consisting of vertices and edges where each edge is directed from one vertex to another."
+ },
+ "DAU": {
+  "name": "Daily Active Users",
+  "def": "Distinct users who use a product on a given day; the usual starting number for capacity estimates."
+ },
+ "DDL": {
+  "name": "Data Definition Language",
+  "def": "Syntax for creating and modifying database objects such as tables, indices, and users."
+ },
+ "DFA": {
+  "name": "Deterministic Finite Automaton",
+  "def": "A machine with finitely many states and exactly one transition per state and input symbol; recognises regular languages."
+ },
+ "DFS": {
+  "name": "Depth-First Search",
+  "def": "An algorithm for traversing or searching tree or graph data structures by exploring as far as possible along each branch before backtracking."
+ },
+ "DLQ": {
+  "name": "Dead-Letter Queue",
+  "def": "Where messages go after repeated processing failures, so they stop blocking the rest and can be inspected and replayed."
+ },
+ "DMA": {
+  "name": "Direct Memory Access",
+  "def": "A device copying data to or from RAM without the CPU moving each byte."
+ },
+ "DNS": {
+  "name": "Domain Name System",
+  "def": "A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet."
+ },
+ "DP": {
+  "name": "Dynamic Programming",
+  "def": "A method for solving complex problems by breaking them down into simpler overlapping subproblems and storing the results."
+ },
+ "DPO": {
+  "name": "Direct Preference Optimization",
+  "def": "Aligns a model on pairs of preferred and rejected answers directly, without training a separate reward model as RLHF does."
+ },
+ "DRY": {
+  "name": "Don't Repeat Yourself",
+  "def": "A software development principle aimed at reducing repetition of software patterns, replacing it with abstractions."
+ },
+ "DVC": {
+  "name": "Data Version Control",
+  "def": "A tool that versions datasets and models alongside Git, storing the large files in remote storage."
+ },
+ "ECC": {
+  "name": "Error-Correcting Code",
+  "def": "Redundant encoding that lets a receiver detect and repair corrupted bits; also memory that uses one."
+ },
+ "EEVDF": {
+  "name": "Earliest Eligible Virtual Deadline First",
+  "def": "The Linux fair scheduler since kernel 6.6: it keeps CFS's virtual-runtime accounting and runs the eligible task with the earliest virtual deadline."
+ },
+ "EOF": {
+  "name": "End of File",
+  "def": "The signal that no more data will arrive; on a socket, a read returning zero bytes because the other side closed the connection."
+ },
+ "EWMA": {
+  "name": "Exponentially Weighted Moving Average",
+  "def": "A running average in which older samples' weights decay exponentially."
+ },
+ "FCFS": {
+  "name": "First Come, First Served",
+  "def": "A scheduling policy that runs work in arrival order, each item to completion."
+ },
+ "FIFO": {
+  "name": "First-In, First-Out",
+  "def": "A method for processing data where the first items entered are the first to be removed, characteristic of queue data structures."
+ },
+ "FLP": {
+  "name": "Fischer, Lynch and Paterson",
+  "def": "The 1985 result that no deterministic consensus algorithm can guarantee termination in an asynchronous system if one node may crash."
+ },
+ "GAN": {
+  "name": "Generative Adversarial Network",
+  "def": "Two networks trained against each other: a generator makes fake samples and a discriminator tries to tell them from real ones."
+ },
+ "GC": {
+  "name": "Garbage Collection",
+  "def": "A form of automatic memory management that attempts to reclaim garbage, or memory occupied by objects that are no longer in use by the program."
+ },
+ "GIL": {
+  "name": "Global Interpreter Lock",
+  "def": "A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at once."
+ },
+ "GPU": {
+  "name": "Graphics Processing Unit",
+  "def": "A processor with thousands of simple cores and very fast memory, used to train and serve machine-learning models."
+ },
+ "gRPC": {
+  "name": "gRPC Remote Procedure Call",
+  "def": "A modern, open-source, high-performance RPC framework that can run in any environment."
+ },
+ "GRU": {
+  "name": "Gated Recurrent Unit",
+  "def": "A recurrent cell with update and reset gates; a simpler alternative to the LSTM."
+ },
+ "GUI": {
+  "name": "Graphical User Interface",
+  "def": "A form of user interface that allows users to interact with electronic devices through graphical icons."
+ },
+ "HDD": {
+  "name": "Hard Disk Drive",
+  "def": "An electro-mechanical data storage device that stores and retrieves digital data using magnetic storage."
+ },
+ "HLC": {
+  "name": "Hybrid Logical Clock",
+  "def": "A timestamp of physical time plus a logical counter: respects causality and stays close to wall-clock time."
+ },
+ "HMAC": {
+  "name": "Hash-based Message Authentication Code",
+  "def": "A keyed hash that proves a message was produced by someone holding the secret key and was not changed."
+ },
+ "HNSW": {
+  "name": "Hierarchical Navigable Small World",
+  "def": "A graph-based approximate nearest-neighbour index that searches greedily from coarse to fine layers."
+ },
+ "HSM": {
+  "name": "Hardware Security Module",
+  "def": "Tamper-resistant hardware that stores keys and performs cryptographic operations inside it."
+ },
+ "HSTS": {
+  "name": "HTTP Strict Transport Security",
+  "def": "A header telling browsers to use only HTTPS for a site, preventing downgrade to plain HTTP."
+ },
+ "HTTP": {
+  "name": "Hypertext Transfer Protocol",
+  "def": "The foundation of data communication for the World Wide Web, operating on a client-server model."
+ },
+ "HTTPS": {
+  "name": "Hypertext Transfer Protocol Secure",
+  "def": "An extension of HTTP that uses encryption for secure communication over a computer network."
+ },
+ "IDE": {
+  "name": "Integrated Development Environment",
+  "def": "A software application that provides comprehensive facilities to computer programmers for software development."
+ },
+ "IDOR": {
+  "name": "Insecure Direct Object Reference",
+  "def": "An access-control bug where changing an ID in a request returns someone else's data because ownership is not checked."
+ },
+ "IEEE": {
+  "name": "Institute of Electrical and Electronics Engineers",
+  "def": "Standards body; IEEE 754 is the floating-point format every mainstream CPU implements."
+ },
+ "ILP": {
+  "name": "Instruction-Level Parallelism · Integer Linear Programming",
+  "def": "Instruction-Level Parallelism: A CPU core executing several independent instructions at the same time. Integer Linear Programming: Optimising a linear objective under linear constraints with integer variables; NP-hard but well served by solvers."
+ },
+ "IP": {
+  "name": "Internet Protocol",
+  "def": "The principal communications protocol in the Internet protocol suite for relaying datagrams across network boundaries."
+ },
+ "IPC": {
+  "name": "Inter-Process Communication",
+  "def": "Mechanisms for separate processes to exchange data: pipes, sockets, shared memory, message queues."
+ },
+ "ISA": {
+  "name": "Instruction Set Architecture",
+  "def": "The set of machine instructions a CPU understands, such as x86-64 or ARM64."
+ },
+ "IVF": {
+  "name": "Inverted File index",
+  "def": "An approximate nearest-neighbour index that clusters vectors and searches only the clusters nearest the query."
+ },
+ "JSON": {
+  "name": "JavaScript Object Notation",
+  "def": "A lightweight data-interchange format that is easy for humans to read/write and machines to parse/generate."
+ },
+ "JVM": {
+  "name": "Java Virtual Machine",
+  "def": "An abstract computing machine that enables a computer to run a Java program."
+ },
+ "JWT": {
+  "name": "JSON Web Token",
+  "def": "A compact, URL-safe means of representing claims to be transferred between two parties, often used for authentication."
+ },
+ "K8s": {
+  "name": "Kubernetes",
+  "def": "An open-source system that schedules containers onto a cluster of machines and keeps them running at the declared state."
+ },
+ "KISS": {
+  "name": "Keep It Simple, Stupid",
+  "def": "A design principle noting that most systems work best if they are kept simple rather than made complicated."
+ },
+ "KMP": {
+  "name": "Knuth-Morris-Pratt",
+  "def": "A string-searching algorithm that searches for occurrences of a word within a main text string in optimal time."
+ },
+ "KMS": {
+  "name": "Key Management Service",
+  "def": "A managed service that stores encryption keys and performs operations with them, so keys never leave it."
+ },
+ "LB": {
+  "name": "Load Balancer",
+  "def": "A device or software service that distributes network or application traffic across a number of servers to improve capacity and reliability."
+ },
+ "LCA": {
+  "name": "Lowest Common Ancestor",
+  "def": "In a tree or directed acyclic graph, the lowest node that has both given nodes as descendants."
+ },
+ "LCP": {
+  "name": "Longest Common Prefix",
+  "def": "The shared prefix of maximum length among a set of strings."
+ },
+ "LCS": {
+  "name": "Longest Common Subsequence",
+  "def": "The problem of finding the longest subsequence common to all sequences in a set of sequences."
+ },
+ "LFU": {
+  "name": "Least Frequently Used",
+  "def": "A cache replacement policy that discards the least frequently used items first."
+ },
+ "LIFO": {
+  "name": "Last-In, First-Out",
+  "def": "A method for processing data where the last items entered are the first to be removed, characteristic of stack data structures."
+ },
+ "LIS": {
+  "name": "Longest Increasing Subsequence",
+  "def": "The problem of finding a subsequence of a given sequence in which the elements are in sorted order."
+ },
+ "LLM": {
+  "name": "Large Language Model",
+  "def": "A neural network (usually a Transformer) trained on huge amounts of text to predict the next token."
+ },
+ "LoRA": {
+  "name": "Low-Rank Adaptation",
+  "def": "Fine-tuning that freezes the model and trains small low-rank matrices added to chosen weight layers."
+ },
+ "LP": {
+  "name": "Linear Programming",
+  "def": "Optimising a linear objective under linear constraints over real numbers; solvable in polynomial time."
+ },
+ "LRU": {
+  "name": "Least Recently Used",
+  "def": "A cache replacement policy that discards the least recently used items first when the cache reaches its capacity."
+ },
+ "LSM": {
+  "name": "Log-Structured Merge-tree",
+  "def": "A data structure with performance characteristics that make it attractive for providing indexed access to files with high insert volume."
+ },
+ "LSTM": {
+  "name": "Long Short-Term Memory",
+  "def": "A recurrent cell whose gates control what to keep, forget and output, so it can learn longer dependencies than a plain RNN."
+ },
+ "LWW": {
+  "name": "Last Writer Wins",
+  "def": "A conflict rule that keeps the write with the latest timestamp and silently discards the others."
+ },
+ "LZ77": {
+  "name": "Lempel–Ziv 1977",
+  "def": "Compression by replacing repeated substrings with back-references; the first stage of DEFLATE (gzip, zip, PNG)."
+ },
+ "MCMC": {
+  "name": "Markov Chain Monte Carlo",
+  "def": "Sampling from a hard-to-compute distribution by running a random walk whose long-run distribution is the target."
+ },
+ "MCP": {
+  "name": "Model Context Protocol",
+  "def": "An open protocol that lets an AI application discover and call tools, resources and prompts exposed by servers."
+ },
+ "MESI": {
+  "name": "Modified, Exclusive, Shared, Invalid",
+  "def": "The cache-coherence protocol states that keep each core's cached copy of a line consistent."
+ },
+ "MIME": {
+  "name": "Multipurpose Internet Mail Extensions",
+  "def": "The type labels, such as image/png, that say what kind of content a file or HTTP body claims to be."
+ },
+ "ML": {
+  "name": "Machine Learning",
+  "def": "Building systems that learn patterns from data instead of following hand-written rules."
+ },
+ "MMU": {
+  "name": "Memory Management Unit",
+  "def": "The CPU hardware that translates virtual addresses to physical ones using page tables and the TLB."
+ },
+ "MoE": {
+  "name": "Mixture of Experts",
+  "def": "A layer with many expert sub-networks where a router sends each token to only a few of them, so parameters grow faster than compute."
+ },
+ "MRO": {
+  "name": "Method Resolution Order",
+  "def": "The order in which a programming language resolves a method or attribute in a class hierarchy."
+ },
+ "MST": {
+  "name": "Minimum Spanning Tree",
+  "def": "A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices with the minimum possible total edge weight."
+ },
+ "MVCC": {
+  "name": "Multi-Version Concurrency Control",
+  "def": "The database keeps several versions of a row so readers see a consistent snapshot and do not block writers (and writers do not block readers)."
+ },
+ "NaN": {
+  "name": "Not a Number",
+  "def": "The floating-point value produced by undefined operations such as 0/0; it is not equal to anything, itself included."
+ },
+ "NFA": {
+  "name": "Nondeterministic Finite Automaton",
+  "def": "A finite automaton that may be in several states at once; equivalent in power to a DFA."
+ },
+ "NLP": {
+  "name": "Natural Language Processing",
+  "def": "Computing with human language: classification, translation, extraction, generation."
+ },
+ "NoSQL": {
+  "name": "Not Only SQL",
+  "def": "A broad class of database management systems that differ from the classic relational model, designed for distributed data stores."
+ },
+ "NTP": {
+  "name": "Network Time Protocol",
+  "def": "The protocol that synchronises machine clocks against reference servers, typically to within milliseconds."
+ },
+ "NUMA": {
+  "name": "Non-Uniform Memory Access",
+  "def": "A multi-socket design where each CPU has local memory that is faster to reach than another CPU's memory."
+ },
+ "OAEP": {
+  "name": "Optimal Asymmetric Encryption Padding",
+  "def": "Randomised padding that makes RSA encryption secure against attacks on textbook RSA."
+ },
+ "OCC": {
+  "name": "Optimistic Concurrency Control",
+  "def": "Letting transactions run without locks and checking for conflicts at commit, aborting one if they conflict."
+ },
+ "OIDC": {
+  "name": "OpenID Connect",
+  "def": "An identity layer on top of OAuth 2.0: an ID token tells the app who the user is."
+ },
+ "OLAP": {
+  "name": "Online Analytical Processing",
+  "def": "Workloads that scan and aggregate large amounts of data, usually on column-oriented storage."
+ },
+ "OLTP": {
+  "name": "Online Transaction Processing",
+  "def": "Workloads of many small reads and writes by key, such as placing orders, usually on row-oriented storage."
+ },
+ "OOM": {
+  "name": "Out of Memory",
+  "def": "An undesired state of computer operation where no additional memory can be allocated for use by programs."
+ },
+ "OOP": {
+  "name": "Object-Oriented Programming",
+  "def": "A programming paradigm based on the concept of 'objects', which can contain data and code."
+ },
+ "ORM": {
+  "name": "Object-Relational Mapping",
+  "def": "A programming technique for converting data between incompatible type systems using object-oriented programming languages."
+ },
+ "OS": {
+  "name": "Operating System",
+  "def": "System software that manages computer hardware, software resources, and provides common services for computer programs."
+ },
+ "PACELC": {
+  "name": "Partition: Availability or Consistency; Else: Latency or Consistency",
+  "def": "An extension of CAP: during a partition choose A or C, and otherwise choose between low latency and consistency."
+ },
+ "PCA": {
+  "name": "Principal Component Analysis",
+  "def": "Finds the orthogonal directions of greatest variance in data, used for dimensionality reduction."
+ },
+ "PEFT": {
+  "name": "Parameter-Efficient Fine-Tuning",
+  "def": "Fine-tuning methods (LoRA, adapters, prefix tuning) that train a small fraction of the parameters."
+ },
+ "PEP": {
+  "name": "Python Enhancement Proposal",
+  "def": "A design document providing information to the Python community, describing a new feature or its environment."
+ },
+ "PID": {
+  "name": "Process Identifier",
+  "def": "The number the kernel assigns to each process."
+ },
+ "PII": {
+  "name": "Personally Identifiable Information",
+  "def": "Data that can identify a person, such as a name, email address or location, and needs extra protection."
+ },
+ "PKCE": {
+  "name": "Proof Key for Code Exchange",
+  "def": "An OAuth extension: the client proves, with a secret verifier, that it started the flow, so an intercepted authorization code is useless."
+ },
+ "QLoRA": {
+  "name": "Quantized Low-Rank Adaptation",
+  "def": "LoRA training on top of a base model quantized to 4 bits, so large models fit on one GPU."
+ },
+ "QPS": {
+  "name": "Queries Per Second",
+  "def": "A common metric used to measure the rate of traffic passing through a particular server or system."
+ },
+ "QUIC": {
+  "name": "QUIC",
+  "def": "A transport protocol over UDP with built-in TLS 1.3 and independent streams; HTTP/3 runs on it."
+ },
+ "RAG": {
+  "name": "Retrieval-Augmented Generation",
+  "def": "Retrieve relevant documents first, then give them to the LLM in the prompt so the answer is grounded in them."
+ },
+ "RAID": {
+  "name": "Redundant Array of Independent Disks",
+  "def": "Combines disks for redundancy and/or speed; RAID-5 stores XOR parity to rebuild one failed disk."
+ },
+ "RAII": {
+  "name": "Resource Acquisition Is Initialization",
+  "def": "Tying a resource's lifetime to an object's scope, so leaving the scope releases it (C++, Rust)."
+ },
+ "RAM": {
+  "name": "Random Access Memory",
+  "def": "A form of computer memory that can be read and changed in any order, typically used to store working data."
+ },
+ "RBAC": {
+  "name": "Role-Based Access Control",
+  "def": "Authorization by assigning permissions to roles and roles to users."
+ },
+ "RE2": {
+  "name": "RE2 regular expression engine",
+  "def": "Google's automaton-based regex library that guarantees linear-time matching (no backreferences)."
+ },
+ "ReBAC": {
+  "name": "Relationship-Based Access Control",
+  "def": "Authorization derived from relationships between users and objects, as in Google's Zanzibar."
+ },
+ "ReDoS": {
+  "name": "Regular expression Denial of Service",
+  "def": "An attack that sends input causing a backtracking regex engine to take exponential time."
+ },
+ "REST": {
+  "name": "Representational State Transfer",
+  "def": "An architectural style for distributed hypermedia systems, commonly used for creating interactive web services."
+ },
+ "RFO": {
+  "name": "Read For Ownership",
+  "def": "The cache-coherence request a core sends to get exclusive ownership of a cache line before writing it, invalidating other cores' copies."
+ },
+ "RLHF": {
+  "name": "Reinforcement Learning from Human Feedback",
+  "def": "Train a reward model on human preference rankings, then optimise the LLM against it (often with PPO)."
+ },
+ "RNN": {
+  "name": "Recurrent Neural Network",
+  "def": "A network that processes a sequence one step at a time, carrying a hidden state forward."
+ },
+ "RPC": {
+  "name": "Remote Procedure Call",
+  "def": "A protocol that allows one program to request a service from a program located in another computer on a network."
+ },
+ "RPO": {
+  "name": "Recovery Point Objective",
+  "def": "How much data you can afford to lose in a failure, measured as time: the window of writes that may be gone."
+ },
+ "RSA": {
+  "name": "Rivest–Shamir–Adleman",
+  "def": "Public-key cryptosystem whose security rests on the difficulty of factoring the product of two large primes."
+ },
+ "RSS": {
+  "name": "Resident Set Size",
+  "def": "The physical memory a process currently occupies."
+ },
+ "RST": {
+  "name": "TCP Reset",
+  "def": "A TCP segment that aborts a connection immediately; a client sees it as connection refused or connection reset."
+ },
+ "RTO": {
+  "name": "Recovery Time Objective",
+  "def": "How long a service may be down after a failure before it must be back."
+ },
+ "RTT": {
+  "name": "Round-Trip Time",
+  "def": "The time for a packet to reach the other end and a reply to come back."
+ },
+ "SaaS": {
+  "name": "Software as a Service",
+  "def": "A software licensing and delivery model in which software is licensed on a subscription basis and is centrally hosted."
+ },
+ "SAT": {
+  "name": "Boolean satisfiability",
+  "def": "Is there an assignment making a Boolean formula true? The first problem proved NP-complete."
+ },
+ "SDK": {
+  "name": "Software Development Kit",
+  "def": "A collection of software development tools in one installable package."
+ },
+ "SECDED": {
+  "name": "Single Error Correction, Double Error Detection",
+  "def": "An extended Hamming code used in ECC memory: fixes one flipped bit, detects two."
+ },
+ "SGD": {
+  "name": "Stochastic Gradient Descent",
+  "def": "Update the weights with the gradient computed on a small random batch instead of the whole dataset."
+ },
+ "SIMD": {
+  "name": "Single Instruction, Multiple Data",
+  "def": "One instruction operating on several values packed into a wide register."
+ },
+ "SJF": {
+  "name": "Shortest Job First",
+  "def": "A scheduling policy that runs the job with the shortest expected run time next, minimising average waiting time."
+ },
+ "SLA": {
+  "name": "Service Level Agreement",
+  "def": "A commitment between a service provider and a client outlining expected performance metrics such as availability."
+ },
+ "SLI": {
+  "name": "Service Level Indicator",
+  "def": "A carefully defined quantitative measure of some aspect of the level of service that is provided, such as latency."
+ },
+ "SLO": {
+  "name": "Service Level Objective",
+  "def": "A specific target level for the reliability of a service, usually defined by a numerical goal for a metric."
+ },
+ "SMT": {
+  "name": "Simultaneous Multithreading · Satisfiability Modulo Theories",
+  "def": "Simultaneous Multithreading: Running two hardware threads on one core's execution units (Intel calls it Hyper-Threading). Satisfiability Modulo Theories: SAT extended with theories such as integers and arrays; used in program verification and solvers."
+ },
+ "SNI": {
+  "name": "Server Name Indication",
+  "def": "A TLS field in which the client names the site it wants, so one IP address can serve many certificates."
+ },
+ "SOAP": {
+  "name": "Simple Object Access Protocol",
+  "def": "A messaging protocol specification for exchanging structured information in the implementation of web services."
+ },
+ "SOLID": {
+  "name": "SOLID principles",
+  "def": "Five object-oriented design principles: Single responsibility, Open–closed, Liskov substitution, Interface segregation, Dependency inversion."
+ },
+ "SPIFFE": {
+  "name": "Secure Production Identity Framework for Everyone",
+  "def": "A standard for giving workloads cryptographic identities (SPIFFE IDs and SVIDs) instead of shared secrets."
+ },
+ "SQL": {
+  "name": "Structured Query Language",
+  "def": "A standard language for storing, manipulating and retrieving data in databases."
+ },
+ "SRTF": {
+  "name": "Shortest Remaining Time First",
+  "def": "The preemptive version of shortest job first: a newly arrived shorter job interrupts the running one."
+ },
+ "SSD": {
+  "name": "Solid-State Drive",
+  "def": "A solid-state storage device that uses integrated circuit assemblies to store data persistently, offering faster access times."
+ },
+ "SSE": {
+  "name": "Server-Sent Events",
+  "def": "A standard describing how servers can initiate data transmission towards clients once an initial connection is established."
+ },
+ "SSI": {
+  "name": "Serializable Snapshot Isolation",
+  "def": "PostgreSQL's serializable level: snapshot isolation plus tracking of read/write dependencies, aborting a transaction when the interleaving could not have happened one at a time."
+ },
+ "SSL": {
+  "name": "Secure Sockets Layer",
+  "def": "The predecessor to TLS, a cryptographic protocol providing communications security over a network."
+ },
+ "SSRF": {
+  "name": "Server-Side Request Forgery",
+  "def": "An attack that makes a server fetch a URL of the attacker's choosing, often reaching internal services."
+ },
+ "STW": {
+  "name": "Stop-The-World",
+  "def": "A garbage-collection pause during which all program threads are halted."
+ },
+ "SVD": {
+  "name": "Singular Value Decomposition",
+  "def": "Factoring a matrix as U·Σ·Vᵀ; the largest singular values give the best low-rank approximation."
+ },
+ "SWIM": {
+  "name": "Scalable Weakly-consistent Infection-style Membership",
+  "def": "A gossip-based protocol for cluster membership and failure detection, used by Consul and memberlist."
+ },
+ "TCO": {
+  "name": "Tail Call Optimization",
+  "def": "Reusing the current stack frame for a call in tail position, so deep tail recursion uses constant stack. Python and Go do not do it."
+ },
+ "TCP": {
+  "name": "Transmission Control Protocol",
+  "def": "A core protocol of the Internet Protocol Suite that provides reliable, ordered, and error-checked delivery of a stream of bytes."
+ },
+ "TDD": {
+  "name": "Test-Driven Development",
+  "def": "A software development process relying on software requirements being converted to test cases before software is fully developed."
+ },
+ "TLB": {
+  "name": "Translation Lookaside Buffer",
+  "def": "A memory cache that stores recent translations of virtual memory to physical addresses for faster retrieval."
+ },
+ "TLS": {
+  "name": "Transport Layer Security",
+  "def": "A cryptographic protocol designed to provide communications security over a computer network."
+ },
+ "TOCTOU": {
+  "name": "Time Of Check To Time Of Use",
+  "def": "A race where a condition checked earlier is no longer true when acted on."
+ },
+ "TSP": {
+  "name": "Travelling Salesman Problem",
+  "def": "Find the shortest tour visiting every city once; NP-hard."
+ },
+ "TTFT": {
+  "name": "Time To First Token",
+  "def": "How long an LLM takes to produce the first token of its response; what users perceive as responsiveness."
+ },
+ "TTL": {
+  "name": "Time To Live",
+  "def": "How long a cached value, DNS record or packet stays valid before it expires."
+ },
+ "UDP": {
+  "name": "User Datagram Protocol",
+  "def": "A simple, connectionless communication protocol that allows for sending messages with minimal overhead but no delivery guarantees."
+ },
+ "ULID": {
+  "name": "Universally Unique Lexicographically Sortable Identifier",
+  "def": "A 128-bit ID that starts with a millisecond timestamp, so IDs sort roughly by creation time."
+ },
+ "ULP": {
+  "name": "Unit in the Last Place",
+  "def": "The gap between a floating-point number and the next representable one."
+ },
+ "UTF": {
+  "name": "Unicode Transformation Format",
+  "def": "A family of character encodings capable of encoding all possible Unicode code points."
+ },
+ "UUID": {
+  "name": "Universally Unique Identifier",
+  "def": "A 128-bit label used for information in computer systems to ensure uniqueness across distributed systems."
+ },
+ "vDSO": {
+  "name": "virtual Dynamic Shared Object",
+  "def": "A small library the kernel maps into every process so calls like clock_gettime run without entering the kernel."
+ },
+ "VM": {
+  "name": "Virtual Machine",
+  "def": "The virtualization/emulation of a computer system."
+ },
+ "WAL": {
+  "name": "Write-Ahead Logging",
+  "def": "A family of techniques for providing atomicity and durability in database systems by writing modifications to a log before they are applied."
+ },
+ "XML": {
+  "name": "Extensible Markup Language",
+  "def": "A markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable."
+ },
+ "XOR": {
+  "name": "Exclusive OR",
+  "def": "A bitwise operation that evaluates to true if and only if its arguments differ."
+ },
+ "XSS": {
+  "name": "Cross-Site Scripting",
+  "def": "An attack that injects script into a page other users view, so it runs with their session."
+ },
+ "YAGNI": {
+  "name": "You Aren't Gonna Need It",
+  "def": "A principle of extreme programming that states a programmer should not add functionality until deemed necessary."
+ }
+}

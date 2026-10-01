@@ -1,0 +1,58 @@
+/* ============================================================================
+   HTML parts of the CS Fundamentals / System Design labs (viz-cs*.js,
+   viz-sd4.js). Canvas labs need no CSS; these are the ones built from DOM.
+   Colours come from the theme tokens, so dark, light and the reader's page
+   themes all work.
+   ========================================================================= */
+
+/* --- cs-isolation --------------------------------------------------------- */
+.iso { --t1: #6cb6ff; --t2: #f5b453; display: grid; gap: 12px; font-size: 13.5px; }
+[data-theme="light"] .iso { --t1: #1f6fd1; --t2: #a35f00; }
+.iso .t1 { --tc: var(--t1); }
+.iso .t2 { --tc: var(--t2); }
+.iso-story { margin: 0; color: var(--text-dim); line-height: 1.55; }
+.iso-lv { color: var(--accent); font-weight: 650; }
+.iso-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(210px, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 760px) { .iso-grid { grid-template-columns: 1fr; } }
+.iso-steps { display: grid; gap: 6px; }
+.iso-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.iso-headrow span { font: 700 12px/1 var(--sans); letter-spacing: .04em; padding: 0 4px; }
+.iso-headrow span:first-child { color: var(--t1); }
+.iso-headrow span:last-child { color: var(--t2); }
+.iso-cell {
+  border: 1px solid var(--border); border-left: 3px solid var(--tc); border-radius: 8px;
+  padding: 7px 9px; background: var(--surface-2, var(--surface)); opacity: .55;
+  transition: opacity var(--t), box-shadow var(--t);
+}
+.iso-cell code { font: 500 11.5px/1.45 var(--mono); color: var(--text); white-space: pre-wrap; word-break: break-word; background: none; padding: 0; }
+.iso-cell.done { opacity: 1; }
+.iso-cell.next { opacity: 1; box-shadow: 0 0 0 2px var(--accent-line); }
+.iso-res { margin-top: 5px; font: 600 11.5px/1.4 var(--mono); color: var(--tc); }
+.iso-res .err { color: var(--err); font-weight: 700; }
+.iso-res em { font-style: normal; color: var(--text-faint); font-weight: 500; }
+.iso-res em.warn { color: var(--err); }
+.iso-db { border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: var(--bg); overflow-x: auto; }
+.iso-dbh { font: 700 12px/1 var(--sans); color: var(--text-dim); margin-bottom: 8px; letter-spacing: .04em; }
+.iso-db table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.iso-db th { white-space: nowrap; font-size: 11px; text-align: left; color: var(--text-faint); font-weight: 600; padding: 3px 4px; border-bottom: 1px solid var(--border); }
+.iso-db td { padding: 4px; border-bottom: 1px solid var(--border-soft); font-family: var(--mono); }
+.iso-db td code { font-size: 11px; background: none; padding: 0; }
+.iso-pend { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 11px; color: var(--tc); border: 1px dashed var(--tc); }
+.iso-tx { display: grid; gap: 3px; margin-top: 8px; font: 600 11.5px/1.4 var(--mono); }
+.iso-tx span { color: var(--tc); }
+.iso-verdict { border-radius: 10px; padding: 10px 12px; line-height: 1.55; }
+.iso-verdict.bad { background: var(--err-wash); border: 1px solid var(--err); }
+.iso-verdict.ok { background: var(--ok-wash); border: 1px solid var(--ok); }
+.iso-verdict code { font-size: 12px; }
+.iso-matrix { width: 100%; border-collapse: collapse; font-size: 12px; }
+.iso-matrix th, .iso-matrix td { padding: 5px 6px; border: 1px solid var(--border-soft); text-align: center; }
+.iso-matrix th { color: var(--text-faint); font-weight: 600; }
+.iso-matrix th.on { color: var(--accent); }
+.iso-matrix td:first-child { text-align: left; color: var(--text-dim); font-weight: 600; }
+.iso-matrix tr.on td:first-child { color: var(--text); }
+.iso-matrix td.bad { color: var(--err); }
+.iso-matrix td.ok { color: var(--ok); }
+.iso-matrix td.cur { box-shadow: inset 0 0 0 2px var(--accent); font-weight: 700; }
+.iso-note { margin: 0; color: var(--text-faint); font-size: 12.5px; line-height: 1.55; }
+.iso-note code { font-size: 11.5px; }
+@media (max-width: 560px) { .iso-matrix { display: block; overflow-x: auto; } .iso-row { gap: 5px; } .iso-cell { padding: 6px 7px; } }

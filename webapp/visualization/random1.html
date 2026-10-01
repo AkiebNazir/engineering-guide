@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Algorithm Visualization</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --primary: #38bdf8;
+            --comparing: #facc15;
+            --merged: #4ade80;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            margin: 0;
+        }
+
+        /* The Visualization Arena */
+        #array-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 300px;
+            width: 100%;
+            max-width: 800px;
+            gap: 8px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* The Data Blocks */
+        .bar {
+            width: 40px;
+            background-color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 10px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            font-size: 14px;
+            color: #0f172a;
+            /* The magic that makes it animated instead of instant */
+            transition: height 0.3s ease, background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        /* Live Commentary Log */
+        #status-board {
+            width: 100%;
+            max-width: 800px;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 16px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #2563eb;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        button:hover { background-color: #1d4ed8; }
+        button:disabled { background-color: #475569; cursor: not-allowed; }
+
+    </style>
+</head>
+<body>
+
+    <h2>Live Merge Sort Visualization</h2>
+    <button id="start-btn" onclick="startVisualization()">Start Animation</button>
+    
+    <div id="array-container"></div>
+    <div id="status-board">Status: Waiting to start...</div>
+
+    <script>
+        // The raw input data
+        const initialData = [38, 27, 43, 3, 9, 82, 10];
+        let elements = [];
+        const container = document.getElementById('array-container');
+        const statusBoard = document.getElementById('status-board');
+        const startBtn = document.getElementById('start-btn');
+
+        // Delay function to create "Frames" in the animation
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Update the live text log
+        function log(message) {
+            statusBoard.innerHTML = message;
+        }
+
+        // Initialize the DOM elements based on the data
+        function setup() {
+            container.innerHTML = '';
+            elements = [];
+            initialData.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${value * 3}px`; // Scale height for visibility
+                bar.innerText = value;
+                container.appendChild(bar);
+                
+                elements.push({
+                    value: value,
+                    div: bar // Keep a reference to the DOM node
+                });
+            });
+        }
+
+        // --- The Core Algorithm with Animation Hooks ---
+
+        async function mergeSort(arr, left, right) {
+            if (left >= right) return;
+            
+            const mid = Math.floor((left + right) / 2);
+            
+            log(`Splitting array from index ${left} to ${right}`);
+            await sleep(800);
+
+            await mergeSort(arr, left, mid);
+            await mergeSort(arr, mid + 1, right);
+            
+            await merge(arr, left, mid, right);
+        }
+
+        async function merge(arr, left, mid, right) {
+            log(`Merging subarrays: [${left} to ${mid}] and [${mid + 1} to ${right}]`);
+            
+            // Highlight the section being merged
+            for (let i = left; i <= right; i++) {
+                arr[i].div.style.backgroundColor = 'var(--comparing)';
+            }
+            await sleep(800);
+
+            let temp = [];
+            let i = left;
+            let j = mid + 1;
+
+            while (i <= mid && j <= right) {
+                log(`Comparing ${arr[i].value} and ${arr[j].value}...`);
+                
+                // Emphasize the specific elements being compared
+                arr[i].div.style.transform = 'scale(1.1)';
+                arr[j].div.style.transform = 'scale(1.1)';
+                await sleep(600);
+
+                if (arr[i].value <= arr[j].value) {
+                    log(`${arr[i].value} is smaller. Moving to sorted array.`);
+                    temp.push(arr[i]);
+                    i++;
+                } else {
+                    log(`${arr[j].value} is smaller. Moving to sorted array.`);
+                    temp.push(arr[j]);
+                    j++;
+                }
+                
+                // Reset scale
+                if (i <= mid) arr[i-1].div.style.transform = 'scale(1)';
+                if (j <= right) arr[j-1].div.style.transform = 'scale(1)';
+                await sleep(200);
+            }
+
+            // Collect remaining elements
+            while (i <= mid) temp.push(arr[i++]);
+            while (j <= right) temp.push(arr[j++]);
+
+            log(`Writing merged result back to the main array...`);
+            await sleep(500);
+
+            // Animate the values settling into their new sorted positions
+            for (let k = 0; k < temp.length; k++) {
+                const targetIndex = left + k;
+                arr[targetIndex] = temp[k];
+                
+                // Update the DOM to visually morph into the new state
+                arr[targetIndex].div.style.height = `${arr[targetIndex].value * 3}px`;
+                arr[targetIndex].div.innerText = arr[targetIndex].value;
+                arr[targetIndex].div.style.backgroundColor = 'var(--merged)';
+                arr[targetIndex].div.style.transform = 'scale(1)';
+                
+                await sleep(300); // Visual delay for each element dropping into place
+            }
+
+            // Reset colors for the next operations
+            for (let k = left; k <= right; k++) {
+                arr[k].div.style.backgroundColor = 'var(--primary)';
+            }
+        }
+
+        async function startVisualization() {
+            startBtn.disabled = true;
+            setup();
+            log("Starting Merge Sort...");
+            await sleep(1000);
+            
+            await mergeSort(elements, 0, elements.length - 1);
+            
+            log("Array is fully sorted!");
+            // Final celebration animation
+            for (let i = 0; i < elements.length; i++) {
+                elements[i].div.style.backgroundColor = 'var(--merged)';
+                await sleep(100);
+            }
+            startBtn.disabled = false;
+        }
+
+        // Initialize on load
+        setup();
+    </script>
+</body>
+</html>
