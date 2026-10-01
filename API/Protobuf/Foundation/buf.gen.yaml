@@ -1,0 +1,17 @@
+# buf codegen config for FOUNDATION LEVEL 08.
+#
+# The second difference: the PLUGIN INVOCATION is declared in a file too.
+# `protoc --go_out=. --go_opt=module=... proto/x.proto` becomes this, and
+# `buf generate` then reproduces it byte-for-byte on every machine and in CI.
+#
+# Note `local: protoc-gen-go` - buf is calling the exact same plugin binary
+# that protoc calls. That is why the output is identical: buf replaces the
+# DRIVER, not the code generator.
+version: v2
+plugins:
+  - local: protoc-gen-go
+    out: buf_out
+    opt:
+      - module=dsapractice/api/Protobuf/Foundation
+  - protoc_builtin: python
+    out: buf_out/python

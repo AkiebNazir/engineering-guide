@@ -1,0 +1,22 @@
+// FOUNDATION LEVEL 05 (the NEWER schema) - knows four Status values.
+// A service that has already been upgraded uses this file.
+syntax = "proto3";
+
+package found.l05.new;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l05new;l05new";
+
+enum Status {
+  // The zero value is mandatory in proto3 and is the default for the field.
+  // Convention: name it <ENUM>_UNSPECIFIED so "nobody set this" is explicit
+  // rather than accidentally meaning a real state.
+  STATUS_UNSPECIFIED = 0;
+  STATUS_QUEUED = 1;
+  STATUS_RUNNING = 2;
+  STATUS_ARCHIVED = 3; // added in the newer release; l05_old.proto has never heard of it
+}
+
+message Job {
+  string id = 1;
+  Status status = 2;
+}

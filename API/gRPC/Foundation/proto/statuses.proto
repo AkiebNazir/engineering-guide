@@ -1,0 +1,23 @@
+// FOUNDATION LEVEL 06 - gRPC status codes.
+// The token/role live in the REQUEST here on purpose: metadata is level 07 and
+// interceptors are levels 08-10. This level is only about the status code itself.
+syntax = "proto3";
+
+package foundation.statuses.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/statusespb;statusespb";
+
+service Vault {
+  rpc GetSecret(GetSecretRequest) returns (Secret);
+}
+
+message GetSecretRequest {
+  string id = 1;
+  string token = 2;
+  string role = 3;
+}
+
+message Secret {
+  string id = 1;
+  string value = 2;
+}

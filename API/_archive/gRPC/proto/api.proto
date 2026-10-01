@@ -1,0 +1,36 @@
+syntax = "proto3";
+package api;
+
+option go_package = "path/to/proto/api";
+
+service MicroserviceSystem {
+  // Use Case 1: Unary
+  rpc ValidateToken (AuthRequest) returns (AuthResponse);
+  
+  // Use Case 2: Client Streaming
+  rpc StreamMetrics (stream Metric) returns (Ack);
+  
+  // Use Case 3: Server Streaming
+  rpc WatchMarketData (MarketRequest) returns (stream MarketData);
+  
+  // Use Case 4: Bidirectional Streaming
+  rpc GameSync (stream PlayerState) returns (stream GameState);
+  
+  // Use Case 5: Unary with Deadlines
+  rpc ProcessTask (Task) returns (TaskResult);
+}
+
+message AuthRequest { string token = 1; }
+message AuthResponse { bool is_valid = 1; string user_id = 2; }
+
+message Metric { string service_id = 1; float cpu_usage = 2; float mem_usage = 3; }
+message Ack { bool success = 1; int32 processed_count = 2; }
+
+message MarketRequest { string ticker_symbol = 1; }
+message MarketData { string symbol = 1; float price = 2; int64 timestamp = 3; }
+
+message PlayerState { string player_id = 1; float x = 2; float y = 3; }
+message GameState { int32 active_players = 1; string global_event = 2; }
+
+message Task { string task_id = 1; string payload = 2; }
+message TaskResult { string task_id = 1; string status = 2; }

@@ -1,0 +1,18 @@
+// FOUNDATION LEVEL 03 - repeated fields: protobuf's lists/arrays.
+syntax = "proto3";
+
+package found.l03;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l03;l03";
+
+message Track {
+  string title = 1;
+  int32 seconds = 2;
+}
+
+message Playlist {
+  string name = 1;
+  repeated string tags = 2;      // repeated STRING: one tag+length per element
+  repeated int32 ratings = 3;    // repeated scalar NUMBER: packed into one run of bytes
+  repeated Track tracks = 4;     // repeated MESSAGE: never packed
+}

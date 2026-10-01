@@ -1,0 +1,17 @@
+// FOUNDATION LEVEL 01 (version 1 of the schema) - the "before" file.
+// Field 1 is called `title` here. l01_v2.proto renames it to `name` while
+// KEEPING the number 1, which is the whole point of the level.
+syntax = "proto3";
+
+package found.l01.v1;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l01v1;l01v1";
+
+message Book {
+  string title = 1;
+  int32 year = 2;
+  bool in_print = 3;
+  double price = 4;
+  int64 copies_sold = 5;
+  bytes cover_thumbnail = 6;
+}

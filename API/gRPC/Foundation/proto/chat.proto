@@ -1,0 +1,17 @@
+// FOUNDATION LEVEL 05 - bidirectional streaming: "stream" on BOTH sides.
+syntax = "proto3";
+
+package foundation.chat.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/chatpb;chatpb";
+
+service Chat {
+  rpc Talk(stream ChatMessage) returns (stream ChatMessage);
+}
+
+message ChatMessage {
+  // "sender", not "from": "from" is a Python keyword and protoc does not rename
+  // fields for you, so `msg.from` would be a syntax error in the generated code.
+  string sender = 1;
+  string text = 2;
+}

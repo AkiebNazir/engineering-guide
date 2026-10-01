@@ -1,0 +1,20 @@
+// FOUNDATION LEVEL 02 - a message whose field is itself a message.
+syntax = "proto3";
+
+package found.l02;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l02;l02";
+
+message Address {
+  string street = 1;
+  string city = 2;
+  string country_code = 3;
+}
+
+message Person {
+  string name = 1;
+  // A message-typed field. Unlike a scalar, this one has real PRESENCE:
+  // "no address at all" and "an address with every field empty" are
+  // different states, and both languages can tell them apart.
+  Address home = 2;
+}

@@ -1,0 +1,35 @@
+// FOUNDATION LEVEL 11 (capstone) - one small, complete, protected service.
+// Three RPCs, three different access levels, one interceptor chain.
+syntax = "proto3";
+
+package foundation.notes.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/notespb;notespb";
+
+service Notes {
+  rpc GetNote(GetNoteRequest) returns (Note); // public: no credential needed
+  rpc CreateNote(CreateNoteRequest) returns (Note); // any authenticated caller
+  rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse); // admin role only
+}
+
+message Note {
+  int32 id = 1;
+  string title = 2;
+  string author = 3;
+}
+
+message GetNoteRequest {
+  int32 id = 1;
+}
+
+message CreateNoteRequest {
+  string title = 1;
+}
+
+message DeleteNoteRequest {
+  int32 id = 1;
+}
+
+message DeleteNoteResponse {
+  int32 remaining = 1;
+}

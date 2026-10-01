@@ -1,0 +1,20 @@
+// FOUNDATION LEVEL 07 - metadata (gRPC's headers) travels BESIDE these messages,
+// never inside them. Note there is no "request_id" field anywhere below.
+syntax = "proto3";
+
+package foundation.metaecho.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/metaechopb;metaechopb";
+
+service MetaEcho {
+  rpc Echo(EchoRequest) returns (EchoResponse);
+}
+
+message EchoRequest {
+  string text = 1;
+}
+
+message EchoResponse {
+  string text = 1;
+  string saw_request_id = 2; // proof the server read metadata it was never sent in a field
+}

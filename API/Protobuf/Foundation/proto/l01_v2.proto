@@ -1,0 +1,18 @@
+// FOUNDATION LEVEL 01 (version 2 of the schema) - the "after" file.
+// IDENTICAL to l01_v1.proto except that field 1 is now spelled `name`
+// instead of `title`. Every field NUMBER is unchanged, so bytes encoded by
+// v1 still decode perfectly here - the name never travelled.
+syntax = "proto3";
+
+package found.l01.v2;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l01v2;l01v2";
+
+message Book {
+  string name = 1; // was `title` in v1 - same number, new spelling
+  int32 year = 2;
+  bool in_print = 3;
+  double price = 4;
+  int64 copies_sold = 5;
+  bytes cover_thumbnail = 6;
+}

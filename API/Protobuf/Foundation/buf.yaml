@@ -1,0 +1,33 @@
+# buf workspace config for FOUNDATION LEVEL 08.
+#
+# This file is the first difference you notice between the two toolchains.
+# With protoc you pass every include path and every input file on the command
+# line, every time. With buf, the SCHEMA ITSELF is declared once here and
+# checked into the repo, so `buf generate` needs no arguments at all - and
+# everyone on the team gets identical output without remembering any flags.
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+  except:
+    # Three of buf's default rules encode a repo layout this teaching folder
+    # deliberately does not use, so they are turned off here. In a real
+    # service repo you would leave all three ON - they are good rules.
+    #
+    # PACKAGE_VERSION_SUFFIX     wants `found.l00.v1`; our packages are named
+    #                            after the LEVEL, not an API version.
+    # PACKAGE_DIRECTORY_MATCH    wants proto/found/l00/ to hold package
+    #                            found.l00; we keep proto/ flat so each level's
+    #                            schema is one obvious file.
+    # DIRECTORY_SAME_PACKAGE     wants every file in a directory to share one
+    #                            package; we have 16 independent packages in
+    #                            proto/ on purpose, so that every level is
+    #                            runnable and readable in isolation.
+    - PACKAGE_VERSION_SUFFIX
+    - PACKAGE_DIRECTORY_MATCH
+    - DIRECTORY_SAME_PACKAGE
+breaking:
+  use:
+    - FILE

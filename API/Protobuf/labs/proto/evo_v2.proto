@@ -1,0 +1,13 @@
+syntax = "proto3";
+package evo.v2;
+
+// Version 2 of Customer: 'phone' was removed and REPLACED by 'phones'.
+message Customer {
+  reserved 3;                 // never reuse tag 3 ...
+  reserved "phone";           // ... or the old name
+
+  int64 id = 1;
+  string name = 2;
+  string email = 4;           // new field: old readers just skip it
+  repeated string phones = 5;
+}

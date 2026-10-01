@@ -1,0 +1,77 @@
+# Kong Gateway (DB-less, declarative) configuration equivalent to the Gateway labs.
+# Reference only: the labs do not need Kong. To try it:
+#   docker run --rm -p 8000:8000 -e KONG_DATABASE=off -e KONG_DECLARATIVE_CONFIG=/kong.yaml \
+#     -v $PWD/kong.yaml:/kong.yaml kong/kong-gateway:3.9
+#
+# Kong's vocabulary: a SERVICE is an upstream API, a ROUTE matches requests to it, an UPSTREAM
+# with TARGETS is a load-balanced pool, a CONSUMER is a caller identity, a PLUGIN is a policy.
+_format_version: "3.0"
+
+upstreams:
+- name: users-pool
+  algorithm: least-connections
+  healthchecks:
+    active:                                   # lab 03: poll /healthz, need 2 in a row to flip
+      http_path: /healthz
+      healthy:   { interval: 5, successes: 2 }
+      unhealthy: { interval: 5, http_failures: 2, tcp_failures: 2, timeouts: 2 }
+    passive:                                  # lab 03: outlier ejection from real traffic
+      unhealthy: { http_failures: 5, http_statuses: [500, 502, 503, 504] }
+  targets:
+  - { target: "users-a:8000", weight: 100 }
+  - { target: "users-b:8000", weight: 100 }
+  - { target: "users-c:8000", weight: 100 }
+
+services:
+- name: users
+  host: users-pool                            # resolves to the upstream above
+  port: 8000
+  path: /users                                # lab 01: /api/users/42 -> /users/42 (strip_path below)
+  connect_timeout: 500
+  read_timeout: 2000
+  retries: 2                                  # on connect errors/timeouts; check your version before relying
+                                              # on it for non-idempotent methods (lab 03: never blind-retry POST)
+  routes:
+  - name: users-route
+    paths: ["/api/users"]
+    strip_path: true
+  plugins:
+  - name: jwt                                 # lab 02: JWT at the edge (HS256 here, keys per consumer)
+  - name: rate-limiting                       # lab 02: per-consumer limit, shared counter in Redis
+    config:
+      minute: 60
+      limit_by: consumer
+      policy: redis                           # "local" = per node, lab 02's N x limit problem
+      redis: { host: redis, port: 6379 }
+
+- name: orders
+  url: http://orders-v1:8000/orders
+  routes:
+  - name: orders-route
+    paths: ["/api/orders"]
+    strip_path: true
+    plugins:
+    - name: request-size-limiting             # lab 01: 413 before the body reaches the service
+      config: { allowed_payload_size: 1, size_unit: megabytes }
+  plugins:
+  - name: key-auth                            # lab 02: API keys mapped to consumers
+    config: { key_names: [x-api-key], hide_credentials: true }
+
+consumers:
+- username: checkout-web
+  keyauth_credentials:
+  - key: dev-only-key-change-me
+  jwt_secrets:
+  - key: https://auth.example.test            # matched against the token's iss claim
+    algorithm: HS256
+    secret: dev-only-jwt-secret-change-me
+
+plugins:                                      # global plugins: every request
+- name: correlation-id                        # lab 01: X-Request-Id minted or passed through
+  config: { header_name: X-Request-Id, generator: uuid, echo_downstream: true }
+- name: file-log                              # lab 01: one structured access-log line per request
+  config: { path: /dev/stdout }
+- name: opentelemetry                         # Observability lab 01: traces from the edge
+  config:
+    traces_endpoint: http://otel-collector:4318/v1/traces
+    header_type: w3c

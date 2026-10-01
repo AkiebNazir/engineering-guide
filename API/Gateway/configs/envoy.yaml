@@ -1,0 +1,164 @@
+# Envoy (v3 API) configuration equivalent to the Gateway labs. Reference only: the labs do not
+# need Envoy installed. To try it:   docker run --rm -p 8080:8080 -v $PWD/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.35-latest
+#
+#   lab 01 (py/go)  routing, prefix rewrite, X-Forwarded-*, request id, access log, timeouts
+#   lab 02 (py)     JWT auth at the edge, local rate limit (per replica!)
+#   lab 03 (py)     least-request LB, outlier ejection, active health checks, retries + budget,
+#                   circuit breakers (max in-flight requests)
+#   lab 02 (go)     weighted canary + request mirroring
+static_resources:
+  listeners:
+  - name: edge
+    address: { socket_address: { address: 0.0.0.0, port_value: 8080 } }
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: edge
+          use_remote_address: true          # the EDGE: X-Forwarded-For is set from the real peer
+          xff_num_trusted_hops: 0           # trust nothing the client sent
+          generate_request_id: true         # x-request-id
+          max_request_headers_kb: 60
+          request_timeout: 30s
+          stream_idle_timeout: 300s
+          access_log:
+          - name: envoy.access_loggers.stdout
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+              log_format:
+                json_format:
+                  request_id: "%REQ(X-REQUEST-ID)%"
+                  method: "%REQ(:METHOD)%"
+                  path: "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%"
+                  route: "%ROUTE_NAME%"
+                  status: "%RESPONSE_CODE%"
+                  flags: "%RESPONSE_FLAGS%"       # UF = upstream connect failure, UT = timeout, UO = overflow ...
+                  upstream_ms: "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"
+                  total_ms: "%DURATION%"
+          route_config:
+            name: api
+            virtual_hosts:
+            - name: api
+              domains: ["*"]
+              routes:
+              - name: users
+                match: { prefix: "/api/users/" }
+                route:
+                  cluster: users
+                  prefix_rewrite: "/users/"
+                  timeout: 2s
+                  retry_policy:                  # Envoy retries ANY method that matches retry_on: put POST
+                                                 # routes without Idempotency-Key on a route with no retry_policy
+                    retry_on: "connect-failure,refused-stream,unavailable,gateway-error"
+                    num_retries: 2
+                    retry_host_predicate:
+                    - name: envoy.retry_host_predicates.previous_hosts   # retry on a DIFFERENT host
+                      typed_config:
+                        "@type": type.googleapis.com/envoy.extensions.retry.host.previous_hosts.v3.PreviousHostsPredicate
+              - name: orders
+                match: { prefix: "/api/orders/" }
+                route:
+                  prefix_rewrite: "/orders/"
+                  timeout: 2s
+                  weighted_clusters:             # canary: 95 / 5
+                    clusters:
+                    - { name: orders_v1, weight: 95 }
+                    - { name: orders_v2, weight: 5 }
+                  hash_policy:                   # sticky-ish: needs ring_hash/maglev LB on the clusters
+                  - header: { header_name: x-user }
+                  request_mirror_policies:       # shadow traffic, response discarded
+                  - cluster: orders_v3
+                    runtime_fraction: { default_value: { numerator: 100, denominator: HUNDRED } }
+          http_filters:
+          - name: envoy.filters.http.jwt_authn
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+              providers:
+                auth:
+                  issuer: https://auth.example.test
+                  audiences: [orders-api]
+                  remote_jwks:
+                    http_uri: { uri: "https://auth.example.test/.well-known/jwks.json", cluster: auth, timeout: 1s }
+                    cache_duration: 300s
+                  forward: false                  # do not pass the raw token upstream
+                  claim_to_headers:               # trusted identity headers for the services
+                  - { header_name: x-user-id, claim_name: sub }
+              rules:
+              - match: { prefix: "/api/" }
+                requires: { provider_name: auth }
+          - name: envoy.filters.http.local_ratelimit
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+              stat_prefix: edge_rl
+              token_bucket: { max_tokens: 100, tokens_per_fill: 100, fill_interval: 1s }
+              filter_enabled: { default_value: { numerator: 100, denominator: HUNDRED } }
+              filter_enforced: { default_value: { numerator: 100, denominator: HUNDRED } }
+              # LOCAL = per Envoy replica (lab 02's warning). A global limit uses
+              # envoy.filters.http.ratelimit + an external rate-limit service backed by Redis.
+          - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+  - name: users
+    type: STRICT_DNS
+    connect_timeout: 0.5s
+    lb_policy: LEAST_REQUEST                     # power-of-two-choices by default
+    load_assignment:
+      cluster_name: users
+      endpoints:
+      - lb_endpoints:
+        - endpoint: { address: { socket_address: { address: users-a, port_value: 8000 } } }
+        - endpoint: { address: { socket_address: { address: users-b, port_value: 8000 } } }
+        - endpoint: { address: { socket_address: { address: users-c, port_value: 8000 } } }
+    outlier_detection:                           # passive health: eject after 5 consecutive 5xx
+      consecutive_5xx: 5
+      interval: 10s
+      base_ejection_time: 30s
+      max_ejection_percent: 50
+    health_checks:                               # active health, with hysteresis
+    - timeout: 1s
+      interval: 5s
+      unhealthy_threshold: 2
+      healthy_threshold: 2
+      http_health_check: { path: /healthz }
+    circuit_breakers:
+      thresholds:
+      - max_connections: 1000
+        max_pending_requests: 100
+        max_requests: 200                        # lab 03's "max in flight": beyond it, fail fast (503, flag UO)
+        retry_budget:                            # retries <= 20% of active requests (min 3)
+          budget_percent: { value: 20.0 }
+          min_retry_concurrency: 3
+  - name: orders_v1
+    type: STRICT_DNS
+    connect_timeout: 0.5s
+    lb_policy: RING_HASH
+    load_assignment:
+      cluster_name: orders_v1
+      endpoints: [{ lb_endpoints: [{ endpoint: { address: { socket_address: { address: orders-v1, port_value: 8000 } } } }] }]
+  - name: orders_v2
+    type: STRICT_DNS
+    connect_timeout: 0.5s
+    lb_policy: RING_HASH
+    load_assignment:
+      cluster_name: orders_v2
+      endpoints: [{ lb_endpoints: [{ endpoint: { address: { socket_address: { address: orders-v2, port_value: 8000 } } } }] }]
+  - name: orders_v3
+    type: STRICT_DNS
+    connect_timeout: 0.5s
+    load_assignment:
+      cluster_name: orders_v3
+      endpoints: [{ lb_endpoints: [{ endpoint: { address: { socket_address: { address: orders-v3, port_value: 8000 } } } }] }]
+  - name: auth
+    type: STRICT_DNS
+    connect_timeout: 1s
+    load_assignment:
+      cluster_name: auth
+      endpoints: [{ lb_endpoints: [{ endpoint: { address: { socket_address: { address: auth.example.test, port_value: 443 } } } }] }]
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        sni: auth.example.test

@@ -1,0 +1,21 @@
+// FOUNDATION LEVEL 00 (and re-used by the level 13 bonus).
+// The smallest possible gRPC contract: one service, one unary RPC, two messages.
+syntax = "proto3";
+
+package foundation.ping.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/pingpb;pingpb";
+
+// A "service" is a named group of RPCs. This one has exactly one.
+service Greeter {
+  // Unary RPC: one request message in, one response message out.
+  rpc Ping(PingRequest) returns (PongResponse);
+}
+
+message PingRequest {
+  string name = 1; // "1" is the FIELD NUMBER - the wire identity of this field, forever
+}
+
+message PongResponse {
+  string message = 1;
+}

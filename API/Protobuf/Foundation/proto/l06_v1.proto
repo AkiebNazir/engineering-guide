@@ -1,0 +1,15 @@
+// FOUNDATION LEVEL 06 (schema version 1) - what shipped first.
+//
+// See also ../../labs/proto/evo_v1.proto, evo_v2.proto and evo_bad.proto for
+// a second, larger worked example (including the field-renumbering disaster).
+syntax = "proto3";
+
+package found.l06.v1;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l06v1;l06v1";
+
+message Order {
+  int64 id = 1;
+  string sku = 2;
+  int32 qty = 3;
+}

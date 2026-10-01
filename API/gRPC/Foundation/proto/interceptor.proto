@@ -1,0 +1,19 @@
+// FOUNDATION LEVEL 08 - middleware, which gRPC calls INTERCEPTORS.
+// The contract is deliberately boring: the lesson is entirely in the wrapping.
+syntax = "proto3";
+
+package foundation.interceptor.v1;
+
+option go_package = "dsapractice/api/gRPC/Foundation/golang/pb/interceptorpb;interceptorpb";
+
+service Work {
+  rpc Do(DoRequest) returns (DoResponse);
+}
+
+message DoRequest {
+  string task = 1; // "ok" succeeds, "boom" makes the handler panic on purpose
+}
+
+message DoResponse {
+  string result = 1;
+}

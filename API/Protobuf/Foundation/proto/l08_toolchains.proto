@@ -1,0 +1,17 @@
+// FOUNDATION LEVEL 08 - one schema, compiled by two different toolchains.
+//
+// This exact file is fed to BOTH `protoc` (the official C++ compiler) and
+// `buf generate` (the modern wrapper). Neither one invents anything: both
+// shell out to the same protoc-gen-go / Python codegen plugins, so the
+// generated code - and therefore the encoded bytes - come out identical.
+syntax = "proto3";
+
+package found.l08;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l08;l08";
+
+message Metric {
+  string name = 1;
+  double value = 2;
+  repeated string labels = 3;
+}

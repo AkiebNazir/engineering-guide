@@ -1,0 +1,17 @@
+// FOUNDATION LEVEL 00 - the smallest useful .proto file there is.
+//
+// A .proto file is a SCHEMA: it describes the shape of some data once, in a
+// language-neutral file, and then a compiler (protoc) turns it into real
+// classes/structs for Python, Go, Java, Rust, ... This file is the whole
+// contract for level 00.
+syntax = "proto3";
+
+package found.l00;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l00;l00";
+
+message Ping {
+  // "= 1" is NOT a value and NOT an array index. It is this field's permanent
+  // FIELD NUMBER - the only thing that identifies it on the wire. See level 01.
+  string text = 1;
+}

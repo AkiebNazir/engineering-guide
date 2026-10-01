@@ -1,0 +1,14 @@
+// FOUNDATION LEVEL 10 - the shared contract for the cross-language demo.
+// The Python program and the Go program are compiled from THIS file, and
+// nothing else is shared between them: no library, no runtime, no transport.
+syntax = "proto3";
+
+package found.l10;
+
+option go_package = "dsapractice/api/Protobuf/Foundation/golang/pb/l10;l10";
+
+message Greeting {
+  string language = 1;
+  string text = 2;
+  int32 schema_version = 3;
+}
