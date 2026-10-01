@@ -1,0 +1,4 @@
+# Python caches and downloaded wheels: local leftovers, never content
+__pycache__/
+*.pyc
+*.whl
