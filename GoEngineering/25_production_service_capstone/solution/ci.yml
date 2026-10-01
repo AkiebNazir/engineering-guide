@@ -1,0 +1,51 @@
+# ci.yml — minimal CI workflow for this module, kept here as folder
+# documentation for problem 25 (not wired into an actual GitHub Actions
+# pipeline for this repository). Demonstrates the four checks this
+# curriculum's own verification loop runs manually per problem:
+# gofmt, go build, go vet, go test -race.
+#
+# To activate for real in a standalone repository, this file would live at
+# .github/workflows/ci.yml at the repo root.
+name: GoEngineering CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: GoEngineering
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: true
+          cache-dependency-path: GoEngineering/go.sum
+
+      - name: Check formatting (gofmt)
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "The following files are not gofmt-formatted:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      # -race requires cgo; GitHub's ubuntu-latest runners ship a C
+      # toolchain by default so this needs no extra setup.
+      - name: Test (with race detector)
+        run: go test -race ./...

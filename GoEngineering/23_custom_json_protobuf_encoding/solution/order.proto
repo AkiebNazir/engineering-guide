@@ -1,0 +1,52 @@
+// order.proto — wire schema for problem 23 (Custom JSON & protobuf encoding).
+//
+// Generation command (run from the GoEngineering/ module root, with protoc and
+// protoc-gen-go on PATH — both are pre-installed per the assignment brief):
+//
+//   protoc \
+//     --proto_path=23_custom_json_protobuf_encoding/solution \
+//     --go_out=. --go_opt=module=goengineering \
+//     23_custom_json_protobuf_encoding/solution/order.proto
+//
+// This writes the generated file to
+// 23_custom_json_protobuf_encoding/solution/orderpb/order.pb.go because
+// `go_opt=module=goengineering` tells protoc-gen-go to strip the module
+// prefix from `go_package` below and lay the file out under it, mirroring
+// how `go build` resolves the import path.
+syntax = "proto3";
+
+package orderpb;
+
+option go_package = "goengineering/23_custom_json_protobuf_encoding/solution/orderpb";
+
+// Order mirrors the JSON-side Order type (see
+// 23_custom_json_protobuf_encoding_solution.go) field-for-field, but using
+// protobuf-native types: money is split into integer cents + an ISO-4217
+// currency code (protobuf has no decimal type, and floats are unsafe for
+// money — same reasoning as the JSON side's custom Money marshaler), and
+// timestamps are Unix seconds rather than RFC 3339 strings (cheaper to
+// encode, no timezone-string ambiguity at rest).
+message Order {
+  string id = 1;
+  string customer_id = 2;
+  int64 amount_cents = 3;
+  string currency = 4;
+  repeated string items = 5;
+  int64 created_at_unix = 6;
+
+  // optional (proto3 "explicit presence"): lets us distinguish "no note"
+  // from "empty note", the same distinction the JSON side makes with a
+  // *string. Without `optional` proto3 scalars are always present with an
+  // implicit zero value — you cannot tell "unset" from "set to zero/empty".
+  optional string notes = 7;
+
+  // Free-form forward-compatibility escape hatch: an embedded, independently
+  // versioned payload (here: JSON bytes) for fields not yet promoted to the
+  // schema. Mirrors json.RawMessage on the JSON side. Because it's field 8
+  // and not baked into the message shape, it costs nothing to routers that
+  // don't understand it and can be promoted to real fields later without
+  // breaking wire compatibility (see the schema-evolution notes in the
+  // solution file for why *renumbering* an existing field, unlike adding
+  // one, is the actual danger).
+  bytes metadata_json = 8;
+}

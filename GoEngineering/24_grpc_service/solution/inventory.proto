@@ -1,0 +1,75 @@
+// inventory.proto — service contract for problem 24 (gRPC service).
+//
+// Generation command (run from the GoEngineering/ module root, with protoc,
+// protoc-gen-go and protoc-gen-go-grpc on PATH — all three are pre-installed
+// per the assignment brief):
+//
+//   protoc \
+//     --proto_path=24_grpc_service/solution \
+//     --go_out=. --go_opt=module=goengineering \
+//     --go-grpc_out=. --go-grpc_opt=module=goengineering \
+//     24_grpc_service/solution/inventory.proto
+//
+// This writes inventory.pb.go (message types) and inventory_grpc.pb.go
+// (client/server stubs) to 24_grpc_service/solution/inventorypb/, driven by
+// the go_package option below plus `module=goengineering` stripping the
+// module prefix the same way problem 23's generation does.
+syntax = "proto3";
+
+package inventorypb;
+
+option go_package = "goengineering/24_grpc_service/solution/inventorypb";
+
+// Item is a single SKU's current stock record.
+message Item {
+  string sku = 1;
+  string name = 2;
+  int64 quantity = 3;
+}
+
+message GetItemRequest {
+  string sku = 1;
+}
+
+message WatchStockRequest {
+  string sku = 1;
+  // Number of updates to emit before the server closes the stream on its
+  // own; 0 means "until the client cancels or the deadline expires" (a real
+  // service would stream indefinitely — this exists so tests can bound the
+  // stream deterministically without relying on timing).
+  int32 max_updates = 2;
+}
+
+message StockUpdate {
+  string sku = 1;
+  int64 quantity = 2;
+  int64 unix_time = 3;
+}
+
+message SaleRecord {
+  string sku = 1;
+  int64 quantity = 2;
+}
+
+message SalesSummary {
+  int64 total_quantity = 1;
+  int32 record_count = 2;
+}
+
+// InventoryService demonstrates all three RPC shapes this exercise requires:
+// a plain unary call, a server-streaming call, and a client-streaming call.
+service InventoryService {
+  // GetItem: unary. Returns codes.NotFound for an unknown SKU and honors
+  // context deadlines (see the server implementation's simulated-latency
+  // path) by returning codes.DeadlineExceeded rather than blocking forever.
+  rpc GetItem(GetItemRequest) returns (Item);
+
+  // WatchStock: server-streaming. Emits a StockUpdate each tick until
+  // max_updates is reached, the client cancels, or the deadline expires.
+  rpc WatchStock(WatchStockRequest) returns (stream StockUpdate);
+
+  // RecordSales: client-streaming. The client sends a stream of sale
+  // records; the server decrements stock as each arrives and returns one
+  // aggregated SalesSummary when the client closes its send side.
+  rpc RecordSales(stream SaleRecord) returns (SalesSummary);
+}
