@@ -1,0 +1,4 @@
+grpcio
+grpcio-tools
+chromadb
+sentence-transformers
