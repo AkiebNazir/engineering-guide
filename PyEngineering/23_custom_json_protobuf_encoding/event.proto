@@ -1,0 +1,34 @@
+// Event envelope used by 23_custom_json_protobuf_encoding.
+//
+// Generate Python bindings with (run from the PyEngineering/ directory):
+//
+//   .venv/bin/python -m grpc_tools.protoc \
+//       -I23_custom_json_protobuf_encoding \
+//       --python_out=23_custom_json_protobuf_encoding \
+//       --pyi_out=23_custom_json_protobuf_encoding \
+//       23_custom_json_protobuf_encoding/event.proto
+//
+// This produces `event_pb2.py` (and a `.pyi` stub) next to this file. No
+// --grpc_python_out is needed here since this problem is about message
+// encoding only, not an RPC service (that's problem 24).
+syntax = "proto3";
+
+package pyengineering.events;
+
+// Mirrors the `Event` dataclass in the Python solution. `priority` was
+// added after `event_id`/`event_type`/`timestamp`/`payload` shipped -
+// proto3 gives it a wire default of 0 for free on old messages that never
+// set it, the built-in equivalent of the JSON side's `dict.get("priority",
+// 0)` schema-evolution trick.
+message Event {
+  string event_id = 1;
+  string event_type = 2;
+  double timestamp = 3;
+  // Free-form event payload, kept as a JSON-encoded string rather than a
+  // protobuf `map`/`struct` field: a common real-world hybrid where the
+  // envelope (routing/ops fields) is strongly typed protobuf but the
+  // payload stays schema-flexible JSON, avoiding a .proto edit for every
+  // new payload shape.
+  string payload_json = 4;
+  int32 priority = 5;
+}

@@ -1,0 +1,50 @@
+# Minimal CI example for this service: lint + typecheck + test.
+#
+# Lives here as folder documentation of the check sequence a real PR
+# against this service would run - not wired into any actual CI system by
+# this curriculum (no GitHub Actions runner is exercised by the
+# pytest/mypy/ruff/black verification loop used to grade this problem).
+# The three commands below are exactly this repo's own verification
+# sequence (see PyEngineering/README.md), so this file doubles as a
+# literal "how would a CI job re-run my local checks" example.
+#
+# Would live at .github/workflows/ci.yml in a real repo using GitHub
+# Actions; the job names/structure below translate directly to another
+# CI system (GitLab CI, Buildkite, etc.) with only the YAML dialect
+# changing, since the actual work is three plain shell commands.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-typecheck-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --no-cache-dir -r PyEngineering/requirements.txt
+
+      # Formatting: fails the job if any file isn't already black-formatted
+      # (never auto-fixes in CI - that's a local/pre-commit step).
+      - name: Lint - black --check
+        run: .venv/bin/black --check PyEngineering/25_production_service_capstone/
+
+      - name: Lint - ruff
+        run: .venv/bin/ruff check PyEngineering/25_production_service_capstone/
+
+      - name: Typecheck - mypy
+        run: .venv/bin/mypy PyEngineering/25_production_service_capstone/
+
+      - name: Test - pytest
+        run: .venv/bin/pytest PyEngineering/25_production_service_capstone/ -v

@@ -1,0 +1,4 @@
+# Curriculum targets Python 3.12+ (see ../README.md). Scoped to this
+# directory only so ruff resolves builtins/syntax (e.g. ExceptionGroup,
+# PEP 654 except*) against 3.12 instead of its conservative default.
+target-version = "py312"
