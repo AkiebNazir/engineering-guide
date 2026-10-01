@@ -2,3 +2,9 @@
 __pycache__/
 *.pyc
 *.whl
+
+node_module/
+*.pyc
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/

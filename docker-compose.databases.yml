@@ -1,0 +1,56 @@
+# Lab environment for the SQL/ and NoSQL/ learning modules.
+# Non-default host ports so this never collides with services you already run natively
+# (e.g. a brew-installed MongoDB on the default 27017).
+#
+# Usage:
+#   docker compose -f docker-compose.databases.yml up -d
+#   docker compose -f docker-compose.databases.yml down        # stop, keep data
+#   docker compose -f docker-compose.databases.yml down -v     # stop, wipe data
+services:
+  postgres:
+    image: postgres:16
+    container_name: dsa-postgres
+    environment:
+      POSTGRES_USER: dsa
+      POSTGRES_PASSWORD: dsa
+      POSTGRES_DB: dsa
+    # wal_level=logical (not the default 'replica'): required for logical
+    # replication (CREATE PUBLICATION/SUBSCRIPTION, see SQL/17) on top of the
+    # physical-replication-capable default. Declared here, not just set live
+    # with ALTER SYSTEM, so a fresh volume (`down -v` then `up`) still has it.
+    command: ["-c", "wal_level=logical"]
+    ports:
+      - "5544:5432"
+    volumes:
+      - dsa-postgres-data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:7
+    container_name: dsa-mongodb
+    # Single-node replica set (not just a standalone mongod): multi-document
+    # transactions (see NoSQL/mongodb/09) and write/read concern (see
+    # NoSQL/mongodb/10) are only meaningful/available on a replica set.
+    # `rs.initiate()` still has to be run once after the container is up
+    # (see NoSQL/mongodb README/runbook) since Mongo doesn't auto-initiate.
+    # Internal port is also 27018 (not the mongod default 27017) so the
+    # replica-set member's self-advertised host ("localhost:27018") is the
+    # SAME address host-side clients use — required for the single-node
+    # replica set to be reachable at all outside the container.
+    command: ["--replSet", "rs0", "--port", "27018"]
+    ports:
+      - "27018:27018"
+    volumes:
+      - dsa-mongodb-data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: dsa-redis
+    ports:
+      - "6390:6379"
+    volumes:
+      - dsa-redis-data:/data
+
+volumes:
+  dsa-postgres-data:
+  dsa-mongodb-data:
+  dsa-redis-data:
