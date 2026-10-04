@@ -623,6 +623,11 @@
     "swd:README": {
       "last": 1789899802551,
       "pos": 0
+    },
+    "testing:02_test_doubles": {
+      "last": 1791093314243,
+      "pct": 100,
+      "pos": 0.1192
     }
   },
   "problems": {
@@ -962,6 +967,14 @@
       },
       "lastSolutionView": 1789928320548,
       "solutionViews": 1,
+      "status": "attempting",
+      "timeSpent": 0
+    },
+    "06_stack/003": {
+      "attempts": 1,
+      "drafts": {
+        "py": "from typing import List\n\n\nclass Solution:\n    def nextGreaterElement(self, nums1: List[int], nums2: List[int]) -> List[int]:\n        # YOUR CODE HERE\n        pass\n\n\n# ==============================================================================\n# TESTS \u2014 run:  python 003_next_greater_element_i_question.py\n# ==============================================================================\ndef run_tests() -> None:\n    sol = Solution()\n    cases = [\n        ([4, 1, 2], [1, 3, 4, 2], [-1, 3, -1]),\n        ([2, 4], [1, 2, 3, 4], [3, -1]),\n        ([1, 3, 5, 2, 4], [6, 5, 4, 3, 2, 1, 7], [7, 7, 7, 7, 7]),\n        ([1], [1], [-1]),\n        ([3], [3, 2, 1], [-1]),\n        ([1], [1, 2], [2]),\n        ([4, 3, 2, 1], [1, 2, 3, 4], [-1, 4, 3, 2]),\n        ([5], [5, 4, 3, 10], [10]),\n        ([4, 3, 2], [5, 4, 3, 10, 2], [10, 10, -1]),\n    ]\n\n    passed = 0\n    for nums1, nums2, expected in cases:\n        got = sol.nextGreaterElement(list(nums1), list(nums2))\n        ok = got == expected\n        passed += ok\n        print(f\"{'PASS' if ok else 'FAIL'}  nums1={nums1!r:<18} nums2={nums2!r:<24} \"\n              f\"-> {got}  (want {expected})\")\n\n    print(f\"\\n{passed}/{len(cases)} passed\")\n\n\nif __name__ == \"__main__\":\n    run_tests()\n"
+      },
       "status": "attempting",
       "timeSpent": 0
     },

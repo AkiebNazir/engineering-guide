@@ -44,14 +44,109 @@ const activeId = () =>
   mode === 'stdlib' ? (curStdlib && curStdlib.recId) : (cur && cur.id);
 
 /* --------------------------------------------------------------- utils -- */
-const api = async (path, opts) => {
-  const r = await fetch(path, opts);
-  if (!r.ok) throw new Error(`${path} → ${r.status}`);
-  return r.json();
+const IS_STATIC = location.protocol === 'file:' || 
+                  location.hostname.endsWith('.github.io') || 
+                  !location.hostname.match(/^(localhost|127\.0\.0\.1)$/);
+
+const apiToStatic = (path) => {
+  if (!path.startsWith('/api/')) return path;
+  let base = path.split('?')[0].substring(5); // remove /api/
+  let search = path.includes('?') ? path.substring(path.indexOf('?') + 1) : '';
+  let params = new URLSearchParams(search);
+  
+  if (base === 'bootstrap') return './data/bootstrap.json';
+  if (base === 'dsa-map') return './data/dsa-map.json';
+  if (base === 'dsa-guides') return `./data/dsa-guides-${params.get('lang') || 'py'}.json`;
+  if (base === 'system-design-guide') return './data/system-design-guide.json';
+  if (base === 'sd') return './data/sd.json';
+  if (base === 'roadmap') return './data/roadmap.json';
+  if (base === 'library-guides') return './data/library-guides.json';
+  if (base === 'apis') return './data/apis.json';
+  if (base === 'api-types') return './data/api-types.json';
+  if (base === 'agentic-ai') return './data/agentic-ai.json';
+  if (base === 'cs-fundamentals') return './data/cs-fundamentals.json';
+  if (base === 'google-behavioral') return './data/google-behavioral.json';
+  if (base === 'sql') return './data/sql.json';
+  if (base === 'nosql') return './data/nosql.json';
+  if (base === 'software-design') return './data/software-design.json';
+  
+  if (base === 'track') return `./data/track-${params.get('m')}.json`;
+  if (base === 'stdlib') return `./data/stdlib-${params.get('lang') || 'py'}.json`;
+  
+  if (base === 'roadmap-doc') return `./data/docs/roadmap/${params.get('id')}.json`;
+  if (base === 'library-guide-doc') return `./data/docs/library-guides/${params.get('id')}.json`;
+  if (base === 'agentic-ai-doc') return `./data/docs/agentic-ai/${params.get('id')}.json`;
+  if (base === 'sd-doc') return `./data/docs/sd/${params.get('id').replace(/\//g, '_')}.json`;
+  if (base === 'cs-fundamentals-doc') return `./data/docs/cs-fundamentals/${params.get('id')}.json`;
+  if (base === 'google-behavioral-doc') return `./data/docs/google-behavioral/${params.get('id')}.json`;
+  if (base === 'sql-doc') return `./data/docs/sql/${params.get('id')}.json`;
+  if (base === 'nosql-doc') return `./data/docs/nosql/${params.get('id').replace(/\//g, '_')}.json`;
+  if (base === 'software-design-doc') return `./data/docs/software-design/${params.get('id')}.json`;
+  
+  if (base === 'track-doc') return `./data/docs/track-${params.get('m')}/${params.get('id')}.json`;
+  if (base === 'dsa-guide-doc') return `./data/docs/dsa-guide-doc/${params.get('id')}_${params.get('lang') || 'py'}.json`;
+  if (base === 'guide') return `./data/docs/guide/${params.get('topic')}_${params.get('lang') || 'py'}.json`;
+  
+  if (base === 'problem') return `./data/docs/problems/${params.get('topic')}_${params.get('seq')}_${params.get('kind') || 'question'}_${params.get('lang') || 'py'}.json`;
+  if (base === 'eng-problem') return `./data/docs/eng/${params.get('lang') || 'go'}_${params.get('topic')}_${params.get('kind') || 'explanation'}.json`;
+  
+  if (base === 'apis-doc') return `./data/docs/apis/${params.get('id').replace(/\//g, '_')}.json`;
+  if (base === 'api-type') return `./data/docs/api-type/${params.get('type')}.json`;
+  if (base === 'api-file') return `./data/docs/api-file/${params.get('type')}_${params.get('section') || 'Foundation'}_${params.get('level')}_${params.get('lang') || 'py'}.json`;
+  
+  if (base === 'stdlib-doc') return `./data/docs/stdlib-doc/${params.get('lang') || 'py'}_${params.get('id')}.json`;
+  if (base === 'stdlib-file') return `./data/docs/stdlib-file/${params.get('lang') || 'py'}_${params.get('pkg')}_${params.get('level')}.json`;
+  
+  if (base === 'state') return './data/state.json';
+  
+  return path;
 };
-const post = (path, body) =>
+
+const api = async (path, opts) => {
+  const url = IS_STATIC ? apiToStatic(path) : path;
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(`${url} → ${r.status}`);
+  let json = await r.json();
+  if (IS_STATIC && path === '/api/bootstrap') {
+    try {
+      const localState = JSON.parse(localStorage.getItem('dsa-state'));
+      if (localState) json.state = localState;
+    } catch(e) {}
+  }
+  return json;
+};
+
+const serverPost = (path, body) =>
   api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body) });
+
+const staticPost = async (path, body) => {
+  if (path === '/api/patch' || path === '/api/state') {
+    if (path === '/api/state') {
+      localStorage.setItem('dsa-state', JSON.stringify(body));
+    } else if (path === '/api/patch') {
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem('dsa-state') || '{}'); } catch(e) {}
+      for (const [key, val] of Object.entries(body)) {
+        if (Array.isArray(val) && val.length === 2 && val[0] === "$push") {
+          if (!state[key]) state[key] = [];
+          if (!state[key].includes(val[1])) state[key].push(val[1]);
+        } else if (Array.isArray(val) && val.length === 2 && val[0] === "$pull") {
+          if (state[key]) state[key] = state[key].filter(x => x !== val[1]);
+        } else if (Array.isArray(val) && val.length === 2 && val[0] === "$add") {
+          state[key] = (state[key] || 0) + val[1];
+        } else {
+          state[key] = val;
+        }
+      }
+      localStorage.setItem('dsa-state', JSON.stringify(state));
+    }
+    return {status: "ok"};
+  }
+  return {ok: false, exitCode: 1, stdout: "", stderr: "Code execution requires the local Python server.\nRun `make app` to use this feature.", ms: 0};
+};
+
+const post = IS_STATIC ? staticPost : serverPost;
 
 const esc = s => s.replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -792,7 +887,7 @@ function ensureMermaid() {
   if (mermaidLoad) return mermaidLoad;
   mermaidLoad = new Promise(resolve => {
     const s = document.createElement('script');
-    s.src = '/vendor/mermaid/10.9.1/mermaid.min.js';
+    s.src = './vendor/mermaid/10.9.1/mermaid.min.js';
     s.onload = () => resolve(typeof mermaid !== 'undefined');
     s.onerror = () => resolve(false);
     document.head.appendChild(s);
@@ -816,10 +911,10 @@ function ensureKatex() {
   });
   katexLoad = (async () => {
     if (typeof katex === 'undefined') {
-      if (!await load('/vendor/KaTeX/0.16.9/katex.min.js')) return false;
+      if (!await load('./vendor/KaTeX/0.16.9/katex.min.js')) return false;
     }
     if (typeof renderMathInElement === 'undefined') {
-      if (!await load('/vendor/KaTeX/0.16.9/contrib/auto-render.min.js')) return false;
+      if (!await load('./vendor/KaTeX/0.16.9/contrib/auto-render.min.js')) return false;
     }
     return typeof renderMathInElement !== 'undefined';
   })();

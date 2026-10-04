@@ -1175,7 +1175,7 @@ const LABEL_CALLOUT = [
    headings, diagrams or labs. */
 let glossaryJson = null;
 async function linkAcronyms(prose) {
-  glossaryJson ??= fetch('/glossary.json').then(r => (r.ok ? r.json() : {})).catch(() => { glossaryJson = null; return {}; });
+  glossaryJson ??= fetch('./glossary.json').then(r => (r.ok ? r.json() : {})).catch(() => { glossaryJson = null; return {}; });
   const gl = await glossaryJson;
   const keys = Object.keys(gl).sort((a, b) => b.length - a.length);
   if (!keys.length || !prose.isConnected) return;
@@ -1594,7 +1594,7 @@ function mermaidVars(el) {
    bodies come from /arch-icons.json, fetched once on first use. */
 let archIcons = null;
 function ensureArchIcons() {
-  if (!archIcons) archIcons = fetch('/arch-icons.json').then(r => (r.ok ? r.json() : {})).catch(() => { archIcons = null; return {}; });
+  if (!archIcons) archIcons = fetch('./arch-icons.json').then(r => (r.ok ? r.json() : {})).catch(() => { archIcons = null; return {}; });
   return archIcons;
 }
 const diagramChrome = fig => `<button type="button" class="diagram-zoom" aria-label="Expand diagram"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>Expand</button>

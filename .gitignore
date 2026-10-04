@@ -8,3 +8,6 @@ node_module/
 .ruff_cache/
 .mypy_cache/
 .pytest_cache/
+
+# Static build output
+webapp/static/data/

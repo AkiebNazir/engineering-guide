@@ -89,7 +89,7 @@ function renderHome() {
     <div class="home">
       <section class="hero">
         <div class="hero-copy">
-          <span class="hero-badge"><img src="/logo.svg" alt="" width="20" height="20">Ultimate Engineering Guide</span>
+          <span class="hero-badge"><img src="./logo.svg" alt="" width="20" height="20">Ultimate Engineering Guide</span>
           <h1 class="hero-title">One workshop for the whole engineering craft.</h1>
           <p class="hero-sub">Algorithms, system design, production Go and Python, data, and AI.
             Read the theory, run real code, watch the algorithm move, and let spaced repetition
