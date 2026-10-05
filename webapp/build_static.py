@@ -111,6 +111,12 @@ def client_requests() -> list[str]:
                     if level["has"].get(lang):
                         urls.append(api_url("/api/api-file", type=t["id"], section=section,
                                             level=level["id"], lang=lang))
+    # Query Lab (qlab.js): question banks and the datasets the in-browser engines load
+    for engine in server.QUERY_LABS:
+        urls.append(api_url("/api/query-lab", engine=engine))
+        lab = server.load_query_lab(engine)
+        for d in lab.get("datasets", []):
+            urls.append(api_url("/api/query-lab-data", engine=engine, dataset=d["id"]))
     return list(dict.fromkeys(urls))       # de-duplicated, order kept
 
 

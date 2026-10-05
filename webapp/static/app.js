@@ -1455,7 +1455,7 @@ async function loadEditorFor(lang) {
 /* --------------------------------------------------------------- router -- */
 const VIEWS = {
   home: '#viewHome', dashboard: '#viewDashboard', review: '#viewReview', 'dsa-home': '#viewDsaHome',
-  'dsa-topic': '#viewDsaTopic', 'dsa-drill': '#viewDsaDrill', 'dsa-patterns': '#viewDsaPatterns', 'api-type': '#viewApiType', 'stdlib-pkg': '#viewStdlibPkg',
+  'dsa-topic': '#viewDsaTopic', 'dsa-drill': '#viewDsaDrill', 'dsa-patterns': '#viewDsaPatterns', 'api-type': '#viewApiType', 'stdlib-pkg': '#viewStdlibPkg', 'query-lab': '#viewQueryLab',
   'module-home': '#viewModuleHome', 'doc-reader': '#viewDocReader', problem: '#viewProblem',
 };
 
@@ -1508,6 +1508,10 @@ async function route() {
     showView('stdlib-pkg'); renderStdlibPkg(parts[1], parts[2]); renderSidebar();
   } else if (parts[0] === 'stdlib-item' && parts.length >= 4) {
     await openStdlibItem(parts[1], parts[2], parts[3]);
+  } else if (parts[0] === 'query-lab') {
+    await leaveWorkspace();                           // qlab.js: SQL / MongoDB / Redis in the browser
+    curModule = parts[1] === 'mongodb' || parts[1] === 'redis' ? 'nosql' : 'sql';
+    showView('query-lab'); renderQueryLab(parts[1] || 'sql', parts[2]); renderSidebar();
   } else if (await routeModule(parts)) {
     // System Design, engineering lists, AI Roadmap, Library Guides, Agentic AI
   } else if (parts[0] === 'dsa') {

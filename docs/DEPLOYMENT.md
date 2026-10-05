@@ -121,4 +121,20 @@ node webapp/scripts/validate_api_labs.mjs             # every API/System Design 
 node webapp/scripts/validate_mermaid.mjs              # mermaid blocks in the API guides parse
 node webapp/scripts/arch_tool.mjs check               # every ```arch diagram lays out
 node webapp/scripts/validate_viz_player.js            # every visualizer plays (app running)
+node webapp/scripts/validate_query_labs.mjs           # every Query Lab solution runs (no npm needed)
 ```
+
+### The Query Lab
+
+The SQL and NoSQL modules' Query Lab (`#/query-lab/sql|mongodb|redis`, `webapp/static/qlab*.js`)
+runs its databases in the browser, so it works the same locally and on a static host: PostgreSQL
+via PGlite (`static/vendor/pglite/`), MongoDB's query language via mingo (`static/vendor/mingo/`)
+and a Redis emulator (`static/qlab-redis.js`, checked command by command against Redis 7).
+
+- **Questions** live in Markdown that also reads well on GitHub: `SQL/lab/questions.md`,
+  `NoSQL/lab/mongodb-questions.md`, `NoSQL/lab/redis-questions.md`. To add one, copy an existing
+  question (heading, metadata comment, prompt, hints, `<details>` with the solution) and run
+  `validate_query_labs.mjs`. No code changes, and the static build picks it up.
+- **Datasets** (`SQL/lab/datasets/`, `NoSQL/lab/datasets/`) are generated, deterministically, by
+  `python3 tools/gen_query_lab_data.py`. Re-run the validator after regenerating: answers depend on
+  the data.

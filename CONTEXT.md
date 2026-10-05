@@ -54,6 +54,9 @@ webapp/               local web app (see §8)
   build_static.py     `make build` → dist/: static site for GitHub Pages / any host (docs/DEPLOYMENT.md)
   scripts/            dev checks: validate_viz_player.js, validate_api_labs.mjs, validate_mermaid.mjs, arch_tool.mjs
 deploy/               Dockerfile + nginx.conf (static site in a container)
+SQL/lab/, NoSQL/lab/  Query Lab: question banks (markdown) + datasets (tools/gen_query_lab_data.py);
+                      UI in webapp/static/qlab*.js, engines run in the browser (PGlite, mingo, MiniRedis);
+                      check with `node webapp/scripts/validate_query_labs.mjs`
 docs/DEPLOYMENT.md    running locally vs the static build; GitHub Pages, other hosts, containers
 
 API/<Type>/            REST/GraphQL/Protobuf/gRPC/WebSockets/Webhooks/SOAP + Gateway/ + Observability/ —

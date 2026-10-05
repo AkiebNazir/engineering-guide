@@ -405,6 +405,7 @@ function renderModGrid(mod) {
 
   host.innerHTML = `
     ${mod === 'api' ? apiPracticeStrip() : ''}
+    ${(mod === 'sql' || mod === 'nosql') && typeof qlabStrip === 'function' ? qlabStrip(mod) : ''}
     <div class="mod-toolbar">
       <div class="seg" role="group" aria-label="Show">
         ${Object.entries(FILTERS).map(([f, l]) =>
@@ -1058,6 +1059,7 @@ async function renderReader(mod, id) {
   await renderMath(prose);
   await Promise.all([renderCode(prose), renderMermaidBlocks(prose)]);
   if (!curDoc || curDoc.key !== key) return;
+  if (typeof qlabEnhanceDoc === 'function') qlabEnhanceDoc(prose, mod, id);   // qlab.js: Run buttons on SQL / mongosh / redis-cli blocks
   if (extras) await extras.afterRender();
   if (!curDoc || curDoc.key !== key) return;
   applyHighlights(prose, r);
@@ -1399,6 +1401,10 @@ function repoRoute(path) {
   if ((r = path.match(/^API\/(\w+)\/(?:Foundation|labs)\/(?:python|golang)\/([\w-]+)\.(?:py|go)$/)))
     return { href: `#/api-item/${r[1]}/${/\/labs\//.test(path) ? 'labs' : 'Foundation'}/${r[2]}`, title: prettyName(r[2]) };
   if ((r = path.match(/^API\/(\w+)\/([\w-]+)\.md$/))) return item('api', `${r[1]}/${r[2]}`);
+  // Query Lab question banks open in the lab itself (qlab.js)
+  if (/^SQL\/lab\/questions\.md$/.test(path)) return { href: '#/query-lab/sql', title: 'SQL Query Lab' };
+  if ((r = path.match(/^NoSQL\/lab\/(mongodb|redis)-questions\.md$/)))
+    return { href: `#/query-lab/${r[1]}`, title: r[1] === 'mongodb' ? 'MongoDB Query Lab' : 'Redis Query Lab' };
   if ((r = path.match(/^SQL\/([\w-]+)\.md$/))) return item('sql', r[1]);
   if ((r = path.match(/^NoSQL\/(README|(?:mongodb|redis|concepts)\/[\w-]+)\.md$/))) return item('nosql', r[1]);
   if ((r = path.match(/^(Py|Go)StdLib\/(\d+_\w+)\/GUIDE\.md$/)))
