@@ -36,6 +36,22 @@ transactions, indexes, injection, migrations, pooling) applies to MySQL, SQL Ser
 or any other relational database — the syntax and specific behaviors shown are
 Postgres's, called out as such where they differ from other engines.
 
+## Practice in the Query Lab (no install)
+
+The fastest way to practise is the app's **Query Lab** (SQL module → Query Lab): a real
+PostgreSQL engine running in your browser, three realistic datasets and
+[61 interview and everyday questions](lab/questions.md). Each question is checked automatically,
+with hints and an explained solution. Questions range from `SELECT` basics through joins,
+window functions, gaps-and-islands, cohort retention, churn and recursive CTEs.
+
+- **Datasets** ([details and schemas](lab/datasets/README.md)): `shop` (an online store's two years
+  of orders), `hr` (a 174-person company's org chart, salaries and hiring) and `analytics` (a
+  SaaS app's signups, activity, subscriptions and an A/B test).
+- **Every `sql` block in these chapters has a Run button** in the app. Blocks on one page share a
+  scratch database, so run them in order.
+- The same datasets load into the Docker Postgres below with one `psql -f` each, for the levels
+  that need a real server (replication, `pg_stat_statements`, concurrent sessions).
+
 ## Starting the lab environment
 
 A `docker-compose.databases.yml` at the repo root brings up Postgres 16 on a

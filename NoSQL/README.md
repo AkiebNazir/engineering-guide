@@ -33,6 +33,23 @@ a schema-design exercise, and graph databases with real modelling and Cypher que
 (run against a throwaway Neo4j container; there's no graph or wide-column container in
 this repo's lab stack).
 
+## Practice in the Query Lab (no install)
+
+The app's **Query Lab** (NoSQL module → Query Lab) runs both databases in your browser:
+
+- **MongoDB:** `mongosh` syntax over the shop's `customers`, `products`, `orders` (embedding
+  their items) and `reviews`, with [34 questions](lab/mongodb-questions.md) on queries, the
+  aggregation pipeline (`$group`, `$unwind`, `$lookup`, `$facet`, `$setWindowFields`) and writes.
+- **Redis:** `redis-cli` commands against caches, leaderboards, sessions, carts, bitmaps,
+  HyperLogLog, geo and streams, with [36 questions](lab/redis-questions.md) on the patterns
+  interviews ask about: counters, TTLs, locks, rate limiting, leaderboards, consumer groups.
+
+Every question is checked automatically and has hints and an explained solution. The data is
+the same store as the SQL lab's `shop` schema, so you can compare the three models on identical
+data ([datasets and how to load them into the real servers](lab/datasets/README.md)). The
+`mongosh` examples in the MongoDB chapters and the Redis command examples in the Redis chapters
+have Run buttons in the app.
+
 ## Starting the lab environment
 
 A `docker-compose.databases.yml` at the repo root brings up all three lab databases
