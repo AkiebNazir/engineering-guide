@@ -14,11 +14,18 @@
 .qlab-head-main { min-width: 0; flex: 1; }
 .qlab-head .crumb { display: flex; gap: 8px; }
 .qlab-head .crumb::after { content: none; }
-.qlab-title { margin: 6px 0 2px; font: 650 19px/1.2 var(--display, var(--sans)); letter-spacing: -.02em; }
+.qlab-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 6px 0 3px; }
+.qlab-title { margin: 0; font: 650 19px/1.2 var(--display, var(--sans)); letter-spacing: -.02em; }
 .qlab-title-engine { color: var(--accent); }
 .qlab-sub { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); max-width: 92ch; }
-.qlab-progress { margin-left: 8px; white-space: nowrap; color: var(--text-faint); }
-.qlab-progress b { color: var(--ok); font-variant-numeric: tabular-nums; }
+.qlab-progress {
+  padding: 3px 9px; border-radius: 20px; border: 1px solid var(--border); white-space: nowrap;
+  font: 400 11.5px/1.2 var(--mono); color: var(--text-faint); font-variant-numeric: tabular-nums;
+}
+.qlab-progress:empty { display: none; }
+.qlab-progress b { color: var(--text-dim); font-weight: 600; }
+.qlab-progress.has-done { border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.qlab-progress.has-done b { color: var(--ok); }
 .qlab-engines .lang { text-decoration: none; }
 
 .qlab-body { flex: 1; min-height: 0; display: flex; }
@@ -52,7 +59,8 @@
   font-size: 12.5px; color: var(--text-dim); text-decoration: none;
 }
 .qlab-item:hover { background: var(--surface-2); color: var(--text); }
-.qlab-item.is-on { background: var(--accent-wash); color: var(--text); }
+.qlab-item.is-on { background: var(--accent-wash); color: var(--text); box-shadow: inset 2px 0 0 var(--accent); }
+.qlab-item:focus-visible, .qlab-play:focus-visible { outline-offset: -2px; }
 .qlab-item-glyph { width: 12px; flex: none; text-align: center; color: var(--text-faint); }
 .qlab-item.st-solved .qlab-item-glyph { color: var(--ok); }
 .qlab-item.st-attempting .qlab-item-glyph { color: var(--accent); }
@@ -86,6 +94,9 @@
 
 /* --- main column: question / editor / output ------------------------------ */
 .qlab-main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); }
+/* the column scrolls; its parts must keep their height, or a long result squeezes
+   under the solution card that follows it */
+.qlab-main > * { flex-shrink: 0; }
 .qlab-q { padding: 18px 24px 8px; max-width: 980px; }
 .qlab-q-head h2 { margin: 0 0 8px; font: 650 17px/1.3 var(--display, var(--sans)); letter-spacing: -.015em; }
 .qlab-q-meta { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -126,8 +137,21 @@
 .qlab-ds select:disabled { opacity: .7; }
 .qlab-engine-state { font: 400 11px/1 var(--mono); color: var(--text-faint); }
 .qlab-engine-state[data-state="ready"]::before { content: "●"; color: var(--ok); margin-right: 5px; }
-.qlab-engine-state[data-state="loading"]::before { content: "◌"; color: var(--accent); margin-right: 5px; }
+.qlab-engine-state[data-state="loading"]::before, .qlab-engine-state[data-state="running"]::before {
+  content: "●"; color: var(--accent); margin-right: 5px; animation: qlab-pulse 1s ease-in-out infinite;
+}
+.qlab-engine-state[data-state="running"] { color: var(--text-dim); }
+@keyframes qlab-pulse { 50% { opacity: .25; } }
 .qlab-engine-state[data-state="error"] { color: var(--err); }
+.qlab-kbd {
+  margin-left: 2px; padding: 2px 4px; border-radius: 4px;
+  font: 500 10.5px/1 var(--mono); opacity: .75;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.qlab-check { color: var(--accent); border-color: var(--accent-line); background: var(--accent-wash); font-weight: 600; }
+.qlab-check:hover { color: var(--accent); border-color: var(--accent); }
+.qlab-check svg { fill: none; stroke: currentColor; stroke-width: 2.4; }
+.qlab .btn.busy { opacity: .6; pointer-events: none; cursor: progress; }
 .qlab-editor { height: 240px; resize: vertical; overflow: hidden; min-height: 120px; }
 .qlab-editor .CodeMirror { height: 100%; font: 13px/1.6 var(--mono); }
 .qlab-ta {
@@ -136,10 +160,16 @@
 }
 
 .qlab-out { margin: 12px 24px 24px; min-height: 60px; }
-.qlab-out-empty { padding: 16px; border: 1px dashed var(--border); border-radius: var(--r-lg); color: var(--text-faint); font-size: 12.5px; }
+.qlab-out-empty {
+  padding: 12px 16px; border: 1px dashed var(--border); border-radius: var(--r-lg);
+  color: var(--text-faint); font-size: 12.5px; line-height: 1.6;
+}
+.qlab-out-empty p { margin: 4px 0; }
+.qlab-out-empty b { color: var(--text-dim); font-weight: 600; }
 .qlab-out kbd, .qlab-out-empty kbd {
   font: 500 11px/1 var(--mono); padding: 2px 5px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface-2);
 }
+.qlab-out-empty kbd + kbd { margin-left: 2px; }
 .qlab-meta { display: flex; gap: 14px; margin: 0 2px 8px; font: 400 11.5px/1 var(--mono); color: var(--text-faint); }
 .qlab-verdict {
   margin: 0 0 12px; padding: 11px 14px; border-radius: var(--r-lg); font-size: 13px; line-height: 1.5;
@@ -157,11 +187,13 @@
 .qlab-expected .qlab-grid { margin-top: 8px; }
 
 .qlab-grid { overflow: auto; max-height: 460px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); }
-.qlab-grid table { border-collapse: collapse; width: max-content; min-width: 100%; font: 12.5px/1.45 var(--mono); }
+.qlab-grid table { display: table; margin: 0; border-collapse: collapse; width: max-content; min-width: 100%; font: 12.5px/1.45 var(--mono); }
+.qlab-grid th, .qlab-grid td { border: 0; }
 .qlab-grid th {
   position: sticky; top: 0; z-index: 1; text-align: left; padding: 7px 12px;
   background: var(--surface-2); color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--border);
 }
+.qlab-grid tr:last-child td { border-bottom: 0; }
 .qlab-grid td { padding: 5px 12px; border-bottom: 1px solid var(--border-soft); color: var(--text); white-space: nowrap; max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
 .qlab-grid tr:hover td { background: color-mix(in srgb, var(--accent-wash) 60%, transparent); }
 .qlab-rn { color: var(--text-faint) !important; text-align: right; width: 1%; }
@@ -173,24 +205,69 @@
   margin: 0; padding: 12px 14px; max-height: 520px; overflow: auto; border-radius: var(--r);
   background: var(--ed-bg); border: 1px solid var(--border); color: var(--ed-fg); font: 12.5px/1.55 var(--mono);
 }
-.qlab-cli { display: flex; flex-direction: column; gap: 4px; }
-.qlab-cli-cmd { font: 600 12px/1.4 var(--mono); color: var(--accent); margin-top: 6px; }
+/* redis: one terminal transcript, prompt then reply, like redis-cli itself */
+.qlab-cli {
+  max-height: 560px; overflow: auto; padding: 10px 14px 12px; border-radius: var(--r);
+  background: var(--ed-bg); border: 1px solid var(--border); font: 12.5px/1.55 var(--mono);
+}
+.qlab-cli-cmd { font: 600 12.5px/1.55 var(--mono); color: var(--accent); margin-top: 8px; overflow-wrap: anywhere; }
+.qlab-cli-cmd:first-child { margin-top: 0; }
+.qlab-cli .qlab-cli-reply {
+  margin: 1px 0 0; padding: 0 0 0 2px; max-height: none; overflow: visible; border: 0; border-radius: 0;
+  background: none; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit;
+}
 .qlab-cli-reply { padding: 6px 12px; max-height: 320px; }
 .qlab-cli-reply.is-err { color: var(--err); }
 
+/* --- module landing-page strip (qlabStrip) -------------------------------- */
+.qlab-strip .aps-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.qlab-card { flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
+.qlab-card-ic {
+  flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px;
+  color: var(--accent); background: var(--accent-wash); border: 1px solid var(--accent-line);
+}
+.aps-card .qlab-card-ic svg { width: 19px; height: 19px; margin: 0; align-self: auto; color: currentColor; stroke-width: 1.7; transform: none; }
+.qlab-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.qlab-card-go {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--r);
+  font: 600 12px/1 var(--sans); color: var(--accent); border: 1px solid var(--accent-line); white-space: nowrap;
+}
+.aps-card .qlab-card-go svg { width: 13px; height: 13px; margin: 0; align-self: auto; color: currentColor; }
+.qlab-card:hover .qlab-card-go { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+@media (max-width: 560px) {
+  .qlab-card { flex-wrap: wrap; }
+  .qlab-card-body { flex-basis: calc(100% - 52px); }
+  .qlab-card-go { margin-left: 52px; }
+}
+
 /* --- Run buttons on chapter code blocks --------------------------------- */
 .code-run {
-  margin-left: auto; padding: 4px 9px; border-radius: var(--r-sm);
+  margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 8px; border-radius: var(--r-sm);
   font: 600 11.5px/1 var(--sans); color: var(--accent); border: 1px solid var(--accent-line); background: var(--accent-wash);
+  transition: background var(--t), border-color var(--t);
 }
+.code-run svg { width: 10px; height: 10px; fill: currentColor; stroke: none; }
 .code-run + .code-copy { margin-left: 0; }
-.code-run:hover { filter: brightness(1.1); }
-.code-run:disabled { opacity: .6; }
-.qlab-doc-out { margin: -1.1em 0 1.6em; padding: 12px; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 13px 13px; background: var(--surface); }
+.code-run:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.code-run:disabled { opacity: .7; cursor: progress; }
+/* the block and its output read as one card: square the seam, drop the gap */
+.code.has-run-out { margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.qlab-doc-out {
+  margin: 0 0 1.6em; padding: 12px 14px; border: 1px solid var(--border); border-top: 1px dashed var(--border);
+  border-radius: 0 0 13px 13px; background: var(--surface); font-size: 13px;
+}
 .qlab-doc-out .qlab-grid { max-height: 320px; }
-.qlab-doc-foot { display: flex; align-items: center; gap: 12px; margin-top: 8px; font: 400 11.5px/1.4 var(--sans); color: var(--text-faint); }
-.qlab-doc-foot > span { flex: 1; }
-.qlab-doc-reset { padding: 3px 8px; border-radius: var(--r-sm); border: 1px solid var(--border); font: 500 11.5px/1 var(--sans); color: var(--text-dim); background: transparent; white-space: nowrap; }
+.qlab-doc-out .qlab-verdict { margin-bottom: 0; }
+.qlab-doc-out p.qlab-trunc { margin: 6px 2px 0; font-size: 12px; line-height: 1.5; color: var(--text-faint); }
+.qlab-doc-out > p.qlab-trunc:first-child { margin: 0 2px 8px; }
+.qlab-doc-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; font: 400 11.5px/1.4 var(--sans); color: var(--text-faint); }
+.qlab-doc-foot > span { flex: 1 1 200px; }
+.qlab-doc-foot > span:empty { flex-basis: 0; }
+.qlab-doc-reset {
+  margin-left: auto; padding: 4px 9px; border-radius: var(--r-sm); border: 1px solid var(--border);
+  font: 500 11.5px/1 var(--sans); color: var(--text-dim); background: transparent; white-space: nowrap;
+  transition: color var(--t), border-color var(--t);
+}
 .qlab-doc-reset:hover { color: var(--text); border-color: var(--accent-line); }
 .qlab-doc-banner {
   display: flex; gap: 12px; align-items: flex-start; margin: 0 0 1.6em; padding: 12px 14px;
@@ -198,8 +275,21 @@
   font: 400 14px/1.55 var(--sans); color: var(--text-dim);
 }
 .qlab-doc-banner b { color: var(--text); font-weight: 600; }
-.qlab-doc-banner a { color: var(--accent); }
-.qlab-doc-banner-ic { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 11px; }
+.qlab-doc-banner-text { flex: 1; min-width: 0; }
+.doc-prose .qlab-doc-banner a.qlab-doc-banner-go {
+  flex: none; align-self: center; display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: var(--r);
+  font: 600 12.5px/1 var(--sans); white-space: nowrap; text-decoration: none;
+  color: var(--accent-ink); background: var(--accent); transition: filter var(--t);
+}
+.doc-prose .qlab-doc-banner a.qlab-doc-banner-go:hover { filter: brightness(1.08); }
+.qlab-doc-banner-go svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
+@media (max-width: 720px) {
+  .qlab-doc-banner { flex-wrap: wrap; }
+  .qlab-doc-banner-text { flex-basis: calc(100% - 38px); }
+  .doc-prose .qlab-doc-banner a.qlab-doc-banner-go { margin-left: 38px; }
+}
+.qlab-doc-banner-ic { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); }
+.qlab-doc-banner-ic svg { width: 11px; height: 11px; fill: currentColor; stroke: none; }
 
 @media (max-width: 860px) {
   .qlab-body { flex-direction: column; overflow-y: auto; }
@@ -212,3 +302,16 @@
   .qlab-head { padding: 12px 16px 10px; }
   .qlab-nav { margin-left: 0; }
 }
+@media (max-width: 560px) {
+  .qlab-head { gap: 10px; }
+  .qlab-head-main { flex-basis: 100%; }
+  .qlab-engines { width: 100%; }
+  .qlab-engines .lang { flex: 1; text-align: center; }
+  .qlab-side { max-height: 38vh; }
+  .qlab-bar .editor-actions { margin-left: 0; width: 100%; }
+  .qlab-bar #qlabRun { margin-left: auto; }
+  .qlab-doc-out { padding: 10px; }
+}
+/* touch screens have no ⌘↵ to press */
+@media (hover: none), (max-width: 560px) { .qlab-kbd { display: none; } }
+@media (prefers-reduced-motion: reduce) { .qlab-engine-state::before { animation: none !important; } }

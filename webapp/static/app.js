@@ -394,6 +394,32 @@ const SECTION_ICON = {
   gostdlib: '<circle cx="8" cy="8" r="2.4"/><circle cx="16" cy="8" r="2.4"/><circle cx="12" cy="16" r="2.4"/><path d="M9.9 9.6L14.1 9.6M9.2 10.3L11 14M14.8 10.3L13 14"/>',
 };
 
+/* The Query Lab is not a module (nothing to read or tick off) but the tool SQL
+   and NoSQL share: run SQL, mongosh and redis-cli in the browser against real
+   datasets. It gets its own sidebar row right under those two, a card on Home,
+   and a place in search and quick jump, so it can be found without reading a
+   chapter first. qlab.js */
+const QLAB_ICON = '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v8c0 1.66 3.58 3 8 3"/><path d="M15 16l6 3.5-6 3.5z"/>';
+const QLAB_TOOLS = [
+  { name: 'SQL Query Lab', href: '#/query-lab/sql', meta: 'PostgreSQL',
+    words: 'query lab sql postgres postgresql psql run execute playground practice interview questions database select join' },
+  { name: 'MongoDB Query Lab', href: '#/query-lab/mongodb', meta: 'mongosh',
+    words: 'query lab nosql mongodb mongo mongosh run execute playground practice interview questions database find aggregate' },
+  { name: 'Redis Query Lab', href: '#/query-lab/redis', meta: 'redis-cli',
+    words: 'query lab nosql redis redis-cli cli run execute playground practice interview questions cache key value' },
+];
+/* where the lab row leads: from a SQL / MongoDB / Redis page, that engine's lab;
+   anywhere else, the engine you last had open */
+function qlabNavHref() {
+  let e = typeof qlabEngine === 'string' && qlabEngine ? qlabEngine : 'sql';
+  if (curView !== 'query-lab' && curModule === 'sql') e = 'sql';
+  else if (curView !== 'query-lab' && curModule === 'nosql') {
+    const id = (typeof curDoc !== 'undefined' && curDoc && curDoc.id) || '';
+    e = id.startsWith('redis/') ? 'redis' : id.startsWith('mongodb/') ? 'mongodb' : e === 'sql' ? 'mongodb' : e;
+  }
+  return `#/query-lab/${e}`;
+}
+
 const sectionName = key => key === 'dsa' ? 'DSA' : MODULES[key].name;
 const sectionHref = key => key === 'dsa' ? '#/dsa' : `#/${MODULES[key].hash}`;
 const modsAsked = new Set();          // module lists already requested
@@ -443,6 +469,7 @@ const DSA_TOOLS = [
 function searchResults(q = query) {
   const out = [];
   for (const t of DSA_TOOLS) if (matchesAll(`${t.name} ${t.words}`.toLowerCase(), q)) out.push({ sec: 'DSA', href: t.href, name: t.name, meta: t.meta, st: 'todo' });
+  for (const t of QLAB_TOOLS) if (matchesAll(`${t.name} ${t.words}`.toLowerCase(), q)) out.push({ sec: 'Query Lab', href: t.href, name: t.name, meta: t.meta, st: 'todo' });
   for (const p of DATA.problems) {
     if (passes(p, q)) out.push({ sec: 'DSA', href: `#/p/${p.topic}/${p.seq}`, name: p.title,
                               meta: p.lc, on: cur && cur.id === p.id, st: rec(p.id).status });
@@ -486,7 +513,7 @@ let palRows = [], palIdx = 0, palReturnFocus = null;
 
 function paletteRows(q) {
   if (!q) {
-    const go = [['Home', '#/home'], ['Dashboard', '#/dashboard'], ['Review queue', '#/review'],
+    const go = [['Home', '#/home'], ['Dashboard', '#/dashboard'], ['Review queue', '#/review'], ['Query Lab: SQL, MongoDB, Redis', qlabNavHref()],
       ['Pattern recognition drill', '#/dsa-drill'], ['Pattern cheat sheet', '#/dsa-patterns']]
       .map(([name, href]) => ({ sec: 'Go to', name, href, meta: '' }));
     const mods = SECTIONS.map(k => {
@@ -584,6 +611,14 @@ function renderSidebar() {
 
   const active = activeSection();
   const host = $('#modules');
+  const onLab = curView === 'query-lab';     // the lab row lights up, not SQL / NoSQL
+  const labRow = `
+        <a class="mod-item mod-lab${onLab ? ' is-on' : ''}" id="navQueryLab" href="${qlabNavHref()}"${onLab ? ' aria-current="page"' : ''}
+           title="Run SQL, MongoDB and Redis queries in your browser">
+          <svg class="mod-icon" viewBox="0 0 24 24" aria-hidden="true">${QLAB_ICON}</svg>
+          <span class="mod-name">Query Lab</span>
+          <span class="mod-tag">SQL · Mongo · Redis</span>
+        </a>`;
 
   if (query) {
     renderResults(host);
@@ -591,13 +626,14 @@ function renderSidebar() {
     host.innerHTML = SECTIONS.map(key => {
       const c = sectionCount(key);
       const pct = c && c.total ? c.done / c.total * 100 : 0;
+      const on = active === key && !onLab;
       return `
-        <a class="mod-item${active === key ? ' is-on' : ''}" href="${sectionHref(key)}">
-          <svg class="mod-icon" viewBox="0 0 24 24">${SECTION_ICON[key]}</svg>
+        <a class="mod-item${on ? ' is-on' : ''}" href="${sectionHref(key)}"${on ? ' aria-current="page"' : ''}>
+          <svg class="mod-icon" viewBox="0 0 24 24" aria-hidden="true">${SECTION_ICON[key]}</svg>
           <span class="mod-name">${esc(sectionName(key))}</span>
           ${c ? `<span class="mod-count">${c.done}<i>/${c.total}</i></span>` : ''}
           <span class="mod-bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
-        </a>`;
+        </a>${key === 'nosql' ? labRow : ''}`;
     }).join('');
   }
 

@@ -146,6 +146,13 @@
 .hc-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--border-soft); }
 .hc-bar i { display: block; height: 100%; background: var(--c); transition: width .6s var(--ease); }
 
+.hc-engines { display: flex; flex-wrap: wrap; gap: 5px; }
+.hc-engines i {
+  font: 400 11px/1 var(--mono); font-style: normal; color: var(--text-dim);
+  padding: 4px 7px; border-radius: 20px; border: 1px solid var(--border);
+}
+.hc-lab:hover .hc-engines i { border-color: color-mix(in srgb, var(--c) 40%, var(--border)); }
+
 /* module colours — same hues as reader.css / the sidebar */
 .hc[data-m="dsa"]        { --c-d: #e5ab4f; --c-l: #96650d; }
 .hc[data-m="sd"]         { --c-d: #93a4ff; --c-l: #3d4fd6; }
@@ -161,6 +168,7 @@
 .hc[data-m="api"]        { --c-d: #ff6b6b; --c-l: #c92a2a; }
 .hc[data-m="sql"]        { --c-d: #7fd8e0; --c-l: #147a85; }
 .hc[data-m="nosql"]      { --c-d: #a8e06a; --c-l: #4d8a12; }
+.hc[data-m="qlab"]       { --c-d: #7fd8e0; --c-l: #147a85; }
 .hc[data-m="pystdlib"]   { --c-d: #ffd43b; --c-l: #8a6500; }
 .hc[data-m="gostdlib"]   { --c-d: #34d5c5; --c-l: #0b7a70; }
 .hc[data-m="toolkit"]    { --c-d: #7cc4ff; --c-l: #1f6fb0; }

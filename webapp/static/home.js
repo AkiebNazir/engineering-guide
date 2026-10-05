@@ -17,7 +17,7 @@ const HOME_GROUPS = [
   { name: 'Build in Go and Python', note: 'Production code, run against real tests',
     mods: ['go', 'py', 'gostdlib', 'pystdlib'] },
   { name: 'Data and APIs', note: 'The layers every service sits on',
-    mods: ['sql', 'nosql', 'api'] },
+    mods: ['sql', 'nosql', 'qlab', 'api'] },
   { name: 'AI engineering', note: 'From the maths to agents in production',
     mods: ['roadmap', 'library', 'agentic', 'mlops'] },
   { name: 'Ship and run it', note: 'The tools and practices around the code',
@@ -51,7 +51,7 @@ const HOME_BLURB = {
 const HOME_STEPS = [
   { n: '01', name: 'Read', text: 'Theory guides written for 30-minute sessions, with zoomable diagrams and checks after every section.',
     icon: '<path d="M4 5a2 2 0 012-2h12v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M9 8h6M9 12h6"/>' },
-  { n: '02', name: 'Run', text: 'Write Python or Go in the built-in editor. Code runs as a real process against real tests.',
+  { n: '02', name: 'Run', text: 'Write Python or Go in the built-in editor and run it against real tests. Query SQL, MongoDB and Redis in the browser.',
     icon: '<path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12"/>' },
   { n: '03', name: 'Visualize', text: 'Step through 50 algorithms with the matching line highlighted, and feed them your own input.',
     icon: '<circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/>' },
@@ -71,6 +71,7 @@ function homeCount(key) {
 function renderHome() {
   let idx = 0;
   const card = key => {
+    if (key === 'qlab') return labCard(idx++);
     const c = homeCount(key);
     return `
       <a class="hc" data-m="${key}" href="${sectionHref(key)}" style="--i:${idx++}">
@@ -143,6 +144,22 @@ function renderHome() {
     </div>`;
 
   updateHome();
+}
+
+/* The Query Lab is a tool shared by SQL and NoSQL, not a module: no count to
+   show, so its card names the three engines instead. */
+function labCard(i) {
+  return `
+      <a class="hc hc-lab" data-m="qlab" href="${qlabNavHref()}" style="--i:${i}">
+        <span class="hc-icon"><svg viewBox="0 0 24 24">${QLAB_ICON}</svg></span>
+        <span class="hc-name">Query Lab</span>
+        <span class="hc-text">Run SQL, MongoDB and Redis right here in the browser against realistic datasets, then work through interview questions that check your answer.</span>
+        <span class="hc-foot">
+          <span class="hc-engines"><i>PostgreSQL</i><i>mongosh</i><i>redis-cli</i></span>
+          <span class="hc-go">${HOME_ARROW}</span>
+        </span>
+        <span class="hc-bar" aria-hidden="true"></span>
+      </a>`;
 }
 
 /* Counts arrive one module at a time; patch them in place so the cards do not

@@ -41,6 +41,12 @@ const QLAB_ENGINES = {
   },
 };
 const QLAB_LEVELS = ['Easy', 'Medium', 'Hard'];
+/* Shortcut labels in the platform's own words: ⌘ on a Mac, Ctrl elsewhere. */
+const QLAB_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
+const QLAB_MODK = QLAB_MAC ? '⌘' : 'Ctrl';
+const QLAB_SHIFT = QLAB_MAC ? '⇧' : 'Shift';
+const QLAB_ENTER = QLAB_MAC ? '↵' : 'Enter';
+const qlabKeys = (...keys) => keys.map(k => `<kbd>${k}</kbd>`).join('');
 
 let qlabEngine = null;          // engine on screen
 let qlabQid = null;             // question on screen, or null for the playground
@@ -243,7 +249,10 @@ function qlabShell(engine, bank) {
       <header class="qlab-head">
         <div class="qlab-head-main">
           <div class="crumb"><a href="#/${E.module === 'sql' ? 'sql' : 'nosql'}">${E.module === 'sql' ? 'SQL' : 'NoSQL'}</a><span>›</span><span>Query Lab</span></div>
-          <h1 class="qlab-title">Query Lab <span class="qlab-title-engine">${esc(E.label)}</span></h1>
+          <div class="qlab-title-row">
+            <h1 class="qlab-title">Query Lab <span class="qlab-title-engine">${esc(E.label)}</span></h1>
+            <span class="qlab-progress" id="qlabProgress"></span>
+          </div>
           <p class="qlab-sub" id="qlabSub"></p>
         </div>
         <nav class="lang-switch qlab-engines" aria-label="Database">
@@ -272,9 +281,10 @@ function qlabShell(engine, bank) {
               <span class="qlab-engine-state" id="qlabState" aria-live="polite"></span>
               <div class="editor-actions">
                 <button class="btn btn-ghost" id="qlabReset" title="Reload the dataset, undoing your changes">Reset data</button>
-                <button class="btn btn-ghost" id="qlabCheck" hidden>Check answer</button>
-                <button class="btn btn-primary" id="qlabRun" title="Run (Ctrl/Cmd + Enter)">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>Run</button>
+                <button class="btn btn-ghost qlab-check" id="qlabCheck" hidden title="Check your answer against the reference (Shift + ${QLAB_MODK} + Enter)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Check answer</button>
+                <button class="btn btn-primary" id="qlabRun" title="Run the editor, or just the selected text (${QLAB_MODK} + Enter)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>Run<span class="qlab-kbd" aria-hidden="true">${QLAB_MAC ? '⌘↵' : 'Ctrl+Enter'}</span></button>
               </div>
             </div>
             <div class="qlab-editor" id="qlabEditor"></div>
@@ -289,7 +299,9 @@ function qlabShell(engine, bank) {
 function qlabPaintHead(engine, bank) {
   const done = bank.questions.filter(q => qlabStatus(engine, q.id) === 'solved').length;
   const E = QLAB_ENGINES[engine];
-  $('#qlabSub').innerHTML = `${esc(E.blurb)} <span class="qlab-progress"><b>${done}</b> / ${bank.questions.length} solved</span>`;
+  $('#qlabSub').textContent = E.blurb;
+  $('#qlabProgress').innerHTML = `<b>${done}</b> / ${bank.questions.length} solved`;
+  $('#qlabProgress').classList.toggle('has-done', done > 0);
   const ds = $('#qlabDs');
   if (ds) {
     ds.value = qlabDataset.sql;
@@ -303,12 +315,16 @@ function qlabSetEngineState(state, msg) {
   if (!el) return;
   const E = QLAB_ENGINES[qlabEngine];
   el.dataset.state = state;
-  el.textContent = state === 'loading' ? `Starting ${E.engineName}…` : state === 'ready' ? `${E.engineName} ready` : `Engine failed: ${msg || ''}`;
+  el.textContent = state === 'loading' ? `Starting ${E.engineName}…` : state === 'running' ? 'Running…'
+    : state === 'ready' ? `${E.engineName} ready` : `Engine failed: ${msg || ''}`;
 }
 
 /* ---------------------------------------------------------- side rail -- */
 function qlabPaintSide(engine, bank) {
-  $$('.qlab-side-tabs .tab').forEach(t => t.classList.toggle('is-on', t.dataset.side === qlabSide));
+  $$('.qlab-side-tabs .tab').forEach(t => {
+    t.classList.toggle('is-on', t.dataset.side === qlabSide);
+    t.setAttribute('aria-selected', String(t.dataset.side === qlabSide));
+  });
   if (qlabSide === 'schema') { qlabPaintSchema(engine); return; }
   const f = qlabFilter, term = f.q.trim().toLowerCase();
   const pass = q => (f.level === 'all' || q.level === f.level)
@@ -460,7 +476,7 @@ function qlabPlaygroundHelp(engine) {
     return 'Query any of the datasets: **shop** (an online store: customers, products, orders, order_items, payments, reviews), ' +
       '**hr** (a company: departments, employees, salary_history, projects, job_applications) or **analytics** (a SaaS app: users, events, ' +
       'subscriptions, experiment_assignments), or **scratch** to create your own tables. The *Schema* tab lists every table and column.\n\n' +
-      'Changes you make (INSERT, UPDATE, CREATE) stay until **Reset data**. Pick a question on the left to be checked.';
+      'Changes you make (INSERT, UPDATE, CREATE) stay until **Reset data**. Pick a question from the list to have your answer checked.';
   }
   if (engine === 'mongodb') {
     return 'The shop data as documents: `customers`, `products`, `orders` (with embedded `items`, a `customer` snapshot and `status_history`) and `reviews`. ' +
@@ -559,8 +575,10 @@ function qlabPaintOutput(out, verdict) {
   const host = $('#qlabOut');
   if (!host) return;
   if (!out && !verdict) {
-    host.innerHTML = `<div class="qlab-out-empty">Run your ${QLAB_ENGINES[qlabEngine].label} with <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd>.
-      ${qlabQid ? 'Then <b>Check answer</b> (<kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd>).' : ''}</div>`;
+    host.innerHTML = `<div class="qlab-out-empty">
+      <p><b>Run</b> ${qlabKeys(QLAB_MODK, QLAB_ENTER)} executes the editor, or only the text you have selected. Results appear here.</p>
+      ${qlabQid ? `<p><b>Check answer</b> ${qlabKeys(QLAB_SHIFT, QLAB_MODK, QLAB_ENTER)} compares your result with the reference solution. Anything your answer changes is thrown away afterwards.</p>` : ''}
+    </div>`;
     return;
   }
   host.innerHTML = (verdict ? qlabVerdictHtml(verdict) : '') + (out ? qlabResultHtml(out) : '');
@@ -642,7 +660,7 @@ function qlabRun() {
   return qlabWithBusy($('#qlabRun'), async () => {
     const code = qlabCode();
     if (!code.trim()) return;
-    qlabSetEngineState('loading');
+    qlabSetEngineState('running');
     try {
       const out = await qlabRunPlayground(engine, code);
       qlabSetEngineState('ready');
@@ -672,7 +690,7 @@ async function qlabCheck() {
   return qlabWithBusy($('#qlabCheck'), async () => {
     const code = qlabEditor.getValue();
     if (!code.replace(/^\s*(--|#|\/\/).*$/gm, '').trim()) { toast('Write your answer in the editor first.'); return; }
-    qlabSetEngineState('loading');
+    qlabSetEngineState('running');
     let actual, expected;
     try {
       actual = await qlabRunIsolated(engine, q, code);
@@ -776,10 +794,13 @@ function qlabStrip(mod) {
       </header>
       <div class="aps-grid">
         ${cards.map(([k, name, sub]) => `
-          <a class="aps-card" href="#/query-lab/${k}">
-            <span class="aps-card-name">${name}</span>
-            <span class="aps-card-counts"><span>${sub}</span></span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <a class="aps-card qlab-card" href="#/query-lab/${k}">
+            <span class="qlab-card-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${QLAB_ICON}</svg></span>
+            <span class="qlab-card-body">
+              <span class="aps-card-name">${name}</span>
+              <span class="aps-card-counts"><span>${sub}</span></span>
+            </span>
+            <span class="qlab-card-go">Open the lab <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
           </a>`).join('')}
       </div>
     </section>`;
@@ -797,6 +818,7 @@ const QLAB_DOC_RAN = new Map();        // doc key -> Set of block indexes alread
 
 const qlabDocEngine = (mod, id, lang, text) =>
   QLabCore.docEngine(mod, id, lang, text, typeof QLabRedis !== 'undefined' ? QLabRedis.COMMANDS : null);
+const QLAB_RUN_LABEL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>Run';
 const qlabDocSchema = key => 'doc_' + key.replace(/[^a-z0-9]+/gi, '_').toLowerCase().slice(0, 50);
 
 function qlabEnhanceDoc(prose, mod, id) {
@@ -812,7 +834,7 @@ function qlabEnhanceDoc(prose, mod, id) {
     const block = { wrap, engine, text: code.textContent, idx: blocks.length };
     blocks.push(block);
     const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'code-run'; btn.textContent = '▶ Run';
+    btn.type = 'button'; btn.className = 'code-run'; btn.innerHTML = QLAB_RUN_LABEL;
     btn.title = engine === 'sql' ? 'Run in PostgreSQL in your browser (this page has its own scratch database)'
       : engine === 'mongodb' ? 'Run in the in-browser MongoDB shell (shop collections loaded)' : 'Run in the in-browser Redis (lab keys loaded)';
     $('.code-head', wrap).insertBefore(btn, $('.code-copy', wrap));
@@ -829,10 +851,12 @@ function qlabDocBanner(prose, mod, id, blocks) {
   const lab = engine === 'sql' ? 'sql' : id.startsWith('redis/') ? 'redis' : 'mongodb';
   const el = document.createElement('div');
   el.className = 'qlab-doc-banner';
-  el.innerHTML = `<span class="qlab-doc-banner-ic">▶</span>
-    <span><b>${blocks.length} runnable example${blocks.length === 1 ? '' : 's'} on this page.</b>
+  el.innerHTML = `<span class="qlab-doc-banner-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z"/></svg></span>
+    <span class="qlab-doc-banner-text"><b>${blocks.length} runnable example${blocks.length === 1 ? '' : 's'} on this page.</b>
     Press <b>Run</b> on a code block to execute it in ${what} inside your browser and see the output, no install needed.
-    Edit-and-run, real datasets and interview questions are in the <a href="#/query-lab/${lab}">${QLAB_ENGINES[lab].label} Query Lab</a>.</span>`;
+    To write your own queries against real datasets and practise interview questions, open the Query Lab.</span>
+    <a class="qlab-doc-banner-go" href="#/query-lab/${lab}">${QLAB_ENGINES[lab].label} Query Lab
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>`;
   const h1 = $('h1', prose);
   (h1 && h1.nextElementSibling) ? h1.nextElementSibling.after(el) : prose.prepend(el);
 }
@@ -886,10 +910,14 @@ async function qlabRunDocBlock(key, blocks, block, btn) {
   if (!out || !out.classList.contains('qlab-doc-out')) {
     out = document.createElement('div');
     out.className = 'qlab-doc-out';
+    out.setAttribute('aria-live', 'polite');
     wrap.after(out);
   }
+  wrap.classList.add('has-run-out');            // code block and its output read as one card
   out.innerHTML = `<div class="qlab-meta"><span>Running…${engine === 'sql' && !QE.sql.db ? ' (starting PostgreSQL, a few seconds the first time)' : ''}</span></div>`;
   btn.disabled = true;
+  btn.setAttribute('aria-busy', 'true');
+  btn.textContent = 'Running…';
   const ran = QLAB_DOC_RAN.get(key) || new Set();
   QLAB_DOC_RAN.set(key, ran);
   const tools = `<button type="button" class="qlab-doc-reset" title="Throw away this page's scratch data and start again">↺ Reset page data</button>`;
@@ -919,11 +947,15 @@ async function qlabRunDocBlock(key, blocks, block, btn) {
       <div class="qlab-doc-foot"><span></span>${tools}</div>`;
   } finally {
     btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+    btn.innerHTML = QLAB_RUN_LABEL;
   }
   const reset = $('.qlab-doc-reset', out);
   if (reset) reset.onclick = async () => {
     await qlabResetDoc(key);
-    $$('.qlab-doc-out', wrap.closest('.doc-prose') || document).forEach(o => o.remove());
+    const page = wrap.closest('.doc-prose') || document;
+    $$('.qlab-doc-out', page).forEach(o => o.remove());
+    $$('.code.has-run-out', page).forEach(c => c.classList.remove('has-run-out'));
     toast('Page data reset: blocks will run from a clean start');
   };
 }

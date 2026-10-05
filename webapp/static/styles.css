@@ -362,6 +362,7 @@ html.scroll-lock { overflow: hidden; }
   z-index: 20;
 }
 
+.nav-main { padding-bottom: 8px; border-bottom: 1px solid var(--border-soft); }
 .nav-item {
   display: flex; align-items: center; gap: 10px;
   margin: 3px 10px 0; padding: 7px 10px;
@@ -409,7 +410,7 @@ html.scroll-lock { overflow: hidden; }
    The sidebar is a list of modules and the DSA filter chips — nothing else.
    Topics and problems live on the pages, where there is room for them.
    ========================================================================= */
-.modules { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 10px 12px; }
+.modules { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 10px 12px; }
 
 .mod-item {
   position: relative; overflow: hidden;
@@ -440,6 +441,14 @@ html.scroll-lock { overflow: hidden; }
 .mod-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: transparent; }
 .mod-bar i { display: block; height: 100%; background: var(--accent); opacity: .55; transition: width .5s var(--ease); }
 .mod-item.is-on .mod-bar i { opacity: 1; }
+/* Query Lab: a tool, not a module, so it carries a label instead of a count */
+.mod-tag {
+  flex: none; padding: 2px 6px; border-radius: 20px;
+  border: 1px solid var(--border); color: var(--text-faint);
+  font: 500 9.5px/1.3 var(--mono); letter-spacing: .01em; white-space: nowrap;
+}
+.mod-item:hover .mod-tag { color: var(--text-dim); }
+.mod-item.is-on .mod-tag { color: var(--accent); border-color: var(--accent-line); }
 
 /* ---- search results: one flat list over every module ---- */
 .results-head {
