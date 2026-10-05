@@ -74,6 +74,17 @@ function qlabScript(src) {
   });
 }
 
+/* One PGlite connection serves the lab and every chapter, so a run must never leave a
+   transaction open behind it: a BEGIN without COMMIT (or one aborted by an error) would
+   make every later statement fail with "current transaction is aborted". */
+const sqlStripTxn = code => code.replace(
+  /(^|;)(\s*)(?:BEGIN|START\s+TRANSACTION|COMMIT|END|ROLLBACK|ABORT)(?:\s+(?:WORK|TRANSACTION))?(?:\s+ISOLATION\s+LEVEL\s+[A-Z ]+?)?\s*(?=;|$)/gi, '$1$2');
+async function sqlCloseTxn(db) {
+  if (!db.isInTransaction()) return '';
+  await db.exec('ROLLBACK');
+  return 'The run left a transaction open, so it was rolled back. End it with COMMIT in the same run to keep its changes.';
+}
+
 async function sqlDb() {
   QE.sql.ready ??= (async () => {
     const { PGlite } = await import(new URL('./vendor/pglite/0.5.8/index.js', document.baseURI).href);
@@ -128,8 +139,12 @@ async function qlabRunPlayground(engine, code) {
   if (engine === 'sql') {
     const db = await sqlLoad(qlabDataset.sql);
     await db.exec(`SET search_path TO ${sqlPath(qlabDataset.sql)}`);
-    const res = await db.exec(code);
-    return { kind: 'table', ms: performance.now() - t0, statements: res.length, ...QLabCore.sqlLastResult(res) };
+    try {
+      const res = await db.exec(code);
+      return { kind: 'table', ms: performance.now() - t0, statements: res.length, ...QLabCore.sqlLastResult(res), note: await sqlCloseTxn(db) };
+    } finally {
+      await sqlCloseTxn(db);
+    }
   }
   if (engine === 'mongodb') {
     await mongoBase();
@@ -145,10 +160,13 @@ async function qlabRunPlayground(engine, code) {
 async function qlabRunIsolated(engine, q, code) {
   if (engine === 'sql') {
     const db = await sqlLoad(q.dataset);
+    await sqlCloseTxn(db);
     await db.exec('BEGIN');
     try {
       await db.exec(`SET LOCAL search_path TO ${sqlPath(q.dataset)}`);
-      let r = QLabCore.sqlLastResult(await db.exec(code));
+      // The check already runs inside a transaction it rolls back; an answer's own
+      // BEGIN/COMMIT would end that early and make its changes permanent.
+      let r = QLabCore.sqlLastResult(await db.exec(sqlStripTxn(code)));
       if (q.verify) r = QLabCore.sqlLastResult(await db.exec(q.verify));
       return r;
     } finally {
@@ -583,6 +601,7 @@ function qlabJson(v) {
 function qlabResultHtml(out, compact = false) {
   const ms = out.ms != null ? `<span>${out.ms < 1 ? '<1' : Math.round(out.ms)} ms</span>` : '';
   if (out.kind === 'table' || (out.columns && !out.kind)) {
+    if (out.note) return `<p class="qlab-trunc">${esc(out.note)}</p>` + qlabResultHtml({ ...out, note: '' }, compact);
     if (!out.columns.length) {
       return `<div class="qlab-meta"><span>${out.statements > 1 ? `${out.statements} statements ran` : 'Statement ran'}</span>
         ${out.affected != null ? `<span>${out.affected} row${out.affected === 1 ? '' : 's'} affected</span>` : ''}${ms}</div>`;
@@ -767,40 +786,102 @@ function qlabStrip(mod) {
 }
 
 /* ============================= Run buttons on chapter code blocks == *
-   SQL chapters: every ```sql block. MongoDB chapters: ```javascript blocks that
-   use `db.`. Redis chapters: ```bash blocks made only of Redis commands.
-   Each chapter page gets its own scratch session, so a chapter's blocks build
-   on each other when run in order, and nothing leaks into the Query Lab. */
+   SQL chapters: every ```sql block. MongoDB chapters: ```js blocks that use
+   `db.` (over the shop collections). Redis chapters: ```redis / ```bash blocks
+   made only of Redis commands (over the lab's seed keys).
+   Each chapter page gets its own scratch session, so nothing leaks into the
+   Query Lab. Running a block first runs the page's earlier blocks that haven't
+   run yet, so a query never fails just because its setup block was skipped. */
 const QLAB_DOC_SESSIONS = new Map();   // doc key -> { sql schema | mongo shell | redis }
+const QLAB_DOC_RAN = new Map();        // doc key -> Set of block indexes already run
 
-function qlabDocEngine(mod, id, lang, text) {
-  if (mod === 'sql' && lang === 'sql') return 'sql';
-  if (mod === 'nosql' && id.startsWith('mongodb/') && (lang === 'javascript' || lang === 'js') && /\bdb\.\w+/.test(text)) return 'mongodb';
-  if (mod === 'nosql' && id.startsWith('redis/') && (lang === 'bash' || lang === 'redis') && typeof QLabRedis !== 'undefined') {
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
-    if (lines.length && lines.every(l => QLabRedis.COMMANDS[l.split(/\s+/)[0].toUpperCase()])) return 'redis';
-  }
-  return null;
-}
+const qlabDocEngine = (mod, id, lang, text) =>
+  QLabCore.docEngine(mod, id, lang, text, typeof QLabRedis !== 'undefined' ? QLabRedis.COMMANDS : null);
+const qlabDocSchema = key => 'doc_' + key.replace(/[^a-z0-9]+/gi, '_').toLowerCase().slice(0, 50);
 
 function qlabEnhanceDoc(prose, mod, id) {
   if (mod !== 'sql' && mod !== 'nosql') return;
+  const key = `${mod}:${id}`;
+  const blocks = [];
   $$('.code', prose).forEach(wrap => {
     const code = $('pre > code', wrap);
     if (!code || $('.code-run', wrap)) return;
     const lang = ([...code.classList].find(c => c.startsWith('language-')) || '').slice(9).toLowerCase();
     const engine = qlabDocEngine(mod, id, lang, code.textContent);
     if (!engine) return;
+    const block = { wrap, engine, text: code.textContent, idx: blocks.length };
+    blocks.push(block);
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'code-run'; btn.textContent = '▶ Run';
-    btn.title = engine === 'sql' ? 'Run in an in-browser PostgreSQL (this page has its own scratch database)'
-      : engine === 'mongodb' ? 'Run in the in-browser MongoDB shell' : 'Run in the in-browser Redis';
+    btn.title = engine === 'sql' ? 'Run in PostgreSQL in your browser (this page has its own scratch database)'
+      : engine === 'mongodb' ? 'Run in the in-browser MongoDB shell (shop collections loaded)' : 'Run in the in-browser Redis (lab keys loaded)';
     $('.code-head', wrap).insertBefore(btn, $('.code-copy', wrap));
-    btn.onclick = () => qlabRunDocBlock(wrap, engine, `${mod}:${id}`, code.textContent, btn);
+    btn.onclick = () => qlabRunDocBlock(key, blocks, block, btn);
   });
+  if (blocks.length) qlabDocBanner(prose, mod, id, blocks);
 }
 
-async function qlabRunDocBlock(wrap, engine, key, text, btn) {
+// One line at the top of the chapter, so the Run buttons and the lab are never a surprise.
+function qlabDocBanner(prose, mod, id, blocks) {
+  if ($('.qlab-doc-banner', prose)) return;
+  const engine = blocks[0].engine;
+  const what = engine === 'sql' ? 'a real PostgreSQL' : engine === 'mongodb' ? 'a MongoDB shell' : 'Redis';
+  const lab = engine === 'sql' ? 'sql' : id.startsWith('redis/') ? 'redis' : 'mongodb';
+  const el = document.createElement('div');
+  el.className = 'qlab-doc-banner';
+  el.innerHTML = `<span class="qlab-doc-banner-ic">▶</span>
+    <span><b>${blocks.length} runnable example${blocks.length === 1 ? '' : 's'} on this page.</b>
+    Press <b>Run</b> on a code block to execute it in ${what} inside your browser and see the output, no install needed.
+    Edit-and-run, real datasets and interview questions are in the <a href="#/query-lab/${lab}">${QLAB_ENGINES[lab].label} Query Lab</a>.</span>`;
+  const h1 = $('h1', prose);
+  (h1 && h1.nextElementSibling) ? h1.nextElementSibling.after(el) : prose.prepend(el);
+}
+
+async function qlabDocSession(key, engine) {
+  let s = QLAB_DOC_SESSIONS.get(key);
+  if (s) return s;
+  if (engine === 'sql') {
+    const db = await sqlDb();
+    const schema = qlabDocSchema(key);
+    await db.exec(`DROP SCHEMA IF EXISTS ${schema} CASCADE; CREATE SCHEMA ${schema};`);
+    s = { schema };
+  } else if (engine === 'mongodb') {
+    await mongoBase();
+    s = QLabCore.createMongoShell(mingo, QE.mongodb.base);
+  } else {
+    await redisSeed();
+    s = qlabFreshRedis();
+  }
+  QLAB_DOC_SESSIONS.set(key, s);
+  return s;
+}
+
+async function qlabDocExec(key, engine, text) {
+  const s = await qlabDocSession(key, engine);
+  const src = QLabCore.docRunnable(engine, text);
+  if (engine === 'sql') {
+    const db = await sqlDb();
+    await db.exec(`SET search_path TO ${s.schema}, public`);
+    try {
+      const r = await db.exec(src);
+      return { kind: 'table', statements: r.length, ...QLabCore.sqlLastResult(r), note: await sqlCloseTxn(db) };
+    } finally {
+      await sqlCloseTxn(db);
+    }
+  }
+  if (engine === 'mongodb') return { kind: 'mongo', value: s.run(src) };
+  return { kind: 'redis', results: QLabRedis.runScript(s, src) };
+}
+
+async function qlabResetDoc(key) {
+  const s = QLAB_DOC_SESSIONS.get(key);
+  if (s && s.schema && QE.sql.db) await QE.sql.db.exec(`DROP SCHEMA IF EXISTS ${s.schema} CASCADE`);
+  QLAB_DOC_SESSIONS.delete(key);
+  QLAB_DOC_RAN.delete(key);
+}
+
+async function qlabRunDocBlock(key, blocks, block, btn) {
+  const { wrap, engine } = block;
   let out = wrap.nextElementSibling;
   if (!out || !out.classList.contains('qlab-doc-out')) {
     out = document.createElement('div');
@@ -809,36 +890,40 @@ async function qlabRunDocBlock(wrap, engine, key, text, btn) {
   }
   out.innerHTML = `<div class="qlab-meta"><span>Running…${engine === 'sql' && !QE.sql.db ? ' (starting PostgreSQL, a few seconds the first time)' : ''}</span></div>`;
   btn.disabled = true;
+  const ran = QLAB_DOC_RAN.get(key) || new Set();
+  QLAB_DOC_RAN.set(key, ran);
+  const tools = `<button type="button" class="qlab-doc-reset" title="Throw away this page's scratch data and start again">↺ Reset page data</button>`;
   try {
-    let res;
-    const t0 = performance.now();
-    if (engine === 'sql') {
-      const db = await sqlDb();
-      const schema = 'doc_' + key.replace(/[^a-z0-9]+/gi, '_').toLowerCase().slice(0, 50);
-      if (!QE.sql.scratchPages.has(schema)) {
-        await db.exec(`DROP SCHEMA IF EXISTS ${schema} CASCADE; CREATE SCHEMA ${schema};`);
-        QE.sql.scratchPages.add(schema);
-      }
-      await db.exec(`SET search_path TO ${schema}, public`);
-      const r = await db.exec(text.split('\n').filter(l => !/^\s*\\/.test(l)).join('\n'));
-      res = { kind: 'table', statements: r.length, ...QLabCore.sqlLastResult(r) };
-    } else if (engine === 'mongodb') {
-      await mongoBase();
-      const s = QLAB_DOC_SESSIONS.get(key) || QLabCore.createMongoShell(mingo, QE.mongodb.base);
-      QLAB_DOC_SESSIONS.set(key, s);
-      res = { kind: 'mongo', value: s.run(text) };
-    } else {
-      const r = QLAB_DOC_SESSIONS.get(key) || new QLabRedis.MiniRedis();
-      QLAB_DOC_SESSIONS.set(key, r);
-      const script = text.split('\n').map(l => l.replace(/\s+#\s.*$/, '')).join('\n');   // strip "# -> 1" notes
-      res = { kind: 'redis', results: QLabRedis.runScript(r, script) };
+    // Earlier blocks first (setup, inserts), once each; their own errors don't stop this one.
+    let before = 0;
+    for (const b of blocks) {
+      if (b.idx >= block.idx) break;
+      if (b.engine !== engine || ran.has(b.idx)) continue;
+      ran.add(b.idx);
+      before++;
+      try { await qlabDocExec(key, engine, b.text); } catch (e) { /* an earlier demo of an error */ }
     }
+    const t0 = performance.now();
+    ran.add(block.idx);
+    const res = await qlabDocExec(key, engine, block.text);
     res.ms = performance.now() - t0;
-    out.innerHTML = qlabResultHtml(res);
+    const scaled = QLabCore.docScaled(engine, block.text);
+    if (scaled) res.note = [`Scaled down for the browser: ${QLabCore.DOC_MAX_ROWS.toLocaleString()} rows instead of ${scaled.toLocaleString()}, so counts and timings on this page will be smaller than the text describes.`, res.note].filter(Boolean).join(' ');
+    out.innerHTML = qlabResultHtml(res)
+      + `<div class="qlab-doc-foot">${before ? `<span>Ran ${before} earlier block${before === 1 ? '' : 's'} on this page first, so their setup is in place.</span>` : '<span></span>'}${tools}</div>`;
   } catch (e) {
     out.innerHTML = `<div class="qlab-verdict is-err"><b>Error</b><pre>${esc(e.message || String(e))}</pre>
-      ${engine === 'sql' ? '<p class="qlab-trunc">Blocks on this page share one scratch database: run earlier blocks first if this one depends on their tables.</p>' : ''}</div>`;
+      <p class="qlab-trunc">${engine === 'sql'
+        ? 'This page has one scratch database shared by its blocks. If a table already exists because a block ran twice, reset the page data and run again.'
+        : 'This page has its own scratch data. Reset it to start from the original data.'}</p></div>
+      <div class="qlab-doc-foot"><span></span>${tools}</div>`;
   } finally {
     btn.disabled = false;
   }
+  const reset = $('.qlab-doc-reset', out);
+  if (reset) reset.onclick = async () => {
+    await qlabResetDoc(key);
+    $$('.qlab-doc-out', wrap.closest('.doc-prose') || document).forEach(o => o.remove());
+    toast('Page data reset: blocks will run from a clean start');
+  };
 }

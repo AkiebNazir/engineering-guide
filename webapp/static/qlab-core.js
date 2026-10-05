@@ -319,7 +319,45 @@
     return last ? last.reply : null;
   }
 
-  const api = { normValue, compareResults, sqlLastResult, reviveEjson, createMongoShell, mongoToTable, compareMongo, redisLastReply, stable };
+  /* ------------------------------------------------- chapter code blocks -- */
+  // Which engine runs a chapter's code block, or null. Shared by the reader's Run buttons
+  // and validate_doc_runs.mjs, so the validator checks exactly the blocks a learner can run.
+  //   SQL chapters:     ```sql
+  //   MongoDB chapters: ```js / ```javascript that use db.<collection>
+  //   Redis chapters:   ```redis / ```bash made only of Redis commands
+  function docEngine(mod, id, lang, text, redisCommands) {
+    lang = (lang || '').toLowerCase();
+    if (mod === 'sql' && lang === 'sql') return 'sql';
+    if (mod === 'nosql' && id.startsWith('mongodb/') && (lang === 'javascript' || lang === 'js') && /\bdb\.\w+/.test(text)) return 'mongodb';
+    if (mod === 'nosql' && id.startsWith('redis/') && (lang === 'bash' || lang === 'redis') && redisCommands) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+      if (lines.length && lines.every(l => redisCommands[l.split(/\s+/)[0].toUpperCase()])) return 'redis';
+    }
+    return null;
+  }
+  // The text an engine actually runs: psql meta-commands (\d, \timing) and redis "# -> 1"
+  // notes are documentation, not input.
+  // Tables the chapters fill with up to 2M rows (for realistic EXPLAIN plans) are capped at
+  // 1,000 rows in the browser: plenty to see what a query returns, instead of a WASM Postgres
+  // spending minutes and gigabytes building them.
+  const DOC_MAX_ROWS = 1000;
+  const BIG_SERIES = /generate_series\(\s*1\s*,\s*([\d_]+)\s*\)/gi;
+  function docScaled(engine, text) {
+    if (engine !== 'sql') return 0;
+    let n = 0;
+    for (const m of text.matchAll(BIG_SERIES)) n = Math.max(n, +m[1].replace(/_/g, ''));
+    return n > DOC_MAX_ROWS ? n : 0;
+  }
+  function docRunnable(engine, text) {
+    if (engine === 'sql') {
+      return text.split('\n').filter(l => !/^\s*\\/.test(l)).join('\n')
+        .replace(BIG_SERIES, (m, n) => (+n.replace(/_/g, '') > DOC_MAX_ROWS ? `generate_series(1, ${DOC_MAX_ROWS})` : m));
+    }
+    if (engine === 'redis') return text.split('\n').map(l => l.replace(/\s+#\s.*$/, '')).join('\n');
+    return text;
+  }
+
+  const api = { docEngine, docRunnable, docScaled, DOC_MAX_ROWS, normValue, compareResults, sqlLastResult, reviveEjson, createMongoShell, mongoToTable, compareMongo, redisLastReply, stable };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.QLabCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -188,6 +188,18 @@
 .code-run:disabled { opacity: .6; }
 .qlab-doc-out { margin: -1.1em 0 1.6em; padding: 12px; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 13px 13px; background: var(--surface); }
 .qlab-doc-out .qlab-grid { max-height: 320px; }
+.qlab-doc-foot { display: flex; align-items: center; gap: 12px; margin-top: 8px; font: 400 11.5px/1.4 var(--sans); color: var(--text-faint); }
+.qlab-doc-foot > span { flex: 1; }
+.qlab-doc-reset { padding: 3px 8px; border-radius: var(--r-sm); border: 1px solid var(--border); font: 500 11.5px/1 var(--sans); color: var(--text-dim); background: transparent; white-space: nowrap; }
+.qlab-doc-reset:hover { color: var(--text); border-color: var(--accent-line); }
+.qlab-doc-banner {
+  display: flex; gap: 12px; align-items: flex-start; margin: 0 0 1.6em; padding: 12px 14px;
+  border: 1px solid var(--accent-line); border-radius: 12px; background: var(--accent-wash);
+  font: 400 14px/1.55 var(--sans); color: var(--text-dim);
+}
+.qlab-doc-banner b { color: var(--text); font-weight: 600; }
+.qlab-doc-banner a { color: var(--accent); }
+.qlab-doc-banner-ic { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 11px; }
 
 @media (max-width: 860px) {
   .qlab-body { flex-direction: column; overflow-y: auto; }
