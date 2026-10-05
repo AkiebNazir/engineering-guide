@@ -4,7 +4,8 @@ import csv, pathlib, collections
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TSV = ROOT / "tools" / "problems.tsv"
-OUT = ROOT / "CURRICULUM.md"
+PY_DSA = ROOT / "content" / "interview-core" / "PyDSA"
+OUT = ROOT / "content" / "study-plans" / "CURRICULUM.md"
 
 TOPIC_TITLES = {
     "01_arrays_hashing": "Arrays & Hashing",
@@ -64,12 +65,12 @@ def main():
     A("*internally* in that language, how to build it from scratch, every algorithm that")
     A("operates on it, and when to reach for it. Then the problems.\n")
     A("```")
-    A("PyDSA/01_arrays_hashing/")
+    A("content/interview-core/PyDSA/01_arrays_hashing/")
     A("  _TOPIC_GUIDE.md                  <- read this first")
     A("  004_two_sum_question.py          <- problem + explanation + your stub")
     A("  004_two_sum_solution.py          <- solution + step-by-step walkthrough")
     A("")
-    A("GoDSA/01_arrays_hashing/")
+    A("content/interview-core/GoDSA/01_arrays_hashing/")
     A("  _TOPIC_GUIDE.md")
     A("  004_two_sum/")
     A("    question.go                    <- problem + explanation + your stub")
@@ -77,8 +78,8 @@ def main():
     A("```\n")
     A("Run them:\n")
     A("```bash")
-    A("python  PyDSA/01_arrays_hashing/004_two_sum_solution.py")
-    A("cd GoDSA && go run ./01_arrays_hashing/004_two_sum")
+    A("python  content/interview-core/PyDSA/01_arrays_hashing/004_two_sum_solution.py")
+    A("cd content/interview-core/GoDSA && go run ./01_arrays_hashing/004_two_sum")
     A("```\n")
     A("---\n")
     A("## Progress\n")
@@ -86,10 +87,10 @@ def main():
     A("|:--:|---|:--:|:--:|:--:|")
     for topic, items in by_topic.items():
         n = len(items)
-        guide = (ROOT / "PyDSA" / topic / "_TOPIC_GUIDE.md").exists()
+        guide = (PY_DSA / topic / "_TOPIC_GUIDE.md").exists()
         done = sum(
             1 for r in items
-            if (ROOT / "PyDSA" / topic /
+            if (PY_DSA / topic /
                 f"{r['seq']}_{snake(r['slug'])}_solution.py").exists()
         )
         num = topic.split("_")[0]
@@ -97,7 +98,7 @@ def main():
           f"{'✅' if guide else '⬜'} | {done}/{n} |")
     total_done = sum(
         1 for r in rows
-        if (ROOT / "PyDSA" / r["topic"] /
+        if (PY_DSA / r["topic"] /
             f"{r['seq']}_{snake(r['slug'])}_solution.py").exists()
     )
     A(f"| | **Total** | **{len(rows)}** | | **{total_done}/{len(rows)}** |\n")
@@ -106,7 +107,7 @@ def main():
     for topic, items in by_topic.items():
         num = topic.split("_")[0]
         A(f"## {num} · {TOPIC_TITLES[topic]}\n")
-        A(f"`PyDSA/{topic}/` · `GoDSA/{topic}/`\n")
+        A(f"`content/interview-core/PyDSA/{topic}/` · `content/interview-core/GoDSA/{topic}/`\n")
         A("| # | LC | Problem | Difficulty |")
         A("|:--:|:--:|---|:--:|")
         for r in items:

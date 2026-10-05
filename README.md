@@ -6,12 +6,12 @@ elective:
 
 | Core module | What it gives you | Where it starts |
 |---|---|---|
-| **DSA** (data structures and algorithms) | 353 problems in 28 pattern topics, each with a question file you solve, a tested reference solution, a topic guide and a step-by-step visualizer | [Curriculum Index](CURRICULUM.md), then `PyDSA/<topic>/_TOPIC_GUIDE.md` |
-| **CS Fundamentals** | 15 chapters from complexity to distributed systems, with runnable measurements, live labs and a 62-question bank | [CS Fundamentals — Start Here](CSFundamentals/README.md) |
-| **System Design** | 33 building blocks, 41 practice problems with reference designs, spoken walkthroughs and a 42-question bank | [System Design Mastery Curriculum](SystemDesign/README.md) |
+| **DSA** (data structures and algorithms) | 353 problems in 28 pattern topics, each with a question file you solve, a tested reference solution, a topic guide and a step-by-step visualizer | [Curriculum Index](content/study-plans/CURRICULUM.md), then `content/interview-core/PyDSA/<topic>/_TOPIC_GUIDE.md` |
+| **CS Fundamentals** | 15 chapters from complexity to distributed systems, with runnable measurements, live labs and a 62-question bank | [CS Fundamentals — Start Here](content/interview-core/CSFundamentals/README.md) |
+| **System Design** | 33 building blocks, 41 practice problems with reference designs, spoken walkthroughs and a 42-question bank | [System Design Mastery Curriculum](content/interview-core/SystemDesign/README.md) |
 
 One **supporting module** feeds all three: **Maths for CS Engineers**
-([Maths for CS Engineers — Start Here](Maths/README.md)), 15 chapters from reading notation to probability and
+([Maths for CS Engineers — Start Here](content/interview-core/Maths/README.md)), 15 chapters from reading notation to probability and
 complexity theory, with 45 labs and machine-checked code. Section 2 schedules each chapter next
 to the work that uses it.
 
@@ -58,11 +58,11 @@ week). With less time, stretch the phases; don't skip them. With a fixed date so
 1. Do the offline setup in section 6 while you still have internet.
 2. Start the app (`make app`, then open http://127.0.0.1:8080) and click around: the DSA
    dashboard, one problem, one topic guide, one CS chapter.
-3. Read [How Google Scores You](GoogleBehavioral/01_how_google_scores_and_googleyness.md):
+3. Read [How Google Scores You](content/interview-core/GoogleBehavioral/01_how_google_scores_and_googleyness.md):
    how every round is scored. It changes how you practise everything else.
-4. If maths feels rusty, read [Maths 01 Reading maths like code](Maths/01_reading_maths_like_code.md)
+4. If maths feels rusty, read [Maths 01 Reading maths like code](content/interview-core/Maths/01_reading_maths_like_code.md)
    now; every later chapter assumes you can read Σ, logs and exponents as code.
-5. Read §0 of [MAANG/FAANG DSA Master Plan](master_dsa_plan.md), especially the status legend and the hint
+5. Read §0 of [MAANG/FAANG DSA Master Plan](content/study-plans/master_dsa_plan.md), especially the status legend and the hint
    ladder: the solved-versus-mastered distinction, and the 25/40-minute rule the app's timer
    follows.
 
@@ -70,12 +70,12 @@ week). With less time, stretch the phases; don't skip them. With a fixed date so
 
 | Week | DSA topics (problems) | Reading alongside |
 |---|---|---|
-| 1 | 01 Arrays & Hashing (14), 02 Two Pointers (11) | CS [08 Python for interviews](CSFundamentals/08_python_for_coding_interviews_deep_dive.md), CS [07 Complexity](CSFundamentals/07_complexity_analysis_deep_dive.md) |
-| 2 | 03 Sliding Window (15), 04 Prefix Sum (8) | CS [09 The 45-minute coding round](CSFundamentals/09_coding_round_execution_deep_dive.md): use its timeline from now on; Maths [06 Sums and recurrences](Maths/06_sequences_sums_recurrences.md) |
-| 3 | 05 Binary Search (12), 22 Sorting Algorithms (8) | CS [06 Data structure internals](CSFundamentals/06_data_structure_internals_deep_dive.md), first half; Maths [03 Logic and proofs](Maths/03_logic_and_proofs.md) (loop invariants) |
+| 1 | 01 Arrays & Hashing (14), 02 Two Pointers (11) | CS [08 Python for interviews](content/interview-core/CSFundamentals/08_python_for_coding_interviews_deep_dive.md), CS [07 Complexity](content/interview-core/CSFundamentals/07_complexity_analysis_deep_dive.md) |
+| 2 | 03 Sliding Window (15), 04 Prefix Sum (8) | CS [09 The 45-minute coding round](content/interview-core/CSFundamentals/09_coding_round_execution_deep_dive.md): use its timeline from now on; Maths [06 Sums and recurrences](content/interview-core/Maths/06_sequences_sums_recurrences.md) |
+| 3 | 05 Binary Search (12), 22 Sorting Algorithms (8) | CS [06 Data structure internals](content/interview-core/CSFundamentals/06_data_structure_internals_deep_dive.md), first half; Maths [03 Logic and proofs](content/interview-core/Maths/03_logic_and_proofs.md) (loop invariants) |
 | 4 | 06 Stack (16), 07 Queue & Deque (6) | CS 06, second half |
-| 5 | 08 Linked List (15) | Start your story list: [Your Story Bank](GoogleBehavioral/04_story_bank_worksheet.md), step 1 |
-| 6 | 27 Classic Algorithms (9), then redo every problem you logged as missed | Catch-up week for CS Part 1; Maths [05 Counting](Maths/05_counting_and_combinatorics.md) before backtracking and DP |
+| 5 | 08 Linked List (15) | Start your story list: [Your Story Bank](content/interview-core/GoogleBehavioral/04_story_bank_worksheet.md), step 1 |
+| 6 | 27 Classic Algorithms (9), then redo every problem you logged as missed | Catch-up week for CS Part 1; Maths [05 Counting](content/interview-core/Maths/05_counting_and_combinatorics.md) before backtracking and DP |
 
 **Ready to move on when:** you can solve an unseen Medium from topics 01–08 in about 25
 minutes while talking, state its complexity without hesitating, and tick the interview
@@ -85,29 +85,29 @@ checklists at the end of CS 07 and CS 06.
 
 | Week | DSA topics (problems) | Reading alongside |
 |---|---|---|
-| 7 | 10 Trees (21) | CS [13 Computer architecture](CSFundamentals/13_computer_architecture_deep_dive.md) (Maths [02 Number systems](Maths/02_number_systems_and_binary.md) covers the same ground more gently) |
-| 8 | 11 Binary Search Tree (11), 13 Trie (7) | CS [01 Operating systems](CSFundamentals/01_operating_systems_deep_dive.md) |
-| 9 | 12 Heap / Priority Queue (12), 09 Recursion & Backtracking (14) | CS [14 Memory management](CSFundamentals/14_memory_management_deep_dive.md), CS [05 Concurrency](CSFundamentals/05_concurrency_deep_dive.md) |
-| 10 | 14 Graphs (19) | CS [02 Networking](CSFundamentals/02_networking_deep_dive.md); Maths [08 Graph theory](Maths/08_graph_theory.md) |
-| 11 | 15 Advanced Graphs (15) | CS [03 Databases](CSFundamentals/03_databases_deep_dive.md) |
-| 12 | 28 Recursion Mastery (25): the ones you find hard, not all | CS [15 Distributed systems](CSFundamentals/15_distributed_systems_deep_dive.md). First timed mock: two problems in 45 minutes |
+| 7 | 10 Trees (21) | CS [13 Computer architecture](content/interview-core/CSFundamentals/13_computer_architecture_deep_dive.md) (Maths [02 Number systems](content/interview-core/Maths/02_number_systems_and_binary.md) covers the same ground more gently) |
+| 8 | 11 Binary Search Tree (11), 13 Trie (7) | CS [01 Operating systems](content/interview-core/CSFundamentals/01_operating_systems_deep_dive.md) |
+| 9 | 12 Heap / Priority Queue (12), 09 Recursion & Backtracking (14) | CS [14 Memory management](content/interview-core/CSFundamentals/14_memory_management_deep_dive.md), CS [05 Concurrency](content/interview-core/CSFundamentals/05_concurrency_deep_dive.md) |
+| 10 | 14 Graphs (19) | CS [02 Networking](content/interview-core/CSFundamentals/02_networking_deep_dive.md); Maths [08 Graph theory](content/interview-core/Maths/08_graph_theory.md) |
+| 11 | 15 Advanced Graphs (15) | CS [03 Databases](content/interview-core/CSFundamentals/03_databases_deep_dive.md) |
+| 12 | 28 Recursion Mastery (25): the ones you find hard, not all | CS [15 Distributed systems](content/interview-core/CSFundamentals/15_distributed_systems_deep_dive.md). First timed mock: two problems in 45 minutes |
 
 **Ready to move on when:** graph and tree problems feel like choosing a traversal, not
 inventing one; you can answer the L4–L5 questions in sections 2–5 and 9–11 of the
-[CS question bank](CSFundamentals/12_interview_question_bank_deep_dive.md) out loud; and
+[CS question bank](content/interview-core/CSFundamentals/12_interview_question_bank_deep_dive.md) out loud; and
 you have a first draft of five behavioral stories.
 
 ### Phase 3 · Dynamic programming, the rest of DSA, and System Design (weeks 13–17)
 
 | Week | DSA topics (problems) | System Design |
 |---|---|---|
-| 13 | 16 DP 1D (17) | [Google L5 System Design Playbook](SystemDesign/00_google_l5_playbook.md), then building blocks `00`–`04` |
+| 13 | 16 DP 1D (17) | [Google L5 System Design Playbook](content/interview-core/SystemDesign/00_google_l5_playbook.md), then building blocks `00`–`04` |
 | 14 | 17 DP 2D (22) | Building blocks `05`–`09` |
-| 15 | 18 Greedy (10), 19 Intervals (11) | Building blocks `10`–`13` and `18` (estimation); Maths [10 Probability](Maths/10_probability.md) |
-| 16 | 20 Bit Manipulation (10), 21 Math & Geometry (10), 23 String Algorithms (8) | Building blocks `14`–`17`; first problems `001`–`004`, untimed; Maths [07 Number theory](Maths/07_number_theory.md) with topic 21 |
-| 17 | 24 Matrix (8), 25 Design (13), 26 Segment Tree & Fenwick (6) | Building blocks `19`–`25`; problems `005`–`010`; Maths [11 Statistics](Maths/11_statistics.md) (percentiles, A/B tests) |
+| 15 | 18 Greedy (10), 19 Intervals (11) | Building blocks `10`–`13` and `18` (estimation); Maths [10 Probability](content/interview-core/Maths/10_probability.md) |
+| 16 | 20 Bit Manipulation (10), 21 Math & Geometry (10), 23 String Algorithms (8) | Building blocks `14`–`17`; first problems `001`–`004`, untimed; Maths [07 Number theory](content/interview-core/Maths/07_number_theory.md) with topic 21 |
+| 17 | 24 Matrix (8), 25 Design (13), 26 Segment Tree & Fenwick (6) | Building blocks `19`–`25`; problems `005`–`010`; Maths [11 Statistics](content/interview-core/Maths/11_statistics.md) (percentiles, A/B tests) |
 
-Work each System Design problem the way [System Design Mastery Curriculum](SystemDesign/README.md)
+Work each System Design problem the way [System Design Mastery Curriculum](content/interview-core/SystemDesign/README.md)
 describes: the question file first, your own design, then the solution, then its follow-ups
 out loud.
 
@@ -119,19 +119,19 @@ prompting.
 
 | Week | Coding | System Design and the rest |
 |---|---|---|
-| 18 | Mixed sets from all topics, timed; the follow-up drills in CS [10 Google-style follow-ups](CSFundamentals/10_google_follow_ups_deep_dive.md) | Building blocks `26`–`32` as your level needs; problems `011`–`020` at 45 minutes; CS [04 Software engineering](CSFundamentals/04_software_engineering_deep_dive.md) and [11 Security](CSFundamentals/11_security_fundamentals_deep_dive.md) |
-| 19 | Full mock loops: 2 coding + 1 design + 1 behavioral in one day | Problems `021`–`030` (L6 targets: `031`–`041`); the [SD question bank](SystemDesign/07_interview_question_bank.md); one [spoken walkthrough](SystemDesign/06_spoken_walkthroughs.md) aloud against a timer |
-| 20 | Redo everything in your missed log; light practice only in the last days | Behavioral `02`, `03`, `05`–`08`; finish the story bank; Maths [15 Interview maths toolkit](Maths/15_interview_maths_toolkit.md) and its question bank; rest before the loop |
+| 18 | Mixed sets from all topics, timed; the follow-up drills in CS [10 Google-style follow-ups](content/interview-core/CSFundamentals/10_google_follow_ups_deep_dive.md) | Building blocks `26`–`32` as your level needs; problems `011`–`020` at 45 minutes; CS [04 Software engineering](content/interview-core/CSFundamentals/04_software_engineering_deep_dive.md) and [11 Security](content/interview-core/CSFundamentals/11_security_fundamentals_deep_dive.md) |
+| 19 | Full mock loops: 2 coding + 1 design + 1 behavioral in one day | Problems `021`–`030` (L6 targets: `031`–`041`); the [SD question bank](content/interview-core/SystemDesign/07_interview_question_bank.md); one [spoken walkthrough](content/interview-core/SystemDesign/06_spoken_walkthroughs.md) aloud against a timer |
+| 20 | Redo everything in your missed log; light practice only in the last days | Behavioral `02`, `03`, `05`–`08`; finish the story bank; Maths [15 Interview maths toolkit](content/interview-core/Maths/15_interview_maths_toolkit.md) and its question bank; rest before the loop |
 
-The Maths chapters not scheduled above are electives: [04 Sets, relations and functions](Maths/04_sets_relations_functions.md)
-for precision in general, [09 Linear algebra](Maths/09_linear_algebra.md) and [12 Calculus](Maths/12_calculus.md)
-for ML roles, and [13 Information theory](Maths/13_information_theory_and_coding.md) and
-[14 Automata and complexity](Maths/14_automata_computability_complexity.md) for "is this NP-hard?"
+The Maths chapters not scheduled above are electives: [04 Sets, relations and functions](content/interview-core/Maths/04_sets_relations_functions.md)
+for precision in general, [09 Linear algebra](content/interview-core/Maths/09_linear_algebra.md) and [12 Calculus](content/interview-core/Maths/12_calculus.md)
+for ML roles, and [13 Information theory](content/interview-core/Maths/13_information_theory_and_coding.md) and
+[14 Automata and complexity](content/interview-core/Maths/14_automata_computability_complexity.md) for "is this NP-hard?"
 questions and staff-level depth.
 
 If your loop includes a low-level (object-oriented) design round, add the
-[Software Design module](SoftwareDesign/README.md) in Phase 4, starting with
-[Low-Level Design (LLD) Interview Playbook](SoftwareDesign/14_low_level_design_interview_playbook.md)
+[Software Design module](content/interview-core/SoftwareDesign/README.md) in Phase 4, starting with
+[Low-Level Design (LLD) Interview Playbook](content/interview-core/SoftwareDesign/14_low_level_design_interview_playbook.md)
 and its `lld/` problems.
 
 ---
@@ -149,7 +149,7 @@ Rules that make the hours count:
 
 - **Say it out loud.** Interviews are spoken; practise explaining while you code and design.
 - **Solved isn't mastered.** A problem counts only when you can solve it cold, first run, in
-  about 20 minutes, while narrating (`[★]` in [MAANG/FAANG DSA Master Plan](master_dsa_plan.md)).
+  about 20 minutes, while narrating (`[★]` in [MAANG/FAANG DSA Master Plan](content/study-plans/master_dsa_plan.md)).
 - **Run the demos.** The CS and System Design chapters contain programs with their real
   output. Change a parameter and predict the result before running it.
 - **Depth over count.** 250 problems you understand beat 500 you've seen.
@@ -171,7 +171,7 @@ know** table and an **interview checklist**; use them as the exit test for that 
 
 ## 5. Compressed plan (about 10 weeks)
 
-[MAANG/FAANG DSA Master Plan](master_dsa_plan.md) names **Monday 7 December 2026** as a target. If that date still holds,
+[MAANG/FAANG DSA Master Plan](content/study-plans/master_dsa_plan.md) names **Monday 7 December 2026** as a target. If that date still holds,
 run the same order with less breadth:
 
 | Weeks | DSA | CS Fundamentals | System Design and behavioral |
@@ -203,11 +203,11 @@ sets; CS 13, 14, 01, 04, 11; building blocks beyond the list above.
 
    | Track | Command, from the repo root |
    |---|---|
-   | PyEngineering | `python3 -m venv PyEngineering/.venv && PyEngineering/.venv/bin/pip install -r PyEngineering/requirements.txt` |
-   | API | `python3 -m venv API/.venv && API/.venv/bin/pip install -r API/requirements.txt`, then `cd API && go mod download` |
-   | GoEngineering | `cd GoEngineering && go mod download` |
-   | SQL and NoSQL | `pip install -r SQL/requirements.txt -r NoSQL/requirements.txt`, and `docker compose -f docker-compose.databases.yml pull` (PostgreSQL 16, MongoDB 7, Redis 7) |
-   | AI Roadmap practice | `pip install -r AI-road-map/practice-guide/requirements.txt` |
+   | PyEngineering | `python3 -m venv content/languages/PyEngineering/.venv && content/languages/PyEngineering/.venv/bin/pip install -r content/languages/PyEngineering/requirements.txt` |
+   | API | `python3 -m venv content/data-and-apis/API/.venv && content/data-and-apis/API/.venv/bin/pip install -r content/data-and-apis/API/requirements.txt`, then `cd content/data-and-apis/API && go mod download` |
+   | GoEngineering | `cd content/languages/GoEngineering && go mod download` |
+   | SQL and NoSQL | `pip install -r content/data-and-apis/SQL/requirements.txt -r content/data-and-apis/NoSQL/requirements.txt`, and `docker compose -f docker-compose.databases.yml pull` (PostgreSQL 16, MongoDB 7, Redis 7) |
+   | AI Roadmap practice | `pip install -r content/ai-engineering/AI-road-map/practice-guide/requirements.txt` |
    | Agentic AI projects | each project's `requirements.txt`, plus the Ollama models they name (large downloads) |
 
 5. **Turn the network off and start the app again.** Everything in the core modules should
@@ -245,17 +245,17 @@ Use these when a phase calls for them or your target role needs them:
 
 | Module | When to use it |
 |---|---|
-| [`GoogleBehavioral/`](GoogleBehavioral) | Phases 0, 1 (story list) and 4 (all eight guides) |
-| [`SoftwareDesign/`](SoftwareDesign/README.md) | Low-level design rounds; code-quality depth |
-| [`SQL/`](SQL/README.md) and [`NoSQL/`](NoSQL/README.md) | Hands-on PostgreSQL, MongoDB and Redis; pairs with CS 03 and building block 05 |
-| [`API/`](API) | REST, GraphQL, gRPC, WebSockets, webhooks in depth; pairs with building blocks 03–04 |
-| `PyEngineering/`, `GoEngineering/`, `PyStdLib/`, `GoStdLib/` | Production-style language skills for backend roles |
-| `TestingAndQuality/`, `CICD/`, `DataEngineering/`, `MLOps/`, `Tool-Kit/` | Role-specific depth |
-| `AI-road-map/`, `AI-Libraries-Guides/`, `Agentic-AI/` | ML and AI engineering roles |
+| [`content/interview-core/GoogleBehavioral/`](content/interview-core/GoogleBehavioral) | Phases 0, 1 (story list) and 4 (all eight guides) |
+| [`content/interview-core/SoftwareDesign/`](content/interview-core/SoftwareDesign/README.md) | Low-level design rounds; code-quality depth |
+| [`content/data-and-apis/SQL/`](content/data-and-apis/SQL/README.md) and [`content/data-and-apis/NoSQL/`](content/data-and-apis/NoSQL/README.md) | Hands-on PostgreSQL, MongoDB and Redis; pairs with CS 03 and building block 05 |
+| [`content/data-and-apis/API/`](content/data-and-apis/API) | REST, GraphQL, gRPC, WebSockets, webhooks in depth; pairs with building blocks 03–04 |
+| `content/languages/PyEngineering/`, `content/languages/GoEngineering/`, `content/languages/PyStdLib/`, `content/languages/GoStdLib/` | Production-style language skills for backend roles |
+| `content/ship-and-run/TestingAndQuality/`, `content/ship-and-run/CICD/`, `content/ship-and-run/DataEngineering/`, `content/ai-engineering/MLOps/`, `content/ship-and-run/Tool-Kit/` | Role-specific depth |
+| `content/ai-engineering/AI-road-map/`, `content/ai-engineering/AI-Libraries-Guides/`, `content/ai-engineering/Agentic-AI/` | ML and AI engineering roles |
 
-Two older planning documents remain for reference: [Google Interview Master Study Plan (L5 / Senior SWE)](GOOGLE_INTERVIEW_PREP.md)
+Two older planning documents remain for reference: [Google Interview Master Study Plan (L5 / Senior SWE)](content/study-plans/GOOGLE_INTERVIEW_PREP.md)
 (a 12-week plan that maps Google's four scoring attributes to files) and
-[MAANG/FAANG DSA Master Plan](master_dsa_plan.md) (the DSA schedule, pattern table and retention
+[MAANG/FAANG DSA Master Plan](content/study-plans/master_dsa_plan.md) (the DSA schedule, pattern table and retention
 system). Where they disagree with this page about order, follow this page.
 
 ---
@@ -270,6 +270,18 @@ system). Where they disagree with this page about order, follow this page.
   the browser, and running code needs the local app.
   [Running and Deploying the Guide](docs/DEPLOYMENT.md) covers GitHub Pages, other static
   hosts and containers.
-- **Layout:** the module folders listed in this page are the curriculum; `webapp/` is the
-  app (`server.py`, `build_static.py`, `static/`), `tools/` holds the curriculum tooling,
-  `deploy/` the container setup, and `make help` lists every command.
+- **Layout:** all learning material lives in `content/`, grouped the way the app's home page
+  groups it; everything else is the app and its tooling. `make help` lists every command.
+
+```text
+content/
+  interview-core/   PyDSA, GoDSA, SystemDesign, SoftwareDesign, CSFundamentals, Maths, GoogleBehavioral
+  languages/        GoEngineering, PyEngineering, GoStdLib, PyStdLib
+  data-and-apis/    SQL, NoSQL, API            (SQL/lab and NoSQL/lab: the Query Lab)
+  ai-engineering/   AI-road-map, AI-Libraries-Guides, Agentic-AI, MLOps
+  ship-and-run/     Tool-Kit, TestingAndQuality, CICD, DataEngineering
+  study-plans/      master_dsa_plan, REVIEW_LEDGER, GOOGLE_INTERVIEW_PREP, CURRICULUM
+webapp/             the app: server.py, build_static.py, static/ (front end), scripts/ (checks)
+tools/              curriculum tooling: problems.tsv, generators, checkers
+deploy/  docs/      container setup; developer docs (deployment, session notes)
+```

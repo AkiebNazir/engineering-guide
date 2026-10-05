@@ -38,26 +38,35 @@ STATIC = WEBAPP / "static"
 DATA = WEBAPP / "data"
 STATE_FILE = DATA / "progress.json"
 TSV = ROOT / "tools" / "problems.tsv"
-SYSTEM_DESIGN_GUIDE = ROOT / "SYSTEM_DESIGN_GUIDE.md"
-SYSTEM_DESIGN = ROOT / "SystemDesign"
-ENG_ROOTS = {"go": ROOT / "GoEngineering", "py": ROOT / "PyEngineering",
-             "lld": ROOT / "SoftwareDesign" / "lld"}
+# The curriculum lives under content/, one folder per area (see docs/DEPLOYMENT.md).
+CONTENT = ROOT / "content"
+INTERVIEW_CORE = CONTENT / "interview-core"
+LANGUAGES = CONTENT / "languages"
+DATA_AND_APIS = CONTENT / "data-and-apis"
+AI_ENGINEERING = CONTENT / "ai-engineering"
+SHIP_AND_RUN = CONTENT / "ship-and-run"
+PY_DSA = INTERVIEW_CORE / "PyDSA"
+GO_DSA = INTERVIEW_CORE / "GoDSA"
+SYSTEM_DESIGN = INTERVIEW_CORE / "SystemDesign"
+SYSTEM_DESIGN_GUIDE = SYSTEM_DESIGN / "SYSTEM_DESIGN_GUIDE.md"
+ENG_ROOTS = {"go": LANGUAGES / "GoEngineering", "py": LANGUAGES / "PyEngineering",
+             "lld": INTERVIEW_CORE / "SoftwareDesign" / "lld"}
 ENG_EXT = {"go": "go", "py": "py", "lld": "py"}
 LLD_ID_RE = re.compile(r"^\d{3}_[a-z0-9_]+$")
-ROADMAP_DIR = ROOT / "AI-road-map"
-LIBRARY_GUIDES_DIR = ROOT / "AI-Libraries-Guides"
-AGENTIC_AI_DIR = ROOT / "Agentic-AI"
-CS_FUNDAMENTALS_DIR = ROOT / "CSFundamentals"
-GOOGLE_BEHAVIORAL_DIR = ROOT / "GoogleBehavioral"
-SOFTWARE_DESIGN_DIR = ROOT / "SoftwareDesign"
-API_DIR = ROOT / "API"
-SQL_DIR = ROOT / "SQL"
-NOSQL_DIR = ROOT / "NoSQL"
-STDLIB_ROOTS = {"py": ROOT / "PyStdLib", "go": ROOT / "GoStdLib"}
+ROADMAP_DIR = AI_ENGINEERING / "AI-road-map"
+LIBRARY_GUIDES_DIR = AI_ENGINEERING / "AI-Libraries-Guides"
+AGENTIC_AI_DIR = AI_ENGINEERING / "Agentic-AI"
+CS_FUNDAMENTALS_DIR = INTERVIEW_CORE / "CSFundamentals"
+GOOGLE_BEHAVIORAL_DIR = INTERVIEW_CORE / "GoogleBehavioral"
+SOFTWARE_DESIGN_DIR = INTERVIEW_CORE / "SoftwareDesign"
+API_DIR = DATA_AND_APIS / "API"
+SQL_DIR = DATA_AND_APIS / "SQL"
+NOSQL_DIR = DATA_AND_APIS / "NoSQL"
+STDLIB_ROOTS = {"py": LANGUAGES / "PyStdLib", "go": LANGUAGES / "GoStdLib"}
 # Flat `NN_slug.md` tracks with a README index, all served by one pair of endpoints:
 # /api/track?m=<key> and /api/track-doc?m=<key>&id=<id>.
-TRACK_DIRS = {"toolkit": ROOT / "Tool-Kit", "testing": ROOT / "TestingAndQuality", "cicd": ROOT / "CICD",
-              "dataeng": ROOT / "DataEngineering", "mlops": ROOT / "MLOps", "maths": ROOT / "Maths"}
+TRACK_DIRS = {"toolkit": SHIP_AND_RUN / "Tool-Kit", "testing": SHIP_AND_RUN / "TestingAndQuality", "cicd": SHIP_AND_RUN / "CICD",
+              "dataeng": SHIP_AND_RUN / "DataEngineering", "mlops": AI_ENGINEERING / "MLOps", "maths": INTERVIEW_CORE / "Maths"}
 # Tracks whose chapters are grouped into parts (a learning path), keyed like
 # TRACK_DIRS. Chapter numbers already run in path order; the table only names
 # the groups. A chapter missing from its track's table lands in "More".
@@ -177,11 +186,11 @@ def snake(slug: str) -> str:
 
 
 def py_path(topic: str, seq: str, slug: str, kind: str) -> Path:
-    return ROOT / "PyDSA" / topic / f"{seq}_{snake(slug)}_{kind}.py"
+    return PY_DSA / topic / f"{seq}_{snake(slug)}_{kind}.py"
 
 
 def go_path(topic: str, seq: str, slug: str, kind: str) -> Path:
-    return ROOT / "GoDSA" / topic / f"{seq}_{snake(slug)}" / f"{kind}.go"
+    return GO_DSA / topic / f"{seq}_{snake(slug)}" / f"{kind}.go"
 
 
 def load_curriculum() -> list[dict]:
@@ -226,8 +235,8 @@ def load_topics(problems: list[dict]) -> list[dict]:
             t["written"] += 1
     for tid, t in seen.items():
         t["guides"] = {
-            "py": (ROOT / "PyDSA" / tid / "_TOPIC_GUIDE.md").exists(),
-            "go": (ROOT / "GoDSA" / tid / "_TOPIC_GUIDE.md").exists(),
+            "py": (PY_DSA / tid / "_TOPIC_GUIDE.md").exists(),
+            "go": (GO_DSA / tid / "_TOPIC_GUIDE.md").exists(),
         }
     return list(seen.values())
 
@@ -333,7 +342,7 @@ def lld_brief(doc: str) -> str:
 
 
 def eng_python_bin() -> str:
-    venv = ROOT / "PyEngineering" / ".venv" / "bin" / "python"
+    venv = ENG_ROOTS["py"] / ".venv" / "bin" / "python"
     return str(venv) if venv.exists() else python_bin()
 
 
@@ -755,15 +764,15 @@ def load_nosql() -> list[dict]:
 
 
 DSA_GUIDE_ID_RE = re.compile(r"^\d{2}_[a-z0-9_]+$")
-DSA_GUIDE_ROOTS = {"py": "PyDSA", "go": "GoDSA"}
+DSA_GUIDE_ROOTS = {"py": PY_DSA, "go": GO_DSA}
 
 
 def load_dsa_guides(lang: str = "py") -> list[dict]:
     """One reader page per topic that has a _TOPIC_GUIDE.md in the given language's
     tree (PyDSA or GoDSA), in topic order."""
-    root = DSA_GUIDE_ROOTS.get(lang, "PyDSA")
+    root = DSA_GUIDE_ROOTS.get(lang, PY_DSA)
     items: list[dict] = []
-    for path in sorted((ROOT / root).glob("*/_TOPIC_GUIDE.md")):
+    for path in sorted(root.glob("*/_TOPIC_GUIDE.md")):
         tid = path.parent.name
         if not DSA_GUIDE_ID_RE.fullmatch(tid):
             continue
@@ -776,7 +785,7 @@ def read_dsa_guide(doc_id: str, lang: str = "py") -> dict:
     """Whole-id match against a fixed shape, so it cannot escape PyDSA/ or GoDSA/."""
     if not DSA_GUIDE_ID_RE.fullmatch(doc_id or ""):
         return {"exists": False, "markdown": ""}
-    return read_markdown(ROOT / DSA_GUIDE_ROOTS.get(lang, "PyDSA") / doc_id / "_TOPIC_GUIDE.md")
+    return read_markdown(DSA_GUIDE_ROOTS.get(lang, PY_DSA) / doc_id / "_TOPIC_GUIDE.md")
 
 
 def read_sql(doc_id: str) -> dict:
@@ -1307,7 +1316,7 @@ def run_api_file(type_name: str, section: str, level_id: str, lang: str, code: s
     principle as run_stdlib above). Python: the level's sibling files (some
     Protobuf/gRPC levels import generated *_pb2 / *_pb2_grpc stubs by bare
     name) are copied into a scratch dir alongside the edited code, so those
-    imports still resolve, using the API/.venv interpreter that has fastapi,
+    imports still resolve, using the content/data-and-apis/API/.venv interpreter that has fastapi,
     strawberry, grpcio, websockets etc. installed. Go: a scratch package
     created *under* API/ so it still compiles inside the dsapractice/api
     module and picks up its real dependencies (gin, echo, coder/websocket...)."""
@@ -1626,8 +1635,8 @@ _dsa_map_cache: dict = {"key": None, "value": None}
 
 
 def load_dsa_map() -> dict:
-    guides = sorted((ROOT / "PyDSA").glob("*/_TOPIC_GUIDE.md"))
-    questions = sorted((ROOT / "PyDSA").glob("*/*_question.py"))
+    guides = sorted(PY_DSA.glob("*/_TOPIC_GUIDE.md"))
+    questions = sorted(PY_DSA.glob("*/*_question.py"))
     key = (TSV.stat().st_mtime, max((p.stat().st_mtime for p in guides + questions), default=0))
     if _dsa_map_cache["key"] == key:
         return _dsa_map_cache["value"]
@@ -1660,8 +1669,7 @@ def load_dsa_map() -> dict:
 
 
 def read_guide(topic: str, lang: str) -> dict:
-    folder = "PyDSA" if lang == "py" else "GoDSA"
-    path = ROOT / folder / topic / "_TOPIC_GUIDE.md"
+    path = (PY_DSA if lang == "py" else GO_DSA) / topic / "_TOPIC_GUIDE.md"
     if not path.exists():
         return {"exists": False, "markdown": ""}
     return {

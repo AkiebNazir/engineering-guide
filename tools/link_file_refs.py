@@ -32,11 +32,28 @@ from collections import Counter
 ROOT = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip()
 os.chdir(ROOT)
 TRACKED = set(subprocess.check_output(['git', 'ls-files'], text=True).split('\n'))
-DEV_NOTES = re.compile(r'^(_archive/|webapp/|.*node_modules/|CONTEXT\.md$|REVIEW_LEDGER\.md$|CURRICULUM\.md$)')
-DOCS = sorted(p for p in TRACKED if p.endswith('.md') and not DEV_NOTES.match(p))
+
+
+# The curriculum lives in content/<group>/<Module>/; the page patterns below (and the app's
+# reader) speak in module-rooted paths ("PyDSA/01_x/..."). virt() maps a real path to that
+# form; links are always computed between real paths.
+def virt(p):
+    m = re.match(r'^content/[\w-]+/(.+)$', p)
+    return m.group(1) if m else p
+
+
+VIRT2REAL = {virt(p): p for p in TRACKED}
+DEV_NOTES = re.compile(r'^(_archive/|webapp/|docs/|.*node_modules/|CONTEXT\.md$|REVIEW_LEDGER\.md$|CURRICULUM\.md$)')
+DOCS = sorted(p for p in TRACKED if p.endswith('.md') and not DEV_NOTES.match(virt(p)))
 BY_NAME = {}
 for p in TRACKED:
     BY_NAME.setdefault(os.path.basename(p), []).append(p)
+
+
+def module_root(p):
+    """content/<group>/<Module> for a curriculum file, else its first folder"""
+    parts = p.split('/')
+    return '/'.join(parts[:3]) if parts[0] == 'content' and len(parts) > 3 else (parts[0] if len(parts) > 1 else '')
 
 # source files the app shows as a page of their own
 PAGE_SOURCES = re.compile(r'^((Py|Go)DSA/\d{2}_\w+/\d{3}_|API/\w+/(Foundation|labs)/(python|golang)/'
@@ -78,18 +95,19 @@ _titles = {}
 def title_of(path):
     if path in _titles:
         return _titles[path]
-    m = DSA_FILE.match(path)
+    v = virt(path)
+    m = DSA_FILE.match(v)
     if path.endswith('.md'):
         with open(path, encoding='utf-8') as fh:
             head = fh.read(20000)
         h = re.search(r'^# +(.+)$', head, re.M) or re.search(r'^#{2,3} +(.+)$', head, re.M)
         t = plain(h.group(1)) if h else ''
         if path.endswith('_TOPIC_GUIDE.md'):
-            topic = re.sub(r'^Topic \d+ · ', '', t).split(' — ')[0] or from_name(path.split('/')[1])
-            t = f"{topic} topic guide ({'Go' if path.startswith('GoDSA') else 'Python'})"
+            topic = re.sub(r'^Topic \d+ · ', '', t).split(' — ')[0] or from_name(v.split('/')[1])
+            t = f"{topic} topic guide ({'Go' if v.startswith('GoDSA') else 'Python'})"
         t = t or from_name(os.path.basename(os.path.dirname(path)) if path.endswith('README.md') else os.path.basename(path))
     elif m:
-        t = PROBLEMS.get((m.group(1), m.group(2))) or from_name(path.split('/')[2])
+        t = PROBLEMS.get((m.group(1), m.group(2))) or from_name(v.split('/')[2])
     else:
         t = from_name(os.path.basename(path))
     _titles[path] = t = shorten(t)
@@ -101,8 +119,9 @@ def resolve(ref, doc):
     p = re.sub(r'^\./', '', ref.split('#')[0])
     if not re.search(r'\.(md|py|go)$', p) or re.search(r'[<>*{}\s]|NN|XX', p):
         return None
-    mod = doc.split('/')[0] if '/' in doc else ''
-    cands = [os.path.normpath(os.path.join(os.path.dirname(doc), p)), os.path.normpath(p)]
+    mod = module_root(doc)
+    cands = [os.path.normpath(os.path.join(os.path.dirname(doc), p)), os.path.normpath(p),
+             VIRT2REAL.get(os.path.normpath(p), '')]      # a module-rooted path ("SystemDesign/…")
     if mod:
         cands.append(os.path.normpath(os.path.join(mod, p)))
     hit = next((c for c in cands if c in TRACKED), None)
@@ -113,8 +132,8 @@ def resolve(ref, doc):
     if not hit:
         return None
     if hit.endswith('.md'):
-        return None if DEV_NOTES.match(hit) and hit not in ('REVIEW_LEDGER.md', 'CURRICULUM.md') else hit
-    return hit if PAGE_SOURCES.match(hit) else None
+        return None if DEV_NOTES.match(virt(hit)) and virt(hit) not in ('REVIEW_LEDGER.md', 'CURRICULUM.md') else hit
+    return hit if PAGE_SOURCES.match(virt(hit)) else None
 
 
 FENCE = re.compile(r'^\s*(```|~~~)')
@@ -134,7 +153,8 @@ def fix_line(line, doc, n):
         if re.search(r'\.(md|py|go)(#.*)?$', href) and not resolve(href, doc):
             target = href.split('#')[0]
             # the reader also accepts repo-root paths ("SystemDesign/…") from any page
-            if os.path.normpath(os.path.join(os.path.dirname(doc), target)) not in TRACKED and target not in TRACKED:
+            if (os.path.normpath(os.path.join(os.path.dirname(doc), target)) not in TRACKED
+                    and target not in TRACKED and target not in VIRT2REAL):
                 broken.append(f'{doc}:{n}: {href}')
         if is_path_text(text):
             tgt = resolve(href, doc) or resolve(text.strip().strip('`'), doc)

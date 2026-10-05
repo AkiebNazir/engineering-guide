@@ -27,7 +27,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MATHS = ROOT / "Maths"
+MATHS = ROOT / "content" / "interview-core" / "Maths"
 FENCE = re.compile(r"^```python[^\n]*\n(.*?)^```", re.S | re.M)
 ARROW = re.compile(r"^\s*print\(.*\)\s*#\s*→\s*(.*?)\s*$")
 

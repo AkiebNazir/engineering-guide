@@ -6,17 +6,17 @@ import { JSDOM } from 'jsdom';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 const files = [
-  'API/Fundamentals/01_api_fundamentals.md',
-  'API/Fundamentals/02_http_and_web_foundations.md',
-  'API/Fundamentals/03_cross_cutting_concerns.md',
-  'API/Fundamentals/04_choosing_the_right_api.md',
-  'API/REST/Theory.md',
-  'API/GraphQL/Theory.md',
-  'API/SOAP/Theory.md',
-  'API/WebSockets/Theory.md',
-  'API/Webhooks/Theory.md',
-  'API/gRPC/Theory.md',
-  'API/Protobuf/Theory.md',
+  'content/data-and-apis/API/Fundamentals/01_api_fundamentals.md',
+  'content/data-and-apis/API/Fundamentals/02_http_and_web_foundations.md',
+  'content/data-and-apis/API/Fundamentals/03_cross_cutting_concerns.md',
+  'content/data-and-apis/API/Fundamentals/04_choosing_the_right_api.md',
+  'content/data-and-apis/API/REST/Theory.md',
+  'content/data-and-apis/API/GraphQL/Theory.md',
+  'content/data-and-apis/API/SOAP/Theory.md',
+  'content/data-and-apis/API/WebSockets/Theory.md',
+  'content/data-and-apis/API/Webhooks/Theory.md',
+  'content/data-and-apis/API/gRPC/Theory.md',
+  'content/data-and-apis/API/Protobuf/Theory.md',
 ];
 
 const dom = new JSDOM('<!DOCTYPE html><body></body>', { pretendToBeVisual: true });

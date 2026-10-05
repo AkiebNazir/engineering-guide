@@ -1,4 +1,4 @@
-# Lab environment for the SQL/ and NoSQL/ learning modules.
+# Lab environment for the content/data-and-apis/SQL/ and content/data-and-apis/NoSQL/ learning modules.
 # Non-default host ports so this never collides with services you already run natively
 # (e.g. a brew-installed MongoDB on the default 27017).
 #
@@ -31,7 +31,7 @@ services:
     # transactions (see NoSQL/mongodb/09) and write/read concern (see
     # NoSQL/mongodb/10) are only meaningful/available on a replica set.
     # `rs.initiate()` still has to be run once after the container is up
-    # (see NoSQL/mongodb README/runbook) since Mongo doesn't auto-initiate.
+    # (see content/data-and-apis/NoSQL/mongodb README/runbook) since Mongo doesn't auto-initiate.
     # Internal port is also 27018 (not the mongod default 27017) so the
     # replica-set member's self-advertised host ("localhost:27018") is the
     # SAME address host-side clients use — required for the single-node

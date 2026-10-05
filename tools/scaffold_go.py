@@ -32,14 +32,14 @@ def main():
         seq = r["seq"]
         slug = snake(r["slug"])
         
-        go_dir = ROOT / "GoDSA" / topic / f"{seq}_{slug}"
+        go_dir = ROOT / "content" / "interview-core" / "GoDSA" / topic / f"{seq}_{slug}"
         go_q = go_dir / "question.go"
         go_s = go_dir / "solution.go"
         
         if not go_q.exists() or not go_s.exists():
             go_dir.mkdir(parents=True, exist_ok=True)
             
-            py_q = ROOT / "PyDSA" / topic / f"{seq}_{slug}_question.py"
+            py_q = ROOT / "content" / "interview-core" / "PyDSA" / topic / f"{seq}_{slug}_question.py"
             comment = extract_comment_block(py_q)
             
             if not go_q.exists():

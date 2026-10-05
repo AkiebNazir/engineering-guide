@@ -1,6 +1,6 @@
 # Ultimate Engineering Guide
 
-A local web app for the `PyDSA/` + `GoDSA/` curriculum. Reads your problem files
+A local web app for the `content/interview-core/PyDSA/` + `content/interview-core/GoDSA/` curriculum. Reads your problem files
 straight off disk, runs your code in **both languages for real**, and saves
 everything to `webapp/data/progress.json`.
 
@@ -28,7 +28,7 @@ what else to install before going offline).
 | **Runs your code** | Python via your `.venv`, Go via `go run`. Real subprocesses, real output, 15s/40s timeouts so an infinite loop can't hang the app. |
 | **Saves everything** | Drafts, status, notes, timer, streak — written to disk on every change and on tab close. Close the browser, kill the server, reboot: it's all still there. |
 | **Two languages per problem** | Toggle Python/Go; each keeps its own independent draft. |
-| **Timer with the hint ladder** | Counts up per problem. Warns at **25 min** (take one hint) and **40 min** (open the solution) — the ladder from `master_dsa_plan.md` §0. |
+| **Timer with the hint ladder** | Counts up per problem. Warns at **25 min** (take one hint) and **40 min** (open the solution) — the ladder from `content/study-plans/master_dsa_plan.md` §0. |
 | **Spaced repetition** | Marking a problem solved schedules a cold re-solve at D+1 → D+3 → D+10 → D+30. The Review queue shows what's due. |
 | **Pattern journal** | A Notes tab per problem for the trigger→technique line. |
 | **Pattern pages** | `#/t/<topic>` — one pattern, its progress ring, difficulty mix and every problem in it as a scannable list with status, review-due and time-on-problem. Filter by status or difficulty, reorder by unsolved-first or easiest-first, step to the previous/next pattern. Reached from a card or cell on the DSA home, from the topic name in the sidebar, or from the breadcrumb above an open problem. |
@@ -78,7 +78,7 @@ Guides, Agentic AI, CS Fundamentals and Google Behavioral each get:
 | **Practice problems** | System design problems hide the reference design until you choose to open it. |
 
 **Software Design** is one ordered path, numbered by step: a Start-here page
-(`SoftwareDesign/README.md`), 14 chapters in four parts, then 17 LLD problems in
+(`content/interview-core/SoftwareDesign/README.md`), 14 chapters in four parts, then 17 LLD problems in
 recommended practice order. The order lives in `server.py` (`SWD_CHAPTER_PARTS`,
 `SWD_LLD_SETS`). LLD problems open in the code workspace: the brief is
 `lld/NNN_slug_question.py`, **Run** executes that file with your code swapped in (its
@@ -166,7 +166,7 @@ In the editor (VS Code bindings):
 `○` todo · `◐` attempting · `●` solved · `★` mastered
 
 Only `★` counts toward interview readiness — it means cleared cold through all
-four review intervals. Same bar as `master_dsa_plan.md`.
+four review intervals. Same bar as `content/study-plans/master_dsa_plan.md`.
 
 ## Notes
 

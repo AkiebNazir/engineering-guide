@@ -1429,17 +1429,32 @@ function repoRoute(path) {
 }
 
 /* a reference may be written relative to the current doc, or to its module's folder */
+/* On disk every module sits in content/<group>/ (content/interview-core/SystemDesign/...).
+   Pages and routes keep the module-rooted path ("SystemDesign/..."); relative links are
+   resolved from the file's real location, so a link may climb across groups
+   (../../data-and-apis/SQL/x.md) and still land on the right page. */
+const CONTENT_GROUP = {
+  PyDSA: 'interview-core', GoDSA: 'interview-core', SystemDesign: 'interview-core', SoftwareDesign: 'interview-core',
+  CSFundamentals: 'interview-core', Maths: 'interview-core', GoogleBehavioral: 'interview-core',
+  GoEngineering: 'languages', PyEngineering: 'languages', GoStdLib: 'languages', PyStdLib: 'languages',
+  SQL: 'data-and-apis', NoSQL: 'data-and-apis', API: 'data-and-apis',
+  'AI-road-map': 'ai-engineering', 'AI-Libraries-Guides': 'ai-engineering', 'Agentic-AI': 'ai-engineering', MLOps: 'ai-engineering',
+  'Tool-Kit': 'ship-and-run', TestingAndQuality: 'ship-and-run', CICD: 'ship-and-run', DataEngineering: 'ship-and-run' };
+const onDisk = path => { const g = CONTENT_GROUP[path.split('/')[0]]; return g ? `content/${g}/${path}` : path; };
+const moduleRooted = path => { const m = path.match(/^content\/[\w-]+\/(.+)$/); return m ? m[1] : path; };
+
 function repoRefRoute(ref, mod, id) {
-  let p = ref.replace(/[#?].*$/, '').replace(/^\.\//, '');
+  const p = moduleRooted(ref.replace(/[#?].*$/, '').replace(/^\.\//, ''));
   if (REPO_ROOT_RE.test(p)) return repoRoute(p);
   const src = docSourcePath(mod, id);
   const home = REPO_HOME[mod] || DSA_GUIDE_ROOT[mod] || null;
   if (!src) return null;
-  const tries = [src.split('/').slice(0, -1), home ? [home] : []];
+  const tries = [onDisk(src).split('/').slice(0, -1), home ? onDisk(home).split('/') : []];
   for (const segs of tries) {
     const out = [...segs];
     for (const s of p.split('/')) { if (s === '..') out.pop(); else if (s && s !== '.') out.push(s); }
-    const hit = REPO_ROOT_RE.test(out.join('/')) ? repoRoute(out.join('/')) : null;
+    const at = moduleRooted(out.join('/'));
+    const hit = REPO_ROOT_RE.test(at) ? repoRoute(at) : null;
     if (hit) return hit;
   }
   return null;

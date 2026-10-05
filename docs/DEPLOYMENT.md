@@ -93,23 +93,32 @@ year and makes browsers revalidate everything else, so a redeploy shows up at on
 ## Repository layout
 
 ```text
-<module folders>/   the curriculum (PyDSA/, GoDSA/, SystemDesign/, CSFundamentals/, …):
-                    the single source of truth; the app reads them as they are
-tools/              curriculum tooling: problems.tsv (DSA index), generators, checkers
+content/            all learning material, the app's single source of truth (read as is, never written)
+  interview-core/     PyDSA/  GoDSA/  SystemDesign/  SoftwareDesign/  CSFundamentals/  Maths/  GoogleBehavioral/
+  languages/          GoEngineering/  PyEngineering/  GoStdLib/  PyStdLib/
+  data-and-apis/      SQL/  NoSQL/  API/        (SQL/lab/, NoSQL/lab/: Query Lab questions and datasets)
+  ai-engineering/     AI-road-map/  AI-Libraries-Guides/  Agentic-AI/  MLOps/
+  ship-and-run/       Tool-Kit/  TestingAndQuality/  CICD/  DataEngineering/
+  study-plans/        master_dsa_plan.md  REVIEW_LEDGER.md  GOOGLE_INTERVIEW_PREP.md  CURRICULUM.md (generated)
 webapp/
-  server.py         local app: serves the front end, answers /api/*, runs code
+  server.py         local app: serves the front end, answers /api/*, runs code (paths: CONTENT and friends at the top)
   build_static.py   static build: dist/ from the front end + every /api answer
   static/           the front end (index.html, app.js, …, vendor/ libraries)
   scripts/          developer checks for the front end (npm ci first; see below)
   data/             progress.json, your local progress
+tools/              curriculum tooling: problems.tsv (DSA index), generators, checkers; ollama/Modelfile
 deploy/             Dockerfile + nginx.conf for container platforms
-docs/               this guide
+docs/               this guide; CONTEXT.md (session handoff notes)
 .github/workflows/  GitHub Pages deployment
+docker-compose.databases.yml   Postgres, MongoDB and Redis for the SQL / NoSQL lessons
 Makefile            make help lists every command
 ```
 
-The curriculum folders keep their names on purpose: the app's routes, the links between
-guides and the run instructions inside the lessons (`go run GoStdLib/…`) all use them.
+The groups mirror the sections of the app's home page. Module folders keep their names
+(`PyDSA`, `SystemDesign`, …) because they are part of the app's contract: page ids, the
+reader's cross-references between guides (`SystemDesign/building_blocks/06_x.md` written in a
+lesson is resolved to its page) and the problem tracker all use them. Moving a module to
+another group is a `git mv` plus one line in `server.py` and in `CONTENT_GROUP` (reader.js).
 
 ### Developer checks
 
@@ -131,10 +140,10 @@ runs its databases in the browser, so it works the same locally and on a static 
 via PGlite (`static/vendor/pglite/`), MongoDB's query language via mingo (`static/vendor/mingo/`)
 and a Redis emulator (`static/qlab-redis.js`, checked command by command against Redis 7).
 
-- **Questions** live in Markdown that also reads well on GitHub: `SQL/lab/questions.md`,
-  `NoSQL/lab/mongodb-questions.md`, `NoSQL/lab/redis-questions.md`. To add one, copy an existing
+- **Questions** live in Markdown that also reads well on GitHub: `content/data-and-apis/SQL/lab/questions.md`,
+  `content/data-and-apis/NoSQL/lab/mongodb-questions.md`, `content/data-and-apis/NoSQL/lab/redis-questions.md`. To add one, copy an existing
   question (heading, metadata comment, prompt, hints, `<details>` with the solution) and run
   `validate_query_labs.mjs`. No code changes, and the static build picks it up.
-- **Datasets** (`SQL/lab/datasets/`, `NoSQL/lab/datasets/`) are generated, deterministically, by
+- **Datasets** (`content/data-and-apis/SQL/lab/datasets/`, `content/data-and-apis/NoSQL/lab/datasets/`) are generated, deterministically, by
   `python3 tools/gen_query_lab_data.py`. Re-run the validator after regenerating: answers depend on
   the data.
