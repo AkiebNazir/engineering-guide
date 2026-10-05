@@ -286,7 +286,7 @@ Hard limits worth knowing: every document must be routable, so a **unique index*
 
 A chunk can only be split between two *different* shard-key values. If a huge number of documents share one value, that value's chunk grows past the chunk size and can't be split or, if it's too big, moved. MongoDB flags it **`jumbo`**, and the balancer skips it from then on. Demonstrated with a low-cardinality key where 85% of documents share one value:
 
-```javascript
+```text
 sh.shardCollection("shop.users_by_country", { country: 1 });
 const docs = [];
 for (let i = 0; i < 40000; i++)
@@ -315,7 +315,7 @@ This is what the cardinality/frequency rows of the table mean in practice: one s
 
 The fix is to add a field to the shard key that makes the key finer. **Refining** a shard key (MongoDB 4.4+) appends suffix fields to the existing key without moving any data; it needs an index on the new full key first:
 
-```javascript
+```text
 db.users_by_country.createIndex({ country: 1, _id: 1 });
 db.adminCommand({ refineCollectionShardKey: "shop.users_by_country", key: { country: 1, _id: 1 } });
 ```
@@ -335,7 +335,7 @@ Refining also cleared the jumbo flag. Within a minute the balancer had split the
 
 **Zones** let you say "documents in this shard-key range must live on these shards". The balancer then moves chunks to honour that. The usual reasons are data residency (EU users' data stays on EU hardware), tiered storage (recent data on fast shards), or isolating a large tenant. The zone ranges have to be expressed in terms of the shard key, so the key must start with the field you zone by:
 
-```javascript
+```text
 sh.addShardToZone("shA", "EU");
 sh.addShardToZone("shB", "US");
 sh.updateZoneKeyRange("shop.users", { region: "EU", userId: MinKey }, { region: "EU", userId: MaxKey }, "EU");
@@ -362,6 +362,74 @@ Every EU user is on `shA`, every US user on `shB`, and a query for one region is
 - **Migrations cost I/O** on both shards and are throttled one per shard at a time. On a busy cluster, set a balancing window (`config.settings` `activeWindow`) to keep them off peak hours.
 - **Pre-split** a new ranged collection before a bulk load (`sh.splitAt`, then `sh.moveRange` in 6.0+), or you get the single-shard insert pattern measured above until the balancer catches up.
 - **Know when not to shard.** A sharded cluster is at least three replica sets plus routers, with more to monitor, back up and upgrade. A single replica set on a bigger machine, with good indexes (level 05) and secondaries for reads (level 10), handles more than most applications need. Shard when the working set no longer fits in one primary's RAM, the data no longer fits comfortably on its disks, or the write rate has outgrown it, and you've measured that, not guessed it.
+
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser over the Query Lab's shop data, on a single in-memory node. There is no cluster: `sh.*` helpers, chunks, the balancer, `mongos` routing, jumbo flags and zones can't run here, which is why the cluster commands above have no Run button. What does run is the analysis you do *before* `sh.shardCollection`: measuring a candidate key's cardinality, frequency and monotonicity on real data, and checking which queries would be targeted.
+
+Cardinality: how many distinct values each candidate key for `orders` has. `status` can never be split into more than 5 chunks, `customer.country` into more than 18; `customer._id` and `_id` leave plenty of room.
+
+```js
+({
+  status: db.orders.distinct("status").length,
+  country: db.orders.distinct("customer.country").length,
+  customerId: db.orders.distinct("customer._id").length,
+  orderId: db.orders.estimatedDocumentCount()
+})
+```
+
+Frequency: the share of orders held by each key's most common value. Under `{ "customer.country": 1 }`, India alone is about a third of all orders, one value that can't be split (the jumbo-chunk demo above, on real-looking data). The busiest customer holds well under 1%.
+
+```js
+const total = db.orders.estimatedDocumentCount();
+const top = field => db.orders.aggregate([{ $sortByCount: "$" + field }, { $limit: 1 }]).toArray()[0];
+const share = field => { const t = top(field); return { value: t._id, orders: t.count, pct: Math.round(1000 * t.count / total) / 10 }; };
+({ country: share("customer.country"), status: share("status"), customerId: share("customer._id") })
+```
+
+Monotonicity: the five highest `_id`s are all from the last day in the data, because ids and order times both only grow. A ranged key on either sends every new insert to the last chunk, the `orders_by_time` result above.
+
+```js
+db.orders.find({}, { _id: 1, ordered_at: 1 }).sort({ _id: -1 }).limit(5)
+```
+
+Where the next writes would land, simulated on the 500 newest orders. Pretend each key's collection has been split into two chunks at its median value and see which chunk each new order falls in: by time, every one hits the upper chunk; by customer, they spread across both.
+
+```js
+db.orders.aggregate([
+  { $sort: { ordered_at: -1 } },
+  { $limit: 500 },
+  { $facet: {
+      byOrderedAt: [{ $group: {
+        _id: { $cond: [{ $gte: ["$ordered_at", ISODate("2025-05-09")] }, "upper chunk", "lower chunk"] },
+        newOrders: { $sum: 1 } } }],
+      byCustomerId: [{ $group: {
+        _id: { $cond: [{ $gte: ["$customer._id", 1051] }, "upper chunk", "lower chunk"] },
+        newOrders: { $sum: 1 } } }]
+  } }
+])
+```
+
+Targeted vs. scatter-gather is decided by the filter. With a `{ "customer._id": 1, ordered_at: 1 }` key, the "my orders" query below names the key's first field, so `mongos` would send it to one shard; the second has no shard-key field and would go to every shard. Both return the same documents here; only the routing differs on a cluster.
+
+```js
+({
+  targeted: db.orders.find({ "customer._id": 917, ordered_at: { $gte: ISODate("2025-01-01") } }, { total: 1 }).limit(3).toArray(),
+  scatterGather: db.orders.find({ status: "returned", total: { $gt: 3000 } }, { total: 1 }).limit(3).toArray()
+})
+```
+
+Sizing zones before you define them: if EU customers' orders had to stay on EU shards, this is how the load would split between zones (Germany, France, Spain and the Netherlands count as `"EU"` here). Whatever share the EU zone gets, it needs enough shards of its own, because the balancer never moves data across zones.
+
+```js
+db.orders.aggregate([
+  { $group: {
+      _id: { $cond: [{ $in: ["$customer.country", ["Germany", "France", "Spain", "Netherlands"]] }, "EU", "rest"] },
+      orders: { $sum: 1 }
+  } },
+  { $sort: { orders: -1 } }
+])
+```
 
 ## Common mistakes
 

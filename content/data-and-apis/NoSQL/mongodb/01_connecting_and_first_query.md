@@ -150,6 +150,51 @@ db.users.insert_one({"_id": "ada_lovelace", "role": "engineer"})
 # db.users.insert_one({"_id": "ada_lovelace", "role": "duplicate"})  # would raise DuplicateKeyError
 ```
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser instead of a real server: there's no connection string, and `use` is accepted but ignored. The database already holds the Query Lab's shop data (`customers`, `products`, `orders`, `reviews`), and the mongosh block at the top of this page has created `users` (pressing Run on any block runs the earlier ones first). Writes stay in this page's session.
+
+List the collections. This is what mongosh's `show collections` prints; notice `users` is there only because the first block on this page wrote to it, which is the "created lazily on first write" rule from above.
+
+```js
+db.getCollectionNames()
+```
+
+A first real query: one customer, found by email. The result is one whole document, with the nested `name` and `address` sub-documents and the `_id` this dataset gave every customer (a plain integer rather than an `ObjectId`, because the data mirrors the SQL lab's ids).
+
+```js
+db.customers.findOne({ email: "zoe.novak@icloud.com" })
+```
+
+`findOne` with a filter that matches nothing returns `null`, not an error, so check for it in application code:
+
+```js
+db.customers.findOne({ email: "nobody@example.com" })
+```
+
+Counting: `countDocuments` runs the filter, `estimatedDocumentCount` reads the collection's metadata (fast, no filter, and on a real server can be slightly off after an unclean shutdown).
+
+```js
+({
+  orders: db.orders.estimatedDocumentCount(),
+  deliveredOrders: db.orders.countDocuments({ status: "delivered" }),
+  customersInIndia: db.customers.countDocuments({ "address.country": "India" })
+})
+```
+
+Supply your own `_id` when the document has a natural key. The first insert works; the second uses the same `_id` and fails with the same `E11000` error the Python and Go sections showed (expect an error on this block).
+
+```js
+db.users.insertOne({ _id: "ada_lovelace", role: "engineer" });
+db.users.insertOne({ _id: "ada_lovelace", role: "duplicate" })   // expect an error: E11000 duplicate key
+```
+
+The first common mistake below, fixed: "the latest orders" needs an explicit sort, never `findOne()` and hope. Notice the projection keeps the output to the two fields you need.
+
+```js
+db.orders.find({}, { ordered_at: 1, status: 1, total: 1 }).sort({ ordered_at: -1 }).limit(3)
+```
+
 ## Common mistakes
 
 - **Assuming `find_one`/`findOne` with no filter returns "the first inserted document."** It returns *a* document matching the (empty) filter with no guaranteed order unless you sort. Don't rely on insertion order without an explicit `sort()`.

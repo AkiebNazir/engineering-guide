@@ -78,6 +78,63 @@ You already know SQL from the `content/data-and-apis/SQL/` module, so here's the
 
 The one-sentence version: a relational database starts from "normalize, then join when you need related data back together"; MongoDB starts from "store the aggregate your application actually reads together, in one document, and reach for joins or transactions only when embedding stops making sense." Level 04 is where that decision gets made concretely, with a worked example.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser, over the Query Lab's shop data: `customers`, `products`, `orders` and `reviews` (shapes in [the datasets README](../lab/datasets/README.md)). Writes stay in this page's session, and pressing Run on a block first runs the earlier blocks on the page, so the inserts above have already happened by the time you get here.
+
+Start with one real order. Notice how much of it is not a flat row: `customer` is a sub-document, `items` is an array of sub-documents, `status_history` is an array of `{ status, at }` pairs with real dates, and `coupon` is just there (other orders don't have one).
+
+```js
+db.orders.findOne({ _id: 10001 })
+```
+
+Flexible schema in real data: a phone, a pair of trousers and a foam roller all live in `products`, and each one's `attributes` sub-document has whatever fields make sense for that kind of product.
+
+```js
+db.products.find(
+  { _id: { $in: [101, 161, 204] } },
+  { _id: 0, name: 1, category: 1, attributes: 1 }
+)
+```
+
+Every document still has a BSON type per field, even with no schema declared. `$type` reports it: `_id` was stored as an `int`, `total` as a `double`, `ordered_at` as a real `date` (not a string), and a field the document doesn't have (`gift_wrap`) is `"missing"`, which is a different thing from `null`.
+
+```js
+db.orders.aggregate([
+  { $match: { _id: 10001 } },
+  { $project: {
+      _id: { $type: "$_id" }, total: { $type: "$total" }, ordered_at: { $type: "$ordered_at" },
+      customer: { $type: "$customer" }, items: { $type: "$items" }, gift_wrap: { $type: "$gift_wrap" }
+  } }
+])
+```
+
+Optional fields in this dataset are left out rather than set to `null`. Count how many customers have a phone number and how many simply don't have the field:
+
+```js
+({
+  withPhone: db.customers.countDocuments({ phone: { $exists: true } }),
+  withoutPhone: db.customers.countDocuments({ phone: { $exists: false } }),
+  total: db.customers.countDocuments({})
+})
+```
+
+The cost of "nothing is enforced": a typo is a new field, not an error. The insert succeeds, and the lamp then silently drops out of every query that filters or sorts on `price`. Only a query for the missing field finds it.
+
+```js
+db.products.insertOne({ name: "Desk Lamp", pryce: 39 });
+db.products.find({ price: { $exists: false } }, { _id: 0, name: 1, pryce: 1 })
+```
+
+Because the order is the aggregate your application reads, one query can reach into its embedded parts with dot notation: orders from Japan that contain a pair of headphones, returning just the customer's name and the item names.
+
+```js
+db.orders.find(
+  { "customer.country": "Japan", "items.category": "Headphones" },
+  { "customer.name": 1, "items.name": 1 }
+).limit(3)
+```
+
 ## What's ahead in this ladder
 
 Levels 01–03 build fluency with the basics (connecting, CRUD, query operators). Level 04 is the pivotal schema-design skill. Levels 05–08 cover performance and structure (indexes, aggregation, update operators, validation). Levels 09–10 cover the distributed-systems side (transactions, replication, write/read concern). Level 11 ties it into a small production-shaped service module.

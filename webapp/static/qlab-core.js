@@ -153,6 +153,8 @@
       hasNext() { return this.toArray().length > 0; }
       next() { return this.toArray()[0] ?? null; }
       pretty() { return this; }
+      readPref() { return this; }      // one node here: accepted, routes nowhere
+      maxTimeMS() { return this; }     // accepted; nothing here runs long enough to time out
       explain() { return { note: 'explain() is not available in the in-browser lab; run it on a real MongoDB.' }; }
     }
     class AggCursor extends Cursor {
@@ -166,14 +168,21 @@
       arr.forEach((d, i) => { if (q.test(d)) out.push(i); });
       return out;
     };
-    const applyUpdate = (arr, i, update) => {
+    // `filter` (already known to match arr[i]) is passed on so a positional `items.$.qty` update
+    // knows which array element the query matched.
+    const applyUpdate = (arr, i, update, o = {}, filter) => {
       if (Array.isArray(update)) {                       // aggregation-pipeline update
         arr[i] = mingo.aggregate([arr[i]], update, opts())[0];
         return true;
       }
       if (!Object.keys(update).some(k => k.startsWith('$'))) throw new Error('Update document requires atomic operators (use replaceOne to replace a whole document)');
+      if (update.$setOnInsert) {                         // only applies when an upsert inserts
+        update = { ...update }; delete update.$setOnInsert;
+        if (!Object.keys(update).length) return false;
+      }
       const one = [arr[i]];
-      const r = mingo.updateOne(one, { _id: arr[i]._id }, update);
+      const cond = filter && Object.keys(filter).length ? filter : { _id: arr[i]._id };
+      const r = mingo.updateOne(one, cond, update, o.arrayFilters ? { arrayFilters: o.arrayFilters } : undefined);
       arr[i] = one[0];
       return (r && (r.modifiedCount ?? r.modified ?? 1)) > 0;
     };
@@ -196,8 +205,15 @@
         countDocuments: (filter = {}) => new mingo.Query(filter).find(docs(name)).all().length,
         estimatedDocumentCount: () => docs(name).length,
         distinct: (field, filter = {}) => {
-          const vals = mingo.aggregate(new mingo.Query(filter).find(docs(name)).all(),
-            [{ $unwind: { path: `$${field}`, preserveNullAndEmptyArrays: false } }, { $group: { _id: `$${field}` } }]).map(g => g._id);
+          // Like the server: a path through an array of sub-documents ("items.category") and an
+          // array at the end of the path both contribute their elements, not the arrays.
+          const at = (v, parts) => {
+            if (Array.isArray(v)) return v.flatMap(x => at(x, parts));
+            if (!parts.length) return v === undefined ? [] : [v];
+            return v && typeof v === 'object' && !(v instanceof Date) ? at(v[parts[0]], parts.slice(1)) : [];
+          };
+          const found = new mingo.Query(filter).find(docs(name)).all().flatMap(d => at(d, field.split('.')));
+          const vals = mingo.aggregate(found.map(v => ({ v })), [{ $group: { _id: '$v' } }]).map(g => g._id);
           return vals.sort((a, b) => (normValue(a) > normValue(b) ? 1 : -1));
         },
         insertOne: doc => {
@@ -216,14 +232,14 @@
             if (o.upsert) { const d = upsertDoc(filter, update); arr.push(d); return { acknowledged: true, matchedCount: 0, modifiedCount: 0, upsertedId: d._id }; }
             return { acknowledged: true, matchedCount: 0, modifiedCount: 0 };
           }
-          const changed = applyUpdate(arr, idx[0], update);
+          const changed = applyUpdate(arr, idx[0], update, o, filter);
           return { acknowledged: true, matchedCount: 1, modifiedCount: changed ? 1 : 0 };
         },
         updateMany: (filter, update, o = {}) => {
           const arr = writable(name); const idx = matchIdx(arr, filter);
           if (!idx.length && o.upsert) { const d = upsertDoc(filter, update); arr.push(d); return { acknowledged: true, matchedCount: 0, modifiedCount: 0, upsertedId: d._id }; }
           let modified = 0;
-          idx.forEach(i => { if (applyUpdate(arr, i, update)) modified++; });
+          idx.forEach(i => { if (applyUpdate(arr, i, update, o, filter)) modified++; });
           return { acknowledged: true, matchedCount: idx.length, modifiedCount: modified };
         },
         replaceOne: (filter, doc, o = {}) => {
@@ -239,7 +255,7 @@
           const arr = writable(name); const idx = matchIdx(arr, filter);
           if (!idx.length) return null;
           const before = clone(arr[idx[0]]);
-          applyUpdate(arr, idx[0], update);
+          applyUpdate(arr, idx[0], update, o, filter);
           const after = arr[idx[0]];
           const doc = o.returnNewDocument || o.returnDocument === 'after' ? after : before;
           return o.projection ? new mingo.Query({}).find([doc], o.projection).all()[0] : doc;
@@ -275,13 +291,15 @@
       ISODate: s => (s === undefined ? new Date() : new Date(s)),
       ObjectId: h => new ObjectId(h),
       NumberInt: n => Number(n), NumberLong: n => Number(n), NumberDecimal: n => Number(n), Double: n => Number(n),
+      // mongosh prints these; here they return their argument, so a trailing printjson(x) shows x.
+      print: (...a) => (a.length === 1 ? a[0] : a.join(' ')), printjson: v => v,
     };
     const names = Object.keys(helpers);
 
     /* Run mongosh-style code: statements separated by ; or newlines, the value of the last
        expression is the result. Cursors are drained so the UI gets plain documents. */
     function run(code) {
-      const src = String(code).replace(/^\s*use\s+\w+\s*;?\s*$/gm, '');   // `use shop` is a no-op here
+      const src = String(code).replace(/^\s*use\s+\w+\s*;?\s*(\/\/.*)?$/gm, '');   // `use shop` is a no-op here
       // eslint-disable-next-line no-new-func
       const fn = new Function('db', ...names, '__src', '"use strict"; return eval(__src);');
       let out = fn(db, ...names.map(n => helpers[n]), src);

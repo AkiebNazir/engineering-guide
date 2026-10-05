@@ -178,13 +178,70 @@ Same result as pymongo: `1`, for the same reason traced above — one `done: tru
 Same operations, shell syntax, for reference:
 
 ```javascript
-db.tasks.insertMany([...]);
+db.tasks.insertMany([
+  { title: "Write report", done: false, priority: 2 },
+  { title: "Review PR", done: false, priority: 1 },
+  { title: "Deploy service", done: true, priority: 3 },
+  { title: "Update docs", done: false, priority: 1 },
+]);
 db.tasks.find({ done: false }, { _id: 0, title: 1 });
 db.tasks.updateOne({ title: "Review PR" }, { $set: { done: true } });
 db.tasks.updateMany({ priority: 1, done: false }, { $set: { priority: 0 } });
 db.tasks.deleteOne({ done: true });
 db.tasks.deleteMany({ done: false });
 db.tasks.countDocuments({});
+```
+
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser, over the Query Lab's shop data (`customers`, `products`, `orders`, `reviews`) plus any collection you create. Writes stay in this page's session, and Run on a block first runs the earlier blocks on the page, including the mongosh mirror above (which leaves one task behind).
+
+Reset `tasks` and insert the four tasks again. `insertMany` returns one generated `_id` per document, in insertion order.
+
+```js
+db.tasks.drop();
+db.tasks.insertMany([
+  { title: "Write report", done: false, priority: 2 },
+  { title: "Review PR", done: false, priority: 1 },
+  { title: "Deploy service", done: true, priority: 3 },
+  { title: "Update docs", done: false, priority: 1 },
+])
+```
+
+Filter, project and sort in one call. The sort has a tie-breaker (`title`) so the two priority-1 tasks always come back in the same order.
+
+```js
+db.tasks.find({ done: false }, { _id: 0, title: 1, priority: 1 }).sort({ priority: 1, title: 1 })
+```
+
+`matchedCount` vs `modifiedCount`: "Deploy service" is already done, so the filter matches it but nothing changes. Notice `modifiedCount: 0`.
+
+```js
+db.tasks.updateOne({ title: "Deploy service" }, { $set: { done: true } })
+```
+
+The first common mistake below: an update document without an operator. The shell rejects it instead of merging `done` into the task (expect an error).
+
+```js
+db.tasks.updateOne({ title: "Write report" }, { done: true })   // expect an error: no $-operator
+```
+
+The same verbs on real data. A review is a small, referenced document, so adding one is a plain `insertOne`; read it back with the product's other reviews, newest first.
+
+```js
+db.reviews.insertOne({
+  _id: 1845, product_id: 101, customer_id: 1, rating: 4,
+  title: "Great screen, average battery", verified: false, created_at: new Date()
+});
+db.reviews.find({ product_id: 101 }, { _id: 1, rating: 1, title: 1, verified: 1 }).sort({ created_at: -1 })
+```
+
+`updateMany` and `deleteMany` report how many documents they touched. Mark the product's unverified reviews as verified (only the one you just added is), then delete every review by customer 1646, who has closed their account, and count what's left.
+
+```js
+const verified = db.reviews.updateMany({ product_id: 101, verified: false }, { $set: { verified: true } });
+const deleted = db.reviews.deleteMany({ customer_id: 1646 });
+({ verified: verified.modifiedCount, deleted: deleted.deletedCount, remaining: db.reviews.countDocuments({}) })
 ```
 
 ## Common mistakes

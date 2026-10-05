@@ -190,6 +190,112 @@ Real output — identical result to the Python pipeline above:
 
 **Why `mongo.Pipeline` (`[]bson.D`) and not `bson.A`/`[]bson.M`:** a `bson.M` is a Go map, and Go maps have no guaranteed iteration/marshaling order — irrelevant for a filter document (where key order never matters), but a pipeline's stage order is the entire meaning of the pipeline (`$group` before `$unwind` silently changes the answer, as the "Common mistakes" section below already warns). `mongo.Pipeline` is a thin `type Pipeline []bson.D` alias specifically so the compiler and the driver both treat pipeline stage order as load-bearing, matching the ordered Python list (`pipeline = [...]`) the Python version already relies on for the same reason.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser over the Query Lab's shop data (`customers`, `products`, `orders`, `reviews`). The pipelines below are the everyday reporting questions a store asks; add or remove a stage and run again to see what each one contributes.
+
+The chapter's question on real data: each customer's spend on delivered orders placed in March 2025, line items fanned out with `$unwind`, summed per customer, joined to `customers` for the email, highest first. Same six stages, same order as above.
+
+```js
+db.orders.aggregate([
+  { $match: { status: "delivered", ordered_at: { $gte: ISODate("2025-03-01"), $lt: ISODate("2025-04-01") } } },
+  { $unwind: "$items" },
+  { $group: {
+      _id: "$customer._id",
+      spent: { $sum: { $multiply: ["$items.qty", "$items.price"] } },
+      line_items: { $sum: 1 }
+  } },
+  { $lookup: { from: "customers", localField: "_id", foreignField: "_id", as: "customer" } },
+  { $unwind: "$customer" },
+  { $project: { _id: 0, customer_id: "$_id", email: "$customer.email", line_items: 1, spent: { $round: ["$spent", 2] } } },
+  { $sort: { spent: -1 } },
+  { $limit: 5 }
+])
+```
+
+`$group` before vs. after `$unwind` (the last common mistake below): counting orders and counting line items are different questions, and only the stage order tells them apart.
+
+```js
+({
+  orders: db.orders.aggregate([{ $group: { _id: null, n: { $sum: 1 } } }]).toArray()[0].n,
+  lineItems: db.orders.aggregate([{ $unwind: "$items" }, { $group: { _id: null, n: { $sum: 1 } } }]).toArray()[0].n
+})
+```
+
+Revenue by product category, from delivered orders' line items, applying each line's discount (a missing `discount_pct` counts as 0 via `$ifNull`).
+
+```js
+db.orders.aggregate([
+  { $match: { status: "delivered" } },
+  { $unwind: "$items" },
+  { $group: {
+      _id: "$items.category",
+      revenue: { $sum: { $multiply: [
+        "$items.qty", "$items.price",
+        { $subtract: [1, { $divide: [{ $ifNull: ["$items.discount_pct", 0] }, 100] }] }
+      ] } },
+      units: { $sum: "$items.qty" }
+  } },
+  { $project: { units: 1, revenue: { $round: ["$revenue", 2] } } },
+  { $sort: { revenue: -1 } },
+  { $limit: 5 }
+])
+```
+
+A monthly trend: `$dateToString` turns each order date into a `"YYYY-MM"` key to group on.
+
+```js
+db.orders.aggregate([
+  { $match: { ordered_at: { $gte: ISODate("2025-01-01"), $lt: ISODate("2025-07-01") } } },
+  { $group: {
+      _id: { $dateToString: { format: "%Y-%m", date: "$ordered_at" } },
+      orders: { $sum: 1 },
+      revenue: { $sum: "$total" }
+  } },
+  { $project: { orders: 1, revenue: { $round: ["$revenue", 2] } } },
+  { $sort: { _id: 1 } }
+])
+```
+
+Best-rated products with enough reviews to mean something: group the reviews first, keep products with at least 30, then `$lookup` only those few products for their names. Doing the join after the `$match` and `$limit` means it runs 5 times, not 1,844.
+
+```js
+db.reviews.aggregate([
+  { $group: { _id: "$product_id", avgRating: { $avg: "$rating" }, reviews: { $sum: 1 } } },
+  { $match: { reviews: { $gte: 30 } } },
+  { $sort: { avgRating: -1 } },
+  { $limit: 5 },
+  { $lookup: { from: "products", localField: "_id", foreignField: "_id", as: "product" } },
+  { $project: { _id: 0, name: { $arrayElemAt: ["$product.name", 0] }, reviews: 1, avgRating: { $round: ["$avgRating", 2] } } }
+])
+```
+
+`$lookup` is a left outer join: a customer with no orders gets an empty array, not a missing field. That makes "customers who never ordered" a `$size: 0` match.
+
+```js
+db.customers.aggregate([
+  { $lookup: { from: "orders", localField: "_id", foreignField: "customer._id", as: "orders" } },
+  { $match: { orders: { $size: 0 } } },
+  { $count: "neverOrdered" }
+])
+```
+
+Several summaries in one pass with `$facet`: order counts by status, and a histogram of order totals with `$bucket` (each `_id` is a bucket's lower bound; `default` catches everything past the last boundary, and without it a single larger total makes the whole stage fail).
+
+```js
+db.orders.aggregate([
+  { $facet: {
+      byStatus: [{ $sortByCount: "$status" }],
+      totals: [{ $bucket: {
+        groupBy: "$total",
+        boundaries: [0, 50, 100, 250, 500, 1000, 2500],
+        default: "2500+",
+        output: { orders: { $sum: 1 } }
+      } }]
+  } }
+])
+```
+
 ## Common mistakes
 
 - **Putting `$match` late, or not at all before an expensive stage.** `$match` first lets MongoDB use an index and shrinks the pipeline's working set immediately — putting it after `$unwind`/`$lookup` means those expensive stages run over documents you're about to throw away anyway.

@@ -174,6 +174,84 @@ cur, _ = products.Find(ctx, bson.M{"category": "accessories"}, options.Find().Se
 
 Notice `_id`, `price`, and `name` appear in a *different order* between the first and second document — `bson.M` is a Go `map[string]any`, and Go's map iteration order is intentionally randomized. This is purely a display artifact of decoding into a generic map (the actual BSON documents on the wire and on disk have a defined field order); decoding into a typed struct with ordered `bson:"..."` tags instead of `bson.M` avoids it entirely, and is generally the better choice once a document's shape is known ahead of time rather than being discovered ad hoc.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser over the Query Lab's shop data (`customers`, `products`, `orders`, `reviews`; shapes in [the datasets README](../lab/datasets/README.md)). Every operator above works the same way here; these are the queries you'd actually write against a store.
+
+Range plus `$in`: headphones and speakers from two brands between 100 and 300, cheapest first. Two conditions on `price` share one operator document (`$gte` and `$lte`), so no `$and` is needed.
+
+```js
+db.products.find(
+  { brand: { $in: ["Sonora", "Boomly"] }, price: { $gte: 100, $lte: 300 } },
+  { _id: 0, name: 1, brand: 1, price: 1 }
+).sort({ price: 1 })
+```
+
+`$or` across two unrelated conditions: products that are out of stock or rated below 3. Notice products rated well above 3 still come back: being out of stock is enough on its own.
+
+```js
+db.products.find(
+  { $or: [{ stock: 0 }, { "rating.avg": { $lt: 3 } }] },
+  { _id: 0, name: 1, stock: 1, "rating.avg": 1 }
+).limit(5)
+```
+
+Arrays match element-wise. `{ category: "Audio" }` matches any product whose `category` array contains `"Audio"`; `$all` needs every listed value; `$size` matches the array's length exactly.
+
+```js
+({
+  audio: db.products.countDocuments({ category: "Audio" }),
+  taggedVoltAndElectronics: db.products.countDocuments({ tags: { $all: ["volt", "electronics"] } }),
+  ordersWithFiveItems: db.orders.countDocuments({ items: { $size: 5 } })
+})
+```
+
+The array gotcha interviewers love. Separate conditions on `items.category` and `items.qty` can be satisfied by *different* line items; `$elemMatch` requires one line item to satisfy both. Notice the first count is larger.
+
+```js
+({
+  dotNotation: db.orders.countDocuments({ "items.category": "Phones", "items.qty": { $gte: 2 } }),
+  elemMatch: db.orders.countDocuments({ items: { $elemMatch: { category: "Phones", qty: { $gte: 2 } } } })
+})
+```
+
+`$regex`, as a literal or as an operator: customers on one email domain, and products whose name contains "earbuds" in any case. Only an anchored, case-sensitive prefix (`/^Sonora/`) can use an index efficiently (level 05).
+
+```js
+({
+  protonCustomers: db.customers.countDocuments({ email: /@proton\.me$/ }),
+  earbuds: db.products.find({ name: { $regex: "earbuds", $options: "i" } }, { _id: 0, name: 1 }).toArray()
+})
+```
+
+Missing vs. present: `referred_by` exists only on customers who were referred. `$exists: false` finds the rest, and `{ referred_by: null }` matches the same documents, because a `null` equality also matches a missing field.
+
+```js
+({
+  referred: db.customers.countDocuments({ referred_by: { $exists: true } }),
+  notReferred: db.customers.countDocuments({ referred_by: { $exists: false } }),
+  nullOrMissing: db.customers.countDocuments({ referred_by: null })
+})
+```
+
+Projections into arrays: `items.$` returns only the first line item that matched the query, and `$slice: -1` returns only the last status change, instead of shipping the whole arrays back.
+
+```js
+db.orders.find(
+  { "items.product_id": 116 },
+  { "customer.name": 1, "items.$": 1, status_history: { $slice: -1 } }
+).limit(2)
+```
+
+Pagination with sort, skip and limit: page 2 (rows 6 to 10) of Electronics by price, highest first. `_id` in the sort breaks ties so a product can't appear on two pages.
+
+```js
+db.products.find({ category: "Electronics" }, { _id: 0, name: 1, price: 1 })
+  .sort({ price: -1, _id: 1 })
+  .skip(5)
+  .limit(5)
+```
+
 ## Common mistakes
 
 - **(Go) Forgetting `bson.A` for array-valued operators.** A plain Go slice (`[]string{"a", "b"}`) inside a `bson.M` for `$in`/`$and`/`$or` will actually still marshal correctly in most cases via reflection, but `bson.A` (`[]any`) is the driver's own explicit BSON array type and is the idiomatic, always-safe choice — especially once the array holds mixed types (a `bson.M` alongside a string, as in `$or` above).

@@ -209,6 +209,80 @@ Reach for a real transaction when:
 
 Avoid transactions as your default tool for "make these two writes safe" — check first whether a schema that puts the related data in one document (or one array, with `arrayFilters` from level 07) makes the transaction unnecessary. That's not a workaround; it's the intended MongoDB design idiom, and it's strictly cheaper.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser, over the Query Lab's shop data plus any collection you create. It is a single in-memory engine with no sessions: `startSession()`, `startTransaction()`, `commitTransaction()`/`abortTransaction()`, write conflicts and rollback can't be shown here, so run the Python or Go examples above against the lab replica set for those. What runs here is the other half of this level: the single-document atomicity you get for free, how much of a "transaction" it can cover, and what the in-between state looks like when you split one logical change across two documents without one.
+
+The funds transfer, modelled so it doesn't need a transaction: both balances in one document. The guard (`alice: { $gte: 30 }`) and both `$inc`s are one atomic write, so the check-then-act race from the Python `transfer()` above can't happen.
+
+```js
+db.wallets.insertOne({ _id: "shared", alice: 100, bob: 50 });
+db.wallets.updateOne({ _id: "shared", alice: { $gte: 30 } }, { $inc: { alice: -30, bob: 30 } });
+db.wallets.findOne({ _id: "shared" })
+```
+
+Insufficient funds is just "the filter matched nothing": no exception, no partial write, and `matchedCount: 0` tells the application to refuse the transfer.
+
+```js
+db.wallets.updateOne({ _id: "shared", alice: { $gte: 500 } }, { $inc: { alice: -500, bob: 500 } })
+```
+
+Now the two-document version, without a transaction. Set up the chapter's two accounts:
+
+```js
+db.accounts.insertMany([
+  { _id: "acct_a", owner: "Alice", balance: 100 },
+  { _id: "acct_b", owner: "Bob", balance: 50 }
+])
+```
+
+Do the debit, look at the total money in the system, then do the credit. Notice the middle reading: for that moment 30 has left Alice and not reached Bob, and any reader (or a crash) sees 120 instead of 150. That window is exactly what a multi-document transaction hides: inside one, other readers see 150 before and 150 after, never 120.
+
+```js
+const total = () => db.accounts.aggregate([{ $group: { _id: null, total: { $sum: "$balance" } } }]).toArray()[0].total;
+const before = total();
+db.accounts.updateOne({ _id: "acct_a", balance: { $gte: 30 } }, { $inc: { balance: -30 } });
+const between = total();
+db.accounts.updateOne({ _id: "acct_b" }, { $inc: { balance: 30 } });
+({ before, between, after: total() })
+```
+
+Embedding is why the shop rarely needs one. Cancelling an order changes its status, its payment and its history, and because they all live in the order document, one update with three operators is atomic. The status in the filter makes it safe to retry: a second call matches nothing.
+
+```js
+db.orders.updateOne(
+  { _id: 10046, status: "placed" },
+  {
+    $set: { status: "cancelled", "payment.status": "refunded" },
+    $push: { status_history: { status: "cancelled", at: ISODate("2026-10-05T12:00:00Z") } }
+  }
+);
+db.orders.findOne({ _id: 10046 }, { status: 1, payment: 1, status_history: 1 })
+```
+
+Where the shop genuinely spans two collections, placing an order (decrement `products.stock`, insert into `orders`), each write is still atomic on its own: the guarded `$inc` below can never oversell, but the pair is not. Without a transaction, a crash between the two leaves stock reserved with no order, which a cleanup job has to find and release.
+
+```js
+const reserved = db.products.updateOne({ _id: 116, stock: { $gte: 2 } }, { $inc: { stock: -2 } });
+const placed = reserved.modifiedCount === 1
+  ? db.orders.insertOne({
+      _id: 20001, customer: { _id: 1, name: "Zoe Novak", city: "Mumbai", country: "India" },
+      ordered_at: ISODate("2026-10-05T12:05:00Z"), status: "placed",
+      items: [{ product_id: 116, name: "Sonora Noise-Cancelling Headphones", category: "Headphones", qty: 2, price: 202.99 }],
+      total: 405.98, status_history: [{ status: "placed", at: ISODate("2026-10-05T12:05:00Z") }]
+    })
+  : null;
+({ reserved, placed, stockNow: db.products.findOne({ _id: 116 }, { _id: 0, stock: 1 }) })
+```
+
+A reconciliation query of the kind you write when you chose not to use a transaction: every order's `status` should equal the last entry of its `status_history`. A non-zero count means some write path updated one without the other.
+
+```js
+db.orders.countDocuments({
+  $expr: { $ne: ["$status", { $arrayElemAt: ["$status_history.status", -1] }] }
+})
+```
+
 ## Common mistakes
 
 - **Forgetting to pass `session=` to every operation inside the callback.** An operation without it silently executes outside the transaction — no error, just wrong behavior (a partial commit is now possible, which is the exact thing transactions exist to prevent).

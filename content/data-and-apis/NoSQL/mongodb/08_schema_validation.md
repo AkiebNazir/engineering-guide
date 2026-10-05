@@ -185,6 +185,74 @@ Reach for a validator when:
 
 Don't reach for it as a default on every collection — the entire value proposition of level 00's flexible schema (add a field to new documents without a migration) is undermined the moment `additionalProperties: false` or an overly strict `required` list is bolted onto a collection whose shape is still evolving. Validate the fields that are load-bearing for correctness; leave everything else free.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser over the Query Lab's shop data. One thing it can't do: it has no validators, so `db.createCollection(name, { validator })`, `collMod` and the `$jsonSchema` query operator don't run here, and every insert is accepted, exactly like a collection with no validator (or with `validationAction: "warn"`). Try those on the lab MongoDB. What runs here is the step the first common mistake below says to do before any of that: **audit the existing data** with ordinary queries, so you know what a validator would reject.
+
+Survey the shape you're about to enforce. For `orders.status`, the distinct values are the enum; for `payment.method`, the same.
+
+```js
+({ status: db.orders.distinct("status"), paymentMethod: db.orders.distinct("payment.method") })
+```
+
+Required fields and types: how many customers are missing an email or a sign-up date, and how many products have a `price` that isn't a number. `$type: "number"` matches any numeric BSON type (`int`, `long`, `double`, `decimal`), the same reason the chapter's validator lists `["double", "int"]`.
+
+```js
+({
+  customersWithoutEmail: db.customers.countDocuments({ email: { $exists: false } }),
+  customersWithoutSignup: db.customers.countDocuments({ signed_up: { $not: { $type: "date" } } }),
+  productsWithNonNumericPrice: db.products.countDocuments({ price: { $not: { $type: "number" } } }),
+  customersWithoutPhone: db.customers.countDocuments({ phone: { $exists: false } })
+})
+```
+
+Notice `phone` is missing on 216 customers: put it in `required` and every one of them fails the next time it's updated under `validationLevel: "strict"`. That's a field to leave optional.
+
+Why `additionalProperties: false` would be wrong for `products`: `$objectToArray` lists the keys each top-level category actually uses in `attributes`, and they differ by category (and will grow as the store adds new kinds of product).
+
+```js
+db.products.aggregate([
+  { $project: { top: { $arrayElemAt: ["$category", 0] }, attrs: { $objectToArray: "$attributes" } } },
+  { $unwind: "$attrs" },
+  { $group: { _id: "$top", keys: { $addToSet: "$attrs.k" } } },
+  { $sort: { _id: 1 } }
+])
+```
+
+Now the chapter's `accounts` collection, without a validator. All three inserts succeed here, including the two that the validator above rejects (`code: 121`) on a real server: one is missing `status`, the other breaks every rule.
+
+```js
+db.accounts.insertMany([
+  { email: "a@example.com", balance: 100.0, status: "active" },
+  { email: "b@example.com", balance: 50.0 },
+  { email: "bad", balance: -1, status: "not-valid" }
+])
+```
+
+The validator's rules, rewritten as an ordinary query that finds the documents violating any of them. This is the audit to run before flipping `validationAction` from `"warn"` to `"error"`. Notice a missing field fails `$type` and `$nin` too, so `required` comes for free.
+
+```js
+db.accounts.find(
+  { $or: [
+      { email: { $not: { $type: "string" } } },
+      { email: { $not: /^.+@.+\..+$/ } },
+      { balance: { $not: { $type: "number" } } },
+      { balance: { $lt: 0 } },
+      { status: { $nin: ["active", "suspended", "closed"] } }
+  ] },
+  { _id: 0 }
+)
+```
+
+The same audit on real data: customers whose email doesn't look like an email, and orders whose `total` is negative or missing. Zero is the answer you want before turning a rule on.
+
+```js
+({
+  badEmails: db.customers.countDocuments({ email: { $not: /^[^@\s]+@[^@\s]+\.[^@\s]+$/ } }),
+  badTotals: db.orders.countDocuments({ $or: [{ total: { $not: { $type: "number" } } }, { total: { $lt: 0 } }] })
+})
+```
+
 ## Common mistakes
 
 - **Setting `validationAction: "error"` on day one against an existing, unaudited collection.** You will reject writes you didn't know existed. Roll out with `"warn"` first.

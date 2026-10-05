@@ -219,6 +219,68 @@ Same fallback behavior, same result — read preference is routing logic the dri
 
 This is the PACELC tradeoff from [Distributed Systems Theory](../../../interview-core/SystemDesign/building_blocks/10_distributed_systems_theory.md) made concrete: in the normal case (no partition), MongoDB lets you trade **latency/throughput** (read from a nearby, less-loaded secondary) against **consistency** (that secondary might be milliseconds to seconds behind the primary) — an explicit, per-query dial, not a global property of the deployment.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser, and it is one in-memory node: no replica set, no secondaries, no oplog. Write concern and read preference options are accepted so the code reads like real mongosh, but they change nothing here (every write is applied and acknowledged immediately, every read sees it), and `rs.status()`, elections, replication lag and stale secondary reads can't be shown at all. What does run is the application-side discipline this level keeps coming back to: knowing what a write did, and making retries safe.
+
+The syntax first: a write concern is an option on the write. On a real set this insert waits for a majority of voting members, or reports a `WriteConcernError` after 2 seconds. Here it just inserts.
+
+```js
+db.notes.insertOne(
+  { who: "majority", text: "survives the loss of a minority of nodes" },
+  { writeConcern: { w: "majority", wtimeout: 2000 } }
+)
+```
+
+Why a write-concern timeout makes blind retries dangerous: the write landed on the primary, only the acknowledgment failed, so retrying a non-idempotent `$inc` applies it twice. Simulate the timeout-then-retry and notice the balance gained 40, not 20.
+
+```js
+db.balances.insertOne({ _id: "acct_1", balance: 100, applied: [] });
+const credit = () => db.balances.updateOne({ _id: "acct_1" }, { $inc: { balance: 20 } });
+credit();   // applied, but the client saw a WTimeoutError...
+credit();   // ...so it retried
+db.balances.findOne({ _id: "acct_1" }, { _id: 0, balance: 1 })
+```
+
+The fix is to make the write idempotent: tag it with an operation id and only apply it if that id isn't recorded yet. The id check and the `$inc` are one atomic single-document update, so the retry matches nothing (`matchedCount: 0`) and the balance moves by 20 exactly once.
+
+```js
+const creditOnce = () => db.balances.updateOne(
+  { _id: "acct_1", applied: { $ne: "op-42" } },
+  { $inc: { balance: 20 }, $push: { applied: "op-42" } }
+);
+({ first: creditOnce(), retry: creditOnce(), doc: db.balances.findOne({ _id: "acct_1" }) })
+```
+
+Inserts can be made idempotent with a natural `_id` (the retry then fails with `E11000`, which the application treats as "already done") or with an upsert keyed on it, which simply matches the second time:
+
+```js
+const record = () => db.payments.updateOne(
+  { _id: "pay_8812" },
+  { $setOnInsert: { order_id: 10001, amount: 287.93, at: ISODate("2026-10-05T12:00:00Z") } },
+  { upsert: true }
+);
+({ first: record(), retry: record(), payments: db.payments.countDocuments({}) })
+```
+
+Read preference is set per query too. A heavy report like this is the kind you might send to a secondary with `secondaryPreferred`, accepting that it may miss the last few seconds of orders; a "show me the order I just placed" read is not, because of the read-your-own-writes mistake below. Here the option is accepted and ignored.
+
+```js
+db.orders.aggregate([
+  { $match: { ordered_at: { $gte: ISODate("2025-12-01") } } },
+  { $group: { _id: "$customer.country", orders: { $sum: 1 }, revenue: { $sum: "$total" } } },
+  { $project: { orders: 1, revenue: { $round: ["$revenue", 2] } } },
+  { $sort: { revenue: -1 } },
+  { $limit: 5 }
+], { readPreference: "secondaryPreferred" })
+```
+
+The read that has to see the latest write stays on the primary (the default, written out here with the cursor's `readPref`):
+
+```js
+db.orders.find({ _id: 10001 }, { status: 1, total: 1 }).readPref("primary")
+```
+
 ## Common mistakes
 
 - **Assuming `w: 1` writes are durable.** They're acknowledged by the primary alone — a crash before replication can lose them. Use `w: "majority"` for anything where losing an acknowledged write would be a real incident (payments, anything a user was told succeeded). It is the implicit default on MongoDB 5.0+ unless the set has an arbiter (PSA) or someone lowered it, so check what a PSA deployment, an old driver config, or an explicit `w=1` in code is actually giving you.

@@ -229,6 +229,70 @@ Same bounded-failure result as pymongo — **~1000ms**, matching the configured 
 
 **The real, worth-knowing driver difference:** the Go v2 driver has **no `SetSocketTimeout`** — trying to set one is a compile error, not a missing feature accidentally left out. It's been replaced by a single **`SetTimeout`** (Go's driver calls this **CSOT — Client-Side Operation Timeout**, a newer cross-driver MongoDB spec), which bounds an *entire operation* — connection checkout, server selection, and the operation itself — with one deadline, composed naturally with Go's own `context.Context` cancellation, rather than pymongo's three separately-configured windows (`serverSelectionTimeoutMS`/`connectTimeoutMS`/`socketTimeoutMS`) that each cover one phase. Both approaches solve "don't hang forever," but Go's is the direction newer official MongoDB drivers (including pymongo's own newer `timeoutMS` option) are converging toward — worth knowing which style a given driver version actually supports rather than assuming the three-timeout model is universal.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser, so the client-side half of this level (one pooled `MongoClient`, `retryWrites`, the three timeouts) has nothing to act on: there's no network, no pool and no server to time out. What runs here are the queries `NotesService` sends, and the query-level habits that make a client well-behaved: bounded result sets, ownership checks in the filter, retry-safe writes and stable pagination. Writes stay in this page's session, and Run on a block first runs the earlier ones.
+
+`create_note`, a few times. The index the constructor creates is accepted here but not built (level 05 explains what it would do).
+
+```js
+db.notes.createIndex({ owner: 1 });
+db.notes.insertMany([
+  { owner: "njasm", text: "capstone module works", archived: false },
+  { owner: "njasm", text: "set timeouts shorter than the HTTP handler's", archived: false },
+  { owner: "ada", text: "one MongoClient per process", archived: false }
+])
+```
+
+`get_notes_for`, with the two habits the Python version leaves out: a `limit` so one heavy user can't return an unbounded list, and `maxTimeMS` so the server abandons a slow query instead of holding the request. (`maxTimeMS` is accepted and ignored here, since nothing in the browser runs long enough to hit it.)
+
+```js
+db.notes.find({ owner: "njasm", archived: false }, { _id: 0, text: 1 }).limit(50).maxTimeMS(2000)
+```
+
+`archive_note` puts the owner in the filter, so the ownership check and the write are one atomic step. The right owner gets the updated document back (`returnDocument: "after"`); anyone else gets `null` and nothing changes.
+
+```js
+const id = db.notes.findOne({ owner: "njasm" })._id;
+({
+  wrongOwner: db.notes.findOneAndUpdate({ _id: id, owner: "ada" }, { $set: { archived: true } }, { returnDocument: "after" }),
+  rightOwner: db.notes.findOneAndUpdate({ _id: id, owner: "njasm" }, { $set: { archived: true } }, { returnDocument: "after" })
+})
+```
+
+A retry-safe create, for when a write's outcome is unknown (a timeout, a failover outside what `retryWrites` covers): the client generates the id, so retrying is an upsert that matches the second time instead of creating a duplicate note.
+
+```js
+const createNote = () => db.notes.updateOne(
+  { _id: "req-7f3a" },
+  { $setOnInsert: { owner: "njasm", text: "created exactly once", archived: false } },
+  { upsert: true }
+);
+({ first: createNote(), retry: createNote(), notes: db.notes.countDocuments({ owner: "njasm" }) })
+```
+
+Pagination a client can rely on, on a real customer's order history: sort on a unique key pair (`ordered_at`, then `_id`) and fetch the next page by "after the last row I saw" instead of `skip`. It stays fast on page 500 (an index seek, where `skip` walks and discards every earlier row) and doesn't repeat or miss rows when new orders arrive between page loads.
+
+```js
+const page1 = db.orders.find({ "customer._id": 917 }, { ordered_at: 1, total: 1 })
+  .sort({ ordered_at: -1, _id: -1 }).limit(3).toArray();
+const last = page1[page1.length - 1];
+const page2 = db.orders.find(
+  { "customer._id": 917,
+    $or: [{ ordered_at: { $lt: last.ordered_at } }, { ordered_at: last.ordered_at, _id: { $lt: last._id } }] },
+  { ordered_at: 1, total: 1 }
+).sort({ ordered_at: -1, _id: -1 }).limit(3).toArray();
+({ page1, page2 })
+```
+
+Return only what the screen needs. The same "order history" row with and without a projection: the full documents carry every line item, address snapshot and status change, several times the bytes on the wire, in the driver's memory and in your JSON response.
+
+```js
+const full = db.orders.find({ "customer._id": 917 }).toArray();
+const slim = db.orders.find({ "customer._id": 917 }, { ordered_at: 1, status: 1, total: 1 }).toArray();
+({ orders: full.length, fullChars: JSON.stringify(full).length, projectedChars: JSON.stringify(slim).length })
+```
+
 ## Common mistakes
 
 - **Constructing a `MongoClient` per request handler.** The single most common real-world pymongo mistake — throws away pooling entirely, and under load can also exhaust available file descriptors/ports as each short-lived client opens and tears down its own connections. Construct once, store it (module-level, dependency-injected, or on an app/request-context object), reuse.

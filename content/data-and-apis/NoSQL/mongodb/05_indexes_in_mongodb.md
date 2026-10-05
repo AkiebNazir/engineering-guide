@@ -184,6 +184,66 @@ totalDocsExamined: 0 totalKeysExamined: 1 nReturned: 1
 
 Same result: the index alone answered the query, zero documents fetched. One Go-specific wrinkle worth naming: decoding `explain`'s nested `executionStats` sub-document into a generic `bson.M` field yields a **`bson.D`** (an ordered list of key/value pairs), not another `bson.M` — the driver's default decoding of a nested document inside a `bson.M`/`interface{}` context is `bson.D`, not recursively `bson.M`. Reading a field back out requires walking the `bson.D` (or converting it) rather than a second map index — a real, easy-to-hit surprise the first time you decode a multi-level nested command reply generically instead of into a typed struct.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser over the Query Lab's shop data (`customers`, `products`, `orders`, `reviews`). Be clear about what it can't show: the browser shell has no indexes. `createIndex` is accepted and returns the index name, but nothing is built, every query is effectively a collection scan over a few thousand documents, and `.explain()` only returns a note. Run `.explain("executionStats")` on the lab MongoDB to see `IXSCAN`, `docsExamined` and `isMultiKey`. What you *can* do here is the part of index design that happens before any index exists: look at the data and the queries.
+
+Selectivity first. Three quarters of all orders are `delivered`, so an index on `status` alone would still hand back most of the collection for the most common value. A field like `customer._id` (one customer's handful of orders) narrows far better.
+
+```js
+({
+  byStatus: db.orders.aggregate([{ $sortByCount: "$status" }]).toArray(),
+  distinctCustomers: db.orders.distinct("customer._id").length,
+  orders: db.orders.estimatedDocumentCount()
+})
+```
+
+The "my orders" page: equality on the customer, newest first. A compound index on `{ "customer._id": 1, ordered_at: -1 }` serves both the filter and the sort, so the server reads the first 5 index entries and stops, with no in-memory sort (the last common mistake below).
+
+```js
+db.orders.createIndex({ "customer._id": 1, ordered_at: -1 });
+db.orders.find({ "customer._id": 917 }, { ordered_at: 1, status: 1, total: 1 })
+  .sort({ ordered_at: -1 })
+  .limit(5)
+```
+
+Add a second equality and a range, and the order of fields in the index follows the **ESR rule**: Equality fields first, then the Sort field, then Range fields. This query wants `{ "customer._id": 1, status: 1, ordered_at: -1, total: 1 }`; putting `total` before `ordered_at` would force a sort in memory.
+
+```js
+db.orders.createIndex({ "customer._id": 1, status: 1, ordered_at: -1, total: 1 });
+db.orders.find(
+  { "customer._id": 917, status: "delivered", total: { $gte: 100 } },
+  { ordered_at: 1, total: 1 }
+).sort({ ordered_at: -1 }).limit(5)
+```
+
+A multikey index: `items` is an array, so an index on `items.product_id` gets one entry per line item, and "which orders contain product 116" becomes an index lookup instead of opening every order.
+
+```js
+db.orders.createIndex({ "items.product_id": 1 });
+db.orders.countDocuments({ "items.product_id": 116 })
+```
+
+A query shaped to be **covered** by `{ brand: 1, price: 1 }`: it filters on `brand`, sorts by `price`, and projects only those two fields with `_id` excluded, so on a real server it would report `totalDocsExamined: 0`. Add `name` to the projection and it stops being covered.
+
+```js
+db.products.createIndex({ brand: 1, price: 1 });
+db.products.find({ brand: "Sonora" }, { _id: 0, brand: 1, price: 1 }).sort({ price: 1 })
+```
+
+Before building a **unique** index, look for values that would break it. Emails are already unique (an empty list), but phone is missing on 216 customers, and a unique index treats every missing value as `null`, so `createIndex({ phone: 1 }, { unique: true })` would fail with a duplicate key on `null`. The fix is a partial index that only indexes documents that have the field: `{ unique: true, partialFilterExpression: { phone: { $exists: true } } }`.
+
+```js
+({
+  duplicateEmails: db.customers.aggregate([
+    { $group: { _id: "$email", n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }, { $limit: 3 }
+  ]).toArray(),
+  duplicatePhones: db.customers.aggregate([
+    { $group: { _id: "$phone", n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }, { $sort: { n: -1 } }, { $limit: 3 }
+  ]).toArray()
+})
+```
+
 ## Common mistakes
 
 - **Indexing every field "just in case."** Every index speeds up matching reads but slows down every write to the collection (each insert/update has to update every index too) and costs memory (indexes are ideally kept in RAM). Index for the queries you actually run, not defensively.

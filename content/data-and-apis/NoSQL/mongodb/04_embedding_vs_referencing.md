@@ -180,6 +180,91 @@ access -> emb2 : "yes"
 access:R -> ref:B : "no, B often queried alone"
 ```
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser over the Query Lab's shop data, which was modelled with exactly this chapter's decisions: an order **embeds** its line items and a snapshot of the customer, while reviews **reference** a product and a customer by id. Writes stay in this page's session, and Run on a block first runs the earlier blocks.
+
+The embedded side: one read returns the whole order, line items and customer included, with no join. This is the "read together, bounded" case.
+
+```js
+db.orders.findOne({ _id: 10002 }, { customer: 1, items: 1, total: 1, status: 1 })
+```
+
+Check that the embedded array really is bounded before trusting the design: the largest order in the store has a handful of line items, nowhere near anything that threatens the 16 MB limit.
+
+```js
+db.orders.aggregate([
+  { $project: { lines: { $size: "$items" } } },
+  { $group: { _id: null, maxLines: { $max: "$lines" }, avgLines: { $avg: "$lines" } } },
+  { $project: { _id: 0, maxLines: 1, avgLines: { $round: ["$avgLines", 2] } } }
+])
+```
+
+The referenced side: reviews per product keep growing as long as the product sells, and one product already has 200. That's the unbounded case, which is why reviews live in their own collection instead of in an array on the product.
+
+```js
+db.reviews.aggregate([
+  { $group: { _id: "$product_id", reviews: { $sum: 1 } } },
+  { $sort: { reviews: -1 } },
+  { $limit: 3 }
+])
+```
+
+The price of referencing: showing a review with its author's name takes a join. `$lookup` brings the customer in as an array (level 06 covers it properly); notice the reviewer's name is not stored on the review.
+
+```js
+db.reviews.aggregate([
+  { $match: { product_id: 107 } },
+  { $sort: { created_at: -1 } },
+  { $limit: 3 },
+  { $lookup: { from: "customers", localField: "customer_id", foreignField: "_id", as: "author" } },
+  { $project: { _id: 0, rating: 1, title: 1, author: { $arrayElemAt: ["$author.name.first", 0] } } }
+])
+```
+
+Now the chapter's worked example as data. Set up a post with the denormalized summary (`comment_count`, `recent_comments`) and the full comments in their own `comments` collection, referenced by `post_id`.
+
+```js
+db.posts.insertOne({
+  _id: "post_1", title: "Embedding vs referencing", tags: ["mongodb", "schema-design"],
+  comment_count: 2,
+  recent_comments: [{ user: "zoe", text: "Great read" }, { user: "sam", text: "Second this" }]
+});
+db.comments.insertMany([
+  { post_id: "post_1", user: "zoe", text: "Great read", at: ISODate("2026-03-01T10:00:00Z") },
+  { post_id: "post_1", user: "sam", text: "Second this", at: ISODate("2026-03-01T11:00:00Z") }
+])
+```
+
+Adding a comment is now two writes: insert the comment, and update the summary with `$inc` plus `$push` with `$slice: -2` so the preview stays at the two newest. Notice the preview dropped "zoe" and the count went to 3. Forget the second write and the summary silently drifts, the denormalization mistake below.
+
+```js
+db.comments.insertOne({ post_id: "post_1", user: "ana", text: "What about $lookup cost?", at: ISODate("2026-03-02T09:00:00Z") });
+db.posts.updateOne(
+  { _id: "post_1" },
+  { $inc: { comment_count: 1 }, $push: { recent_comments: { $each: [{ user: "ana", text: "What about $lookup cost?" }], $slice: -2 } } }
+);
+db.posts.findOne({ _id: "post_1" })
+```
+
+The post page reads only the post (one fetch, preview included). The "all comments" page pays for the reference with a `$lookup`, newest first, and can paginate inside the join's pipeline.
+
+```js
+db.posts.aggregate([
+  { $match: { _id: "post_1" } },
+  { $lookup: {
+      from: "comments", let: { pid: "$_id" },
+      pipeline: [
+        { $match: { $expr: { $eq: ["$post_id", "$$pid"] } } },
+        { $sort: { at: -1 } },
+        { $project: { _id: 0, user: 1, text: 1 } }
+      ],
+      as: "comments"
+  } },
+  { $project: { title: 1, comment_count: 1, comments: 1 } }
+])
+```
+
 ## Common mistakes
 
 - **Embedding "because it's a document database, so why not."** Embedding is a specific trade for a specific access pattern (read together, bounded growth), not the default posture. A collection of independently-queried, unbounded children belongs referenced.

@@ -172,6 +172,88 @@ items after arrayFilters: [{"sku":"mouse","qty":11} {"sku":"keyboard","qty":1}]
 
 Every result above is identical to the corresponding Python result — `arrayFilters` is a server-side feature; Go's `options.UpdateOne()` builder pattern (chainable `Set*` methods) is simply this driver's idiomatic way of expressing what pymongo passes as `array_filters=[...]`/`upsert=True` keyword arguments.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run a mongosh-like shell in your browser over the Query Lab's shop data plus any collection you create. Writes stay in this page's session, and Run on a block first runs the earlier blocks on the page, so the blocks below build on each other: run them top to bottom and watch the cart change.
+
+Create the cart from the setup above, in mongosh syntax.
+
+```js
+db.carts.insertOne({
+  _id: "cart_1", user: "njasm", views: 0, tags: ["electronics"],
+  items: [{ sku: "mouse", qty: 1 }, { sku: "cable", qty: 3 }]
+})
+```
+
+Several operators in one update, applied atomically to one document: `$set` the user, `$inc` the view counter, `$push` a new line item, and stamp the time with `$currentDate`. Notice all four changes arrive together.
+
+```js
+db.carts.updateOne(
+  { _id: "cart_1" },
+  {
+    $set: { user: "njasm786" },
+    $inc: { views: 1 },
+    $push: { items: { sku: "keyboard", qty: 1 } },
+    $currentDate: { updated_at: true }
+  }
+);
+db.carts.findOne({ _id: "cart_1" })
+```
+
+`$addToSet` vs. `$push`: run the same `$addToSet` twice. The first call adds two tags (`modifiedCount: 1`), the retry changes nothing (`modifiedCount: 0`) where a `$push` would have duplicated them.
+
+```js
+const first = db.carts.updateOne({ _id: "cart_1" }, { $addToSet: { tags: { $each: ["office", "sale"] } } });
+const retry = db.carts.updateOne({ _id: "cart_1" }, { $addToSet: { tags: { $each: ["office", "sale"] } } });
+({ first: first.modifiedCount, retry: retry.modifiedCount, tags: db.carts.findOne({ _id: "cart_1" }).tags })
+```
+
+Two ways to change one line item without rewriting the array. The positional `$` updates the first element the *query* matched; `arrayFilters` binds `$[line]` to every element matching its own condition. Notice the mouse went to 2 and the cable to 13, and the keyboard was untouched.
+
+```js
+db.carts.updateOne({ _id: "cart_1", "items.sku": "mouse" }, { $set: { "items.$.qty": 2 } });
+db.carts.updateOne(
+  { _id: "cart_1" },
+  { $inc: { "items.$[line].qty": 10 } },
+  { arrayFilters: [{ "line.sku": "cable" }] }
+);
+db.carts.findOne({ _id: "cart_1" }, { _id: 0, items: 1 })
+```
+
+`$pull` takes a condition, not just a value: drop every line with 10 or more units in one call.
+
+```js
+db.carts.updateOne({ _id: "cart_1" }, { $pull: { items: { qty: { $gte: 10 } } } });
+db.carts.findOne({ _id: "cart_1" }, { _id: 0, items: 1 })
+```
+
+A "recently viewed" list capped at 3: `$push` with `$each` and `$slice: -3` appends and trims in the same atomic update, so the array can never grow without bound (level 04's unbounded-array problem, solved at write time).
+
+```js
+db.carts.updateOne({ _id: "cart_1" }, { $push: { recent: { $each: [101, 116, 120, 107], $slice: -3 } } });
+db.carts.updateOne({ _id: "cart_1" }, { $push: { recent: { $each: [204], $slice: -3 } } });
+db.carts.findOne({ _id: "cart_1" }, { _id: 0, recent: 1 })
+```
+
+Upsert as a per-day counter: the first call inserts (notice `upsertedId` and `matchedCount: 0`), the second matches the same document and only increments, leaving `first_seen` from `$setOnInsert` alone.
+
+```js
+const day = { _id: "views:2026-10-05" };
+const a = db.daily_stats.updateOne(day, { $inc: { views: 1 }, $setOnInsert: { first_seen: ISODate("2026-10-05T08:00:00Z") } }, { upsert: true });
+const b = db.daily_stats.updateOne(day, { $inc: { views: 1 }, $setOnInsert: { first_seen: ISODate("2026-10-05T09:30:00Z") } }, { upsert: true });
+({ a, b, doc: db.daily_stats.findOne(day) })
+```
+
+On the shop data: ship an order only if it is still `placed`. Putting the current status in the filter makes the check and the write one atomic step (a second call matches nothing), and one update changes the status and appends to `status_history` together.
+
+```js
+const ship = () => db.orders.updateOne(
+  { _id: 10008, status: "placed" },
+  { $set: { status: "shipped" }, $push: { status_history: { status: "shipped", at: ISODate("2026-10-05T12:00:00Z") } } }
+);
+({ firstCall: ship(), secondCall: ship(), order: db.orders.findOne({ _id: 10008 }, { status: 1, status_history: 1 }) })
+```
+
 ## Common mistakes
 
 - **Reaching for read-then-write in application code instead of `$inc`/`$push`/`$addToSet`.** Every one of these operators exists specifically to make a read-modify-write atomic on the server. If you find yourself calling `find_one` immediately before a `$set` that only depends on the value you just read, there's almost always an atomic operator that does the same thing without the race.
