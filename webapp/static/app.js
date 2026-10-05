@@ -44,74 +44,49 @@ const activeId = () =>
   mode === 'stdlib' ? (curStdlib && curStdlib.recId) : (cur && cur.id);
 
 /* --------------------------------------------------------------- utils -- */
-const IS_STATIC = location.protocol === 'file:' || 
-                  location.hostname.endsWith('.github.io') || 
-                  !location.hostname.match(/^(localhost|127\.0\.0\.1)$/);
+/* Two ways to run this client:
+     local server  `make app` — server.py answers /api/*, runs code, saves progress.json
+     static build  `make build` — dist/ on any static host (GitHub Pages, Netlify, S3, nginx…).
+                   build_static.py pre-renders every GET /api/* answer to dist/data/, and
+                   dist/config.js sets EG_STATIC. Progress is kept in this browser's
+                   localStorage; running code needs the local server. */
+const IS_STATIC = window.EG_STATIC === true;
 
-const apiToStatic = (path) => {
-  if (!path.startsWith('/api/')) return path;
-  let base = path.split('?')[0].substring(5); // remove /api/
-  let search = path.includes('?') ? path.substring(path.indexOf('?') + 1) : '';
-  let params = new URLSearchParams(search);
-  
-  if (base === 'bootstrap') return './data/bootstrap.json';
-  if (base === 'dsa-map') return './data/dsa-map.json';
-  if (base === 'dsa-guides') return `./data/dsa-guides-${params.get('lang') || 'py'}.json`;
-  if (base === 'system-design-guide') return './data/system-design-guide.json';
-  if (base === 'sd') return './data/sd.json';
-  if (base === 'roadmap') return './data/roadmap.json';
-  if (base === 'library-guides') return './data/library-guides.json';
-  if (base === 'apis') return './data/apis.json';
-  if (base === 'api-types') return './data/api-types.json';
-  if (base === 'agentic-ai') return './data/agentic-ai.json';
-  if (base === 'cs-fundamentals') return './data/cs-fundamentals.json';
-  if (base === 'google-behavioral') return './data/google-behavioral.json';
-  if (base === 'sql') return './data/sql.json';
-  if (base === 'nosql') return './data/nosql.json';
-  if (base === 'software-design') return './data/software-design.json';
-  
-  if (base === 'track') return `./data/track-${params.get('m')}.json`;
-  if (base === 'stdlib') return `./data/stdlib-${params.get('lang') || 'py'}.json`;
-  
-  if (base === 'roadmap-doc') return `./data/docs/roadmap/${params.get('id')}.json`;
-  if (base === 'library-guide-doc') return `./data/docs/library-guides/${params.get('id')}.json`;
-  if (base === 'agentic-ai-doc') return `./data/docs/agentic-ai/${params.get('id')}.json`;
-  if (base === 'sd-doc') return `./data/docs/sd/${params.get('id').replace(/\//g, '_')}.json`;
-  if (base === 'cs-fundamentals-doc') return `./data/docs/cs-fundamentals/${params.get('id')}.json`;
-  if (base === 'google-behavioral-doc') return `./data/docs/google-behavioral/${params.get('id')}.json`;
-  if (base === 'sql-doc') return `./data/docs/sql/${params.get('id')}.json`;
-  if (base === 'nosql-doc') return `./data/docs/nosql/${params.get('id').replace(/\//g, '_')}.json`;
-  if (base === 'software-design-doc') return `./data/docs/software-design/${params.get('id')}.json`;
-  
-  if (base === 'track-doc') return `./data/docs/track-${params.get('m')}/${params.get('id')}.json`;
-  if (base === 'dsa-guide-doc') return `./data/docs/dsa-guide-doc/${params.get('id')}_${params.get('lang') || 'py'}.json`;
-  if (base === 'guide') return `./data/docs/guide/${params.get('topic')}_${params.get('lang') || 'py'}.json`;
-  
-  if (base === 'problem') return `./data/docs/problems/${params.get('topic')}_${params.get('seq')}_${params.get('kind') || 'question'}_${params.get('lang') || 'py'}.json`;
-  if (base === 'eng-problem') return `./data/docs/eng/${params.get('lang') || 'go'}_${params.get('topic')}_${params.get('kind') || 'explanation'}.json`;
-  
-  if (base === 'apis-doc') return `./data/docs/apis/${params.get('id').replace(/\//g, '_')}.json`;
-  if (base === 'api-type') return `./data/docs/api-type/${params.get('type')}.json`;
-  if (base === 'api-file') return `./data/docs/api-file/${params.get('type')}_${params.get('section') || 'Foundation'}_${params.get('level')}_${params.get('lang') || 'py'}.json`;
-  
-  if (base === 'stdlib-doc') return `./data/docs/stdlib-doc/${params.get('lang') || 'py'}_${params.get('id')}.json`;
-  if (base === 'stdlib-file') return `./data/docs/stdlib-file/${params.get('lang') || 'py'}_${params.get('pkg')}_${params.get('level')}.json`;
-  
-  if (base === 'state') return './data/state.json';
-  
-  return path;
+/* /api/<name>?<query> → ./data/<name>[/<key>].json. The key is the query with its
+   parameters sorted, escaped to file-name-safe characters (A-Z a-z 0-9 - _ . and ~XX
+   for every other UTF-8 byte). build_static.py's static_data_path() is the twin of
+   this; the two must stay identical. */
+const staticKeyEscape = s => [...new TextEncoder().encode(s)].map(b =>
+  /[A-Za-z0-9\-_.]/.test(String.fromCharCode(b)) && b < 128
+    ? String.fromCharCode(b) : '~' + b.toString(16).toUpperCase().padStart(2, '0')).join('');
+const staticDataPath = path => {
+  const u = new URL(path, 'http://static.invalid');
+  const params = [...u.searchParams].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const key = params.map(([k, v]) => `${k}=${v}`).join('&');
+  return `./data/${u.pathname.replace(/^\/api\//, '')}${key ? '/' + staticKeyEscape(key) : ''}.json`;
+};
+
+/* Static build: progress lives in localStorage, updated with the same merge rules
+   as server.py's POST /api/patch, so the app code is identical in both modes. */
+const LOCAL_STATE_KEY = 'eg-progress-v1';
+let localState = null;
+const saveLocalState = () => {
+  try { localStorage.setItem(LOCAL_STATE_KEY, JSON.stringify(localState)); } catch (e) { /* private mode / quota */ }
+};
+const loadLocalState = defaults => {           // mirrors server.py load_state(): defaults, then saved keys on top
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LOCAL_STATE_KEY)); } catch (e) { /* none or unreadable */ }
+  return Object.assign(defaults, saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {});
 };
 
 const api = async (path, opts) => {
-  const url = IS_STATIC ? apiToStatic(path) : path;
+  const url = IS_STATIC ? staticDataPath(path) : path;
   const r = await fetch(url, opts);
   if (!r.ok) throw new Error(`${url} → ${r.status}`);
-  let json = await r.json();
+  const json = await r.json();
   if (IS_STATIC && path === '/api/bootstrap') {
-    try {
-      const localState = JSON.parse(localStorage.getItem('dsa-state'));
-      if (localState) json.state = localState;
-    } catch(e) {}
+    localState = loadLocalState(json.state);
+    json.state = JSON.parse(JSON.stringify(localState));   // the app mutates DATA.state itself
   }
   return json;
 };
@@ -120,30 +95,32 @@ const serverPost = (path, body) =>
   api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body) });
 
+const NEEDS_SERVER = 'Running code needs the local server: clone the repo and run `make app`.';
 const staticPost = async (path, body) => {
-  if (path === '/api/patch' || path === '/api/state') {
-    if (path === '/api/state') {
-      localStorage.setItem('dsa-state', JSON.stringify(body));
-    } else if (path === '/api/patch') {
-      let state = {};
-      try { state = JSON.parse(localStorage.getItem('dsa-state') || '{}'); } catch(e) {}
-      for (const [key, val] of Object.entries(body)) {
-        if (Array.isArray(val) && val.length === 2 && val[0] === "$push") {
-          if (!state[key]) state[key] = [];
-          if (!state[key].includes(val[1])) state[key].push(val[1]);
-        } else if (Array.isArray(val) && val.length === 2 && val[0] === "$pull") {
-          if (state[key]) state[key] = state[key].filter(x => x !== val[1]);
-        } else if (Array.isArray(val) && val.length === 2 && val[0] === "$add") {
-          state[key] = (state[key] || 0) + val[1];
-        } else {
-          state[key] = val;
-        }
-      }
-      localStorage.setItem('dsa-state', JSON.stringify(state));
-    }
-    return {status: "ok"};
+  if (path === '/api/state') {
+    localState = body;
+    saveLocalState();
+    return { ok: true };
   }
-  return {ok: false, exitCode: 1, stdout: "", stderr: "Code execution requires the local Python server.\nRun `make app` to use this feature.", ms: 0};
+  if (path === '/api/patch') {                 // same rules as server.py do_POST /api/patch
+    if (!localState) return { ok: false };
+    if (body.id) {
+      localState.problems[body.id] = Object.assign(localState.problems[body.id] || {}, body.patch || {});
+    }
+    if ('settings' in body) Object.assign(localState.settings, body.settings);
+    if (body.doc) {
+      localState.docs ??= {};
+      localState.docs[body.doc] = Object.assign(localState.docs[body.doc] || {}, body.docPatch || {});
+    }
+    if ('session' in body) {
+      const day = body.session.date;
+      localState.sessions[day] = (localState.sessions[day] || 0) + body.session.seconds;
+    }
+    saveLocalState();
+    return { ok: true };
+  }
+  // /api/run, /api/eng-run, /api/stdlib-run, /api/api-run, /api/format
+  return { ok: false, exitCode: 1, stdout: '', stderr: NEEDS_SERVER, error: NEEDS_SERVER, ms: 0 };
 };
 
 const post = IS_STATIC ? staticPost : serverPost;
@@ -1670,9 +1647,11 @@ function wireUI() {
   window.addEventListener('hashchange', route);
   window.addEventListener('beforeunload', () => {
     const id = activeId();
-    if (id) { navigator.sendBeacon?.('/api/patch', new Blob(
-      [JSON.stringify({ id, patch: { drafts: { ...rec(id).drafts, [curLang]: getCode() },
-        timeSpent: timer.sec } })], { type: 'application/json' })); }
+    if (!id) return;
+    const body = { id, patch: { drafts: { ...rec(id).drafts, [curLang]: getCode() }, timeSpent: timer.sec } };
+    // static build: staticPost writes localStorage synchronously, before the page goes
+    if (IS_STATIC) staticPost('/api/patch', body);
+    else navigator.sendBeacon?.('/api/patch', new Blob([JSON.stringify(body)], { type: 'application/json' }));
   });
 
   document.onkeydown = e => {
@@ -1708,7 +1687,9 @@ function wireUI() {
   } catch (e) {
     document.body.innerHTML =
       `<div class="empty" style="padding-top:120px"><div class="empty-icon">⚠</div>
-       <h3>Cannot reach the server</h3><p>Start it with <code>python webapp/server.py</code>.</p></div>`;
+       ${IS_STATIC
+         ? '<h3>Cannot load the guide</h3><p>The site data did not load. Reload the page to try again.</p>'
+         : '<h3>Cannot reach the server</h3><p>Start it with <code>python webapp/server.py</code>.</p>'}</div>`;
     return;
   }
   // The bootstrap fetch can resolve while the parser is still running the scripts

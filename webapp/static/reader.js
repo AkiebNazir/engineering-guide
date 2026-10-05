@@ -13,7 +13,7 @@
    ========================================================================= */
 'use strict';
 
-const CDN = '/vendor';   // local copies of the libraries, so reading works offline
+const CDN = './vendor';   // local copies of the libraries, so reading works offline
 
 let curModule = null;      // 'sd' | 'swd' | 'roadmap' | 'library' | 'agentic' | 'go' | 'py' | … | null
 let curDoc = null;         // { mod, id, key, item } while the reader is open

@@ -1638,6 +1638,159 @@ def format_go(code: str) -> dict:
 
 
 # ----------------------------------------------------------------------------
+# GET routes
+# ----------------------------------------------------------------------------
+def _reply(obj, code: int = 200) -> tuple[object, int]:
+    return obj, code
+
+
+def api_get(p: str, q: dict[str, list[str]]) -> tuple[object, int] | None:
+    """Answer GET /api/*: (JSON payload, HTTP status), or None if `p` is not an API route.
+
+    The HTTP handler below and the static-site builder (build_static.py) both call
+    this, so a deployed static build serves exactly what the local server does.
+    """
+    if p == "/api/bootstrap":
+        problems = load_curriculum()
+        with _state_lock:
+            state = load_state()
+        return _reply({
+            "problems": problems,
+            "topics": load_topics(problems),
+            "engTopics": {
+                "go": load_eng_curriculum("go"),
+                "py": load_eng_curriculum("py"),
+                "lld": load_eng_curriculum("lld"),
+            },
+            "state": state,
+            "runtimes": {"python": True, "go": go_bin() is not None},
+            "root": str(ROOT),
+        })
+    elif p == "/api/eng-problem":
+        r = read_eng_problem(q.get("lang", ["go"])[0], q.get("topic", [""])[0],
+                              q.get("kind", ["explanation"])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/problem":
+        r = read_problem(q.get("topic", [""])[0], q.get("seq", [""])[0],
+                         q.get("kind", ["question"])[0],
+                         q.get("lang", ["py"])[0])
+        return _reply(r if r else {"error": "unknown problem"},
+                      200 if r else 404)
+    elif p == "/api/guide":
+        return _reply(read_guide(q.get("topic", [""])[0],
+                                 q.get("lang", ["py"])[0]))
+    elif p == "/api/dsa-map":
+        return _reply(load_dsa_map())
+    elif p == "/api/dsa-guides":
+        return _reply({"items": load_dsa_guides(q.get("lang", ["py"])[0])})
+    elif p == "/api/dsa-guide-doc":
+        return _reply(read_dsa_guide(q.get("id", [""])[0], q.get("lang", ["py"])[0]))
+    elif p == "/api/system-design-guide":
+        if SYSTEM_DESIGN_GUIDE.exists():
+            # The in-app reader starts with the active curriculum, then
+            # continues into the full reference and its first paired drill.
+            # Files remain separate on disk so a learner can solve a prompt
+            # before opening its solution.
+            parts = []
+            building_blocks_dir = SYSTEM_DESIGN / "building_blocks"
+            for path in (
+                SYSTEM_DESIGN / "README.md",
+                *sorted(building_blocks_dir.glob("*.md")),
+                SYSTEM_DESIGN / "02_problem_catalog.md",
+                SYSTEM_DESIGN / "problems" / "001_url_shortener_question.md",
+                SYSTEM_DESIGN / "solutions" / "001_url_shortener_solution.md",
+                SYSTEM_DESIGN / "03_practice_prompts.md",
+                SYSTEM_DESIGN / "04_practice_answers.md",
+                SYSTEM_DESIGN / "05_architecture_blueprints.md",
+                SYSTEM_DESIGN / "solutions" / "009_search_and_autocomplete_solution.md",
+                SYSTEM_DESIGN / "solutions" / "002_rate_limiter_solution.md",
+                SYSTEM_DESIGN / "solutions" / "003_pastebin_solution.md",
+                SYSTEM_DESIGN / "solutions" / "004_notification_platform_solution.md",
+                SYSTEM_DESIGN / "solutions" / "005_photo_pipeline_solution.md",
+                SYSTEM_DESIGN / "solutions" / "006_chat_solution.md",
+                SYSTEM_DESIGN_GUIDE,
+            ):
+                if path.exists():
+                    parts.append(path.read_text())
+            return _reply({"exists": True, "markdown": "\n\n---\n\n".join(parts)})
+        else:
+            return _reply({"exists": False, "markdown": ""}, 404)
+    elif p == "/api/sd":
+        return _reply({"items": load_system_design()})
+    elif p == "/api/sd-doc":
+        return _reply(read_system_design(q.get("id", [""])[0]))
+    elif p == "/api/roadmap":
+        return _reply({"items": load_roadmap()})
+    elif p == "/api/roadmap-doc":
+        return _reply(read_markdown(safe_md(ROADMAP_DIR, q.get("id", [""])[0])))
+    elif p == "/api/library-guides":
+        return _reply({"items": load_library_guides()})
+    elif p == "/api/library-guide-doc":
+        return _reply(read_markdown(safe_md(LIBRARY_GUIDES_DIR, q.get("id", [""])[0])))
+    elif p == "/api/apis":
+        return _reply({"items": load_api()})
+    elif p == "/api/apis-doc":
+        # The ID is now something like "REST/REST_API_Guide"
+        req_id = q.get("id", [""])[0]
+        if req_id:
+            return _reply(read_markdown(API_DIR / f"{req_id}.md"))
+        else:
+            return _reply({"content": "Not found", "title": "Not Found"})
+    elif p == "/api/api-types":
+        return _reply({"items": load_api_types()})
+    elif p == "/api/api-type":
+        r = load_api_type(q.get("type", [""])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/api-file":
+        r = read_api_file(q.get("type", [""])[0], q.get("section", ["Foundation"])[0],
+                           q.get("level", [""])[0], q.get("lang", ["py"])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/agentic-ai":
+        return _reply({"items": load_agentic_ai()})
+    elif p == "/api/agentic-ai-doc":
+        return _reply(read_markdown(safe_md(AGENTIC_AI_DIR, q.get("id", [""])[0])))
+    elif p == "/api/track":
+        return _reply({"items": load_track(q.get("m", [""])[0])})
+    elif p == "/api/track-doc":
+        base = TRACK_DIRS.get(q.get("m", [""])[0])
+        path = safe_md(base, q.get("id", [""])[0]) if base else None
+        return _reply(read_markdown(path) if path else {"exists": False, "markdown": ""})
+    elif p == "/api/cs-fundamentals":
+        return _reply({"items": load_cs_fundamentals()})
+    elif p == "/api/cs-fundamentals-doc":
+        return _reply(read_markdown(safe_md(CS_FUNDAMENTALS_DIR, q.get("id", [""])[0])))
+    elif p == "/api/google-behavioral":
+        return _reply({"items": load_google_behavioral()})
+    elif p == "/api/google-behavioral-doc":
+        return _reply(read_markdown(safe_md(GOOGLE_BEHAVIORAL_DIR, q.get("id", [""])[0])))
+    elif p == "/api/sql":
+        return _reply({"items": load_sql()})
+    elif p == "/api/sql-doc":
+        return _reply(read_sql(q.get("id", [""])[0]))
+    elif p == "/api/nosql":
+        return _reply({"items": load_nosql()})
+    elif p == "/api/nosql-doc":
+        return _reply(read_nosql(q.get("id", [""])[0]))
+    elif p == "/api/stdlib":
+        return _reply({"items": load_stdlib(stdlib_lang(q.get("lang", ["py"])[0]))})
+    elif p == "/api/stdlib-doc":
+        return _reply(stdlib_guide(stdlib_lang(q.get("lang", ["py"])[0]),
+                                   q.get("id", [""])[0]))
+    elif p == "/api/stdlib-file":
+        return _reply(read_stdlib_file(stdlib_lang(q.get("lang", ["py"])[0]),
+                                       q.get("pkg", [""])[0], q.get("level", [""])[0]))
+    elif p == "/api/software-design":
+        return _reply({"items": load_software_design()})
+    elif p == "/api/software-design-doc":
+        return _reply(read_markdown(safe_md(SOFTWARE_DESIGN_DIR, q.get("id", [""])[0])))
+    elif p == "/api/state":
+        with _state_lock:
+            return _reply(load_state())
+
+    return None
+
+
+# ----------------------------------------------------------------------------
 # HTTP handler
 # ----------------------------------------------------------------------------
 class Handler(BaseHTTPRequestHandler):
@@ -1690,147 +1843,11 @@ class Handler(BaseHTTPRequestHandler):
     # -- routes -------------------------------------------------------------
     def do_GET(self) -> None:
         u = urlparse(self.path)
-        q = parse_qs(u.query)
-        p = u.path
-
-        if p == "/api/bootstrap":
-            problems = load_curriculum()
-            with _state_lock:
-                state = load_state()
-            self._json({
-                "problems": problems,
-                "topics": load_topics(problems),
-                "engTopics": {
-                    "go": load_eng_curriculum("go"),
-                    "py": load_eng_curriculum("py"),
-                    "lld": load_eng_curriculum("lld"),
-                },
-                "state": state,
-                "runtimes": {"python": True, "go": go_bin() is not None},
-                "root": str(ROOT),
-            })
-        elif p == "/api/eng-problem":
-            r = read_eng_problem(q.get("lang", ["go"])[0], q.get("topic", [""])[0],
-                                  q.get("kind", ["explanation"])[0])
-            self._json(r, 200 if r["exists"] else 404)
-        elif p == "/api/problem":
-            r = read_problem(q.get("topic", [""])[0], q.get("seq", [""])[0],
-                             q.get("kind", ["question"])[0],
-                             q.get("lang", ["py"])[0])
-            self._json(r if r else {"error": "unknown problem"},
-                       200 if r else 404)
-        elif p == "/api/guide":
-            self._json(read_guide(q.get("topic", [""])[0],
-                                  q.get("lang", ["py"])[0]))
-        elif p == "/api/dsa-map":
-            self._json(load_dsa_map())
-        elif p == "/api/dsa-guides":
-            self._json({"items": load_dsa_guides(q.get("lang", ["py"])[0])})
-        elif p == "/api/dsa-guide-doc":
-            self._json(read_dsa_guide(q.get("id", [""])[0], q.get("lang", ["py"])[0]))
-        elif p == "/api/system-design-guide":
-            if SYSTEM_DESIGN_GUIDE.exists():
-                # The in-app reader starts with the active curriculum, then
-                # continues into the full reference and its first paired drill.
-                # Files remain separate on disk so a learner can solve a prompt
-                # before opening its solution.
-                parts = []
-                building_blocks_dir = SYSTEM_DESIGN / "building_blocks"
-                for path in (
-                    SYSTEM_DESIGN / "README.md",
-                    *sorted(building_blocks_dir.glob("*.md")),
-                    SYSTEM_DESIGN / "02_problem_catalog.md",
-                    SYSTEM_DESIGN / "problems" / "001_url_shortener_question.md",
-                    SYSTEM_DESIGN / "solutions" / "001_url_shortener_solution.md",
-                    SYSTEM_DESIGN / "03_practice_prompts.md",
-                    SYSTEM_DESIGN / "04_practice_answers.md",
-                    SYSTEM_DESIGN / "05_architecture_blueprints.md",
-                    SYSTEM_DESIGN / "solutions" / "009_search_and_autocomplete_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "002_rate_limiter_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "003_pastebin_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "004_notification_platform_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "005_photo_pipeline_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "006_chat_solution.md",
-                    SYSTEM_DESIGN_GUIDE,
-                ):
-                    if path.exists():
-                        parts.append(path.read_text())
-                self._json({"exists": True, "markdown": "\n\n---\n\n".join(parts)})
-            else:
-                self._json({"exists": False, "markdown": ""}, 404)
-        elif p == "/api/sd":
-            self._json({"items": load_system_design()})
-        elif p == "/api/sd-doc":
-            self._json(read_system_design(q.get("id", [""])[0]))
-        elif p == "/api/roadmap":
-            self._json({"items": load_roadmap()})
-        elif p == "/api/roadmap-doc":
-            self._json(read_markdown(safe_md(ROADMAP_DIR, q.get("id", [""])[0])))
-        elif p == "/api/library-guides":
-            self._json({"items": load_library_guides()})
-        elif p == "/api/library-guide-doc":
-            self._json(read_markdown(safe_md(LIBRARY_GUIDES_DIR, q.get("id", [""])[0])))
-        elif p == "/api/apis":
-            self._json({"items": load_api()})
-        elif p == "/api/apis-doc":
-            # The ID is now something like "REST/REST_API_Guide"
-            req_id = q.get("id", [""])[0]
-            if req_id:
-                self._json(read_markdown(API_DIR / f"{req_id}.md"))
-            else:
-                self._json({"content": "Not found", "title": "Not Found"})
-        elif p == "/api/api-types":
-            self._json({"items": load_api_types()})
-        elif p == "/api/api-type":
-            r = load_api_type(q.get("type", [""])[0])
-            self._json(r, 200 if r["exists"] else 404)
-        elif p == "/api/api-file":
-            r = read_api_file(q.get("type", [""])[0], q.get("section", ["Foundation"])[0],
-                               q.get("level", [""])[0], q.get("lang", ["py"])[0])
-            self._json(r, 200 if r["exists"] else 404)
-        elif p == "/api/agentic-ai":
-            self._json({"items": load_agentic_ai()})
-        elif p == "/api/agentic-ai-doc":
-            self._json(read_markdown(safe_md(AGENTIC_AI_DIR, q.get("id", [""])[0])))
-        elif p == "/api/track":
-            self._json({"items": load_track(q.get("m", [""])[0])})
-        elif p == "/api/track-doc":
-            base = TRACK_DIRS.get(q.get("m", [""])[0])
-            path = safe_md(base, q.get("id", [""])[0]) if base else None
-            self._json(read_markdown(path) if path else {"exists": False, "markdown": ""})
-        elif p == "/api/cs-fundamentals":
-            self._json({"items": load_cs_fundamentals()})
-        elif p == "/api/cs-fundamentals-doc":
-            self._json(read_markdown(safe_md(CS_FUNDAMENTALS_DIR, q.get("id", [""])[0])))
-        elif p == "/api/google-behavioral":
-            self._json({"items": load_google_behavioral()})
-        elif p == "/api/google-behavioral-doc":
-            self._json(read_markdown(safe_md(GOOGLE_BEHAVIORAL_DIR, q.get("id", [""])[0])))
-        elif p == "/api/sql":
-            self._json({"items": load_sql()})
-        elif p == "/api/sql-doc":
-            self._json(read_sql(q.get("id", [""])[0]))
-        elif p == "/api/nosql":
-            self._json({"items": load_nosql()})
-        elif p == "/api/nosql-doc":
-            self._json(read_nosql(q.get("id", [""])[0]))
-        elif p == "/api/stdlib":
-            self._json({"items": load_stdlib(stdlib_lang(q.get("lang", ["py"])[0]))})
-        elif p == "/api/stdlib-doc":
-            self._json(stdlib_guide(stdlib_lang(q.get("lang", ["py"])[0]),
-                                    q.get("id", [""])[0]))
-        elif p == "/api/stdlib-file":
-            self._json(read_stdlib_file(stdlib_lang(q.get("lang", ["py"])[0]),
-                                        q.get("pkg", [""])[0], q.get("level", [""])[0]))
-        elif p == "/api/software-design":
-            self._json({"items": load_software_design()})
-        elif p == "/api/software-design-doc":
-            self._json(read_markdown(safe_md(SOFTWARE_DESIGN_DIR, q.get("id", [""])[0])))
-        elif p == "/api/state":
-            with _state_lock:
-                self._json(load_state())
+        reply = api_get(u.path, parse_qs(u.query))
+        if reply is None:
+            self._static(u.path)
         else:
-            self._static(p)
+            self._json(*reply)
 
     def do_POST(self) -> None:
         p = urlparse(self.path).path

@@ -1,194 +1,178 @@
 #!/usr/bin/env python3
+"""Build the static site: a self-contained folder any static host can serve.
+
+    python3 webapp/build_static.py              # → dist/
+    python3 webapp/build_static.py --out DIR    # → DIR/
+
+The output is the app's front end (webapp/static/) plus every GET /api/* answer
+the client asks for, pre-rendered to data/*.json. Answers come from server.py's
+own api_get(), so the static site shows exactly what the local server shows.
+Nothing in it needs a server: deploy the folder to GitHub Pages, Netlify,
+Cloudflare Pages, Vercel, S3 + CloudFront, nginx, … as is.
+
+What the static site cannot do (it has no backend): run code, and save progress
+to webapp/data/progress.json. Progress is kept in the visitor's browser instead.
+
+Standard library only; Python 3.10+.
+"""
+from __future__ import annotations
+
+import argparse
 import json
-import os
+import shutil
 import sys
 from pathlib import Path
+from urllib.parse import parse_qs, urlencode, urlparse
 
-# Add webapp directory to path so we can import server.py
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import server
+import server  # noqa: E402  (needs the path above)
 
-STATIC_DATA_DIR = server.STATIC / "data"
+DEFAULT_OUT = server.ROOT / "dist"
+SAFE = frozenset(b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.")
 
-def write_json(rel_path: str, data: dict | list) -> None:
-    p = STATIC_DATA_DIR / rel_path
-    p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("w") as f:
-        json.dump(data, f, separators=(',', ':'))
 
-def build_static():
-    print("Building static API data...")
-    STATIC_DATA_DIR.mkdir(parents=True, exist_ok=True)
+def static_key_escape(s: str) -> str:
+    """File-name-safe form of a query: A-Z a-z 0-9 - _ . kept, every other UTF-8 byte → ~XX."""
+    return "".join(chr(b) if b in SAFE else f"~{b:02X}" for b in s.encode())
 
-    # /api/bootstrap
+
+def static_data_path(url: str) -> str:
+    """/api/<name>?<query> → data/<name>[/<key>].json — twin of staticDataPath() in static/app.js."""
+    u = urlparse(url)
+    params = sorted(((k, v) for k, vs in parse_qs(u.query, keep_blank_values=True).items() for v in vs),
+                    key=lambda kv: kv[0])
+    key = "&".join(f"{k}={v}" for k, v in params)
+    name = u.path.removeprefix("/api/")
+    return f"data/{name}{'/' + static_key_escape(key) if key else ''}.json"
+
+
+def api_url(path: str, **params: str) -> str:
+    return f"{path}?{urlencode(params)}" if params else path
+
+
+def client_requests() -> list[str]:
+    """Every GET /api/* request the client can make, written the way the client writes it.
+
+    Keep in step with the api(...) calls in static/*.js: app.js (problems, eng
+    topics), reader.js (MODULES list/doc pairs), dsa-learn.js, api-practice.js,
+    stdlib-practice.js, roadmap.js.
+    """
+    urls = ["/api/bootstrap", "/api/dsa-map"]
+
+    # DSA problems (app.js): question + solution tabs, both languages
     problems = server.load_curriculum()
-    write_json("bootstrap.json", {
-        "problems": problems,
-        "topics": server.load_topics(problems),
-        "engTopics": {
-            "go": server.load_eng_curriculum("go"),
-            "py": server.load_eng_curriculum("py"),
-            "lld": server.load_eng_curriculum("lld"),
-        },
-        "state": server.default_state(),
-        "runtimes": {"python": False, "go": False},
-        "root": "",
-    })
-
-    # /api/dsa-map
-    write_json("dsa-map.json", server.load_dsa_map())
-
-    # /api/dsa-guides
-    write_json("dsa-guides-py.json", {"items": server.load_dsa_guides("py")})
-    write_json("dsa-guides-go.json", {"items": server.load_dsa_guides("go")})
-
-    # /api/system-design-guide
-    if server.SYSTEM_DESIGN_GUIDE.exists():
-        parts = []
-        building_blocks_dir = server.SYSTEM_DESIGN / "building_blocks"
-        for path in (
-            server.SYSTEM_DESIGN / "README.md",
-            *sorted(building_blocks_dir.glob("*.md")),
-            server.SYSTEM_DESIGN / "02_problem_catalog.md",
-            server.SYSTEM_DESIGN / "problems" / "001_url_shortener_question.md",
-            server.SYSTEM_DESIGN / "solutions" / "001_url_shortener_solution.md",
-            server.SYSTEM_DESIGN / "03_practice_prompts.md",
-            server.SYSTEM_DESIGN / "04_practice_answers.md",
-            server.SYSTEM_DESIGN / "05_architecture_blueprints.md",
-            server.SYSTEM_DESIGN / "solutions" / "009_search_and_autocomplete_solution.md",
-            server.SYSTEM_DESIGN / "solutions" / "002_rate_limiter_solution.md",
-            server.SYSTEM_DESIGN / "solutions" / "003_pastebin_solution.md",
-            server.SYSTEM_DESIGN / "solutions" / "004_notification_platform_solution.md",
-            server.SYSTEM_DESIGN / "solutions" / "005_photo_pipeline_solution.md",
-            server.SYSTEM_DESIGN / "solutions" / "006_chat_solution.md",
-            server.SYSTEM_DESIGN_GUIDE,
-        ):
-            if path.exists():
-                parts.append(path.read_text())
-        write_json("system-design-guide.json", {"exists": True, "markdown": "\n\n---\n\n".join(parts)})
-    else:
-        write_json("system-design-guide.json", {"exists": False, "markdown": ""})
-
-    # /api/sd
-    sd_items = server.load_system_design()
-    write_json("sd.json", {"items": sd_items})
-    for item in sd_items:
-        write_json(f"docs/sd/{item['id'].replace('/', '_')}.json", server.read_system_design(item['id']))
-
-    # /api/roadmap
-    roadmap_items = server.load_roadmap()
-    write_json("roadmap.json", {"items": roadmap_items})
-    for item in roadmap_items:
-        if item['id'] != 'README':
-            write_json(f"docs/roadmap/{item['id']}.json", server.read_markdown(server.safe_md(server.ROADMAP_DIR, item['id'])))
-
-    # /api/library-guides
-    lib_guides = server.load_library_guides()
-    write_json("library-guides.json", {"items": lib_guides})
-    for item in lib_guides:
-        write_json(f"docs/library-guides/{item['id']}.json", server.read_markdown(server.safe_md(server.LIBRARY_GUIDES_DIR, item['id'])))
-    
-    # /api/apis
-    apis_items = server.load_api()
-    write_json("apis.json", {"items": apis_items})
-    for item in apis_items:
-        write_json(f"docs/apis/{item['id'].replace('/', '_')}.json", server.read_markdown(server.API_DIR / f"{item['id']}.md"))
-    
-    # /api/api-types
-    api_types = server.load_api_types()
-    write_json("api-types.json", {"items": api_types})
-    for item in api_types:
-        t = item['id']
-        write_json(f"docs/api-type/{t}.json", server.load_api_type(t))
-        for section in ["Foundation", "labs"]:
-            for level in server.api_ladder(t, section):
-                for lang in ["py", "go"]:
-                    if level["has"].get(lang):
-                        write_json(f"docs/api-file/{t}_{section}_{level['id']}_{lang}.json", server.read_api_file(t, section, level["id"], lang))
-    
-    # /api/agentic-ai
-    agentic_items = server.load_agentic_ai()
-    write_json("agentic-ai.json", {"items": agentic_items})
-    for item in agentic_items:
-        write_json(f"docs/agentic-ai/{item['id']}.json", server.read_markdown(server.safe_md(server.AGENTIC_AI_DIR, item['id'])))
-
-    # /api/track
-    for track in server.TRACK_DIRS:
-        items = server.load_track(track)
-        write_json(f"track-{track}.json", {"items": items})
-        for item in items:
-            write_json(f"docs/track-{track}/{item['id']}.json", server.read_markdown(server.safe_md(server.TRACK_DIRS[track], item['id'])))
-
-    # /api/cs-fundamentals
-    cs_items = server.load_cs_fundamentals()
-    write_json("cs-fundamentals.json", {"items": cs_items})
-    for item in cs_items:
-        write_json(f"docs/cs-fundamentals/{item['id']}.json", server.read_markdown(server.safe_md(server.CS_FUNDAMENTALS_DIR, item['id'])))
-        
-    # /api/google-behavioral
-    gb_items = server.load_google_behavioral()
-    write_json("google-behavioral.json", {"items": gb_items})
-    for item in gb_items:
-        write_json(f"docs/google-behavioral/{item['id']}.json", server.read_markdown(server.safe_md(server.GOOGLE_BEHAVIORAL_DIR, item['id'])))
-        
-    # /api/sql
-    sql_items = server.load_sql()
-    write_json("sql.json", {"items": sql_items})
-    for item in sql_items:
-        write_json(f"docs/sql/{item['id']}.json", server.read_sql(item['id']))
-        
-    # /api/nosql
-    nosql_items = server.load_nosql()
-    write_json("nosql.json", {"items": nosql_items})
-    for item in nosql_items:
-        write_json(f"docs/nosql/{item['id'].replace('/', '_')}.json", server.read_nosql(item['id']))
-        
-    # /api/stdlib
-    for lang in ["py", "go"]:
-        stdlib_items = server.load_stdlib(lang)
-        write_json(f"stdlib-{lang}.json", {"items": stdlib_items})
-        for item in stdlib_items:
-            pkg = item["id"]
-            write_json(f"docs/stdlib-doc/{lang}_{pkg}.json", server.stdlib_guide(lang, pkg))
-            for level in item.get("levels", []):
-                write_json(f"docs/stdlib-file/{lang}_{pkg}_{level['id']}.json", server.read_stdlib_file(lang, pkg, level["id"]))
-                
-    # /api/software-design
-    sd2_items = server.load_software_design()
-    write_json("software-design.json", {"items": sd2_items})
-    for item in sd2_items:
-        if item.get("kind") == "doc":
-            write_json(f"docs/software-design/{item['id']}.json", server.read_markdown(server.safe_md(server.SOFTWARE_DESIGN_DIR, item['id'])))
-
-    # Iterating over problems for /api/problem and /api/eng-problem
     for p in problems:
-        for lang in ["py", "go"]:
-            for kind in ["question", "solution"]:
-                res = server.read_problem(p['topic'], p['seq'], kind, lang)
-                if not res:
-                    res = {"exists": False, "doc": "", "code": "", "path": ""}
-                write_json(f"docs/problems/{p['topic']}_{p['seq']}_{kind}_{lang}.json", res)
-                
-    # /api/guide and /api/dsa-guide-doc
-    topics = server.load_topics(problems)
-    for topic in topics:
-        for lang in ["py", "go"]:
-            write_json(f"docs/guide/{topic['id']}_{lang}.json", server.read_guide(topic['id'], lang))
-            write_json(f"docs/dsa-guide-doc/{topic['id']}_{lang}.json", server.read_dsa_guide(topic['id'], lang))
-            
-    # /api/eng-problem
-    for lang in ["go", "py", "lld"]:
-        eng_items = server.load_eng_curriculum(lang)
-        for item in eng_items:
-            topic_id = item['id']
-            for kind in ["explanation", "solution", "test"]:
-                write_json(f"docs/eng/{lang}_{topic_id}_{kind}.json", server.read_eng_problem(lang, topic_id, kind))
-                
-    # /api/state
-    write_json("state.json", server.default_state())
+        for kind in ("question", "solution"):
+            for lang in ("py", "go"):
+                urls.append(api_url("/api/problem", topic=p["topic"], seq=p["seq"], kind=kind, lang=lang))
 
-    print("Static build complete.")
+    # Go / Py Engineering and Software Design LLD workspaces (app.js engTabs)
+    for lang in ("go", "py", "lld"):
+        kinds = ("explanation", "solution") if lang == "lld" else ("explanation", "solution", "test")
+        for t in server.load_eng_curriculum(lang):
+            for kind in kinds:
+                urls.append(api_url("/api/eng-problem", lang=lang, topic=t["id"], kind=kind))
+
+    # Reading modules (reader.js MODULES): one list call, then one doc call per item
+    modules = [("/api/sd", "/api/sd-doc", {}),
+               ("/api/software-design", "/api/software-design-doc", {}),
+               ("/api/roadmap", "/api/roadmap-doc", {}),
+               ("/api/library-guides", "/api/library-guide-doc", {}),
+               ("/api/agentic-ai", "/api/agentic-ai-doc", {}),
+               ("/api/apis", "/api/apis-doc", {}),
+               ("/api/cs-fundamentals", "/api/cs-fundamentals-doc", {}),
+               ("/api/google-behavioral", "/api/google-behavioral-doc", {}),
+               ("/api/sql", "/api/sql-doc", {}),
+               ("/api/nosql", "/api/nosql-doc", {})]
+    modules += [("/api/track", "/api/track-doc", {"m": m}) for m in server.TRACK_DIRS]
+    modules += [("/api/dsa-guides", "/api/dsa-guide-doc", {"lang": lang}) for lang in ("py", "go")]
+    for list_path, doc_path, extra in modules:
+        urls.append(api_url(list_path, **extra))
+        reply = server.api_get(list_path, {k: [v] for k, v in extra.items()})
+        for item in reply[0]["items"]:
+            urls.append(api_url(doc_path, **extra, id=item["id"]))
+
+    # Standard-library modules (stdlib-practice.js)
+    for lang in ("py", "go"):
+        urls.append(api_url("/api/stdlib", lang=lang))
+        for pkg in server.load_stdlib(lang):
+            urls.append(api_url("/api/stdlib-doc", lang=lang, id=pkg["id"]))
+            for level in pkg.get("levels", []):
+                urls.append(api_url("/api/stdlib-file", lang=lang, pkg=pkg["id"], level=level["id"]))
+
+    # API practice ladders (api-practice.js)
+    urls.append("/api/api-types")
+    for t in server.load_api_types():
+        urls.append(api_url("/api/api-type", type=t["id"]))
+        for section in ("Foundation", "labs"):
+            for level in server.api_ladder(t["id"], section):
+                for lang in ("py", "go"):
+                    if level["has"].get(lang):
+                        urls.append(api_url("/api/api-file", type=t["id"], section=section,
+                                            level=level["id"], lang=lang))
+    return list(dict.fromkeys(urls))       # de-duplicated, order kept
+
+
+def build(out: Path) -> None:
+    out, static = out.resolve(), server.STATIC.resolve()
+    if server.ROOT.resolve().is_relative_to(out) or static.is_relative_to(out) or out.is_relative_to(static):
+        sys.exit(f"Refusing to build into {out}: it would delete or overwrite source files.")
+    print(f"Building static site → {out}")
+    if out.exists():
+        shutil.rmtree(out)
+    junk = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store")
+
+    def ignore(folder: str, names: list[str]) -> set[str]:
+        skip = set(junk(folder, names))
+        if Path(folder).resolve() == static:
+            skip.add("data")           # leftovers of older builds, which wrote into static/data/
+        return skip
+
+    shutil.copytree(server.STATIC, out, ignore=ignore)
+
+    # Switch the client to static mode (see static/config.js).
+    (out / "config.js").write_text(
+        "/* Generated by webapp/build_static.py: this is a static build. */\nwindow.EG_STATIC = true;\n")
+    # GitHub Pages: serve files as they are (no Jekyll processing).
+    (out / ".nojekyll").write_text("")
+
+    written, skipped, seen = 0, [], {}
+    for url in client_requests():
+        u = urlparse(url)
+        status_payload = server.api_get(u.path, parse_qs(u.query, keep_blank_values=True))
+        assert status_payload is not None, f"not an API route: {url}"
+        payload, status = status_payload
+        if status != 200:
+            # The local server answers 404 here too; the static host will do the same.
+            skipped.append(url)
+            continue
+        if u.path == "/api/bootstrap":
+            # Ship a clean slate, not the local progress.json; no code runner online.
+            payload = {**payload, "state": server.default_state(),
+                       "runtimes": {"python": False, "go": False}, "root": ""}
+        rel = static_data_path(url)
+        if rel in seen:
+            sys.exit(f"Static path collision: {url} and {seen[rel]} → {rel}")
+        seen[rel] = url
+        if len(Path(rel).name) > 200:
+            sys.exit(f"Static file name too long for some hosts: {rel}")
+        dest = out / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(json.dumps(payload, separators=(",", ":")))
+        written += 1
+
+    size = sum(f.stat().st_size for f in out.rglob("*") if f.is_file())
+    print(f"  {written} data files written, {len(skipped)} skipped (the server answers 404 for them too)")
+    print(f"  {size / 1e6:.1f} MB total")
+    print(f"Done. Preview it with:  python3 -m http.server -d {out} 8000   (or: make preview)")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--out", type=Path, default=DEFAULT_OUT, help=f"output folder (default: {DEFAULT_OUT})")
+    build(ap.parse_args().out)
+
 
 if __name__ == "__main__":
-    build_static()
+    main()
