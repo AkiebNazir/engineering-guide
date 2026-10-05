@@ -11,6 +11,10 @@ DSA_PORT=9000 python3 webapp/server.py   # any other port
 ```
 
 No `pip install`, no `npm install`, no build step — the server is Python stdlib only.
+
+To publish it, `make build` writes a static copy to `dist/` (no server needed: code
+running is off and progress is kept in the browser). See
+[Running and Deploying the Guide](../docs/DEPLOYMENT.md).
 Every library and font the pages use is served from `webapp/static/vendor/`, so the
 app works with no internet connection at all (see the root `README.md`, section 6, for
 what else to install before going offline).
@@ -108,9 +112,12 @@ Reading state lives in `progress.json` under `docs`.
 
 ```
 webapp/
-  server.py            stdlib HTTP server: files, execution, persistence
+  server.py            stdlib HTTP server: files, execution, persistence; api_get() answers every GET /api/*
+  build_static.py      static build (`make build` → dist/): the front end + every api_get() answer as JSON
+  scripts/             dev checks (validate_*.mjs/js, arch_tool.mjs); `npm ci` here first
   static/
     index.html         structure
+    config.js          EG_STATIC = false here; true in a static build (app.js then reads ./data/)
     styles.css         design system (dark + light, all tokenised)
                        — editor is VS Code Dark Modern / Light Modern
     app.js             router, editor, timer, review scheduling

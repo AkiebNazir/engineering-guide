@@ -257,3 +257,19 @@ Two older planning documents remain for reference: [Google Interview Master Stud
 (a 12-week plan that maps Google's four scoring attributes to files) and
 [MAANG/FAANG DSA Master Plan](master_dsa_plan.md) (the DSA schedule, pattern table and retention
 system). Where they disagree with this page about order, follow this page.
+
+---
+
+## 8. Running it, publishing it, and where things live
+
+- **On your machine:** `make app` runs the full app: everything above, including running
+  your code and saving progress to `webapp/data/progress.json`.
+- **Online:** the same app builds into a static site (`make build` → `dist/`) that any
+  host can serve; `.github/workflows/deploy.yaml` publishes it to GitHub Pages on every
+  push to `main`. Every page, guide, visualizer and lab works there; progress is kept in
+  the browser, and running code needs the local app.
+  [Running and Deploying the Guide](docs/DEPLOYMENT.md) covers GitHub Pages, other static
+  hosts and containers.
+- **Layout:** the module folders listed in this page are the curriculum; `webapp/` is the
+  app (`server.py`, `build_static.py`, `static/`), `tools/` holds the curriculum tooling,
+  `deploy/` the container setup, and `make help` lists every command.

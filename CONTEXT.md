@@ -51,6 +51,10 @@ GoDSA/<topic>/        same 28 topics; every one has a `_TOPIC_GUIDE.md` (24 Sep 
 
 webapp/               local web app (see §8)
   server.py  static/{index.html,styles.css,app.js}  data/progress.json
+  build_static.py     `make build` → dist/: static site for GitHub Pages / any host (docs/DEPLOYMENT.md)
+  scripts/            dev checks: validate_viz_player.js, validate_api_labs.mjs, validate_mermaid.mjs, arch_tool.mjs
+deploy/               Dockerfile + nginx.conf (static site in a container)
+docs/DEPLOYMENT.md    running locally vs the static build; GitHub Pages, other hosts, containers
 
 API/<Type>/            REST/GraphQL/Protobuf/gRPC/WebSockets/Webhooks/SOAP + Gateway/ + Observability/ —
                       Theory.md, Foundation/ 00-13 ladder (py+go), labs/ (per-type counts in API/README.md)
