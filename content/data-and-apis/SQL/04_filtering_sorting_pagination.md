@@ -48,8 +48,15 @@ conditions with `AND`/`OR`/`NOT`, and remember `AND` binds tighter than `OR` —
 mixed conditions in parentheses:
 
 ```sql
+SELECT id, kind, payload
+FROM events
 WHERE kind = 'purchase' AND (payload LIKE 'a%' OR payload LIKE 'b%')
+ORDER BY id
+LIMIT 5;
 ```
+
+Drop the parentheses and the `OR` binds last, so you'd get every purchase starting
+with `a` *plus* every event of any kind starting with `b` — a classic silent bug.
 
 Other operators worth knowing immediately: `IN (...)` for "matches any of these
 values," `BETWEEN a AND b` for an inclusive range, `IS NULL`/`IS NOT NULL` (never
@@ -74,12 +81,12 @@ The obvious way to paginate is to ask for successive slices:
 ```sql
 -- "page 1" (rows 1-20)
 SELECT id, kind FROM events ORDER BY id LIMIT 20 OFFSET 0;
--- "page 2501" (rows 50,001-50,020)
-SELECT id, kind FROM events ORDER BY id LIMIT 20 OFFSET 50000;
+-- "page 50" (rows 981-1,000)
+SELECT id, kind FROM events ORDER BY id LIMIT 20 OFFSET 980;
 ```
 
-The problem: Postgres can't skip straight to row 50,001 of a sorted result. It has
-to walk the index (or scan the table) counting off and discarding the first 50,000
+The problem: Postgres can't skip straight to row 981 of a sorted result. It has
+to walk the index (or scan the table) counting off and discarding the first 980
 matching rows before it can return your 20. The further into the table you page, the
 more rows get thrown away just to find your starting point — cost grows linearly
 with the offset.
@@ -211,6 +218,8 @@ with psycopg.connect("postgresql://dsa:dsa@localhost:5544/dsa") as conn:
   repeat rows when multiple rows share the same cursor value.
 - **Forgetting `ORDER BY` entirely** and assuming "insertion order" — as level 03
   noted, a table has no guaranteed order without one.
+
+Practise on realistic data: the warm-up questions in the [SQL Query Lab](lab/questions.md).
 
 ## What's next
 

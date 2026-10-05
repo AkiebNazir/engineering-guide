@@ -18,11 +18,24 @@ add is the ability to make **several** statements atomic together — critical t
 moment "transfer $50 from account A to account B" needs to debit one row and credit
 another as a single, indivisible operation.
 
+The examples on this page use a two-row `accounts` table; create it first:
+
+```sql
+DROP TABLE IF EXISTS accounts;
+CREATE TABLE accounts (
+    id      INT PRIMARY KEY,
+    balance NUMERIC NOT NULL CHECK (balance >= 0)
+);
+INSERT INTO accounts VALUES (1, 100), (2, 100);
+```
+
 ```sql
 BEGIN;
 UPDATE accounts SET balance = balance - 50 WHERE id = 1;
 UPDATE accounts SET balance = balance + 50 WHERE id = 2;
 COMMIT;   -- or ROLLBACK to undo both if something went wrong
+
+SELECT id, balance FROM accounts ORDER BY id;
 ```
 
 ```arch
@@ -348,6 +361,53 @@ actually prevents the anomaly you care about:
 4. **`REPEATABLE READ`/`SERIALIZABLE`**, when the logic genuinely needs a consistent
    view across multiple statements and multiple rows (write skew territory) — at the
    cost of needing retry logic for the `SerializationFailure`s this demo just showed.
+
+## Try it in the browser
+
+The in-browser Postgres is a single session, so it can't reproduce the two-connection
+races above, but it shows atomicity directly. These continue from the `accounts`
+table created at the top of the page (balances 50 and 150 after the transfer).
+
+`ROLLBACK` throws away everything since `BEGIN`. Inside the transaction account 1 is at
+0; after the rollback the final `SELECT` shows it back at 50:
+
+```sql
+BEGIN;
+UPDATE accounts SET balance = balance - 50 WHERE id = 1;
+SELECT id, balance FROM accounts ORDER BY id;   -- 0 and 150, visible only inside this txn
+ROLLBACK;
+
+SELECT id, balance FROM accounts ORDER BY id;
+```
+
+A failing statement aborts the whole transaction. The credit to account 2 succeeds, then
+the debit would take account 1 below zero and the `CHECK` rejects it:
+
+```sql
+-- expect an error: new row for relation "accounts" violates check constraint
+BEGIN;
+UPDATE accounts SET balance = balance + 500 WHERE id = 2;
+UPDATE accounts SET balance = balance - 500 WHERE id = 1;
+COMMIT;
+```
+
+Notice that account 2 did **not** keep its +500: the half-done transfer never
+happened.
+
+```sql
+SELECT id, balance FROM accounts ORDER BY id;
+```
+
+Defense 1 from the list above, an atomic conditional update. It returns the new
+balance; change `10` to `1000` and run it again, and it returns zero rows: nothing was
+debited, and that row count is what your code checks.
+
+```sql
+UPDATE accounts
+SET balance = balance - 10
+WHERE id = 1 AND balance >= 10
+RETURNING id, balance;
+```
 
 ## Common mistakes
 

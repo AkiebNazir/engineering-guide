@@ -63,7 +63,7 @@ SELECT 'User' || i || '@Example.com',
        (ARRAY['US','UK','DE','FR','BR','IN'])[1 + i % 6]
 FROM generate_series(1, 50000) AS i;
 INSERT INTO shop_orders (customer_id, status, total_cents, created_at)
-SELECT 1 + (i::bigint * 7919) % 50000,
+SELECT 1 + (i::bigint * 7919) % (SELECT count(*) FROM shop_customers),   -- spread over every customer
        (ARRAY['paid','paid','paid','shipped','refunded'])[1 + i % 5],
        500 + (i * 37) % 20000,
        now() - (i % 525600) * interval '1 minute'
@@ -78,6 +78,12 @@ schemas.
 
 ### Turning the tools on
 
+Most of this level is server administration, so run it in `psql` against the lab
+Postgres. The in-browser Postgres behind **Run** has no `pg_stat_statements`, no server
+log and no other connections; the blocks that need those say so in a comment and show
+the error you'd get. The setup above, `pg_stat_activity`, the `EXPLAIN` and the index
+fix all run in the browser.
+
 `pg_stat_statements` and `auto_explain` ship with Postgres but are loaded as shared
 libraries at server start, so they need a config change and a restart:
 
@@ -90,6 +96,7 @@ docker restart dsa-postgres        # shared_preload_libraries only takes effect 
 ```
 
 ```sql
+-- in the browser, expect an error: the extension isn't available there
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;   -- once per database: creates the view
 SELECT pg_stat_statements_reset();                   -- start counting from zero
 ```
@@ -151,6 +158,7 @@ Postgres runs it.
 The query you'll run most often, sorted by **total** time:
 
 ```sql
+-- in the browser, expect an error: relation "pg_stat_statements" does not exist
 SELECT queryid, calls,
        round(total_exec_time::numeric, 0)  AS total_ms,
        round(mean_exec_time::numeric, 2)   AS mean_ms,
@@ -186,6 +194,7 @@ different users and different databases also split a query into several rows. Gr
 the query text when you rank, or you'll under-count exactly the queries that matter:
 
 ```sql
+-- in the browser, expect an error: relation "pg_stat_statements" does not exist
 SELECT left(regexp_replace(query, '\s+', ' ', 'g'), 48) AS query,
        sum(calls) AS calls,
        round(sum(total_exec_time)::numeric, 0) AS total_ms,
@@ -258,6 +267,8 @@ This setting logs every statement that takes longer than a threshold, with its d
 and bind parameters:
 
 ```sql
+-- in the browser, expect an error: Run sends a block as one transaction, and ALTER SYSTEM
+-- can't run inside one (psql sends each statement on its own)
 ALTER SYSTEM SET log_min_duration_statement = '250ms';   -- -1 disables; 0 logs everything
 SELECT pg_reload_conf();                                  -- no restart needed
 ```
@@ -298,6 +309,7 @@ parameters differ. `auto_explain` writes the **plan of the actual slow execution
 the log:
 
 ```sql
+-- in the browser, expect an error: ALTER SYSTEM can't run inside the one transaction a Run uses
 ALTER SYSTEM SET auto_explain.log_min_duration = '250ms';  -- -1 (default) = off
 ALTER SYSTEM SET auto_explain.log_analyze = on;            -- actual rows, like EXPLAIN ANALYZE
 ALTER SYSTEM SET auto_explain.log_buffers = on;            -- Buffers: lines
@@ -351,6 +363,7 @@ needs to update the same row; and a report running `pg_sleep(5)` to stand in for
 query. Two seconds in:
 
 ```sql
+-- in the browser this returns no rows: your session is the only one, and it's excluded
 SELECT pid, application_name AS app, state,
        wait_event_type || ':' || wait_event AS waiting_on,
        now() - xact_start  AS xact_age,
@@ -400,9 +413,12 @@ no running statement), so terminate is the tool.
 And preventing it, with timeouts that belong in every production role's settings:
 
 ```sql
+CREATE ROLE app_user LOGIN;   -- your application's role; skip this line if it exists
 ALTER ROLE app_user SET statement_timeout = '5s';                     -- no query runs forever
 ALTER ROLE app_user SET lock_timeout = '2s';                          -- fail fast instead of queueing on a lock
 ALTER ROLE app_user SET idle_in_transaction_session_timeout = '60s';  -- kill forgotten transactions
+
+SELECT rolname, rolconfig FROM pg_roles WHERE rolname = 'app_user';
 ```
 
 Two more cumulative views are worth one query each. `pg_stat_user_tables` counts
@@ -412,12 +428,14 @@ with `idx_scan = 0`, which cost write time and disk for nothing (check replicas 
 dropping one: the counters are per server).
 
 ```sql
-SELECT relname, seq_scan, seq_tup_read, idx_scan
-FROM pg_stat_user_tables ORDER BY seq_tup_read DESC LIMIT 5;
-
+-- unused indexes (empty for now: so far there are only primary keys, which are unique)
 SELECT s.relname, s.indexrelname, s.idx_scan, pg_size_pretty(pg_relation_size(s.indexrelid))
 FROM pg_stat_user_indexes s JOIN pg_index i ON i.indexrelid = s.indexrelid
 WHERE NOT i.indisunique ORDER BY s.idx_scan, pg_relation_size(s.indexrelid) DESC;
+
+-- tables read mostly by sequential scans
+SELECT relname, seq_scan, seq_tup_read, idx_scan
+FROM pg_stat_user_tables ORDER BY seq_tup_read DESC LIMIT 5;
 ```
 
 ## Reading `EXPLAIN (ANALYZE, BUFFERS)` like you mean it
@@ -440,12 +458,12 @@ means an index is missing or not usable.
 
 ```sql
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT id FROM shop_customers WHERE lower(email) = 'user4242@example.com';
+SELECT id FROM shop_customers WHERE lower(email) = 'user777@example.com';
 ```
 
 ```text
  Seq Scan on shop_customers  (cost=0.00..1208.00 rows=250 width=8) (actual time=1.503..15.038 rows=1 loops=1)
-   Filter: (lower(email) = 'user4242@example.com'::text)
+   Filter: (lower(email) = 'user777@example.com'::text)
    Rows Removed by Filter: 49999
    Buffers: shared hit=458
  Planning Time: 0.128 ms
@@ -517,11 +535,28 @@ they build (it takes longer and can't run inside a transaction; if it fails it l
 `INVALID` index you must drop and retry):
 
 ```sql
+-- in the browser, expect an error: Run sends a block as one transaction, and CONCURRENTLY
+-- refuses to run inside one (psql sends each statement on its own)
 CREATE INDEX CONCURRENTLY shop_orders_customer_created
     ON shop_orders (customer_id, created_at DESC);          -- filter AND sort order
 CREATE INDEX CONCURRENTLY shop_customers_lower_email
     ON shop_customers (lower(email));                       -- matches the query's expression
 ANALYZE shop_customers, shop_orders;
+```
+
+In the browser there are no other writers to block, so build the same two indexes the
+plain way and look at the recent-orders plan:
+
+```sql
+CREATE INDEX IF NOT EXISTS shop_orders_customer_created
+    ON shop_orders (customer_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS shop_customers_lower_email
+    ON shop_customers (lower(email));
+ANALYZE shop_customers, shop_orders;
+
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, status, total_cents, created_at FROM shop_orders
+WHERE customer_id = 777 ORDER BY created_at DESC LIMIT 10;
 ```
 
 The composite index serves both the `WHERE customer_id = $1` and the

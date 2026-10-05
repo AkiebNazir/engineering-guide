@@ -179,6 +179,101 @@ the same `-1` sentinel level 01 already covers is exactly the trap this repo's "
 not asserted" rule exists to catch — print the raw value before writing logic against
 it, don't assume the client library normalized it into something more intuitive.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page (the `INCR` block at the top has one too) run an in-browser
+Redis loaded with the Query Lab seed, which includes real-looking counters
+(`pageviews:<page>`), sessions, and daily-activity bitmaps (all listed in
+[the datasets README](../lab/datasets/README.md)). Writes stay in this page's session.
+
+`INCR` on a key that doesn't exist starts from `0`, so a brand-new counter needs no `SET`
+first. On an existing counter it's the atomic read-add-write that the Python race above
+gets wrong.
+
+```redis
+INCR lab02:signups:2025-10-05       # -> 1 (the key didn't exist)
+INCR lab02:signups:2025-10-05       # -> 2
+INCRBY pageviews:pricing 25         # -> 40236 (the seed had 40211)
+DECRBY pageviews:pricing 5          # -> 40231
+```
+
+The value is still a string: `GET` returns the number as a bulk string, and `MGET` reads
+several counters in one round trip. `INCRBYFLOAT` does the same atomic trick for decimals.
+
+```redis
+GET pageviews:pricing                               # -> "40231"
+MGET pageviews:home pageviews:docs pageviews:nope    # -> "184213", "77120", (nil)
+SET lab02:wallet 10.50                              # -> OK
+INCRBYFLOAT lab02:wallet 0.25                       # -> "10.75"
+```
+
+The "INCR fails on non-numeric strings" mistake, for real. This block is meant to show an
+error, and the value is left untouched.
+
+```redis
+SET lab02:name alice        # -> OK
+INCR lab02:name             # ERROR: ERR value is not an integer or out of range
+GET lab02:name              # -> "alice"
+```
+
+A value and its expiry in one command, and the legacy `SETEX` form with its reversed
+argument order (seconds *before* the value).
+
+```redis
+SET lab02:sess session-data EX 3    # -> OK
+TTL lab02:sess                      # -> 3
+SETEX lab02:sess2 3 session-data    # -> OK
+TTL lab02:sess2                     # -> 3
+```
+
+The sliding-session pattern with `GETEX`: read the value and push its expiry forward in
+the same call, then `PERSIST` (or `GETEX ... PERSIST`) to remove the expiry entirely.
+
+```redis
+SET lab02:sess session-data         # -> OK
+GETEX lab02:sess EX 2               # -> "session-data"
+TTL lab02:sess                      # -> 2
+GETEX lab02:sess PERSIST            # -> "session-data"
+TTL lab02:sess                      # -> -1
+```
+
+`SETNX` (or `SET ... NX`) writes only if the key doesn't exist yet, so exactly one of many
+racing clients wins. It's the primitive behind level 08's locks. `SET ... GET` swaps in a
+new value and hands back the old one, atomically.
+
+```redis
+SETNX lab02:first-buyer customer:3              # -> 1 (won)
+SETNX lab02:first-buyer customer:9              # -> 0 (someone was first)
+GET lab02:first-buyer                           # -> "customer:3"
+SET lab02:first-buyer customer:9 GET            # -> "customer:3" (and now it's customer:9)
+```
+
+A string is just bytes, so you can append to it and read a slice of it. `GETRANGE` takes
+inclusive byte offsets, and negative offsets count from the end.
+
+```redis
+SET lab02:log "2025-10-05 checkout ok"     # -> OK
+GETRANGE lab02:log 0 9                     # -> "2025-10-05"
+APPEND lab02:log "; email sent"            # -> 34 (the new length)
+GETRANGE lab02:log -10 -1                  # -> "email sent"
+STRLEN lab02:log                           # -> 34
+```
+
+Strings are also bit arrays. The seed's `dau:<date>` keys set bit *n* when user *n* was
+active that day, so `BITCOUNT` is "daily active users" in one command, and `BITOP AND`
+across two days finds users active on both. `PFADD`/`PFCOUNT` (HyperLogLog, also a
+string underneath) estimates unique visitors in at most 12 KB per key, however many there
+are, within about 0.81% (at this size the estimate is exact).
+
+```redis
+GETBIT dau:2025-09-01 9                                     # -> 1: user 9 was active
+BITCOUNT dau:2025-09-01                                     # -> 63 active users that day
+BITOP AND lab02:active-both dau:2025-09-01 dau:2025-09-02   # -> 101 (bytes in the result)
+BITCOUNT lab02:active-both                                  # -> 29 users active on both days
+PFCOUNT uniques:2025-09-01                                  # -> 63 unique visitors that day
+PFCOUNT uniques:2025-09-01 uniques:2025-09-02               # -> 111 unique across both days
+```
+
 ## Common mistakes
 
 - **Using `GET`+increment-in-app-code instead of `INCR`.** If you ever find yourself doing

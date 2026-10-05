@@ -19,6 +19,36 @@ and for how long — a lock held for milliseconds is invisible; the same lock he
 the seconds a full-table rewrite takes can queue up every other query against that
 table behind it.
 
+## Setup used for this level
+
+The examples alter two tables from earlier levels: a small `accounts` table (level 09)
+and level 10's 300,000-row `accounts_big`. Recreate them if you're starting here:
+
+```sql
+DROP TABLE IF EXISTS accounts;
+CREATE TABLE accounts (
+    id      INT PRIMARY KEY,
+    balance NUMERIC NOT NULL CHECK (balance >= 0)
+);
+INSERT INTO accounts VALUES (1, 100), (2, 100);
+
+DROP TABLE IF EXISTS accounts_big;
+CREATE TABLE accounts_big (
+    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    email      TEXT NOT NULL,
+    country    TEXT NOT NULL,
+    status     TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+INSERT INTO accounts_big (email, country, status)
+SELECT
+    'user' || i || '@example.com',
+    (ARRAY['US','UK','DE','FR','BR','IN'])[1 + floor(random()*6)::int],
+    (ARRAY['active','suspended','closed'])[1 + floor(random()*3)::int]
+FROM generate_series(1, 300000) AS i;
+ANALYZE accounts_big;
+```
+
 ## Up/down migration scripts
 
 A minimal versioned migration, in the shape most migration tools (Alembic, Flyway,
@@ -69,6 +99,9 @@ rewrite the entire table:
 
 ```sql
 ALTER TABLE accounts_big ADD COLUMN signup_token UUID NOT NULL DEFAULT gen_random_uuid();
+
+-- every existing row got its own value: that is the rewrite
+SELECT id, plan_tier, signup_token FROM accounts_big ORDER BY id LIMIT 3;
 ```
 
 Measured on the same table:

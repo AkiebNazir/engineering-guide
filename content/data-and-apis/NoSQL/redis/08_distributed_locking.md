@@ -213,6 +213,84 @@ where "this happened exactly once" is a hard business invariant. In those cases:
 Redis locking is a good, cheap tool for "reduce the odds of two workers stepping on each
 other" when a rare miss is tolerable. It's the wrong tool when a miss is a P0 incident.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed
+(keys listed in [the datasets README](../lab/datasets/README.md)). It doesn't run Lua, so
+`EVAL` and the release script above need the real lab Redis. The safe release below uses
+the other atomic tool from level 07, `WATCH` + `MULTI`/`EXEC`, which gives the same
+compare-and-delete guarantee. You play every client in turn; the tokens stand in for the
+random UUIDs.
+
+Acquire: client A gets the lock, client B's identical attempt gets `(nil)` because the key
+already exists. The value records who holds it, and `PTTL` shows the safety-net expiry
+counting down (10 minutes here, sized for a long nightly job, and long enough to read the
+next few blocks before it runs out).
+
+```redis
+SET lock:lab08:nightly-report token-A NX PX 600000  # -> OK: A holds the lock
+SET lock:lab08:nightly-report token-B NX PX 600000  # -> (nil): B must wait or give up
+GET lock:lab08:nightly-report                       # -> "token-A"
+PTTL lock:lab08:nightly-report                      # -> 600000 or a few ms less
+```
+
+Safe release, refused: B (who never got the lock) tries to release it. It watches the key
+and reads the token; it isn't `token-B`, so B leaves the lock alone and drops the watch.
+
+```redis
+WATCH lock:lab08:nightly-report     # -> OK
+GET lock:lab08:nightly-report       # -> "token-A": not ours
+UNWATCH                             # -> OK, lock untouched
+EXISTS lock:lab08:nightly-report    # -> 1: A still holds it
+```
+
+Safe release, accepted: A does the same and the token matches, so it deletes inside
+`MULTI`/`EXEC`. If the key changed or expired between the `GET` and the `EXEC` (the lock
+timed out and someone else took it), `WATCH` would make `EXEC` return `(nil)` and delete
+nothing.
+
+```redis
+WATCH lock:lab08:nightly-report     # -> OK
+GET lock:lab08:nightly-report       # -> "token-A": ours
+MULTI                               # -> OK
+DEL lock:lab08:nightly-report       # -> QUEUED
+EXEC                                # -> 1: released
+```
+
+Why plain `DEL` is the bug. A takes the lock and stalls (a GC pause); its TTL runs out,
+simulated here with `PEXPIRE ... 0`, which deletes the key at once. B acquires the free
+lock. When A wakes up, the token check shows the lock is no longer A's, where a blind
+`DEL` would have released B's lock.
+
+```redis
+SET lock:lab08:nightly-report token-A NX PX 600000  # -> OK
+PEXPIRE lock:lab08:nightly-report 0                 # -> 1 (A's TTL ran out while A was paused)
+SET lock:lab08:nightly-report token-B NX PX 600000  # -> OK: B now holds it
+GET lock:lab08:nightly-report                       # -> "token-B": A must not DEL this
+```
+
+Extending a lock for long-running work (a renewal heartbeat) needs the same token check:
+only push the expiry forward if the lock is still yours.
+
+```redis
+WATCH lock:lab08:nightly-report     # -> OK
+GET lock:lab08:nightly-report       # -> "token-B": B's, so B may extend it
+MULTI                               # -> OK
+PEXPIRE lock:lab08:nightly-report 600000    # -> QUEUED
+EXEC                                # -> 1
+PTTL lock:lab08:nightly-report      # -> 600000 again
+```
+
+A fencing token from "When NOT to rely on Redis locking": every acquisition also takes the
+next number from a counter that only goes up, and the protected resource rejects any write
+carrying a number lower than one it has already seen. A, waking up late with token 1,
+would be refused once B has written with token 2.
+
+```redis
+INCR lab08:fence:nightly-report     # -> 1 (A's fencing token)
+INCR lab08:fence:nightly-report     # -> 2 (B's, after A's lock expired)
+```
+
 ## Common mistakes
 
 - **Releasing with plain `DEL` instead of the token-checked script.** This is the bug that

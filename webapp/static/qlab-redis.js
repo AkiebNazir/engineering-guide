@@ -4,7 +4,8 @@
    Implements the commands a learner meets in NoSQL/redis/ and in interviews:
    keys + expiry, strings and counters, hashes, lists, sets, sorted sets,
    bitmaps, HyperLogLog, geo, streams (with consumer groups), MULTI/EXEC and
-   WATCH. Replies are plain JS values and format() prints them exactly the way
+   WATCH, and PUBLISH (to no subscribers: SUBSCRIBE needs a second connection).
+   Replies are plain JS values and format() prints them exactly the way
    redis-cli does. Anything outside that set answers with a clear error that
    points to the real server (docker-compose.databases.yml).
 
@@ -233,7 +234,7 @@
 
   const arityOk = (spec, n) => (spec.min == null || n >= spec.min) && (spec.max == null || n <= spec.max) && (!spec.even || n % 2 === 0) && (!spec.odd || n % 2 === 1);
 
-  const UNSUPPORTED = new Set(['EVAL', 'EVALSHA', 'SCRIPT', 'FUNCTION', 'FCALL', 'SUBSCRIBE', 'PSUBSCRIBE', 'PUBLISH',
+  const UNSUPPORTED = new Set(['EVAL', 'EVALSHA', 'SCRIPT', 'FUNCTION', 'FCALL', 'SUBSCRIBE', 'PSUBSCRIBE', 'SSUBSCRIBE',
     'UNSUBSCRIBE', 'MONITOR', 'CLIENT', 'CONFIG', 'SAVE', 'BGSAVE', 'BGREWRITEAOF', 'REPLICAOF', 'SLAVEOF', 'CLUSTER',
     'BLPOP', 'BRPOP', 'BLMOVE', 'BZPOPMIN', 'BZPOPMAX', 'WAIT', 'OBJECT', 'MEMORY', 'SLOWLOG', 'LATENCY', 'ACL', 'AUTH',
     'SELECT', 'SWAPDB', 'MIGRATE', 'DUMP', 'RESTORE', 'SORT', 'SORT_RO']);
@@ -382,6 +383,18 @@
     return `# Server\r\nredis_version:7.2.0-lab\r\nredis_mode:standalone (in-browser MiniRedis)\r\n# Keyspace\r\ndb0:keys=${this.command(['DBSIZE'])}\r\n`;
   });
 
+  // pub/sub: a page session has no subscribers (SUBSCRIBE needs a second, long-lived
+  // connection), so PUBLISH reaches 0 clients and the message is simply dropped.
+  def('PUBLISH SPUBLISH', { min: 2, max: 2 }, () => 0);
+  def('PUBSUB', { min: 1 }, function (a) {
+    const sub = a[0].toUpperCase(), n = a.length - 1;
+    const bad = () => err(`ERR unknown subcommand or wrong number of arguments for '${a[0]}'. Try PUBSUB HELP.`);
+    if (sub === 'CHANNELS' || sub === 'SHARDCHANNELS') { if (n > 1) bad(); return []; }
+    if (sub === 'NUMSUB' || sub === 'SHARDNUMSUB') return a.slice(1).flatMap(c => [c, 0]);
+    if (sub === 'NUMPAT') { if (n) err("ERR wrong number of arguments for 'pubsub|numpat' command"); return 0; }
+    err(`ERR unknown subcommand '${a[0]}'. Try PUBSUB HELP.`);
+  });
+
   // keys
   def('DEL UNLINK', { min: 1 }, function (a) { let n = 0; for (const k of a) if (this._get(k)) { this.db.delete(k); this._touch(k); n++; } return n; });
   def('EXISTS', { min: 1 }, function (a) { return a.filter(k => this._get(k)).length; });
@@ -422,6 +435,13 @@
     return name === 'TTL' ? Math.round(ms / 1000) : ms;
   });
   def('PERSIST', { min: 1, max: 1 }, function (a) { const e = this._get(a[0]); if (!e || e.expireAt == null) return 0; e.expireAt = null; return 1; });
+  // The absolute expiry (Unix seconds / ms) that RDB and AOF store: -1 no expiry, -2 no key.
+  def('EXPIRETIME PEXPIRETIME', { min: 1, max: 1 }, function (a, name) {
+    const e = this._get(a[0]);
+    if (!e) return -2;
+    if (e.expireAt == null) return -1;
+    return name === 'EXPIRETIME' ? Math.floor(e.expireAt / 1000) : e.expireAt;
+  });
 
   // strings
   def('GET', { min: 1, max: 1 }, function (a) { return this._str(a[0]); });
@@ -973,10 +993,10 @@
   def('XREADGROUP', { min: 6 }, function (a) {
     if (a[0].toUpperCase() !== 'GROUP') err(SYNTAX);
     const group = a[1], consumer = a[2];
-    let i = 3, count = null;
+    let i = 3, count = null, noack = false;
     while (i < a.length && a[i].toUpperCase() !== 'STREAMS') {
       const o = a[i].toUpperCase();
-      if (o === 'COUNT') { count = toInt(a[i + 1]); i += 2; } else if (o === 'BLOCK') i += 2; else if (o === 'NOACK') i++; else err(SYNTAX);
+      if (o === 'COUNT') { count = toInt(a[i + 1]); i += 2; } else if (o === 'BLOCK') i += 2; else if (o === 'NOACK') { noack = true; i++; } else err(SYNTAX);
     }
     const rest = a.slice(i + 1); const half = rest.length / 2; const out = [];
     for (let j = 0; j < half; j++) {
@@ -988,17 +1008,28 @@
       if (rest[half + j] === '>') {
         es = s.entries.filter(e => idCmp(e.id, g.last) > 0);
         if (count != null) es = es.slice(0, count);
-        es.forEach(e => { g.pending.set(idStr(e.id), { consumer, deliveries: 1, at: this.now() }); });
+        if (!noack) es.forEach(e => { g.pending.set(idStr(e.id), { consumer, deliveries: 1, at: this.now() }); });
         if (es.length) g.last = es[es.length - 1].id;
       } else {
+        // History: this consumer's own pending entries after the ID. Each re-delivery
+        // counts (delivery counter +1, idle reset); a pending entry that was deleted
+        // from the stream comes back as [id, nil].
         const from = parseId(rest[half + j]);
-        es = s.entries.filter(e => idCmp(e.id, from) > 0 && g.pending.get(idStr(e.id))?.consumer === consumer);
-        if (count != null) es = es.slice(0, count);
+        let ids = [...g.pending].filter(([k, p]) => p.consumer === consumer && idCmp(parseId(k), from) > 0)
+          .map(([k]) => k).sort((x, y) => idCmp(parseId(x), parseId(y)));
+        if (count != null) ids = ids.slice(0, count);
+        out.push([rest[j], ids.map(k => {
+          const e = s.entries.find(x => idStr(x.id) === k);
+          if (!e) return [k, null];
+          const p = g.pending.get(k); p.deliveries++; p.at = this.now();
+          return entryReply(e);
+        })]);
+        continue;
       }
-      out.push([rest[j], es.map(entryReply)]);
+      if (es.length) out.push([rest[j], es.map(entryReply)]);
     }
     this._touch(rest[0]);
-    return out.some(x => x[1].length) ? out : null;
+    return out.length ? out : null;   // a history read always answers; ">" only when there is something new
   });
   def('XACK', { min: 3 }, function (a) {
     const g = streamOf(this, a[0])?.groups.get(a[1]); if (!g) return 0;
@@ -1011,12 +1042,15 @@
     const ids = [...g.pending.keys()].sort((x, y) => idCmp(parseId(x), parseId(y)));
     if (a.length === 2) {
       if (!ids.length) return [0, null, null, null];
-      const per = {}; g.pending.forEach(p => { per[p.consumer] = (per[p.consumer] || 0) + 1; });
-      return [ids.length, ids[0], ids[ids.length - 1], Object.entries(per).map(([c, n]) => [c, String(n)])];
+      const per = new Map(); g.pending.forEach(p => { per.set(p.consumer, (per.get(p.consumer) || 0) + 1); });
+      return [ids.length, ids[0], ids[ids.length - 1], [...per].sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0)).map(([c, n]) => [c, String(n)])];
     }
+    let minIdle = 0;
+    if (a[2].toUpperCase() === 'IDLE') { minIdle = toInt(a[3]); a = [a[0], a[1], ...a.slice(4)]; }
     const lo = parseId(a[2], 0), hi = parseId(a[3], Number.MAX_SAFE_INTEGER), cnt = toInt(a[4] ?? '10');
     return ids.filter(x => idCmp(parseId(x), lo) >= 0 && idCmp(parseId(x), hi) <= 0)
-      .filter(x => !a[5] || g.pending.get(x).consumer === a[5]).slice(0, cnt)
+      .filter(x => !a[5] || g.pending.get(x).consumer === a[5])
+      .filter(x => this.now() - g.pending.get(x).at >= minIdle).slice(0, cnt)
       .map(x => { const p = g.pending.get(x); return [x, p.consumer, this.now() - p.at, p.deliveries]; });
   });
   def('XCLAIM', { min: 5 }, function (a) {
@@ -1031,6 +1065,39 @@
       }
     }
     return out;
+  });
+
+  // XAUTOCLAIM key group consumer min-idle-time start [COUNT n] [JUSTID]: scan the PEL from
+  // start, take over every entry idle >= min-idle-time; reply [next cursor, claimed entries,
+  // ids that were pending but no longer exist in the stream (dropped from the PEL)].
+  def('XAUTOCLAIM', { min: 5 }, function (a) {
+    const s = streamOf(this, a[0]); const g = s?.groups.get(a[1]);
+    if (!g) err(`NOGROUP No such key '${a[0]}' or consumer group '${a[1]}'`);
+    const consumer = a[2], minIdle = Math.max(0, toInt(a[3]));
+    const excl = a[4].startsWith('(');
+    const start = parseId(excl ? a[4].slice(1) : a[4]);
+    if (excl) start[1]++;   // "(id": strictly after id
+    let count = 100, justid = false;
+    for (let i = 5; i < a.length; i++) {
+      const o = a[i].toUpperCase();
+      if (o === 'COUNT' && i + 1 < a.length) { count = toInt(a[++i]); if (count < 1) err('ERR COUNT must be > 0'); }
+      else if (o === 'JUSTID') justid = true;
+      else err(SYNTAX);
+    }
+    g.consumers.add(consumer);
+    const ids = [...g.pending.keys()].filter(k => idCmp(parseId(k), start) >= 0).sort((x, y) => idCmp(parseId(x), parseId(y)));
+    const claimed = [], deleted = [];
+    let attempts = count * 10, i = 0;
+    for (; i < ids.length && attempts > 0 && count > 0; i++, attempts--) {
+      const k = ids[i], p = g.pending.get(k);
+      const e = s.entries.find(x => idStr(x.id) === k);
+      if (!e) { g.pending.delete(k); deleted.push(k); count--; continue; }
+      if (minIdle && this.now() - p.at < minIdle) continue;
+      g.pending.set(k, { consumer, deliveries: p.deliveries + (justid ? 0 : 1), at: this.now() });
+      claimed.push(justid ? k : entryReply(e)); count--;
+    }
+    this._touch(a[0]);
+    return [i < ids.length ? ids[i] : '0-0', claimed, deleted];
   });
 
   // transactions

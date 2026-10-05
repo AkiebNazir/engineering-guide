@@ -175,6 +175,82 @@ A real use: "users who both liked post X and follow user Y" is `SINTER liked:X
 following:Y` — one command, computed server-side, instead of pulling both sets into your
 app and intersecting them in a loop.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed,
+which has all three types in realistic roles: products and carts as hashes, "recently
+viewed" lists, and follower and tag sets (see [the datasets README](../lab/datasets/README.md)).
+Writes stay in this page's session.
+
+A cached product is a hash. Read the whole object, one field, or a chosen few, without
+deserializing anything.
+
+```redis
+HGETALL product:105                         # -> name, brand, category, price, stock
+HGET product:105 price                      # -> "455.99"
+HMGET product:105 name stock nonexistent    # -> "Nimbus Phone Pro Max", "397", (nil)
+```
+
+The point of a hash: change one field atomically, in place. A sale decrements `stock` with
+`HINCRBY` (no fetch-modify-write of the whole object), and `HSET` on an existing field
+returns `0` because it updated rather than added a field.
+
+```redis
+HINCRBY product:105 stock -1        # -> 396
+HSET product:105 price 449.99       # -> 0 (field existed, value updated)
+HMGET product:105 price stock       # -> "449.99", "396"
+```
+
+A shopping cart is a hash of product to quantity. Add one more of an item, remove another,
+and count the distinct items left.
+
+```redis
+HGETALL cart:customer:2                     # -> product:157 "2", product:205 "3"
+HINCRBY cart:customer:2 product:157 1       # -> 3
+HDEL cart:customer:2 product:205            # -> 1
+HLEN cart:customer:2                        # -> 1
+```
+
+A list as a FIFO queue: push at the tail, pop from the head, so jobs come out in the order
+they went in. `LRANGE 0 -1` shows what's still waiting.
+
+```redis
+RPUSH lab03:jobs email:1 email:2 email:3    # -> 3 (the list's length)
+LPOP lab03:jobs                             # -> "email:1"
+LRANGE lab03:jobs 0 -1                      # -> "email:2", "email:3"
+```
+
+The same list used as a capped "recently viewed" feed, as the seed does it: `LPUSH` the
+newest at the head, then `LTRIM` to keep only the 5 most recent, so the list never grows.
+
+```redis
+LRANGE recent:customer:6 0 -1               # -> 5 products, newest (product:123) first
+LPUSH recent:customer:6 product:180         # -> 6
+LTRIM recent:customer:6 0 4                 # -> OK
+LRANGE recent:customer:6 0 -1               # -> product:180 first, the oldest one dropped
+```
+
+Sets ignore duplicates and answer membership in O(1). The seed indexes tags both ways
+(`tags:product:<id>` and `products:tag:<tag>`); the second kind holds product ids.
+
+```redis
+SADD products:tag:phones 105        # -> 0 (already a member)
+SISMEMBER products:tag:phones 105   # -> 1
+SISMEMBER products:tag:phones 180   # -> 0
+SCARD products:tag:phones           # -> 7
+```
+
+Set algebra, computed server-side. `following:<id>` is who a user follows: `SINTER` is
+"followed by both 2 and 3", `SDIFF` is "followed by 2 but not 3" (a "you might know"
+list), and `SINTER` on two tag sets is "Nimbus phones". The browser prints set members
+sorted as strings; real Redis promises no order at all, so read these as sets.
+
+```redis
+SINTER following:2 following:3              # -> "24", "25"
+SDIFF following:2 following:3               # -> 6, 15 and 20, in no guaranteed order
+SINTER products:tag:nimbus products:tag:phones  # -> "105", "106"
+```
+
 ## Common mistakes
 
 - **Reaching for a list when you need random access.** `LINDEX`/`LSET` at an arbitrary

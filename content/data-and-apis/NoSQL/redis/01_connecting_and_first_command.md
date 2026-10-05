@@ -172,6 +172,72 @@ mistakes" below). Also notice `TTL` comes back as an idiomatic `time.Duration`
 (`5s`, `3s`), not a bare integer of seconds — `go-redis` converts the wire protocol's
 integer into Go's native duration type for you.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page (including the one on the `SET foo bar` block above) run an
+in-browser Redis loaded with the Query Lab seed (keys listed in
+[the datasets README](../lab/datasets/README.md)), and show a `redis-cli`-style transcript.
+It's the same interactive prompt as `redis-cli -p 6390`, minus the container. Writes stay
+in this page's session.
+
+`PING` is the "is anything there?" check every client library and health probe sends
+first. `ECHO` returns its argument, quotes and all, which shows how `redis-cli` splits a
+line: spaces separate arguments unless they're inside quotes.
+
+```redis
+PING                    # -> PONG
+ECHO "hello redis"      # -> "hello redis"
+```
+
+The Python demo above, without the sleeps: set a key, read it back, read a key that was
+never set. A missing key is `(nil)`, not an error.
+
+```redis
+SET lab01:greeting "hello redis"    # -> OK
+GET lab01:greeting                  # -> "hello redis"
+GET lab01:missing                   # -> (nil)
+EXISTS lab01:greeting lab01:missing # -> 1 (how many of the keys exist)
+```
+
+Attach a countdown and read it back. `TTL` answers in seconds and `PTTL` in milliseconds,
+both counting down from the moment `EXPIRE` ran.
+
+```redis
+EXPIRE lab01:greeting 100   # -> 1 (the key exists, so the expiry was set)
+TTL lab01:greeting          # -> 100
+PTTL lab01:greeting         # -> 100000 or a few ms less
+```
+
+The `-1` vs `-2` distinction from above, side by side: a key with no expiry, and a key
+that doesn't exist (a typo, or a session that already expired).
+
+```redis
+SET lab01:permanent yes     # -> OK
+TTL lab01:permanent         # -> -1  (exists, never expires)
+TTL lab01:permanet          # -> -2  (no such key: note the typo)
+```
+
+A real login check against the seed's sessions: the session token maps to a user, and its
+TTL says how long until the user is logged out.
+
+```redis
+GET session:aaecae400acfde91    # -> "user:1"
+TTL session:aaecae400acfde91    # -> up to 3600, counting down
+GET session:not-a-real-token    # -> (nil): not logged in
+```
+
+Two ways an expiry disappears. A plain `SET` on a key replaces the value *and* drops its
+TTL (the key quietly becomes permanent), and `DEL` removes the key right away, expiry or
+not. `DEL` returns how many keys it actually removed.
+
+```redis
+SET lab01:greeting hello EX 100     # -> OK
+SET lab01:greeting hi               # -> OK
+TTL lab01:greeting                  # -> -1: the overwrite removed the expiry
+DEL lab01:greeting                  # -> 1
+DEL lab01:greeting                  # -> 0 (already gone)
+```
+
 ## Common mistakes
 
 - **Forgetting `decode_responses=True`** and then being confused why `r.get("x") == "x"`

@@ -43,6 +43,11 @@ it):
 SHOW wal_level;   -- must read 'logical' for what follows
 ```
 
+The in-browser Postgres behind **Run** is a single database with `wal_level = replica`,
+so it shows the first step and then the exact errors a misconfigured server gives you
+(the comments in steps 2 and 3 say which). Run the full demo against the lab Postgres
+to watch rows actually replicate.
+
 **1. On the "primary" (`dsa` database): expose a table via a publication.**
 
 ```sql
@@ -58,12 +63,15 @@ the `CREATE SUBSCRIPTION` statement's own still-open transaction counts as one o
 Creating the slot as its own, separate, already-committed statement avoids that:
 
 ```sql
+-- In the browser (wal_level = replica), expect an error: logical decoding requires "wal_level" >= "logical"
 SELECT pg_create_logical_replication_slot('sub_repl_demo', 'pgoutput');
 ```
 
 **3. On the "replica" (a separate `dsa_replica` database, same instance): subscribe.**
 
 ```sql
+-- Runs on the replica database. The browser has only one database, where repl_demo
+-- already exists, so expect an error there.
 CREATE TABLE repl_demo (id INT PRIMARY KEY, note TEXT NOT NULL);  -- schema not auto-created
 CREATE SUBSCRIPTION sub_repl_demo
   CONNECTION 'host=localhost port=5432 dbname=dsa user=dsa password=dsa'
@@ -99,6 +107,7 @@ immediately, and the replica caught up a few dozen milliseconds later. `pg_repli
 also exposes exactly how far behind a replica is, in bytes of un-replayed WAL:
 
 ```sql
+-- in the browser this returns no rows: step 2 could not create the slot there
 SELECT slot_name, active,
        pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), confirmed_flush_lsn)) AS lag
 FROM pg_replication_slots WHERE slot_name = 'sub_repl_demo';

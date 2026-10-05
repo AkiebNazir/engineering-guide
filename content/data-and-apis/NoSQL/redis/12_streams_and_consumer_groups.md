@@ -529,6 +529,111 @@ The practical rule of thumb:
   poisoned message blocks its partition. The Streams PEL handles that one message
   individually.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed,
+which includes `stream:orders`: the shop's last 40 orders as events, with fixed IDs, so
+the replies below are predictable (see [the datasets README](../lab/datasets/README.md)).
+Everything except blocking (`BLOCK` returns at once here) works as on the lab Redis,
+including consumer groups, the PEL and `XAUTOCLAIM`. Writes stay in this page's session.
+
+IDs first, as in the `redis-cli` transcript at the top. `*` generates a
+`<ms>-<seq>` ID from the clock, and an explicit ID at or below the last one is rejected.
+This block is meant to end with an error.
+
+```redis
+XADD lab12:cli * sensor t1 temp 21.5    # -> an ID like "1790312026718-0"
+XADD lab12:cli * sensor t1 temp 21.7    # -> a larger ID ("-1" if in the same millisecond)
+XLEN lab12:cli                          # -> 2
+XADD lab12:cli 5-0 sensor t1            # ERROR: The ID specified in XADD is equal or smaller than the target stream top item
+```
+
+The seed's order stream. Read the oldest two entries, the newest one, and a time range:
+the IDs are millisecond timestamps, so "orders between two instants" is an `XRANGE` on
+IDs (a bare number means "any sequence in that millisecond").
+
+```redis
+XLEN stream:orders                                      # -> 40
+XRANGE stream:orders - + COUNT 2                        # -> orders 14564 and 14563
+XREVRANGE stream:orders + - COUNT 1                     # -> the newest order, 14598
+XRANGE stream:orders 1767020400000 1767022920000        # -> the 3 orders in that window
+```
+
+`XREAD` is the plain fan-out read: give it the last ID you processed and it returns what
+came after. Reading removes nothing, so `XLEN` is still 40, and any number of readers can
+do this independently.
+
+```redis
+XREAD COUNT 2 STREAMS stream:orders 0                   # -> orders 14564 and 14563
+XREAD COUNT 2 STREAMS stream:orders 1767020400000-0     # -> orders 14566 and 14565: after the last ID seen
+XLEN stream:orders                                      # -> 40
+```
+
+A consumer group splits the work instead. Create `billing` at `0` (start from the
+beginning of the stream), and two workers each take three orders with `>` ("entries never
+delivered to this group"). They get different orders.
+
+```redis
+XGROUP CREATE stream:orders billing 0                               # -> OK
+XREADGROUP GROUP billing worker-a COUNT 3 STREAMS stream:orders >   # -> orders 14564, 14563, 14566
+XREADGROUP GROUP billing worker-b COUNT 3 STREAMS stream:orders >   # -> orders 14565, 14562, 14568
+```
+
+worker-a finishes and acknowledges all three; worker-b acknowledges one and "crashes".
+`XPENDING` shows the two entries still owned by worker-b: the summary, then each entry's
+owner, idle milliseconds and delivery count.
+
+```redis
+XACK stream:orders billing 1767001920000-0 1767020400000-0 1767022260000-0  # -> 3
+XACK stream:orders billing 1767022920000-0                                  # -> 1
+XPENDING stream:orders billing                                              # -> 2 pending, all worker-b's
+XPENDING stream:orders billing - + 10                                       # -> each delivered once so far
+```
+
+Recovery path 1: worker-b restarts under the same name and reads its own PEL with ID `0`
+instead of `>`. Recovery path 2: worker-c takes over whatever has been idle at least
+`min-idle-time` ms. In production that's your visibility timeout (say `60000`); it's `0`
+here so you don't have to wait. Notice the delivery count reach 3 (b's read, b's re-read,
+c's claim), and the `0-0` cursor meaning the scan is finished.
+
+```redis
+XREADGROUP GROUP billing worker-b STREAMS stream:orders 0   # -> orders 14562 and 14568 again
+XAUTOCLAIM stream:orders billing worker-c 0 0-0             # -> "0-0", both entries, (empty array)
+XPENDING stream:orders billing - + 10                       # -> owner worker-c, 3 deliveries each
+XACK stream:orders billing 1767033180000-0 1767035340000-0  # -> 2
+XPENDING stream:orders billing                              # -> 0 pending
+```
+
+Time-based retention: IDs start with a timestamp, so `XTRIM ... MINID` means "drop
+everything older than this".
+
+```redis
+XADD lab12:ttl 1000-0 n old             # -> "1000-0"
+XADD lab12:ttl 2000-0 n old2            # -> "2000-0"
+XADD lab12:ttl 5000-0 n new             # -> "5000-0"
+XTRIM lab12:ttl MINID 3000              # -> 2
+XRANGE lab12:ttl - +                    # -> only "5000-0" is left
+```
+
+The sharp edge from "Trimming doesn't care about consumer groups". Five entries are
+delivered and none acknowledged, then the stream is trimmed to 2. The PEL still lists all
+5 until `XAUTOCLAIM` finds that 3 of them no longer exist: it claims the 2 that do and
+reports the 3 trimmed IDs in its third reply. That work is lost.
+
+```redis
+XGROUP CREATE lab12:trim g $ MKSTREAM                   # -> OK
+XADD lab12:trim 1-0 n 0                                 # -> "1-0"
+XADD lab12:trim 2-0 n 1                                 # -> "2-0"
+XADD lab12:trim 3-0 n 2                                 # -> "3-0"
+XADD lab12:trim 4-0 n 3                                 # -> "4-0"
+XADD lab12:trim 5-0 n 4                                 # -> "5-0"
+XREADGROUP GROUP g w1 COUNT 5 STREAMS lab12:trim >      # -> all 5, none ACKed
+XTRIM lab12:trim MAXLEN 2                               # -> 3
+XPENDING lab12:trim g                                   # -> 5 still pending
+XAUTOCLAIM lab12:trim g w2 0 0-0                        # -> "0-0", entries 4-0 and 5-0, deleted 1-0 2-0 3-0
+XPENDING lab12:trim g                                   # -> 2
+```
+
 ## Common mistakes
 
 - **Never trimming.** An untrimmed stream is a memory leak with a delay. Put `MAXLEN ~ N`

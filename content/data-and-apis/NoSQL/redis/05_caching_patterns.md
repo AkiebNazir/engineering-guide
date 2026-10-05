@@ -180,6 +180,84 @@ Jitter is cheap and handles the common case (steady traffic). Locking is the str
 for a genuinely hot key under high concurrency, at the cost of the added complexity in
 level 08.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed,
+whose `product:<id>` hashes are a cache-aside product cache (`product:101` and `:102`
+carry a one-hour TTL; see [the datasets README](../lab/datasets/README.md)). There's no
+database behind it here, so you play the application: when a read misses, you write the
+value the "DB" would have returned. `CONFIG GET`/`CONFIG SET` for `maxmemory-policy` need
+the real lab Redis; eviction can't be shown in the browser.
+
+Cache-aside, by hand. The first read misses (`(nil)`), the app loads the row from the
+database and caches it with a TTL, and the next read is a hit.
+
+```redis
+GET lab05:product:103                                                       # -> (nil): miss
+SET lab05:product:103 '{"id": 103, "name": "Orbit Phone Lite", "price": 382.49}' EX 30
+GET lab05:product:103                                                       # -> the JSON: a hit
+TTL lab05:product:103                                                       # -> 30
+```
+
+Check which seed entries are actually a cache. Two products expire; `product:105` has no
+TTL at all, which is the first item in "Common mistakes" below: a permanent,
+silently-stale copy. `EXPIRE` fixes it.
+
+```redis
+TTL product:101         # -> up to 3600, counting down
+TTL product:105         # -> -1: never refreshes
+EXPIRE product:105 3600 # -> 1
+TTL product:105         # -> 3600
+```
+
+Invalidation on write: when the database row changes, delete the cached copy so the next
+read misses and reloads the new value. (Write-through would `SET` the new value instead.)
+
+```redis
+DEL lab05:product:103       # -> 1 (0 if its 30-second TTL already ran out)
+GET lab05:product:103       # -> (nil): the next reader reloads from the DB
+```
+
+A gotcha when refreshing a cached value: a plain `SET` replaces the TTL too, so the entry
+quietly becomes permanent. `KEEPTTL` keeps the remaining TTL, and `PERSIST` is how you'd
+remove it on purpose.
+
+```redis
+SET lab05:price:105 455.99 EX 60        # -> OK
+SET lab05:price:105 449.99              # -> OK
+TTL lab05:price:105                     # -> -1: no longer expires
+SET lab05:price:105 455.99 EX 60        # -> OK
+SET lab05:price:105 449.99 KEEPTTL      # -> OK
+TTL lab05:price:105                     # -> 60: still expires
+PERSIST lab05:price:105                 # -> 1
+TTL lab05:price:105                     # -> -1
+```
+
+TTL jitter against a stampede: entries cached in the same instant get slightly different
+TTLs (base 10 seconds plus a random 0 to 5 that the app picks), so they don't all expire
+in the same event-loop tick.
+
+```redis
+SET lab05:product:106 '{"id": 106}' EX 10     # -> OK
+SET lab05:product:107 '{"id": 107}' EX 13     # -> OK
+SET lab05:product:108 '{"id": 108}' EX 11     # -> OK
+TTL lab05:product:106                         # -> 10
+TTL lab05:product:107                         # -> 13
+TTL lab05:product:108                         # -> 11
+```
+
+The stampede lock (level 08): on a miss, only the request that wins `SET ... NX PX` rebuilds
+the entry; every other request sees `(nil)` and waits briefly or serves stale data. The
+winner caches the value and then releases the lock (plain `DEL` here for brevity; level 08
+shows why real code checks its token first).
+
+```redis
+SET lock:lab05:product:104 req-a NX PX 5000     # -> OK: request A rebuilds
+SET lock:lab05:product:104 req-b NX PX 5000     # -> (nil): request B doesn't
+SET lab05:product:104 '{"id": 104, "name": "Volt Phone Lite", "price": 275.99}' EX 30
+DEL lock:lab05:product:104                      # -> 1
+```
+
 ## Common mistakes
 
 - **No TTL at all on cache entries.** A cache-aside key with no expiry never refreshes —

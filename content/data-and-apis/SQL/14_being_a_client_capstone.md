@@ -340,6 +340,62 @@ real production service would add on top, each traceable to a level above:
   actually filters or sorts by at scale — this demo's tables are far too small to
   need one.
 
+## Try it in the browser
+
+The `TaskStore` is client code, but what it sends is plain SQL with parameters. Here
+are its statements as the server sees them: prepared once, then executed with values.
+(The timeout proof needs a real server; the in-browser Postgres can't enforce
+`statement_timeout`.)
+
+```sql
+DROP TABLE IF EXISTS tasks;
+CREATE TABLE tasks (
+    id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title TEXT NOT NULL,
+    done  BOOLEAN NOT NULL DEFAULT false
+);
+
+DEALLOCATE ALL;   -- so the block can be re-run
+PREPARE task_create(text)   AS INSERT INTO tasks (title) VALUES ($1) RETURNING id, title, done;
+PREPARE task_get(bigint)    AS SELECT id, title, done FROM tasks WHERE id = $1;
+PREPARE task_done(bigint)   AS UPDATE tasks SET done = true WHERE id = $1 RETURNING id, title, done;
+PREPARE task_delete(bigint) AS DELETE FROM tasks WHERE id = $1;
+```
+
+The first half of the run above: two creates, a mark-done, then `list()`. Notice each
+`RETURNING` write hands back the row in the same round trip.
+
+```sql
+EXECUTE task_create('write the SQL capstone');
+EXECUTE task_create('review the PR');
+EXECUTE task_done(1);
+SELECT id, title, done FROM tasks ORDER BY id;   -- store.list()
+```
+
+Delete task 2, then `get(999)`. The empty result is what the Python store turns into
+`None`:
+
+```sql
+EXECUTE task_delete(2);
+EXECUTE task_get(999);
+```
+
+A parameter is data, never SQL (level 11). This title is stored exactly as typed, and
+`tasks` is still there:
+
+```sql
+EXECUTE task_create('x''); DROP TABLE tasks; --');
+SELECT id, title, done FROM tasks ORDER BY id;
+```
+
+A data error, the kind `_run` deliberately does **not** retry: it would fail the same way
+every time.
+
+```sql
+-- expect an error: null value in column "title" violates not-null constraint
+EXECUTE task_create(NULL);
+```
+
 ## What's next
 
 Level 15 is optional: a conceptual walk through what Postgres does internally, end

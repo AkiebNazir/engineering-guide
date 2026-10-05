@@ -137,7 +137,7 @@ There is no clean insert for "a customer exists" alone.
 
 Split by functional dependency: customer facts depend on the customer, product facts
 depend on the product, and only order-specific facts (which product, how many) belong
-on the order row itself.
+on the order row itself. Same three orders as before, each fact now stored once:
 
 ```sql
 DROP TABLE IF EXISTS orders_norm, products_norm, customers_norm;
@@ -161,6 +161,14 @@ CREATE TABLE orders_norm (
     product_id  INT NOT NULL REFERENCES products_norm(product_id),
     qty         INT NOT NULL
 );
+
+INSERT INTO customers_norm VALUES
+  (1, 'Amara Okafor', 'amara@example.com', 'Lagos'),
+  (2, 'Diego Ramos',  'diego@example.com', 'Madrid');
+INSERT INTO products_norm VALUES
+  (1, 'Keyboard', 49.99), (2, 'Mouse', 19.99), (3, 'Monitor', 199.99);
+INSERT INTO orders_norm VALUES
+  (1, 1, 1, 1), (2, 1, 2, 2), (3, 2, 3, 1);
 ```
 
 All three anomalies are now structurally impossible, not just avoided by discipline:

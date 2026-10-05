@@ -193,6 +193,96 @@ window; a token bucket stores two numbers regardless of request volume) rather t
 one is "shareable" — sharing across processes is what moving the state into Redis buys
 you either way.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed
+(its `ratelimit:user:<id>:<minute>` keys are fixed-window counters; see
+[the datasets README](../lab/datasets/README.md)). It doesn't run Lua, so instead of
+`EVAL` you run the script's commands yourself, one line at a time, with the timestamps
+written out. Keep in mind that by hand they are *not* atomic: that's the gap the script, or
+`WATCH`/`MULTI`, closes.
+
+The simplest shared limiter is a fixed window: one counter per client per window (an
+hour here, so the key name ends in the hour). `INCR` counts the request, and
+`EXPIRE ... NX` (Redis 7.0+) sets the TTL only on the first request of the window, so
+later requests don't keep pushing it back.
+
+```redis
+INCR ratelimit:user:42:2025-10-05T10            # -> 1
+EXPIRE ratelimit:user:42:2025-10-05T10 3600 NX  # -> 1 (TTL set)
+INCR ratelimit:user:42:2025-10-05T10            # -> 2
+EXPIRE ratelimit:user:42:2025-10-05T10 3600 NX  # -> 0 (already has one)
+TTL ratelimit:user:42:2025-10-05T10             # -> 3600
+```
+
+The point of this level: two app servers, one Redis. Each server's request lands on the
+same key, so the count is the client's total across the fleet, not per process.
+
+```redis
+# app server A handles a request from user 42
+INCR ratelimit:user:42:2025-10-05T10  # -> 3
+# app server B handles the next one
+INCR ratelimit:user:42:2025-10-05T10  # -> 4
+```
+
+To make "count, then set the expiry" one indivisible step without Lua, wrap the pair in
+`MULTI`/`EXEC`. The app compares the first reply with the limit (say 1000 per hour).
+
+```redis
+MULTI                                           # -> OK
+INCR ratelimit:user:42:2025-10-05T10            # -> QUEUED
+EXPIRE ratelimit:user:42:2025-10-05T10 3600 NX  # -> QUEUED
+EXEC                                            # -> 5, 0: request 5 of 1000, allowed
+```
+
+Now the sliding-window log from the Lua script, step by step, with a limit of 5 per
+1000 ms. Five requests arrived between 10:16:00.100 and 10:16:00.900 (scores and members
+are Unix millisecond timestamps).
+
+```redis
+ZADD lab09:ratelimit:client-a 1759659360100 1759659360100-1  # -> 1
+ZADD lab09:ratelimit:client-a 1759659360300 1759659360300-1  # -> 1
+ZADD lab09:ratelimit:client-a 1759659360500 1759659360500-1  # -> 1
+ZADD lab09:ratelimit:client-a 1759659360700 1759659360700-1  # -> 1
+ZADD lab09:ratelimit:client-a 1759659360900 1759659360900-1  # -> 1
+```
+
+Request 6 at `now = 1759659361000`: drop everything at or before `now - 1000`, count what's
+left, and compare with the limit. Five are still inside the window, so it's denied and
+nothing is added.
+
+```redis
+ZREMRANGEBYSCORE lab09:ratelimit:client-a 0 1759659360000  # -> 0 (nothing old enough to drop)
+ZCARD lab09:ratelimit:client-a                             # -> 5: at the limit, deny
+```
+
+Request 7 arrives 400 ms later. The window has slid past the two oldest entries, so there
+is room: record this request and refresh the key's expiry so an idle client's set cleans
+itself up.
+
+```redis
+ZREMRANGEBYSCORE lab09:ratelimit:client-a 0 1759659360400    # -> 2 (the 10:16:00.100 and .300 requests)
+ZCARD lab09:ratelimit:client-a                               # -> 3: under 5, allow
+ZADD lab09:ratelimit:client-a 1759659361400 1759659361400-1  # -> 1
+PEXPIRE lab09:ratelimit:client-a 1000                        # -> 1
+ZRANGE lab09:ratelimit:client-a 0 -1 WITHSCORES              # -> the .500, .700, .900 and 01.400 requests
+```
+
+The `WATCH` version from "`MULTI`/`WATCH` as the alternative to Lua": watch the key, read
+the in-window count with `ZCOUNT` (a read, which doesn't trip our own watch), and only
+then queue the writes. If another request changed the key in between, `EXEC` returns
+`(nil)` and the app retries.
+
+```redis
+WATCH lab09:ratelimit:client-b                               # -> OK
+ZCOUNT lab09:ratelimit:client-b (1759659360500 +inf          # -> 0: under the limit
+MULTI                                                        # -> OK
+ZREMRANGEBYSCORE lab09:ratelimit:client-b 0 1759659360500    # -> QUEUED
+ZADD lab09:ratelimit:client-b 1759659361500 1759659361500-1  # -> QUEUED
+PEXPIRE lab09:ratelimit:client-b 1000                        # -> QUEUED
+EXEC                                                         # -> 0, 1, 1: allowed
+```
+
 ## Common mistakes
 
 - **Doing the check and the increment as two separate Redis calls from application code.**

@@ -154,6 +154,65 @@ Every level in this module exercised this pipeline without naming it:
   statement can be metadata-only or must rewrite heap pages) that has nothing to do
   with the parser, rewriter, or planner at all.
 
+## Try it in the browser
+
+Each stage leaves fingerprints you can see from SQL. Start with a 1,000-row table and a
+view over it:
+
+```sql
+DROP VIEW IF EXISTS active_users;
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id     INT  PRIMARY KEY,
+    email  TEXT NOT NULL,
+    status TEXT NOT NULL
+);
+INSERT INTO users
+SELECT i, 'user' || i || '@example.com', (ARRAY['active', 'active', 'suspended'])[1 + i % 3]
+FROM generate_series(1, 1000) AS i;
+ANALYZE users;
+CREATE VIEW active_users AS SELECT * FROM users WHERE status = 'active';
+```
+
+**Parser.** A typo never reaches the planner; the error comes back before anything runs.
+
+```sql
+-- expect an error: syntax error at or near "SELCT"
+SELCT * FROM users;
+```
+
+**Rewriter.** Ask for a plan against the view. Notice the plan never mentions
+`active_users`: it reads `users` directly, with the view's `status = 'active'` folded in
+as a filter.
+
+```sql
+EXPLAIN SELECT * FROM active_users WHERE id = 42;
+```
+
+**Planner.** With no index on `email`, the only path is a `Seq Scan` that filters every
+row:
+
+```sql
+EXPLAIN SELECT * FROM users WHERE email = 'user777@example.com';
+```
+
+Add an index and ask again. The query text is identical; the planner now has a cheaper
+path, and the plan changes to an `Index Scan`:
+
+```sql
+CREATE INDEX IF NOT EXISTS users_email ON users (email);
+EXPLAIN SELECT * FROM users WHERE email = 'user777@example.com';
+```
+
+**Executor.** `EXPLAIN ANALYZE` runs the plan and reports each node's real row count.
+Read it bottom up: the scan produces 1,000 rows, and the aggregate above it pulls them
+and emits one row per status.
+
+```sql
+EXPLAIN (ANALYZE, COSTS OFF)
+SELECT status, count(*) FROM users GROUP BY status;
+```
+
 ## What's next
 
 That's the ladder. [SQL — PostgreSQL from First Query to Production Client](README.md) has the full roadmap if you want to revisit an

@@ -247,6 +247,103 @@ one at a time on the server (level 00 — one thread), and without wrapping them
 purely a network optimization; combine it with `MULTI`/`EXEC` (as `redis-py`'s
 `pipeline(transaction=True)` does by default) if you also need atomicity.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed
+(keys listed in [the datasets README](../lab/datasets/README.md)). `MULTI`, `EXEC`,
+`DISCARD` and `WATCH` behave as on a real server. Pipelining is the one thing here you
+can't see: it's a client-side choice about when to read replies, and this page sends one
+command at a time, so there's no round trip to save.
+
+The Python transaction from the top of the page. Each command answers `QUEUED` instead of
+running, and `EXEC` runs them back to back and returns all the replies at once.
+
+```redis
+MULTI                   # -> OK
+SET lab07:a 1           # -> QUEUED
+SET lab07:b 2           # -> QUEUED
+INCR lab07:a            # -> QUEUED
+EXEC                    # -> OK, OK, 2
+MGET lab07:a lab07:b    # -> "2", "2"
+```
+
+No rollback. The middle command fails when it runs (`INCR` on a hash), but the commands
+around it still take effect. `EXEC`'s reply holds an error for that one command, which
+is why you check each reply.
+
+```redis
+HSET lab07:profile name alice   # -> 1
+MULTI                           # -> OK
+SET lab07:step1 done            # -> QUEUED
+INCR lab07:profile              # -> QUEUED (the type error only shows up at EXEC)
+SET lab07:step3 done            # -> QUEUED
+EXEC                            # -> OK, (error) WRONGTYPE ..., OK
+MGET lab07:step1 lab07:step3    # -> "done", "done": nothing was undone
+```
+
+A command Redis can reject while *queuing* (wrong number of arguments, unknown command)
+is different: the whole transaction is refused at `EXEC`. This block is meant to show
+errors.
+
+```redis
+MULTI                   # -> OK
+SET lab07:x 1           # -> QUEUED
+INCR                    # ERROR: wrong number of arguments, rejected while queuing
+EXEC                    # ERROR: EXECABORT Transaction discarded because of previous errors.
+GET lab07:x             # -> (nil): the SET never ran
+```
+
+`DISCARD` throws the queue away before anything runs.
+
+```redis
+SET lab07:balance 100           # -> OK
+MULTI                           # -> OK
+DECRBY lab07:balance 1000       # -> QUEUED
+DISCARD                         # -> OK
+GET lab07:balance               # -> "100"
+```
+
+`WATCH` check-and-set, the transfer that succeeds: watch the balance, read it, decide in
+the app (100 ≥ 30), then queue the write. Nothing changed the key, so `EXEC` runs.
+
+```redis
+SET lab07:balance 100           # -> OK
+WATCH lab07:balance             # -> OK
+GET lab07:balance               # -> "100": enough for a transfer of 30
+MULTI                           # -> OK
+DECRBY lab07:balance 30         # -> QUEUED
+EXEC                            # -> 70
+```
+
+The conflict case. The `SET 999` stands in for another client writing between our read
+and our `EXEC` (in this one session it's our own write, which trips `WATCH` just the
+same). `EXEC` returns `(nil)`: the transaction was aborted and the 999 survives. This is
+the `WatchError` the Python retry loop catches.
+
+```redis
+SET lab07:balance 100           # -> OK
+WATCH lab07:balance             # -> OK
+GET lab07:balance               # -> "100"
+SET lab07:balance 999           # -> OK (the "other client")
+MULTI                           # -> OK
+DECRBY lab07:balance 10         # -> QUEUED
+EXEC                            # -> (nil): aborted
+GET lab07:balance               # -> "999"
+```
+
+The same pattern on real data: reserve 2 units of a product and record the order
+atomically, but only if nobody changed the stock since we read it (two shoppers can't both
+buy the last unit).
+
+```redis
+WATCH product:105                                   # -> OK
+HGET product:105 stock                              # -> "397": enough
+MULTI                                               # -> OK
+HINCRBY product:105 stock -2                        # -> QUEUED
+RPUSH lab07:orders:customer:2 product:105:qty=2     # -> QUEUED
+EXEC                                                # -> 395, 1
+```
+
 ## Common mistakes
 
 - **Assuming `MULTI`/`EXEC` rolls back on error.** It doesn't — a bad command in the queue

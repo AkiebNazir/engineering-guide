@@ -29,6 +29,27 @@ before an interview, not just re-read.
 
 ## Query patterns that come up constantly — worked, with real output
 
+All four patterns run against one small table: two departments, with a tie at the top
+of Eng and a tie at the top of Sales, because ties are exactly what these questions
+probe.
+
+```sql
+DROP TABLE IF EXISTS employees_demo;
+CREATE TABLE employees_demo (
+    id         INT PRIMARY KEY,
+    name       TEXT NOT NULL,
+    department TEXT NOT NULL,
+    salary     INT  NOT NULL
+);
+INSERT INTO employees_demo VALUES
+  (1, 'Alice', 'Eng',   120000),
+  (2, 'Bob',   'Eng',   120000),
+  (3, 'Cara',  'Eng',    95000),
+  (4, 'Dev',   'Sales',  80000),
+  (5, 'Eli',   'Sales',  80000),
+  (6, 'Faye',  'Sales',  60000);
+```
+
 **"Find the Nth highest value"** (classic: Nth highest salary):
 
 ```sql
@@ -69,7 +90,8 @@ as "2nd", silently hiding the tie.
 **"Find duplicate rows"**:
 
 ```sql
-SELECT salary, COUNT(*) FROM employees_demo GROUP BY salary HAVING COUNT(*) > 1;
+SELECT salary, COUNT(*) FROM employees_demo GROUP BY salary HAVING COUNT(*) > 1
+ORDER BY salary DESC;
 ```
 ```text
  salary | count
@@ -211,6 +233,8 @@ Postgres has no recursion limit (level 22).
 
 **"SQL vs. NoSQL — how do you choose?"** See [Choosing a Database, and CAP Theorem Applied](../NoSQL/concepts/01_choosing_a_database_and_cap_theorem.md)
 for the full decision framework shared across both modules.
+
+Practise on realistic data: 61 checked interview questions in the [SQL Query Lab](lab/questions.md).
 
 ## What's next
 

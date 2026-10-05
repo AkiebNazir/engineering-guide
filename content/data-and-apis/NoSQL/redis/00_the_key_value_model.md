@@ -89,6 +89,72 @@ Every one of those is really the same trick: cheap atomic reads/writes on shared
 visible to every process in your fleet at once. The rest of this module builds up from
 `SET`/`GET` to each of these in turn.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed: a
+small shop's product cache, sessions, counters, leaderboards and an order stream (every key
+family is listed in [the datasets README](../lab/datasets/README.md)). Writes stay in this
+page's session, and the `# -> ...` comments show the reply to expect.
+
+Start by looking at the dictionary itself. `DBSIZE` counts keys, and `TYPE` shows that each
+key holds exactly one kind of value. The key names are plain strings; the `:` separators
+are only a naming convention, not folders.
+
+```redis
+DBSIZE                  # -> 343 when the session starts (the seed's short TTLs expire later)
+TYPE pageviews:home     # -> string
+TYPE product:105        # -> hash
+TYPE bestsellers        # -> zset
+TYPE stream:orders      # -> stream
+```
+
+Every role in "Where Redis actually gets used" is already in the seed. Read one key of
+each: a counter, a cached product, a session, a leaderboard and an event log.
+
+```redis
+GET pageviews:home                      # -> "184213"  (a counter)
+HGET product:105 name                   # -> "Nimbus Phone Pro Max"  (a cached row)
+GET session:aaecae400acfde91            # -> "user:1"  (a login session)
+ZREVRANGE leaderboard:2025-W40 0 2      # -> "liam_12", "lucas_86", "ravi_99"
+XLEN stream:orders                      # -> 40  (an event log)
+```
+
+A single command is atomic because only one command runs at a time. Each `INCR` below is
+a read, an add and a write that no other client can interleave with, which is why a
+thousand app servers can count page views into the same key without losing one.
+
+```redis
+INCR pageviews:home     # -> 184214
+INCR pageviews:home     # -> 184215
+INCRBY pageviews:home 10    # -> 184225
+```
+
+Expiry is part of the model: a key can carry a countdown, and Redis deletes it when the
+countdown runs out. The seed's sessions and two cached products have one; the counters
+don't (`-1` means "no expiry").
+
+```redis
+TTL session:aaecae400acfde91    # -> up to 3600, counting down
+TTL product:101                 # -> up to 3600, counting down
+TTL pageviews:home              # -> -1
+```
+
+One key, one type. A command for a different type is refused rather than guessed at, so
+treating a counter as a list fails loudly. This block is meant to show an error.
+
+```redis
+LPUSH pageviews:home 1      # ERROR: WRONGTYPE Operation against a key holding the wrong kind of value
+GET pageviews:home          # -> "184225": unchanged
+```
+
+`SCAN` walks the keyspace in pages with a cursor, so even on a large instance no single
+call blocks the one thread for long (`KEYS *` would). Here every key fits in one page, so
+the cursor comes back as `"0"`, meaning "done".
+
+```redis
+SCAN 0 MATCH pageviews:* COUNT 1000     # -> cursor "0" and the four pageviews:* keys
+```
+
 ## What's next
 
 Level 01 connects to a real Redis instance from both `redis-cli` and Python and runs the

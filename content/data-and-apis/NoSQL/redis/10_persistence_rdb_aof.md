@@ -139,6 +139,39 @@ jobs would be lost, a session store where losing sessions logs everyone out), AO
 setups run both: RDB for fast, portable full backups, AOF for tighter recovery-point
 objectives between snapshots.
 
+## Try it in the browser
+
+This level is mostly about the disk, and the in-browser Redis behind the ▶ Run buttons
+has none: `CONFIG GET save`, `BGSAVE`, `CONFIG SET appendonly` and `INFO persistence`
+only run against the real lab Redis (the commands above). In a sense the browser is the
+`save ""` + `appendonly no` setup from "The actual tradeoff": everything you write here
+lives only in this tab's memory, and reloading the page starts again from the Query Lab
+seed, like a cache-only Redis after a restart.
+
+One thing that does show up here is what persistence stores for a key's expiry: an
+**absolute** time, not "N seconds left". `EXPIRETIME` (Redis 7.0+) shows it as a Unix
+timestamp. A promotion that ends at midnight UTC on 1 January 2031:
+
+```redis
+SET lab10:promo spring-sale             # -> OK
+EXPIREAT lab10:promo 1924992000         # -> 1
+EXPIRETIME lab10:promo                  # -> 1924992000
+PEXPIRETIME lab10:promo                 # -> 1924992000000 (milliseconds)
+```
+
+A relative TTL is turned into the same thing: `EX 3600` means "now + 3600 seconds", and
+that absolute time is what RDB saves and what Redis 7's AOF logs (as `PXAT` /
+`PEXPIREAT`). So a server that restarts after ten minutes doesn't hand the session a fresh
+hour, and a key whose time passed while the server was down is gone after the reload.
+
+```redis
+SET lab10:session user:42 EX 3600       # -> OK
+TTL lab10:session                       # -> 3600
+EXPIRETIME lab10:session                # -> the current Unix time + 3600
+EXPIRETIME lab10:no-such-key            # -> -2
+EXPIRETIME pageviews:home               # -> -1 (no expiry)
+```
+
 ## Common mistakes
 
 - **Assuming persistence is "on" by default in a way that matches your durability needs.**

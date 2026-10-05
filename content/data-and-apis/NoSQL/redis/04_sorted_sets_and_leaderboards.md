@@ -144,6 +144,87 @@ range syntax also accepts `(` prefixes for exclusive bounds (`(1000` = "greater 
 1000, not equal") — a string is the only type that can represent both an inclusive
 number and an exclusive-bound marker in one field.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed,
+which has two weekly game leaderboards (`leaderboard:2025-W40` and `-W41`) and a
+`bestsellers` ranking of products by units sold (see
+[the datasets README](../lab/datasets/README.md)). Writes stay in this page's session.
+
+The chapter's own example first. Notice the tie: bob and dave both have 2200, so
+ascending order puts bob (alphabetically first) ahead of dave, and the reversed order puts
+dave first. `ZRANGE ... REV` is the Redis 6.2+ spelling of `ZREVRANGE`.
+
+```redis
+ZADD lab04:leaderboard 1500 alice 2200 bob 1800 carol 2200 dave 900 erin  # -> 5
+ZRANGE lab04:leaderboard 0 -1 WITHSCORES        # -> erin 900 ... bob 2200, dave 2200
+ZRANGE lab04:leaderboard 0 2 REV WITHSCORES     # -> dave 2200, bob 2200, carol 1800
+ZREVRANK lab04:leaderboard dave                 # -> 0
+ZREVRANK lab04:leaderboard bob                  # -> 1
+ZREVRANK lab04:leaderboard alice                # -> 3 (4th place)
+```
+
+`ZINCRBY` and `ZRANGEBYSCORE`, as in the sections above: erin wins a 400-point match, and
+then a score-range query returns her. A `(` makes a bound exclusive.
+
+```redis
+ZINCRBY lab04:leaderboard 400 erin                       # -> "1300"
+ZRANGEBYSCORE lab04:leaderboard 1000 2000 WITHSCORES     # -> erin 1300, alice 1500, carol 1800
+ZRANGEBYSCORE lab04:leaderboard (1300 2000               # -> "alice", "carol"
+ZCOUNT lab04:leaderboard 2000 +inf                       # -> 2
+```
+
+Now a real-sized board. The top 5 of week 40 with their scores, and how many players
+there are:
+
+```redis
+ZRANGE leaderboard:2025-W40 0 4 REV WITHSCORES      # -> liam_12 9620, lucas_86 9494, ...
+ZCARD leaderboard:2025-W40                          # -> 60
+```
+
+"Where am I?" for one player: their score, their 0-based rank from the top, and the
+players right around them (rank − 2 to rank + 2, an "around me" view).
+
+```redis
+ZSCORE leaderboard:2025-W40 sophia_81                   # -> "9396"
+ZREVRANK leaderboard:2025-W40 sophia_81                 # -> 4 (5th place)
+ZRANGE leaderboard:2025-W40 2 6 REV WITHSCORES          # -> ravi_99, jun_10, sophia_81, aisha_65, diego_43
+```
+
+A score change re-sorts the member immediately. manish_33 has a great session; check the
+rank before and after.
+
+```redis
+ZREVRANK leaderboard:2025-W40 manish_33         # -> 48 (49th place)
+ZINCRBY leaderboard:2025-W40 7000 manish_33     # -> "9564"
+ZREVRANK leaderboard:2025-W40 manish_33         # -> 1 (2nd place)
+```
+
+Paginate by score instead of rank: everyone between 8000 and 9000 points, highest first,
+10 at a time. `LIMIT offset count` keeps a wide range from returning everything at once.
+
+```redis
+ZRANGE leaderboard:2025-W40 9000 8000 BYSCORE REV LIMIT 0 10 WITHSCORES  # -> sakura_26 8597 down to arjun_67 8245
+ZCOUNT leaderboard:2025-W40 8000 9000           # -> 7, so one page holds them all
+```
+
+A two-week total is one command: `ZUNIONSTORE` adds each player's scores across the weeks
+into a new sorted set (players in only one week keep that score).
+
+```redis
+ZUNIONSTORE lab04:2025-W40-41 2 leaderboard:2025-W40 leaderboard:2025-W41  # -> 60 players in either week
+ZRANGE lab04:2025-W40-41 0 2 REV WITHSCORES                                # -> ravi_99 18984, yusuf_42 17846, lucas_86 17718
+```
+
+The same structure ranks products. A sale of 3 units is a `ZINCRBY`, and the top sellers
+are a reverse range.
+
+```redis
+ZINCRBY bestsellers 3 product:105                   # -> "33"
+ZRANGE bestsellers 0 2 REV WITHSCORES               # -> product:161 1289, product:171 611, product:103 543
+ZREVRANK bestsellers product:105                    # -> 97: a long way down the list
+```
+
 ## Common mistakes
 
 - **Using a plain `SET`/list and sorting in application code.** That means pulling

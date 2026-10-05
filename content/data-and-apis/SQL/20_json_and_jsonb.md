@@ -351,8 +351,17 @@ ALTER TABLE products
   ADD CONSTRAINT attrs_is_object    CHECK (jsonb_typeof(attrs) = 'object'),
   ADD CONSTRAINT attrs_has_brand    CHECK (attrs ? 'brand'),
   ADD CONSTRAINT attrs_price_is_num CHECK (jsonb_typeof(attrs -> 'price') = 'number');
+```
 
+Now two documents that break the rules:
+
+```sql
+-- expect an error: "price" is a string, not a number
 INSERT INTO products (name, attrs) VALUES ('Mystery item', '{"price": "cheap", "brand": "X"}');
+```
+
+```sql
+-- expect an error: an array is not an object and has no "brand" key
 INSERT INTO products (name, attrs) VALUES ('Mystery item', '[1,2,3]');
 ```
 
@@ -624,12 +633,12 @@ key become a normal index scan:
 ```sql
 CREATE INDEX catalog_sku ON catalog ((attrs ->> 'sku'));
 ANALYZE catalog;
-EXPLAIN (ANALYZE) SELECT id FROM catalog WHERE attrs ->> 'sku' = 'SKU-123456';
+EXPLAIN (ANALYZE) SELECT id FROM catalog WHERE attrs ->> 'sku' = 'SKU-777';
 ```
 
 ```text
 Index Scan using catalog_sku on catalog  (cost=0.42..8.44 rows=1 width=8) (actual time=0.030..0.030 rows=1 loops=1)
-  Index Cond: ((attrs ->> 'sku'::text) = 'SKU-123456'::text)
+  Index Cond: ((attrs ->> 'sku'::text) = 'SKU-777'::text)
 Execution Time: 0.058 ms
 ```
 
@@ -690,6 +699,7 @@ SELECT id, attrs->>'price' AS json_price, price FROM catalog WHERE id = 1;
 ```
 
 ```sql
+-- expect an error: price is generated from attrs, so it can't be set directly
 UPDATE catalog SET price = 1 WHERE id = 1;
 ```
 
@@ -751,15 +761,21 @@ SELECT 1, jsonb_build_object('login_count', 0, 'history',
                                               'agent', md5(g::text)))
           FROM generate_series(1, 5000) g));
 
--- in psql: \gset stores a query's result in a variable
-SELECT pg_current_wal_lsn() AS l0 \gset
+-- note the WAL insert position before and after each UPDATE
+-- (a TEMP table is not WAL-logged, so it doesn't distort the numbers)
+DROP TABLE IF EXISTS wal_marks;
+CREATE TEMP TABLE wal_marks (step INT PRIMARY KEY, lsn pg_lsn);
+INSERT INTO wal_marks VALUES (0, pg_current_wal_insert_lsn());
 UPDATE profiles SET login_count = login_count + 1 WHERE id = 1;
-SELECT pg_current_wal_lsn() AS l1 \gset
+INSERT INTO wal_marks VALUES (1, pg_current_wal_insert_lsn());
 UPDATE profiles SET doc = jsonb_set(doc, '{login_count}', to_jsonb((doc->>'login_count')::int + 1))
 WHERE id = 1;
-SELECT pg_current_wal_lsn() AS l2 \gset
-SELECT pg_size_pretty(pg_wal_lsn_diff(:'l1', :'l0')) AS wal_plain_column,
-       pg_size_pretty(pg_wal_lsn_diff(:'l2', :'l1')) AS wal_jsonb_key;
+INSERT INTO wal_marks VALUES (2, pg_current_wal_insert_lsn());
+
+SELECT pg_size_pretty(pg_wal_lsn_diff(m1.lsn, m0.lsn)) AS wal_plain_column,
+       pg_size_pretty(pg_wal_lsn_diff(m2.lsn, m1.lsn)) AS wal_jsonb_key
+FROM wal_marks m0, wal_marks m1, wal_marks m2
+WHERE m0.step = 0 AND m1.step = 1 AND m2.step = 2;
 ```
 
 ```text

@@ -275,6 +275,8 @@ SELECT n FROM nums;
   can stop the planner from using indexes on it — level 22 measures this and shows the
   `MATERIALIZED` / `NOT MATERIALIZED` keywords.
 
+Practise on realistic data: the subqueries and CTEs questions in the [SQL Query Lab](lab/questions.md).
+
 ## What's next
 
 Level 09 moves from single statements to transactions — multiple statements that

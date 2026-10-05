@@ -109,6 +109,74 @@ type Customer struct {
 Levels 01 onward scan real query results into structs (or plain variables) exactly
 this way — the struct definition *is* the client-side half of the schema.
 
+## Try it in the browser
+
+Each block below has a **Run** button that executes it in a real Postgres inside your
+browser. Run them in order; they share one scratch database for this page.
+
+Build the two tables from this level, with `orders.customer_id` declared as a foreign
+key to `customers.id`, and load the same rows. The final `SELECT` shows `customers` as a
+real table:
+
+```sql
+DROP TABLE IF EXISTS orders, customers;
+CREATE TABLE customers (
+    id      INT  PRIMARY KEY,
+    email   TEXT NOT NULL UNIQUE,
+    country TEXT NOT NULL
+);
+CREATE TABLE orders (
+    id          INT PRIMARY KEY,
+    customer_id INT NOT NULL REFERENCES customers (id),   -- the foreign key
+    total_usd   NUMERIC(10, 2) NOT NULL
+);
+INSERT INTO customers VALUES
+  (1, 'ana@example.com', 'PT'), (2, 'bo@example.com', 'US'), (3, 'cy@example.com', 'JP');
+INSERT INTO orders VALUES (1, 1, 42.50), (2, 1, 15.00), (3, 3, 200.00);
+
+SELECT * FROM customers ORDER BY id;
+```
+
+A query that reads across the key. Notice `ana@example.com` appears twice (one
+customer, many orders) and `bo@example.com` not at all (no orders):
+
+```sql
+SELECT o.id AS order_id, c.email, c.country, o.total_usd
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+ORDER BY o.id;
+```
+
+Enforced structure: `total_usd` is a number, so text is rejected before anything is
+written:
+
+```sql
+-- expect an error: invalid input syntax for type numeric: "a lot"
+INSERT INTO orders VALUES (4, 2, 'a lot');
+```
+
+The primary key: no two orders may share an `id`.
+
+```sql
+-- expect an error: duplicate key value violates unique constraint "orders_pkey"
+INSERT INTO orders VALUES (1, 2, 10.00);
+```
+
+Enforced relationships: there is no customer 99, so the foreign key refuses the order:
+
+```sql
+-- expect an error: insert or update on table "orders" violates foreign key constraint
+INSERT INTO orders VALUES (4, 99, 10.00);
+```
+
+And it works the other way too. Customer 1 still has orders, so deleting them is refused
+rather than leaving two orphaned orders behind:
+
+```sql
+-- expect an error: update or delete on table "customers" violates foreign key constraint
+DELETE FROM customers WHERE id = 1;
+```
+
 ## What's next
 
 Level 01 gets you actually connected to a running Postgres instance, from both

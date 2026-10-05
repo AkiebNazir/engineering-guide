@@ -152,6 +152,68 @@ consistent, or don't care" is fine; reach for **Streams** (or a dedicated queue 
 Kafka/RabbitMQ/SQS) the moment "what if a subscriber was briefly down" has a wrong
 answer for your use case.
 
+## Try it in the browser
+
+The ▶ Run buttons on this page run an in-browser Redis loaded with the Query Lab seed.
+What it can't do is the interesting half of pub/sub: `SUBSCRIBE` turns a connection into a
+long-lived listener, which needs a second client (the "terminal 1" above), so delivery
+can't be shown here. Run the `SUBSCRIBE`/`PUBLISH` pair above in two `redis-cli` windows
+against the lab Redis for that. What the browser *can* show is the fire-and-forget half:
+this page's session has no subscribers at all.
+
+Publish with nobody listening. The reply is the number of clients that received the
+message: `0`, so the message is simply gone. No error, no queue, no retry.
+
+```redis
+PUBLISH lab06:channel "hello subscribers"   # -> 0
+PUBLISH lab06:channel "anyone there?"       # -> 0
+```
+
+`PUBSUB` inspects live subscriptions. With no subscribers, no channel exists: a channel
+is only a name that subscribers and publishers happen to agree on, created and dropped
+with its subscriptions.
+
+```redis
+PUBSUB CHANNELS                             # -> (empty array)
+PUBSUB NUMSUB lab06:channel cache:invalidate    # -> lab06:channel 0, cache:invalidate 0
+PUBSUB NUMPAT                               # -> 0 pattern subscriptions
+```
+
+Messages are not keys. Nothing was stored by the two `PUBLISH`es above, so there is
+nothing for a late subscriber to catch up on.
+
+```redis
+EXISTS lab06:channel        # -> 0
+KEYS lab06:*                # -> (empty array)
+```
+
+The cache-invalidation broadcast from "What pub/sub is actually good for": update the
+product, then tell the fleet to drop its local copies. On a real deployment the reply is
+the number of app servers that heard it; one that missed it keeps a stale copy until its
+own TTL runs out, which is acceptable.
+
+```redis
+HSET product:105 price 429.99                   # -> 0 (field updated)
+PUBLISH cache:invalidate product:105            # -> 0 here; N app servers in production
+```
+
+The durable alternative for a message that must not be lost: a stream (level 12). The
+event is stored with an ID, so a consumer that connects later reads it with `XRANGE`.
+
+```redis
+XADD lab06:events * type price_changed product product:105 price 429.99  # -> a new ID like "1790312026718-0"
+XRANGE lab06:events - +                                                  # -> the event, still there
+XLEN lab06:events                                                        # -> 1
+```
+
+And the work-queue alternative from "Common mistakes": a list keeps the job until a worker
+pops it, even if no worker was running when it was pushed.
+
+```redis
+LPUSH lab06:jobs resize-image:105       # -> 1
+RPOP lab06:jobs                         # -> "resize-image:105": picked up late, not lost
+```
+
 ## Common mistakes
 
 - **Using pub/sub as a task queue.** If the one worker that should process a job is

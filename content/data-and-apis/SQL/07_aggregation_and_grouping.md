@@ -212,6 +212,8 @@ destination type it actually knows how to decode a `DATE` into — `time.Time` (
   measured above, it panics; scan into `time.Time` and format it explicitly if you
   need a string representation.
 
+Practise on realistic data: the aggregation and window-function questions in the [SQL Query Lab](lab/questions.md).
+
 ## What's next
 
 Level 08 covers subqueries and CTEs — ways to build a query out of smaller named

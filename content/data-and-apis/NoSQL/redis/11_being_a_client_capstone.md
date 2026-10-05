@@ -287,6 +287,69 @@ cache calls, and seven rate-limit checks — this is the pool doing its job: one
 socket, reused for every command, rather than opening and tearing down a new connection
 per call.
 
+## Try it in the browser
+
+Pools, timeouts and retries live in the client, so the in-browser Redis behind the ▶ Run
+buttons can't show them. What it can show is what `RedisService` actually sends over its
+pooled connection: the same few commands from levels 02, 05 and 09. It's loaded with the
+Query Lab seed (keys listed in [the datasets README](../lab/datasets/README.md)), and
+writes stay in this page's session.
+
+With `health_check_interval` set, `redis-py` checks a pooled connection that has sat idle
+before reusing it, and the check is just a `PING`.
+
+```redis
+PING            # -> PONG
+```
+
+`create_session` and `get_session`: one `SET ... EX` with the JSON payload, then a
+`GETEX ... EX` that reads it and slides the expiry forward on every request. An unknown
+session id is `(nil)`, which the service maps to `None`.
+
+```redis
+SET session:c803eb77-b25a-443f-b945-b8f9e73a62e7 '{"user_id": 42, "created": 1790161317.633247}' EX 3600
+GETEX session:c803eb77-b25a-443f-b945-b8f9e73a62e7 EX 3600   # -> the JSON
+TTL session:c803eb77-b25a-443f-b945-b8f9e73a62e7             # -> 3600
+GETEX session:does-not-exist EX 3600                          # -> (nil)
+```
+
+The seed's sessions use the same keys with a simpler value, and some expire sooner. A
+`GETEX` resets the countdown of a session that's in use.
+
+```redis
+TTL session:8dc7481c0edc4107            # -> up to 1800: a 30-minute session
+GETEX session:8dc7481c0edc4107 EX 3600  # -> "user:5"
+TTL session:8dc7481c0edc4107            # -> 3600: extended by use
+```
+
+`cached()`: a miss, the computed result written back with a TTL, then a hit. The second
+call never reaches `compute_fn`.
+
+```redis
+GET cache:answer                        # -> (nil): miss, so compute it
+SET cache:answer '{"answer": 42}' EX 60 # -> OK
+GET cache:answer                        # -> "{\"answer\": 42}": hit
+```
+
+`allow_request()` runs level 09's sliding-window script. These are the commands inside
+it for one allowed request (with a fixed timestamp, so the replies are predictable).
+
+```redis
+ZREMRANGEBYSCORE ratelimit:client-1 0 1790161316633                 # -> 0
+ZCARD ratelimit:client-1                                            # -> 0: under the limit
+ZADD ratelimit:client-1 1790161317633 1790161317633-0.42            # -> 1
+PEXPIRE ratelimit:client-1 1000                                     # -> 1
+```
+
+The errors `_with_retry` deliberately doesn't retry. A command against the wrong type
+fails the same way every time, so retrying it three times only makes it fail slower. This
+block is meant to show errors.
+
+```redis
+GETEX product:105 EX 3600       # ERROR: WRONGTYPE: product:105 is a hash, not a string
+INCR config:maintenance_mode    # ERROR: ERR value is not an integer or out of range ("off")
+```
+
 ## Common mistakes
 
 - **Creating a new `redis.Redis(...)` (and therefore a new connection or pool) per

@@ -78,9 +78,11 @@ ANALYZE categories;
 
 ## The infinite loop, and why nothing stops it
 
-"Every airport reachable from LHR", written the level-08 way:
+"Every airport reachable from LHR", written the level-08 way (shown here rather than
+runnable: the in-browser Postgres can't enforce `statement_timeout`, so this would hang
+the tab; try it in `psql`):
 
-```sql
+```text
 SET statement_timeout = '2s';
 WITH RECURSIVE reach AS (
     SELECT 'LHR'::text AS airport, 0 AS hops
@@ -389,12 +391,12 @@ whatever you write.
 ```sql
 EXPLAIN (ANALYZE, COSTS OFF)
 WITH c AS (SELECT * FROM categories)
-SELECT * FROM c WHERE id = 4242;
+SELECT * FROM c WHERE id = 424;
 ```
 
 ```text
  Index Scan using categories_pkey on categories (actual time=0.047..0.048 rows=1 loops=1)
-   Index Cond: (id = 4242)
+   Index Cond: (id = 424)
  Execution Time: 0.095 ms
 ```
 
@@ -403,12 +405,12 @@ No trace of the CTE in the plan: it was merged into the query. Force the old beh
 ```sql
 EXPLAIN (ANALYZE, COSTS OFF)
 WITH c AS MATERIALIZED (SELECT * FROM categories)
-SELECT * FROM c WHERE id = 4242;
+SELECT * FROM c WHERE id = 424;
 ```
 
 ```text
  CTE Scan on c (actual time=0.881..225.681 rows=1 loops=1)
-   Filter: (id = 4242)
+   Filter: (id = 424)
    Rows Removed by Filter: 999999
    CTE c
      ->  Seq Scan on categories (actual time=0.022..88.391 rows=1000000 loops=1)
@@ -425,7 +427,7 @@ through a CTE:
 ```sql
 EXPLAIN (ANALYZE, COSTS OFF)
 WITH c AS (SELECT id, parent_id, name FROM categories)
-SELECT a.name, p.name AS parent FROM c a JOIN c p ON p.id = a.parent_id WHERE a.id = 4242;
+SELECT a.name, p.name AS parent FROM c a JOIN c p ON p.id = a.parent_id WHERE a.id = 424;
 ```
 
 ```text
@@ -436,7 +438,7 @@ SELECT a.name, p.name AS parent FROM c a JOIN c p ON p.id = a.parent_id WHERE a.
    ->  Sort (actual time=1048.684..1048.687 rows=1 loops=1)
          Sort Key: a.parent_id
          ->  CTE Scan on c a (actual time=268.695..1048.637 rows=1 loops=1)
-               Filter: (id = 4242)
+               Filter: (id = 424)
                Rows Removed by Filter: 999999
    ->  Materialize (actual time=907.188..907.257 rows=425 loops=1)
          ->  Sort (actual time=907.178..907.208 rows=425 loops=1)
@@ -453,13 +455,13 @@ can use `categories_pkey`. With `NOT MATERIALIZED`, each reference is inlined se
 ```sql
 EXPLAIN (ANALYZE, COSTS OFF)
 WITH c AS NOT MATERIALIZED (SELECT id, parent_id, name FROM categories)
-SELECT a.name, p.name AS parent FROM c a JOIN c p ON p.id = a.parent_id WHERE a.id = 4242;
+SELECT a.name, p.name AS parent FROM c a JOIN c p ON p.id = a.parent_id WHERE a.id = 424;
 ```
 
 ```text
  Nested Loop (actual time=0.024..0.026 rows=1 loops=1)
    ->  Index Scan using categories_pkey on categories (actual time=0.012..0.013 rows=1 loops=1)
-         Index Cond: (id = 4242)
+         Index Cond: (id = 424)
    ->  Index Scan using categories_pkey on categories categories_1 (actual time=0.006..0.007 rows=1 loops=1)
          Index Cond: (id = categories.parent_id)
  Execution Time: 0.047 ms
@@ -645,6 +647,8 @@ materialized.
 main workload: many hops, variable-length paths, shortest-path or pattern queries over
 large, densely connected data. Recursive CTEs are fine for trees and shallow traversals
 on data that lives in Postgres anyway. See [Graph Databases and Cypher](../NoSQL/concepts/03_graph_databases_and_cypher.md).
+
+Practise on realistic data: the recursive-query questions in the [SQL Query Lab](lab/questions.md).
 
 ## What's next
 

@@ -241,6 +241,49 @@ with psycopg.connect("postgresql://dsa:dsa@localhost:5544/dsa", autocommit=True)
     conn.execute("SELECT 1;")   # takes effect immediately, no conn.commit() needed
 ```
 
+## Try it in the browser
+
+Every `sql` block in this module has a **Run** button. It sends the block to a real
+Postgres compiled to WebAssembly and running inside your browser tab: one connection,
+one session, no server to install. Use it for the SQL; use the lab Postgres above for
+the client code.
+
+The first two queries from the `psql` transcript. Notice the version string: the same
+Postgres, built for `wasm32` instead of a Linux server.
+
+```sql
+SELECT 1;
+SELECT version();
+```
+
+A `SELECT` doesn't need a table. Notice that `7 / 2` is `3`: both sides are integers, so
+Postgres does integer division. Make one side `numeric` and you get `3.5`.
+
+```sql
+SELECT 2 + 2         AS four,
+       'Hello, ' || 'Postgres' AS greeting,
+       7 / 2         AS int_division,
+       7 / 2.0       AS numeric_division;
+```
+
+Who and where your session is. `current_schema()` is the scratch schema this page's
+blocks share, and `now()` is the time your current transaction started:
+
+```sql
+SELECT current_database(), current_user, current_schema(), now();
+```
+
+Session settings last until the connection closes. Set one, then read it back from
+`pg_stat_activity`, Postgres's live view of every connection (yours is the only one
+here):
+
+```sql
+SET application_name = 'level-01';
+SELECT pid, application_name, state, backend_start
+FROM pg_stat_activity
+WHERE pid = pg_backend_pid();
+```
+
 ## Common mistakes
 
 - **Forgetting to commit.** Without `autocommit=True`, an `INSERT`/`UPDATE`/`DELETE`

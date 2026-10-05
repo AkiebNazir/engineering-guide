@@ -263,6 +263,71 @@ in SQLAlchemy) specifically to collapse N+1 patterns back down to the join-based
 shape measured above — using it is the difference between the two numbers in this
 level.
 
+## Try it in the browser
+
+The browser's Postgres is a single connection, so it can't show pooling or round-trip
+latency. It can show the queries themselves. Create the same `n1_` tables, 200 customers
+and 200 orders:
+
+```sql
+DROP TABLE IF EXISTS n1_orders, n1_customers;
+CREATE TABLE n1_customers (id INT PRIMARY KEY, name TEXT NOT NULL);
+CREATE TABLE n1_orders (
+    id          INT PRIMARY KEY,
+    customer_id INT NOT NULL REFERENCES n1_customers (id),
+    total       NUMERIC(10, 2) NOT NULL
+);
+INSERT INTO n1_customers SELECT i, 'customer ' || i FROM generate_series(1, 200) AS i;
+INSERT INTO n1_orders
+SELECT i, 1 + (i * 37) % 200, round((10 + random() * 190)::numeric, 2)
+FROM generate_series(1, 200) AS i;
+ANALYZE n1_customers, n1_orders;
+```
+
+This is the per-row query the N+1 loop sends, as the server sees it from a driver: a
+prepared statement with a `$1` parameter, executed once per order. Change `1` to `2`,
+`3`, ... and imagine 200 round trips:
+
+```sql
+DEALLOCATE ALL;   -- so the block can be re-run
+PREPARE order_with_customer(int) AS
+    SELECT o.id, o.total, c.name
+    FROM n1_orders o JOIN n1_customers c ON c.id = o.customer_id
+    WHERE o.id = $1;
+EXECUTE order_with_customer(1);
+```
+
+The eager-load fix: one query, all 200 rows.
+
+```sql
+SELECT o.id, o.total, c.name
+FROM n1_orders o JOIN n1_customers c ON c.id = o.customer_id
+ORDER BY o.id;
+```
+
+Run the join with `EXPLAIN ANALYZE` and look at `Execution Time`: a millisecond or so
+for all 200 rows at once, about what a *single* network round trip costs. That is why
+the N+1 cost is the 200 round trips, not the queries themselves.
+
+```sql
+EXPLAIN ANALYZE
+SELECT o.id, o.total, c.name
+FROM n1_orders o JOIN n1_customers c ON c.id = o.customer_id
+ORDER BY o.id;
+```
+
+Every connection is a backend process with its own row in `pg_stat_activity`, and
+`max_connections` caps how many there can be. In the browser you'll see one
+(`standalone backend`); run the same query on the lab server while the pooling script
+holds its four connections and you'll see them all.
+
+```sql
+SELECT current_setting('max_connections') AS max_connections,
+       count(*)                           AS connections_now,
+       string_agg(DISTINCT backend_type, ', ') AS kinds
+FROM pg_stat_activity;
+```
+
 ## Common mistakes
 
 - **Opening a connection per request without a pool**, as measured above — a

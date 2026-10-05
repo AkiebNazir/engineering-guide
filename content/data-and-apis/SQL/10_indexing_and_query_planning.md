@@ -16,6 +16,8 @@ A table large enough that a sequential scan actually costs something measurable 
 300,000 rows:
 
 ```sql
+DROP TABLE IF EXISTS accounts_big;
+
 CREATE TABLE accounts_big (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email      TEXT NOT NULL,
@@ -55,7 +57,7 @@ No index on `email` yet — a point lookup for one specific email address:
 
 ```sql
 EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
-SELECT * FROM accounts_big WHERE email = 'user123456@example.com';
+SELECT * FROM accounts_big WHERE email = 'user777@example.com';
 ```
 
 Real output:
@@ -66,7 +68,7 @@ Gather  (cost=1000.00..6235.98 rows=1 width=48) (actual time=5.196..5.859 rows=1
   Workers Launched: 1
   Buffers: shared hit=3030
   ->  Parallel Seq Scan on accounts_big  (cost=0.00..5235.88 rows=1 width=48) (actual time=3.300..4.655 rows=0 loops=2)
-        Filter: (email = 'user123456@example.com'::text)
+        Filter: (email = 'user777@example.com'::text)
         Rows Removed by Filter: 150000
         Buffers: shared hit=3030
 Planning Time: 0.050 ms
@@ -85,12 +87,12 @@ CREATE INDEX idx_accounts_big_email ON accounts_big (email);
 ANALYZE accounts_big;
 
 EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
-SELECT * FROM accounts_big WHERE email = 'user123456@example.com';
+SELECT * FROM accounts_big WHERE email = 'user777@example.com';
 ```
 
 ```text
 Index Scan using idx_accounts_big_email on accounts_big  (cost=0.42..8.44 rows=1 width=49) (actual time=0.016..0.017 rows=1 loops=1)
-  Index Cond: (email = 'user123456@example.com'::text)
+  Index Cond: (email = 'user777@example.com'::text)
   Buffers: shared hit=1 read=3
 Planning Time: 0.059 ms
 Execution Time: 0.024 ms
@@ -113,7 +115,7 @@ if err != nil {
 defer pool.Close()
 
 rows, err := pool.Query(ctx, `EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
-    SELECT * FROM accounts_big WHERE email = 'user123456@example.com';`)
+    SELECT * FROM accounts_big WHERE email = 'user777@example.com';`)
 if err != nil {
     log.Fatal(err)
 }
@@ -129,7 +131,7 @@ Real output — an `Index Scan` again, sub-millisecond, same index:
 
 ```text
 Index Scan using idx_accounts_big_email on accounts_big  (cost=0.42..8.44 rows=1 width=72) (actual time=0.164..0.165 rows=1 loops=1)
-  Index Cond: (email = 'user123456@example.com'::text)
+  Index Cond: (email = 'user777@example.com'::text)
   Buffers: shared read=4
 Planning:
   Buffers: shared hit=117

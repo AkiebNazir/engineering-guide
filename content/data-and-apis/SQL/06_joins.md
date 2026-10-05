@@ -257,6 +257,8 @@ Back to the correct 2 rows, each course matched to the grade it actually belongs
   pgx's `pgtype.Text`/a pointer type) whenever the column can be `NULL`, which any
   column coming from the "unmatched" side of a `LEFT`/`RIGHT`/`FULL` join always can.
 
+Practise on realistic data: the joins questions in the [SQL Query Lab](lab/questions.md).
+
 ## What's next
 
 Level 07 aggregates and summarizes the rows a join like this produces —
