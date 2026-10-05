@@ -1,6 +1,8 @@
 import fs from 'fs';
 import { JSDOM } from 'jsdom';
 
+const STATIC = new URL('../static/', import.meta.url);
+
 const dom = new JSDOM('<!DOCTYPE html><body></body>', { pretendToBeVisual: true, url: 'http://localhost/', runScripts: 'dangerously' });
 const { window } = dom;
 window.matchMedia = window.matchMedia || (() => ({ matches: false, addEventListener() {}, addListener() {} }));
@@ -23,7 +25,7 @@ const files = [
 ];
 
 let code = '';
-for (const f of files) code += fs.readFileSync(f, 'utf8') + '\n;\n';
+for (const f of files) code += fs.readFileSync(new URL(f.replace(/^static\//, ''), STATIC), 'utf8') + '\n;\n';
 // jsdom's MutationObserver isn't reachable as a bare global inside window.eval；
 // this one line (a live-redraw-on-theme-change hookup, irrelevant to a static
 // lab-registration check) is the only thing that needs it.

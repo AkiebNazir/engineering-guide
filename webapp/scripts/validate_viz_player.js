@@ -2,7 +2,7 @@
    Drive every DSA visualizer through the real player in headless Chromium.
 
      make app                          # in another terminal (or DSA_PORT=…)
-     node webapp/validate_viz_player.js [http://127.0.0.1:8420]
+     node webapp/scripts/validate_viz_player.js [http://127.0.0.1:8420]
 
    Two passes:
      problems  each of the 345 problems' Visualize tab: the exact animation is

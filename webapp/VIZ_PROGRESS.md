@@ -48,7 +48,7 @@ run counts, and a scored "which variables change?" predict mode. For spec author
 state in the frame under the names the code uses, put drawing-only data under a `_`-prefixed key, and
 give frames a `phase` when the algorithm has distinct stages.
 
-**Regression check:** `node webapp/validate_viz_player.js` (server running) plays every
+**Regression check:** `node webapp/scripts/validate_viz_player.js` (server running) plays every
 problem and every distinct spec to the last frame and fails on any error. Last run (30 Sep 2026,
 after the eight pattern-gap problems and `dsa-viz30.js`): 353/353 problems, 410/410 specs, 0 errors.
 

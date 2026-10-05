@@ -1,7 +1,7 @@
 // Checks and previews ```arch diagram blocks (see ARCH_DIAGRAMS.md).
 //
-//   node webapp/arch_tool.mjs check [file.md|dir ...]     parse + lint every block (default: whole repo)
-//   node webapp/arch_tool.mjs shot  file.md [n] [--dark] [--out DIR]
+//   node webapp/scripts/arch_tool.mjs check [file.md|dir ...]     parse + lint every block (default: whole repo)
+//   node webapp/scripts/arch_tool.mjs shot  file.md [n] [--dark] [--out DIR]
 //                                                       render block n (1-based; default all) to PNG
 //
 // `check` fails on syntax errors and on lines that pass through a box; it
@@ -13,9 +13,9 @@ import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
-const A = require('./static/arch-diagram.js');
-const icons = JSON.parse(fs.readFileSync(path.join(here, 'static/arch-icons.json'), 'utf8'));
-const repo = path.resolve(here, '..');
+const A = require('../static/arch-diagram.js');
+const icons = JSON.parse(fs.readFileSync(path.join(here, '../static/arch-icons.json'), 'utf8'));
+const repo = path.resolve(here, '../..');
 
 const blocksOf = text => {
   const out = [], re = /^```arch[ \t]*\n([\s\S]*?)^```/gm;
@@ -85,6 +85,6 @@ if (cmd === 'check') {
   }
   await browser.close();
 } else {
-  console.log('usage: node webapp/arch_tool.mjs check [paths...] | shot file.md [n] [--dark] [--out DIR]');
+  console.log('usage: node webapp/scripts/arch_tool.mjs check [paths...] | shot file.md [n] [--dark] [--out DIR]');
   process.exit(2);
 }

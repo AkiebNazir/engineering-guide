@@ -1052,7 +1052,7 @@ Key endpoints: `/api/bootstrap` `/api/problem` `/api/guide` `/api/run` `/api/for
 DSA learning layer (29 Sep 2026): `dsa-patterns.js` (playbooks) · `dsa-learn.js` (hint ladder, transfer
 card, pattern-page playbook) · `dsa-drill.js` (`#/dsa-drill`, `#/dsa-patterns`) · `dsa-viz-player.js`
 (the one visualizer player). Checks: `python3 tools/test_pattern_templates.py`,
-`node webapp/validate_viz_player.js` (server running).
+`node webapp/scripts/validate_viz_player.js` (server running).
 
 **Learning modules (15 Sep 2026).** System Design, Go/Py Engineering, AI Roadmap,
 AI Library Guides and Agentic AI share one reader in `static/reader.js` + `reader.css`

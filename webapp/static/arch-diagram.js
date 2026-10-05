@@ -44,7 +44,7 @@
 
   /* -------------------------------------------------------------- icons -- */
   // Short name → [glyph, category]. Glyph bodies live in arch-icons.json
-  // (built by webapp/build_arch_icons.mjs). 'logos:*' glyphs are full-colour
+  // (built by webapp/scripts/build_arch_icons.mjs). 'logos:*' glyphs are full-colour
   // brand marks and are drawn as-is, not on a tinted tile.
   const ICONS = {
     // people & clients

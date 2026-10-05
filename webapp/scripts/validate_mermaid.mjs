@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { JSDOM } from 'jsdom';
+
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 const files = [
   'API/Fundamentals/01_api_fundamentals.md',
@@ -30,7 +33,7 @@ mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' });
 let totalBlocks = 0, failures = 0;
 
 for (const rel of files) {
-  const full = path.join('/Users/njasm/Njasm/AI/DSA-Practice', rel);
+  const full = path.join(REPO, rel);
   if (!fs.existsSync(full)) { console.log(`SKIP (missing): ${rel}`); continue; }
   const text = fs.readFileSync(full, 'utf8');
   const re = /```mermaid\n([\s\S]*?)```/g;

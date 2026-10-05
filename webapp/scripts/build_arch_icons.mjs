@@ -3,11 +3,11 @@
 // only the icons the diagram syntax names, so the reader never needs a CDN.
 //
 //   cd webapp && npm i --no-save @iconify-json/mdi @iconify-json/logos
-//   node build_arch_icons.mjs
+//   node scripts/build_arch_icons.mjs
 import fs from 'fs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const A = require('./static/arch-diagram.js');
+const A = require('../static/arch-diagram.js');
 const packs = { mdi: require('@iconify-json/mdi/icons.json'), logos: require('@iconify-json/logos/icons.json') };
 
 const want = new Set([...Object.values(A.ICONS).map(v => v[0]), ...A.LOGOS.map(n => 'logos:' + n)]);
@@ -28,5 +28,5 @@ for (const full of [...want].sort()) {
   }
   out[full] = { b, w, h };
 }
-fs.writeFileSync(new URL('./static/arch-icons.json', import.meta.url), JSON.stringify(out));
+fs.writeFileSync(new URL('../static/arch-icons.json', import.meta.url), JSON.stringify(out));
 console.log(`${Object.keys(out).length} icons, ${(JSON.stringify(out).length / 1024).toFixed(0)} KB`);
