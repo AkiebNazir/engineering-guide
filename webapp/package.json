@@ -1,5 +1,9 @@
 {
-  "dependencies": {
-    "jsdom": "^29.1.1"
+  "name": "engineering-guide-webapp",
+  "private": true,
+  "description": "Dev-only tooling for the web app (validators, diagram checks). The app itself needs no npm packages.",
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "mermaid": "12.0.0"
   }
 }
