@@ -180,6 +180,18 @@ ROUTES = {
 }
 
 
+# POST routes that run code (hosted mode with a runner). A run copies the page's files
+# into the sandbox, so it needs the same plan as reading that page. The DSA editor and
+# gofmt carry only the learner's own code: any signed-in reader.
+RUN_ROUTES = {
+    "/api/run": ("open", None),
+    "/api/format": ("open", None),
+    "/api/eng-run": ("doc", lambda b: (_eng_module(_one(b, "lang", "go")), _one(b, "topic"))),
+    "/api/stdlib-run": ("doc", lambda b: (_stdlib_module(_one(b, "lang", "py")), _one(b, "pkg"))),
+    "/api/api-run": ("doc", lambda b: ("api", f"ladder/{_one(b, 'type')}")),
+}
+
+
 def upgrade_reply(tier: str, required: str, module: str) -> dict:
     name = MODULE_NAMES.get(module, "This page")
     return {"error": "upgrade_required", "requires": required, "tier": tier, "module": module,
@@ -195,6 +207,22 @@ def check(path: str, q: dict, tier: str) -> dict | None:
     kind, resolve = rule
     if kind != "doc":
         return None
+    module, item_id = resolve(q)
+    if module not in MODULE_TIER:
+        return {"error": "forbidden", "message": "Unknown module."}
+    required = item_tier(module, item_id)
+    return None if allows(tier, required) else upgrade_reply(tier, required, module)
+
+
+def check_run(path: str, body: dict, tier: str) -> dict | None:
+    """None when `tier` may run this code; otherwise the 403 body to send."""
+    rule = RUN_ROUTES.get(path)
+    if rule is None:
+        return {"error": "forbidden", "message": "Unknown route."}
+    kind, resolve = rule
+    if kind != "doc":
+        return None
+    q = {k: [v] for k, v in body.items() if isinstance(v, str)}
     module, item_id = resolve(q)
     if module not in MODULE_TIER:
         return {"error": "forbidden", "message": "Unknown module."}

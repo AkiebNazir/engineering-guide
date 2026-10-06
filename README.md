@@ -267,12 +267,12 @@ system). Where they disagree with this page about order, follow this page.
 
 - **On your machine:** `make app` runs the full app: everything above, including running
   your code and saving progress to `webapp/data/progress.json`.
-- **Online, for learners:** the hosted mode (`make serve` to try it, `deploy/Dockerfile` to
-  deploy) adds sign-in with Google or an emailed one-time code, and four plans, **Free, Base, Pro and Pro
+- **Online, for learners:** the hosted mode (`make up` runs it on any machine with Docker,
+  a laptop included) adds sign-in with Google or an emailed one-time code, and four plans, **Free, Base, Pro and Pro
   Max**, enforced on the server: Free samples every module, Base opens the interview core
   (all of DSA, CS Fundamentals, Maths, Behavioral), Pro adds design and the production stack,
   Pro Max adds staff-level System Design and the AI track. Progress is kept per account, code
-  running is off, and copying page text and the developer tools are restricted (the Copy
+  runs in a separate sandboxed container (no network, a throwaway user per run), and copying page text and the developer tools are restricted (the Copy
   buttons on code examples still work). Plans are granted with `webapp/admin.py`.
 - **Public preview:** `make build` → `dist/` is a static site with the Free plan's content
   only, which any host can serve; `.github/workflows/deploy.yaml` tests and publishes it to

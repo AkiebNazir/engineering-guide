@@ -3,11 +3,12 @@ PREVIEW_PORT ?= 8000
 PYTHON ?= python3
 OUT ?= dist
 IMAGE ?= engineering-guide
+COMPOSE ?= docker compose -f deploy/compose.yaml
 
-.PHONY: help app serve test admin build preview clean docker-build docker-run docker-build-static
+.PHONY: help app serve test admin build preview clean up down logs up-admin tunnel docker-build docker-run docker-build-static
 
 help: ## List the targets
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-13s %s\n", $$1, $$2}'
+	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-20s %s\n", $$1, $$2}'
 
 app: ## Run the full app locally (runs code, saves progress): http://127.0.0.1:8080, or DSA_PORT=…
 	@echo "Checking if port $(DSA_PORT) is in use..."
@@ -32,6 +33,24 @@ preview: build ## Build, then serve the static site: http://127.0.0.1:8000, or P
 
 clean: ## Remove the static build
 	rm -rf "$(OUT)"
+
+up: ## Run the hosted guide WITH code running (web + sandboxed runner) on http://127.0.0.1:8080
+	@test -f tmp/guide.env || { echo "Missing tmp/guide.env (the hosted guide's settings; never committed)." >&2; exit 1; }
+	$(COMPOSE) up -d --build
+	@echo "Up on http://127.0.0.1:$${EG_PORT:-8080}  ·  make logs  ·  make down  ·  make tunnel to share it"
+
+down: ## Stop it (accounts, progress and the Go build cache are kept)
+	$(COMPOSE) down
+
+logs: ## Follow its logs
+	$(COMPOSE) logs -f
+
+up-admin: ## Manage accounts in the running guide, e.g. make up-admin ARGS="grant you@example.com pro"
+	$(COMPOSE) exec web python3 webapp/admin.py $(ARGS)
+
+tunnel: ## Share it on the internet over HTTPS with Tailscale Funnel (prints the public address)
+	tailscale funnel --bg $${EG_PORT:-8080}
+	@tailscale funnel status
 
 docker-build: ## Build the hosted app image (sign-in and plans)
 	docker build -f deploy/Dockerfile -t $(IMAGE) .

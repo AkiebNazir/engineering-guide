@@ -1,0 +1,60 @@
+# The whole hosted guide on one machine (a laptop works): sign-in, plans, and running code.
+#
+#   make up          build and start in the background      make logs    follow the logs
+#   make down        stop                                    (data is kept in named volumes)
+#
+# The site listens on 127.0.0.1 only. To let other people in, put an HTTPS tunnel in front
+# of that port (Tailscale Funnel, Cloudflare Tunnel, ...): nothing else is exposed.
+# Settings come from tmp/guide.env (git-ignored, never in the image or the repository).
+name: engineering-guide
+
+services:
+  web:
+    build: { context: .., dockerfile: deploy/Dockerfile }
+    image: engineering-guide
+    restart: unless-stopped
+    ports: ["127.0.0.1:${EG_PORT:-8080}:8080"]
+    env_file:
+      - path: ../tmp/guide.env
+        required: false
+    environment:
+      EG_RUNNER_SOCKET: /run/eg-runner/runner.sock
+    volumes:
+      - eg-data:/data                     # accounts, sessions, progress, the signing key
+      - eg-runner:/run/eg-runner          # the runner's socket, nothing else
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    depends_on: [runner]
+
+  # Runs learners' code. No network (not even to `web`: they talk over a Unix socket on
+  # the shared volume), no secrets, read-only, capped; each run as its own throwaway user.
+  runner:
+    build: { context: .., dockerfile: deploy/Dockerfile.runner }
+    image: engineering-guide-runner
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    init: true                            # reaps whatever a run leaves behind
+    tmpfs:
+      - /work:size=512m,mode=0711,exec    # each run's scratch directory
+      - /tmp:size=16m,mode=0700           # not a shared drop box between runs
+    volumes:
+      - eg-runner:/run/eg-runner
+      - eg-gocache:/var/cache/go          # Go build cache, written only by the build user
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID, KILL]   # to set up and police each run
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 512
+    mem_limit: 2g
+    cpus: 2
+    shm_size: 16m
+    environment:
+      EG_RUNNER_SLOTS: "${EG_RUNNER_SLOTS:-3}"
+      EG_RUNNER_CLIENT_GID: "10001"       # the web container's group: the only one that may connect
+
+volumes:
+  eg-data:
+  eg-runner:
+  eg-gocache:

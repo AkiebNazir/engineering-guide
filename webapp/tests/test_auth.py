@@ -374,8 +374,10 @@ class HostedServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.saved = {k: getattr(server, k) for k in
-                     ("AUTH_ENABLED", "AUTH", "GOOGLE", "COOKIE_SECURE", "SESSION_COOKIE", "OAUTH_COOKIE")}
+                     ("AUTH_ENABLED", "AUTH", "GOOGLE", "COOKIE_SECURE", "SESSION_COOKIE", "OAUTH_COOKIE",
+                      "RUNNER", "RUNNER_SOCKET")}
         server.AUTH_ENABLED, server.COOKIE_SECURE = True, False
+        server.RUNNER, server.RUNNER_SOCKET = None, ""          # no runner container: runs are off
         server.SESSION_COOKIE, server.OAUTH_COOKIE = "eg_session", "eg_oauth"
         server.AUTH = cls.store = new_store(Clock(__import__("time").time()))
         server.GOOGLE = cls.google = google_signin.GoogleSignIn(cls.store, GOOGLE_ENV)

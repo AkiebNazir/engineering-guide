@@ -25,11 +25,8 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import sys
-import tempfile
 import threading
-import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -44,6 +41,7 @@ from urllib.parse import urlparse, parse_qs
 import auth
 import entitlements
 import google_signin
+import sandbox
 
 ROOT = Path(__file__).resolve().parent.parent
 WEBAPP = ROOT / "webapp"
@@ -113,6 +111,9 @@ OAUTH_COOKIE = "__Host-eg_oauth" if COOKIE_SECURE else "eg_oauth"
 SIGNIN_ERRORS = {"google_failed", "google_cancelled", "google_mismatch", "disabled", "google_off", "rate_limited"}
 CODE_RUN_OFF = ("Running code is switched off on the hosted guide. Clone the repository and "
                 "run `make app` to run code on your own machine.")
+RUNNER_SOCKET = os.environ.get("EG_RUNNER_SOCKET", "")      # hosted: runner.py's socket (see deploy/)
+RUNNER = None          # sandbox.LocalRunner / RemoteRunner, picked by code_runner() and main()
+SCRATCH_PKG = "scratch_run"    # the package a Go level's buffer becomes, inside a copy of its module
 RUN_TIMEOUT_PY = 15
 RUN_TIMEOUT_GO = 40
 RUN_TIMEOUT_ENG_PY = 30
@@ -400,26 +401,24 @@ def eng_python_bin() -> str:
     return str(venv) if venv.exists() else python_bin()
 
 
-_eng_run_lock = threading.Lock()
-
-
 def run_eng(lang: str, topic: str, code: str) -> dict:
     """Runs the learner's edited explanation code.
 
     When the topic has a test file, tests are the real check: Go/Python
-    tests are hardcoded to load the *_solution.* file by name, so the trick
-    is to back up the real solution file, overwrite it with the learner's
-    code (same package/module, same public surface), run the real test file
-    against it, then always restore the original — even on timeout or
-    crash. Many topics have no test file (by design — this curriculum
-    doesn't require one), so when there isn't one we fall back to swapping
-    the *explanation* file itself and just compiling/running it directly:
+    tests are hardcoded to load the *_solution.* file by name, so the run
+    gets a scratch copy of the topic with the learner's code in place of the
+    solution file (same package/module, same public surface) and runs the
+    real test file against it. Many topics have no test file (by design —
+    this curriculum doesn't require one), so when there isn't one the
+    *explanation* file is swapped instead and just compiled/run directly:
     `go vet` (which type-checks a `package main` fine even with no
-    `func main()`) for Go, or executing the file for Python. Either way the
-    swap always takes a lock and always restores the original file."""
+    `func main()`) for Go, or executing the file for Python. The curriculum
+    on disk is only ever read."""
     if not code.strip():
         return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
                 "stderr": "Nothing to run — the editor is empty."}
+    if lang not in ENG_ROOTS or not re.fullmatch(r"[\w\-]+", topic or ""):     # no dots, no slashes
+        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0, "stderr": "Unknown topic."}
 
     expl = eng_file(lang, topic, "explanation")
     sol = eng_file(lang, topic, "solution")
@@ -428,58 +427,34 @@ def run_eng(lang: str, topic: str, code: str) -> dict:
         return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
                 "stderr": "This topic hasn't been authored yet — nothing to run."}
 
-    if lang == "go" and not go_bin():
-        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                "stderr": "Go toolchain not found on PATH."}
-
     has_test = sol.exists() and test.exists()
     target = sol if has_test else expl
+    root = ENG_ROOTS[lang]
+    rel = target.relative_to(root).as_posix()
+    pkg = rel.rpartition("/")[0]
 
-    with _eng_run_lock:
-        original = target.read_text()
-        started = time.perf_counter()
-        try:
-            target.write_text(code)
-            if lang == "go":
-                cmd = [go_bin(), "test", "-v", "./..."] if has_test else [go_bin(), "vet", "./..."]
-                proc = subprocess.run(
-                    cmd, capture_output=True, text=True,
-                    timeout=RUN_TIMEOUT_ENG_GO, cwd=str(target.parent),
-                    env={**os.environ, "GOFLAGS": "-mod=mod"},
-                )
-                stdout = proc.stdout
-                if not has_test and proc.returncode == 0 and not stdout.strip():
-                    stdout = "go vet: no issues found — code compiles cleanly.\n"
-            elif has_test:
-                proc = subprocess.run(
-                    [eng_python_bin(), "-m", "pytest", test.name, "-v"],
-                    capture_output=True, text=True,
-                    timeout=RUN_TIMEOUT_ENG_PY, cwd=str(target.parent),
-                )
-                stdout = proc.stdout
-            else:
-                proc = subprocess.run(
-                    [eng_python_bin(), expl.name],
-                    capture_output=True, text=True,
-                    timeout=RUN_TIMEOUT_ENG_PY, cwd=str(target.parent),
-                )
-                stdout = proc.stdout
-            return {
-                "ok": proc.returncode == 0,
-                "stdout": stdout, "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000),
-            }
-        except subprocess.TimeoutExpired:
-            timeout = RUN_TIMEOUT_ENG_GO if lang == "go" else RUN_TIMEOUT_ENG_PY
-            return {
-                "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {timeout}s — likely an infinite loop, "
-                          f"a deadlock, or a server that never shuts down.",
-                "ms": timeout * 1000,
-            }
-        finally:
-            target.write_text(original)
+    if lang == "go":
+        timeout = RUN_TIMEOUT_ENG_GO
+        job = {"kind": "go-test" if has_test else "go-vet", "cwd": pkg, "timeout": timeout,
+               "files": sandbox.stage_go_module(root, [pkg], {rel: code})}
+    elif lang == "lld":
+        # lld/ is flat (every question and solution side by side): the question alone
+        timeout = RUN_TIMEOUT_ENG_PY
+        job = {"kind": "python", "python": "eng", "args": [target.name], "timeout": timeout,
+               "files": {target.name: code}}
+    else:
+        timeout = RUN_TIMEOUT_ENG_PY
+        files = sandbox.dir_files(target.parent, f"{pkg}/")
+        files[rel] = code
+        args = ["-m", "pytest", test.name, "-v", "-p", "no:cacheprovider"] if has_test else [expl.name]
+        job = {"kind": "python", "python": "eng", "cwd": pkg, "args": args, "timeout": timeout,
+               "files": files}
+
+    result = timed_out_message(code_runner().run(job), timeout,
+                               "likely an infinite loop, a deadlock, or a server that never shuts down.")
+    if lang == "go" and not has_test and result.get("ok") and not result.get("stdout", "").strip():
+        result["stdout"] = "go vet: no issues found — code compiles cleanly.\n"
+    return result
 
 
 # ----------------------------------------------------------------------------
@@ -1165,19 +1140,12 @@ def read_stdlib_file(lang: str, pkg: str, level: str) -> dict:
             "path": str(path.relative_to(ROOT))}
 
 
-_stdlib_run_lock = threading.Lock()
-# Dot-prefixed so the Go tool skips it when expanding ./... — an explicit
-# relative path to it still builds, which is all `go run` needs.
-GO_RUNTMP = ".runtmp"
-
-
 def run_stdlib(lang: str, pkg: str, level: str, code: str) -> dict:
     """Runs the buffer the learner is looking at — never the file on disk.
 
-    Python is trivial: a temp directory outside the repo. Go is not, because a
-    level imports nothing but the stdlib yet still has to compile inside the
-    GoStdLib module, so the throwaway package is created *under* GoStdLib and
-    deleted in a finally. Either way the curriculum file is only ever read."""
+    Python runs alone in a scratch directory. A Go level imports nothing but the
+    stdlib yet still compiles inside the GoStdLib module, so it gets a scratch
+    package inside a copy of that module."""
     timeout = RUN_TIMEOUT_STDLIB_GO if lang == "go" else RUN_TIMEOUT_STDLIB_PY
     if not code.strip():
         return {"ok": False, "stdout": "", "stderr": "Nothing to run — the editor is empty.",
@@ -1185,61 +1153,14 @@ def run_stdlib(lang: str, pkg: str, level: str, code: str) -> dict:
     if stdlib_level_path(lang, pkg, level) is None:
         return {"ok": False, "stdout": "", "stderr": "Unknown package or level.",
                 "exitCode": -1, "ms": 0}
-
-    def timed_out() -> dict:
-        return {
-            "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-            "stderr": f"Timed out after {timeout}s — likely an infinite loop, a "
-                      f"benchmark that is too big, or something waiting on input.",
-            "ms": timeout * 1000,
-        }
-
-    def done(proc, started: float) -> dict:
-        return {"ok": proc.returncode == 0, "stdout": proc.stdout, "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000)}
-
     if lang == "py":
-        tmp = tempfile.mkdtemp(prefix="stdlib_py_")
-        try:
-            f = Path(tmp) / "main.py"
-            f.write_text(code)
-            started = time.perf_counter()
-            try:
-                return done(subprocess.run([python_bin(), str(f)], capture_output=True,
-                                           text=True, timeout=timeout, cwd=tmp), started)
-            except subprocess.TimeoutExpired:
-                return timed_out()
-        finally:
-            shutil.rmtree(tmp, ignore_errors=True)
-
-    go = go_bin()
-    if not go:
-        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                "stderr": "Go toolchain not found on PATH."}
-    root = STDLIB_ROOTS["go"]
-    # The scratch package lives inside the module, so serialise creation and
-    # teardown against anything else mutating shared curriculum paths.
-    with _stdlib_run_lock:
-        holder = root / GO_RUNTMP
-        holder.mkdir(exist_ok=True)
-        tmp = Path(tempfile.mkdtemp(prefix="run_", dir=str(holder)))
-        try:
-            (tmp / "main.go").write_text(code)
-            started = time.perf_counter()
-            try:
-                return done(subprocess.run(
-                    [go, "run", f"./{GO_RUNTMP}/{tmp.name}"], capture_output=True,
-                    text=True, timeout=timeout, cwd=str(root),
-                    env={**os.environ, "GOFLAGS": "-mod=mod"}), started)
-            except subprocess.TimeoutExpired:
-                return timed_out()
-        finally:
-            shutil.rmtree(tmp, ignore_errors=True)
-            try:
-                holder.rmdir()          # only when nothing else is running
-            except OSError:
-                pass
+        job = {"kind": "python", "args": ["main.py"], "timeout": timeout, "files": {"main.py": code}}
+    else:
+        job = {"kind": "go-run", "pkg": SCRATCH_PKG, "timeout": timeout,
+               "files": sandbox.stage_go_module(STDLIB_ROOTS["go"], [], {f"{SCRATCH_PKG}/main.go": code})}
+    return timed_out_message(code_runner().run(job), timeout,
+                             "likely an infinite loop, a benchmark that is too big, "
+                             "or something waiting on input.")
 
 
 # ----------------------------------------------------------------------------
@@ -1261,7 +1182,6 @@ API_TYPES = ["REST", "GraphQL", "Protobuf", "gRPC", "WebSockets", "Webhooks", "S
 API_LEVEL_RE = re.compile(r"^(\d{2})_([a-z0-9_]+)$")
 RUN_TIMEOUT_API_PY = 30
 RUN_TIMEOUT_API_GO = 45
-API_RUNTMP = ".runtmp"
 
 
 def api_python_bin() -> str:
@@ -1362,18 +1282,15 @@ def read_api_file(type_name: str, section: str, level_id: str, lang: str) -> dic
     return {"exists": True, "doc": doc, "code": code, "path": str(path.relative_to(ROOT))}
 
 
-_api_run_lock = threading.Lock()
-
-
 def run_api_file(type_name: str, section: str, level_id: str, lang: str, code: str) -> dict:
     """Runs the buffer the learner is looking at — never the file on disk (same
     principle as run_stdlib above). Python: the level's sibling files (some
     Protobuf/gRPC levels import generated *_pb2 / *_pb2_grpc stubs by bare
-    name) are copied into a scratch dir alongside the edited code, so those
+    name) go into the scratch directory alongside the edited code, so those
     imports still resolve, using the content/data-and-apis/API/.venv interpreter that has fastapi,
     strawberry, grpcio, websockets etc. installed. Go: a scratch package
-    created *under* API/ so it still compiles inside the dsapractice/api
-    module and picks up its real dependencies (gin, echo, coder/websocket...)."""
+    inside a copy of the dsapractice/api module (with the generated packages
+    it imports), so it picks up its real dependencies (gin, echo, coder/websocket...)."""
     timeout = RUN_TIMEOUT_API_GO if lang == "go" else RUN_TIMEOUT_API_PY
     if not code.strip():
         return {"ok": False, "stdout": "", "stderr": "Nothing to run — the editor is empty.",
@@ -1382,56 +1299,16 @@ def run_api_file(type_name: str, section: str, level_id: str, lang: str, code: s
     if not target or not target.exists():
         return {"ok": False, "stdout": "", "stderr": "Unknown type, section, level or language.",
                 "exitCode": -1, "ms": 0}
-
-    def timed_out() -> dict:
-        return {"ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {timeout}s — likely an infinite loop, a "
-                          f"deadlock, or a server that never shuts down.",
-                "ms": timeout * 1000}
-
-    def done(proc, started: float) -> dict:
-        return {"ok": proc.returncode == 0, "stdout": proc.stdout, "stderr": proc.stderr,
-                "exitCode": proc.returncode, "ms": round((time.perf_counter() - started) * 1000)}
-
     if lang == "go":
-        go = go_bin()
-        if not go:
-            return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                    "stderr": "Go toolchain not found on PATH."}
-        with _api_run_lock:
-            holder = API_DIR / API_RUNTMP
-            holder.mkdir(exist_ok=True)
-            tmp = Path(tempfile.mkdtemp(prefix="run_", dir=str(holder)))
-            try:
-                (tmp / "main.go").write_text(code)
-                started = time.perf_counter()
-                try:
-                    return done(subprocess.run(
-                        [go, "run", f"./{API_RUNTMP}/{tmp.name}"], capture_output=True,
-                        text=True, timeout=timeout, cwd=str(API_DIR),
-                        env={**os.environ, "GOFLAGS": "-mod=mod"}), started)
-                except subprocess.TimeoutExpired:
-                    return timed_out()
-            finally:
-                shutil.rmtree(tmp, ignore_errors=True)
-                try:
-                    holder.rmdir()          # only when nothing else is running
-                except OSError:
-                    pass
-
-    with tempfile.TemporaryDirectory(prefix="api_py_") as tmp:
-        tmp_path = Path(tmp)
-        for sib in target.parent.iterdir():
-            if sib.is_file() and sib.suffix == ".py":
-                shutil.copy2(sib, tmp_path / sib.name)
-        (tmp_path / target.name).write_text(code)
-        started = time.perf_counter()
-        try:
-            return done(subprocess.run(
-                [api_python_bin(), target.name], capture_output=True, text=True,
-                timeout=timeout, cwd=str(tmp_path)), started)
-        except subprocess.TimeoutExpired:
-            return timed_out()
+        job = {"kind": "go-run", "pkg": SCRATCH_PKG, "timeout": timeout,
+               "files": sandbox.stage_go_module(API_DIR, [], {f"{SCRATCH_PKG}/main.go": code})}
+    else:
+        files = {k: v for k, v in sandbox.dir_files(target.parent).items() if k.endswith(".py")}
+        files[target.name] = code
+        job = {"kind": "python", "python": "api", "args": [target.name], "timeout": timeout,
+               "files": files}
+    return timed_out_message(code_runner().run(job), timeout,
+                             "likely an infinite loop, a deadlock, or a server that never shuts down.")
 
 
 # ----------------------------------------------------------------------------
@@ -1736,82 +1613,45 @@ def read_guide(topic: str, lang: str) -> dict:
 # ----------------------------------------------------------------------------
 # Code execution
 # ----------------------------------------------------------------------------
+def code_runner():
+    """Where code runs: set by main() (the runner container in hosted mode),
+    otherwise this machine's toolchains."""
+    global RUNNER
+    if RUNNER is None:
+        if AUTH_ENABLED:      # the hosted guide never runs code with this machine's toolchains
+            RUNNER = sandbox.RemoteRunner(RUNNER_SOCKET) if RUNNER_SOCKET else sandbox.DisabledRunner(CODE_RUN_OFF)
+        else:
+            RUNNER = sandbox.LocalRunner(
+                {"default": python_bin(), "eng": eng_python_bin(), "api": api_python_bin()}, go_bin())
+    return RUNNER
+
+
+def timed_out_message(result: dict, timeout: int, why: str) -> dict:
+    if result.get("timeout"):
+        return {**result, "stderr": f"Timed out after {timeout}s — {why}", "ms": timeout * 1000}
+    return result
+
+
 def run_python(code: str) -> dict:
-    with tempfile.TemporaryDirectory(prefix="dsa_py_") as tmp:
-        f = Path(tmp) / "main.py"
-        f.write_text(code)
-        started = time.perf_counter()
-        try:
-            proc = subprocess.run(
-                [python_bin(), str(f)],
-                capture_output=True, text=True,
-                timeout=RUN_TIMEOUT_PY, cwd=tmp,
-            )
-            return {
-                "ok": proc.returncode == 0,
-                "stdout": proc.stdout,
-                "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000),
-            }
-        except subprocess.TimeoutExpired:
-            return {
-                "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {RUN_TIMEOUT_PY}s — "
-                          f"likely an infinite loop or runaway recursion.",
-                "ms": RUN_TIMEOUT_PY * 1000,
-            }
+    return timed_out_message(
+        code_runner().run({"kind": "python", "args": ["main.py"], "timeout": RUN_TIMEOUT_PY,
+                           "files": {"main.py": code}}),
+        RUN_TIMEOUT_PY, "likely an infinite loop or runaway recursion.")
 
 
 def run_go(code: str) -> dict:
-    go = go_bin()
-    if not go:
-        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                "stderr": "Go toolchain not found on PATH. Install Go, or "
-                          "set it up so `go` is runnable from a shell."}
-    with tempfile.TemporaryDirectory(prefix="dsa_go_") as tmp:
-        d = Path(tmp)
-        (d / "main.go").write_text(code)
-        (d / "go.mod").write_text("module dsascratch\n\ngo 1.21\n")
-        started = time.perf_counter()
-        env = {**os.environ, "GOFLAGS": "-mod=mod"}
-        try:
-            proc = subprocess.run(
-                [go, "run", "."],
-                capture_output=True, text=True,
-                timeout=RUN_TIMEOUT_GO, cwd=str(d), env=env,
-            )
-            return {
-                "ok": proc.returncode == 0,
-                "stdout": proc.stdout,
-                "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000),
-            }
-        except subprocess.TimeoutExpired:
-            return {
-                "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {RUN_TIMEOUT_GO}s — "
-                          f"likely an infinite loop, or a very slow first build.",
-                "ms": RUN_TIMEOUT_GO * 1000,
-            }
+    return timed_out_message(
+        code_runner().run({"kind": "go-run", "timeout": RUN_TIMEOUT_GO,
+                           "files": {"main.go": code, "go.mod": "module dsascratch\n\ngo 1.21\n"}}),
+        RUN_TIMEOUT_GO, "likely an infinite loop, or a very slow first build.")
 
 
 def format_go(code: str) -> dict:
-    go = go_bin()
-    if not go:
-        return {"ok": False, "code": code, "error": "Go toolchain not found."}
-    gofmt = Path(go).parent / "gofmt"
-    if not gofmt.exists():
-        return {"ok": False, "code": code, "error": "gofmt not found."}
-    try:
-        proc = subprocess.run([str(gofmt)], input=code, capture_output=True,
-                              text=True, timeout=10)
-        if proc.returncode == 0:
-            return {"ok": True, "code": proc.stdout}
-        return {"ok": False, "code": code, "error": proc.stderr}
-    except subprocess.TimeoutExpired:
-        return {"ok": False, "code": code, "error": "gofmt timed out."}
+    r = code_runner().run({"kind": "gofmt", "stdin": code, "timeout": 10, "files": {}})
+    if r.get("ok"):
+        return {"ok": True, "code": r["stdout"]}
+    error = "gofmt timed out." if r.get("timeout") else (r.get("stderr") or "gofmt failed.")
+    return {"ok": False, "code": code, "error": error}
 
 
 # ----------------------------------------------------------------------------
@@ -1840,7 +1680,7 @@ def api_get(p: str, q: dict[str, list[str]]) -> tuple[object, int] | None:
                 "lld": load_eng_curriculum("lld"),
             },
             "state": state,
-            "runtimes": {"python": True, "go": go_bin() is not None},
+            "runtimes": code_runner().available,
             "root": str(ROOT),
         })
     elif p == "/api/eng-problem":
@@ -2001,6 +1841,28 @@ STATIC_TYPES = {
 GOOGLE_START_RATE = auth.RateLimiter(30, 600)     # Google sign-in starts per client IP
 
 RUN_ROUTES = frozenset({"/api/run", "/api/eng-run", "/api/stdlib-run", "/api/api-run", "/api/format"})
+RUN_RATE_MINUTE = auth.RateLimiter(int(os.environ.get("EG_RUNS_PER_MINUTE", "20")), 60)
+RUN_RATE_HOUR = auth.RateLimiter(int(os.environ.get("EG_RUNS_PER_HOUR", "300")), 3600)
+_runs_lock = threading.Lock()
+_runs_in_flight: set = set()
+
+
+def dispatch_run(p: str, body: dict) -> dict:
+    """POST /api/run, /api/eng-run, /api/stdlib-run, /api/api-run, /api/format."""
+    s = lambda key, default="": str(body.get(key) or default)       # noqa: E731
+    if p == "/api/run":
+        code = s("code")
+        if not code.strip():
+            return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
+                    "stderr": "Nothing to run — the editor is empty."}
+        return run_python(code) if s("lang", "py") == "py" else run_go(code)
+    if p == "/api/eng-run":
+        return run_eng(s("lang", "go"), s("topic"), s("code"))
+    if p == "/api/stdlib-run":
+        return run_stdlib(stdlib_lang(s("lang", "py")), s("pkg"), s("level"), s("code"))
+    if p == "/api/api-run":
+        return run_api_file(s("type"), s("section", "Foundation"), s("level"), s("lang", "py"), s("code"))
+    return format_go(s("code"))
 
 
 def hosted_config_js() -> bytes:
@@ -2254,7 +2116,7 @@ class Handler(BaseHTTPRequestHandler):
         payload, status = reply
         if u.path == "/api/bootstrap":
             payload = {**payload, "state": self._user_state(user), "root": "",
-                       "runtimes": {"python": False, "go": False}, "account": AUTH.account(user)}
+                       "runtimes": code_runner().available, "account": AUTH.account(user)}
         self._json(entitlements.filter_payload(u.path, q, payload, tier), status)
 
     def do_POST(self) -> None:
@@ -2296,8 +2158,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"error": "signed_out", "message": "Sign in to continue."}, 401)
                 return
             if p in RUN_ROUTES:
-                self._json({"ok": False, "exitCode": 1, "stdout": "", "stderr": CODE_RUN_OFF,
-                            "error": CODE_RUN_OFF, "ms": 0})
+                self._hosted_run(p, body, user)
             elif p == "/api/state":
                 state = default_state()
                 state.update(body)
@@ -2312,28 +2173,38 @@ class Handler(BaseHTTPRequestHandler):
         except auth.AuthError as e:
             self._json(e.body(), e.status, {"Retry-After": str(e.retry_after)} if e.retry_after else None)
 
+    def _hosted_run(self, p: str, body: dict, user) -> None:
+        """Code runs on the hosted guide: only with a runner container, only for pages
+        the reader's plan opens, one at a time per account, rate limited."""
+        if not RUNNER_SOCKET:
+            self._json({"ok": False, "exitCode": 1, "stdout": "", "stderr": CODE_RUN_OFF,
+                        "error": CODE_RUN_OFF, "ms": 0})
+            return
+        denied = entitlements.check_run(p, body, AUTH.effective_tier(user))
+        if denied:
+            self._json(denied, 403)
+            return
+        key = f"user:{user['id']}"
+        if not (RUN_RATE_MINUTE.allow(key) and RUN_RATE_HOUR.allow(key)):
+            self._json(sandbox.failure("You are running code very often. Wait a minute and try again.",
+                                       error="rate_limited"), 429, {"Retry-After": "60"})
+            return
+        with _runs_lock:
+            busy = user["id"] in _runs_in_flight
+            _runs_in_flight.add(user["id"])
+        if busy:
+            self._json(sandbox.failure("Your previous run is still going. Wait for it to finish.",
+                                       error="busy"), 429)
+            return
+        try:
+            self._json(dispatch_run(p, body))
+        finally:
+            with _runs_lock:
+                _runs_in_flight.discard(user["id"])
+
     def _local_post(self, p: str, body: dict) -> None:
-        if p == "/api/run":
-            code = body.get("code", "")
-            lang = body.get("lang", "py")
-            if not code.strip():
-                self._json({"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                            "stderr": "Nothing to run — the editor is empty."})
-                return
-            self._json(run_python(code) if lang == "py" else run_go(code))
-        elif p == "/api/eng-run":
-            self._json(run_eng(body.get("lang", "go"), body.get("topic", ""),
-                                body.get("code", "")))
-        elif p == "/api/stdlib-run":
-            self._json(run_stdlib(stdlib_lang(body.get("lang", "py")),
-                                  body.get("pkg", ""), body.get("level", ""),
-                                  body.get("code", "")))
-        elif p == "/api/api-run":
-            self._json(run_api_file(body.get("type", ""), body.get("section", "Foundation"),
-                                    body.get("level", ""), body.get("lang", "py"),
-                                    body.get("code", "")))
-        elif p == "/api/format":
-            self._json(format_go(body.get("code", "")))
+        if p in RUN_ROUTES:
+            self._json(dispatch_run(p, body))
         elif p == "/api/state":
             with _state_lock:
                 save_state(body)
@@ -2378,7 +2249,7 @@ def main() -> None:
         DATA.mkdir(parents=True, exist_ok=True)
     if not AUTH_ENABLED and not LOOPBACK:
         sys.exit(f"EG_HOST={HOST}: the local app runs code you send it, so it only binds to loopback. "
-                 "Set EG_AUTH=1 for the hosted mode (sign-in, no code execution).")
+                 "Set EG_AUTH=1 for the hosted mode (sign-in; code runs only in the runner container).")
 
     problems = load_curriculum()
     written = sum(1 for p in problems if p["has"]["pySolution"])
@@ -2403,7 +2274,12 @@ def main() -> None:
         print(f"  Codes via   {AUTH.mailer.describe()}")
         print(f"  Google      {'on' if GOOGLE.enabled else 'off (EG_GOOGLE_CLIENT_ID / _SECRET not set)'}")
         print(f"  Cookies     {'Secure (HTTPS only)' if COOKIE_SECURE else 'not Secure (development)'}")
-        print("  Code runs   off (hosted mode)")
+        if RUNNER_SOCKET:
+            reachable = code_runner().ping()
+            print(f"  Code runs   runner container at {RUNNER_SOCKET}"
+                  f"{'' if reachable else ' (not answering yet)'}")
+        else:
+            print("  Code runs   off (no EG_RUNNER_SOCKET; see deploy/compose.yaml)")
     else:
         print(f"  Python      {python_bin()}")
         print(f"  Go          {go_ok}")
