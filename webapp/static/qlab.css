@@ -250,6 +250,7 @@
 .code-run + .code-copy { margin-left: 0; }
 .code-run:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, transparent); }
 .code-run:disabled { opacity: .7; cursor: progress; }
+.code-run.is-stop, .qlab-stop { color: var(--err); border-color: color-mix(in srgb, var(--err) 45%, transparent); background: var(--err-wash); }
 /* the block and its output read as one card: square the seam, drop the gap */
 .code.has-run-out { margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .qlab-doc-out {
