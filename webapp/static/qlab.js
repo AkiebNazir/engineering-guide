@@ -7,7 +7,8 @@
 
    Engines run client-side, so the lab works the same with the local server and
    on a static host:
-     sql      PGlite (PostgreSQL compiled to WebAssembly), vendor/pglite/
+     sql      PGlite (PostgreSQL compiled to WebAssembly) in a Web Worker,
+              qlab-sql-worker.js + vendor/pglite/
      mongodb  mingo (MongoDB query language) behind a mongosh-style `db`, qlab-core.js
      redis    MiniRedis, qlab-redis.js
 
@@ -67,7 +68,9 @@ const qlabStatus = (engine, qid) => (DATA.state.problems[qlabRecId(engine, qid)]
 
 /* ============================================================= engines == */
 const QE = {
-  sql: { db: null, ready: null, loaded: new Set(), scratchPages: new Set() },
+  // sql: worker = the SqlWorkerDb starting or running, db = the same once PGlite is up,
+  // loaded = dataset -> promise of its load into this worker
+  sql: { worker: null, db: null, ready: null, loaded: new Map(), scratchPages: new Set() },
   mongodb: { base: null, ready: null, shell: null },
   redis: { seed: null, ready: null, live: null },
 };
@@ -86,26 +89,119 @@ function qlabScript(src) {
 const sqlStripTxn = code => code.replace(
   /(^|;)(\s*)(?:BEGIN|START\s+TRANSACTION|COMMIT|END|ROLLBACK|ABORT)(?:\s+(?:WORK|TRANSACTION))?(?:\s+ISOLATION\s+LEVEL\s+[A-Z ]+?)?\s*(?=;|$)/gi, '$1$2');
 async function sqlCloseTxn(db) {
-  if (!db.isInTransaction()) return '';
+  if (!(await db.isInTransaction())) return '';
   await db.exec('ROLLBACK');
   return 'The run left a transaction open, so it was rolled back. End it with COMMIT in the same run to keep its changes.';
 }
 
+/* --- SQL: PGlite in a Web Worker (qlab-sql-worker.js) --------------------
+   PGlite ignores statement_timeout, and a statement can't be cancelled from
+   outside, so a runaway query (say a recursive CTE with no stop condition) is
+   stopped by terminating the worker. Learners' SQL runs with { limit: true }:
+   past SQL_TIME_LIMIT_MS, or on the Stop button, sqlStop() throws the worker
+   away and starts a fresh one; callers reload their dataset with sqlLoad(). */
+const SQL_TIME_LIMIT_MS = 10000;
+
+class SqlWorkerDb {
+  constructor() {
+    this.worker = new Worker(new URL('./qlab-sql-worker.js', document.baseURI), { type: 'module' });
+    this.pending = new Map();
+    this.seq = 0;
+    this.dead = null;
+    this.ready = new Promise((resolve, reject) => { this.boot = { resolve, reject }; });
+    this.ready.catch(() => {});
+    this.chain = this.ready.catch(() => {});
+    this.worker.onmessage = ({ data: m }) => {
+      if ('ready' in m) { m.ready ? this.boot.resolve(this) : this.kill(sqlError(m.error)); return; }
+      const p = this.pending.get(m.id);
+      if (!p) return;
+      this.pending.delete(m.id);
+      m.ok ? p.resolve(m.result) : p.reject(sqlError(m.error));
+    };
+    this.worker.onerror = e => {
+      e.preventDefault();
+      this.kill(new Error(`PostgreSQL did not start: ${e.message || 'its worker failed to load'}`));
+    };
+  }
+  // One request at a time, so a time limit measures that request and nothing queued before it.
+  call(msg, limit) {
+    const run = this.chain.then(() => new Promise((resolve, reject) => {
+      if (this.dead) { reject(this.dead); return; }
+      const id = ++this.seq;
+      const timer = limit ? setTimeout(() => sqlStop('timeout', this), SQL_TIME_LIMIT_MS) : 0;
+      this.pending.set(id, {
+        resolve: v => { clearTimeout(timer); resolve(v); },
+        reject: e => { clearTimeout(timer); reject(e); },
+      });
+      this.worker.postMessage({ id, ...msg });
+    }));
+    this.chain = run.catch(() => {});
+    return run;
+  }
+  exec(sql, { limit = false } = {}) { return this.call({ op: 'exec', sql }, limit); }
+  query(sql, params = [], { limit = false } = {}) { return this.call({ op: 'query', sql, params }, limit); }
+  isInTransaction() { return this.call({ op: 'inTxn' }); }   // async here, unlike PGlite's own
+  kill(err) {
+    if (this.dead) return;
+    this.dead = err;
+    this.worker.terminate();
+    this.boot.reject(err);
+    for (const p of this.pending.values()) p.reject(err);
+    this.pending.clear();
+  }
+}
+
+// Errors come back from the worker as plain objects (message, position, code, …).
+function sqlError(o) {
+  return Object.assign(new Error(o && o.message ? o.message : 'PostgreSQL error'), o || {});
+}
+
 async function sqlDb() {
-  QE.sql.ready ??= (async () => {
-    const { PGlite } = await import(new URL('./vendor/pglite/0.5.8/index.js', document.baseURI).href);
-    QE.sql.db = await PGlite.create();
-    return QE.sql.db;
-  })().catch(e => { QE.sql.ready = null; throw e; });
+  if (!QE.sql.ready) {
+    const w = QE.sql.worker = new SqlWorkerDb();
+    const p = QE.sql.ready = w.ready.then(db => { if (QE.sql.worker === w) QE.sql.db = db; return db; });
+    p.catch(() => {
+      if (QE.sql.ready !== p) return;
+      QE.sql.ready = QE.sql.worker = QE.sql.db = null;
+      QE.sql.loaded.clear();
+    });
+  }
   return QE.sql.ready;
 }
 async function sqlLoad(dataset) {
   const db = await sqlDb();
-  if (dataset === 'scratch' || QE.sql.loaded.has(dataset)) return db;
-  const d = await api(`/api/query-lab-data?engine=sql&dataset=${encodeURIComponent(dataset)}`);
-  for (const text of Object.values(d.files)) await db.exec(text);
-  QE.sql.loaded.add(dataset);
+  if (dataset === 'scratch') return db;
+  let p = QE.sql.loaded.get(dataset);
+  if (!p) {
+    p = (async () => {
+      const d = await api(`/api/query-lab-data?engine=sql&dataset=${encodeURIComponent(dataset)}`);
+      for (const text of Object.values(d.files)) await db.exec(text);
+    })();
+    QE.sql.loaded.set(dataset, p);
+    p.catch(() => { if (QE.sql.loaded.get(dataset) === p) QE.sql.loaded.delete(dataset); });
+  }
+  await p;
   return db;
+}
+
+// Stop whatever SQL is running: terminate the worker (every pending call rejects with
+// an error that has .stopped set) and boot a fresh one. reason: 'timeout' | 'user'.
+function sqlStop(reason, w = QE.sql.worker) {
+  if (!w || w.dead) return;
+  const err = new Error(reason === 'timeout'
+    ? `Query stopped after ${SQL_TIME_LIMIT_MS / 1000} s, the database was restarted.`
+    : 'Query stopped, the database was restarted.');
+  err.stopped = true;
+  if (QE.sql.worker === w) {
+    QE.sql.ready = QE.sql.worker = QE.sql.db = null;
+    QE.sql.loaded.clear();
+    // chapter pages' scratch schemas died with it: their next Run sets them up again
+    for (const [key, sess] of QLAB_DOC_SESSIONS) {
+      if (sess.schema) { QLAB_DOC_SESSIONS.delete(key); QLAB_DOC_RAN.delete(key); }
+    }
+  }
+  w.kill(err);
+  sqlDb().catch(() => {});
 }
 const sqlPath = ds => (ds === 'scratch' ? 'public' : `${ds}, public`);
 
@@ -146,7 +242,7 @@ async function qlabRunPlayground(engine, code) {
     const db = await sqlLoad(qlabDataset.sql);
     await db.exec(`SET search_path TO ${sqlPath(qlabDataset.sql)}`);
     try {
-      const res = await db.exec(code);
+      const res = await db.exec(code, { limit: true });
       return { kind: 'table', ms: performance.now() - t0, statements: res.length, ...QLabCore.sqlLastResult(res), note: await sqlCloseTxn(db) };
     } finally {
       await sqlCloseTxn(db);
@@ -172,8 +268,8 @@ async function qlabRunIsolated(engine, q, code) {
       await db.exec(`SET LOCAL search_path TO ${sqlPath(q.dataset)}`);
       // The check already runs inside a transaction it rolls back; an answer's own
       // BEGIN/COMMIT would end that early and make its changes permanent.
-      let r = QLabCore.sqlLastResult(await db.exec(sqlStripTxn(code)));
-      if (q.verify) r = QLabCore.sqlLastResult(await db.exec(q.verify));
+      let r = QLabCore.sqlLastResult(await db.exec(sqlStripTxn(code), { limit: true }));
+      if (q.verify) r = QLabCore.sqlLastResult(await db.exec(q.verify, { limit: true }));
       return r;
     } finally {
       await db.exec('ROLLBACK').catch(() => {});
@@ -283,6 +379,8 @@ function qlabShell(engine, bank) {
                 <button class="btn btn-ghost" id="qlabReset" title="Reload the dataset, undoing your changes">Reset data</button>
                 <button class="btn btn-ghost qlab-check" id="qlabCheck" hidden title="Check your answer against the reference (Shift + ${QLAB_MODK} + Enter)">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Check answer</button>
+                <button class="btn btn-ghost qlab-stop" id="qlabStop" hidden title="Stop the running query (restarts the database)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"/></svg>Stop</button>
                 <button class="btn btn-primary" id="qlabRun" title="Run the editor, or just the selected text (${QLAB_MODK} + Enter)">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>Run<span class="qlab-kbd" aria-hidden="true">${QLAB_MAC ? '⌘↵' : 'Ctrl+Enter'}</span></button>
               </div>
@@ -585,7 +683,7 @@ function qlabPaintOutput(out, verdict) {
 }
 
 function qlabVerdictHtml(v) {
-  if (v.error) return `<div class="qlab-verdict is-err"><b>Your query failed</b><pre>${esc(v.error)}</pre></div>`;
+  if (v.error) return `<div class="qlab-verdict is-err"><b>${v.stopped ? 'Stopped' : 'Your query failed'}</b><pre>${esc(v.error)}</pre></div>`;
   if (v.ok) return `<div class="qlab-verdict is-ok"><b>✓ Correct.</b> Your result matches the reference answer.${v.firstSolve ? ' Marked as solved.' : ''}</div>`;
   let preview = '';
   if (v.expected) {
@@ -648,12 +746,31 @@ function qlabCode() {
   const sel = qlabEditor.getSelection && qlabEditor.getSelection();
   return (sel && sel.trim()) ? sel : qlabEditor.getValue();
 }
-async function qlabWithBusy(btn, fn) {
+// stoppable: an SQL run of the learner's code, so offer Stop (sqlStop) while it lasts
+async function qlabWithBusy(btn, fn, stoppable = false) {
   if (qlabBusy) return;
   qlabBusy = true;
   btn && btn.classList.add('busy');
-  try { await fn(); } finally { qlabBusy = false; btn && btn.classList.remove('busy'); }
+  const stop = stoppable && $('#qlabStop');
+  if (stop) stop.hidden = false;
+  try { await fn(); } finally {
+    qlabBusy = false;
+    btn && btn.classList.remove('busy');
+    if (stop) stop.hidden = true;
+  }
 }
+
+// After sqlStop: the fresh worker has no data, so load the dataset on screen again.
+function qlabRewarmSql() {
+  if (qlabEngine !== 'sql') return;
+  qlabSetEngineState('loading');
+  sqlLoad(qlabDataset.sql).then(() => {
+    if (qlabEngine !== 'sql') return;
+    qlabSetEngineState('ready');
+    if (qlabSide === 'schema') qlabPaintSchema('sql');
+  }).catch(e => { if (qlabEngine === 'sql') qlabSetEngineState('error', e.message); });
+}
+const QLAB_STOP_NOTE = '\nPGlite cannot cancel a running statement, so its engine was restarted and the dataset reloaded: changes you made to the data are gone.';
 
 function qlabRun() {
   const engine = qlabEngine;
@@ -668,13 +785,15 @@ function qlabRun() {
       if (qlabSide === 'schema' && engine !== 'mongodb') qlabPaintSchema(engine);
     } catch (e) {
       qlabSetEngineState('ready');
-      qlabPaintOutput(null, { error: qlabErrorText(e) });
+      qlabPaintOutput(null, { error: qlabErrorText(e), stopped: e.stopped });
+      if (e.stopped) qlabRewarmSql();
     }
-  });
+  }, engine === 'sql');
 }
 
 function qlabErrorText(e) {
   let msg = e && e.message ? e.message : String(e);
+  if (e && e.stopped) return msg + QLAB_STOP_NOTE;
   if (e && e.position && qlabEditor.getValue) {
     const upto = qlabEditor.getValue().slice(0, Number(e.position) - 1).split('\n');
     msg += `\n(at line ${upto.length}, column ${upto[upto.length - 1].length + 1})`;
@@ -696,12 +815,14 @@ async function qlabCheck() {
       actual = await qlabRunIsolated(engine, q, code);
     } catch (e) {
       qlabSetEngineState('ready');
-      qlabPaintOutput(null, { error: qlabErrorText(e) });
+      qlabPaintOutput(null, { error: qlabErrorText(e), stopped: e.stopped });
+      if (e.stopped) qlabRewarmSql();
       return;
     }
     try { expected = await qlabRunIsolated(engine, q, q.solution); } catch (e) {
       qlabSetEngineState('ready');
-      qlabPaintOutput(null, { error: `The reference solution failed in this browser: ${e.message}` });
+      qlabPaintOutput(null, { error: e.stopped ? qlabErrorText(e) : `The reference solution failed in this browser: ${e.message}`, stopped: e.stopped });
+      if (e.stopped) qlabRewarmSql();
       return;
     }
     qlabSetEngineState('ready');
@@ -721,7 +842,7 @@ async function qlabCheck() {
       const meta = $('.qlab-q-meta');
       if (meta && !$('.qlab-solved', meta)) meta.insertAdjacentHTML('beforeend', '<span class="pill qlab-solved">✓ solved</span>');
     }
-  });
+  }, engine === 'sql');
 }
 
 async function qlabReset() {
@@ -749,6 +870,7 @@ function qlabWire(host, engine, bank) {
     const t = e.target;
     if (t.closest('#qlabRun')) qlabRun();
     else if (t.closest('#qlabCheck')) qlabCheck();
+    else if (t.closest('#qlabStop')) sqlStop('user');
     else if (t.closest('#qlabReset')) qlabReset();
     else if (t.closest('#qlabHintBtn') && q) { qlabHints++; qlabPaintHints(q); }
     else if (t.closest('#qlabSolBtn') && q) qlabShowSolution(engine, q);
@@ -815,10 +937,12 @@ function qlabStrip(mod) {
    run yet, so a query never fails just because its setup block was skipped. */
 const QLAB_DOC_SESSIONS = new Map();   // doc key -> { sql schema | mongo shell | redis }
 const QLAB_DOC_RAN = new Map();        // doc key -> Set of block indexes already run
+const QLAB_DOC_STOPPED = new Map();    // doc key -> Set of block indexes stopped (sqlStop): not re-run as setup
 
 const qlabDocEngine = (mod, id, lang, text) =>
   QLabCore.docEngine(mod, id, lang, text, typeof QLabRedis !== 'undefined' ? QLabRedis.COMMANDS : null);
 const QLAB_RUN_LABEL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>Run';
+const QLAB_STOP_LABEL = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>Stop';
 const qlabDocSchema = key => 'doc_' + key.replace(/[^a-z0-9]+/gi, '_').toLowerCase().slice(0, 50);
 
 function qlabEnhanceDoc(prose, mod, id) {
@@ -887,7 +1011,7 @@ async function qlabDocExec(key, engine, text) {
     const db = await sqlDb();
     await db.exec(`SET search_path TO ${s.schema}, public`);
     try {
-      const r = await db.exec(src);
+      const r = await db.exec(src, { limit: true });
       return { kind: 'table', statements: r.length, ...QLabCore.sqlLastResult(r), note: await sqlCloseTxn(db) };
     } finally {
       await sqlCloseTxn(db);
@@ -902,6 +1026,7 @@ async function qlabResetDoc(key) {
   if (s && s.schema && QE.sql.db) await QE.sql.db.exec(`DROP SCHEMA IF EXISTS ${s.schema} CASCADE`);
   QLAB_DOC_SESSIONS.delete(key);
   QLAB_DOC_RAN.delete(key);
+  QLAB_DOC_STOPPED.delete(key);
 }
 
 async function qlabRunDocBlock(key, blocks, block, btn) {
@@ -915,24 +1040,37 @@ async function qlabRunDocBlock(key, blocks, block, btn) {
   }
   wrap.classList.add('has-run-out');            // code block and its output read as one card
   out.innerHTML = `<div class="qlab-meta"><span>Running…${engine === 'sql' && !QE.sql.db ? ' (starting PostgreSQL, a few seconds the first time)' : ''}</span></div>`;
-  btn.disabled = true;
   btn.setAttribute('aria-busy', 'true');
-  btn.textContent = 'Running…';
+  // SQL: the button becomes Stop while the block runs (sqlStop restarts the database)
+  const idle = { title: btn.title, onclick: btn.onclick };
+  if (engine === 'sql') {
+    btn.innerHTML = QLAB_STOP_LABEL; btn.title = 'Stop this query (restarts PostgreSQL in your browser)';
+    btn.classList.add('is-stop');
+    btn.onclick = () => sqlStop('user');
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'Running…';
+  }
   const ran = QLAB_DOC_RAN.get(key) || new Set();
   QLAB_DOC_RAN.set(key, ran);
+  const stopped = QLAB_DOC_STOPPED.get(key) || new Set();
+  QLAB_DOC_STOPPED.set(key, stopped);
+  let current = null;                           // the block executing, if it gets stopped
   const tools = `<button type="button" class="qlab-doc-reset" title="Throw away this page's scratch data and start again">↺ Reset page data</button>`;
   try {
     // Earlier blocks first (setup, inserts), once each; their own errors don't stop this one.
     let before = 0;
     for (const b of blocks) {
       if (b.idx >= block.idx) break;
-      if (b.engine !== engine || ran.has(b.idx)) continue;
+      if (b.engine !== engine || ran.has(b.idx) || stopped.has(b.idx)) continue;
       ran.add(b.idx);
       before++;
-      try { await qlabDocExec(key, engine, b.text); } catch (e) { /* an earlier demo of an error */ }
+      current = b;
+      try { await qlabDocExec(key, engine, b.text); } catch (e) { if (e.stopped) throw e; /* else an earlier demo of an error */ }
     }
     const t0 = performance.now();
     ran.add(block.idx);
+    current = block;
     const res = await qlabDocExec(key, engine, block.text);
     res.ms = performance.now() - t0;
     const scaled = QLabCore.docScaled(engine, block.text);
@@ -940,8 +1078,11 @@ async function qlabRunDocBlock(key, blocks, block, btn) {
     out.innerHTML = qlabResultHtml(res)
       + `<div class="qlab-doc-foot">${before ? `<span>Ran ${before} earlier block${before === 1 ? '' : 's'} on this page first, so their setup is in place.</span>` : '<span></span>'}${tools}</div>`;
   } catch (e) {
-    out.innerHTML = `<div class="qlab-verdict is-err"><b>Error</b><pre>${esc(e.message || String(e))}</pre>
-      <p class="qlab-trunc">${engine === 'sql'
+    if (e.stopped && current) stopped.add(current.idx);
+    out.innerHTML = `<div class="qlab-verdict is-err"><b>${e.stopped ? 'Stopped' : 'Error'}</b><pre>${esc(e.message || String(e))}</pre>
+      <p class="qlab-trunc">${e.stopped
+        ? 'PGlite cannot cancel a running statement, so it was restarted and this page\'s scratch data was cleared. The next Run sets it up again.'
+        : engine === 'sql'
         ? 'This page has one scratch database shared by its blocks. If a table already exists because a block ran twice, reset the page data and run again.'
         : 'This page has its own scratch data. Reset it to start from the original data.'}</p></div>
       <div class="qlab-doc-foot"><span></span>${tools}</div>`;
@@ -949,6 +1090,8 @@ async function qlabRunDocBlock(key, blocks, block, btn) {
     btn.disabled = false;
     btn.removeAttribute('aria-busy');
     btn.innerHTML = QLAB_RUN_LABEL;
+    btn.title = idle.title; btn.onclick = idle.onclick;
+    btn.classList.remove('is-stop');
   }
   const reset = $('.qlab-doc-reset', out);
   if (reset) reset.onclick = async () => {
