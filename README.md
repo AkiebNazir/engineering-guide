@@ -11,8 +11,9 @@ elective:
 | **System Design** | 33 building blocks, 41 practice problems with reference designs, spoken walkthroughs and a 42-question bank | [System Design Mastery Curriculum](content/interview-core/SystemDesign/README.md) |
 
 One **supporting module** feeds all three: **Maths for CS Engineers**
-([Maths for CS Engineers — Start Here](content/interview-core/Maths/README.md)), 15 chapters from reading notation to probability and
-complexity theory, with 45 labs and machine-checked code. Section 2 schedules each chapter next
+([Maths for CS Engineers — Start Here](content/interview-core/Maths/README.md)), a school-maths warm-up plus 15 chapters from reading
+notation to probability and complexity theory, with hand-worked examples revealed one step at a
+time, a "Your turn" problem after each, 47 labs and machine-checked code. Section 2 schedules each chapter next
 to the work that uses it.
 
 This page tells you **what to study in which order**, how to spend a day, when you're ready
@@ -60,7 +61,8 @@ week). With less time, stretch the phases; don't skip them. With a fixed date so
    dashboard, one problem, one topic guide, one CS chapter.
 3. Read [How Google Scores You](content/interview-core/GoogleBehavioral/01_how_google_scores_and_googleyness.md):
    how every round is scored. It changes how you practise everything else.
-4. If maths feels rusty, read [Maths 01 Reading maths like code](content/interview-core/Maths/01_reading_maths_like_code.md)
+4. If maths feels rusty, read [Maths 00 Warm-up](content/interview-core/Maths/00_maths_warm_up.md) (fractions,
+   powers, solving equations) and [Maths 01 Reading maths like code](content/interview-core/Maths/01_reading_maths_like_code.md)
    now; every later chapter assumes you can read Σ, logs and exponents as code.
 5. Read §0 of [MAANG/FAANG DSA Master Plan](content/study-plans/master_dsa_plan.md), especially the status legend and the hint
    ladder: the solved-versus-mastered distinction, and the 25/40-minute rule the app's timer

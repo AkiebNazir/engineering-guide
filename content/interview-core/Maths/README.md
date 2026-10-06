@@ -4,9 +4,14 @@ The maths a software engineer actually uses, taught from zero to interview depth
 notation as code, binary and floating point, logic and proof, sets and functions,
 counting, sums and recurrences, number theory, graphs, linear algebra, probability,
 statistics, calculus, information theory, and the limits of computation. Every idea
-comes with a plain-language explanation, an everyday analogy, a notebook example solved
-step by step by hand, and runnable Python whose printed results are machine-checked. And
-47 live, interactive labs let you poke at the ideas until they click.
+comes with a plain-language explanation, an everyday analogy, notebook examples solved
+by hand one small move at a time (with a *why* for each move), a **Your turn** problem to
+try yourself, and runnable Python whose printed results are machine-checked. And 47 live,
+interactive labs let you poke at the ideas until they click.
+
+Rusty at school maths, or never liked it? Start with
+[00 Maths warm-up](00_maths_warm_up.md): negative numbers, fractions, powers and
+rearranging equations, gently, in under an hour. Everything else stands on it.
 
 ## Where to Start
 
@@ -20,6 +25,7 @@ already know well enough; skim those chapters' checklists later.
 
 | # | Can you answer this? | If not, start at |
 |---|---|---|
+| 0 | What is $\frac12 + \frac13$? If $3x + 5 = 20$, what is x? | [00 Maths warm-up](00_maths_warm_up.md) |
 | 1 | What is $\sum_{i=1}^{4} i^2$, and how would you write it as a loop? | [01 Reading maths like code](01_reading_maths_like_code.md) |
 | 2 | What is −1 as an 8-bit two's-complement number? | [02 Number systems and binary](02_number_systems_and_binary.md) |
 | 3 | Does "if p then q" mean the same as "if q then p"? | [03 Logic and proofs](03_logic_and_proofs.md) |
@@ -38,6 +44,8 @@ already know well enough; skim those chapters' checklists later.
 <details>
 <summary>Open the answers</summary>
 
+0. $\frac36 + \frac26 = \frac56$. Take 5 from both sides ($3x = 15$), then divide both
+   sides by 3: $x = 5$.
 1. $1 + 4 + 9 + 16 = 30$; `sum(i * i for i in range(1, 5))`.
 2. `1111 1111`.
 3. No. "If q then p" is the **converse**, a different statement.
@@ -60,7 +68,7 @@ and use the other chapters as reference.
 </details>
 
 > **Watch out:** A gap in the middle matters more than where you start. If you could
-> answer 1–4 but not 5, start at 05, but later come back for any question you got wrong
+> answer 0–4 but not 5, start at 05, but later come back for any question you got wrong
 > further down.
 
 ### Step 2 · Pick your route
@@ -70,7 +78,7 @@ already passed in Step 1 can be skipped.
 
 | Your goal | Route | Time at 1 hour a day |
 |---|---|---|
-| **Rusty or never liked maths** — build it all from zero | 01 → 15 in order. Nothing is assumed beyond school arithmetic and basic Python | 6–8 weeks |
+| **Rusty or never liked maths** — build it all from zero | 00 → 15 in order. Nothing is assumed beyond counting and basic Python; 00 rebuilds the school maths | 6–8 weeks |
 | **Coding interviews** | 01 → 02 → 05 → 06 → 07 → 15, then 03 §6 (loop invariants) and 08 §3–7 | about 2 weeks |
 | **System design and production work** | 02 (floats, overflow) → 06 → 10 → 11 → 13 → 15 §3 (estimation) | about 2 weeks |
 | **ML and data foundations** | 01 → 06 → 09 → 10 → 11 → 12 → 13 | about 3 weeks |
@@ -83,8 +91,10 @@ what it needs and what comes next.
 
 1. **Read "Where you will use this"** and pick one row you care about.
 2. **Read Foundations** slowly. The analogy is the part to remember.
-3. **Do each Notebook example on paper first.** Cover the steps, solve it, then compare
-   line by line.
+3. **Do each Notebook example on paper, one step at a time.** Read *What you need* and
+   the *Plan*, try the first move yourself, then press **Show step 1** (in the web app)
+   to compare. Keep going step by step; the answer appears after the last one. Then do
+   the **Your turn** problem under it before opening its worked answer.
 4. **Play with each lab** as its *Try it* paragraph says. Predict before you press play.
 5. **Run the code** and change one number; predict the new output first.
 6. **Answer Check yourself out loud** before opening the answers. Tick the checklist only
@@ -99,6 +109,7 @@ lists them this way.
 
 | Part | Chapters | After this part you can… |
 |---|---|---|
+| **0 · Warm-up** (optional) | [00 Maths warm-up](00_maths_warm_up.md) | Handle negatives, fractions, percentages, powers and roots; solve and rearrange an equation; read a straight-line graph; estimate and sanity-check an answer |
 | **1 · The language of maths** | [01 Reading maths like code](01_reading_maths_like_code.md), [02 Number systems and binary](02_number_systems_and_binary.md), [03 Logic and proofs](03_logic_and_proofs.md), [04 Sets, relations and functions](04_sets_relations_functions.md) | Read any formula as code, reason about bits and floats, simplify conditions, prove a loop correct, and use sets, relations and functions precisely |
 | **2 · Discrete maths** | [05 Counting, permutations and combinations](05_counting_and_combinatorics.md), [06 Sequences, sums and recurrences](06_sequences_sums_recurrences.md), [07 Number theory](07_number_theory.md), [08 Graph theory](08_graph_theory.md) | Count search spaces and DP states, derive any complexity bound, work modulo a prime, explain RSA, and reason about graphs and their algorithms |
 | **3 · Continuous maths** | [09 Linear algebra](09_linear_algebra.md), [10 Probability](10_probability.md), [11 Statistics](11_statistics.md), [12 Calculus](12_calculus.md) | Work with vectors, matrices and eigenvectors; reason about randomness, collisions, experiments and percentiles; and understand gradients and optimisation |
@@ -107,7 +118,8 @@ lists them this way.
 ```mermaid
 %% caption: How the chapters depend on each other. Arrows point from a chapter to the ones that build on it; any chapter's Foundations section still stands on its own.
 flowchart LR
-  C01["01 Notation"] --> C05["05 Permutations & combinations"]
+  C00["00 Warm-up"] --> C01["01 Notation"]
+  C01 --> C05["05 Permutations & combinations"]
   C01 --> C06["06 Sums & recurrences"]
   C02["02 Binary & floats"] --> C07["07 Number theory"]
   C02 --> C13["13 Information & coding"]
@@ -136,7 +148,8 @@ memory:
 | **Where you will use this** | Connects the topic to real engineering before any theory | Pick one row you care about and keep it in mind while reading |
 | **Foundations** | The idea in plain language, with an **analogy** you can reuse | Read it even if you think you know the topic; the analogy is the hook |
 | **Numbered sections** | The mechanism, formulas (rendered), diagrams and **worked examples** | One section per sitting; redo each worked example on paper |
-| **Notebook examples** | A problem solved by hand, one numbered step per line, then the answer and a check (no code) | Cover the steps, solve it on paper, then compare line by line |
+| **Notebook examples** | One problem, one skill, solved by hand: *What you need*, a *Plan*, one small move per numbered step (each with a *why*), then the answer and a check | Try each move on paper, then reveal that step and compare. The web app shows one step at a time |
+| **Your turn** | A similar problem right after each notebook example, with a hidden worked answer | Solve it fully before opening the answer. This is where the skill becomes yours |
 | **Runnable code** | Python that *proves* the claims — `print(x)  # → value` lines are verified | Run it, then change a number and predict the new output first |
 | **Live labs** | Interactive, animated experiments next to the text they explain | Do what the **Try it** paragraph says; **predict before you press play** |
 | **Callouts** | 💡 key ideas, 🧩 analogies, 🧠 intuition, ⚠️ traps, 🎯 interview angles | Skim them all again before an interview |
@@ -154,6 +167,23 @@ memory:
    jargon, go back to the analogy.
 4. **Come back later.** Re-answer a chapter's *Check yourself* questions a day, a week
    and a month after reading it. Spaced retrieval is the most reliable way to remember.
+
+### How to read a notebook example
+
+Every notebook example has the same five parts, so after two or three you know exactly
+where to look:
+
+| Part | What it gives you |
+|---|---|
+| **What you need** | The one rule or formula the example uses, restated in plain words, so you never have to scroll back |
+| **Plan** | The strategy in one sentence, before any working: *what* you will do and in which order |
+| **Numbered steps** | One small move each, with its name in bold (*Substitute*, *Cancel*, *Count*…) and a *Why* line when the reason is not obvious. Every bit of arithmetic is written out |
+| **Answer** | The result and what it means in everyday or engineering terms |
+| **Check** | A second, independent way to confirm the answer (plug it back in, try a tiny case, run one line of Python) |
+
+The bold step names are a recipe: when you meet a new problem of the same kind, the same
+moves in the same order will usually solve it. If a step loses you, reread *What you
+need*. It holds everything that step uses.
 
 ## Live Labs: Learn by Poking at It
 
