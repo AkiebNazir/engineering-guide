@@ -72,6 +72,7 @@ TRACK_DIRS = {"toolkit": SHIP_AND_RUN / "Tool-Kit", "testing": SHIP_AND_RUN / "T
 # the groups. A chapter missing from its track's table lands in "More".
 TRACK_PARTS = {
     "maths": (
+        ("Part 0 · Warm-up", ("00",)),
         ("Part 1 · The language of maths", ("01", "02", "03", "04")),
         ("Part 2 · Discrete maths", ("05", "06", "07", "08")),
         ("Part 3 · Continuous maths", ("09", "10", "11", "12")),

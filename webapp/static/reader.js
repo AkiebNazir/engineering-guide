@@ -1152,6 +1152,7 @@ const CALLOUT_META = {
   key: ['💡', 'Key idea'], tip: ['✅', 'Do this'], warn: ['⚠️', 'Watch out'], interview: ['🎯', 'Interview angle'],
   definition: ['📖', 'Definition'], intuition: ['🧠', 'Intuition'], analogy: ['🧩', 'Analogy'],
   example: ['🔢', 'Worked example'], practice: ['🏭', 'In practice'], question: ['❓', 'Check yourself'],
+  yourturn: ['✏️', 'Your turn'],
 };
 const EMOJI_CALLOUT = {
   '💡': 'key', '🔑': 'key', '📌': 'key', '✅': 'tip', '⚠️': 'warn', '⚠': 'warn', '❗': 'warn', '🚫': 'warn',
@@ -1159,6 +1160,7 @@ const EMOJI_CALLOUT = {
   '🏭': 'practice', '🚀': 'practice', '❓': 'question',
 };
 const LABEL_CALLOUT = [
+  [/^your turn$/i, 'yourturn'],
   [/analog/i, 'analogy'],
   [/interview/i, 'interview'],
   [/warn|pitfall|gotcha|caution|trap|mistake|danger|watch out|anti-?pattern/i, 'warn'],
@@ -1333,7 +1335,45 @@ function enhanceCallouts(root) {
     card.innerHTML = `<span class="callout-icon" aria-hidden="true">${icon}</span><div class="callout-body"><span class="callout-label">${esc(label || defLabel)}</span></div>`;
     $('.callout-body', card).append(...bq.childNodes);
     bq.replaceWith(card);
+    if (type === 'example' && /^notebook example$/i.test(label || '')) stepThrough(card);
   });
+}
+
+/* A notebook example is a problem worked one small move per numbered line.
+   Shown all at once, the eye slides straight to the answer; so the steps
+   come one at a time (try the move on paper, then reveal it), and the
+   Answer and Check paragraphs after the list wait until the last step. */
+function stepThrough(card) {
+  const body = $('.callout-body', card);
+  const ol = [...body.children].find(k => k.tagName === 'OL');
+  const steps = ol ? [...ol.children] : [];
+  if (steps.length < 2) return;
+  const after = [];
+  for (let n = ol.nextElementSibling; n; n = n.nextElementSibling) after.push(n);
+  card.classList.add('nb');
+  const bar = document.createElement('div');
+  bar.className = 'nb-bar';
+  bar.innerHTML = `<span class="nb-hint">Try each step on paper first, then reveal it.</span>
+    <span class="nb-count" aria-live="polite"></span>
+    <span class="nb-btns"><button type="button" class="nb-next"></button><button type="button" class="nb-all">Show all</button></span>`;
+  ol.before(bar);
+  const next = $('.nb-next', bar), all = $('.nb-all', bar), count = $('.nb-count', bar), hint = $('.nb-hint', bar);
+  const turn = card.nextElementSibling && card.nextElementSibling.classList.contains('callout-yourturn');
+  let shown = 0;
+  const render = () => {
+    const done = shown >= steps.length;
+    steps.forEach((li, i) => { li.hidden = i >= shown; li.classList.toggle('nb-new', i === shown - 1 && !done); });
+    after.forEach(el => { el.hidden = !done; });
+    ol.hidden = shown === 0;
+    count.textContent = `${shown} of ${steps.length} steps`;
+    next.textContent = done ? 'Start over' : shown ? `Next step (${shown + 1})` : 'Show step 1';
+    all.hidden = done;
+    hint.textContent = !done ? 'Try each step on paper first, then reveal it.'
+      : turn ? 'All steps shown. Now solve the Your turn problem below on your own.' : 'All steps shown.';
+  };
+  next.onclick = () => { shown = shown >= steps.length ? 0 : shown + 1; render(); };
+  all.onclick = () => { shown = steps.length; render(); };
+  render();
 }
 
 function wrapTables(root) {
