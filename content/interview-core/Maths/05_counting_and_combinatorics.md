@@ -102,20 +102,90 @@ before: $52! \approx 8 \times 10^{67}$.
 > for about n ≤ 10–11 (the travelling salesman brute force); beyond that you need DP
 > over subsets ($O(2^n n^2)$, workable to about n = 20) or heuristics.
 
-> **Notebook example:** 8 runners race. In how many ways can gold, silver and bronze be
-> awarded? In how many ways can all 8 finish?
+> **Notebook example:** 8 runners race. In how many ways can the gold, silver and bronze
+> medals be awarded?
 >
-> 1. Draw three slots: `[gold] [silver] [bronze]`.
-> 2. **Gold:** any of the 8 runners, so 8 choices.
-> 3. **Silver:** anyone except the gold winner, so 7 choices.
-> 4. **Bronze:** 6 choices left.
-> 5. Multiply (product rule): $8 \times 7 \times 6 = 336$. This is
->    $P(8, 3) = \frac{8!}{5!}$.
-> 6. For the full finishing order, keep going down to 1:
->    $8! = 8 \cdot 7 \cdot 6 \cdot 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1 = 40{,}320$.
+> **What you need:** two yes/no questions decide every counting problem. **Does order
+> matter?** Here yes: Ann-gold, Ben-silver is a different podium from Ben-gold,
+> Ann-silver. **Can an item repeat?** Here no: one runner cannot win two medals. When
+> order matters and nothing repeats, fill the places one at a time and use the
+> **product rule**: if step one has a choices and step two has b choices (whatever was
+> picked first), the two steps together have $a \times b$ outcomes. The result is
+> written $P(n, k)$, "arrange k of n things": $P(n, k) = n \cdot (n-1) \cdots$ with k
+> factors.
 >
-> **Answer:** 336 podiums and 40,320 finishing orders. **Check:** order matters (gold
-> ≠ silver) and nobody wins twice, so this is the "order matters, no repetition" case. ✓
+> **Plan:** fill the three medal places in order, count the choices for each, multiply.
+>
+> 1. **Draw the places.** `[gold] [silver] [bronze]`: three places to fill.
+> 2. **Fill gold.** Any of the 8 runners can win it: **8 choices**.
+> 3. **Fill silver.** The gold winner is used up, so $8 - 1 = 7$ runners are left:
+>    **7 choices**.
+>    *Why:* "no repeats" means each choice removes one runner from the pool.
+> 4. **Fill bronze.** Two runners are used up: $8 - 2 = 6$ left, so **6 choices**.
+> 5. **Multiply the first two.** $8 \times 7 = 56$ ways to award gold and silver.
+>    *Why:* product rule. For each of the 8 gold winners there are 7 silver winners.
+> 6. **Multiply in the third.** $56 \times 6 = 336$.
+>
+> **Answer:** 336 different podiums. In symbols this is $P(8, 3) = 8 \cdot 7 \cdot 6$:
+> start at 8 and multiply 3 numbers, counting down.
+>
+> **Check:** shrink it to 3 runners (A, B, C) and 2 medals. The formula says
+> $3 \times 2 = 6$. Listing gold-silver by hand: AB, AC, BA, BC, CA, CB, exactly 6. ✓ In
+> Python this is `math.perm(8, 3)`, which prints 336.
+
+> **Your turn:** 5 runners race. In how many ways can gold and silver be awarded?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Draw the places.** `[gold] [silver]`: two places.
+> 2. **Fill gold.** Any of the 5 runners: 5 choices.
+> 3. **Fill silver.** The gold winner is used up: $5 - 1 = 4$ choices.
+> 4. **Multiply.** $5 \times 4 = 20$.
+>
+> **Answer:** 20 ways, which is $P(5, 2)$.
+>
+> </details>
+
+> **Notebook example:** The same 8 runners all finish. In how many different orders can
+> they cross the line?
+>
+> **What you need:** this is the podium question with **all** places filled: order
+> matters and nobody repeats, so multiply the choices for each place. Counting all the
+> way down to 1 has its own name: **n factorial**,
+> $n! = n \cdot (n-1) \cdots 2 \cdot 1$, the number of ways to put n different things in
+> a row.
+>
+> **Plan:** 8 places, with 8, 7, 6, … choices; multiply one factor at a time.
+>
+> 1. **List the choices for each place.** 1st place: 8. 2nd: 7. 3rd: 6. … 8th: only 1
+>    runner is left. So the count is $8 \cdot 7 \cdot 6 \cdot 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1 = 8!$.
+> 2. **Start from the podium count.** The first three factors are the podium
+>    from the last example: $8 \cdot 7 \cdot 6 = 336$.
+> 3. **Multiply by 5.** $336 \times 5 = 1680$.
+> 4. **Multiply by 4.** $1680 \times 4 = 6720$.
+> 5. **Multiply by 3.** $6720 \times 3 = 20{,}160$.
+> 6. **Multiply by 2, then 1.** $20{,}160 \times 2 = 40{,}320$, and $\times 1$ changes
+>    nothing.
+>
+> **Answer:** $8! = 40{,}320$ finishing orders, from only 8 runners. Factorials grow
+> very fast.
+>
+> **Check:** count it a second way. Pick the podium first (336 ways), then put the other
+> 5 runners in order behind it ($5! = 120$ ways): $336 \times 120 = 40{,}320$. ✓ In
+> Python, `math.factorial(8)` prints 40320.
+
+> **Your turn:** In how many orders can 4 runners finish?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **List the choices for each place.** 4, then 3, then 2, then 1: $4! = 4 \cdot 3 \cdot 2 \cdot 1$.
+> 2. **Multiply step by step.** $4 \times 3 = 12$, $12 \times 2 = 24$, $24 \times 1 = 24$.
+>
+> **Answer:** $4! = 24$ orders.
+>
+> </details>
 
 ### When some items are identical: divide out the repeats
 
@@ -147,14 +217,49 @@ print(math.factorial(10) // (math.factorial(5) * math.factorial(3) * math.factor
 > **Notebook example:** How many different arrangements are there of the letters of
 > LETTER?
 >
-> 1. Count the letters: 6 in total. L × 1, E × 2, T × 2, R × 1.
-> 2. If all 6 were different, there would be $6! = 720$ arrangements.
-> 3. The two E's can swap places without changing the word, so divide by $2!$. Do the
->    same for the two T's.
-> 4. $\frac{6!}{1!\,2!\,2!\,1!} = \frac{720}{4} = 180$.
+> **What you need:** n different things can be put in a row in $n!$ ways. When some
+> things are **identical**, swapping two identical ones makes no visible change, so
+> $n!$ counts each real word several times. If a letter appears r times, its copies can
+> be shuffled among themselves in $r!$ ways, so divide by $r!$ for each repeated letter:
+> $\frac{n!}{r_1!\, r_2! \cdots}$.
 >
-> **Answer:** 180. **Check** on something tiny: AAB has $\frac{3!}{2!} = 3$
-> arrangements, and the list AAB, ABA, BAA has exactly 3. ✓
+> **Plan:** pretend every letter is different, count, then divide out the swaps that
+> change nothing.
+>
+> 1. **Tally the letters.** L × 1, E × 2, T × 2, R × 1. That is $1 + 2 + 2 + 1 = 6$
+>    letters.
+> 2. **Pretend they are all different.** Paint tiny numbers on the copies: L, E₁, T₁,
+>    T₂, E₂, R. Six different letters can be arranged in $6!$ ways.
+> 3. **Work out 6!.** $6 \cdot 5 = 30$, $30 \cdot 4 = 120$, $120 \cdot 3 = 360$,
+>    $360 \cdot 2 = 720$. So 720 painted arrangements.
+> 4. **See the overcount for the E's.** The painted words E₁…E₂… and E₂…E₁… look the same
+>    once the paint is wiped off. The 2 E's can be ordered in $2! = 2$ ways, so every real
+>    word was counted 2 times because of the E's.
+> 5. **See the overcount for the T's.** Same story: $2! = 2$ orders of T₁ and T₂, so
+>    another factor of 2.
+> 6. **Combine the overcounts.** Each real word was counted $2 \times 2 = 4$ times.
+>    *Why:* the E-swap and the T-swap are independent choices, so they multiply.
+> 7. **Divide.** $720 \div 4 = 180$. As one formula: $\frac{6!}{1!\,2!\,2!\,1!} = \frac{720}{4} = 180$.
+>
+> **Answer:** 180 different arrangements of LETTER.
+>
+> **Check:** test the method on something tiny. AAB: $\frac{3!}{2!} = \frac{6}{2} = 3$,
+> and listing by hand gives AAB, ABA, BAA, exactly 3. ✓ In Python,
+> `len(set(permutations("LETTER")))` prints 180.
+
+> **Your turn:** How many different arrangements are there of the letters of TOOT?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Tally the letters.** T × 2, O × 2: 4 letters.
+> 2. **Pretend they are all different.** $4! = 4 \cdot 3 \cdot 2 \cdot 1 = 24$.
+> 3. **Combine the overcounts.** T's: $2! = 2$. O's: $2! = 2$. Together $2 \times 2 = 4$.
+> 4. **Divide.** $24 \div 4 = 6$.
+>
+> **Answer:** 6. By hand: TTOO, TOTO, TOOT, OTTO, OTOT, OOTT.
+>
+> </details>
 
 ### Arranging in a circle
 
@@ -184,17 +289,87 @@ print(len({canonical_rotation(p) for p in permutations(people)}))    # → 24
 print(len({canonical_necklace(p) for p in permutations(people)}))    # → 12
 ```
 
+> **Notebook example:** 4 friends, A, B, C and D, sit at a round table. Only who sits
+> next to whom matters (rotating everyone one seat round counts as the same seating).
+> How many seatings are there?
+>
+> **What you need:** in a row, n people can be arranged in $n!$ ways. Around a table,
+> **rotations count as the same seating**, because everyone keeps the same neighbours.
+> The trick: **fix one person's seat**. Once A is pinned to the top seat, rotating is no
+> longer possible, and the others just fill the remaining seats like a row. So n people
+> in a circle give $(n - 1)!$ seatings.
+>
+> **Plan:** sit A down first, then arrange the other three in the remaining seats.
+>
+> 1. **Fix A's seat.** Put A at the top of the table. This uses up the "which way round"
+>    freedom.
+>    *Why:* any seating can be rotated until A is at the top, so every seating has
+>    exactly one version with A there. Counting those counts each seating once.
+> 2. **Count who is left.** $4 - 1 = 3$ people: B, C, D.
+> 3. **Arrange them clockwise from A.** 3 choices for the seat after A, then 2, then 1:
+>    $3! = 3 \cdot 2 \cdot 1 = 6$.
+>
+> **Answer:** $(4 - 1)! = 6$ different seatings.
+>
+> **Check:** list them clockwise from A: ABCD, ABDC, ACBD, ACDB, ADBC, ADCB. That is 6. ✓
+> Another way: 4 people in a row give $4! = 24$, and each seating appears 4 times (once
+> per rotation), so $24 \div 4 = 6$. ✓
+
+> **Your turn:** In how many ways can 5 people sit at a round table, if only neighbours
+> matter?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Fix one person's seat.** Pin the first person to the top seat.
+> 2. **Count who is left.** $5 - 1 = 4$ people.
+> 3. **Arrange them clockwise.** $4! = 4 \cdot 3 \cdot 2 \cdot 1 = 24$.
+>
+> **Answer:** $(5 - 1)! = 24$ seatings.
+>
+> </details>
+
 > **Notebook example:** 6 people sit at a round table, and Ann and Ben insist on sitting
 > together. How many seatings are there?
 >
-> 1. **Glue** Ann and Ben into one block. Now there are 5 units: the block and 4 others.
-> 2. Arrange 5 units in a circle: $(5 - 1)! = 4! = 24$.
-> 3. Inside the block they can sit Ann-Ben or Ben-Ann: $\times 2$.
-> 4. $24 \times 2 = 48$.
+> **What you need:** two tools. (1) **Circle rule:** n units around a table can be
+> seated in $(n - 1)!$ ways, because rotations are the same seating. (2) **Glue:** to
+> force two people together, tape them into one block and treat the block as a single
+> person. Afterwards, remember the people **inside** the block can still swap places.
 >
-> **Answer:** 48. **Check** with the complement: all circular seatings are $5! = 120$.
-> By symmetry, Ann's two neighbours are equally likely to be any 2 of the other 5, so
-> Ben sits next to Ann in $\frac{2}{5}$ of seatings: $120 \times \frac{2}{5} = 48$. ✓
+> **Plan:** glue Ann and Ben, seat the units in a circle, then multiply by the orders
+> inside the block.
+>
+> 1. **Glue Ann and Ben into one block.** Write it `[AnnBen]`.
+>    *Why:* now they can never be separated, which is exactly the rule.
+> 2. **Count the units.** The block plus the other 4 people: $1 + 4 = 5$ units.
+> 3. **Seat 5 units in a circle.** $(5 - 1)! = 4!$.
+> 4. **Work out 4!.** $4 \cdot 3 = 12$, $12 \cdot 2 = 24$, $24 \cdot 1 = 24$.
+> 5. **Count the orders inside the block.** Ann-Ben or Ben-Ann: 2 ways.
+>    *Why:* gluing fixed that they sit together, not who is on the left.
+> 6. **Multiply.** $24 \times 2 = 48$.
+>
+> **Answer:** 48 seatings with Ann and Ben side by side.
+>
+> **Check:** count another way. All seatings of 6: $(6 - 1)! = 120$. Ann has 2
+> neighbours, and Ben is equally likely to be in any of the other 5 seats, so he is next
+> to her in $\frac{2}{5}$ of them: $120 \times 2 = 240$, and $240 \div 5 = 48$. ✓
+
+> **Your turn:** 5 people sit at a round table, and two of them must sit together. How
+> many seatings are there?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Glue the two into one block.**
+> 2. **Count the units.** The block plus 3 others: 4 units.
+> 3. **Seat 4 units in a circle.** $(4 - 1)! = 3! = 6$.
+> 4. **Count the orders inside the block.** 2.
+> 5. **Multiply.** $6 \times 2 = 12$.
+>
+> **Answer:** 12 seatings.
+>
+> </details>
 
 ### Restrictions: together, apart, in a fixed place
 
@@ -287,24 +462,103 @@ Both run in $O(n)$ and $O(n^2)$ time respectively, instead of $O(n!)$. Next
 permutation also handles repeated items (use `>=` and `<=` as written), so it steps
 through only the *distinct* arrangements.
 
-> **Notebook example:** Find the permutation right after `1 3 5 4 2`, and the 10th
-> permutation of `1 2 3 4` in dictionary order.
+> **Notebook example:** In dictionary order, which permutation comes right after
+> `1 3 5 4 2`?
 >
-> 1. **Pivot:** scan from the right. 2 < 4 (rising), 4 < 5 (rising), then 3 < 5, so the
->    run stops. The pivot is **3**, and the suffix `5 4 2` is descending.
-> 2. **Successor:** the rightmost number in the suffix bigger than 3 is **4**.
-> 3. **Swap** 3 and 4: `1 4 5 3 2`.
-> 4. **Reverse the suffix** `5 3 2` into `2 3 5`: the answer is `1 4 2 3 5`.
-> 5. **k-th:** subtract one, since counting starts at 0: $10 - 1 = 9$.
-> 6. Blocks of $3! = 6$: $9 \div 6 = 1$ remainder 3. Take item number 1 (counting from 0)
->    of `1 2 3 4`, which is **2**. Left: `1 3 4`.
-> 7. Blocks of $2! = 2$: $3 \div 2 = 1$ remainder 1. Item 1 of `1 3 4` is **3**. Left:
->    `1 4`.
-> 8. Blocks of $1! = 1$: $1 \div 1 = 1$ remainder 0. Item 1 of `1 4` is **4**. Left: `1`.
+> **What you need:** **dictionary order** sorts permutations the way a dictionary sorts
+> words: compare the first number, then the second, and so on (123 < 132 < 213 …). The
+> **suffix** is the tail end of the list. The four-step recipe for the next one:
+> find the **pivot** (scanning from the right, the first number smaller than the number
+> to its right), find the **successor** (the rightmost number in the suffix after the
+> pivot that is bigger than the pivot), swap them, then reverse the suffix.
 >
-> **Answer:** `1 4 2 3 5`, and the 10th permutation is `2 3 4 1`. **Check:** the 7th
-> to 12th permutations all start with 2 (2134, 2143, 2314, 2341, …), and the 10th is
-> 2341. ✓
+> **Plan:** keep the left part as long as possible and change only the tail, making the
+> smallest increase that is still an increase.
+>
+> 1. **Find the descending tail.** Read from the right: 2, then 4 (bigger), then 5
+>    (bigger). The tail `5 4 2` goes down from left to right.
+>    *Why:* a tail that goes down is already the biggest possible arrangement of those
+>    numbers, so nothing can be gained by shuffling only the tail.
+> 2. **Name the pivot.** The next number to the left is 3, and $3 < 5$, so the run of
+>    "bigger" stops here. The pivot is **3**.
+>    *Why:* the pivot is the rightmost place that can still be made bigger.
+> 3. **Find the successor.** In the tail `5 4 2`, the numbers bigger than 3 are 5 and 4.
+>    The rightmost of them is **4**.
+>    *Why:* 4 is the smallest number bigger than 3 in the tail, so it gives the smallest
+>    possible increase.
+> 4. **Swap pivot and successor.** Swap 3 and 4: `1 4 5 3 2`.
+> 5. **Reverse the tail.** The tail after the 4 is `5 3 2`. Reversed, it is `2 3 5`.
+>    *Why:* after the swap the tail is still descending (its largest order); reversing
+>    turns it into its smallest order.
+> 6. **Write the result.** `1 4` followed by `2 3 5`: `1 4 2 3 5`.
+>
+> **Answer:** `1 4 2 3 5` comes right after `1 3 5 4 2`.
+>
+> **Check:** `1 3 5 4 2` is the largest permutation that starts `1 3`, so the next one
+> must start `1 4` and then be as small as possible: `1 4 2 3 5`. ✓ The
+> `next_permutation` function above prints the same.
+
+> **Your turn:** Which permutation comes right after `1 2 4 3`?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Find the descending tail.** From the right: 3, then 4 (bigger). The tail is `4 3`.
+> 2. **Name the pivot.** Next to the left is 2, and $2 < 4$. The pivot is **2**.
+> 3. **Find the successor.** In `4 3`, both are bigger than 2. The rightmost is **3**.
+> 4. **Swap pivot and successor.** `1 3 4 2`.
+> 5. **Reverse the tail.** The tail after the 3 is `4 2`; reversed it is `2 4`.
+>
+> **Answer:** `1 3 2 4`. (The list starts 1234, 1243, 1324.)
+>
+> </details>
+
+> **Notebook example:** Without listing them all, find the 10th permutation of
+> `1 2 3 4` in dictionary order.
+>
+> **What you need:** with 4 numbers, the permutations come in **blocks**. The first
+> $3! = 6$ all start with 1, the next 6 start with 2, and so on, because once the first
+> number is fixed the other 3 can be arranged in $3!$ ways. Inside a block, the same
+> thing happens with blocks of $2! = 2$, then $1! = 1$. Whole-number division,
+> "$a \div b = q$ remainder r", tells you which block you are in (q) and how far into
+> it (r).
+>
+> **Plan:** turn 10 into a count from 0, then repeatedly divide by the block size to pick
+> one number at a time.
+>
+> 1. **Count from 0.** $10 - 1 = 9$.
+>    *Why:* the 1st permutation is "0 steps from the start", so the 10th is 9 steps on.
+>    Counting from 0 makes the divisions line up with list positions.
+> 2. **Divide by the block size 3! = 6.** $9 \div 6 = 1$ remainder 3.
+> 3. **Pick the first number.** Quotient 1 means "skip 1 whole block". In the list
+>    `1 2 3 4`, position 1 (counting from 0) is **2**. Cross it off: `1 3 4` is left.
+> 4. **Divide the remainder by 2! = 2.** $3 \div 2 = 1$ remainder 1.
+> 5. **Pick the second number.** Position 1 of `1 3 4` is **3**. Left: `1 4`.
+> 6. **Divide the remainder by 1! = 1.** $1 \div 1 = 1$ remainder 0.
+> 7. **Pick the third number.** Position 1 of `1 4` is **4**. Left: `1`.
+> 8. **Take what is left.** Only **1** remains, so it goes last.
+>
+> **Answer:** the 10th permutation is `2 3 4 1`.
+>
+> **Check:** the 7th to 12th permutations are the "starts with 2" block: 2134, 2143,
+> 2314, 2341, 2413, 2431. The 10th is the 4th in that block: 2341. ✓ This is
+> `list(permutations(range(1, 5)))[9]` in Python.
+
+> **Your turn:** Find the 4th permutation of `1 2 3` in dictionary order.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Count from 0.** $4 - 1 = 3$.
+> 2. **Divide by the block size 2! = 2.** $3 \div 2 = 1$ remainder 1.
+> 3. **Pick the first number.** Position 1 of `1 2 3` is **2**. Left: `1 3`.
+> 4. **Divide the remainder by 1! = 1.** $1 \div 1 = 1$ remainder 0.
+> 5. **Pick the second number.** Position 1 of `1 3` is **3**. Left: `1`.
+> 6. **Take what is left.** **1** goes last.
+>
+> **Answer:** `2 3 1`. (The list starts 123, 132, 213, 231.)
+>
+> </details>
 
 **Try it: step through both algorithms.** In *next permutation* mode press **Step** and
 watch the pivot rise, the successor light up, the swap, and the suffix flip. Start from
@@ -339,20 +593,92 @@ print(math.comb(10, 3) == math.comb(10, 7))                    # → True
 Symmetry, $\binom{n}{k} = \binom{n}{n-k}$: choosing which 3 to take is the same as
 choosing which 7 to leave.
 
-> **Notebook example:** Work out $\binom{8}{3}$ by hand, then count 5-card poker hands
-> with exactly two aces.
+> **Notebook example:** A club has 8 members. How many different teams of 3 can be
+> picked? (Work out $\binom{8}{3}$ by hand.)
 >
-> 1. Write only the top k factors of $n!$ over $k!$:
->    $\binom{8}{3} = \frac{8 \cdot 7 \cdot 6}{3 \cdot 2 \cdot 1}$.
-> 2. **Cancel before multiplying:** $3 \cdot 2 = 6$ cancels the 6 on top, leaving
->    $8 \cdot 7 = 56$.
-> 3. Hands with exactly two aces: choose the 2 aces from the 4 aces, **and** the other
->    3 cards from the 48 non-aces. Multiply.
-> 4. $\binom{4}{2} = \frac{4 \cdot 3}{2} = 6$. $\binom{48}{3} = \frac{48 \cdot 47 \cdot 46}{6} = 8 \cdot 47 \cdot 46 = 17{,}296$.
-> 5. $6 \times 17{,}296 = 103{,}776$.
+> **What you need:** a team is a **set**: order does **not** matter ({Ann, Ben, Cat} is
+> the same team as {Cat, Ann, Ben}), and nobody is picked twice. $\binom{n}{k}$, read
+> "n choose k", counts the ways to pick k things from n when order does not matter. The
+> recipe: count as if order mattered ($P(n, k)$, the podium count), then **divide by
+> $k!$**, the number of orders each team was counted in.
 >
-> **Answer:** $\binom{8}{3} = 56$, and 103,776 hands. **Check:** 103,776 out of 2,598,960
-> hands is about 4%, which sounds right for "two aces".
+> **Plan:** count ordered picks first, then divide out the orderings.
+>
+> 1. **Ask the two questions.** Order matters? No, it is a team. Repeats? No. So this is
+>    $\binom{8}{3}$.
+> 2. **Count as if order mattered.** Pick a first, second and third member:
+>    $8 \cdot 7 = 56$, then $56 \cdot 6 = 336$ ordered picks.
+> 3. **Count how often each team appears.** Take one team, {Ann, Ben, Cat}, written A, B, C for
+>    short. The ordered count included it as ABC, ACB, BAC, BCA, CAB, CBA: $3! = 3 \cdot 2 \cdot 1 = 6$ times.
+>    *Why:* 3 people can be put in order in $3!$ ways, and the ordered count saw every
+>    one of those orders as different.
+> 4. **Divide out the repeats.** Every team was counted exactly 6 times, so
+>    $336 \div 6 = 56$.
+>
+> **Answer:** $\binom{8}{3} = 56$ different teams of 3.
+>
+> **Check:** do it the fraction way, cancelling before multiplying:
+> $\frac{8 \cdot 7 \cdot 6}{3 \cdot 2 \cdot 1}$, and $3 \cdot 2 \cdot 1 = 6$ cancels the 6
+> on top, leaving $8 \cdot 7 = 56$. ✓ In Python, `math.comb(8, 3)` prints 56.
+
+> **Your turn:** How many different pairs can be picked from 6 people?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Ask the two questions.** Order matters? No. Repeats? No. So $\binom{6}{2}$.
+> 2. **Count as if order mattered.** $6 \cdot 5 = 30$.
+> 3. **Count how often each pair appears.** $2! = 2$ (AB and BA).
+> 4. **Divide out the repeats.** $30 \div 2 = 15$.
+>
+> **Answer:** $\binom{6}{2} = 15$ pairs.
+>
+> </details>
+
+> **Notebook example:** A poker hand is 5 cards from a 52-card deck, which holds 4 aces
+> and 48 other cards. How many hands contain **exactly two** aces?
+>
+> **What you need:** a hand is a set (order does not matter), so each pick is a
+> $\binom{n}{k}$, computed as $\frac{n \cdot (n-1) \cdots}{k!}$ with k factors on top.
+> When a hand is built in two independent parts ("these cards **and** those cards"),
+> use the **product rule**: multiply the counts of the parts.
+>
+> **Plan:** split the hand into "2 aces" and "3 non-aces", count each part, multiply.
+>
+> 1. **Split the hand into parts.** Exactly two aces means 2 cards from the 4 aces
+>    **and** $5 - 2 = 3$ cards from the 48 non-aces.
+>    *Why:* "exactly two" rules out a third ace, so the other 3 must come from the
+>    non-aces.
+> 2. **Count the ace part.** $\binom{4}{2} = \frac{4 \cdot 3}{2 \cdot 1} = \frac{12}{2} = 6$.
+> 3. **Set up the non-ace part.** $\binom{48}{3} = \frac{48 \cdot 47 \cdot 46}{3 \cdot 2 \cdot 1} = \frac{48 \cdot 47 \cdot 46}{6}$.
+> 4. **Cancel first.** $48 \div 6 = 8$, so it becomes $8 \cdot 47 \cdot 46$.
+>    *Why:* dividing early keeps the numbers small.
+> 5. **Multiply.** $8 \cdot 47 = 376$, and $376 \cdot 46 = 17{,}296$.
+> 6. **Combine the parts.** Any of the 6 ace pairs goes with any of the 17,296 non-ace
+>    triples: $6 \times 17{,}296 = 103{,}776$.
+>
+> **Answer:** 103,776 hands have exactly two aces.
+>
+> **Check:** all hands: $\binom{52}{5} = 2{,}598{,}960$. Then
+> $103{,}776 \div 2{,}598{,}960 \approx 0.04$, about 1 hand in 25, which sounds right for
+> "two aces". ✓ A brute-force loop over `combinations(range(52), 5)` counting hands with
+> two aces also gives 103,776.
+
+> **Your turn:** From 4 seniors and 5 juniors, how many teams of 3 contain exactly 2
+> seniors?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Split the team into parts.** 2 from the 4 seniors **and** $3 - 2 = 1$ from the 5
+>    juniors.
+> 2. **Count the senior part.** $\binom{4}{2} = \frac{4 \cdot 3}{2} = 6$.
+> 3. **Count the junior part.** $\binom{5}{1} = 5$.
+> 4. **Combine the parts.** $6 \times 5 = 30$.
+>
+> **Answer:** 30 teams.
+>
+> </details>
 
 ### Choosing with conditions
 
@@ -386,15 +712,48 @@ print(sum(not ("M0" in c and "W0" in c) for c in committees))                   
 > **Notebook example:** From 6 men and 5 women, how many committees of 4 contain **at
 > most one** woman?
 >
-> 1. "At most one" splits into two disjoint cases: exactly 0 women, or exactly 1.
-> 2. **0 women:** all 4 from the men: $\binom{6}{4} = \binom{6}{2} = \frac{6 \cdot 5}{2} = 15$.
-> 3. **1 woman:** choose her ($\binom{5}{1} = 5$) and 3 men
->    ($\binom{6}{3} = \frac{6 \cdot 5 \cdot 4}{6} = 20$). Multiply: $5 \times 20 = 100$.
-> 4. The cases do not overlap, so add them: $15 + 100 = 115$.
+> **What you need:** a committee is a set, so each pick is $\binom{n}{k}$ ("n choose k",
+> order does not matter). Two rules glue the pieces together. **Multiply** for "and"
+> (choose the women **and** the men). **Add** for "or", but only when the cases cannot
+> both happen at once (**disjoint** cases). "At most one" means "0 or 1".
 >
-> **Answer:** 115. **Check:** add the cases for 2, 3 and 4 women,
-> $\binom{5}{2}\binom{6}{2} + \binom{5}{3}\binom{6}{1} + \binom{5}{4} = 150 + 60 + 5 = 215$.
-> Then $115 + 215 = 330 = \binom{11}{4}$, all committees. ✓
+> **Plan:** split into the case "0 women" and the case "1 woman", count each, add.
+>
+> 1. **Split into cases.** At most one woman means exactly 0 women **or** exactly 1.
+>    *Why:* a committee cannot have 0 and 1 women at the same time, so the cases are
+>    disjoint and their counts can be added.
+> 2. **Case 0 women: set it up.** All 4 members come from the 6 men: $\binom{6}{4}$.
+> 3. **Case 0 women: use symmetry.** $\binom{6}{4} = \binom{6}{2}$.
+>    *Why:* choosing which 4 men to take is the same as choosing which 2 to leave out.
+> 4. **Case 0 women: compute.** $\binom{6}{2} = \frac{6 \cdot 5}{2} = \frac{30}{2} = 15$.
+> 5. **Case 1 woman: choose her.** $\binom{5}{1} = 5$ ways.
+> 6. **Case 1 woman: choose the men.** The other 3 seats go to men:
+>    $\binom{6}{3} = \frac{6 \cdot 5 \cdot 4}{3 \cdot 2 \cdot 1} = \frac{120}{6} = 20$.
+> 7. **Case 1 woman: combine.** Woman **and** men, so multiply: $5 \times 20 = 100$.
+> 8. **Add the cases.** $15 + 100 = 115$.
+>
+> **Answer:** 115 committees have at most one woman.
+>
+> **Check:** count the other cases too. 2 women: $\binom{5}{2}\binom{6}{2} = 10 \times 15 = 150$.
+> 3 women: $\binom{5}{3}\binom{6}{1} = 10 \times 6 = 60$. 4 women: $\binom{5}{4} = 5$.
+> Those add to $150 + 60 + 5 = 215$, and $115 + 215 = 330 = \binom{11}{4}$, every
+> possible committee. ✓
+
+> **Your turn:** From 4 men and 3 women, how many committees of 3 contain at most one
+> woman?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Split into cases.** Exactly 0 women, or exactly 1.
+> 2. **Case 0 women.** All 3 from the 4 men: $\binom{4}{3} = \binom{4}{1} = 4$.
+> 3. **Case 1 woman.** Choose her: $\binom{3}{1} = 3$. Choose 2 men:
+>    $\binom{4}{2} = \frac{4 \cdot 3}{2} = 6$. Multiply: $3 \times 6 = 18$.
+> 4. **Add the cases.** $4 + 18 = 22$.
+>
+> **Answer:** 22 committees (out of $\binom{7}{3} = 35$ in all).
+>
+> </details>
 
 ### Every subset and every combination, in code
 
@@ -478,18 +837,141 @@ flowchart TD
   Q3 -->|yes| A4["C(n+k−1, k): scoops, stars and bars"]
 ```
 
-> **Notebook example:** For each question, answer the two questions (order? repeats?),
-> then pick the formula.
+The next three examples each start by answering the two questions, then read the
+formula off the table.
+
+> **Notebook example:** How many 4-letter codes can be made from the letters A–Z, if
+> letters may repeat (so AABA is allowed)?
 >
-> | Question | Order matters? | Repeats? | Formula | Count |
-> |---|---|---|---|---|
-> | 4-letter codes from A–Z, letters may repeat | yes | yes | $26^4$ | 456,976 |
-> | President, secretary, treasurer from 20 members | yes | no | $20 \cdot 19 \cdot 18$ | 6,840 |
-> | 3 delegates from 20 members | no | no | $\binom{20}{3} = \frac{6840}{6}$ | 1,140 |
-> | A box of 12 doughnuts from 5 flavours | no | yes | $\binom{12 + 5 - 1}{12} = \binom{16}{4}$ | 1,820 |
+> **What you need:** the two questions. **Order matters?** Yes: ABCD and DCBA are
+> different codes. **Repeats allowed?** Yes. That is the top-left cell of the table:
+> $n^k$, where n is the number of symbols and k the length. Why: each of the k positions
+> independently has all n choices, and the product rule multiplies them.
 >
-> **Check** the middle two rows: the officers and the delegates are the same 3 people,
-> but officers have roles. So $6840 / 3! = 1140$. ✓
+> **Plan:** answer the two questions, then multiply 26 by itself 4 times.
+>
+> 1. **Ask the two questions.** Order matters: yes. Repeats: yes. So the formula is
+>    $n^k$.
+> 2. **Read off n and k.** $n = 26$ letters, $k = 4$ positions. Count $= 26^4$.
+>    *Why:* every position has all 26 letters available, because using a letter does not
+>    use it up.
+> 3. **Multiply in the 2nd position.** $26 \times 26 = 676$.
+> 4. **Multiply in the 3rd position.** $676 \times 26 = 17{,}576$.
+> 5. **Multiply in the 4th position.** $17{,}576 \times 26 = 456{,}976$.
+>
+> **Answer:** 456,976 four-letter codes.
+>
+> **Check:** this is exactly four nested loops, `for a in letters: for b in letters: …`,
+> and `len(list(product(letters, repeat=4)))` prints 456976. ✓ Estimate: $26^4$ is a bit
+> more than $25^4 = 390{,}625$, so a number just under half a million is right.
+
+> **Your turn:** A bike lock has 3 wheels, each showing a digit 0–9. How many
+> combinations are there?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Ask the two questions.** Order matters: yes (123 ≠ 321). Repeats: yes (007 is
+>    fine). So $n^k$.
+> 2. **Read off n and k.** $n = 10$ digits, $k = 3$ wheels: $10^3$.
+> 3. **Multiply.** $10 \times 10 = 100$, $100 \times 10 = 1000$.
+>
+> **Answer:** 1000 combinations (000 to 999).
+>
+> </details>
+
+> **Notebook example:** A club has 20 members. (a) How many ways can it elect a
+> president, a secretary and a treasurer? (b) How many ways can it send 3 delegates to a
+> conference?
+>
+> **What you need:** the two questions decide between two formulas. With roles,
+> **order matters** (Ann-president differs from Ann-treasurer): use
+> $P(n, k) = n \cdot (n-1) \cdots$ with k factors. Without roles, **order does not
+> matter**: use $\binom{n}{k} = \frac{P(n, k)}{k!}$. The $k!$ is the number of ways to
+> hand out k roles to the same k people.
+>
+> **Plan:** count the officers first, then turn that into delegates by dividing by $3!$.
+>
+> 1. **Ask the two questions for (a).** Order matters: yes, the roles differ.
+>    Repeats: no, one person cannot hold two posts. So $P(20, 3)$.
+> 2. **Count the officers.** President: 20 choices. Secretary: 19. Treasurer: 18.
+>    $20 \cdot 19 = 380$, then $380 \cdot 18 = 6840$.
+> 3. **Ask the two questions for (b).** Order matters: no, delegates are just a group.
+>    Repeats: no. So $\binom{20}{3}$.
+> 4. **Count role-assignments per group.** Any group of 3 people can fill the three
+>    posts in $3! = 3 \cdot 2 \cdot 1 = 6$ ways.
+>    *Why:* this is how many times each group of 3 appears in the 6840 officer count.
+> 5. **Divide.** $6840 \div 6 = 1140$.
+>
+> **Answer:** (a) 6840 ways to elect officers; (b) 1140 ways to choose delegates. Same
+> people, but roles make 6 times as many outcomes.
+>
+> **Check:** compute $\binom{20}{3}$ by cancelling:
+> $\frac{20 \cdot 19 \cdot 18}{3 \cdot 2 \cdot 1}$, with $18 \div 6 = 3$, gives
+> $20 \cdot 19 \cdot 3 = 380 \cdot 3 = 1140$. ✓ In Python, `math.perm(20, 3)` is 6840 and
+> `math.comb(20, 3)` is 1140.
+
+> **Your turn:** A team of 6 needs (a) a captain and a vice-captain, or (b) any 2
+> players to send to a meeting. Count both.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Ask the two questions for (a).** Order matters, no repeats: $P(6, 2)$.
+> 2. **Count the officers.** $6 \cdot 5 = 30$.
+> 3. **Ask the two questions for (b).** Order does not matter, no repeats: $\binom{6}{2}$.
+> 4. **Count role-assignments per group.** $2! = 2$.
+> 5. **Divide.** $30 \div 2 = 15$.
+>
+> **Answer:** (a) 30; (b) 15.
+>
+> </details>
+
+> **Notebook example:** A doughnut shop has 3 flavours: plain, jam and iced. How many
+> different boxes of 4 doughnuts can you buy? (Doughnuts of one flavour are identical,
+> and only how many of each flavour matters.)
+>
+> **What you need:** **Order matters?** No: a box is a box, however you packed it.
+> **Repeats?** Yes: you can take several jam doughnuts. That is the bottom-left cell,
+> $\binom{n + k - 1}{k}$, with n flavours and k doughnuts. The reason is **stars and
+> bars** (section 5): write the box as k stars (doughnuts) with $n - 1$ bars between
+> the flavours. For example `★★|★|★` means 2 plain, 1 jam, 1 iced. Each box is one way
+> to choose which of the $k + n - 1$ symbols are bars.
+>
+> **Plan:** answer the two questions, turn the box into stars and bars, count the bar
+> positions.
+>
+> 1. **Ask the two questions.** Order: no. Repeats: yes. So $\binom{n + k - 1}{k}$.
+>    *Why not just divide by $k!$ as before?* Ordered picks would be $3^4 = 81$, and
+>    $81 \div 4! = 81 \div 24 = 3.375$, not even a whole number. A box like "4 jam" has
+>    only 1 ordering, not 24, so there is no single number to divide by.
+> 2. **Read off n and k.** $n = 3$ flavours, $k = 4$ doughnuts.
+> 3. **Count the symbols.** 4 stars and $3 - 1 = 2$ bars: $4 + 2 = 6$ symbols in a row.
+>    *Why:* 2 bars are enough to cut a row into 3 flavour groups.
+> 4. **Choose where the bars go.** $\binom{6}{2} = \frac{6 \cdot 5}{2} = 15$. (Choosing
+>    the 4 star places instead gives $\binom{6}{4}$, the same number by symmetry.)
+>
+> **Answer:** 15 different boxes.
+>
+> **Check:** count by the number of plain doughnuts. 0 plain: the 4 others split between
+> jam and iced as 0+4, 1+3, 2+2, 3+1, 4+0, so 5 boxes. 1 plain: 4 boxes. 2 plain: 3.
+> 3 plain: 2. 4 plain: 1. Total $5 + 4 + 3 + 2 + 1 = 15$. In Python,
+> `len(list(combinations_with_replacement("PJI", 4)))` also prints 15. ✓
+
+> **Your turn:** An ice-cream cup holds 3 scoops, from 2 flavours (vanilla and
+> chocolate). How many different cups are there?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Ask the two questions.** Order: no. Repeats: yes. So $\binom{n + k - 1}{k}$.
+> 2. **Read off n and k.** $n = 2$ flavours, $k = 3$ scoops.
+> 3. **Count the symbols.** 3 stars and $2 - 1 = 1$ bar: 4 symbols.
+> 4. **Choose where the bar goes.** $\binom{4}{1} = 4$.
+>
+> **Answer:** 4 cups: VVV, VVC, VCC, CCC.
+>
+> </details>
 
 **Try it: see all four cases.** Pick n and k and answer the two questions: the lab lists
 every outcome, with each row holding the orderings of one selection. With *order
@@ -532,15 +1014,50 @@ repetition is distributing k identical scoops among n flavours.
 > **Notebook example:** How many solutions does $x_1 + x_2 + x_3 + x_4 = 10$ have in
 > non-negative integers, if $x_1 \ge 2$?
 >
-> 1. Deal with the lower bound first: give $x_1$ its 2 up front. That leaves
->    $10 - 2 = 8$ to share freely.
-> 2. Now count $y_1 + x_2 + x_3 + x_4 = 8$ with everything $\ge 0$: 8 stars and $4 - 1 = 3$
->    bars.
-> 3. Choose where the 3 bars go among $8 + 3 = 11$ positions:
->    $\binom{11}{3} = \frac{11 \cdot 10 \cdot 9}{6} = 165$.
+> **What you need:** **non-negative integers** are the whole numbers 0, 1, 2, …. A
+> solution is a list $(x_1, x_2, x_3, x_4)$ that adds to 10, like (2, 5, 0, 3); order
+> matters, so (3, 0, 5, 2) is a different solution. Think of it as handing out 10
+> identical sweets to 4 children. **Stars and bars:** n sweets into k children is a row of
+> n stars and $k - 1$ bars, and the count is $\binom{n + k - 1}{k - 1}$ (choose which
+> positions hold bars). A **lower bound** like $x_1 \ge 2$ is handled by giving those
+> sweets out before you start.
 >
-> **Answer:** 165. **Check** the method on a tiny case: $x_1 + x_2 = 2$ gives
-> $\binom{3}{1} = 3$, and the list (0,2), (1,1), (2,0) has 3 solutions. ✓
+> **Plan:** remove the lower bound by pre-paying it, then use plain stars and bars.
+>
+> 1. **Pre-pay the lower bound.** Give child 1 their 2 sweets now.
+>    *Why:* every allowed solution has $x_1 \ge 2$, so those 2 are fixed; only the rest
+>    is a real choice.
+> 2. **Count what is left to share.** $10 - 2 = 8$ sweets.
+> 3. **Rename the first variable.** Let $y_1 = x_1 - 2$ (the extra sweets child 1 gets
+>    on top of the 2). Now the question is $y_1 + x_2 + x_3 + x_4 = 8$ with every
+>    variable $\ge 0$.
+> 4. **Count stars and bars.** 8 stars (sweets) and $4 - 1 = 3$ bars (walls between 4
+>    children): $8 + 3 = 11$ symbols in a row.
+> 5. **Choose the bar positions.** $\binom{11}{3} = \frac{11 \cdot 10 \cdot 9}{3 \cdot 2 \cdot 1}$.
+> 6. **Multiply the top.** $11 \cdot 10 = 110$, and $110 \cdot 9 = 990$.
+> 7. **Divide.** $3 \cdot 2 \cdot 1 = 6$, and $990 \div 6 = 165$.
+>
+> **Answer:** 165 solutions have $x_1 \ge 2$.
+>
+> **Check:** test the method on a tiny case. $x_1 + x_2 = 2$ is 2 stars and 1 bar, so
+> $\binom{3}{1} = 3$; the list (0,2), (1,1), (2,0) has 3. ✓ A brute-force loop over all
+> $x_1, \dots, x_4$ from 0 to 10, counting the ones that add to 10 with $x_1 \ge 2$, also
+> gives 165. ✓
+
+> **Your turn:** How many solutions does $x_1 + x_2 + x_3 = 5$ have in non-negative
+> integers, if $x_1 \ge 1$?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Pre-pay the lower bound.** Give $x_1$ its 1 now.
+> 2. **Count what is left to share.** $5 - 1 = 4$.
+> 3. **Count stars and bars.** 4 stars and $3 - 1 = 2$ bars: 6 symbols.
+> 4. **Choose the bar positions.** $\binom{6}{2} = \frac{6 \cdot 5}{2} = \frac{30}{2} = 15$.
+>
+> **Answer:** 15 solutions.
+>
+> </details>
 
 ## 6 · The Binomial Theorem
 
@@ -568,19 +1085,87 @@ print(sum((-1)**k * math.comb(n, k) for k in range(n + 1)))       # → 0
 > **In practice:** The binomial distribution in chapter 10 — "the chance of exactly k
 > heads in n flips" — is $\binom{n}{k} p^k (1-p)^{n-k}$: one term of this expansion.
 
-> **Notebook example:** Expand $(x + 2)^4$, and find the coefficient of $x^2$ in
-> $(2x - 1)^5$.
+> **Notebook example:** Expand $(x + 2)^4$ (multiply it out into separate terms).
 >
-> 1. Row 4 of Pascal's triangle is 1, 4, 6, 4, 1.
-> 2. Term k is $\binom{4}{k} x^{4-k} 2^k$: $1 \cdot x^4$, $4 \cdot 2x^3$, $6 \cdot 4x^2$,
->    $4 \cdot 8x$, $1 \cdot 16$.
-> 3. So $(x + 2)^4 = x^4 + 8x^3 + 24x^2 + 32x + 16$.
-> 4. **Check** with $x = 1$: the left side is $3^4 = 81$ and the right side is
->    $1 + 8 + 24 + 32 + 16 = 81$. ✓
-> 5. In $(2x - 1)^5$ a term is $\binom{5}{k}(2x)^{5-k}(-1)^k$. For $x^2$ you need
->    $5 - k = 2$, so $k = 3$: $\binom{5}{3} \cdot 2^2 \cdot (-1)^3 = 10 \cdot 4 \cdot (-1) = -40$.
+> **What you need:** the **binomial theorem**: $(a + b)^n$ is a sum of $n + 1$ terms,
+> and term number k (counting k = 0, 1, …, n) is $\binom{n}{k} a^{n-k} b^k$. The power of
+> a goes **down** by one each term while the power of b goes **up**. The numbers
+> $\binom{n}{k}$ are row n of **Pascal's triangle** (each entry is the sum of the two
+> above it): row 4 is 1, 4, 6, 4, 1. A **coefficient** is the plain number in front of
+> a power of x, like the 8 in $8x^3$.
 >
-> **Answer:** $x^4 + 8x^3 + 24x^2 + 32x + 16$, and $-40$.
+> **Plan:** here $a = x$, $b = 2$, $n = 4$. Write the 5 terms one by one, then add.
+>
+> 1. **Write down row 4.** 1, 4, 6, 4, 1. These are $\binom{4}{0}, \dots, \binom{4}{4}$.
+> 2. **Term k = 0.** $1 \cdot x^4 \cdot 2^0 = 1 \cdot x^4 \cdot 1 = x^4$.
+>    *Why:* $2^0 = 1$; anything to the power 0 is 1.
+> 3. **Term k = 1.** $4 \cdot x^3 \cdot 2^1 = 4 \cdot 2 \cdot x^3 = 8x^3$.
+> 4. **Term k = 2.** $6 \cdot x^2 \cdot 2^2 = 6 \cdot 4 \cdot x^2 = 24x^2$.
+> 5. **Term k = 3.** $4 \cdot x^1 \cdot 2^3 = 4 \cdot 8 \cdot x = 32x$.
+> 6. **Term k = 4.** $1 \cdot x^0 \cdot 2^4 = 1 \cdot 1 \cdot 16 = 16$.
+> 7. **Add the terms.** $(x + 2)^4 = x^4 + 8x^3 + 24x^2 + 32x + 16$.
+>
+> **Answer:** $(x + 2)^4 = x^4 + 8x^3 + 24x^2 + 32x + 16$.
+>
+> **Check:** put $x = 1$ into both sides. Left: $(1 + 2)^4 = 3^4 = 81$. Right:
+> $1 + 8 + 24 + 32 + 16 = 81$. ✓
+
+> **Your turn:** Expand $(x + 2)^3$. Row 3 of Pascal's triangle is 1, 3, 3, 1.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Term k = 0.** $1 \cdot x^3 \cdot 1 = x^3$.
+> 2. **Term k = 1.** $3 \cdot x^2 \cdot 2 = 6x^2$.
+> 3. **Term k = 2.** $3 \cdot x \cdot 4 = 12x$.
+> 4. **Term k = 3.** $1 \cdot 1 \cdot 8 = 8$.
+> 5. **Add the terms.** $x^3 + 6x^2 + 12x + 8$.
+>
+> **Answer:** $(x + 2)^3 = x^3 + 6x^2 + 12x + 8$. (At $x = 1$: $27 = 1 + 6 + 12 + 8$.)
+>
+> </details>
+
+> **Notebook example:** Find the coefficient of $x^2$ in $(2x - 1)^5$, without
+> expanding everything.
+>
+> **What you need:** term k of $(a + b)^n$ is $\binom{n}{k} a^{n-k} b^k$. Here
+> $a = 2x$ (the whole thing, 2 included) and $b = -1$ (the minus sign belongs to b).
+> The power of x in term k comes only from $a^{n-k} = (2x)^{n-k}$, so it is $n - k$.
+>
+> **Plan:** find which k gives $x^2$, then work out only that one term.
+>
+> 1. **Write the general term.** $\binom{5}{k}(2x)^{5-k}(-1)^k$.
+> 2. **Match the power.** You want $x^2$, so $5 - k = 2$, which gives $k = 3$.
+> 3. **Work out the binomial.** $\binom{5}{3} = \binom{5}{2} = \frac{5 \cdot 4}{2} = 10$.
+>    *Why:* choosing 3 brackets to take is the same as choosing 2 to leave, and 2 is
+>    less work.
+> 4. **Work out the a-part.** $(2x)^2 = 2^2 x^2 = 4x^2$.
+>    *Why:* the power applies to the 2 as well as the x. Forgetting this is the most
+>    common slip.
+> 5. **Work out the b-part.** $(-1)^3 = -1$.
+>    *Why:* an odd number of minus signs multiplies to a minus.
+> 6. **Multiply the numbers.** $10 \cdot 4 = 40$, and $40 \cdot (-1) = -40$.
+>
+> **Answer:** the $x^2$ term is $-40x^2$, so the coefficient is $-40$.
+>
+> **Check:** the full expansion is $32x^5 - 80x^4 + 80x^3 - 40x^2 + 10x - 1$. Its
+> coefficients add to $32 - 80 + 80 - 40 + 10 - 1 = 1$, and indeed $(2 \cdot 1 - 1)^5 = 1$. ✓
+
+> **Your turn:** Find the coefficient of $x$ in $(3x - 1)^3$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write the general term.** $\binom{3}{k}(3x)^{3-k}(-1)^k$.
+> 2. **Match the power.** $3 - k = 1$, so $k = 2$.
+> 3. **Work out the binomial.** $\binom{3}{2} = 3$.
+> 4. **Work out the a-part.** $(3x)^1 = 3x$.
+> 5. **Work out the b-part.** $(-1)^2 = 1$.
+> 6. **Multiply the numbers.** $3 \cdot 3 \cdot 1 = 9$.
+>
+> **Answer:** 9. (In full, $(3x - 1)^3 = 27x^3 - 27x^2 + 9x - 1$.)
+>
+> </details>
 
 ## 7 · From Formula to Dynamic Programming: Grid Paths
 
@@ -623,20 +1208,56 @@ print(grid_paths(4, 6, {(1, 1), (2, 3)}))      # → 14
 > column 1 (counting from 0) is blocked. Count the right/down paths from the top-left to
 > the bottom-right corner.
 >
-> 1. Top row and left column: only one way to reach each cell (keep going right, or
->    keep going down), so they are all 1.
-> 2. The blocked cell is 0.
-> 3. Fill the rest row by row: each cell = the cell above + the cell to the left.
+> **What you need:** write ways(r, c) for the number of paths from the start to the cell
+> in row r, column c. You can only arrive at a cell from the cell **above** it or the
+> cell to its **left**, never both on the same path, so
+> ways(r, c) = ways(above) + ways(left) (the sum rule). A blocked cell has 0 ways. This
+> is a **DP table** (dynamic programming): fill it in an order where the cells you need
+> are already done.
 >
-> | | col 0 | col 1 | col 2 | col 3 |
-> |---|---|---|---|---|
-> | **row 0** | 1 | 1 | 1 | 1 |
-> | **row 1** | 1 | ✗ 0 | 0 + 1 = 1 | 1 + 1 = 2 |
-> | **row 2** | 1 | 0 + 1 = 1 | 1 + 1 = 2 | 2 + 2 = 4 |
+> **Plan:** fill the table one row at a time, left to right, then read the bottom-right
+> corner.
 >
-> **Answer:** 4 paths. **Check:** without the block the formula gives
-> $\binom{2 + 3}{2} = 10$. The block removes the paths through it, $2 \times 3 = 6$
-> (2 ways in, 3 ways out), and $10 - 6 = 4$. ✓
+> 1. **Fill the top row.** Every cell in row 0 can only be reached by going right along
+>    the top, so each holds 1: `1 1 1 1`.
+> 2. **Fill the left column.** Same idea going down: rows 0, 1, 2 of column 0 hold 1.
+> 3. **Mark the blocked cell.** Row 1, column 1 holds 0.
+>    *Why:* no path may pass through it, so nothing can arrive there or leave from it.
+> 4. **Fill row 1, column 2.** Above is 1, left is the blocked 0: $1 + 0 = 1$.
+> 5. **Fill row 1, column 3.** Above is 1, left is 1: $1 + 1 = 2$.
+> 6. **Fill row 2, column 1.** Above is the blocked 0, left is 1: $0 + 1 = 1$.
+> 7. **Fill row 2, column 2.** Above is 1, left is 1: $1 + 1 = 2$.
+> 8. **Fill row 2, column 3.** Above is 2, left is 2: $2 + 2 = 4$. The finished table:
+>    | | col 0 | col 1 | col 2 | col 3 |
+>    |---|---|---|---|---|
+>    | **row 0** | 1 | 1 | 1 | 1 |
+>    | **row 1** | 1 | ✗ 0 | 1 | 2 |
+>    | **row 2** | 1 | 1 | 2 | **4** |
+>
+> **Answer:** 4 paths reach the bottom-right corner while avoiding the blocked cell.
+>
+> **Check:** count it another way. With no block, a path is 2 downs and 3 rights in some
+> order: choose where the 2 downs go among 5 moves, $\binom{5}{2} = 10$. Paths through
+> the blocked cell: 2 ways in (right-down or down-right) times 3 ways out (1 down and 2
+> rights, $\binom{3}{1} = 3$), so $2 \times 3 = 6$. Then $10 - 6 = 4$. ✓ The
+> `grid_paths(3, 4, {(1, 1)})` function above prints 4.
+
+> **Your turn:** A 3 × 3 grid has its centre cell (row 1, column 1) blocked. How many
+> right/down paths go from the top-left to the bottom-right corner?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Fill the top row and left column.** All 1.
+> 2. **Mark the blocked cell.** Centre = 0.
+> 3. **Fill row 1, column 2.** $1 + 0 = 1$.
+> 4. **Fill row 2, column 1.** $0 + 1 = 1$.
+> 5. **Fill row 2, column 2.** $1 + 1 = 2$.
+>
+> **Answer:** 2 paths: all the way round the top-right, or all the way round the
+> bottom-left.
+>
+> </details>
 
 > **Key idea:** A counting recurrence is a DP. "Ways to reach a state = sum over the
 > last move of ways to reach the previous state" solves climbing stairs, coin-change
@@ -678,16 +1299,57 @@ draws themselves.
 > **Notebook example:** 4 people drop their coats in a pile and each grabs one at
 > random. In how many ways does **nobody** get their own coat?
 >
-> 1. All ways: $4! = 24$.
-> 2. Subtract the ways that fix at least one chosen person. Choose that person
->    ($\binom{4}{1}$) and arrange the rest ($3!$): $4 \times 6 = 24$.
-> 3. Pairs were subtracted twice, so add them back: $\binom{4}{2} \times 2! = 6 \times 2 = 12$.
-> 4. Subtract triples: $\binom{4}{3} \times 1! = 4$. Add back all four: $\binom{4}{4} \times 0! = 1$.
-> 5. $D(4) = 24 - 24 + 12 - 4 + 1 = 9$.
+> **What you need:** a **derangement** is a shuffle where nobody ends up with their own
+> item; $D(n)$ counts them. **Inclusion–exclusion** is the fix for overlapping groups:
+> subtract the bad cases, but a case that is bad in two ways got subtracted twice, so
+> add it back once; a case bad in three ways is now off again, so subtract; and so on,
+> alternating minus and plus. Here "bad" means "a particular person got their own coat".
+> If j chosen people get their own coats, the other $4 - j$ coats can go anywhere:
+> $(4 - j)!$ ways.
 >
-> **Answer:** 9 of the 24 ways, or 37.5%, already close to $1/e \approx 36.8\%$.
-> **Check** with the recurrence $D(n) = (n - 1)\big(D(n-1) + D(n-2)\big)$ and
-> $D(2) = 1$, $D(3) = 2$: $D(4) = 3 \times (2 + 1) = 9$. ✓
+> **Plan:** start from all shuffles and correct for "at least 1, 2, 3, 4 people get
+> their own coat", alternating the sign.
+>
+> 1. **Count all shuffles.** 4 coats to 4 people: $4! = 24$.
+> 2. **Subtract "some one person gets their own".** Choose the person:
+>    $\binom{4}{1} = 4$ ways. Shuffle the other 3 coats freely: $3! = 6$. That is
+>    $4 \times 6 = 24$ to subtract.
+> 3. **Spot the double subtraction.** A shuffle where Ann **and** Ben both get their own
+>    coats was subtracted twice: once in "Ann's group" and once in "Ben's group".
+> 4. **Add back the pairs.** Choose the pair: $\binom{4}{2} = 6$. Shuffle the other 2:
+>    $2! = 2$. That is $6 \times 2 = 12$ to add.
+> 5. **Subtract the triples.** Choose 3 people: $\binom{4}{3} = 4$. The last coat has
+>    $1! = 1$ place to go. That is $4 \times 1 = 4$ to subtract.
+>    *Why:* the add-back overshoots. The shuffle where everyone gets their own coat was
+>    subtracted 4 times in step 2 but added back 6 times in step 4. The signs keep
+>    alternating until it is counted exactly 0 times: $1 - 4 + 6 - 4 + 1 = 0$.
+> 6. **Add back all four.** $\binom{4}{4} = 1$ way, $0! = 1$: add 1.
+> 7. **Combine, one operation at a time.** $24 - 24 = 0$. $0 + 12 = 12$. $12 - 4 = 8$.
+>    $8 + 1 = 9$.
+>
+> **Answer:** $D(4) = 9$. In 9 of the 24 shuffles nobody gets their own coat: 37.5%,
+> already close to $1/e \approx 36.8\%$.
+>
+> **Check:** list them. Writing the coat each of persons 1, 2, 3, 4 gets: 2143, 2341,
+> 2413, 3142, 3412, 3421, 4123, 4312, 4321. That is 9. ✓ The recurrence
+> $D(n) = (n - 1)\big(D(n-1) + D(n-2)\big)$ with $D(2) = 1$, $D(3) = 2$ agrees:
+> $D(4) = 3 \times (2 + 1) = 9$. ✓
+
+> **Your turn:** 3 people grab coats at random. In how many ways does nobody get their
+> own? Use inclusion–exclusion.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Count all shuffles.** $3! = 6$.
+> 2. **Subtract "some one person gets their own".** $\binom{3}{1} \times 2! = 3 \times 2 = 6$.
+> 3. **Add back the pairs.** $\binom{3}{2} \times 1! = 3 \times 1 = 3$.
+> 4. **Subtract all three.** $\binom{3}{3} \times 0! = 1$.
+> 5. **Combine, one operation at a time.** $6 - 6 = 0$, $0 + 3 = 3$, $3 - 1 = 2$.
+>
+> **Answer:** $D(3) = 2$: the shuffles 231 and 312.
+>
+> </details>
 
 ## 9 · Catalan Numbers: the Sequence Behind Recursion Puzzles
 
@@ -739,16 +1401,52 @@ print([bst_shapes(n) for n in range(8)])           # → [1, 1, 2, 5, 14, 42, 13
 print(len(balanced(4)), balanced(3))               # → 14 ['((()))', '(()())', '(())()', '()(())', '()()()']
 ```
 
-> **Notebook example:** How many ways are there to arrange 4 pairs of brackets? Use the
-> recurrence, then check with the formula.
+> **Notebook example:** How many balanced strings can be made from 4 pairs of brackets?
+> Use the recurrence.
 >
-> 1. Known values: $C_0 = 1$, $C_1 = 1$, $C_2 = 2$, $C_3 = 5$.
-> 2. Split at the bracket matching the first `(`: i pairs inside it and $3 - i$ after it.
->    $C_4 = C_0C_3 + C_1C_2 + C_2C_1 + C_3C_0$.
-> 3. $= 1 \cdot 5 + 1 \cdot 2 + 2 \cdot 1 + 5 \cdot 1 = 5 + 2 + 2 + 5 = 14$.
-> 4. Formula: $C_4 = \frac{1}{5}\binom{8}{4} = \frac{70}{5} = 14$. ✓
+> **What you need:** $C_n$ (the n-th **Catalan number**) is the number of balanced
+> strings of n bracket pairs. Known small values: $C_0 = 1$ (the empty string),
+> $C_1 = 1$ (`()`), $C_2 = 2$ (`(())`, `()()`), $C_3 = 5$. The **recurrence** (a rule
+> that builds a value from smaller ones): every balanced string starts with `(`, and that
+> bracket closes somewhere. Say i pairs sit **inside** it and the rest sit **after** it.
+> With n pairs in total, one pair is the outer brackets themselves, so $n - 1 - i$ pairs
+> are after. The inside and the after part are chosen independently (multiply), and
+> different i are different cases (add).
 >
-> **Answer:** 14. That is also the number of shapes of a binary search tree with 4 keys.
+> **Plan:** list the possible splits for n = 4, multiply each pair of known values, add.
+>
+> 1. **Count the pairs to share.** $n = 4$, and the first `(` with its partner uses 1
+>    pair, so $4 - 1 = 3$ pairs are split between inside and after.
+> 2. **List the splits.** Inside/after: 0/3, 1/2, 2/1, 3/0.
+>    *Why:* the inside can hold anywhere from 0 to all 3 of the remaining pairs.
+> 3. **Split 0/3.** $C_0 \cdot C_3 = 1 \cdot 5 = 5$.
+> 4. **Split 1/2.** $C_1 \cdot C_2 = 1 \cdot 2 = 2$.
+> 5. **Split 2/1.** $C_2 \cdot C_1 = 2 \cdot 1 = 2$.
+> 6. **Split 3/0.** $C_3 \cdot C_0 = 5 \cdot 1 = 5$.
+> 7. **Add the cases.** $5 + 2 = 7$, $7 + 2 = 9$, $9 + 5 = 14$.
+>
+> **Answer:** $C_4 = 14$ balanced strings. It is also the number of shapes of a binary
+> search tree with 4 keys.
+>
+> **Check:** the closed formula $C_n = \frac{1}{n+1}\binom{2n}{n}$ gives
+> $\binom{8}{4} = \frac{8 \cdot 7 \cdot 6 \cdot 5}{4 \cdot 3 \cdot 2 \cdot 1} = \frac{1680}{24} = 70$,
+> and $70 \div 5 = 14$. ✓ The code above prints `len(balanced(4))` as 14.
+
+> **Your turn:** Use the same recurrence to find $C_3$, and compare with the five strings
+> listed at the start of this section.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Count the pairs to share.** $3 - 1 = 2$.
+> 2. **List the splits.** Inside/after: 0/2, 1/1, 2/0.
+> 3. **Multiply each split.** $C_0 C_2 = 1 \cdot 2 = 2$. $C_1 C_1 = 1 \cdot 1 = 1$.
+>    $C_2 C_0 = 2 \cdot 1 = 2$.
+> 4. **Add the cases.** $2 + 1 + 2 = 5$.
+>
+> **Answer:** $C_3 = 5$, matching `((()))`, `(()())`, `(())()`, `()(())`, `()()()`.
+>
+> </details>
 
 ## 10 · Counting Modulo a Prime
 
@@ -785,14 +1483,53 @@ the inverse exists and why $p$ must be prime.
 > **Notebook example:** Compute $\binom{5}{2} \bmod 7$ the way a program must, using
 > inverses instead of division.
 >
-> 1. $5! = 120$, and $120 \bmod 7 = 120 - 119 = 1$.
-> 2. $2! = 2$ and $3! = 6$.
-> 3. Inverse of 2 mod 7: $2 \times 4 = 8 \equiv 1$, so it is 4. By Fermat,
->    $2^{7-2} = 32 = 4 \cdot 7 + 4 \equiv 4$. ✓
-> 4. Inverse of 6 mod 7: $6 \times 6 = 36 = 35 + 1 \equiv 1$, so it is 6.
-> 5. $\binom{5}{2} \equiv 1 \times 4 \times 6 = 24 \equiv 24 - 21 = 3 \pmod 7$.
+> **What you need:** $a \bmod p$ is the **remainder** after dividing a by p (like `a % p`
+> in Python), and $a \equiv b \pmod p$ means a and b leave the same remainder. Programs
+> keep only remainders so numbers stay small. Adding and multiplying remainders works,
+> but dividing does not. Instead, multiply by an **inverse**: the inverse of a mod p is
+> the number b with $a \times b \equiv 1 \pmod p$, so multiplying by b undoes
+> multiplying by a, just as dividing would. Here
+> $\binom{5}{2} = \frac{5!}{2! \cdot 3!}$, so you need the inverses of $2!$ and $3!$.
 >
-> **Answer:** 3. **Check:** $\binom{5}{2} = 10$, and $10 \bmod 7 = 3$. ✓
+> **Plan:** reduce the top mod 7, find the inverses of the two bottom factors, multiply
+> everything, reduce again.
+>
+> 1. **Compute the top.** $5! = 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1 = 120$.
+> 2. **Reduce the top mod 7.** $7 \times 17 = 119$, and $120 - 119 = 1$. So
+>    $5! \equiv 1 \pmod 7$.
+>    *Why you cannot just divide now:* the remainder 1 divided by $2! \cdot 3! = 12$ is
+>    not a whole number. The remainder has forgotten that 120 was divisible by 12.
+> 3. **Compute the bottom factors.** $2! = 2$ and $3! = 6$.
+> 4. **Find the inverse of 2.** Try multipliers: $2 \times 4 = 8$, and
+>    $8 = 7 + 1 \equiv 1$. So the inverse of 2 is **4**.
+> 5. **Find the inverse of 6.** $6 \times 6 = 36$, and $36 = 35 + 1 \equiv 1$. So the
+>    inverse of 6 is **6**.
+> 6. **Multiply instead of dividing.** $1 \times 4 \times 6 = 24$.
+> 7. **Reduce mod 7.** $7 \times 3 = 21$, and $24 - 21 = 3$.
+>
+> **Answer:** $\binom{5}{2} \equiv 3 \pmod 7$. This is exactly what `make_ncr` above
+> does, with $10^9 + 7$ in place of 7.
+>
+> **Check:** directly, $\binom{5}{2} = 10$, and $10 - 7 = 3$. ✓ For big p, guessing
+> inverses is too slow; Fermat's shortcut says the inverse of a is $a^{p-2} \bmod p$.
+> For 2: $2^{5} = 32 = 28 + 4 \equiv 4$ (`pow(2, 5, 7)` in Python), the same 4 as
+> step 4. ✓
+
+> **Your turn:** Compute $\binom{4}{2} \bmod 5$ using inverses instead of division.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Compute the top.** $4! = 24$.
+> 2. **Reduce the top mod 5.** $24 - 20 = 4$.
+> 3. **Compute the bottom factors.** $\binom{4}{2} = \frac{4!}{2! \cdot 2!}$, and $2! = 2$.
+> 4. **Find the inverse of 2.** $2 \times 3 = 6 = 5 + 1 \equiv 1$, so it is **3**.
+> 5. **Multiply instead of dividing.** One inverse per $2!$: $4 \times 3 \times 3 = 36$.
+> 6. **Reduce mod 5.** $36 - 35 = 1$.
+>
+> **Answer:** 1. (Directly: $\binom{4}{2} = 6$, and $6 - 5 = 1$.)
+>
+> </details>
 
 ## 11 · How Big Is the Search Space?
 
@@ -811,19 +1548,90 @@ lab turns this table into wall-clock time.
 
 <div class="lab" data-viz="cs-growth"></div>
 
-> **Notebook example:** Can brute force solve the travelling salesman problem for 15
-> cities in a compiled language?
+> **Notebook example:** The travelling salesman problem: visit 15 cities once each and
+> return home, by the shortest loop (a **tour**). How many different tours would a
+> brute-force search have to try, and how long would that take in a compiled language?
 >
-> 1. Fix the starting city. The other 14 can be visited in $14!$ orders, and each tour is
->    counted twice (once in each direction): $\frac{14!}{2}$ tours.
-> 2. $14! = 87{,}178{,}291{,}200$, so there are about $4.4 \times 10^{10}$ tours.
-> 3. At $10^8$ simple steps per second, that is at least $440$ seconds, about 7 minutes,
->    and more because each tour costs 15 additions.
-> 4. Bitmask DP instead: $2^{15} \times 15^2 \approx 32{,}768 \times 225 \approx 7.4 \times 10^6$
->    steps, about 0.07 seconds.
+> **What you need:** a tour is a loop, like people round a table. As in circular
+> seating, **fix one city** as the start, because starting elsewhere on the same loop
+> gives the same tour; that leaves $(n - 1)!$ orders. A loop driven backwards is also the
+> same tour, so each one appears twice: divide by 2. Rough speed: about $10^8$ simple
+> steps per second in a compiled language.
 >
-> **Answer:** brute force is borderline at 15 cities and hopeless at 20. DP over subsets
-> is instant. Counting first told you which algorithm to write.
+> **Plan:** count the tours, then divide by the speed to get seconds.
+>
+> 1. **Fix the start city.** $15 - 1 = 14$ cities are left to put in order: $14!$ orders.
+> 2. **Build up 14! from 10!.** The table above gives $10! = 3{,}628{,}800$. Then
+>    $\times 11 = 39{,}916{,}800$, $\times 12 = 479{,}001{,}600$,
+>    $\times 13 = 6{,}227{,}020{,}800$, $\times 14 = 87{,}178{,}291{,}200$.
+> 3. **Halve for direction.** $87{,}178{,}291{,}200 \div 2 = 43{,}589{,}145{,}600$,
+>    about $4.4 \times 10^{10}$ tours.
+>    *Why:* A→B→C→A and A→C→B→A are the same loop with the same length.
+> 4. **Divide by the speed.** $4.4 \times 10^{10} \div 10^8 = 4.4 \times 10^2 = 440$
+>    seconds, even if checking a tour cost just 1 step.
+> 5. **Turn it into minutes.** $440 \div 60 \approx 7.3$ minutes.
+> 6. **Allow for the real cost per tour.** Adding up a tour's 15 road lengths is about 15
+>    steps: $440 \times 15 = 6600$ seconds, which is $6600 \div 3600 \approx 1.8$ hours.
+>
+> **Answer:** about $4.4 \times 10^{10}$ tours: somewhere between minutes and a couple of
+> hours. Brute force is borderline at 15 cities.
+>
+> **Check:** in Python, `math.factorial(14) // 2` prints 43589145600. ✓ The same rule,
+> $(n - 1)!/2$, is the necklace count from section 2.
+
+> **Your turn:** How many different tours does brute force try for 6 cities?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Fix the start city.** $6 - 1 = 5$ cities left: $5! = 120$ orders.
+> 2. **Halve for direction.** $120 \div 2 = 60$.
+>
+> **Answer:** 60 tours, which a computer checks instantly.
+>
+> </details>
+
+> **Notebook example:** The smarter algorithm, **bitmask DP** (Held–Karp), solves the
+> same 15-city problem in about $2^n \times n^2$ steps. How long does it take?
+>
+> **What you need:** the DP remembers, for every **set** of cities already visited and
+> every city you could be standing in, the shortest route so far. There are $2^n$ sets
+> (each city is in or out) and n current cities, and each entry tries up to n next
+> cities: $2^n \cdot n \cdot n = 2^n n^2$ steps. "Bitmask" just means each set is stored
+> as an n-bit number, one bit per city.
+>
+> **Plan:** work out $2^{15}$ and $15^2$, multiply them, divide by the speed.
+>
+> 1. **Count the sets.** $2^{10} = 1024$, so $2^{15} = 1024 \times 32 = 32{,}768$.
+> 2. **Count the city pairs.** $15^2 = 15 \times 15 = 225$.
+> 3. **Split the multiplication.** $32{,}768 \times 225 = 32{,}768 \times 200 + 32{,}768 \times 25$.
+>    *Why:* 200 and 25 are easy to multiply by.
+> 4. **Do each part.** $32{,}768 \times 200 = 6{,}553{,}600$, and
+>    $32{,}768 \times 25 = 819{,}200$.
+> 5. **Add the parts.** $6{,}553{,}600 + 819{,}200 = 7{,}372{,}800$, about
+>    $7.4 \times 10^6$ steps.
+> 6. **Divide by the speed.** $7.4 \times 10^6 \div 10^8 = 0.074$ seconds.
+>
+> **Answer:** about 0.07 seconds, against minutes-to-hours for brute force. At 20 cities
+> brute force needs $19!/2 \approx 6 \times 10^{16}$ tours (about 19 years at $10^8$ per
+> second), while the DP needs $2^{20} \times 400 \approx 4 \times 10^8$ steps, about
+> 4 seconds. Counting first told you which algorithm to write.
+>
+> **Check:** in Python, `2**15 * 15**2` prints 7372800. ✓ Estimate: $2^{15} \approx 3 \times 10^4$
+> and $225 \approx 2 \times 10^2$, so roughly $6 \times 10^6$, the same size. ✓
+
+> **Your turn:** How many steps does the bitmask DP take for 10 cities?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Count the sets.** $2^{10} = 1024$.
+> 2. **Count the city pairs.** $10^2 = 100$.
+> 3. **Multiply.** $1024 \times 100 = 102{,}400$.
+>
+> **Answer:** 102,400 steps, about a thousandth of a second.
+>
+> </details>
 
 ## Common Mistakes
 

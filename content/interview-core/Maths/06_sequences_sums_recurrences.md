@@ -92,19 +92,126 @@ harmonic series, whose terms shrink but whose sum still grows forever.
 
 <div class="lab" data-viz="math-series"></div>
 
-> **Notebook example:** Add $5 + 8 + 11 + \dots + 50$, then $3 + 6 + 12 + \dots + 1536$,
-> then $1 + \frac13 + \frac19 + \dots$ forever.
+> **Notebook example:** Add up $5 + 8 + 11 + \dots + 50$.
 >
-> 1. **Arithmetic.** Count the terms: the step is 3, so there are
->    $\frac{50 - 5}{3} + 1 = 16$ terms. The average of the first and last is
->    $\frac{5 + 50}{2} = 27.5$. Sum $= 16 \times 27.5 = 440$.
-> 2. **Geometric.** The ratio is 2 and $1536 = 3 \cdot 2^9$, so the sum is
->    $S = 3(1 + 2 + \dots + 2^9)$.
-> 3. Use the subtract trick: $2S' - S' = 2^{10} - 1$, so $S' = 1023$ and $S = 3 \times 1023 = 3069$.
-> 4. **Infinite, ratio below 1:** $\frac{1}{1 - r} = \frac{1}{1 - \frac13} = \frac{3}{2}$.
+> **What you need:** an **arithmetic series** adds numbers that go up by the same
+> **step** each time. Its sum is **(number of terms) × (average of the first and last
+> term)**. The number of terms is $\frac{\text{last} - \text{first}}{\text{step}} + 1$.
 >
-> **Answer:** 440, 3069 and 1.5. **Check** step 3: the last term, 1536, is just over
-> half the total, 3069. That is the "last term dominates" rule for r = 2.
+> **Plan:** find the step, count the terms, find the average of the ends, multiply.
+>
+> 1. **Find the step.** $8 - 5 = 3$ (and $11 - 8 = 3$ too).
+> 2. **Measure the distance from first to last.** $50 - 5 = 45$.
+> 3. **Count the steps.** $45 \div 3 = 15$ steps of 3.
+> 4. **Count the terms.** $15 + 1 = 16$ terms.
+>    *Why:* like fence posts and gaps, 15 gaps between numbers need 16 numbers. Forgetting
+>    the +1 is the classic off-by-one bug.
+> 5. **Average the first and last.** $5 + 50 = 55$, and $55 \div 2 = 27.5$.
+>    *Why:* the terms are evenly spaced, so their average is exactly halfway between the
+>    ends.
+> 6. **Multiply.** $16 \times 27.5$: $16 \times 27 = 432$ and $16 \times 0.5 = 8$, so
+>    $432 + 8 = 440$.
+>
+> **Answer:** $5 + 8 + 11 + \dots + 50 = 440$.
+>
+> **Check:** Gauss's pairing trick. First + last $= 5 + 50 = 55$; second + second-last
+> $= 8 + 47 = 55$; every pair makes 55. 16 terms make 8 pairs: $8 \times 55 = 440$. ✓ In
+> Python, `sum(range(5, 51, 3))` prints 440.
+
+> **Your turn:** Add up $2 + 5 + 8 + \dots + 20$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Find the step.** $5 - 2 = 3$.
+> 2. **Count the steps.** $(20 - 2) \div 3 = 18 \div 3 = 6$.
+> 3. **Count the terms.** $6 + 1 = 7$.
+> 4. **Average the first and last.** $(2 + 20) \div 2 = 22 \div 2 = 11$.
+> 5. **Multiply.** $7 \times 11 = 77$.
+>
+> **Answer:** 77.
+>
+> </details>
+
+> **Notebook example:** Add up $3 + 6 + 12 + \dots + 1536$, where each term is double the
+> one before.
+>
+> **What you need:** a **geometric series** multiplies by the same **ratio** r each
+> time. For ratio 2 there is a neat fact: $1 + 2 + 4 + \dots + 2^m = 2^{m+1} - 1$ (one
+> less than the next power of two). It comes from the **subtract trick**: call the sum
+> S, double it, and subtract; everything cancels except the two ends.
+>
+> **Plan:** pull out the common factor 3, sum the powers of two, multiply back.
+>
+> 1. **Find the ratio.** $6 \div 3 = 2$ (and $12 \div 6 = 2$).
+> 2. **Pull out the common factor.** Every term is 3 times a power of two:
+>    $3(1 + 2 + 4 + \dots + 512)$.
+> 3. **Find the last power.** $1536 \div 3 = 512$, and $512 = 2^9$. So the bracket is
+>    $1 + 2 + \dots + 2^9$.
+> 4. **Set up the subtract trick.** Call the bracket $S'$. Then
+>    $2S' = 2 + 4 + \dots + 2^9 + 2^{10}$.
+> 5. **Subtract.** In $2S' - S'$ every middle term appears once with $+$ and once with
+>    $-$ and cancels. What is left: $2^{10} - 1$. And $2S' - S' = S'$, so
+>    $S' = 2^{10} - 1$.
+> 6. **Do the arithmetic.** $2^{10} = 1024$, and $1024 - 1 = 1023$.
+> 7. **Multiply back the 3.** $3 \times 1023 = 3069$.
+>
+> **Answer:** $3 + 6 + 12 + \dots + 1536 = 3069$.
+>
+> **Check:** the last term, 1536, is just over half of 3069. That is the "last term
+> dominates" rule for ratio 2: the last term is bigger than all the others put together.
+> In Python, `sum(3 * 2**i for i in range(10))` prints 3069. ✓
+
+> **Your turn:** Add up $5 + 10 + 20 + 40 + 80$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Find the ratio.** $10 \div 5 = 2$.
+> 2. **Pull out the common factor.** $5(1 + 2 + 4 + 8 + 16)$.
+> 3. **Find the last power.** $16 = 2^4$.
+> 4. **Use the powers-of-two fact.** $1 + \dots + 2^4 = 2^5 - 1 = 32 - 1 = 31$.
+> 5. **Multiply back the 5.** $5 \times 31 = 155$.
+>
+> **Answer:** 155.
+>
+> </details>
+
+> **Notebook example:** Add up $1 + \frac13 + \frac19 + \frac{1}{27} + \dots$ forever.
+>
+> **What you need:** when the ratio r is between 0 and 1, the terms shrink so fast that
+> the never-ending sum settles on a fixed number:
+> $1 + r + r^2 + \dots = \frac{1}{1 - r}$. (It is the formula
+> $\frac{1 - r^{n+1}}{1 - r}$ from above, with $r^{n+1}$ shrinking to 0.)
+>
+> **Plan:** find r, make sure it is below 1, put it into $\frac{1}{1 - r}$.
+>
+> 1. **Find the ratio.** $\frac13 \div 1 = \frac13$, so $r = \frac13$.
+> 2. **Check the ratio is below 1.** $\frac13 < 1$, so the formula applies.
+>    *Why:* with $r \ge 1$ the terms never shrink and the sum grows forever.
+> 3. **Substitute.** $\frac{1}{1 - \frac13}$.
+> 4. **Simplify the bottom.** $1 - \frac13 = \frac33 - \frac13 = \frac23$.
+> 5. **Divide.** $1 \div \frac23 = \frac32 = 1.5$.
+>    *Why:* dividing by a fraction is multiplying by it flipped over.
+>
+> **Answer:** the sum gets as close to 1.5 as you like, and never goes past it.
+>
+> **Check:** add the first few terms: 1, then 1.333, 1.444, 1.481, 1.494, 1.498. They
+> creep up towards 1.5. ✓
+
+> **Your turn:** Add up $1 + \frac14 + \frac{1}{16} + \dots$ forever.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Find the ratio.** $r = \frac14$, which is below 1.
+> 2. **Substitute.** $\frac{1}{1 - \frac14}$.
+> 3. **Simplify the bottom.** $1 - \frac14 = \frac34$.
+> 4. **Divide.** $1 \div \frac34 = \frac43$.
+>
+> **Answer:** $\frac43 \approx 1.333$.
+>
+> </details>
 
 ### The amortized array, priced by a geometric series
 
@@ -153,18 +260,83 @@ becomes a straight line — each halving is one equal step down.
 <div class="lab" data-viz="math-log"></div>
 
 > **Notebook example:** In the worst case, how many comparisons does binary search need
-> on 5,000 sorted items? And at least how many comparisons must any sort use for 5
-> items?
+> on 5,000 sorted items?
 >
-> 1. Halve until 1 item is left, rounding up: 5000 → 2500 → 1250 → 625 → 313 → 157 →
->    79 → 40 → 20 → 10 → 5 → 3 → 2 → 1.
-> 2. Count the arrows: **13** halvings.
-> 3. Check with powers of two: $2^{12} = 4096 < 5000 \le 8192 = 2^{13}$, so
->    $\lceil \log_2 5000 \rceil = 13$. ✓
-> 4. Sorting 5 items must tell apart $5! = 120$ orders. Each comparison has 2 outcomes,
->    so you need $2^c \ge 120$. $2^6 = 64$ is too small and $2^7 = 128$ is enough.
+> **What you need:** each comparison in binary search throws away half of the items
+> still in play. So the number of comparisons is the number of times you can **halve**
+> 5000 before 1 item is left, which is what $\log_2 5000$ measures. When the count is
+> odd, the halves are uneven; in the worst case you keep the bigger half, so **round up**.
+> $\lceil x \rceil$ ("ceiling of x") means x rounded up to a whole number.
 >
-> **Answer:** 13 comparisons, and at least 7. (Seven is actually achievable for 5 items.)
+> **Plan:** halve repeatedly, rounding up, and count the halvings; then confirm with
+> powers of two.
+>
+> 1. **Halve the even part.** 5000 → 2500 → 1250 → 625. That is 3 halvings.
+> 2. **Halve an odd number.** Half of 625 is 312.5. Round up: 313. That is 4 halvings.
+>    *Why:* the worst case keeps the bigger half.
+> 3. **Keep halving, rounding up.** 313 → 157 → 79 → 40 → 20 → 10 → 5 → 3 → 2 → 1.
+> 4. **Count the arrows.** 3 in step 1, 1 in step 2, and 9 in step 3: $3 + 1 + 9 = 13$
+>    halvings.
+>
+> **Answer:** at most 13 comparisons to search 5,000 items.
+>
+> **Check:** powers of two. $2^{12} = 4096$ is smaller than 5000, and $2^{13} = 8192$ is
+> at least 5000, so $\log_2 5000$ is between 12 and 13, and rounding up gives
+> $\lceil \log_2 5000 \rceil = 13$. ✓ In Python, `math.ceil(math.log2(5000))` prints 13.
+
+> **Your turn:** In the worst case, how many comparisons does binary search need on 100
+> sorted items?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Halve the even part.** 100 → 50 → 25.
+> 2. **Halve an odd number.** Half of 25 is 12.5; round up to 13.
+> 3. **Keep halving, rounding up.** 13 → 7 → 4 → 2 → 1.
+> 4. **Count the arrows.** $2 + 1 + 4 = 7$.
+>
+> **Answer:** 7 comparisons. ($2^6 = 64 < 100 \le 128 = 2^7$.)
+>
+> </details>
+
+> **Notebook example:** Any sorting algorithm that works by comparing two items at a
+> time must, in the worst case, use at least how many comparisons to sort 5 items?
+>
+> **What you need:** before sorting, the 5 items could be in any of $5!$ orders, and
+> the algorithm has to tell all of them apart. Each comparison has 2 possible outcomes
+> (yes or no), so c comparisons can lead to at most $2^c$ different results. To tell
+> all orders apart you need $2^c \ge$ (number of orders).
+>
+> **Plan:** count the orders, then find the smallest power of two that covers them.
+>
+> 1. **Count the possible orders.** $5! = 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1$:
+>    $5 \cdot 4 = 20$, $20 \cdot 3 = 60$, $60 \cdot 2 = 120$.
+> 2. **Write the condition.** You need $2^c \ge 120$.
+>    *Why:* with fewer than 120 possible results, two different input orders would get
+>    the same treatment, and one of them would come out unsorted.
+> 3. **Try c = 6.** $2^6 = 64$. Too small, since $64 < 120$.
+> 4. **Try c = 7.** $2^7 = 128$. Enough, since $128 \ge 120$.
+>
+> **Answer:** at least 7 comparisons in the worst case. (Seven is actually achievable
+> for 5 items.)
+>
+> **Check:** $\log_2 120 \approx 6.9$, which rounds up to 7. ✓ In Python,
+> `math.ceil(math.log2(math.factorial(5)))` prints 7.
+
+> **Your turn:** At least how many comparisons must any comparison sort use, in the
+> worst case, for 3 items?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Count the possible orders.** $3! = 3 \cdot 2 \cdot 1 = 6$.
+> 2. **Write the condition.** $2^c \ge 6$.
+> 3. **Try c = 2.** $2^2 = 4$, too small.
+> 4. **Try c = 3.** $2^3 = 8$, enough.
+>
+> **Answer:** at least 3 comparisons.
+>
+> </details>
 
 ### Logarithm facts you will use
 
@@ -374,20 +546,96 @@ print(first_bad)                                       # → 71
 > $\varphi^n$. Closed forms are great for analysis; for exact large answers use integer
 > methods.
 
+> **Notebook example:** (Warm-up.) Find a formula for $a_n = 3a_{n-1}$ with $a_0 = 2$.
+>
+> **What you need:** a **recurrence** gives each term from earlier ones; **solving** it
+> means finding an explicit formula, so you can jump straight to any $a_n$ without
+> computing all the terms before it. The standard first move is to **guess**
+> $a_n = x^n$ for some unknown number x, put the guess into the recurrence, and see
+> which x makes it work.
+>
+> **Plan:** list a few terms, guess $x^n$, find x, then scale to fit the starting value.
+>
+> 1. **List a few terms.** $a_0 = 2$, $a_1 = 3 \cdot 2 = 6$, $a_2 = 3 \cdot 6 = 18$,
+>    $a_3 = 3 \cdot 18 = 54$.
+> 2. **Substitute the guess.** Put $a_n = x^n$ into $a_n = 3a_{n-1}$: $x^n = 3x^{n-1}$.
+> 3. **Divide by $x^{n-1}$.** $x = 3$.
+>    *Why:* $x^n \div x^{n-1} = x$, and dividing both sides by the same thing keeps them
+>    equal.
+> 4. **Allow a constant in front.** $a_n = A \cdot 3^n$ also satisfies the recurrence,
+>    for any number A.
+>    *Why:* multiplying every term by A does not change the rule "each term is 3 times
+>    the last".
+> 5. **Fit the start.** At $n = 0$: $A \cdot 3^0 = A \cdot 1 = A$, and this must equal
+>    $a_0 = 2$. So $A = 2$.
+>
+> **Answer:** $a_n = 2 \cdot 3^n$.
+>
+> **Check:** $n = 3$ gives $2 \cdot 27 = 54$, matching step 1. ✓
+
+> **Your turn:** Find a formula for $a_n = 2a_{n-1}$ with $a_0 = 5$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Substitute the guess.** $x^n = 2x^{n-1}$.
+> 2. **Divide by the smaller power.** $x = 2$.
+> 3. **Allow a constant in front.** $a_n = A \cdot 2^n$.
+> 4. **Fit the start.** $n = 0$: $A = 5$.
+>
+> **Answer:** $a_n = 5 \cdot 2^n$ (5, 10, 20, 40, …).
+>
+> </details>
+
 > **Notebook example:** Solve $a_n = 5a_{n-1} - 6a_{n-2}$ with $a_0 = 0$ and $a_1 = 1$.
 >
-> 1. Try $a_n = x^n$: $x^n = 5x^{n-1} - 6x^{n-2}$. Divide by $x^{n-2}$ to get the
->    characteristic equation $x^2 - 5x + 6 = 0$.
-> 2. Factor: $(x - 2)(x - 3) = 0$, so the roots are 2 and 3.
-> 3. General solution: $a_n = A \cdot 2^n + B \cdot 3^n$.
-> 4. Fit the start: $n = 0$ gives $A + B = 0$. $n = 1$ gives $2A + 3B = 1$. Substitute
->    $A = -B$: $-2B + 3B = 1$, so $B = 1$ and $A = -1$.
-> 5. $a_n = 3^n - 2^n$.
+> **What you need:** the same guess, $a_n = x^n$, now gives a quadratic, the
+> **characteristic equation**, with two solutions (**roots**) $r_1$ and $r_2$. Any mix
+> $a_n = A \cdot r_1^n + B \cdot r_2^n$ obeys the recurrence (the **general solution**).
+> Then pick A and B so the first two terms come out right. To **factor**
+> $x^2 - 5x + 6$, look for two numbers that multiply to 6 and add to $-5$.
 >
-> **Check** against the recurrence: $a_2 = 5 \cdot 1 - 6 \cdot 0 = 5$, and
-> $3^2 - 2^2 = 5$ ✓. $a_3 = 5 \cdot 5 - 6 \cdot 1 = 19$, and $27 - 8 = 19$ ✓. It grows
-> like $3^n$, the larger root. That is how you read off the growth rate of any linear
-> recurrence.
+> **Plan:** get the characteristic equation, find its two roots, write the general
+> solution, then fit A and B to $a_0$ and $a_1$.
+>
+> 1. **Substitute the guess.** $x^n = 5x^{n-1} - 6x^{n-2}$.
+> 2. **Divide by the smallest power, $x^{n-2}$.** $x^2 = 5x - 6$.
+>    *Why:* this strips out the n, leaving an ordinary equation in x.
+> 3. **Move everything to one side.** $x^2 - 5x + 6 = 0$. This is the characteristic
+>    equation.
+> 4. **Factor.** $-2$ and $-3$ multiply to $+6$ and add to $-5$, so
+>    $(x - 2)(x - 3) = 0$.
+> 5. **Read off the roots.** A product is 0 only if one factor is 0: $x = 2$ or $x = 3$.
+> 6. **Write the general solution.** $a_n = A \cdot 2^n + B \cdot 3^n$.
+> 7. **Fit $a_0 = 0$.** Put $n = 0$: $A \cdot 1 + B \cdot 1 = 0$, so $A + B = 0$, which
+>    means $A = -B$.
+> 8. **Fit $a_1 = 1$.** Put $n = 1$: $2A + 3B = 1$.
+> 9. **Substitute $A = -B$.** $2(-B) + 3B = 1$, so $-2B + 3B = 1$, so $B = 1$.
+> 10. **Find A.** $A = -B = -1$.
+> 11. **Write the formula.** $a_n = -1 \cdot 2^n + 1 \cdot 3^n = 3^n - 2^n$.
+>
+> **Answer:** $a_n = 3^n - 2^n$. It grows like $3^n$, the larger root: that is how you
+> read off the growth rate of any linear recurrence.
+>
+> **Check:** run the recurrence. $a_2 = 5 \cdot 1 - 6 \cdot 0 = 5$, and
+> $3^2 - 2^2 = 9 - 4 = 5$. ✓ $a_3 = 5 \cdot 5 - 6 \cdot 1 = 25 - 6 = 19$, and
+> $3^3 - 2^3 = 27 - 8 = 19$. ✓
+
+> **Your turn:** Solve $a_n = 3a_{n-1} - 2a_{n-2}$ with $a_0 = 0$ and $a_1 = 1$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Substitute the guess and divide.** $x^2 = 3x - 2$.
+> 2. **Move everything to one side.** $x^2 - 3x + 2 = 0$.
+> 3. **Factor.** $-1$ and $-2$ multiply to 2 and add to $-3$: $(x - 1)(x - 2) = 0$.
+> 4. **Write the general solution.** $a_n = A \cdot 1^n + B \cdot 2^n = A + B \cdot 2^n$.
+> 5. **Fit the start.** $n = 0$: $A + B = 0$. $n = 1$: $A + 2B = 1$. Subtracting the
+>    first from the second: $B = 1$, so $A = -1$.
+>
+> **Answer:** $a_n = 2^n - 1$: 0, 1, 3, 7, 15, …, the Tower of Hanoi numbers.
+>
+> </details>
 
 ### O(log n) Fibonacci with a matrix power
 
@@ -452,20 +700,89 @@ import math
 print(round(math.log(2) / math.log(1.10), 2))   # → 7.27
 ```
 
-> **Notebook example:** A client retries with backoff starting at 1 s, doubling, capped at
-> 30 s. How long has it waited in total after 8 retries? And how long until 5% monthly
-> growth doubles your traffic?
+> **Notebook example:** A client retries a failing call with exponential backoff: it
+> waits 1 s before the first retry, and doubles the wait each time, but never waits more
+> than 30 s (the **cap**). How long has it waited in total after 8 retries?
 >
-> 1. The waits double until they hit the cap: 1, 2, 4, 8, 16, then 32 would exceed 30,
->    so 30, 30, 30.
-> 2. Total: $1 + 2 + 4 + 8 + 16 = 31$ (that is $2^5 - 1$), plus $3 \times 30 = 90$, so
->    **121 s**.
-> 3. Rule of 70: $70 / 5 = 14$ months.
-> 4. Exact: solve $1.05^t = 2$, so $t = \frac{\ln 2}{\ln 1.05} = \frac{0.6931}{0.0488} \approx 14.2$
->    months.
+> **What you need:** **exponential backoff** means each wait is double the last: 1, 2,
+> 4, 8, … The **cap** replaces any wait above it with the cap itself. The doubling part
+> is a geometric series: $1 + 2 + 4 + \dots + 2^{k-1} = 2^k - 1$.
 >
-> **Answer:** 121 s of waiting, and about 14 months to double. The rule of 70 was off by
-> only 0.2 months.
+> **Plan:** list all 8 waits, applying the cap, then add the doubling part and the capped
+> part separately.
+>
+> 1. **List the doubling waits.** 1, 2, 4, 8, 16. That is 5 waits.
+> 2. **Apply the cap.** The next wait would be $16 \times 2 = 32$, which is more than 30,
+>    so it becomes 30. Every later wait is capped too.
+> 3. **Fill up to 8 waits.** $8 - 5 = 3$ capped waits: 30, 30, 30.
+> 4. **Add the doubling part.** $1 + 2 = 3$, $3 + 4 = 7$, $7 + 8 = 15$, $15 + 16 = 31$.
+>    *Why it is quick:* this is $2^5 - 1 = 32 - 1 = 31$, the geometric-sum shortcut.
+> 5. **Add the capped part.** $3 \times 30 = 90$.
+> 6. **Add the two parts.** $31 + 90 = 121$ seconds.
+>
+> **Answer:** 121 seconds, about 2 minutes, of total waiting after 8 retries.
+>
+> **Check:** in Python, `sum(min(30, 2**k) for k in range(8))` prints 121. ✓
+
+> **Your turn:** Backoff starts at 1 s, doubles, and is capped at 10 s. What is the total
+> wait after 6 retries?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **List the doubling waits.** 1, 2, 4, 8.
+> 2. **Apply the cap.** The next would be 16, more than 10, so 10.
+> 3. **Fill up to 6 waits.** $6 - 4 = 2$ capped waits: 10, 10.
+> 4. **Add the doubling part.** $1 + 2 + 4 + 8 = 15$ ($= 2^4 - 1$).
+> 5. **Add the capped part.** $2 \times 10 = 20$.
+> 6. **Add the two parts.** $15 + 20 = 35$ seconds.
+>
+> **Answer:** 35 seconds.
+>
+> </details>
+
+> **Notebook example:** Your traffic grows 5% every month. How many months until it
+> doubles?
+>
+> **What you need:** growing 5% means multiplying by $1.05$ each month, so after t
+> months traffic is $1.05^t$ times bigger. Doubling means $1.05^t = 2$. Quick estimate,
+> the **rule of 70**: doubling takes about $70 \div p$ periods at p% growth. Exact answer
+> uses the **natural log** ln (the `math.log` button), whose key property is that it
+> brings a power down in front: $\ln(a^t) = t \ln a$.
+>
+> **Plan:** estimate with the rule of 70, then solve $1.05^t = 2$ exactly with logs.
+>
+> 1. **Write the equation.** $1.05^t = 2$.
+> 2. **Estimate with the rule of 70.** $70 \div 5 = 14$ months.
+> 3. **Take ln of both sides.** $\ln(1.05^t) = \ln 2$.
+>    *Why:* doing the same thing to both sides keeps them equal, and ln can pull the
+>    unknown t out of the exponent.
+> 4. **Bring the power down.** $t \cdot \ln 1.05 = \ln 2$.
+> 5. **Divide to get t alone.** $t = \frac{\ln 2}{\ln 1.05}$.
+> 6. **Look up the logs.** $\ln 2 \approx 0.6931$ and $\ln 1.05 \approx 0.0488$.
+> 7. **Divide.** $0.6931 \div 0.0488 \approx 14.2$ months.
+>
+> **Answer:** traffic doubles in about 14.2 months. The rule of 70 said 14, off by only
+> 0.2 months.
+>
+> **Check:** $1.05^{14} \approx 1.98$ (just under double) and $1.05^{15} \approx 2.08$
+> (just over), so the answer must be a little above 14. ✓ In Python,
+> `math.log(2) / math.log(1.05)` prints about 14.21.
+
+> **Your turn:** Something grows 7% per year. Estimate the doubling time with the rule of
+> 70, then find it exactly ($\ln 1.07 \approx 0.0677$).
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write the equation.** $1.07^t = 2$.
+> 2. **Estimate with the rule of 70.** $70 \div 7 = 10$ years.
+> 3. **Take ln and bring the power down.** $t \cdot \ln 1.07 = \ln 2$.
+> 4. **Divide to get t alone.** $t = 0.6931 \div 0.0677 \approx 10.2$ years.
+>
+> **Answer:** about 10.2 years; the rule of 70 gave 10.
+>
+> </details>
 
 ## Common Mistakes
 
