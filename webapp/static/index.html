@@ -19,6 +19,18 @@
   r.dataset.theme = dark ? 'dark' : 'light';
   r.dataset.themePref = pref;
 })();
+/* iOS Safari zooms into any focused field whose text is under 16px (the code
+   editor, search) and stays zoomed. maximum-scale=1 stops that, and iOS still
+   allows pinch-zoom despite it. Elsewhere it would block pinch-zoom, and no
+   other browser auto-zooms, so iOS only. */
+(function () {
+  var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPadOS reports as a Mac
+  if (ios) {
+    var vp = document.querySelector('meta[name=viewport]');
+    vp.content += ', maximum-scale=1';
+  }
+})();
 </script>
 <link rel="icon" type="image/svg+xml" href="./logo.svg">
 <link rel="stylesheet" href="./vendor/fonts/fonts.css">
@@ -283,8 +295,11 @@
 <script src="./vendor/codemirror/5.65.16/addon/search/jump-to-line.js"></script>
 <script src="./vendor/marked/4.3.0/marked.min.js"></script>
 <!-- mermaid, KaTeX and highlight.js load lazily, the first time a page needs them.
-     Every library and font is served from /vendor, so the app works with no network. -->
+     Every library and font is served from /vendor, so the app works with no network.
+     The one exception is browser-run.js, used only by the static build (no server to
+     run code): it loads Pyodide from jsDelivr and sends Go to the Go Playground. -->
 <script src="./config.js"></script>
+<script src="./browser-run.js"></script>
 <script src="./app.js"></script>
 <script src="./arch-diagram.js"></script>
 <script src="./reader.js"></script>

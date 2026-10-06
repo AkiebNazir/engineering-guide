@@ -269,8 +269,11 @@ system). Where they disagree with this page about order, follow this page.
   your code and saving progress to `webapp/data/progress.json`.
 - **Online:** the same app builds into a static site (`make build` → `dist/`) that any
   host can serve; `.github/workflows/deploy.yaml` publishes it to GitHub Pages on every
-  push to `main`. Every page, guide, visualizer and lab works there; progress is kept in
-  the browser, and running code needs the local app.
+  push to `main`. Every page, guide, visualizer and lab works there, on a laptop or a
+  phone; progress is kept in the browser. DSA problems and standard-library levels run
+  there too: Python in the browser itself (Pyodide), Go on the official Go Playground.
+  The Engineering and API workspaces, which run tests against project files and
+  third-party packages, need the local app.
   [Running and Deploying the Guide](docs/DEPLOYMENT.md) covers GitHub Pages, other static
   hosts and containers.
 - **Layout:** all learning material lives in `content/`, grouped the way the app's home page
