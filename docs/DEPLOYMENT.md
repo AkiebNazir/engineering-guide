@@ -5,7 +5,7 @@ The web app runs in three modes from the same front end (`webapp/static/`):
 | | Local app (`make app`) | Hosted app (`make serve`, `deploy/Dockerfile`) | Static preview (`make build`) |
 |---|---|---|---|
 | What it is | `webapp/server.py` on `127.0.0.1` | `webapp/server.py` with `EG_AUTH=1`, behind HTTPS | A plain folder, `dist/`, of HTML, JS, CSS and pre-rendered JSON |
-| Sign-in | None | Emailed one-time code | None |
+| Sign-in | None | Google, or an emailed one-time code | None |
 | Content | Every module | What the account's plan includes (Free, Base, Pro, Pro Max) | The Free plan only |
 | **Run** / **gofmt** in the editor | Yes (Python and Go on your machine) | No | No |
 | Progress | `webapp/data/progress.json` | Per account (SQLite) | The visitor's browser (`localStorage`) |
@@ -114,7 +114,8 @@ content/            all learning material, the app's single source of truth (rea
   study-plans/        master_dsa_plan.md  REVIEW_LEDGER.md  GOOGLE_INTERVIEW_PREP.md  CURRICULUM.md (generated)
 webapp/
   server.py         local app / hosted app (EG_AUTH=1): serves the front end, answers /api/*, runs code locally
-  auth.py           hosted mode: emailed one-time codes, sessions, per-user progress (SQLite)
+  auth.py           hosted mode: emailed one-time codes (Brevo), sessions, per-user progress (SQLite)
+  google_signin.py  hosted mode: Sign in with Google
   entitlements.py   the Free / Base / Pro / Pro Max plans and what each one reads
   admin.py          grant and revoke plans, list accounts, end sessions
   tests/            sign-in and plans tests (make test)

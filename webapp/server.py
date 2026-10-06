@@ -13,7 +13,8 @@ Two modes:
                    everything readable, progress in webapp/data/progress.json.
                    Do not expose it to a network.
   hosted (EG_AUTH=1, `make serve`, deploy/Dockerfile)
-                   Email one-time-code sign-in (auth.py), subscription tiers
+                   Sign-in with Google (google_signin.py) or an emailed
+                   one-time code (auth.py), subscription tiers
                    (entitlements.py) enforced on every /api request, per-user progress
                    in SQLite, security headers, and code execution switched off.
 """
@@ -40,7 +41,9 @@ class StudioServer(ThreadingHTTPServer):
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
+import auth
 import entitlements
+import google_signin
 
 ROOT = Path(__file__).resolve().parent.parent
 WEBAPP = ROOT / "webapp"
@@ -105,6 +108,9 @@ UPGRADE_URL = os.environ.get("EG_UPGRADE_URL", "")           # where "Upgrade" b
 AUTH_DB = Path(os.environ.get("EG_AUTH_DB", str(DATA / "auth.sqlite3")))
 MAX_BODY = 4_000_000
 AUTH = None            # auth.AuthStore, created by main() in hosted mode
+GOOGLE = None          # google_signin.GoogleSignIn, when EG_GOOGLE_CLIENT_ID/SECRET are set
+OAUTH_COOKIE = "__Host-eg_oauth" if COOKIE_SECURE else "eg_oauth"
+SIGNIN_ERRORS = {"google_failed", "google_cancelled", "google_mismatch", "disabled", "google_off", "rate_limited"}
 CODE_RUN_OFF = ("Running code is switched off on the hosted guide. Clone the repository and "
                 "run `make app` to run code on your own machine.")
 RUN_TIMEOUT_PY = 15
@@ -1992,6 +1998,8 @@ STATIC_TYPES = {
     ".mjs": "application/javascript; charset=utf-8",
 }
 
+GOOGLE_START_RATE = auth.RateLimiter(30, 600)     # Google sign-in starts per client IP
+
 RUN_ROUTES = frozenset({"/api/run", "/api/eng-run", "/api/stdlib-run", "/api/api-run", "/api/format"})
 
 
@@ -2035,7 +2043,10 @@ class Handler(BaseHTTPRequestHandler):
             for one in (v if isinstance(v, list) else [v]):
                 self.send_header(k, one)
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            pass        # the browser moved on (navigation, reload) before the answer arrived
 
     def _json(self, obj, code: int = 200, headers: dict | None = None) -> None:
         self._send(code, json.dumps(obj).encode(), "application/json", headers)
@@ -2075,14 +2086,76 @@ class Handler(BaseHTTPRequestHandler):
                 return fwd.split(",")[-1].strip()      # the address our own proxy saw
         return self.client_address[0]
 
-    def _session_token(self) -> str | None:
+    def _cookie(self, wanted: str) -> str | None:
         # Parsed by hand: http.cookies drops every cookie after one it cannot parse,
         # and other apps on the same host can set those.
         for part in (self.headers.get("Cookie") or "").split(";"):
             name, _, value = part.strip().partition("=")
-            if name == SESSION_COOKIE and value:
+            if name == wanted and value:
                 return value
         return None
+
+    def _session_token(self) -> str | None:
+        return self._cookie(SESSION_COOKIE)
+
+    def _oauth_cookie(self, value: str, max_age: int) -> str:
+        # Lax, not Strict: it has to come back on the top-level redirect from Google.
+        parts = [f"{OAUTH_COOKIE}={value}", "Path=/", "HttpOnly", "SameSite=Lax", f"Max-Age={max_age}"]
+        if COOKIE_SECURE:
+            parts.append("Secure")
+        return "; ".join(parts)
+
+    def _google_redirect_uri(self) -> str:
+        if PUBLIC_ORIGIN:
+            return f"{PUBLIC_ORIGIN}/api/auth/google/callback"
+        host = (self.headers.get("X-Forwarded-Host") if TRUST_PROXY else None) or self.headers.get("Host", "")
+        return f"{'https' if COOKIE_SECURE else 'http'}://{host}/api/auth/google/callback"
+
+    def _signin_failed(self, code: str) -> None:
+        self._send(302, b"", "text/plain", {
+            "Location": f"/login.html?error={code if code in SIGNIN_ERRORS else 'google_failed'}",
+            "Set-Cookie": self._oauth_cookie("", 0)})
+
+    def _google_start(self, q: dict) -> None:
+        if GOOGLE is None or not GOOGLE.enabled:
+            self._signin_failed("google_off")
+            return
+        if not GOOGLE_START_RATE.allow(f"ip:{self._client_ip()}"):
+            self._signin_failed("rate_limited")
+            return
+        url, binding = GOOGLE.start(self._google_redirect_uri(), (q.get("next") or [""])[0])
+        self._send(302, b"", "text/plain", {"Location": url, "Set-Cookie": self._oauth_cookie(binding, 600)})
+
+    def _google_callback(self, q: dict) -> None:
+        one = lambda k: (q.get(k) or [""])[0]
+        if GOOGLE is None or not GOOGLE.enabled:
+            self._signin_failed("google_off")
+            return
+        if one("error"):                                   # cancelled on Google's screen
+            AUTH.take_oauth_state(one("state"), self._cookie(OAUTH_COOKIE) or "")
+            self._signin_failed("google_cancelled")
+            return
+        ip = self._client_ip()
+        try:
+            email, sub, next_hash = GOOGLE.finish(one("state"), one("code"), self._cookie(OAUTH_COOKIE) or "",
+                                                  self._google_redirect_uri())
+            token, _ = AUTH.sign_in_google(email, sub, ip, self.headers.get("User-Agent", ""))
+        except google_signin.GoogleError as e:
+            AUTH.log("google_failed", ip=ip, note=e.reason[:200])
+            self._signin_failed("google_failed")
+            return
+        except auth.AuthError as e:
+            self._signin_failed(e.code)
+            return
+        # A 200 page that moves on by itself, not a 302: this response ends a navigation
+        # that started on Google's site, so a redirect from it would still count as
+        # cross-site and the browser would hold back the new SameSite=Strict cookie.
+        target = "/" + next_hash
+        page = (f'<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url={target}">'
+                f'<title>Signing in</title><p style="font-family:sans-serif;padding:40px">Signed in. '
+                f'<a href="{target}">Continue to the guide</a>.</p>').encode()
+        self._send(200, page, "text/html; charset=utf-8", {"Set-Cookie": [
+            self._session_cookie(token, auth.SESSION_TTL), self._oauth_cookie("", 0)]})
 
     def _session_cookie(self, token: str, max_age: int) -> str:
         parts = [f"{SESSION_COOKIE}={token}", "Path=/", "HttpOnly", "SameSite=Strict", f"Max-Age={max_age}"]
@@ -2138,6 +2211,15 @@ class Handler(BaseHTTPRequestHandler):
         if rel in PUBLIC_STATIC or rel.startswith(PUBLIC_PREFIXES):
             self._static(rel)
             return
+        if u.path == "/api/auth/providers":
+            self._json({"email": True, "google": bool(GOOGLE and GOOGLE.enabled)})
+            return
+        if u.path == "/api/auth/google/start":
+            self._google_start(parse_qs(u.query))
+            return
+        if u.path == "/api/auth/google/callback":
+            self._google_callback(parse_qs(u.query))
+            return
         if u.path == "/api/me":
             self._json(AUTH.account(user) if user else {"error": "signed_out"}, 200 if user else 401)
             return
@@ -2183,7 +2265,6 @@ class Handler(BaseHTTPRequestHandler):
         self._local_post(p, self._body())
 
     def _hosted_post(self, p: str) -> None:
-        import auth   # hosted mode only
         try:
             length = int(self.headers.get("Content-Length") or 0)
         except ValueError:
@@ -2268,23 +2349,31 @@ class Handler(BaseHTTPRequestHandler):
 
 def open_auth_store():
     """Hosted mode: the account store, or exit with what is missing."""
-    import auth
     mailer = auth.Mailer()
     if not mailer.configured:
-        sys.exit("EG_AUTH=1 needs a way to send sign-in codes: set EG_SMTP_HOST and EG_SMTP_FROM "
+        sys.exit("EG_AUTH=1 needs a way to send sign-in codes: set EG_BREVO_API_KEY and EG_MAIL_FROM, "
+                 "or EG_SMTP_HOST and EG_MAIL_FROM "
                  "(plus EG_SMTP_USER / EG_SMTP_PASSWORD), or EG_OTP_CONSOLE=1 for local development.")
-    if mailer.console and not mailer.host and not LOOPBACK:
+    if mailer.provider == "console" and not LOOPBACK:
         print("  [warn] EG_OTP_CONSOLE=1 on a public address: codes go to this console, not by email.",
               file=sys.stderr)
     return auth.AuthStore(AUTH_DB, auth.load_secret(AUTH_DB.parent), mailer)
 
 
+def open_google(store):
+    g = google_signin.GoogleSignIn(store)
+    if bool(g.client_id) != bool(g.client_secret):
+        sys.exit("Sign in with Google needs both EG_GOOGLE_CLIENT_ID and EG_GOOGLE_CLIENT_SECRET.")
+    return g
+
+
 def main() -> None:
-    global AUTH
+    global AUTH, GOOGLE
     if not TSV.exists():
         sys.exit(f"Missing {TSV}. Run this from the DSA-Practice repo.")
     if AUTH_ENABLED:
         AUTH = open_auth_store()       # hosted: writes only next to EG_AUTH_DB (the image's /data volume)
+        GOOGLE = open_google(AUTH)
     else:
         DATA.mkdir(parents=True, exist_ok=True)
     if not AUTH_ENABLED and not LOOPBACK:
@@ -2312,6 +2401,7 @@ def main() -> None:
     if AUTH_ENABLED:
         print(f"  Accounts    {AUTH_DB.relative_to(ROOT) if AUTH_DB.is_relative_to(ROOT) else AUTH_DB}")
         print(f"  Codes via   {AUTH.mailer.describe()}")
+        print(f"  Google      {'on' if GOOGLE.enabled else 'off (EG_GOOGLE_CLIENT_ID / _SECRET not set)'}")
         print(f"  Cookies     {'Secure (HTTPS only)' if COOKIE_SECURE else 'not Secure (development)'}")
         print("  Code runs   off (hosted mode)")
     else:

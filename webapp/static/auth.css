@@ -58,6 +58,16 @@
   padding: 4px 0; border: 0; background: none; color: var(--accent); font: 500 13.5px var(--sans); cursor: pointer;
 }
 .auth-link:disabled { color: var(--text-faint); cursor: default; }
+.auth-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px; height: 44px; border-radius: 10px;
+  background: #fff; color: #1f1f1f; border: 1px solid #747775; text-decoration: none;
+  font: 500 15px "Roboto", var(--sans);
+}
+.auth-google:hover { background: #f7f8f8; }
+.auth-google:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.auth-or { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; color: var(--text-faint); font-size: 12.5px; }
+.auth-or::before, .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+#topMsg { margin: 0 0 14px; }
 .auth-msg { margin: 10px 0 0; font-size: 13.5px; color: var(--err); }
 .auth-msg[data-kind="info"] { color: var(--ok); }
 .auth-foot { margin: 24px 0 0; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-faint); }

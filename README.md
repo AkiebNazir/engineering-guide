@@ -268,7 +268,7 @@ system). Where they disagree with this page about order, follow this page.
 - **On your machine:** `make app` runs the full app: everything above, including running
   your code and saving progress to `webapp/data/progress.json`.
 - **Online, for learners:** the hosted mode (`make serve` to try it, `deploy/Dockerfile` to
-  deploy) adds sign-in by emailed one-time code and four plans, **Free, Base, Pro and Pro
+  deploy) adds sign-in with Google or an emailed one-time code, and four plans, **Free, Base, Pro and Pro
   Max**, enforced on the server: Free samples every module, Base opens the interview core
   (all of DSA, CS Fundamentals, Maths, Behavioral), Pro adds design and the production stack,
   Pro Max adds staff-level System Design and the AI track. Progress is kept per account, code

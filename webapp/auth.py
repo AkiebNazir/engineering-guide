@@ -3,11 +3,14 @@
 Used by server.py when EG_AUTH=1 (`make serve`, deploy/Dockerfile). The local
 single-user app (`make app`) does not load any of this.
 
-Sign-in is passwordless:
-  1. POST /api/auth/request-otp {email}  → a 6-digit code is emailed (valid 10 min)
-  2. POST /api/auth/verify-otp {email, code} → the account is created on first
-     sign-in (Free tier) and an HttpOnly session cookie is set
-The email address is verified by the same step that signs in.
+Sign-in is passwordless, two ways:
+  * emailed code
+      1. POST /api/auth/request-otp {email}  → a 6-digit code is emailed (valid 10 min)
+      2. POST /api/auth/verify-otp {email, code} → the account is created on first
+         sign-in (Free tier) and an HttpOnly session cookie is set
+  * Sign in with Google (google_signin.py): Google vouches for the address
+Either way the email address is verified by the same step that signs in, and one
+address is one account.
 
 Security choices, each enforced here rather than in the browser:
   * codes come from `secrets`, are stored only as HMAC-SHA256(server key, email, code),
@@ -22,12 +25,13 @@ Security choices, each enforced here rather than in the browser:
     (entitlements.MAX_SESSIONS): signing in on one more device ends the oldest session
   * subscriptions carry an optional expiry; an expired one reads as Free
 
-Standard library only (sqlite3, hmac, secrets, smtplib).
+Standard library only (sqlite3, hmac, secrets, urllib, smtplib).
 """
 from __future__ import annotations
 
 import hashlib
 import hmac
+import html
 import json
 import os
 import re
@@ -37,6 +41,8 @@ import sqlite3
 import sys
 import threading
 import time
+import urllib.error
+import urllib.request
 from collections import defaultdict, deque
 from email.message import EmailMessage
 from pathlib import Path
@@ -95,10 +101,18 @@ CREATE TABLE IF NOT EXISTS progress (
     state      TEXT NOT NULL,
     updated_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS oauth_states (   -- a Google sign-in between leaving and coming back
+    state_hash   TEXT PRIMARY KEY,
+    binding_hash TEXT NOT NULL,                -- ties it to the browser that started it (cookie)
+    verifier     TEXT NOT NULL,                -- PKCE code_verifier
+    nonce        TEXT NOT NULL,
+    next         TEXT NOT NULL DEFAULT '',
+    expires_at   INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS auth_events (
     id    INTEGER PRIMARY KEY,
     ts    INTEGER NOT NULL,
-    kind  TEXT NOT NULL,       -- otp_sent, otp_failed, otp_locked, login, logout, session_evicted, tier_set
+    kind  TEXT NOT NULL,       -- otp_sent, otp_failed, login, login_google, google_refused, session_evicted, tier_set
     email TEXT,
     ip    TEXT,
     note  TEXT
@@ -156,51 +170,109 @@ class RateLimiter:
 # ----------------------------------------------------------------------------
 # Mail
 # ----------------------------------------------------------------------------
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+
+
 class Mailer:
-    """Sends the sign-in code by SMTP (EG_SMTP_*), or prints it to the server console
-    when EG_OTP_CONSOLE=1 (development only: anyone who can read the log can sign in)."""
+    """Sends the sign-in code. Providers, first configured wins:
+
+      Brevo   EG_BREVO_API_KEY + EG_MAIL_FROM: Brevo's transactional HTTPS API (port 443,
+              which no host blocks, unlike SMTP ports on several clouds)
+      SMTP    EG_SMTP_HOST + EG_MAIL_FROM (any provider, Brevo's SMTP relay included)
+      console EG_OTP_CONSOLE=1: printed to the server log (development only: anyone who
+              can read the log can sign in)
+    """
 
     def __init__(self, env=os.environ):
+        self.brevo_key = env.get("EG_BREVO_API_KEY", "")
         self.host = env.get("EG_SMTP_HOST", "")
         self.port = int(env.get("EG_SMTP_PORT", "587"))
         self.user = env.get("EG_SMTP_USER", "")
         self.password = env.get("EG_SMTP_PASSWORD", "")
-        self.sender = env.get("EG_SMTP_FROM", self.user)
+        self.sender = env.get("EG_MAIL_FROM") or env.get("EG_SMTP_FROM") or self.user
         self.security = env.get("EG_SMTP_SECURITY", "starttls").lower()   # starttls | ssl | none
         self.console = env.get("EG_OTP_CONSOLE", "") == "1"
         self.app_name = env.get("EG_APP_NAME", "Ultimate Engineering Guide")
+        self.sender_name = env.get("EG_MAIL_FROM_NAME", self.app_name)
         self.sent: list[tuple[str, str]] = []      # tests read the last code from here
 
     @property
+    def provider(self) -> str:
+        if self.brevo_key and self.sender:
+            return "brevo"
+        if self.host and self.sender:
+            return "smtp"
+        return "console" if self.console else ""
+
+    @property
     def configured(self) -> bool:
-        return bool(self.host and self.sender) or self.console
+        return bool(self.provider)
 
     def describe(self) -> str:
-        if self.host:
-            return f"SMTP {self.host}:{self.port} ({self.security}) as {self.sender}"
-        return "console (EG_OTP_CONSOLE=1, development only)" if self.console else "NOT CONFIGURED"
+        return {
+            "brevo": f"Brevo API as {self.sender_name} <{self.sender}>",
+            "smtp": f"SMTP {self.host}:{self.port} ({self.security}) as {self.sender}",
+            "console": "console (EG_OTP_CONSOLE=1, development only)",
+        }.get(self.provider, "NOT CONFIGURED")
+
+    def message(self, code: str) -> tuple[str, str, str]:
+        """(subject, plain text, HTML) of the code email."""
+        minutes = OTP_TTL // 60
+        name = html.escape(self.app_name)
+        subject = f"{code} is your {self.app_name} sign-in code"
+        text = (f"Your {self.app_name} sign-in code is:\n\n    {code}\n\n"
+                f"It expires in {minutes} minutes and works once.\n"
+                "If you did not ask for it, ignore this email; nobody can sign in without the code.\n")
+        body = (f'<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:420px;margin:0 auto;'
+                f'padding:24px;color:#0f141c">'
+                f'<p style="margin:0 0 16px;font-size:15px">Your {name} sign-in code is:</p>'
+                f'<p style="margin:0 0 16px;font:700 30px/1.2 ui-monospace,Menlo,monospace;letter-spacing:6px">{code}</p>'
+                f'<p style="margin:0 0 8px;font-size:14px;color:#4c5566">It expires in {minutes} minutes and works once.</p>'
+                f'<p style="margin:0;font-size:13px;color:#6c7688">If you did not ask for it, ignore this email; '
+                f'nobody can sign in without the code.</p></div>')
+        return subject, text, body
 
     def send_code(self, email: str, code: str) -> None:
-        minutes = OTP_TTL // 60
         self.sent.append((email, code))
         del self.sent[:-20]
-        if not self.host:
-            if self.console:
-                print(f"  [otp] sign-in code for {email}: {code}  (valid {minutes} min)", flush=True)
+        provider = self.provider
+        if provider == "console":
+            print(f"  [otp] sign-in code for {email}: {code}  (valid {OTP_TTL // 60} min)", flush=True)
             return
-        msg = EmailMessage()
-        msg["Subject"] = f"{code} is your {self.app_name} sign-in code"
-        msg["From"] = self.sender
-        msg["To"] = email
-        msg.set_content(
-            f"Your {self.app_name} sign-in code is:\n\n    {code}\n\n"
-            f"It expires in {minutes} minutes and works once.\n"
-            "If you did not ask for it, ignore this email; nobody can sign in without the code.\n")
-        # Sent off the request thread: SMTP latency must not tell an observer anything,
-        # and a slow mail server must not hold a request open.
-        threading.Thread(target=self._deliver, args=(msg,), daemon=True).start()
+        if not provider:
+            return
+        # Sent off the request thread: mail latency must not tell an observer anything,
+        # and a slow provider must not hold a request open.
+        target = self._deliver_brevo if provider == "brevo" else self._deliver_smtp
+        threading.Thread(target=target, args=(email, *self.message(code)), daemon=True).start()
 
-    def _deliver(self, msg: EmailMessage) -> None:
+    def _deliver_brevo(self, email: str, subject: str, text: str, body: str) -> None:
+        payload = {
+            "sender": {"name": self.sender_name, "email": self.sender},
+            "to": [{"email": email}],
+            "subject": subject,
+            "textContent": text,
+            "htmlContent": body,
+            "tags": ["sign-in-code"],
+        }
+        req = urllib.request.Request(BREVO_API_URL, data=json.dumps(payload).encode(), method="POST", headers={
+            "api-key": self.brevo_key, "Content-Type": "application/json", "Accept": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                r.read()
+        except urllib.error.HTTPError as e:
+            detail = e.read()[:300].decode("utf-8", "replace")
+            print(f"  [otp] Brevo refused the mail to {email}: HTTP {e.code} {detail}", file=sys.stderr, flush=True)
+        except (OSError, ValueError) as e:
+            print(f"  [otp] could not reach Brevo for {email}: {e}", file=sys.stderr, flush=True)
+
+    def _deliver_smtp(self, email: str, subject: str, text: str, body: str) -> None:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = f"{self.sender_name} <{self.sender}>"
+        msg["To"] = email
+        msg.set_content(text)
+        msg.add_alternative(body, subtype="html")
         try:
             if self.security == "ssl":
                 smtp = smtplib.SMTP_SSL(self.host, self.port, timeout=15)
@@ -213,7 +285,7 @@ class Mailer:
                     smtp.login(self.user, self.password)
                 smtp.send_message(msg)
         except (OSError, smtplib.SMTPException) as e:
-            print(f"  [otp] could not send mail to {msg['To']}: {e}", file=sys.stderr, flush=True)
+            print(f"  [otp] could not send mail to {email}: {e}", file=sys.stderr, flush=True)
 
 
 # ----------------------------------------------------------------------------
@@ -251,6 +323,10 @@ class AuthStore:
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA foreign_keys=ON")
         self.db.executescript(SCHEMA)
+        # Columns added after the first release: databases created before them get them here.
+        cols = {r["name"] for r in self.db.execute("PRAGMA table_info(users)")}
+        if "google_sub" not in cols:
+            self.db.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
         try:
             os.chmod(self.db_path, 0o600)
         except OSError:
@@ -383,6 +459,55 @@ class AuthStore:
             raise AuthError(403, "disabled", "This account is disabled.")
         token = self._create_session(user, ip, user_agent)
         self.log("login", email, ip)
+        return token, self.account(user)
+
+    # -- sign-in through an identity provider (google_signin.py) -------------
+    def save_oauth_state(self, state: str, binding: str, verifier: str, nonce: str, next_hash: str, ttl: int) -> None:
+        now = self.now()
+        with self.lock:
+            self.db.execute("DELETE FROM oauth_states WHERE expires_at <= ?", (now,))
+            self.db.execute("INSERT INTO oauth_states(state_hash, binding_hash, verifier, nonce, next, expires_at) "
+                            "VALUES (?,?,?,?,?,?)", (self._hash_token(state), self._hash_token(binding),
+                                                     verifier, nonce, next_hash, now + ttl))
+
+    def take_oauth_state(self, state: str, binding: str) -> sqlite3.Row | None:
+        """The pending sign-in for `state`, removed so it works once; None unless it exists,
+        has not expired and was started by the browser holding `binding`."""
+        if not state or not binding or len(state) > 200 or len(binding) > 200:
+            return None
+        th = self._hash_token(state)
+        with self.lock:
+            row = self.db.execute("SELECT * FROM oauth_states WHERE state_hash = ?", (th,)).fetchone()
+            self.db.execute("DELETE FROM oauth_states WHERE state_hash = ?", (th,))
+        if row is None or row["expires_at"] <= self.now():
+            return None
+        return row if hmac.compare_digest(row["binding_hash"], self._hash_token(binding)) else None
+
+    def sign_in_google(self, raw_email: str, sub: str, ip: str = "", user_agent: str = "") -> tuple[str, dict]:
+        """Sign in with an email Google has verified. Creates the account on first use
+        (Free) or signs into the existing one with that address, and remembers the Google
+        account id: a different Google account later claiming the same address is refused."""
+        email = normalize_email(raw_email)
+        if not sub or len(sub) > 255:
+            raise AuthError(400, "google_failed", "Google did not identify the account.")
+        now = self.now()
+        with self.lock:
+            self.db.execute("INSERT OR IGNORE INTO users(email, created_at) VALUES (?, ?)", (email, now))
+            row = self.db.execute("SELECT google_sub FROM users WHERE email = ?", (email,)).fetchone()
+            linked = row["google_sub"]
+            if linked is None:
+                self.db.execute("UPDATE users SET google_sub = ? WHERE email = ?", (sub, email))
+        if linked is not None and not hmac.compare_digest(linked, sub):
+            self.log("google_refused", email, ip, "a different Google account is linked")
+            raise AuthError(403, "google_mismatch",
+                            "This email is linked to a different Google account. Sign in with an emailed code instead.")
+        self._x("UPDATE users SET verified_at = COALESCE(verified_at, ?), last_login_at = ? WHERE email = ?",
+                (now, now, email))
+        user = self.user_by_email(email)
+        if user["disabled"]:
+            raise AuthError(403, "disabled", "This account is disabled.")
+        token = self._create_session(user, ip, user_agent)
+        self.log("login_google", email, ip)
         return token, self.account(user)
 
     # -- sessions -------------------------------------------------------------

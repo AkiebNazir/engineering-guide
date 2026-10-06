@@ -62,6 +62,29 @@
     }
   }
 
+  /* Errors the server sends back here (?error=…), e.g. after Google sign-in. */
+  const ERRORS = {
+    google_failed: 'Google sign-in did not complete. Try again, or get a code by email.',
+    google_cancelled: 'Google sign-in was cancelled.',
+    google_mismatch: 'This email is linked to a different Google account. Get a code by email instead.',
+    google_off: 'Google sign-in is not available here. Get a code by email.',
+    disabled: 'This account is disabled.',
+    rate_limited: 'Too many attempts. Wait a few minutes and try again.',
+  };
+  const err = new URLSearchParams(location.search).get('error');
+  if (err) show($('topMsg'), ERRORS[err] || ERRORS.google_failed);
+
+  /* Offer Google only when the server has it configured. */
+  fetch('./api/auth/providers', { credentials: 'same-origin' })
+    .then(r => (r.ok ? r.json() : {}))
+    .then(p => {
+      if (!p.google) return;
+      const n = next().slice(2);                      // './#/x' → '#/x'
+      $('googleBtn').href = './api/auth/google/start' + (n ? `?next=${encodeURIComponent(n)}` : '');
+      $('googleBox').hidden = false;
+    })
+    .catch(() => { /* email sign-in still works */ });
+
   stepEmail.addEventListener('submit', async e => {
     e.preventDefault();
     email = $('email').value.trim().toLowerCase();

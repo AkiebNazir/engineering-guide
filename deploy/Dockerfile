@@ -1,4 +1,4 @@
-# The hosted guide: sign-in by emailed one-time code, Free / Base / Pro / Pro Max
+# The hosted guide: sign-in with Google or an emailed one-time code, Free / Base / Pro / Pro Max
 # plans enforced on the server, per-user progress. Code execution is off.
 #
 #   docker build -f deploy/Dockerfile -t engineering-guide .           (or: make docker-build)

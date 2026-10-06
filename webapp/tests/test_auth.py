@@ -8,6 +8,7 @@ in hosted mode, with codes captured from the mailer instead of sent.
 from __future__ import annotations
 
 import ast
+import base64
 import http.client
 import json
 import sys
@@ -15,12 +16,15 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest import mock
+from urllib.parse import parse_qs, urlparse
 
 WEBAPP = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(WEBAPP))
 
 import auth            # noqa: E402
 import entitlements    # noqa: E402
+import google_signin   # noqa: E402
 import server          # noqa: E402
 
 
@@ -39,6 +43,143 @@ def new_store(clock=None) -> auth.AuthStore:
 
 def last_code(store: auth.AuthStore) -> str:
     return store.mailer.sent[-1][1]
+
+
+CLIENT_ID = "test-client.apps.googleusercontent.com"
+GOOGLE_ENV = {"EG_GOOGLE_CLIENT_ID": CLIENT_ID, "EG_GOOGLE_CLIENT_SECRET": "test-secret"}
+
+
+def fake_id_token(**claims) -> str:
+    enc = lambda d: base64.urlsafe_b64encode(json.dumps(d).encode()).rstrip(b"=").decode()
+    return f"{enc({'alg': 'RS256'})}.{enc(claims)}.sig"
+
+
+def good_claims(_nonce: str, now: float, **over) -> dict:
+    c = {"iss": "https://accounts.google.com", "aud": CLIENT_ID, "azp": CLIENT_ID, "sub": "1234567890",
+         "email": "G.User@Gmail.com", "email_verified": True, "nonce": _nonce, "iat": int(now), "exp": int(now) + 3600}
+    c.update(over)
+    return c
+
+
+class MailerTests(unittest.TestCase):
+    def test_provider_order(self):
+        self.assertEqual(auth.Mailer({"EG_BREVO_API_KEY": "k", "EG_MAIL_FROM": "a@x.co", "EG_SMTP_HOST": "h"}).provider, "brevo")
+        self.assertEqual(auth.Mailer({"EG_SMTP_HOST": "h", "EG_MAIL_FROM": "a@x.co"}).provider, "smtp")
+        self.assertEqual(auth.Mailer({"EG_OTP_CONSOLE": "1"}).provider, "console")
+        self.assertEqual(auth.Mailer({"EG_BREVO_API_KEY": "k"}).provider, "")      # no sender address
+        self.assertFalse(auth.Mailer({}).configured)
+
+    def test_brevo_request(self):
+        m = auth.Mailer({"EG_BREVO_API_KEY": "xkeysib-test", "EG_MAIL_FROM": "codes@guide.example",
+                         "EG_MAIL_FROM_NAME": "The Guide"})
+        seen = {}
+
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+            def read(self): return b'{"messageId":"<x@brevo>"}'
+
+        def fake_urlopen(req, timeout):
+            seen.update(url=req.full_url, method=req.get_method(), key=req.get_header("Api-key"),
+                        body=json.loads(req.data), timeout=timeout)
+            return Resp()
+
+        with mock.patch("urllib.request.urlopen", fake_urlopen):
+            m._deliver_brevo("learner@example.com", *m.message("123456"))
+        self.assertEqual(seen["url"], "https://api.brevo.com/v3/smtp/email")
+        self.assertEqual((seen["method"], seen["key"]), ("POST", "xkeysib-test"))
+        self.assertEqual(seen["body"]["sender"], {"name": "The Guide", "email": "codes@guide.example"})
+        self.assertEqual(seen["body"]["to"], [{"email": "learner@example.com"}])
+        self.assertIn("123456", seen["body"]["subject"])
+        self.assertIn("123456", seen["body"]["textContent"])
+        self.assertIn("123456", seen["body"]["htmlContent"])
+
+
+class GoogleTests(unittest.TestCase):
+    def setUp(self):
+        self.clock = Clock()
+        self.s = new_store(self.clock)
+        self.g = google_signin.GoogleSignIn(self.s, GOOGLE_ENV, self.clock)
+        self.redirect = "https://guide.example/api/auth/google/callback"
+
+    def begin(self, next_hash="#/dsa"):
+        url, binding = self.g.start(self.redirect, next_hash)
+        q = {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
+        return q, binding
+
+    def complete(self, q, binding, claims=None, **over):
+        claims = claims or good_claims(q["nonce"], self.clock.t, **over)
+        with mock.patch.object(self.g, "_exchange", return_value={"id_token": fake_id_token(**claims)}) as ex:
+            out = self.g.finish(q["state"], "auth-code", binding, self.redirect)
+        return out, ex
+
+    def test_start_url(self):
+        q, _ = self.begin()
+        self.assertEqual(q["client_id"], CLIENT_ID)
+        self.assertEqual(q["scope"], "openid email")
+        self.assertEqual(q["code_challenge_method"], "S256")
+        self.assertEqual(q["redirect_uri"], self.redirect)
+        self.assertTrue(q["state"] and q["nonce"] and q["code_challenge"])
+
+    def test_success_and_pkce_verifier_sent(self):
+        q, binding = self.begin("#/system-design")
+        (email, sub, nxt), ex = self.complete(q, binding)
+        self.assertEqual((email, sub, nxt), ("G.User@Gmail.com", "1234567890", "#/system-design"))
+        verifier = ex.call_args[0][1]
+        import hashlib
+        self.assertEqual(google_signin._b64url(hashlib.sha256(verifier.encode()).digest()), q["code_challenge"])
+
+    def test_state_single_use_bound_and_expiring(self):
+        q, binding = self.begin()
+        self.complete(q, binding)
+        with self.assertRaises(google_signin.GoogleError):          # reused
+            self.complete(q, binding)
+        q, binding = self.begin()
+        with self.assertRaises(google_signin.GoogleError):          # another browser
+            self.complete(q, "someone-elses-cookie")
+        q, binding = self.begin()
+        self.clock.t += google_signin.STATE_TTL + 1
+        with self.assertRaises(google_signin.GoogleError):          # too late
+            self.complete(q, binding)
+
+    def test_claims_rejected(self):
+        bad = [dict(iss="https://evil.example"), dict(aud="another-app"), dict(email_verified=False),
+               dict(nonce="replayed"), dict(exp=int(self.clock.t) - 3600), dict(iat=int(self.clock.t) + 3600),
+               dict(aud=[CLIENT_ID, "other"], azp="other"), dict(email=None), dict(sub="")]
+        for over in bad:
+            q, binding = self.begin()
+            with self.assertRaises(google_signin.GoogleError, msg=str(over)):
+                self.complete(q, binding, **over)
+
+    def test_unsafe_next_dropped(self):
+        for nxt in ("https://evil.example", "//evil.example", "javascript:alert(1)", "#/a\"<b>"):
+            q, binding = self.begin(nxt)
+            self.assertEqual(self.complete(q, binding)[0][2], "")
+
+    def test_sign_in_links_and_refuses_other_google_account(self):
+        self.s.request_otp("g.user@gmail.com", "ip")
+        self.s.verify_otp("g.user@gmail.com", last_code(self.s), "ip")       # existing account by code
+        token, account = self.s.sign_in_google("G.User@Gmail.com", "sub-1")
+        self.assertEqual(account["email"], "g.user@gmail.com")
+        self.assertEqual(len(self.s.list_users()), 1)
+        self.assertEqual(self.s.session_user(token)["google_sub"], "sub-1")
+        with self.assertRaises(auth.AuthError) as e:
+            self.s.sign_in_google("g.user@gmail.com", "sub-2")
+        self.assertEqual(e.exception.code, "google_mismatch")
+
+    def test_new_google_account_is_free_and_verified(self):
+        token, account = self.s.sign_in_google("new@gmail.com", "sub-9")
+        self.assertEqual(account["tier"], "free")
+        self.assertIsNotNone(self.s.session_user(token)["verified_at"])
+
+    def test_old_database_gets_google_column(self):
+        path = Path(tempfile.mkdtemp()) / "old.db"
+        import sqlite3
+        db = sqlite3.connect(path)
+        db.executescript(auth.SCHEMA)                  # users as first released: no google_sub column
+        db.close()
+        store = auth.AuthStore(path, b"k" * 64, auth.Mailer({}), Clock())
+        store.sign_in_google("x@gmail.com", "s")
 
 
 class OtpTests(unittest.TestCase):
@@ -232,9 +373,12 @@ class HostedServerTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.saved = {k: getattr(server, k) for k in ("AUTH_ENABLED", "AUTH", "COOKIE_SECURE", "SESSION_COOKIE")}
-        server.AUTH_ENABLED, server.COOKIE_SECURE, server.SESSION_COOKIE = True, False, "eg_session"
+        cls.saved = {k: getattr(server, k) for k in
+                     ("AUTH_ENABLED", "AUTH", "GOOGLE", "COOKIE_SECURE", "SESSION_COOKIE", "OAUTH_COOKIE")}
+        server.AUTH_ENABLED, server.COOKIE_SECURE = True, False
+        server.SESSION_COOKIE, server.OAUTH_COOKIE = "eg_session", "eg_oauth"
         server.AUTH = cls.store = new_store(Clock(__import__("time").time()))
+        server.GOOGLE = cls.google = google_signin.GoogleSignIn(cls.store, GOOGLE_ENV)
         cls.httpd = server.StudioServer(("127.0.0.1", 0), server.Handler)
         cls.port = cls.httpd.server_address[1]
         threading.Thread(target=cls.httpd.serve_forever, daemon=True).start()
@@ -318,6 +462,45 @@ class HostedServerTests(unittest.TestCase):
         other = self.login("other@example.com")
         self.assertNotIn("p1", self.req("GET", "/api/state", cookie=other)[2]["problems"])
         self.assertIn("p1", self.req("GET", "/api/state", cookie=cookie)[2]["problems"])
+
+    def test_google_flow(self):
+        st, _, prov = self.req("GET", "/api/auth/providers")
+        self.assertEqual((st, prov["google"]), (200, True))
+        st, h, _ = self.req("GET", "/api/auth/google/start?next=%23/system-design")
+        self.assertEqual(st, 302)
+        loc = urlparse(h["Location"])
+        self.assertEqual(f"{loc.scheme}://{loc.netloc}{loc.path}", google_signin.AUTH_URL)
+        q = {k: v[0] for k, v in parse_qs(loc.query).items()}
+        self.assertEqual(q["redirect_uri"], f"http://127.0.0.1:{self.port}/api/auth/google/callback")
+        oauth = h["Set-Cookie"]
+        self.assertIn("SameSite=Lax", oauth)
+        oauth = oauth.split(";")[0]
+        claims = good_claims(q["nonce"], __import__("time").time(), email="flow@gmail.com", sub="flow-sub")
+        with mock.patch.object(self.google, "_exchange", return_value={"id_token": fake_id_token(**claims)}):
+            # without the browser's binding cookie: refused, and the state is spent
+            st, h, _ = self.req("GET", f"/api/auth/google/callback?state={q['state']}&code=c")
+            self.assertEqual((st, h["Location"]), (302, "/login.html?error=google_failed"))
+            st, h, _ = self.req("GET", "/api/auth/google/start?next=%23/system-design")
+            q = {k: v[0] for k, v in parse_qs(urlparse(h["Location"]).query).items()}
+            oauth = h["Set-Cookie"].split(";")[0]
+            claims["nonce"] = q["nonce"]
+            with mock.patch.object(self.google, "_exchange", return_value={"id_token": fake_id_token(**claims)}):
+                c = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+                c.request("GET", f"/api/auth/google/callback?state={q['state']}&code=c", headers={"Cookie": oauth})
+                r = c.getresponse()
+                page = r.read().decode()
+                cookies = r.headers.get_all("Set-Cookie")
+                c.close()
+        self.assertEqual(r.status, 200)
+        self.assertIn('url=/#/system-design', page)
+        session = next(x for x in cookies if x.startswith("eg_session="))
+        self.assertIn("SameSite=Strict", session)
+        st, _, boot = self.req("GET", "/api/bootstrap", cookie=session.split(";")[0])
+        self.assertEqual((st, boot["account"]["email"]), (200, "flow@gmail.com"))
+
+    def test_google_cancelled(self):
+        st, h, _ = self.req("GET", "/api/auth/google/callback?error=access_denied&state=x")
+        self.assertEqual((st, h["Location"]), (302, "/login.html?error=google_cancelled"))
 
     def test_logout(self):
         cookie = self.login("bye@example.com")
