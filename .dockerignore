@@ -9,3 +9,5 @@ webapp/static/data
 webapp/data/progress.json
 webapp/data/auth.sqlite3*
 webapp/data/auth_secret.key
+# Private local notes
+tmp
