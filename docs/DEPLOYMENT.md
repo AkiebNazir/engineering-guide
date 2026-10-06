@@ -14,6 +14,25 @@ The web app runs in two modes from the same front end (`webapp/static/`):
 The static build is safe to publish: it contains no server, executes nothing on the host,
 and never includes your `progress.json`.
 
+### Loading speed and caching
+
+- **Only what the page needs.** The DSA visualizers and the "Try it" labs and flows are
+  about 3 MB of the app's JavaScript, so `index.html` leaves them out and
+  `webapp/static/lazy.js` loads them the first time a page uses them (the Visualize and
+  Solution tabs, or a reading page with a lab). Opening a DSA problem downloads the
+  visualizers in the background so those tabs open without a wait.
+- **Content-hashed URLs.** `build_static.py` adds `?v=<hash of the file>` to every file
+  `index.html` loads, writes the same hashes into `config.js` for the files loaded later,
+  and one hash over `data/` for the pre-rendered JSON. A deploy changes only the URLs of
+  the files that changed.
+- **Service worker** (`sw.js`, static build only). Hashed files are served from the
+  device's cache without asking the network; the page itself is fetched from the network
+  first, so a deploy shows up on the next visit. Repeat visits need no network at all,
+  and everything already opened works offline.
+- **Running code.** Opening a Python editor starts Python in the background (skipped on
+  data-saver and 2G connections), and a Go editor opens the connection to the Go
+  Playground, so the first **Run** does not wait for either.
+
 ### Running code on the static site
 
 `webapp/static/browser-run.js` stands in for the server's `/api/run`, `/api/stdlib-run` and

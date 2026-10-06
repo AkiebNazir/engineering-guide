@@ -1109,6 +1109,38 @@ body.is-resizing { user-select: none; cursor: row-resize; }
   user-select: none;
 }
 .editor-status .es-sep { margin-left: auto; }
+
+/* Edit toolbar above the editor (editor-tools.js). Icon buttons; the labels are
+   for screen readers. Bigger targets on touch screens, where it matters most. */
+.edit-bar {
+  display: flex; align-items: center; gap: 2px; flex: none;
+  padding: 3px 8px; border-bottom: 1px solid var(--border-soft);
+  background: var(--ed-bg);
+  overflow-x: auto; scrollbar-width: none;
+}
+.edit-bar::-webkit-scrollbar { display: none; }
+.edit-btn {
+  display: grid; place-items: center; flex: none;
+  width: 30px; height: 26px; border-radius: var(--r-sm);
+  color: var(--text-faint);
+  transition: background var(--t), color var(--t);
+}
+.edit-btn svg {
+  width: 15px; height: 15px;
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.edit-btn span {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.edit-btn:hover { background: var(--surface-2); color: var(--text); }
+.edit-btn:active { background: var(--elevated); color: var(--text); }
+.edit-sep { width: 1px; height: 16px; margin: 0 4px; background: var(--border); flex: none; }
+@media (pointer: coarse) {
+  .edit-bar { gap: 4px; padding: 4px 8px; }
+  .edit-btn { width: 40px; height: 36px; }
+  .edit-btn svg { width: 18px; height: 18px; }
+}
 .editor-status b { font-weight: 500; color: var(--text-dim); }
 
 /* ============================================================== responsive == */

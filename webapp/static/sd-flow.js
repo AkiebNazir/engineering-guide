@@ -487,7 +487,7 @@ function flowIcon(n) {
   return FLOW_KIND_ICON[n.kind || 'svc'];
 }
 let flowIconData = null;
-const flowIcons = () => (flowIconData ||= fetch('./arch-icons.json').then(r => (r.ok ? r.json() : {})).catch(() => ({})));
+const flowIcons = () => (flowIconData ||= fetch(assetUrl('./arch-icons.json')).then(r => (r.ok ? r.json() : {})).catch(() => ({})));
 
 /* ---------------------------------------------------------- lane layout --
    Most diagrams are a pipeline: clients on the left, state and external
