@@ -94,15 +94,47 @@ $2^{3^2} = 2^9 = 512$, not $(2^3)^2 = 64$. Maths and Python agree here too.
 
 > **Notebook example:** Evaluate $3 + 2 \cdot 4^2 - (6 - 2) \div 2$ by hand.
 >
-> 1. **Brackets first:** $6 - 2 = 4$, so the expression is $3 + 2 \cdot 4^2 - 4 \div 2$.
-> 2. **Exponents:** $4^2 = 16$, giving $3 + 2 \cdot 16 - 4 \div 2$.
-> 3. **Multiply and divide, left to right:** $2 \cdot 16 = 32$ and $4 \div 2 = 2$, giving
->    $3 + 32 - 2$.
-> 4. **Add and subtract, left to right:** $3 + 32 = 35$, then $35 - 2 = 33$.
+> **What you need:** the order of operations. Do **brackets** first, then **powers**
+> ($4^2$ means $4 \cdot 4$), then **multiply and divide** (left to right), and only then
+> **add and subtract** (left to right). The dot $\cdot$ means multiply.
 >
-> **Answer:** 33. **Check the usual slip:** doing the addition first,
-> $(3 + 2) \cdot 16 - 2 = 78$, is a completely different number. Write one line per rule
-> and you cannot make that mistake.
+> **Plan:** apply one rule at a time, and rewrite the whole expression after every
+> single move so nothing gets lost.
+>
+> 1. **Work out the bracket.** $6 - 2 = 4$. The expression is now
+>    $3 + 2 \cdot 4^2 - 4 \div 2$.
+>    *Why:* brackets always go first; they are the writer saying "do this bit first".
+> 2. **Work out the power.** $4^2 = 4 \cdot 4 = 16$. The expression is now
+>    $3 + 2 \cdot 16 - 4 \div 2$.
+> 3. **Do the multiplication.** $2 \cdot 16 = 32$. The expression is now
+>    $3 + 32 - 4 \div 2$.
+>    *Why:* multiplying binds tighter than adding, so the 2 belongs to the 16, not to the 3.
+> 4. **Do the division.** $4 \div 2 = 2$. The expression is now $3 + 32 - 2$.
+> 5. **Add, going left to right.** $3 + 32 = 35$. The expression is now $35 - 2$.
+> 6. **Subtract.** $35 - 2 = 33$.
+>
+> **Answer:** 33. Every reader (and every compiler) who follows the same rules gets the
+> same single value.
+>
+> **Check:** Python's `3 + 2 * 4**2 - (6 - 2) / 2` prints `33.0` (the `/` operator always
+> gives a float). ✓ The usual slip, adding first, gives $(3 + 2) \cdot 16 - 2 = 78$: a
+> completely different number, which is why one line per rule is worth the ink.
+
+> **Your turn:** Evaluate $5 + 3 \cdot 2^3 - (9 - 1) \div 4$ by hand.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Work out the bracket.** $9 - 1 = 8$, giving $5 + 3 \cdot 2^3 - 8 \div 4$.
+> 2. **Work out the power.** $2^3 = 2 \cdot 2 \cdot 2 = 8$, giving $5 + 3 \cdot 8 - 8 \div 4$.
+> 3. **Do the multiplication.** $3 \cdot 8 = 24$, giving $5 + 24 - 8 \div 4$.
+> 4. **Do the division.** $8 \div 4 = 2$, giving $5 + 24 - 2$.
+> 5. **Add, going left to right.** $5 + 24 = 29$, giving $29 - 2$.
+> 6. **Subtract.** $29 - 2 = 27$.
+>
+> **Answer:** 27.
+>
+> </details>
 
 ## 2 · Functions: `def` With a Contract
 
@@ -210,22 +242,130 @@ def absolute(x):
 print(absolute(-5), absolute(5))   # → 5 5
 ```
 
-> **Notebook example:** Let $f(x) = x^2 + 1$ and $g(x) = 2x - 3$. Find $(f \circ g)(4)$,
-> $(g \circ f)(4)$ and $g^{-1}$, then divide $-7$ by 2 "the maths way".
+> **Notebook example:** Let $f(x) = x^2 + 1$ and $g(x) = 2x - 3$. Find $(f \circ g)(4)$.
 >
-> 1. $(f \circ g)(4)$: apply g **first**. $g(4) = 2 \cdot 4 - 3 = 5$. Then
->    $f(5) = 5^2 + 1 = 26$.
-> 2. $(g \circ f)(4)$: apply f first. $f(4) = 16 + 1 = 17$. Then $g(17) = 34 - 3 = 31$.
->    Different from step 1: **the order of composition matters.**
-> 3. Inverse of g: write $y = 2x - 3$ and solve for x: $y + 3 = 2x$, so
->    $x = \frac{y + 3}{2}$. So $g^{-1}(y) = \frac{y + 3}{2}$.
-> 4. Check the inverse: $g^{-1}(g(4)) = g^{-1}(5) = \frac{5 + 3}{2} = 4$. ✓
-> 5. Divide $-7$ by 2 with $-7 = q \cdot 2 + r$ and $0 \le r < 2$:
->    $q = \lfloor -3.5 \rfloor = -4$ (floor goes **down**, towards minus infinity), and
->    $r = -7 - (-4)(2) = -7 + 8 = 1$.
+> **What you need:** $(f \circ g)(x)$ is read "f after g" and means $f(g(x))$: run g
+> **first**, then feed its answer into f. It is the nested call `f(g(x))`, where the inner
+> call always runs first.
 >
-> **Answer:** 26, 31, $g^{-1}(y) = (y + 3)/2$, and $-7 = (-4)(2) + 1$. That quotient and
+> **Plan:** work from the inside out. Find $g(4)$, then put that number into f.
+>
+> 1. **Write out what is asked.** $(f \circ g)(4) = f(g(4))$.
+>    *Why:* the ∘ symbol is only shorthand for "plug one function into the other".
+> 2. **Substitute 4 into g.** Replace every x in $g(x) = 2x - 3$ with 4:
+>    $g(4) = 2 \cdot 4 - 3$.
+> 3. **Do the arithmetic.** $2 \cdot 4 = 8$, and $8 - 3 = 5$. So $g(4) = 5$.
+> 4. **Swap the inside for its value.** $f(g(4))$ becomes $f(5)$.
+>    *Why:* $g(4)$ and 5 are the same number, so one can stand in for the other.
+> 5. **Substitute 5 into f.** Replace every x in $f(x) = x^2 + 1$ with 5:
+>    $f(5) = 5^2 + 1$.
+> 6. **Do the arithmetic.** $5^2 = 5 \cdot 5 = 25$, and $25 + 1 = 26$.
+>
+> **Answer:** $(f \circ g)(4) = 26$.
+>
+> **Check:** in Python, `f(g(4))` with `def g(x): return 2*x - 3` and
+> `def f(x): return x**2 + 1` prints 26. ✓ The order matters: the other way round,
+> $(g \circ f)(4) = g(17) = 31$, a different number.
+
+> **Your turn:** With the same f and g, find $(g \circ f)(2)$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write out what is asked.** $(g \circ f)(2) = g(f(2))$, so this time f runs first.
+> 2. **Substitute 2 into f.** $f(2) = 2^2 + 1 = 4 + 1 = 5$.
+> 3. **Swap the inside for its value.** $g(f(2))$ becomes $g(5)$.
+> 4. **Substitute 5 into g.** $g(5) = 2 \cdot 5 - 3 = 10 - 3 = 7$.
+>
+> **Answer:** $(g \circ f)(2) = 7$.
+>
+> </details>
+
+> **Notebook example:** Find the inverse of $g(x) = 2x - 3$.
+>
+> **What you need:** the **inverse** $g^{-1}$ undoes g: if g turns x into y, then
+> $g^{-1}$ turns y back into x. To find it, write $y = g(x)$ and **solve for x**, which
+> means getting x alone on one side by doing the same thing to both sides. (The $-1$ is
+> a label, not a power: $g^{-1}$ is not $\frac{1}{g}$.)
+>
+> **Plan:** g does "times 2, then minus 3". Undo those two moves in reverse order: first
+> add 3, then halve.
+>
+> 1. **Write the function as an equation.** $y = 2x - 3$.
+>    *Why:* naming the output y lets us ask "which x produced this y?".
+> 2. **Undo the subtraction.** Add 3 to both sides: $y + 3 = 2x - 3 + 3$.
+>    *Why:* g subtracted 3 last, so that is the first thing to undo, like taking off your
+>    shoes before your socks.
+> 3. **Simplify.** $-3 + 3 = 0$, so $y + 3 = 2x$.
+> 4. **Undo the multiplication.** Divide both sides by 2: $\frac{y + 3}{2} = x$.
+> 5. **Name the result.** $g^{-1}(y) = \frac{y + 3}{2}$.
+>
+> **Answer:** $g^{-1}(y) = \frac{y + 3}{2}$. In words: add 3, then halve. Those are g's
+> two steps, undone in reverse order.
+>
+> **Check:** $g(4) = 2 \cdot 4 - 3 = 5$, and $g^{-1}(5) = \frac{5 + 3}{2} = \frac{8}{2} = 4$.
+> We got back to the 4 we started with. ✓ It is the same round trip as
+> `json.loads(json.dumps(x)) == x`.
+
+> **Your turn:** Find the inverse of $h(x) = 3x + 1$, and check it with $x = 2$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write the function as an equation.** $y = 3x + 1$.
+> 2. **Undo the addition.** Subtract 1 from both sides: $y - 1 = 3x$.
+> 3. **Undo the multiplication.** Divide both sides by 3: $\frac{y - 1}{3} = x$.
+> 4. **Name the result.** $h^{-1}(y) = \frac{y - 1}{3}$.
+> 5. **Check with x = 2.** $h(2) = 3 \cdot 2 + 1 = 7$, and
+>    $h^{-1}(7) = \frac{7 - 1}{3} = \frac{6}{3} = 2$. ✓
+>
+> **Answer:** $h^{-1}(y) = \frac{y - 1}{3}$.
+>
+> </details>
+
+> **Notebook example:** Divide $-7$ by 2 "the maths way": find the quotient q and the
+> remainder r.
+>
+> **What you need:** maths defines division with remainder as $a = q \cdot n + r$ with
+> $0 \le r < n$. Here $a = -7$ is the number being divided, $n = 2$ is what we divide by,
+> q is the **quotient** (how many whole 2s) and r is the **remainder** (what is left
+> over), which must be at least 0 and smaller than n. The quotient is
+> $q = \lfloor a / n \rfloor$, where the **floor** $\lfloor \cdot \rfloor$ rounds
+> **down**, towards minus infinity.
+>
+> **Plan:** divide normally, round down to get q, then work out what is left over.
+>
+> 1. **Divide normally.** $-7 \div 2 = -3.5$.
+> 2. **Round down to get q.** $\lfloor -3.5 \rfloor = -4$.
+>    *Why:* on the number line, "down" is to the left. $-4$ is to the left of $-3.5$;
+>    $-3$ is to the right of it, so $-3$ would be rounding up.
+> 3. **Multiply back.** $q \cdot n = (-4) \cdot 2 = -8$.
+> 4. **Find what is left over.** $r = a - q \cdot n = -7 - (-8)$.
+> 5. **Do the arithmetic.** Subtracting $-8$ is adding 8: $-7 + 8 = 1$. So $r = 1$.
+> 6. **Check the remainder rule.** Is $0 \le 1 < 2$? Yes.
+>    *Why:* if r came out negative or too big, we would have picked the wrong q.
+>
+> **Answer:** $q = -4$ and $r = 1$, because $-7 = (-4) \cdot 2 + 1$. That quotient and
 > remainder are exactly Python's `-7 // 2` and `-7 % 2`.
+>
+> **Check:** put the pieces back together: $(-4) \cdot 2 + 1 = -8 + 1 = -7$. ✓ C and Java
+> round towards zero instead, giving $q = -3$ and $r = -1$, which breaks $0 \le r$.
+
+> **Your turn:** Divide $-11$ by 3 the maths way.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Divide normally.** $-11 \div 3 = -3.67$ (roughly).
+> 2. **Round down to get q.** $\lfloor -3.67 \rfloor = -4$ (left of $-3.67$ on the number line).
+> 3. **Multiply back.** $(-4) \cdot 3 = -12$.
+> 4. **Find what is left over.** $r = -11 - (-12) = -11 + 12 = 1$.
+> 5. **Check the remainder rule.** $0 \le 1 < 3$. ✓
+>
+> **Answer:** $q = -4$, $r = 1$, so $-11 = (-4) \cdot 3 + 1$. Python agrees: `-11 // 3` is
+> `-4` and `-11 % 3` is `1`.
+>
+> </details>
 
 ## 3 · Σ and Π Are Loops
 
@@ -375,19 +515,114 @@ print(int(math.log(1000, 10)))   # → 2
 print(math.log10(1000))          # → 3.0
 ```
 
-> **Notebook example:** Without a calculator, find $\log_2(8 \cdot 32)$, $\log_8 64$ and
-> roughly $\log_2 1{,}000{,}000$.
+> **Notebook example:** Without a calculator, find $\log_2(8 \cdot 32)$.
 >
-> 1. Product rule: $\log_2(8 \cdot 32) = \log_2 8 + \log_2 32 = 3 + 5 = 8$.
->    Check: $8 \cdot 32 = 256 = 2^8$. ✓
-> 2. Change of base to 2: $\log_8 64 = \frac{\log_2 64}{\log_2 8} = \frac{6}{3} = 2$.
->    Check: $8^2 = 64$. ✓
-> 3. Estimate with $2^{10} \approx 10^3$:
->    $1{,}000{,}000 = (10^3)^2 \approx (2^{10})^2 = 2^{20}$, so
->    $\log_2 1{,}000{,}000 \approx 20$.
+> **What you need:** $\log_2 x$ asks "2 to what power gives x?" For example
+> $\log_2 8 = 3$, because $2 \cdot 2 \cdot 2 = 2^3 = 8$. The **product rule** says
+> $\log(x \cdot y) = \log x + \log y$: a multiplication inside the log becomes an addition
+> outside it.
 >
-> **Answer:** 8, 2 and about 20. That means a binary search over a million sorted items
-> takes about 20 steps.
+> **Plan:** split the product into two smaller logs, find each by counting 2s, then add.
+>
+> 1. **Split with the product rule.** $\log_2(8 \cdot 32) = \log_2 8 + \log_2 32$.
+>    *Why:* 8 and 32 are each easy powers of 2; their product is less obvious.
+> 2. **Find $\log_2 8$.** $2 \cdot 2 \cdot 2 = 8$ uses three 2s, so $\log_2 8 = 3$.
+> 3. **Find $\log_2 32$.** $2 \cdot 2 \cdot 2 \cdot 2 \cdot 2 = 32$ uses five 2s, so
+>    $\log_2 32 = 5$.
+> 4. **Add.** $3 + 5 = 8$.
+>    *Why:* multiplying three 2s by five 2s gives a row of eight 2s.
+>
+> **Answer:** $\log_2(8 \cdot 32) = 8$: the product $8 \cdot 32$ is 2 multiplied by itself
+> 8 times.
+>
+> **Check:** $8 \cdot 32 = 256$, and doubling from 1 (2, 4, 8, 16, 32, 64, 128, 256) takes
+> 8 doublings, so $2^8 = 256$. ✓ `math.log2(8 * 32)` gives `8.0`.
+
+> **Your turn:** Without a calculator, find $\log_2(4 \cdot 16)$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Split with the product rule.** $\log_2(4 \cdot 16) = \log_2 4 + \log_2 16$.
+> 2. **Find $\log_2 4$.** $2 \cdot 2 = 4$, two 2s, so 2.
+> 3. **Find $\log_2 16$.** $2 \cdot 2 \cdot 2 \cdot 2 = 16$, four 2s, so 4.
+> 4. **Add.** $2 + 4 = 6$.
+>
+> **Answer:** 6. Check: $4 \cdot 16 = 64 = 2^6$. ✓
+>
+> </details>
+
+> **Notebook example:** Without a calculator, find $\log_8 64$.
+>
+> **What you need:** $\log_8 64$ asks "8 to what power gives 64?" The **change-of-base
+> rule** lets you switch to base 2, where powers are easy to count:
+> $\log_b x = \frac{\log_2 x}{\log_2 b}$. Here b (the **base**) is 8 and x is 64.
+>
+> **Plan:** rewrite with base 2, find the two base-2 logs, then divide.
+>
+> 1. **Change to base 2.** $\log_8 64 = \frac{\log_2 64}{\log_2 8}$.
+> 2. **Find $\log_2 64$.** Doubling from 1: 2, 4, 8, 16, 32, 64. That is 6 doublings,
+>    so $\log_2 64 = 6$.
+> 3. **Find $\log_2 8$.** 2, 4, 8 is 3 doublings, so $\log_2 8 = 3$.
+> 4. **Divide.** $\frac{6}{3} = 2$.
+>    *Why:* 64 is a row of six 2s and each 8 is a block of three 2s, so 64 is two 8s
+>    multiplied together.
+>
+> **Answer:** $\log_8 64 = 2$: you multiply two 8s to get 64.
+>
+> **Check:** $8^2 = 8 \cdot 8 = 64$. ✓
+
+> **Your turn:** Without a calculator, find $\log_4 64$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Change to base 2.** $\log_4 64 = \frac{\log_2 64}{\log_2 4}$.
+> 2. **Find $\log_2 64$.** 6 (from the example above).
+> 3. **Find $\log_2 4$.** 2, 4 is 2 doublings, so 2.
+> 4. **Divide.** $\frac{6}{2} = 3$.
+>
+> **Answer:** 3. Check: $4^3 = 4 \cdot 4 \cdot 4 = 64$. ✓
+>
+> </details>
+
+> **Notebook example:** Roughly, what is $\log_2 1{,}000{,}000$?
+>
+> **What you need:** the handiest fact in systems work: $2^{10} = 1024$, which is almost
+> exactly $1000$. Also, multiplying powers of the same base **adds** the exponents:
+> $2^{a} \cdot 2^{b} = 2^{a + b}$. And $\log_2 n$ counts how many times you can halve n
+> before you reach 1.
+>
+> **Plan:** write a million as a thousand times a thousand, swap each thousand for
+> $2^{10}$, then read off the power.
+>
+> 1. **Write a million using thousands.** $1{,}000{,}000 = 1000 \cdot 1000$.
+> 2. **Swap each 1000 for $2^{10}$.** $1000 \cdot 1000 \approx 2^{10} \cdot 2^{10}$.
+>    *Why:* 1024 is within about 2.5% of 1000, close enough for an estimate.
+> 3. **Add the exponents.** $2^{10} \cdot 2^{10} = 2^{10 + 10} = 2^{20}$.
+>    *Why:* ten 2s times another ten 2s is a row of twenty 2s.
+> 4. **Read off the log.** $\log_2 2^{20} = 20$, so $\log_2 1{,}000{,}000 \approx 20$.
+>
+> **Answer:** about 20. That means a binary search over a million sorted items takes
+> about 20 steps.
+>
+> **Check:** $2^{20} = 1{,}048{,}576$ is just above a million and $2^{19} = 524{,}288$ is
+> below it, so the true value is a little under 20 (it is 19.93). ✓ In Python,
+> `(1_000_000).bit_length()` is 20.
+
+> **Your turn:** Roughly, what is $\log_2$ of a billion ($1{,}000{,}000{,}000$)?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write a billion using thousands.** $1{,}000{,}000{,}000 = 1000 \cdot 1000 \cdot 1000$.
+> 2. **Swap each 1000 for $2^{10}$.** $\approx 2^{10} \cdot 2^{10} \cdot 2^{10}$.
+> 3. **Add the exponents.** $10 + 10 + 10 = 30$, giving $2^{30}$.
+> 4. **Read off the log.** About 30.
+>
+> **Answer:** about 30. ($2^{30} = 1{,}073{,}741{,}824$, just above a billion.)
+>
+> </details>
 
 ## 5 · Sets, Comprehensions and Quantifiers
 
@@ -433,17 +668,87 @@ Negating quantifiers flips them: "not every x is positive" means "some x is not
 positive": $\neg \forall x\, P(x) \equiv \exists x\, \neg P(x)$. In code,
 `not all(p(x) for x in S) == any(not p(x) for x in S)`.
 
-> **Notebook example:** Let $S = \{\, x^2 \mid x \in \{1, \dots, 6\},\ x \text{ even} \,\}$.
-> List S, then decide $\forall x \in S: x > 3$, $\exists x \in S: x > 20$ and
-> $\forall x \in S: x < 30$.
+> **Notebook example:** List the elements of
+> $S = \{\, x^2 \mid x \in \{1, \dots, 6\},\ x \text{ even} \,\}$.
 >
-> 1. **Generator and filter:** the even x in 1…6 are 2, 4 and 6.
-> 2. **Output expression:** square each one, giving $S = \{4, 16, 36\}$.
-> 3. $\forall x \in S: x > 3$. Check every element: 4 > 3, 16 > 3, 36 > 3. **True.**
-> 4. $\exists x \in S: x > 20$. One witness is enough: 36 > 20. **True.**
-> 5. $\forall x \in S: x < 30$. Negate it: $\exists x \in S: x \ge 30$. The witness is 36,
->    so the negation is true and the original claim is **false**. One counterexample
->    kills a "for all".
+> **What you need:** set-builder notation reads like a comprehension. The part **before**
+> the bar $\mid$ is the output (what goes into the set). The part **after** it says where
+> x comes from (the **generator**, here $x \in \{1, \dots, 6\}$, "x is one of 1 to 6") and
+> which x to keep (the **filter**, here "x even"). The bar is read "such that". A set
+> has no duplicates and no order.
+>
+> **Plan:** run it exactly like `{x**2 for x in range(1, 7) if x % 2 == 0}`: list the
+> candidates, keep the ones that pass the filter, then apply the output.
+>
+> 1. **List the candidates.** $\{1, \dots, 6\}$ means 1, 2, 3, 4, 5, 6.
+>    *Why:* the dots mean "and every whole number in between".
+> 2. **Apply the filter.** Keep only the even ones: 2, 4, 6.
+> 3. **Apply the output expression.** Square each survivor: $2^2 = 4$, $4^2 = 16$,
+>    $6^2 = 36$.
+> 4. **Collect them into a set.** $S = \{4, 16, 36\}$.
+>
+> **Answer:** $S = \{4, 16, 36\}$: the squares of the even numbers from 1 to 6.
+>
+> **Check:** `{x**2 for x in range(1, 7) if x % 2 == 0}` evaluates to `{4, 16, 36}`. ✓
+
+> **Your turn:** List the elements of $T = \{\, x^2 \mid x \in \{1, \dots, 7\},\ x \text{ odd} \,\}$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **List the candidates.** 1, 2, 3, 4, 5, 6, 7.
+> 2. **Apply the filter.** Keep the odd ones: 1, 3, 5, 7.
+> 3. **Apply the output expression.** $1^2 = 1$, $3^2 = 9$, $5^2 = 25$, $7^2 = 49$.
+> 4. **Collect them into a set.** $T = \{1, 9, 25, 49\}$.
+>
+> **Answer:** $T = \{1, 9, 25, 49\}$.
+>
+> </details>
+
+> **Notebook example:** With $S = \{4, 16, 36\}$, decide whether each claim is true:
+> (a) $\forall x \in S: x > 3$, (b) $\exists x \in S: x > 20$, (c) $\forall x \in S: x < 30$.
+>
+> **What you need:** $\forall$ means "for all": $\forall x \in S: P(x)$ is true only if
+> **every** element passes the test P. One failing element, called a **counterexample**,
+> makes it false. It is Python's `all(...)`. $\exists$ means "there exists":
+> $\exists x \in S: P(x)$ is true if **at least one** element passes. That one element is
+> called a **witness**. It is Python's `any(...)`.
+>
+> **Plan:** for each "for all", test every element and stop at the first failure. For
+> each "there exists", look for one element that works.
+>
+> 1. **Read claim (a) in words.** "Every element of S is bigger than 3."
+> 2. **Test every element.** $4 > 3$ yes, $16 > 3$ yes, $36 > 3$ yes. No failures, so
+>    (a) is **true**.
+> 3. **Read claim (b) in words.** "At least one element of S is bigger than 20."
+> 4. **Look for a witness.** $4 > 20$ no, $16 > 20$ no, $36 > 20$ yes. One witness is
+>    enough, so (b) is **true**.
+> 5. **Read claim (c) in words.** "Every element of S is smaller than 30."
+> 6. **Hunt for a counterexample.** $4 < 30$ yes, $16 < 30$ yes, $36 < 30$ **no**. So 36
+>    is a counterexample and (c) is **false**.
+>    *Why:* one failure is enough to break a "for all". Put another way, the opposite
+>    claim $\exists x \in S: x \ge 30$ is true, with 36 as its witness.
+>
+> **Answer:** (a) true, (b) true, (c) false. One example proves a "there exists"; one
+> counterexample kills a "for all".
+>
+> **Check:** with `S = {4, 16, 36}`, Python gives `all(x > 3 for x in S)` → `True`,
+> `any(x > 20 for x in S)` → `True` and `all(x < 30 for x in S)` → `False`. ✓
+
+> **Your turn:** With $T = \{1, 9, 25, 49\}$, decide (a) $\forall x \in T: x \text{ is odd}$,
+> (b) $\exists x \in T: x > 40$, (c) $\forall x \in T: x < 10$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Test every element for (a).** 1, 9, 25 and 49 are all odd. No failures: **true**.
+> 2. **Look for a witness for (b).** $49 > 40$. One is enough: **true**.
+> 3. **Hunt for a counterexample for (c).** $1 < 10$ and $9 < 10$, but $25 < 10$ fails:
+>    **false**, with 25 as the counterexample.
+>
+> **Answer:** true, true, false.
+>
+> </details>
 
 ## 6 · The Symbol Cheat Sheet
 

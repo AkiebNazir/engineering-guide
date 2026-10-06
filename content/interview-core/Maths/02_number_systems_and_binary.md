@@ -111,24 +111,98 @@ print(bin(11), hex(255), oct(8))   # → 0b1011 0xff 0o10
 print(f"{11:08b}")              # → 00001011
 ```
 
-> **Notebook example:** Convert 156 to binary and to hex, then check by converting back.
+> **Notebook example:** Convert 156 to binary.
 >
-> | Divide | Quotient | Remainder |
-> |---|---|---|
-> | 156 ÷ 2 | 78 | 0 |
-> | 78 ÷ 2 | 39 | 0 |
-> | 39 ÷ 2 | 19 | 1 |
-> | 19 ÷ 2 | 9 | 1 |
-> | 9 ÷ 2 | 4 | 1 |
-> | 4 ÷ 2 | 2 | 0 |
-> | 2 ÷ 2 | 1 | 0 |
-> | 1 ÷ 2 | 0 | 1 |
+> **What you need:** binary is base 2: each place is worth twice the place to its right
+> (1, 2, 4, 8, 16, 32, 64, 128, …), and each digit (a **bit**) is 0 or 1. To convert,
+> use **repeated division**: divide by 2 and write down the **remainder** (what is left
+> over, always 0 or 1). That remainder is the next bit, starting from the right-hand
+> end. Then divide the **quotient** (the whole-number answer) by 2 again, and stop when
+> the quotient reaches 0.
 >
-> 1. Read the remainders **from the bottom up**: $156 = 10011100_2$.
-> 2. For hex, group the bits in fours from the right: `1001 1100` is $9$ and $12 = \text{C}$,
->    so $156 = \text{0x9C}$.
-> 3. Check with place values: $128 + 16 + 8 + 4 = 156$. ✓ In hex:
->    $9 \cdot 16 + 12 = 144 + 12 = 156$. ✓
+> **Plan:** divide by 2 again and again, writing down each remainder, then read the
+> remainders from the last one back to the first.
+>
+> 1. **Divide 156 by 2.** $156 \div 2 = 78$ remainder **0**.
+>    *Why:* the remainder says whether the number is odd, which is exactly the last bit.
+> 2. **Divide the quotient, 78, by 2.** $78 \div 2 = 39$ remainder **0**.
+>    *Why:* halving shifts every bit one place to the right, so the next bit is now last.
+> 3. **Keep dividing each new quotient by 2.**
+>    - $39 \div 2 = 19$ remainder **1**
+>    - $19 \div 2 = 9$ remainder **1**
+>    - $9 \div 2 = 4$ remainder **1**
+>    - $4 \div 2 = 2$ remainder **0**
+>    - $2 \div 2 = 1$ remainder **0**
+>    - $1 \div 2 = 0$ remainder **1**
+> 4. **Stop at quotient 0.** The last division gave quotient 0, so there are no more bits.
+> 5. **Read the remainders from last to first.** Last remainder first:
+>    1, 0, 0, 1, 1, 1, 0, 0. So $156 = 10011100_2$.
+>    *Why:* the first remainder was the rightmost bit, so it must be written last.
+>
+> **Answer:** $156 = 10011100_2$ (the small 2 means "in base 2"). It fits in exactly one
+> byte.
+>
+> **Check:** add up the place values under the 1s. The places are 128, 64, 32, 16, 8, 4,
+> 2, 1, and the 1s sit under 128, 16, 8 and 4: $128 + 16 = 144$, $144 + 8 = 152$,
+> $152 + 4 = 156$. ✓ Python's `bin(156)` prints `0b10011100`.
+
+> **Your turn:** Convert 45 to binary.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Divide 45 by 2.** $45 \div 2 = 22$ remainder 1.
+> 2. **Divide the quotient, 22, by 2.** $22 \div 2 = 11$ remainder 0.
+> 3. **Keep dividing each new quotient by 2.** $11 \div 2 = 5$ r 1, $5 \div 2 = 2$ r 1,
+>    $2 \div 2 = 1$ r 0, $1 \div 2 = 0$ r 1.
+> 4. **Read the remainders from last to first.** 1, 0, 1, 1, 0, 1.
+>
+> **Answer:** $45 = 101101_2$. Check: $32 + 8 + 4 + 1 = 45$. ✓
+>
+> </details>
+
+> **Notebook example:** Convert $10011100_2$ (which is 156) to hex, then check by
+> converting back to decimal.
+>
+> **What you need:** hex is base 16. Its digits are 0–9 and then A = 10, B = 11, C = 12,
+> D = 13, E = 14, F = 15. Because $16 = 2^4$, one hex digit is exactly four bits (a
+> **nibble**), and inside a nibble the places are worth 8, 4, 2, 1. In a two-digit hex
+> number the left digit is worth 16 each and the right digit 1 each. Programmers write
+> `0x` in front to say "this is hex".
+>
+> **Plan:** cut the bits into groups of four, turn each group into one hex digit, then
+> multiply out to check.
+>
+> 1. **Group the bits in fours from the right.** `1001 1100`.
+>    *Why:* starting from the right means any shortfall lands on the left, where extra
+>    zeros change nothing.
+> 2. **Translate the left group.** `1001` has 1s under 8 and 1: $8 + 1 = 9$. Hex digit 9.
+> 3. **Translate the right group.** `1100` has 1s under 8 and 4: $8 + 4 = 12$. Hex digit C.
+> 4. **Write the hex number.** $\text{0x9C}$.
+> 5. **Convert back: multiply the left digit.** $9 \cdot 16 = 144$.
+> 6. **Add the right digit.** $144 + 12 = 156$.
+>
+> **Answer:** $156 = \text{0x9C}$. A byte is always exactly two hex digits, which is why
+> hex dumps are written in pairs.
+>
+> **Check:** step 6 landed back on 156, the number we started from. ✓ Python's
+> `hex(156)` prints `0x9c`.
+
+> **Your turn:** Convert $101101_2$ (which is 45) to hex, and check by converting back.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Group the bits in fours from the right.** `10 1101`. The left group is short, so
+>    pad it with zeros: `0010 1101`.
+> 2. **Translate the left group.** `0010` is 2.
+> 3. **Translate the right group.** `1101` is $8 + 4 + 1 = 13$, hex digit D.
+> 4. **Write the hex number.** $\text{0x2D}$.
+> 5. **Convert back.** $2 \cdot 16 = 32$, and $32 + 13 = 45$. ✓
+>
+> **Answer:** $45 = \text{0x2D}$.
+>
+> </details>
 
 ### Binary ↔ hex: group bits in fours
 
@@ -172,15 +246,47 @@ print(2**32 - 1)                   # → 4294967295
 
 > **Notebook example:** An 8-bit unsigned register holds 200. Add 100. What does it hold?
 >
-> 1. Write both in binary: $200 = 1100\,1000$ and $100 = 0110\,0100$.
-> 2. Add column by column with carries: the true sum is $300 = 1\,0010\,1100$, which needs
->    **9** bits.
-> 3. The register keeps only the low 8 bits, $0010\,1100$, and the carry out of the top
->    is lost.
-> 4. Read what is left: $32 + 8 + 4 = 44$.
+> **What you need:** an 8-bit **unsigned** register (unsigned means "no negative
+> numbers") has 8 places worth 128, 64, 32, 16, 8, 4, 2, 1, so it holds 0 to 255. If a
+> result needs a 9th bit (worth 256), that bit simply falls off the top and is lost.
+> This is called **wrap-around**, and it is the same as keeping the remainder after
+> dividing by 256, written $\bmod 256$.
 >
-> **Answer:** 44. **Check** with modular arithmetic: $300 \bmod 256 = 300 - 256 = 44$. ✓
-> Wrap-around is just "mod $2^n$".
+> **Plan:** add normally, write the true sum in binary, drop everything above 8 bits,
+> then read what is left.
+>
+> 1. **Add as ordinary numbers.** $200 + 100 = 300$.
+> 2. **Compare with the limit.** The largest 8-bit value is 255, and $300 > 255$, so the
+>    sum does not fit.
+> 3. **Split 300 into powers of two.** $300 = 256 + 44$, and $44 = 32 + 8 + 4$. So
+>    $300 = 256 + 32 + 8 + 4$.
+> 4. **Write 300 in binary.** Put 1s under 256, 32, 8 and 4: $1\,0010\,1100$. That is
+>    **9** bits.
+> 5. **Drop the 9th bit.** Keep the low 8 bits: $0010\,1100$.
+>    *Why:* the register only has 8 places; the carry out of the top has nowhere to go.
+> 6. **Read what is left.** $32 + 8 + 4 = 44$.
+>
+> **Answer:** 44. The register silently wrapped around. No error was raised; the 256 just
+> vanished.
+>
+> **Check:** with mod arithmetic, $300 \bmod 256 = 300 - 256 = 44$. ✓ In Python,
+> `(200 + 100) & 0xFF` gives 44 (the mask `0xFF` keeps only the low 8 bits).
+
+> **Your turn:** The same 8-bit register holds 250. Add 10. What does it hold?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Add as ordinary numbers.** $250 + 10 = 260$.
+> 2. **Compare with the limit.** $260 > 255$, so it does not fit.
+> 3. **Split 260 into powers of two.** $260 = 256 + 4$.
+> 4. **Write 260 in binary.** $1\,0000\,0100$ (9 bits).
+> 5. **Drop the 9th bit.** $0000\,0100$.
+> 6. **Read what is left.** 4.
+>
+> **Answer:** 4. Check: $260 - 256 = 4$. ✓
+>
+> </details>
 
 ### KB or KiB?
 
@@ -250,20 +356,85 @@ end and reappearing at the other.
 
 <div class="lab" data-viz="math-bits"></div>
 
-> **Notebook example:** Write $-37$ as an 8-bit two's-complement number, then compute
-> $50 + (-37)$ with an ordinary adder.
+> **Notebook example:** Write $-37$ as an 8-bit two's-complement number.
 >
-> 1. $37$ in binary: $32 + 4 + 1$, so $0010\,0101$.
-> 2. Flip every bit: $1101\,1010$.
-> 3. Add one: $1101\,1011$. That is $-37$.
-> 4. Check with place values, where the top bit is worth $-128$:
->    $-128 + 64 + 16 + 8 + 2 + 1 = -37$. ✓
-> 5. Now add $50 = 0011\,0010$:
->    $0011\,0010 + 1101\,1011 = 1\,0000\,1101$. Drop the carry out of bit 8 to get
->    $0000\,1101 = 13$.
+> **What you need:** in 8-bit **two's complement** the places are worth −128, 64, 32,
+> 16, 8, 4, 2, 1: ordinary binary, except the top bit counts as **minus** 128. The recipe
+> to turn x into −x is: write x in binary, **flip** every bit (0 becomes 1, 1 becomes 0),
+> then **add one**.
 >
-> **Answer:** $50 - 37 = 13$, computed by the same adder that adds unsigned numbers. No
+> **Plan:** write 37 in 8 bits, flip, add one, then check by adding up the place values.
+>
+> 1. **Split 37 into powers of two.** $37 = 32 + 4 + 1$.
+> 2. **Write the 8 bits.** Put 1s under 32, 4 and 1: $0010\,0101$.
+> 3. **Flip every bit.** $0010\,0101$ becomes $1101\,1010$.
+> 4. **Add one.** The last bit is 0, so adding 1 just turns it into 1, with no carry:
+>    $1101\,1011$.
+>    *Why:* x plus its flipped version is all ones, which is −1. So flipped + 1 = −x.
+> 5. **Check with place values.** The top bit is worth −128. The other 1s sit under 64,
+>    16, 8, 2 and 1: $64 + 16 + 8 + 2 + 1 = 91$. Then $-128 + 91 = -37$. ✓
+>
+> **Answer:** $-37 = 1101\,1011$ in 8-bit two's complement (that is $\text{0xDB}$).
+>
+> **Check:** Python's `format(-37 & 0xFF, '08b')` prints `11011011`. ✓ Read as unsigned,
+> that pattern is 219, and $219 - 256 = -37$.
+
+> **Your turn:** Write $-6$ as an 8-bit two's-complement number.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Split 6 into powers of two.** $6 = 4 + 2$.
+> 2. **Write the 8 bits.** $0000\,0110$.
+> 3. **Flip every bit.** $1111\,1001$.
+> 4. **Add one.** The last bit is 1, so it carries: $\ldots 01 + 1 = \ldots 10$. Result
+>    $1111\,1010$.
+> 5. **Check with place values.** $64 + 32 + 16 + 8 + 2 = 122$, and $-128 + 122 = -6$. ✓
+>
+> **Answer:** $-6 = 1111\,1010$.
+>
+> </details>
+
+> **Notebook example:** Using $-37 = 1101\,1011$ from above, compute $50 + (-37)$ with an
+> ordinary (unsigned) adder.
+>
+> **What you need:** the CPU's adder does not know about signs. It sees a bit pattern
+> as an ordinary unsigned number (places 128, 64, …, 1), adds, and throws away any 9th
+> bit, exactly like the wrap-around above. Two's complement is designed so that this
+> still gives the right signed answer.
+>
+> **Plan:** read both patterns the way the adder does, add, drop the 9th bit, then read
+> the result as a signed number.
+>
+> 1. **Write 50 in binary.** $50 = 32 + 16 + 2$, so $0011\,0010$.
+> 2. **Read −37's pattern as unsigned.** $1101\,1011$ has 1s under 128, 64, 16, 8, 2, 1:
+>    $128 + 64 + 16 + 8 + 2 + 1 = 219$.
+>    *Why:* this is the number the adder actually sees.
+> 3. **Add.** $50 + 219 = 269$.
+> 4. **Drop the 9th bit.** $269$ is $1\,0000\,1101$ in binary. Dropping the 256 leaves
+>    $269 - 256 = 13$, which is $0000\,1101$.
+> 5. **Read the result as signed.** The top bit is 0, so the −128 place is not used and
+>    the value is just $8 + 4 + 1 = 13$.
+>
+> **Answer:** $50 + (-37) = 13$, computed by the same adder that adds unsigned numbers. No
 > subtraction circuit was needed.
+>
+> **Check:** $50 - 37 = 13$. ✓ In Python, `(50 + (-37 & 0xFF)) & 0xFF` gives 13.
+
+> **Your turn:** Using $-6 = 1111\,1010$, compute $10 + (-6)$ the way the adder does.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write 10 in binary.** $10 = 8 + 2$, so $0000\,1010$.
+> 2. **Read −6's pattern as unsigned.** $1111\,1010 = 128 + 64 + 32 + 16 + 8 + 2 = 250$.
+> 3. **Add.** $10 + 250 = 260$.
+> 4. **Drop the 9th bit.** $260 - 256 = 4$, which is $0000\,0100$.
+> 5. **Read the result as signed.** Top bit 0, so it is 4.
+>
+> **Answer:** 4, which is $10 - 6$. ✓
+>
+> </details>
 
 ### Overflow is not hypothetical
 
@@ -358,18 +529,159 @@ from operator import xor
 print(reduce(xor, [4, 1, 2, 1, 2]))                      # → 4
 ```
 
-> **Notebook example:** Let $x = 44 = 0010\,1100$. Work out `x & (x - 1)`, `x & -x`,
-> the number of set bits, and toggling bit 5.
+> **Notebook example:** Let $x = 44$. Work out `x & (x - 1)`, then repeat it to count
+> the set bits of 44 (Kernighan's way).
 >
-> 1. $x - 1 = 43 = 0010\,1011$. AND with x: $0010\,1000 = 40$. The lowest 1 (worth 4)
->    is gone.
-> 2. $-x$: flip x to get $1101\,0011$, then add 1 to get $1101\,0100$. AND with x:
->    $0000\,0100 = 4$. Only the lowest 1 is left.
-> 3. Count bits Kernighan's way: $44 \to 40 \to 32 \to 0$. That is three steps, so
->    **3** set bits. (Count the 1s in `0010 1100` to check.)
-> 4. Toggle bit 5 (worth 32): $44 \oplus 32 = 0000\,1100 = 12$.
-> 5. XOR trick: XOR the list $3, 7, 3, 5, 7$ in order: $3 \oplus 7 = 4$,
->    $4 \oplus 3 = 7$, $7 \oplus 5 = 2$, $2 \oplus 7 = 5$. The unpaired value is **5**.
+> **What you need:** a **set bit** is a bit that is 1. `&` (AND) compares two numbers
+> place by place: the result has a 1 only where **both** have a 1. The trick
+> `x & (x - 1)` removes the lowest 1 of x. Repeating it until x reaches 0, and counting
+> the rounds, counts the 1s (this is **Kernighan's popcount**).
+>
+> **Plan:** do one round slowly in binary, then repeat until nothing is left, counting
+> rounds.
+>
+> 1. **Write x in binary.** $44 = 32 + 8 + 4$, so $0010\,1100$.
+> 2. **Subtract one.** $43 = 32 + 8 + 2 + 1$, so $0010\,1011$.
+>    *Why:* compare the two. The lowest 1 (worth 4) turned into 0, and the 0s below it
+>    turned into 1s. Everything above stayed the same.
+> 3. **AND them place by place.** $0010\,1100$ & $0010\,1011$ keeps only the places
+>    where both have 1: the 32 and the 8. Result $0010\,1000 = 40$.
+>    *Why:* the 4 is gone, because x has 1 there but $x - 1$ has 0.
+> 4. **Repeat on 40.** $40 = 0010\,1000$ and $39 = 0010\,0111$. They share only the 32,
+>    so $40$ & $39 = 32$.
+> 5. **Repeat on 32.** $32 = 0010\,0000$ and $31 = 0001\,1111$. They share nothing, so
+>    $32$ & $31 = 0$.
+> 6. **Count the rounds.** $44 \to 40 \to 32 \to 0$ took 3 rounds.
+>
+> **Answer:** `44 & 43` is 40 (the lowest 1 removed), and 44 has **3** set bits. The
+> loop runs once per 1 bit, not once per bit position.
+>
+> **Check:** count the 1s in $0010\,1100$ by eye: three. ✓ Python's `bin(44).count("1")`
+> is 3.
+
+> **Your turn:** Let $x = 12$. Work out `x & (x - 1)` and count the set bits.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write x in binary.** $12 = 8 + 4$, so $0000\,1100$.
+> 2. **Subtract one.** $11 = 8 + 2 + 1$, so $0000\,1011$.
+> 3. **AND them place by place.** Only the 8 is shared: $0000\,1000 = 8$.
+> 4. **Repeat on 8.** $8 = 0000\,1000$ and $7 = 0000\,0111$ share nothing: 0.
+> 5. **Count the rounds.** $12 \to 8 \to 0$: 2 rounds.
+>
+> **Answer:** `12 & 11` is 8, and 12 has 2 set bits.
+>
+> </details>
+
+> **Notebook example:** Let $x = 44 = 0010\,1100$. Work out `x & -x`.
+>
+> **What you need:** in two's complement, $-x$ is "flip every bit of x, then add one".
+> `&` keeps a 1 only where both numbers have a 1. The result of `x & -x` is the value of
+> the **lowest set bit** of x on its own. Fenwick trees are built on this one expression.
+>
+> **Plan:** build $-x$ in 8 bits, then AND it with x.
+>
+> 1. **Write x.** $0010\,1100$.
+> 2. **Flip every bit.** $1101\,0011$.
+> 3. **Add one.** The last four bits $0011$ are 3, and $3 + 1 = 4 = 0100$. So
+>    $-x = 1101\,0100$.
+>    *Why:* the carry runs through the low 1s (which were x's low 0s) and stops at x's
+>    lowest 1.
+> 4. **AND with x place by place.** $0010\,1100$ & $1101\,0100$: the only place where
+>    both have a 1 is the 4. Result $0000\,0100 = 4$.
+>    *Why:* above the lowest 1, −x is just x flipped, so the two never agree there.
+>
+> **Answer:** `44 & -44` is 4: the value of 44's lowest 1 bit, all on its own.
+>
+> **Check:** $44 = 32 + 8 + 4$, and the smallest piece is 4. ✓ Python's `44 & -44` is 4.
+
+> **Your turn:** Let $x = 40 = 0010\,1000$. Work out `x & -x`.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write x.** $0010\,1000$.
+> 2. **Flip every bit.** $1101\,0111$.
+> 3. **Add one.** The last four bits $0111$ are 7, and $7 + 1 = 8 = 1000$. So
+>    $-x = 1101\,1000$.
+> 4. **AND with x place by place.** Only the 8 is shared: $0000\,1000 = 8$.
+>
+> **Answer:** 8, the lowest set bit of $40 = 32 + 8$.
+>
+> </details>
+
+> **Notebook example:** Let $x = 44 = 0010\,1100$. Toggle (flip) bit 5.
+>
+> **What you need:** bits are numbered from the right, starting at 0, and bit k is worth
+> $2^k$: bit 0 is worth 1, bit 1 is worth 2, …, bit 5 is worth $2^5 = 32$. `^` (XOR,
+> also written $\oplus$) gives a 1 where the two bits **differ**. So XOR with 1 flips a
+> bit, and XOR with 0 leaves it alone. A **mask** is a number with 1s only in the places
+> you want to change; `1 << 5` builds the mask for bit 5.
+>
+> **Plan:** build a mask with a single 1 at bit 5, then XOR it with x.
+>
+> 1. **Write x.** $0010\,1100$.
+> 2. **Build the mask.** Bit 5 is worth 32: $0010\,0000$.
+> 3. **XOR place by place.** $0010\,1100 \oplus 0010\,0000 = 0000\,1100$.
+>    *Why:* at bit 5 both are 1, so they agree and give 0. Everywhere else the mask is 0,
+>    so x's bit is copied unchanged.
+> 4. **Read the result.** $8 + 4 = 12$.
+>
+> **Answer:** 12. Bit 5 was on, so toggling it turned it off and took away 32:
+> $44 - 32 = 12$.
+>
+> **Check:** toggling twice must give back the original: $12 \oplus 32 = 44$. ✓ Python's
+> `44 ^ (1 << 5)` is 12.
+
+> **Your turn:** Toggle bit 1 of $x = 44$.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write x.** $0010\,1100$.
+> 2. **Build the mask.** Bit 1 is worth 2: $0000\,0010$.
+> 3. **XOR place by place.** $0010\,1100 \oplus 0000\,0010 = 0010\,1110$.
+> 4. **Read the result.** $32 + 8 + 4 + 2 = 46$.
+>
+> **Answer:** 46. Bit 1 was off, so toggling it turned it on and added 2.
+>
+> </details>
+
+> **Notebook example:** In the list 3, 7, 3, 5, 7 every value appears twice except one.
+> Find it with XOR.
+>
+> **What you need:** two XOR facts. $a \oplus a = 0$ (a value cancels itself) and
+> $a \oplus 0 = a$ (XOR with 0 changes nothing). Also, the order of XORs does not matter.
+> So XOR-ing the whole list cancels every pair and leaves the loner. To XOR two small
+> numbers, write them in binary and put a 1 wherever the bits differ.
+>
+> **Plan:** XOR the list from left to right, keeping a running total, like `sum` but
+> with `^`.
+>
+> 1. **Write the values in binary.** $3 = 011$, $7 = 111$, $5 = 101$.
+> 2. **XOR the first two.** $3 \oplus 7 = 011 \oplus 111 = 100 = 4$.
+> 3. **XOR in the next 3.** $4 \oplus 3 = 100 \oplus 011 = 111 = 7$.
+> 4. **XOR in the 5.** $7 \oplus 5 = 111 \oplus 101 = 010 = 2$.
+> 5. **XOR in the last 7.** $2 \oplus 7 = 010 \oplus 111 = 101 = 5$.
+>
+> **Answer:** 5 is the unpaired value, found in one pass with one variable of memory.
+>
+> **Check:** regroup the same list into pairs: $(3 \oplus 3) \oplus (7 \oplus 7) \oplus 5
+> = 0 \oplus 0 \oplus 5 = 5$. ✓ Python's `reduce(xor, [3, 7, 3, 5, 7])` is 5.
+
+> **Your turn:** In the list 6, 2, 6, find the value without a partner using XOR.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write the values in binary.** $6 = 110$, $2 = 010$.
+> 2. **XOR the first two.** $110 \oplus 010 = 100 = 4$.
+> 3. **XOR in the last 6.** $100 \oplus 110 = 010 = 2$.
+>
+> **Answer:** 2.
+>
+> </details>
 
 ### Sets as bits: the bitmask
 
@@ -425,20 +737,63 @@ cannot hold — and **next float ↑** to see the gap between neighbours. Then t
 
 > **Notebook example:** Encode $-6.25$ as a float32, bit by bit.
 >
-> 1. **Sign:** negative, so the sign bit is 1.
-> 2. **Binary:** $6 = 110_2$ and $0.25 = 0.01_2$, so $6.25 = 110.01_2$.
-> 3. **Normalise** to $1.\text{something}$: move the point two places left, giving
->    $1.1001_2 \times 2^2$.
-> 4. **Exponent field:** $2 + 127$ (the bias) $= 129 = 1000\,0001_2$.
-> 5. **Fraction field:** the bits after the leading 1 (which is not stored), padded to
->    23 bits: $1001\,0000\,0000\,0000\,0000\,000$.
-> 6. Put them together: `1 10000001 10010000000000000000000`. Grouped in fours, that
->    is `1100 0000 1100 1000 0000 …`, which is **0xC0C80000**.
+> **What you need:** a float32 is 32 bits in three fields: 1 **sign** bit (0 for
+> positive, 1 for negative), 8 **exponent** bits and 23 **fraction** bits. The value is
+> $(-1)^{\text{sign}} \times 1.\text{fraction}_2 \times 2^{\,\text{exponent} - 127}$. The
+> 127 is the **bias**: the stored exponent is the real power plus 127, so it never needs
+> a minus sign. In binary, places after the point are worth $\tfrac12, \tfrac14,
+> \tfrac18, \ldots$ **Normalising** means rewriting the number as $1.\text{something}
+> \times 2^{\text{power}}$, like scientific notation.
 >
-> **Check:** $-(1 + \tfrac12 + \tfrac1{16}) \times 2^2 = -1.5625 \times 4 = -6.25$. ✓
-> Now try 0.1 the same way. Doubling the fraction gives the bits:
-> 0.2 → 0, 0.4 → 0, 0.8 → 0, 1.6 → 1, 1.2 → 1, 0.4 → 0, … The pattern repeats forever,
-> so 0.1 must be rounded.
+> **Plan:** fill in the three fields one at a time (sign, then exponent, then fraction),
+> glue them together, and read the result as hex.
+>
+> 1. **Choose the sign bit.** The number is negative, so the sign bit is 1. From now on
+>    work with 6.25.
+> 2. **Write the whole part in binary.** $6 = 4 + 2$, so $110_2$.
+> 3. **Write the fractional part in binary.** $0.25 = \tfrac14$: 0 in the halves place,
+>    1 in the quarters place, so $0.01_2$.
+> 4. **Join them.** $6.25 = 110.01_2$.
+> 5. **Normalise.** Move the point two places left: $110.01_2 = 1.1001_2 \times 2^2$.
+>    *Why:* moving the point one place left halves the number, so we multiply by 2 once
+>    for each place moved to keep the value the same.
+> 6. **Add the bias to the power.** $2 + 127 = 129$.
+> 7. **Write the exponent field.** $129 = 128 + 1$, so $1000\,0001$.
+> 8. **Write the fraction field.** Take the bits after "1.", which are $1001$, and pad
+>    with 19 zeros to make 23 bits: $1001\,0000\,0000\,0000\,0000\,000$.
+>    *Why:* the leading 1 is always there after normalising, so it is not stored (the
+>    "hidden 1").
+> 9. **Glue the fields together.** sign, exponent, fraction:
+>    `1 10000001 10010000000000000000000`.
+> 10. **Regroup into fours and read as hex.** `1100 0000 1100 1000 0000 0000 0000 0000`
+>     is C, 0, C, 8, 0, 0, 0, 0, so **0xC0C80000**.
+>
+> **Answer:** $-6.25$ is stored as $\text{0xC0C80000}$. It is exact, because 6.25 is built
+> from halves and quarters. A number like 0.1 is not: doubling its fraction again and
+> again gives the bits (0.2 → 0, 0.4 → 0, 0.8 → 0, 1.6 → 1, 1.2 → 1, 0.4 → 0, …), and
+> the pattern repeats forever, so 0.1 must be rounded.
+>
+> **Check:** decode it again. $1.1001_2 = 1 + \tfrac12 + \tfrac1{16} = 1.5625$, then
+> $1.5625 \times 2^2 = 1.5625 \times 4 = 6.25$, and the sign bit makes it $-6.25$. ✓
+> Python's `struct.pack('>f', -6.25).hex()` prints `c0c80000`.
+
+> **Your turn:** Encode $2.5$ as a float32.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Choose the sign bit.** Positive, so 0.
+> 2. **Write the whole and fractional parts in binary.** $2 = 10_2$ and
+>    $0.5 = \tfrac12 = 0.1_2$, so $2.5 = 10.1_2$.
+> 3. **Normalise.** Move the point one place left: $1.01_2 \times 2^1$.
+> 4. **Add the bias to the power.** $1 + 127 = 128 = 1000\,0000$.
+> 5. **Write the fraction field.** The bits after "1." are $01$, then 21 zeros.
+> 6. **Glue and read as hex.** `0 10000000 01000000000000000000000` regroups as
+>    `0100 0000 0010 0000 0000 …`, which is 0x40200000.
+>
+> **Answer:** $2.5$ is $\text{0x40200000}$.
+>
+> </details>
 
 ### Why 0.1 is not exact
 
@@ -534,18 +889,91 @@ print(int.from_bytes(b"\x78\x56\x34\x12", "little") == n)   # → True
 Endianness bugs show up the moment two machines or a machine and a file format
 disagree: a length of 1 read with the wrong byte order becomes 16,777,216.
 
-> **Notebook example:** The 32-bit value $\text{0x12345678}$ is stored at address 100.
-> What is in each byte? And what does a receiver read from the bytes `01 00 00 00`?
+> **Notebook example:** The 32-bit value $\text{0x12345678}$ is stored at addresses 100
+> to 103. What is in each byte, in big-endian and in little-endian order?
 >
-> 1. Split into bytes, most significant first: `12`, `34`, `56`, `78`.
-> 2. **Big-endian** puts the most significant byte first: address 100 holds `12`, 101
->    holds `34`, 102 holds `56` and 103 holds `78`.
-> 3. **Little-endian** reverses them: `78 56 34 12` at addresses 100 to 103.
-> 4. The bytes `01 00 00 00` read as little-endian are $\text{0x00000001} = 1$. Read as
->    big-endian, they are $\text{0x01000000} = 2^{24} = 16{,}777{,}216$.
+> **What you need:** a byte is 8 bits, which is exactly two hex digits, so a 32-bit
+> value is four bytes. The **most significant** byte is the leftmost pair of hex digits
+> (it is worth the most, like the thousands digit of a decimal number). **Big-endian**
+> stores the most significant byte at the lowest address ("big end first").
+> **Little-endian** stores the least significant byte there instead.
 >
-> **Answer:** the same four bytes mean 1 or 16,777,216, depending only on the agreed
-> byte order.
+> **Plan:** cut the hex into bytes, then lay them out in each order.
+>
+> 1. **Split into bytes.** $\text{0x12345678}$ becomes `12`, `34`, `56`, `78`.
+>    *Why:* each pair of hex digits is one byte.
+> 2. **Spot the ends.** `12` is the most significant byte; `78` is the least.
+> 3. **Lay out big-endian.** Most significant first: address 100 holds `12`, 101 holds
+>    `34`, 102 holds `56`, 103 holds `78`.
+> 4. **Lay out little-endian.** Least significant first: address 100 holds `78`, 101
+>    holds `56`, 102 holds `34`, 103 holds `12`.
+>
+> **Answer:** in memory, big-endian reads `12 34 56 78` and little-endian reads
+> `78 56 34 12`. Same number, opposite byte order. x86 and ARM normally use
+> little-endian; network protocols use big-endian.
+>
+> **Check:** with `n = 0x12345678`, Python's `n.to_bytes(4, "big").hex()` is `12345678`
+> and `n.to_bytes(4, "little").hex()` is `78563412`. ✓
+
+> **Your turn:** The 16-bit value $\text{0xABCD}$ is stored at addresses 200 and 201. What
+> is in each byte, in both orders?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Split into bytes.** `AB` and `CD`.
+> 2. **Spot the ends.** `AB` is most significant, `CD` least.
+> 3. **Lay out big-endian.** 200 holds `AB`, 201 holds `CD`.
+> 4. **Lay out little-endian.** 200 holds `CD`, 201 holds `AB`.
+>
+> **Answer:** big-endian `AB CD`, little-endian `CD AB`.
+>
+> </details>
+
+> **Notebook example:** A receiver gets the four bytes `01 00 00 00`, in that order. What
+> number is it if read as little-endian? As big-endian?
+>
+> **What you need:** to turn bytes into a number, decide which byte is most
+> significant, then write the bytes from most to least significant to make one hex
+> number. Little-endian means the **first** byte received is the **least** significant.
+> Big-endian means the first byte is the **most** significant. In hex, each digit place
+> is worth 16 times the one to its right, and one hex digit is 4 bits.
+>
+> **Plan:** read the same four bytes once in each order and convert each result to
+> decimal.
+>
+> 1. **Read as little-endian.** The first byte, `01`, is the least significant, so it
+>    goes on the right: $\text{0x00000001}$.
+> 2. **Convert to decimal.** $\text{0x00000001} = 1$.
+> 3. **Read as big-endian.** The first byte, `01`, is the most significant, so it goes
+>    on the left: $\text{0x01000000}$.
+> 4. **Count the places.** The 1 has six hex digits to its right. Each hex digit is 4
+>    bits, so that is $6 \cdot 4 = 24$ bits.
+> 5. **Convert to decimal.** A 1 with 24 bits below it is $2^{24} = 16{,}777{,}216$.
+>
+> **Answer:** the same four bytes mean 1 or 16,777,216, depending only on the agreed byte
+> order. This is how "a length of 1" becomes 16 million when two systems disagree.
+>
+> **Check:** $2^{10} = 1024$, $2^{20} = 1{,}048{,}576$, and
+> $2^{24} = 2^{20} \cdot 16 = 16{,}777{,}216$. ✓ Python's
+> `int.from_bytes(b"\x01\x00\x00\x00", "little")` is 1, and with `"big"` it is 16777216.
+
+> **Your turn:** A receiver gets the two bytes `00 02`. What number is it read as
+> little-endian, and as big-endian?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Read as little-endian.** The first byte, `00`, is least significant, so it goes
+>    on the right: $\text{0x0200}$.
+> 2. **Convert to decimal.** The 2 has two hex digits (8 bits) below it:
+>    $2 \cdot 2^8 = 2 \cdot 256 = 512$.
+> 3. **Read as big-endian.** The first byte is most significant: $\text{0x0002}$.
+> 4. **Convert to decimal.** 2.
+>
+> **Answer:** 512 as little-endian, 2 as big-endian.
+>
+> </details>
 
 ## Common Mistakes
 

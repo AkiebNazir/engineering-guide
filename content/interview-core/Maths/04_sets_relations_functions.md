@@ -138,16 +138,86 @@ solution.
 > CS Fundamentals chapter 07).
 
 > **Notebook example:** List every subset of $\{a, b, c\}$ with the "in or out" method.
-> Then count the subsets of $\{1, \dots, 10\}$ that contain 1 but not 2.
 >
-> 1. Start with the subsets of nothing: $\{\varnothing\}$.
-> 2. Decide about a: keep each old subset, and add a copy with a in it:
+> **What you need:** a **subset** is any selection of the elements, from none at all
+> (the **empty set** $\varnothing$) up to all of them. The "in or out" method takes the
+> elements one at a time. For each one, every subset found so far splits into two
+> versions: one **without** the new element (out) and one **with** it (in). So each
+> element doubles the list.
+>
+> **Plan:** start with the empty selection, then deal with a, then b, then c, doubling
+> the list each time.
+>
+> 1. **Start with nothing decided.** The only selection is "nothing": $\varnothing$.
+>    *Why:* before any choices, the empty set is the one subset you have.
+> 2. **Decide about a.** Keep $\varnothing$ (a out) and add a copy with a in:
 >    $\varnothing, \{a\}$.
-> 3. Decide about b the same way: $\varnothing, \{a\}, \{b\}, \{a, b\}$.
-> 4. Decide about c: $\varnothing, \{a\}, \{b\}, \{a, b\}, \{c\}, \{a, c\}, \{b, c\}, \{a, b, c\}$.
->    That is 8 subsets, $2^3$: each step doubled the list.
-> 5. Second question: 1 is forced in and 2 is forced out, so only 8 elements (3…10) are
->    still free. That gives $2^8 = 256$ subsets.
+> 3. **Decide about b.** Keep those 2, and add a copy of each with b in: $\{b\}, \{a, b\}$.
+>    The list is now $\varnothing, \{a\}, \{b\}, \{a, b\}$.
+> 4. **Decide about c.** Keep those 4, and add a copy of each with c in:
+>    $\{c\}, \{a, c\}, \{b, c\}, \{a, b, c\}$.
+> 5. **Write the full list.** $\varnothing, \{a\}, \{b\}, \{a, b\}, \{c\}, \{a, c\}, \{b, c\}, \{a, b, c\}$.
+> 6. **Count.** The list went $1 \to 2 \to 4 \to 8$. So there are 8 subsets, which is
+>    $2^3$.
+>    *Why:* three yes/no choices, each doubling the count: $2 \cdot 2 \cdot 2 = 8$.
+>
+> **Answer:** 8 subsets, listed in step 5. This is exactly what `power_set_recursive`
+> above does.
+>
+> **Check:** count them by size instead: 1 empty set, 3 with one letter, 3 with two
+> letters, 1 with all three. $1 + 3 + 3 + 1 = 8$. ✓
+
+> **Your turn:** List every subset of $\{x, y\}$ with the "in or out" method.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Start with nothing decided.** $\varnothing$.
+> 2. **Decide about x.** $\varnothing, \{x\}$.
+> 3. **Decide about y.** Add a copy of each with y: $\varnothing, \{x\}, \{y\}, \{x, y\}$.
+> 4. **Count.** $1 \to 2 \to 4$, which is $2^2$.
+>
+> **Answer:** $\varnothing, \{x\}, \{y\}, \{x, y\}$: 4 subsets.
+>
+> </details>
+
+> **Notebook example:** How many subsets of $\{1, \dots, 10\}$ contain 1 but not 2?
+>
+> **What you need:** each element that is **free** gives a yes/no choice, and n free
+> yes/no choices give $2^n$ combinations (each one doubles the count). An element whose
+> answer is **forced** (it must be in, or must be out) has only one option, so it does
+> not double anything.
+>
+> **Plan:** count how many elements are still free to choose, then raise 2 to that
+> power.
+>
+> 1. **Count the elements.** $\{1, \dots, 10\}$ has 10 elements.
+> 2. **Fix the forced ones.** 1 must be in and 2 must be out. Each has just one option.
+> 3. **Count the free elements.** $10 - 2 = 8$ (the numbers 3 to 10).
+> 4. **Multiply the choices.** Each free element is in or out: $2^8$.
+> 5. **Work out the power.** Doubling from 1 eight times: 2, 4, 8, 16, 32, 64, 128, 256.
+>    So $2^8 = 256$.
+>
+> **Answer:** 256 subsets contain 1 but not 2.
+>
+> **Check:** there are $2^{10} = 1024$ subsets in all, and the four combinations for 1
+> and 2 (in/in, in/out, out/in, out/out) split them evenly. One quarter:
+> $1024 \div 4 = 256$. ✓
+
+> **Your turn:** How many subsets of $\{1, \dots, 6\}$ contain 6?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Count the elements.** 6.
+> 2. **Fix the forced ones.** 6 must be in.
+> 3. **Count the free elements.** $6 - 1 = 5$ (the numbers 1 to 5).
+> 4. **Multiply the choices.** $2^5 = 32$.
+>
+> **Answer:** 32. Check: half of all $2^6 = 64$ subsets contain 6, and
+> $64 \div 2 = 32$. ✓
+>
+> </details>
 
 ## 3 · Ordered Pairs and the Cartesian Product
 
@@ -165,15 +235,85 @@ This is SQL's `CROSS JOIN`, a nested loop, and a grid's coordinates ($\mathbb{Z}
 A join without a join condition is a Cartesian product — the classic accidental query
 that returns rows × rows results.
 
-> **Notebook example:** Let $A = \{x, y\}$ and $B = \{1, 2, 3\}$. List $A \times B$, compare
-> it with $B \times A$, and size a cross join.
+> **Notebook example:** Let $A = \{x, y\}$ and $B = \{1, 2, 3\}$. List $A \times B$ and
+> compare it with $B \times A$.
 >
-> 1. Pair each element of A with each element of B:
->    $(x,1), (x,2), (x,3), (y,1), (y,2), (y,3)$. That is 6 pairs, $2 \times 3$.
-> 2. $B \times A$ has pairs like $(1, x)$. Those are **different** pairs, because order
->    matters, so $A \times B \ne B \times A$, even though both have 6 elements.
-> 3. A `CROSS JOIN` of a 1,000-row table with a 500-row table returns
->    $1000 \times 500 = 500{,}000$ rows. Forgetting a join condition does exactly this.
+> **What you need:** an **ordered pair** $(a, b)$ is two things where the order matters:
+> $(x, 1)$ and $(1, x)$ are different pairs. The **Cartesian product** $A \times B$ is
+> the set of all pairs whose first item comes from A and whose second item comes from
+> B. It is the nested loop `for a in A: for b in B: (a, b)`.
+>
+> **Plan:** run the nested loop by hand: fix each element of A in turn and pair it with
+> every element of B. Then build one pair of $B \times A$ and compare.
+>
+> 1. **Fix x and pair it with all of B.** $(x, 1), (x, 2), (x, 3)$.
+> 2. **Fix y and pair it with all of B.** $(y, 1), (y, 2), (y, 3)$.
+> 3. **Collect the pairs.** $A \times B = \{(x,1), (x,2), (x,3), (y,1), (y,2), (y,3)\}$.
+> 4. **Count.** 6 pairs, which is $\lvert A \rvert \cdot \lvert B \rvert = 2 \cdot 3$.
+>    *Why:* each of the 2 outer choices meets each of the 3 inner choices.
+> 5. **Build a pair of $B \times A$.** Now the first item comes from B, for example
+>    $(1, x)$.
+> 6. **Compare.** Every pair in $A \times B$ starts with a letter, so $(1, x)$ is not in
+>    it. Therefore $A \times B \ne B \times A$.
+>    *Why:* order matters inside a pair, so $(1, x) \ne (x, 1)$.
+>
+> **Answer:** $A \times B$ is the 6 pairs in step 3. $B \times A$ also has 6 pairs, but
+> they are different pairs, so the two products are not equal.
+>
+> **Check:** `list(itertools.product("xy", [1, 2, 3]))` gives the same 6 pairs in the same
+> order. ✓
+
+> **Your turn:** Let $A = \{p, q\}$ and $B = \{0, 1\}$. List $A \times B$. Is $(0, p)$ in it?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Fix p and pair it with all of B.** $(p, 0), (p, 1)$.
+> 2. **Fix q and pair it with all of B.** $(q, 0), (q, 1)$.
+> 3. **Count.** 4 pairs, which is $2 \cdot 2$.
+> 4. **Compare.** $(0, p)$ starts with a number, but every pair in $A \times B$ starts with
+>    a letter. So it is not in $A \times B$.
+>
+> **Answer:** $A \times B = \{(p,0), (p,1), (q,0), (q,1)\}$, and $(0, p)$ is not in it.
+>
+> </details>
+
+> **Notebook example:** A `CROSS JOIN` combines a 1,000-row table with a 500-row table.
+> How many rows come back?
+>
+> **What you need:** a `CROSS JOIN`, or any join where you forgot the join condition,
+> returns the Cartesian product of the rows: every row of the first table paired with
+> every row of the second. Its size is $\lvert A \times B \rvert = \lvert A \rvert \cdot
+> \lvert B \rvert$.
+>
+> **Plan:** count how many result rows one row produces, then multiply by the number of
+> rows.
+>
+> 1. **Take one row of the first table.** It pairs with every row of the second table:
+>    500 result rows.
+>    *Why:* there is no join condition to throw any pairs away.
+> 2. **Do the same for every row.** Each of the 1,000 rows produces its own 500.
+> 3. **Multiply.** $1000 \cdot 500 = 500{,}000$.
+>
+> **Answer:** 500,000 rows. Forgetting a join condition does exactly this, and it grows
+> as the product of the table sizes.
+>
+> **Check:** same rule as the small example above: 2 rows times 3 rows gave 6 pairs.
+> Here, 500 per row times 1,000 rows is 500,000. ✓
+
+> **Your turn:** A 200-row table is cross-joined with a 30-row table. How many rows come
+> back?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Take one row of the first table.** It pairs with all 30 rows of the second.
+> 2. **Do the same for every row.** 200 rows, each giving 30.
+> 3. **Multiply.** $200 \cdot 30 = 6000$.
+>
+> **Answer:** 6,000 rows.
+>
+> </details>
 
 ## 4 · Relations: Sets of Pairs
 
@@ -216,16 +356,52 @@ Those two combinations are the two most important kinds of relation.
 > $R = \{(1,1), (2,2), (3,3), (1,2), (2,1), (2,3)\}$. Which of the four properties
 > does R have?
 >
-> 1. **Reflexive?** Are $(1,1), (2,2), (3,3)$ all in R? Yes. ✓
-> 2. **Symmetric?** Every pair needs its mirror. $(1,2)$ has $(2,1)$, but $(2,3)$ has no
->    $(3,2)$. ✗
-> 3. **Antisymmetric?** Two different elements must never point both ways. But $(1,2)$
->    and $(2,1)$ are both in R, and $1 \ne 2$. ✗
-> 4. **Transitive?** Look for chains $a \to b \to c$. $(1,2)$ and $(2,3)$ need $(1,3)$,
->    which is missing. ✗
+> **What you need:** a relation is a set of pairs; read $(a, b) \in R$ as an arrow
+> $a \to b$. The four properties, in plain words:
 >
-> **Answer:** reflexive only. A single missing pair is enough to break a "for every"
-> property, so name it when you answer.
+> - **Reflexive:** every element has an arrow to itself, $(a, a)$.
+> - **Symmetric:** every arrow has its reverse: if $(a, b)$ is in R, so is $(b, a)$.
+> - **Antisymmetric:** no two **different** elements point at each other both ways.
+> - **Transitive:** every two-step chain $a \to b \to c$ has the shortcut $(a, c)$.
+>
+> Each is a "for every" rule, so a single missing (or forbidden) pair breaks it.
+>
+> **Plan:** test the four properties one at a time, hunting for one pair that breaks
+> each.
+>
+> 1. **Test reflexive.** We need $(1,1)$, $(2,2)$ and $(3,3)$. All three are in R. ✓
+> 2. **Test symmetric.** Check each arrow between different elements for its reverse.
+>    $(1,2)$ has $(2,1)$. But $(2,3)$ needs $(3,2)$, which is missing. ✗
+>    *Why:* one arrow without its reverse is enough to break it.
+> 3. **Test antisymmetric.** Look for two different elements pointing both ways.
+>    $(1,2)$ and $(2,1)$ are both in R, and $1 \ne 2$. ✗
+> 4. **Test transitive.** Look for a chain $a \to b \to c$. $(1,2)$ then $(2,3)$ is the
+>    chain $1 \to 2 \to 3$, which needs the shortcut $(1,3)$. It is missing. ✗
+>
+> **Answer:** R is reflexive only. When you answer, name the pair that breaks each
+> property: $(3,2)$ is missing, $(1,2)$ and $(2,1)$ go both ways, $(1,3)$ is missing.
+>
+> **Check:** the `props` function above, run on this R with `A = [1, 2, 3]`, returns
+> reflexive `True` and the other three `False`. ✓
+
+> **Your turn:** On $A = \{1, 2, 3\}$, let
+> $R = \{(1,1), (2,2), (3,3), (1,2), (2,3), (1,3)\}$. Which of the four properties does
+> R have?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Test reflexive.** $(1,1)$, $(2,2)$, $(3,3)$ are all there. ✓
+> 2. **Test symmetric.** $(1,2)$ needs $(2,1)$, which is missing. ✗
+> 3. **Test antisymmetric.** No two different elements point both ways (there is no
+>    $(2,1)$, $(3,2)$ or $(3,1)$). ✓
+> 4. **Test transitive.** The only chain through different elements is
+>    $1 \to 2 \to 3$, and its shortcut $(1,3)$ is there. ✓
+>
+> **Answer:** reflexive, antisymmetric and transitive. This R is $\le$ on $\{1, 2, 3\}$,
+> a partial order (section 6).
+>
+> </details>
 
 ## 5 · Equivalence Relations: "Same in the Way That Matters"
 
@@ -280,15 +456,50 @@ transitivity, done by the data structure.
 > **Notebook example:** Six servers, 1 to 6. The facts "1 and 2 share a rack", "3 and 4
 > share a rack" and "2 and 4 share a rack" arrive in that order. Which racks are there?
 >
-> 1. Start with everything alone: $\{1\}, \{2\}, \{3\}, \{4\}, \{5\}, \{6\}$.
-> 2. Fact (1, 2): merge their groups. $\{1, 2\}, \{3\}, \{4\}, \{5\}, \{6\}$.
-> 3. Fact (3, 4): $\{1, 2\}, \{3, 4\}, \{5\}, \{6\}$.
-> 4. Fact (2, 4): 2 is in $\{1, 2\}$ and 4 is in $\{3, 4\}$, so merge the two groups:
->    $\{1, 2, 3, 4\}, \{5\}, \{6\}$.
+> **What you need:** "shares a rack with" is an **equivalence relation**: every server
+> shares with itself (reflexive), sharing goes both ways (symmetric), and if a shares
+> with b and b shares with c, then a shares with c (transitive). Such a relation splits
+> the servers into separate groups, the **equivalence classes**, and every server is in
+> exactly one. The **union-find** recipe builds the groups: start with everyone alone;
+> for each fact "a and b", find a's group and b's group, and if they differ, merge the
+> two **whole** groups.
 >
-> **Answer:** three racks. No fact mentioned 1 and 3 together, but they share a rack by
-> transitivity. This is union-find, done by hand. The classes also partition the set:
-> every server is in exactly one group.
+> **Plan:** keep a list of groups and apply the facts one at a time, in order.
+>
+> 1. **Start with everyone alone.** $\{1\}, \{2\}, \{3\}, \{4\}, \{5\}, \{6\}$.
+> 2. **Apply fact (1, 2).** 1 is in $\{1\}$ and 2 is in $\{2\}$. Merge them:
+>    $\{1, 2\}, \{3\}, \{4\}, \{5\}, \{6\}$.
+> 3. **Apply fact (3, 4).** Merge $\{3\}$ and $\{4\}$: $\{1, 2\}, \{3, 4\}, \{5\}, \{6\}$.
+> 4. **Find the groups for fact (2, 4).** 2 is in $\{1, 2\}$ and 4 is in $\{3, 4\}$.
+>    *Why:* we merge whole groups, not just the two servers, because 1 is already with 2
+>    and 3 is already with 4.
+> 5. **Merge those groups.** $\{1, 2, 3, 4\}, \{5\}, \{6\}$.
+> 6. **Count the groups.** 3.
+>
+> **Answer:** three racks: $\{1, 2, 3, 4\}$, $\{5\}$ and $\{6\}$. No fact mentioned 1 and 3
+> together, but they share a rack by transitivity. This is union-find, done by hand,
+> and every server ended up in exactly one group.
+>
+> **Check:** each merge of two different groups lowers the count by one. We started with
+> 6 groups and did 3 merges: $6 - 3 = 3$. ✓ `classes_from_pairs(7, [(1, 2), (3, 4), (2, 4)])`
+> from the code above gives `[[0], [1, 2, 3, 4], [5], [6]]` (the extra `[0]` is because
+> the code numbers from 0).
+
+> **Your turn:** Five servers, 1 to 5. The facts "1 and 5", "2 and 3" and "5 and 3" share
+> a rack arrive in that order. Which racks are there?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Start with everyone alone.** $\{1\}, \{2\}, \{3\}, \{4\}, \{5\}$.
+> 2. **Apply fact (1, 5).** $\{1, 5\}, \{2\}, \{3\}, \{4\}$.
+> 3. **Apply fact (2, 3).** $\{1, 5\}, \{2, 3\}, \{4\}$.
+> 4. **Find the groups for fact (5, 3).** 5 is in $\{1, 5\}$ and 3 is in $\{2, 3\}$.
+> 5. **Merge those groups.** $\{1, 2, 3, 5\}, \{4\}$.
+>
+> **Answer:** two racks: $\{1, 2, 3, 5\}$ and $\{4\}$.
+>
+> </details>
 
 ## 6 · Partial Orders: "Must Come Before"
 
@@ -341,16 +552,55 @@ same problem.
 > **Notebook example:** Build steps: *compile* and *docs* both need *fetch*, *test* needs
 > *compile*, and *package* needs *test* and *docs*. Find a valid order.
 >
-> 1. List what each step waits for: fetch (nothing), compile (fetch), docs (fetch),
->    test (compile), package (test, docs).
-> 2. Only **fetch** waits for nothing. Output it and cross it off everywhere.
-> 3. Now compile and docs wait for nothing. Pick **compile**, then cross it off.
-> 4. test and docs are ready. Pick **test**, then **docs**.
-> 5. package is ready last.
+> **What you need:** a **topological sort** lines the steps up so that every step comes
+> after everything it needs. The recipe: repeatedly pick a step that is waiting for
+> nothing, write it down, and cross it off every other step's waiting list. When two
+> steps are ready at once, either may go first; they are **incomparable** (neither needs
+> the other).
+>
+> **Plan:** write each step's waiting list, then pick a ready step and cross it off,
+> over and over, until every step is written down.
+>
+> 1. **Write each step's waiting list.** fetch: nothing. compile: fetch. docs: fetch.
+>    test: compile. package: test, docs.
+> 2. **Pick a step that waits for nothing.** Only fetch. Write down **fetch**.
+> 3. **Cross fetch off.** compile and docs now wait for nothing. test still waits for
+>    compile; package for test and docs.
+> 4. **Pick a ready step.** compile and docs are both ready. Pick **compile**.
+>    *Why:* either is fine; compile and docs do not depend on each other.
+> 5. **Cross compile off.** test now waits for nothing. Ready: docs and test.
+> 6. **Pick a ready step.** Pick **test**, then cross it off. package now waits only for
+>    docs.
+> 7. **Pick a ready step.** Only docs is ready. Pick **docs**, then cross it off. package
+>    waits for nothing.
+> 8. **Pick the last step.** **package**.
 >
 > **Answer:** fetch, compile, test, docs, package. Another valid order is fetch, docs,
 > compile, test, package. compile and docs are **incomparable**, which is why more than
 > one order works.
+>
+> **Check:** go through every requirement in the answer: compile (2nd) is after fetch
+> (1st), docs (4th) is after fetch, test (3rd) is after compile (2nd), and package (5th)
+> is after test and docs. ✓ Python's `graphlib.TopologicalSorter` produces a valid
+> order the same way.
+
+> **Your turn:** *build* and *lint* both need *checkout*, and *deploy* needs *build* and
+> *lint*. Find a valid order.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Write each step's waiting list.** checkout: nothing. build: checkout. lint:
+>    checkout. deploy: build, lint.
+> 2. **Pick a step that waits for nothing.** **checkout**. Cross it off: build and lint
+>    are ready.
+> 3. **Pick a ready step.** **build**. Cross it off: deploy still waits for lint.
+> 4. **Pick a ready step.** **lint**. Cross it off: deploy is ready.
+> 5. **Pick the last step.** **deploy**.
+>
+> **Answer:** checkout, build, lint, deploy (checkout, lint, build, deploy also works).
+>
+> </details>
 
 ## 7 · Functions, Precisely
 
@@ -421,16 +671,80 @@ print(2**n, sum(2**k for k in range(n)))   # → 65536 65535
 > the array", treats the array as a function `i → a[i]` and finds the cycle that
 > pigeonhole guarantees (Floyd's tortoise and hare).
 
-> **Notebook example:** (a) A drawer holds socks of 4 colours. How many must you pull out
-> in the dark to be sure of a matching pair? (b) Among 100 people, what is the largest
-> number you can be sure share a birth month?
+> **Notebook example:** A drawer holds socks of 4 colours. How many must you pull out in
+> the dark to be **sure** of a matching pair?
 >
-> 1. (a) The holes are the 4 colours. With 4 socks you could get one of each colour, so
->    no match is guaranteed. The 5th sock must repeat a colour: **5 socks**.
-> 2. (b) 100 items in 12 boxes: some box has at least $\lceil 100 / 12 \rceil$ people.
->    $100 / 12 = 8.33\ldots$, so the answer is **9**.
-> 3. Check (b) by contradiction: if every month had at most 8 people, there would be at
->    most $12 \times 8 = 96 < 100$ people. So some month has at least 9. ✓
+> **What you need:** the **pigeonhole principle**: if you put more items than there are
+> boxes, some box gets at least two. Here the items are socks and the boxes are colours.
+> "Sure" means it must work even with the worst possible luck.
+>
+> **Plan:** imagine the unluckiest possible draw, then add one more sock.
+>
+> 1. **Name the boxes.** The 4 colours.
+> 2. **Imagine the worst luck.** You could pull out 4 socks that are all different
+>    colours, one in each box. No pair yet.
+>    *Why:* to be sure, we must beat the worst case, not the typical case.
+> 3. **Add one more sock.** The 5th sock has to be one of the 4 colours, and every colour
+>    already has a sock. So it matches one of them.
+> 4. **Count.** $4 + 1 = 5$.
+>
+> **Answer:** 5 socks guarantee a matching pair: 5 items in 4 boxes.
+>
+> **Check:** 4 is not enough (one of each colour is possible), and 5 always is, because
+> $5 > 4$. ✓
+
+> **Your turn:** A hash table has 7 buckets. How many keys must you insert to be sure two
+> keys land in the same bucket?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Name the boxes.** The 7 buckets.
+> 2. **Imagine the worst luck.** 7 keys could land in 7 different buckets.
+> 3. **Add one more key.** The 8th key must land in a bucket that is already used.
+> 4. **Count.** $7 + 1 = 8$.
+>
+> **Answer:** 8 keys guarantee a collision.
+>
+> </details>
+
+> **Notebook example:** Among 100 people, what is the largest number you can be sure
+> share a birth month?
+>
+> **What you need:** the general pigeonhole principle: putting N items into k boxes
+> puts at least $\lceil N / k \rceil$ items into some box. The **ceiling**
+> $\lceil x \rceil$ means "round up to the next whole number" ($\lceil 8.33 \rceil = 9$,
+> but $\lceil 8 \rceil = 8$).
+>
+> **Plan:** divide people by months, round up, then confirm by imagining the most even
+> spread.
+>
+> 1. **Name the items and the boxes.** $N = 100$ people, $k = 12$ months.
+> 2. **Divide.** $100 \div 12 = 8.33\ldots$ (because $12 \cdot 8 = 96$, with 4 left over).
+> 3. **Round up.** $\lceil 8.33 \rceil = 9$.
+>    *Why:* if the average month has 8.33 people, at least one month must have more
+>    than 8, and people come in whole numbers, so that month has at least 9.
+>
+> **Answer:** 9. Whatever the birthdays are, some month has at least 9 of the 100 people.
+>
+> **Check:** suppose every month had at most 8 people. Then there would be at most
+> $12 \cdot 8 = 96$ people, but there are 100. Contradiction, so some month has at least
+> 9. ✓ And 9 is the most you can promise: 4 months of 9 plus 8 months of 8 is
+> $36 + 64 = 100$ people with no month above 9. In integer code, `(100 + 11) // 12` is 9.
+
+> **Your turn:** 50 keys go into 8 buckets. What is the smallest number of keys the
+> fullest bucket can have?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Name the items and the boxes.** $N = 50$ keys, $k = 8$ buckets.
+> 2. **Divide.** $50 \div 8 = 6.25$.
+> 3. **Round up.** $\lceil 6.25 \rceil = 7$.
+>
+> **Answer:** 7. Check: 8 buckets of at most 6 hold only $8 \cdot 6 = 48 < 50$ keys. ✓
+>
+> </details>
 
 ## 9 · Infinity Comes in Sizes
 
@@ -468,17 +782,45 @@ print(new, new in listing)   # → 0.6555 False
 > **Notebook example:** Someone claims this is a complete list of numbers between 0 and
 > 1: 0.5102…, 0.3333…, 0.2753…, 0.8885…. Build a number that is not on it.
 >
-> 1. Take the k-th digit of the k-th number (the **diagonal**): 1st digit of the 1st
->    number is 5, 2nd of the 2nd is 3, 3rd of the 3rd is 5, 4th of the 4th is 5.
-> 2. Change every one of them: write 6 if the digit is 5, otherwise 5. That gives 6, 5,
->    6, 6.
-> 3. The new number is 0.6566….
-> 4. Check it against the list: it differs from number 1 in digit 1 (6 vs 5), from
->    number 2 in digit 2 (5 vs 3), from number 3 in digit 3 (6 vs 5), and from number 4
->    in digit 4 (6 vs 5). ✓
+> **What you need:** Cantor's **diagonal** recipe. Build a new number whose 1st digit
+> (after the decimal point) differs from the 1st digit of the 1st number, whose 2nd
+> digit differs from the 2nd digit of the 2nd number, and so on. Then the new number
+> disagrees with every number on the list in at least one place, so it cannot be any
+> of them. A simple rule for "differ": write 6 if the digit is 5, otherwise write 5.
+> (Using only 5 and 6 avoids the 0s and 9s that would allow $0.4999\ldots = 0.5$.)
 >
-> **Answer:** 0.6566… is missing. The same recipe beats **any** list, however long,
-> which is why the real numbers cannot be listed.
+> **Plan:** read the diagonal digits, change each one, then glue the changed digits into
+> a new number.
+>
+> 1. **Read digit 1 of number 1.** 0.**5**102…: the digit is 5.
+> 2. **Read digit 2 of number 2.** 0.3**3**33…: the digit is 3.
+> 3. **Read digit 3 of number 3.** 0.27**5**3…: the digit is 5.
+> 4. **Read digit 4 of number 4.** 0.888**5**…: the digit is 5.
+>    *Why:* these four digits run diagonally down the list, hence the name.
+> 5. **Change each diagonal digit.** 5 becomes 6, 3 becomes 5, 5 becomes 6, 5 becomes 6.
+> 6. **Glue the new digits together.** 0.6566….
+>
+> **Answer:** 0.6566… is missing from the list. The same recipe beats **any** list,
+> however long, which is why the real numbers cannot be listed.
+>
+> **Check:** compare it with each row. It differs from number 1 in digit 1 (6 vs 5), from
+> number 2 in digit 2 (5 vs 3), from number 3 in digit 3 (6 vs 5), and from number 4 in
+> digit 4 (6 vs 5). ✓ The `diag` code above does exactly this.
+
+> **Your turn:** The list is 0.1234…, 0.5555…, 0.9050…, 0.2468…. Build a number that is not
+> on it.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Read the diagonal digits.** Digit 1 of 0.1234… is 1, digit 2 of 0.5555… is 5,
+>    digit 3 of 0.9050… is 5, digit 4 of 0.2468… is 8.
+> 2. **Change each diagonal digit.** 1 becomes 5, 5 becomes 6, 5 becomes 6, 8 becomes 5.
+> 3. **Glue the new digits together.** 0.5665….
+>
+> **Answer:** 0.5665… is not on the list.
+>
+> </details>
 
 ## Common Mistakes
 

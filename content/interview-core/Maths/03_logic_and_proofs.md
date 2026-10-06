@@ -69,16 +69,53 @@ A statement whose "if" part is false is **vacuously true**. It is the same idea 
 > database, (2) does not touch the database, (3) has a DBA review, (4) has no DBA review.
 > Which ones must you open to check the rule?
 >
-> 1. Name the parts: p = "touches the database", q = "has a DBA review". The rule is
->    $p \to q$, and it is broken only when p is true and q is false.
-> 2. PR 1 (p true): it could break the rule if q is false. **Open it.**
-> 3. PR 2 (p false): the rule says nothing about it, because it is vacuously true.
->    Skip it.
-> 4. PR 3 (q true): whatever p is, the row is T→T or F→T, both fine. Skip it.
-> 5. PR 4 (q false): if p turns out true, that is the broken row. **Open it.**
+> **What you need:** "if p then q", written $p \to q$, is broken in exactly **one**
+> case: p is true and q is false. Every other combination keeps the rule. In
+> particular, when p is false the rule simply does not apply (it is **vacuously true**:
+> the promise was never triggered).
 >
-> **Answer:** PRs 1 and 4. Most people pick 1 and 3. Picking 3 is the converse error:
-> checking $q \to p$ instead of $p \to q$.
+> **Plan:** name p and q, then ask of each pull request: "could this one turn out to be
+> p true **and** q false?" Open only those.
+>
+> 1. **Name the parts.** p = "touches the database", q = "has a DBA review". The rule
+>    is $p \to q$.
+> 2. **Name the only bad case.** p true and q false: a pull request that touches the
+>    database but has no DBA review.
+> 3. **Look at PR 1 (touches the database).** p is true. We cannot see q; if it is false,
+>    this is the bad case. **Open it.**
+> 4. **Look at PR 2 (does not touch the database).** p is false, so the rule says
+>    nothing about it. Skip it.
+>    *Why:* the promise only talks about database changes; this one cannot break it.
+> 5. **Look at PR 3 (has a DBA review).** q is true. The bad case needs q false, so this
+>    one cannot be it, whatever p is. Skip it.
+> 6. **Look at PR 4 (no DBA review).** q is false. If p turns out to be true, this is
+>    the bad case. **Open it.**
+>
+> **Answer:** open PRs 1 and 4. Most people pick 1 and 3. Picking 3 is the converse
+> error: checking $q \to p$ instead of $p \to q$.
+>
+> **Check:** list the truth-table rows each PR could be, written as "value of p → value
+> of q". PR 1 is T→T or T→F; PR 2 is F→T or F→F;
+> PR 3 is T→T or F→T; PR 4 is T→F or F→F. The broken row T→F appears only for PRs 1
+> and 4. ✓ In code the rule is `(not p) or q`, which is `False` only when `p and not q`.
+
+> **Your turn:** The rule is "if a function is public, it has a docstring". Four cards
+> each show one fact: (A) private, (B) public, (C) no docstring, (D) has a docstring.
+> Which must you turn over?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Name the parts.** p = "is public", q = "has a docstring".
+> 2. **Name the only bad case.** Public with no docstring.
+> 3. **Look at A (private).** p false: the rule does not apply. Skip.
+> 4. **Look at B (public).** p true: could be the bad case. **Turn over.**
+> 5. **Look at C (no docstring).** q false: could be the bad case. **Turn over.**
+> 6. **Look at D (has a docstring).** q true: cannot be the bad case. Skip.
+>
+> **Answer:** B and C.
+>
+> </details>
 
 ### Converse, inverse, contrapositive
 
@@ -378,15 +415,50 @@ $1681 = 41^2$. Forty passing tests, still false.
 > **Notebook example:** Is $n^2 - n + 11$ prime for every $n \ge 1$? Test it, then hunt
 > for a counterexample on purpose.
 >
-> 1. Try small n: 1 → 11, 2 → 13, 3 → 17, 4 → 23, 5 → 31, 6 → 41, 7 → 53, 8 → 67,
->    9 → 83, 10 → 101. All ten are prime. Tempting.
-> 2. Think instead of testing: the constant is 11. If n is a multiple of 11, every term
->    is a multiple of 11.
-> 3. Try $n = 11$: $121 - 11 + 11 = 121 = 11 \times 11$. **Not prime.**
+> **What you need:** a **prime** is a whole number bigger than 1 that only 1 and itself
+> divide exactly (2, 3, 5, 7, 11, 13, …). A "for every n" claim is false as soon as
+> **one** n breaks it; that n is a **counterexample**. Passing tests never prove a "for
+> every" claim. One useful fact: if every part of a sum is a multiple of 11, the whole
+> sum is a multiple of 11.
+>
+> **Plan:** try a few small n to see why the claim looks believable, then choose an n
+> that forces the answer to be a multiple of 11.
+>
+> 1. **Test n = 1.** $1^2 - 1 + 11 = 1 - 1 + 11 = 11$. Prime.
+> 2. **Test a few more.** $n = 2$: $4 - 2 + 11 = 13$. $n = 3$: $9 - 3 + 11 = 17$.
+>    $n = 4$: $16 - 4 + 11 = 23$. All prime (and so are n = 5 to 10: 31, 41, 53, 67,
+>    83, 101). Tempting.
+>    *Why:* this is evidence, not proof. We have no idea yet what happens at n = 1000.
+> 3. **Look for a weak spot in the formula.** The constant is 11. If n is a multiple of
+>    11, then $n^2$, n and 11 are all multiples of 11, so the whole result is too.
+> 4. **Substitute n = 11.** $11^2 - 11 + 11$.
+> 5. **Do the arithmetic.** $11^2 = 121$, then $121 - 11 = 110$, then $110 + 11 = 121$.
+> 6. **Factor the result.** $121 = 11 \times 11$, so it is **not prime**.
 >
 > **Answer:** false, with $n = 11$ as the counterexample. Ten passing tests proved
 > nothing, and one counterexample settled it. Asking "where would this break?" beats
 > trying more random cases.
+>
+> **Check:** $11 \times 11 = 121$. ✓ With the `is_prime` function above,
+> `is_prime(11 * 11 - 11 + 11)` is `False`.
+
+> **Your turn:** Is $n^2 + n + 17$ prime for every $n \ge 1$? Use the same trick to find a
+> counterexample.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Test n = 1.** $1 + 1 + 17 = 19$. Prime, so the claim looks believable.
+> 2. **Look for a weak spot in the formula.** The constant is 17, so try a multiple of
+>    17.
+> 3. **Substitute n = 17.** $17^2 + 17 + 17$.
+> 4. **Do the arithmetic.** $17^2 = 289$, then $289 + 17 = 306$, then $306 + 17 = 323$.
+> 5. **Factor the result.** $323 = 17 \times 19$. Not prime.
+>
+> **Answer:** false; $n = 17$ is a counterexample. (A search finds an even smaller one:
+> $n = 16$ gives $289 = 17 \times 17$.)
+>
+> </details>
 
 ## 8 · When Logic Has Three Values: SQL and `NULL`
 
@@ -420,19 +492,88 @@ Reading the table: FALSE AND anything is FALSE (it does not matter what the unkn
 is), but TRUE AND UNKNOWN stays unknown.
 
 > **Notebook example:** A table has two rows: row 1 has `age = NULL, city = 'Paris'`, row
-> 2 has `age = NULL, city = 'Rome'`. Which rows does each query return?
-> (a) `WHERE age > 30 OR city = 'Paris'`, (b) `WHERE age > 30`,
-> (c) `WHERE NOT (age > 30)`.
+> 2 has `age = NULL, city = 'Rome'`. Which rows does
+> `WHERE age > 30 OR city = 'Paris'` return?
 >
-> 1. `age > 30` with a NULL age is **UNKNOWN** in both rows.
-> 2. (a) Row 1: UNKNOWN OR TRUE is **TRUE**, because TRUE OR anything is TRUE, so it is
->    kept. Row 2: UNKNOWN OR FALSE is **UNKNOWN**, so it is dropped.
-> 3. (b) UNKNOWN in both rows, so both are dropped.
-> 4. (c) NOT UNKNOWN is still UNKNOWN, so both are dropped.
+> **What you need:** `NULL` means "unknown". Any comparison with `NULL`, such as
+> `NULL > 30`, gives **UNKNOWN**, not TRUE or FALSE. `WHERE` keeps a row only when the
+> condition is **TRUE**; FALSE and UNKNOWN rows are both dropped. For OR: TRUE OR
+> anything is TRUE, but FALSE OR UNKNOWN stays UNKNOWN.
 >
-> **Answer:** (a) returns row 1, and (b) and (c) return nothing. Queries (b) and (c)
-> look like they split the table in two, yet together they return 0 of 2 rows. Rows with
-> NULL fall through every comparison.
+> **Plan:** for each row, work out each side of the OR, combine them, and keep the row
+> only if the result is TRUE.
+>
+> 1. **Row 1, left side.** `age > 30` is `NULL > 30`, which is UNKNOWN.
+> 2. **Row 1, right side.** `city = 'Paris'` is `'Paris' = 'Paris'`, which is TRUE.
+> 3. **Row 1, combine with OR.** UNKNOWN OR TRUE is **TRUE**, so row 1 is kept.
+>    *Why:* whatever the missing age is, the right side already makes the OR true.
+> 4. **Row 2, left side.** `NULL > 30` is UNKNOWN again.
+> 5. **Row 2, right side.** `'Rome' = 'Paris'` is FALSE.
+> 6. **Row 2, combine with OR.** UNKNOWN OR FALSE is **UNKNOWN**.
+>    *Why:* the answer now depends entirely on the age, which nobody knows.
+> 7. **Apply WHERE to row 2.** UNKNOWN is not TRUE, so row 2 is dropped.
+>
+> **Answer:** only row 1 (Paris) comes back. Row 2 is dropped, not because it failed the
+> test, but because the test could not be decided.
+>
+> **Check:** running the query in `sqlite3` (as in the code above) returns only the
+> Paris row. ✓
+
+> **Your turn:** Rows: row 1 has `age = NULL, city = 'Oslo'`, row 2 has
+> `age = NULL, city = 'Lima'`. Which rows does `WHERE age < 18 OR city = 'Lima'` return?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Row 1, both sides.** `NULL < 18` is UNKNOWN; `'Oslo' = 'Lima'` is FALSE.
+> 2. **Row 1, combine with OR.** UNKNOWN OR FALSE is UNKNOWN, so it is dropped.
+> 3. **Row 2, both sides.** `NULL < 18` is UNKNOWN; `'Lima' = 'Lima'` is TRUE.
+> 4. **Row 2, combine with OR.** UNKNOWN OR TRUE is TRUE, so it is kept.
+>
+> **Answer:** only row 2 (Lima).
+>
+> </details>
+
+> **Notebook example:** Same table: both rows have `age = NULL`. Which rows do
+> (b) `WHERE age > 30` and (c) `WHERE NOT (age > 30)` return?
+>
+> **What you need:** `NULL > 30` is UNKNOWN, and `WHERE` keeps only TRUE rows. For NOT:
+> NOT TRUE is FALSE, NOT FALSE is TRUE, and **NOT UNKNOWN is still UNKNOWN** (if you
+> do not know whether something is true, you do not know whether it is false either).
+>
+> **Plan:** work out the condition for each query, then see whether the two queries
+> together cover the table the way they would with ordinary true/false logic.
+>
+> 1. **Evaluate `age > 30` in both rows.** The age is NULL, so it is UNKNOWN in both.
+> 2. **Apply WHERE for (b).** UNKNOWN is not TRUE, so both rows are dropped. (b) returns
+>    nothing.
+> 3. **Apply NOT for (c).** NOT UNKNOWN is UNKNOWN, in both rows.
+> 4. **Apply WHERE for (c).** Still UNKNOWN, so both rows are dropped. (c) returns
+>    nothing.
+> 5. **Add up the two results.** 0 rows from (b) plus 0 rows from (c) is 0 of the 2 rows.
+>    *Why:* with ordinary booleans, every row passes exactly one of "condition" and
+>    "NOT condition". NULL breaks that rule.
+>
+> **Answer:** both (b) and (c) return nothing. They look like they split the table in
+> two, yet together they return 0 of 2 rows. Rows with NULL fall through every
+> comparison; to catch them, test `age IS NULL`.
+>
+> **Check:** in `sqlite3`, both queries return `[]`. ✓
+
+> **Your turn:** A table has one row, with `age = NULL`. Which rows do `WHERE age = 18`
+> and `WHERE age <> 18` return? (`<>` means "not equal".)
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Evaluate `age = 18`.** `NULL = 18` is UNKNOWN.
+> 2. **Apply WHERE.** UNKNOWN is not TRUE: dropped.
+> 3. **Evaluate `age <> 18`.** `NULL <> 18` is UNKNOWN too.
+> 4. **Apply WHERE.** Dropped again.
+>
+> **Answer:** both queries return nothing. Only `WHERE age IS NULL` finds the row.
+>
+> </details>
 
 ## Common Mistakes
 
