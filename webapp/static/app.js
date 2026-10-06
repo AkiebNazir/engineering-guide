@@ -49,7 +49,9 @@ const activeId = () =>
      static build  `make build` — dist/ on any static host (GitHub Pages, Netlify, S3, nginx…).
                    build_static.py pre-renders every GET /api/* answer to dist/data/, and
                    dist/config.js sets EG_STATIC. Progress is kept in this browser's
-                   localStorage; running code needs the local server. */
+                   localStorage; DSA and standard-library code runs in the browser
+                   (browser-run.js: Pyodide for Python, the Go Playground for Go).
+                   Engineering and API workspaces still need the local server. */
 const IS_STATIC = window.EG_STATIC === true;
 
 /* /api/<name>?<query> → ./data/<name>[/<key>].json. The key is the query with its
@@ -123,7 +125,22 @@ const serverPost = (path, body) =>
   api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body) });
 
-const NEEDS_SERVER = 'Running code needs the local server: clone the repo and run `make app`.';
+const NEEDS_SERVER = 'This workspace runs its tests against project files and third-party ' +
+  'packages, so it needs the local server: clone the repo and run `make app`.\n' +
+  'DSA problems and standard-library levels run right here in the browser.';
+const EMPTY_RUN = { ok: false, stdout: '', exitCode: -1, ms: 0, stderr: 'Nothing to run — the editor is empty.' };
+
+/* Static build: no server to run code, so run it in the browser (browser-run.js). */
+const browserRun = (lang, code, timeoutS) => {
+  if (!code.trim()) return EMPTY_RUN;
+  if (lang !== 'py') return BrowserRun.go(code, timeoutS);
+  if (!BrowserRun.isPythonReady()) {
+    $('#consoleBody').innerHTML =
+      '<span class="muted">Loading Python in your browser — the first run downloads about 10 MB…</span>';
+  }
+  return BrowserRun.python(code, timeoutS);
+};
+
 const staticPost = async (path, body) => {
   if (path === '/api/state') {
     localState = body;
@@ -147,7 +164,10 @@ const staticPost = async (path, body) => {
     saveLocalState();
     return { ok: true };
   }
-  // /api/run, /api/eng-run, /api/stdlib-run, /api/api-run, /api/format
+  if (path === '/api/run') return browserRun(body.lang, body.code || '');
+  if (path === '/api/stdlib-run') return browserRun(body.lang, body.code || '', body.lang === 'py' ? 20 : 45);
+  if (path === '/api/format') return BrowserRun.gofmt(body.code || '');
+  // /api/eng-run, /api/api-run
   return { ok: false, exitCode: 1, stdout: '', stderr: NEEDS_SERVER, error: NEEDS_SERVER, ms: 0 };
 };
 
@@ -1131,7 +1151,7 @@ async function runCode() {
     $('#consoleBody').innerHTML = parts.join('\n');
 
     stat.className = `console-stat ${r.ok ? 'ok' : 'err'}`;
-    stat.textContent = `${r.ok ? 'exit 0' : `exit ${r.exitCode}`} · ${r.ms} ms`;
+    stat.textContent = `${r.ok ? 'exit 0' : `exit ${r.exitCode}`} · ${r.ms} ms${r.via ? ` · ${r.via}` : ''}`;
 
     const rc = rec(id);
     rc.runs = (rc.runs || 0) + 1;

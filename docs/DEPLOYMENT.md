@@ -4,20 +4,37 @@ The web app runs in three modes from the same front end (`webapp/static/`):
 
 | | Local app (`make app`) | Hosted app (`make up`, `make serve`, `deploy/`) | Static preview (`make build`) |
 |---|---|---|---|
-| What it is | `webapp/server.py` on `127.0.0.1` | `webapp/server.py` with `EG_AUTH=1`, behind HTTPS | A plain folder, `dist/`, of HTML, JS, CSS and pre-rendered JSON |
+| What it is | `webapp/server.py`, Python standard library, on `127.0.0.1` | `webapp/server.py` with `EG_AUTH=1`, behind HTTPS | A plain folder, `dist/`, of HTML, JS, CSS and pre-rendered JSON |
 | Sign-in | None | Google, or an emailed one-time code | None |
 | Content | Every module | What the account's plan includes (Free, Base, Pro, Pro Max) | The Free plan only |
-| **Run** / **gofmt** in the editor | Yes (Python and Go on your machine) | Yes with `make up` (a sandboxed runner container); no with `make serve` or the web image alone | No |
-| Progress | `webapp/data/progress.json` | Per account (SQLite) | The visitor's browser (`localStorage`) |
+| **Run** / **gofmt**: DSA problems, standard-library levels | Yes (Python and Go on your machine) | Yes with `make up` (a sandboxed runner container); no with `make serve` or the web image alone | Yes: Python in the browser (Pyodide, WebAssembly), Go on the [Go Playground](https://go.dev/play) |
+| **Run**: Go/Py Engineering, Software Design LLD, API labs | Yes | Yes with `make up`, for the lessons the plan opens | No (they need the repo's files and packages); the editor says so |
+| Progress (status, drafts, notes, timers, reviews) | `webapp/data/progress.json` | Per account (SQLite) | The visitor's browser (`localStorage`), per device |
 | Copy / inspect restrictions | Off | On | On |
 | Where it can run | Your machine only (it executes code you type) | Any machine with Docker, a laptop included; the web image alone on any container platform | Any static host |
 
 Plans and what each one reads are defined in `webapp/entitlements.py`; the sign-in
 rules in `webapp/auth.py`.
 
-The static build is safe to publish: it contains no server, executes nothing, never
-includes your `progress.json`, and holds only Free-plan content (pages above it are
+The static build is safe to publish: it contains no server, executes nothing on the host,
+never includes your `progress.json`, and holds only Free-plan content (pages above it are
 small `upgrade_required` stubs).
+### Running code on the static site
+
+`webapp/static/browser-run.js` stands in for the server's `/api/run`, `/api/stdlib-run` and
+`/api/format` when the app is a static build:
+
+- **Python** runs in the visitor's browser: [Pyodide](https://pyodide.org) (CPython compiled
+  to WebAssembly) in a Web Worker, `webapp/static/py-worker.js`. The runtime (about 10 MB)
+  downloads from the jsDelivr CDN on the first **Run** and is cached after that. A run
+  that exceeds the time limit has its worker terminated, so an infinite loop never
+  freezes the page. Output matches `python main.py`, with two browser limits: timers are
+  coarsened to ~0.1 ms (benchmark timings are rougher), and recursion that passes through
+  C code (`@functools.cache`, `__repr__`, `map`) stops at a few hundred levels with a
+  `RecursionError`. Plain recursion is not limited.
+- **Go** is sent to the Go Playground (`play.golang.org/compile`, `/fmt`), which accepts
+  requests from any site. The code runs on Google's servers; the Playground's clock is
+  simulated, so `time.Since()` measures nothing there.
 
 ---
 

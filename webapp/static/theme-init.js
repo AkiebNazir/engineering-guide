@@ -12,3 +12,13 @@
   r.dataset.theme = dark ? 'dark' : 'light';
   r.dataset.themePref = pref;
 })();
+/* iOS Safari zooms into any focused field whose text is under 16px (the code
+   editor, search) and stays zoomed. maximum-scale=1 stops that, and iOS still
+   allows pinch-zoom despite it. Elsewhere it would block pinch-zoom, and no
+   other browser auto-zooms, so iOS only. */
+(function () {
+  var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPadOS reports as a Mac
+  var vp = document.querySelector('meta[name=viewport]');
+  if (ios && vp) vp.content += ', maximum-scale=1';
+})();

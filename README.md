@@ -276,8 +276,13 @@ system). Where they disagree with this page about order, follow this page.
   buttons on code examples still work). Plans are granted with `webapp/admin.py`.
 - **Public preview:** `make build` → `dist/` is a static site with the Free plan's content
   only, which any host can serve; `.github/workflows/deploy.yaml` tests and publishes it to
-  GitHub Pages on every push to `main`. [Running and Deploying the Guide](docs/DEPLOYMENT.md)
-  covers GitHub Pages, other static hosts and containers.
+  GitHub Pages on every push to `main`. It works on a laptop or a phone, progress is kept
+  in the browser, and the Free DSA problems and standard-library levels run there too:
+  Python in the browser itself (Pyodide), Go on the official Go Playground. The
+  Engineering and API workspaces, which run tests against project files and third-party
+  packages, need the local app or the hosted guide.
+  [Running and Deploying the Guide](docs/DEPLOYMENT.md) covers GitHub Pages, other static
+  hosts and containers.
 - **Layout:** all learning material lives in `content/`, grouped the way the app's home page
   groups it; everything else is the app and its tooling. `make help` lists every command.
 

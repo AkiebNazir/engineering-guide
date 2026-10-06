@@ -272,7 +272,10 @@
 <script src="./vendor/codemirror/5.65.16/addon/search/jump-to-line.js"></script>
 <script src="./vendor/marked/4.3.0/marked.min.js"></script>
 <!-- mermaid, KaTeX and highlight.js load lazily, the first time a page needs them.
-     Every library and font is served from /vendor, so the app works with no network. -->
+     Every library and font is served from /vendor, so the app works with no network.
+     The one exception is browser-run.js, used only by the static build (no server to
+     run code): it loads Pyodide from jsDelivr and sends Go to the Go Playground. -->
+<script src="./browser-run.js"></script>
 <script src="./app.js"></script>
 <script src="./account.js"></script>
 <script src="./arch-diagram.js"></script>
