@@ -32,7 +32,8 @@ function pdFileRef(ref) {
   if (typeof repoRoute !== 'function' || !/\.(md|py|go)$/.test(ref)) return null;
   const onDsa = typeof mode !== 'undefined' && mode === 'dsa' && typeof cur !== 'undefined' && cur;
   const root = typeof curLang !== 'undefined' && curLang === 'go' ? 'GoDSA' : 'PyDSA';
-  let path = ref.replace(/^(\.\.?\/)+/, '');
+  // module-rooted, whether written as content/interview-core/PyDSA/... or PyDSA/... (reader.js)
+  let path = typeof moduleRooted === 'function' ? moduleRooted(ref.replace(/^(\.\.?\/)+/, '')) : ref.replace(/^(\.\.?\/)+/, '');
   if (!/^(Py|Go)DSA\//.test(path)) {
     if (!onDsa) return REPO_ROOT_RE.test(path) ? repoRoute(path) : null;
     if (path === '_TOPIC_GUIDE.md') path = `${root}/${cur.topic}/_TOPIC_GUIDE.md`;

@@ -1,13 +1,21 @@
-# Python caches and downloaded wheels: local leftovers, never content
+# Python: caches, virtualenvs, downloaded wheels
 __pycache__/
 *.pyc
 *.whl
-
-node_module/
-*.pyc
+.venv/
 .ruff_cache/
 .mypy_cache/
 .pytest_cache/
 
-# Static build output
+# Node: dependencies are installed with `npm ci` (see webapp/package.json)
+node_modules/
+
+# Static site build output (`make build`)
+dist/
+# Older builds wrote into the source tree; keep any leftovers out of git
 webapp/static/data/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/

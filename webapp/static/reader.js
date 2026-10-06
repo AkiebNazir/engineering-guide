@@ -13,7 +13,7 @@
    ========================================================================= */
 'use strict';
 
-const CDN = '/vendor';   // local copies of the libraries, so reading works offline
+const CDN = './vendor';   // local copies of the libraries, so reading works offline
 
 let curModule = null;      // 'sd' | 'swd' | 'roadmap' | 'library' | 'agentic' | 'go' | 'py' | … | null
 let curDoc = null;         // { mod, id, key, item } while the reader is open
@@ -405,6 +405,7 @@ function renderModGrid(mod) {
 
   host.innerHTML = `
     ${mod === 'api' ? apiPracticeStrip() : ''}
+    ${(mod === 'sql' || mod === 'nosql') && typeof qlabStrip === 'function' ? qlabStrip(mod) : ''}
     <div class="mod-toolbar">
       <div class="seg" role="group" aria-label="Show">
         ${Object.entries(FILTERS).map(([f, l]) =>
@@ -1058,6 +1059,7 @@ async function renderReader(mod, id) {
   await renderMath(prose);
   await Promise.all([renderCode(prose), renderMermaidBlocks(prose)]);
   if (!curDoc || curDoc.key !== key) return;
+  if (typeof qlabEnhanceDoc === 'function') qlabEnhanceDoc(prose, mod, id);   // qlab.js: Run buttons on SQL / mongosh / redis-cli blocks
   if (extras) await extras.afterRender();
   if (!curDoc || curDoc.key !== key) return;
   applyHighlights(prose, r);
@@ -1150,6 +1152,7 @@ const CALLOUT_META = {
   key: ['💡', 'Key idea'], tip: ['✅', 'Do this'], warn: ['⚠️', 'Watch out'], interview: ['🎯', 'Interview angle'],
   definition: ['📖', 'Definition'], intuition: ['🧠', 'Intuition'], analogy: ['🧩', 'Analogy'],
   example: ['🔢', 'Worked example'], practice: ['🏭', 'In practice'], question: ['❓', 'Check yourself'],
+  yourturn: ['✏️', 'Your turn'],
 };
 const EMOJI_CALLOUT = {
   '💡': 'key', '🔑': 'key', '📌': 'key', '✅': 'tip', '⚠️': 'warn', '⚠': 'warn', '❗': 'warn', '🚫': 'warn',
@@ -1157,6 +1160,7 @@ const EMOJI_CALLOUT = {
   '🏭': 'practice', '🚀': 'practice', '❓': 'question',
 };
 const LABEL_CALLOUT = [
+  [/^your turn\b/i, 'yourturn'],
   [/analog/i, 'analogy'],
   [/interview/i, 'interview'],
   [/warn|pitfall|gotcha|caution|trap|mistake|danger|watch out|anti-?pattern/i, 'warn'],
@@ -1331,7 +1335,45 @@ function enhanceCallouts(root) {
     card.innerHTML = `<span class="callout-icon" aria-hidden="true">${icon}</span><div class="callout-body"><span class="callout-label">${esc(label || defLabel)}</span></div>`;
     $('.callout-body', card).append(...bq.childNodes);
     bq.replaceWith(card);
+    if (type === 'example' && /^notebook example$/i.test(label || '')) stepThrough(card);
   });
+}
+
+/* A notebook example is a problem worked one small move per numbered line.
+   Shown all at once, the eye slides straight to the answer; so the steps
+   come one at a time (try the move on paper, then reveal it), and the
+   Answer and Check paragraphs after the list wait until the last step. */
+function stepThrough(card) {
+  const body = $('.callout-body', card);
+  const ol = [...body.children].find(k => k.tagName === 'OL');
+  const steps = ol ? [...ol.children] : [];
+  if (steps.length < 2) return;
+  const after = [];
+  for (let n = ol.nextElementSibling; n; n = n.nextElementSibling) after.push(n);
+  card.classList.add('nb');
+  const bar = document.createElement('div');
+  bar.className = 'nb-bar';
+  bar.innerHTML = `<span class="nb-hint">Try each step on paper first, then reveal it.</span>
+    <span class="nb-count" aria-live="polite"></span>
+    <span class="nb-btns"><button type="button" class="nb-next"></button><button type="button" class="nb-all">Show all</button></span>`;
+  ol.before(bar);
+  const next = $('.nb-next', bar), all = $('.nb-all', bar), count = $('.nb-count', bar), hint = $('.nb-hint', bar);
+  const turn = card.nextElementSibling && card.nextElementSibling.classList.contains('callout-yourturn');
+  let shown = 0;
+  const render = () => {
+    const done = shown >= steps.length;
+    steps.forEach((li, i) => { li.hidden = i >= shown; li.classList.toggle('nb-new', i === shown - 1 && !done); });
+    after.forEach(el => { el.hidden = !done; });
+    ol.hidden = shown === 0;
+    count.textContent = `${shown} of ${steps.length} steps`;
+    next.textContent = done ? 'Start over' : shown ? `Next step (${shown + 1})` : 'Show step 1';
+    all.hidden = done;
+    hint.textContent = !done ? 'Try each step on paper first, then reveal it.'
+      : turn ? 'All steps shown. Now solve the Your turn problem below on your own.' : 'All steps shown.';
+  };
+  next.onclick = () => { shown = shown >= steps.length ? 0 : shown + 1; render(); };
+  all.onclick = () => { shown = steps.length; render(); };
+  render();
 }
 
 function wrapTables(root) {
@@ -1399,6 +1441,10 @@ function repoRoute(path) {
   if ((r = path.match(/^API\/(\w+)\/(?:Foundation|labs)\/(?:python|golang)\/([\w-]+)\.(?:py|go)$/)))
     return { href: `#/api-item/${r[1]}/${/\/labs\//.test(path) ? 'labs' : 'Foundation'}/${r[2]}`, title: prettyName(r[2]) };
   if ((r = path.match(/^API\/(\w+)\/([\w-]+)\.md$/))) return item('api', `${r[1]}/${r[2]}`);
+  // Query Lab question banks open in the lab itself (qlab.js)
+  if (/^SQL\/lab\/questions\.md$/.test(path)) return { href: '#/query-lab/sql', title: 'SQL Query Lab' };
+  if ((r = path.match(/^NoSQL\/lab\/(mongodb|redis)-questions\.md$/)))
+    return { href: `#/query-lab/${r[1]}`, title: r[1] === 'mongodb' ? 'MongoDB Query Lab' : 'Redis Query Lab' };
   if ((r = path.match(/^SQL\/([\w-]+)\.md$/))) return item('sql', r[1]);
   if ((r = path.match(/^NoSQL\/(README|(?:mongodb|redis|concepts)\/[\w-]+)\.md$/))) return item('nosql', r[1]);
   if ((r = path.match(/^(Py|Go)StdLib\/(\d+_\w+)\/GUIDE\.md$/)))
@@ -1423,17 +1469,32 @@ function repoRoute(path) {
 }
 
 /* a reference may be written relative to the current doc, or to its module's folder */
+/* On disk every module sits in content/<group>/ (content/interview-core/SystemDesign/...).
+   Pages and routes keep the module-rooted path ("SystemDesign/..."); relative links are
+   resolved from the file's real location, so a link may climb across groups
+   (../../data-and-apis/SQL/x.md) and still land on the right page. */
+const CONTENT_GROUP = {
+  PyDSA: 'interview-core', GoDSA: 'interview-core', SystemDesign: 'interview-core', SoftwareDesign: 'interview-core',
+  CSFundamentals: 'interview-core', Maths: 'interview-core', GoogleBehavioral: 'interview-core',
+  GoEngineering: 'languages', PyEngineering: 'languages', GoStdLib: 'languages', PyStdLib: 'languages',
+  SQL: 'data-and-apis', NoSQL: 'data-and-apis', API: 'data-and-apis',
+  'AI-road-map': 'ai-engineering', 'AI-Libraries-Guides': 'ai-engineering', 'Agentic-AI': 'ai-engineering', MLOps: 'ai-engineering',
+  'Tool-Kit': 'ship-and-run', TestingAndQuality: 'ship-and-run', CICD: 'ship-and-run', DataEngineering: 'ship-and-run' };
+const onDisk = path => { const g = CONTENT_GROUP[path.split('/')[0]]; return g ? `content/${g}/${path}` : path; };
+const moduleRooted = path => { const m = path.match(/^content\/[\w-]+\/(.+)$/); return m ? m[1] : path; };
+
 function repoRefRoute(ref, mod, id) {
-  let p = ref.replace(/[#?].*$/, '').replace(/^\.\//, '');
+  const p = moduleRooted(ref.replace(/[#?].*$/, '').replace(/^\.\//, ''));
   if (REPO_ROOT_RE.test(p)) return repoRoute(p);
   const src = docSourcePath(mod, id);
   const home = REPO_HOME[mod] || DSA_GUIDE_ROOT[mod] || null;
   if (!src) return null;
-  const tries = [src.split('/').slice(0, -1), home ? [home] : []];
+  const tries = [onDisk(src).split('/').slice(0, -1), home ? onDisk(home).split('/') : []];
   for (const segs of tries) {
     const out = [...segs];
     for (const s of p.split('/')) { if (s === '..') out.pop(); else if (s && s !== '.') out.push(s); }
-    const hit = REPO_ROOT_RE.test(out.join('/')) ? repoRoute(out.join('/')) : null;
+    const at = moduleRooted(out.join('/'));
+    const hit = REPO_ROOT_RE.test(at) ? repoRoute(at) : null;
     if (hit) return hit;
   }
   return null;

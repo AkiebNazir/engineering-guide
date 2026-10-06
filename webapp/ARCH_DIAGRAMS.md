@@ -124,8 +124,8 @@ Use a brand logo only when the text names that product ("Kafka", "Redis",
 ## Checking your work
 
 ```
-node webapp/arch_tool.mjs check path/to/file.md      # syntax, overlaps, lines through boxes, crossings, size
-node webapp/arch_tool.mjs shot  path/to/file.md 3    # PNG of block 3 (add --dark, --out DIR)
+node webapp/scripts/arch_tool.mjs check path/to/file.md      # syntax, overlaps, lines through boxes, crossings, size
+node webapp/scripts/arch_tool.mjs shot  path/to/file.md 3    # PNG of block 3 (add --dark, --out DIR)
 ```
 
 `check` must report no `FAIL`. Look at the `shot` PNG of every diagram you write:

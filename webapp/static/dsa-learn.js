@@ -24,7 +24,7 @@ let dsaMapPromise = null;
 let dsaMapData = null;
 function dsaMap() {
   if (dsaMapData) return Promise.resolve(dsaMapData);
-  dsaMapPromise ??= fetch('/api/dsa-map').then(r => r.json()).then(d => (dsaMapData = d.problems || {}))
+  dsaMapPromise ??= api('/api/dsa-map').then(d => (dsaMapData = d.problems || {}))
     .catch(() => { dsaMapPromise = null; return {}; });
   return dsaMapPromise;
 }

@@ -39,6 +39,7 @@
 <link rel="stylesheet" href="./sd-flow.css">
 <link rel="stylesheet" href="./api-practice.css">
 <link rel="stylesheet" href="./stdlib-practice.css">
+<link rel="stylesheet" href="./qlab.css">
 </head>
 <body>
 
@@ -171,6 +172,9 @@
     <!-- Stdlib practice: one package's guide + level ladder (#/stdlib-pkg/<lang>/<pkg>) -->
     <section class="view" id="viewStdlibPkg" hidden></section>
 
+    <!-- Query Lab: SQL / MongoDB / Redis in the browser (#/query-lab/<engine>[/<question>]) — qlab.js -->
+    <section class="view" id="viewQueryLab" hidden></section>
+
     <!-- Problem workspace -->
     <section class="view workspace" id="viewProblem" hidden>
       <div class="problem-head">
@@ -264,6 +268,8 @@
 <script src="./vendor/codemirror/5.65.16/codemirror.js"></script>
 <script src="./vendor/codemirror/5.65.16/mode/python/python.js"></script>
 <script src="./vendor/codemirror/5.65.16/mode/go/go.js"></script>
+<script src="./vendor/codemirror/5.65.16/mode/sql/sql.js"></script>
+<script src="./vendor/codemirror/5.65.16/mode/javascript/javascript.js"></script>
 <script src="./vendor/codemirror/5.65.16/addon/edit/closebrackets.js"></script>
 <script src="./vendor/codemirror/5.65.16/addon/selection/active-line.js"></script>
 <!-- matchBrackets was already switched on but its addon was never loaded, so
@@ -278,6 +284,7 @@
 <script src="./vendor/marked/4.3.0/marked.min.js"></script>
 <!-- mermaid, KaTeX and highlight.js load lazily, the first time a page needs them.
      Every library and font is served from /vendor, so the app works with no network. -->
+<script src="./config.js"></script>
 <script src="./app.js"></script>
 <script src="./arch-diagram.js"></script>
 <script src="./reader.js"></script>
@@ -313,6 +320,9 @@
 <script src="./dsa-topic.js"></script>
 <script src="./api-practice.js"></script>
 <script src="./stdlib-practice.js"></script>
+<script src="./qlab-redis.js"></script>
+<script src="./qlab-core.js"></script>
+<script src="./qlab.js"></script>
 <script src="./problem-doc.js"></script>
 <script src="./dsa-patterns.js"></script>
 <script src="./dsa-learn.js"></script>

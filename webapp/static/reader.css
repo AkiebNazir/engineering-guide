@@ -510,6 +510,7 @@
 .callout-intuition  { --c-d: #b996ff; --c-l: #6d3fc4; }
 .callout-practice   { --c-d: #4fc1b0; --c-l: #0f6e66; }
 .callout-question   { --c-d: #ff9670; --c-l: #b23c0c; }
+.callout-yourturn   { --c-d: #a5d66a; --c-l: #4b7a12; }
 .callout-icon {
   flex: none; width: 2em; height: 2em; display: grid; place-items: center;
   border-radius: 10px; font-size: .95em; line-height: 1;
@@ -519,6 +520,28 @@
 .callout-label { display: block; margin: .15em 0 .3em; font: 650 .8em/1.2 var(--sans); color: var(--c); }
 .callout-body > :last-child { margin-bottom: 0; }
 .callout-body p, .callout-body li { color: var(--text-body); }
+
+/* notebook examples: steps revealed one at a time (stepThrough in reader.js) */
+.nb-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5em .9em; margin: 1em 0 .6em;
+  padding: .55em .7em; border-radius: 10px; font: 500 .82em/1.3 var(--sans);
+  background: color-mix(in srgb, var(--c) 9%, transparent);
+}
+.nb-hint { color: var(--text-dim); flex: 1 1 14em; }
+.nb-count { color: var(--c); font-weight: 650; font-variant-numeric: tabular-nums; }
+.nb-btns { display: flex; gap: .45em; }
+.nb-bar button {
+  font: 600 1em/1 var(--sans); padding: .5em .8em; border-radius: 8px; cursor: pointer;
+  color: var(--c); background: var(--surface); border: 1px solid color-mix(in srgb, var(--c) 45%, var(--border));
+}
+.nb-bar .nb-next { color: var(--surface); background: var(--c); border-color: var(--c); }
+.nb-bar button:hover { filter: brightness(1.08); }
+.nb-bar button:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+.nb ol > li { margin-bottom: .55em; }
+.nb ol > li.nb-new { animation: nb-in .35s ease-out; }
+@keyframes nb-in { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .nb ol > li.nb-new { animation: none; } }
+.callout-yourturn details { margin: .8em 0 0; }
 
 /* --- code ------------------------------------------------------------------ */
 .code {

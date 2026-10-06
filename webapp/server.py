@@ -38,31 +38,41 @@ STATIC = WEBAPP / "static"
 DATA = WEBAPP / "data"
 STATE_FILE = DATA / "progress.json"
 TSV = ROOT / "tools" / "problems.tsv"
-SYSTEM_DESIGN_GUIDE = ROOT / "SYSTEM_DESIGN_GUIDE.md"
-SYSTEM_DESIGN = ROOT / "SystemDesign"
-ENG_ROOTS = {"go": ROOT / "GoEngineering", "py": ROOT / "PyEngineering",
-             "lld": ROOT / "SoftwareDesign" / "lld"}
+# The curriculum lives under content/, one folder per area (see docs/DEPLOYMENT.md).
+CONTENT = ROOT / "content"
+INTERVIEW_CORE = CONTENT / "interview-core"
+LANGUAGES = CONTENT / "languages"
+DATA_AND_APIS = CONTENT / "data-and-apis"
+AI_ENGINEERING = CONTENT / "ai-engineering"
+SHIP_AND_RUN = CONTENT / "ship-and-run"
+PY_DSA = INTERVIEW_CORE / "PyDSA"
+GO_DSA = INTERVIEW_CORE / "GoDSA"
+SYSTEM_DESIGN = INTERVIEW_CORE / "SystemDesign"
+SYSTEM_DESIGN_GUIDE = SYSTEM_DESIGN / "SYSTEM_DESIGN_GUIDE.md"
+ENG_ROOTS = {"go": LANGUAGES / "GoEngineering", "py": LANGUAGES / "PyEngineering",
+             "lld": INTERVIEW_CORE / "SoftwareDesign" / "lld"}
 ENG_EXT = {"go": "go", "py": "py", "lld": "py"}
 LLD_ID_RE = re.compile(r"^\d{3}_[a-z0-9_]+$")
-ROADMAP_DIR = ROOT / "AI-road-map"
-LIBRARY_GUIDES_DIR = ROOT / "AI-Libraries-Guides"
-AGENTIC_AI_DIR = ROOT / "Agentic-AI"
-CS_FUNDAMENTALS_DIR = ROOT / "CSFundamentals"
-GOOGLE_BEHAVIORAL_DIR = ROOT / "GoogleBehavioral"
-SOFTWARE_DESIGN_DIR = ROOT / "SoftwareDesign"
-API_DIR = ROOT / "API"
-SQL_DIR = ROOT / "SQL"
-NOSQL_DIR = ROOT / "NoSQL"
-STDLIB_ROOTS = {"py": ROOT / "PyStdLib", "go": ROOT / "GoStdLib"}
+ROADMAP_DIR = AI_ENGINEERING / "AI-road-map"
+LIBRARY_GUIDES_DIR = AI_ENGINEERING / "AI-Libraries-Guides"
+AGENTIC_AI_DIR = AI_ENGINEERING / "Agentic-AI"
+CS_FUNDAMENTALS_DIR = INTERVIEW_CORE / "CSFundamentals"
+GOOGLE_BEHAVIORAL_DIR = INTERVIEW_CORE / "GoogleBehavioral"
+SOFTWARE_DESIGN_DIR = INTERVIEW_CORE / "SoftwareDesign"
+API_DIR = DATA_AND_APIS / "API"
+SQL_DIR = DATA_AND_APIS / "SQL"
+NOSQL_DIR = DATA_AND_APIS / "NoSQL"
+STDLIB_ROOTS = {"py": LANGUAGES / "PyStdLib", "go": LANGUAGES / "GoStdLib"}
 # Flat `NN_slug.md` tracks with a README index, all served by one pair of endpoints:
 # /api/track?m=<key> and /api/track-doc?m=<key>&id=<id>.
-TRACK_DIRS = {"toolkit": ROOT / "Tool-Kit", "testing": ROOT / "TestingAndQuality", "cicd": ROOT / "CICD",
-              "dataeng": ROOT / "DataEngineering", "mlops": ROOT / "MLOps", "maths": ROOT / "Maths"}
+TRACK_DIRS = {"toolkit": SHIP_AND_RUN / "Tool-Kit", "testing": SHIP_AND_RUN / "TestingAndQuality", "cicd": SHIP_AND_RUN / "CICD",
+              "dataeng": SHIP_AND_RUN / "DataEngineering", "mlops": AI_ENGINEERING / "MLOps", "maths": INTERVIEW_CORE / "Maths"}
 # Tracks whose chapters are grouped into parts (a learning path), keyed like
 # TRACK_DIRS. Chapter numbers already run in path order; the table only names
 # the groups. A chapter missing from its track's table lands in "More".
 TRACK_PARTS = {
     "maths": (
+        ("Part 0 · Warm-up", ("00",)),
         ("Part 1 · The language of maths", ("01", "02", "03", "04")),
         ("Part 2 · Discrete maths", ("05", "06", "07", "08")),
         ("Part 3 · Continuous maths", ("09", "10", "11", "12")),
@@ -177,11 +187,11 @@ def snake(slug: str) -> str:
 
 
 def py_path(topic: str, seq: str, slug: str, kind: str) -> Path:
-    return ROOT / "PyDSA" / topic / f"{seq}_{snake(slug)}_{kind}.py"
+    return PY_DSA / topic / f"{seq}_{snake(slug)}_{kind}.py"
 
 
 def go_path(topic: str, seq: str, slug: str, kind: str) -> Path:
-    return ROOT / "GoDSA" / topic / f"{seq}_{snake(slug)}" / f"{kind}.go"
+    return GO_DSA / topic / f"{seq}_{snake(slug)}" / f"{kind}.go"
 
 
 def load_curriculum() -> list[dict]:
@@ -226,8 +236,8 @@ def load_topics(problems: list[dict]) -> list[dict]:
             t["written"] += 1
     for tid, t in seen.items():
         t["guides"] = {
-            "py": (ROOT / "PyDSA" / tid / "_TOPIC_GUIDE.md").exists(),
-            "go": (ROOT / "GoDSA" / tid / "_TOPIC_GUIDE.md").exists(),
+            "py": (PY_DSA / tid / "_TOPIC_GUIDE.md").exists(),
+            "go": (GO_DSA / tid / "_TOPIC_GUIDE.md").exists(),
         }
     return list(seen.values())
 
@@ -333,7 +343,7 @@ def lld_brief(doc: str) -> str:
 
 
 def eng_python_bin() -> str:
-    venv = ROOT / "PyEngineering" / ".venv" / "bin" / "python"
+    venv = ENG_ROOTS["py"] / ".venv" / "bin" / "python"
     return str(venv) if venv.exists() else python_bin()
 
 
@@ -755,15 +765,15 @@ def load_nosql() -> list[dict]:
 
 
 DSA_GUIDE_ID_RE = re.compile(r"^\d{2}_[a-z0-9_]+$")
-DSA_GUIDE_ROOTS = {"py": "PyDSA", "go": "GoDSA"}
+DSA_GUIDE_ROOTS = {"py": PY_DSA, "go": GO_DSA}
 
 
 def load_dsa_guides(lang: str = "py") -> list[dict]:
     """One reader page per topic that has a _TOPIC_GUIDE.md in the given language's
     tree (PyDSA or GoDSA), in topic order."""
-    root = DSA_GUIDE_ROOTS.get(lang, "PyDSA")
+    root = DSA_GUIDE_ROOTS.get(lang, PY_DSA)
     items: list[dict] = []
-    for path in sorted((ROOT / root).glob("*/_TOPIC_GUIDE.md")):
+    for path in sorted(root.glob("*/_TOPIC_GUIDE.md")):
         tid = path.parent.name
         if not DSA_GUIDE_ID_RE.fullmatch(tid):
             continue
@@ -776,7 +786,7 @@ def read_dsa_guide(doc_id: str, lang: str = "py") -> dict:
     """Whole-id match against a fixed shape, so it cannot escape PyDSA/ or GoDSA/."""
     if not DSA_GUIDE_ID_RE.fullmatch(doc_id or ""):
         return {"exists": False, "markdown": ""}
-    return read_markdown(ROOT / DSA_GUIDE_ROOTS.get(lang, "PyDSA") / doc_id / "_TOPIC_GUIDE.md")
+    return read_markdown(DSA_GUIDE_ROOTS.get(lang, PY_DSA) / doc_id / "_TOPIC_GUIDE.md")
 
 
 def read_sql(doc_id: str) -> dict:
@@ -792,6 +802,121 @@ def read_nosql(doc_id: str) -> dict:
     if not NOSQL_ID_RE.fullmatch(doc_id or ""):
         return {"exists": False, "markdown": ""}
     return read_markdown(NOSQL_DIR / f"{doc_id}.md")
+
+
+# ----------------------------------------------------------------------------
+# Query Lab — run SQL / MongoDB / Redis in the browser against real datasets
+#
+#   SQL/lab/questions.md                 question bank (markdown, readable on GitHub)
+#   SQL/lab/datasets/<name>.sql          one Postgres schema per dataset
+#   NoSQL/lab/mongodb-questions.md       + NoSQL/lab/datasets/mongodb/<collection>.json
+#   NoSQL/lab/redis-questions.md         + NoSQL/lab/datasets/redis/seed.redis
+#
+# The engines themselves run in the browser (PGlite, mingo, qlab-redis.js), so
+# the server only hands out files: the lab works the same on a static host.
+# Datasets are generated by tools/gen_query_lab_data.py.
+# ----------------------------------------------------------------------------
+QUERY_LABS = {
+    "sql": {"questions": SQL_DIR / "lab" / "questions.md", "datasets": SQL_DIR / "lab" / "datasets", "glob": "*.sql"},
+    "mongodb": {"questions": NOSQL_DIR / "lab" / "mongodb-questions.md", "datasets": NOSQL_DIR / "lab" / "datasets" / "mongodb", "glob": "*.json"},
+    "redis": {"questions": NOSQL_DIR / "lab" / "redis-questions.md", "datasets": NOSQL_DIR / "lab" / "datasets" / "redis", "glob": "*.redis"},
+}
+QLAB_META_RE = re.compile(r"<!--\s*(id:.*?)-->", re.S)
+QLAB_FENCE_RE = re.compile(r"^```([\w-]*)[ \t]*(verify)?[ \t]*\n(.*?)^```[ \t]*$", re.M | re.S)
+QLAB_DATASET_RE = re.compile(r"^[a-z][a-z0-9_-]*$")
+
+
+def _qlab_question(title: str, section: str, body: str) -> dict | None:
+    meta_m = QLAB_META_RE.search(body)
+    if not meta_m:
+        return None
+    meta = {}
+    for part in meta_m.group(1).split("|"):
+        key, _, val = part.partition(":")
+        meta[key.strip()] = val.strip()
+    body = body[:meta_m.start()] + body[meta_m.end():]
+    before, _, rest = body.partition("<details>")
+    details = rest.split("</details>")[0]
+    details = re.sub(r"<summary>.*?</summary>", "", details, flags=re.S)
+
+    prompt_lines, hints = [], []
+    for line in before.strip().split("\n"):
+        if line.startswith(">"):
+            text = line[1:].strip()
+            m = re.match(r"\*\*Hint:\*\*\s*(.*)", text)
+            if m:
+                hints.append(m.group(1))
+            elif hints:
+                hints[-1] += " " + text
+        else:
+            prompt_lines.append(line)
+
+    solution = verify = None
+    explanation = details
+    for m in QLAB_FENCE_RE.finditer(details):
+        if m.group(2) == "verify" and verify is None:
+            verify = m.group(3).strip()
+            explanation = explanation.replace(m.group(0), "")
+        elif solution is None and m.group(2) is None:
+            solution = m.group(3).strip()
+            explanation = explanation.replace(m.group(0), "")
+    tags = [t.strip() for t in meta.get("tags", "").split(",") if t.strip()]
+    return {
+        "id": meta.get("id", ""), "title": title.strip(), "section": section,
+        "dataset": meta.get("dataset", ""), "level": meta.get("level", "Medium"),
+        "tags": tags, "order": meta.get("order", "any"),
+        "prompt": "\n".join(prompt_lines).strip(), "hints": hints,
+        "solution": solution or "", "verify": verify, "explanation": explanation.strip(),
+    }
+
+
+def load_query_lab(engine: str) -> dict:
+    """A lab's question bank and dataset list, parsed from its markdown file."""
+    lab = QUERY_LABS.get(engine)
+    if not lab:
+        return {"exists": False}
+    text = lab["questions"].read_text() if lab["questions"].exists() else ""
+    title = next((ln[2:].strip() for ln in text.split("\n") if ln.startswith("# ")), "Query Lab")
+    chunks = re.split(r"^(##|###) (.+)$", text, flags=re.M)
+    intro = re.sub(r"^# .*$", "", chunks[0], count=1, flags=re.M)
+    intro = re.sub(r"<!--.*?-->", "", intro, flags=re.S).strip()
+    questions, section = [], ""
+    for i in range(1, len(chunks) - 2, 3):
+        level, heading, body = chunks[i], chunks[i + 1], chunks[i + 2]
+        if level == "##":
+            section = heading.strip()
+        else:
+            q = _qlab_question(heading, section, body)
+            if q:
+                questions.append(q)
+    datasets = []
+    for path in sorted(lab["datasets"].glob(lab["glob"])) if lab["datasets"].exists() else []:
+        if engine == "sql":
+            first = path.read_text().split("\n", 3)
+            desc = first[2].lstrip("- ").strip() if len(first) > 2 else ""
+            datasets.append({"id": path.stem, "description": desc})
+    if engine == "mongodb" and lab["datasets"].exists():
+        datasets = [{"id": "shop", "description": "The shop dataset as documents: orders embed their items.",
+                     "collections": [p.stem for p in sorted(lab["datasets"].glob("*.json"))]}]
+    if engine == "redis" and lab["datasets"].exists():
+        datasets = [{"id": "seed", "description": "Caches, leaderboards, sessions, counters, bitmaps, geo and streams."}]
+    return {"exists": True, "engine": engine, "title": title, "intro": intro,
+            "datasets": datasets, "questions": questions}
+
+
+def read_query_lab_data(engine: str, dataset: str) -> dict:
+    """The raw dataset files for one lab dataset (the browser engine loads them)."""
+    lab = QUERY_LABS.get(engine)
+    if not lab or not QLAB_DATASET_RE.fullmatch(dataset or "") or not lab["datasets"].exists():
+        return {"exists": False, "files": {}}
+    if engine == "sql":
+        path = lab["datasets"] / f"{dataset}.sql"
+        files = {path.name: path.read_text()} if path.is_file() else {}
+    elif dataset in ("shop", "seed"):
+        files = {p.name: p.read_text() for p in sorted(lab["datasets"].glob(lab["glob"]))}
+    else:
+        files = {}
+    return {"exists": bool(files), "files": files}
 
 
 # ----------------------------------------------------------------------------
@@ -1192,7 +1317,7 @@ def run_api_file(type_name: str, section: str, level_id: str, lang: str, code: s
     principle as run_stdlib above). Python: the level's sibling files (some
     Protobuf/gRPC levels import generated *_pb2 / *_pb2_grpc stubs by bare
     name) are copied into a scratch dir alongside the edited code, so those
-    imports still resolve, using the API/.venv interpreter that has fastapi,
+    imports still resolve, using the content/data-and-apis/API/.venv interpreter that has fastapi,
     strawberry, grpcio, websockets etc. installed. Go: a scratch package
     created *under* API/ so it still compiles inside the dsapractice/api
     module and picks up its real dependencies (gin, echo, coder/websocket...)."""
@@ -1511,8 +1636,8 @@ _dsa_map_cache: dict = {"key": None, "value": None}
 
 
 def load_dsa_map() -> dict:
-    guides = sorted((ROOT / "PyDSA").glob("*/_TOPIC_GUIDE.md"))
-    questions = sorted((ROOT / "PyDSA").glob("*/*_question.py"))
+    guides = sorted(PY_DSA.glob("*/_TOPIC_GUIDE.md"))
+    questions = sorted(PY_DSA.glob("*/*_question.py"))
     key = (TSV.stat().st_mtime, max((p.stat().st_mtime for p in guides + questions), default=0))
     if _dsa_map_cache["key"] == key:
         return _dsa_map_cache["value"]
@@ -1545,8 +1670,7 @@ def load_dsa_map() -> dict:
 
 
 def read_guide(topic: str, lang: str) -> dict:
-    folder = "PyDSA" if lang == "py" else "GoDSA"
-    path = ROOT / folder / topic / "_TOPIC_GUIDE.md"
+    path = (PY_DSA if lang == "py" else GO_DSA) / topic / "_TOPIC_GUIDE.md"
     if not path.exists():
         return {"exists": False, "markdown": ""}
     return {
@@ -1638,6 +1762,165 @@ def format_go(code: str) -> dict:
 
 
 # ----------------------------------------------------------------------------
+# GET routes
+# ----------------------------------------------------------------------------
+def _reply(obj, code: int = 200) -> tuple[object, int]:
+    return obj, code
+
+
+def api_get(p: str, q: dict[str, list[str]]) -> tuple[object, int] | None:
+    """Answer GET /api/*: (JSON payload, HTTP status), or None if `p` is not an API route.
+
+    The HTTP handler below and the static-site builder (build_static.py) both call
+    this, so a deployed static build serves exactly what the local server does.
+    """
+    if p == "/api/bootstrap":
+        problems = load_curriculum()
+        with _state_lock:
+            state = load_state()
+        return _reply({
+            "problems": problems,
+            "topics": load_topics(problems),
+            "engTopics": {
+                "go": load_eng_curriculum("go"),
+                "py": load_eng_curriculum("py"),
+                "lld": load_eng_curriculum("lld"),
+            },
+            "state": state,
+            "runtimes": {"python": True, "go": go_bin() is not None},
+            "root": str(ROOT),
+        })
+    elif p == "/api/eng-problem":
+        r = read_eng_problem(q.get("lang", ["go"])[0], q.get("topic", [""])[0],
+                              q.get("kind", ["explanation"])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/problem":
+        r = read_problem(q.get("topic", [""])[0], q.get("seq", [""])[0],
+                         q.get("kind", ["question"])[0],
+                         q.get("lang", ["py"])[0])
+        return _reply(r if r else {"error": "unknown problem"},
+                      200 if r else 404)
+    elif p == "/api/guide":
+        return _reply(read_guide(q.get("topic", [""])[0],
+                                 q.get("lang", ["py"])[0]))
+    elif p == "/api/dsa-map":
+        return _reply(load_dsa_map())
+    elif p == "/api/dsa-guides":
+        return _reply({"items": load_dsa_guides(q.get("lang", ["py"])[0])})
+    elif p == "/api/dsa-guide-doc":
+        return _reply(read_dsa_guide(q.get("id", [""])[0], q.get("lang", ["py"])[0]))
+    elif p == "/api/system-design-guide":
+        if SYSTEM_DESIGN_GUIDE.exists():
+            # The in-app reader starts with the active curriculum, then
+            # continues into the full reference and its first paired drill.
+            # Files remain separate on disk so a learner can solve a prompt
+            # before opening its solution.
+            parts = []
+            building_blocks_dir = SYSTEM_DESIGN / "building_blocks"
+            for path in (
+                SYSTEM_DESIGN / "README.md",
+                *sorted(building_blocks_dir.glob("*.md")),
+                SYSTEM_DESIGN / "02_problem_catalog.md",
+                SYSTEM_DESIGN / "problems" / "001_url_shortener_question.md",
+                SYSTEM_DESIGN / "solutions" / "001_url_shortener_solution.md",
+                SYSTEM_DESIGN / "03_practice_prompts.md",
+                SYSTEM_DESIGN / "04_practice_answers.md",
+                SYSTEM_DESIGN / "05_architecture_blueprints.md",
+                SYSTEM_DESIGN / "solutions" / "009_search_and_autocomplete_solution.md",
+                SYSTEM_DESIGN / "solutions" / "002_rate_limiter_solution.md",
+                SYSTEM_DESIGN / "solutions" / "003_pastebin_solution.md",
+                SYSTEM_DESIGN / "solutions" / "004_notification_platform_solution.md",
+                SYSTEM_DESIGN / "solutions" / "005_photo_pipeline_solution.md",
+                SYSTEM_DESIGN / "solutions" / "006_chat_solution.md",
+                SYSTEM_DESIGN_GUIDE,
+            ):
+                if path.exists():
+                    parts.append(path.read_text())
+            return _reply({"exists": True, "markdown": "\n\n---\n\n".join(parts)})
+        else:
+            return _reply({"exists": False, "markdown": ""}, 404)
+    elif p == "/api/sd":
+        return _reply({"items": load_system_design()})
+    elif p == "/api/sd-doc":
+        return _reply(read_system_design(q.get("id", [""])[0]))
+    elif p == "/api/roadmap":
+        return _reply({"items": load_roadmap()})
+    elif p == "/api/roadmap-doc":
+        return _reply(read_markdown(safe_md(ROADMAP_DIR, q.get("id", [""])[0])))
+    elif p == "/api/library-guides":
+        return _reply({"items": load_library_guides()})
+    elif p == "/api/library-guide-doc":
+        return _reply(read_markdown(safe_md(LIBRARY_GUIDES_DIR, q.get("id", [""])[0])))
+    elif p == "/api/apis":
+        return _reply({"items": load_api()})
+    elif p == "/api/apis-doc":
+        # The ID is now something like "REST/REST_API_Guide"
+        req_id = q.get("id", [""])[0]
+        if req_id:
+            return _reply(read_markdown(API_DIR / f"{req_id}.md"))
+        else:
+            return _reply({"content": "Not found", "title": "Not Found"})
+    elif p == "/api/api-types":
+        return _reply({"items": load_api_types()})
+    elif p == "/api/api-type":
+        r = load_api_type(q.get("type", [""])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/api-file":
+        r = read_api_file(q.get("type", [""])[0], q.get("section", ["Foundation"])[0],
+                           q.get("level", [""])[0], q.get("lang", ["py"])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/agentic-ai":
+        return _reply({"items": load_agentic_ai()})
+    elif p == "/api/agentic-ai-doc":
+        return _reply(read_markdown(safe_md(AGENTIC_AI_DIR, q.get("id", [""])[0])))
+    elif p == "/api/track":
+        return _reply({"items": load_track(q.get("m", [""])[0])})
+    elif p == "/api/track-doc":
+        base = TRACK_DIRS.get(q.get("m", [""])[0])
+        path = safe_md(base, q.get("id", [""])[0]) if base else None
+        return _reply(read_markdown(path) if path else {"exists": False, "markdown": ""})
+    elif p == "/api/cs-fundamentals":
+        return _reply({"items": load_cs_fundamentals()})
+    elif p == "/api/cs-fundamentals-doc":
+        return _reply(read_markdown(safe_md(CS_FUNDAMENTALS_DIR, q.get("id", [""])[0])))
+    elif p == "/api/google-behavioral":
+        return _reply({"items": load_google_behavioral()})
+    elif p == "/api/google-behavioral-doc":
+        return _reply(read_markdown(safe_md(GOOGLE_BEHAVIORAL_DIR, q.get("id", [""])[0])))
+    elif p == "/api/sql":
+        return _reply({"items": load_sql()})
+    elif p == "/api/sql-doc":
+        return _reply(read_sql(q.get("id", [""])[0]))
+    elif p == "/api/nosql":
+        return _reply({"items": load_nosql()})
+    elif p == "/api/nosql-doc":
+        return _reply(read_nosql(q.get("id", [""])[0]))
+    elif p == "/api/query-lab":
+        r = load_query_lab(q.get("engine", [""])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/query-lab-data":
+        r = read_query_lab_data(q.get("engine", [""])[0], q.get("dataset", [""])[0])
+        return _reply(r, 200 if r["exists"] else 404)
+    elif p == "/api/stdlib":
+        return _reply({"items": load_stdlib(stdlib_lang(q.get("lang", ["py"])[0]))})
+    elif p == "/api/stdlib-doc":
+        return _reply(stdlib_guide(stdlib_lang(q.get("lang", ["py"])[0]),
+                                   q.get("id", [""])[0]))
+    elif p == "/api/stdlib-file":
+        return _reply(read_stdlib_file(stdlib_lang(q.get("lang", ["py"])[0]),
+                                       q.get("pkg", [""])[0], q.get("level", [""])[0]))
+    elif p == "/api/software-design":
+        return _reply({"items": load_software_design()})
+    elif p == "/api/software-design-doc":
+        return _reply(read_markdown(safe_md(SOFTWARE_DESIGN_DIR, q.get("id", [""])[0])))
+    elif p == "/api/state":
+        with _state_lock:
+            return _reply(load_state())
+
+    return None
+
+
+# ----------------------------------------------------------------------------
 # HTTP handler
 # ----------------------------------------------------------------------------
 class Handler(BaseHTTPRequestHandler):
@@ -1684,153 +1967,19 @@ class Handler(BaseHTTPRequestHandler):
             ".woff": "font/woff",
             ".ttf": "font/ttf",
             ".png": "image/png",
+            ".wasm": "application/wasm",
+            ".mjs": "application/javascript; charset=utf-8",
         }.get(path.suffix, "application/octet-stream")
         self._send(200, path.read_bytes(), ctype)
 
     # -- routes -------------------------------------------------------------
     def do_GET(self) -> None:
         u = urlparse(self.path)
-        q = parse_qs(u.query)
-        p = u.path
-
-        if p == "/api/bootstrap":
-            problems = load_curriculum()
-            with _state_lock:
-                state = load_state()
-            self._json({
-                "problems": problems,
-                "topics": load_topics(problems),
-                "engTopics": {
-                    "go": load_eng_curriculum("go"),
-                    "py": load_eng_curriculum("py"),
-                    "lld": load_eng_curriculum("lld"),
-                },
-                "state": state,
-                "runtimes": {"python": True, "go": go_bin() is not None},
-                "root": str(ROOT),
-            })
-        elif p == "/api/eng-problem":
-            r = read_eng_problem(q.get("lang", ["go"])[0], q.get("topic", [""])[0],
-                                  q.get("kind", ["explanation"])[0])
-            self._json(r, 200 if r["exists"] else 404)
-        elif p == "/api/problem":
-            r = read_problem(q.get("topic", [""])[0], q.get("seq", [""])[0],
-                             q.get("kind", ["question"])[0],
-                             q.get("lang", ["py"])[0])
-            self._json(r if r else {"error": "unknown problem"},
-                       200 if r else 404)
-        elif p == "/api/guide":
-            self._json(read_guide(q.get("topic", [""])[0],
-                                  q.get("lang", ["py"])[0]))
-        elif p == "/api/dsa-map":
-            self._json(load_dsa_map())
-        elif p == "/api/dsa-guides":
-            self._json({"items": load_dsa_guides(q.get("lang", ["py"])[0])})
-        elif p == "/api/dsa-guide-doc":
-            self._json(read_dsa_guide(q.get("id", [""])[0], q.get("lang", ["py"])[0]))
-        elif p == "/api/system-design-guide":
-            if SYSTEM_DESIGN_GUIDE.exists():
-                # The in-app reader starts with the active curriculum, then
-                # continues into the full reference and its first paired drill.
-                # Files remain separate on disk so a learner can solve a prompt
-                # before opening its solution.
-                parts = []
-                building_blocks_dir = SYSTEM_DESIGN / "building_blocks"
-                for path in (
-                    SYSTEM_DESIGN / "README.md",
-                    *sorted(building_blocks_dir.glob("*.md")),
-                    SYSTEM_DESIGN / "02_problem_catalog.md",
-                    SYSTEM_DESIGN / "problems" / "001_url_shortener_question.md",
-                    SYSTEM_DESIGN / "solutions" / "001_url_shortener_solution.md",
-                    SYSTEM_DESIGN / "03_practice_prompts.md",
-                    SYSTEM_DESIGN / "04_practice_answers.md",
-                    SYSTEM_DESIGN / "05_architecture_blueprints.md",
-                    SYSTEM_DESIGN / "solutions" / "009_search_and_autocomplete_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "002_rate_limiter_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "003_pastebin_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "004_notification_platform_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "005_photo_pipeline_solution.md",
-                    SYSTEM_DESIGN / "solutions" / "006_chat_solution.md",
-                    SYSTEM_DESIGN_GUIDE,
-                ):
-                    if path.exists():
-                        parts.append(path.read_text())
-                self._json({"exists": True, "markdown": "\n\n---\n\n".join(parts)})
-            else:
-                self._json({"exists": False, "markdown": ""}, 404)
-        elif p == "/api/sd":
-            self._json({"items": load_system_design()})
-        elif p == "/api/sd-doc":
-            self._json(read_system_design(q.get("id", [""])[0]))
-        elif p == "/api/roadmap":
-            self._json({"items": load_roadmap()})
-        elif p == "/api/roadmap-doc":
-            self._json(read_markdown(safe_md(ROADMAP_DIR, q.get("id", [""])[0])))
-        elif p == "/api/library-guides":
-            self._json({"items": load_library_guides()})
-        elif p == "/api/library-guide-doc":
-            self._json(read_markdown(safe_md(LIBRARY_GUIDES_DIR, q.get("id", [""])[0])))
-        elif p == "/api/apis":
-            self._json({"items": load_api()})
-        elif p == "/api/apis-doc":
-            # The ID is now something like "REST/REST_API_Guide"
-            req_id = q.get("id", [""])[0]
-            if req_id:
-                self._json(read_markdown(API_DIR / f"{req_id}.md"))
-            else:
-                self._json({"content": "Not found", "title": "Not Found"})
-        elif p == "/api/api-types":
-            self._json({"items": load_api_types()})
-        elif p == "/api/api-type":
-            r = load_api_type(q.get("type", [""])[0])
-            self._json(r, 200 if r["exists"] else 404)
-        elif p == "/api/api-file":
-            r = read_api_file(q.get("type", [""])[0], q.get("section", ["Foundation"])[0],
-                               q.get("level", [""])[0], q.get("lang", ["py"])[0])
-            self._json(r, 200 if r["exists"] else 404)
-        elif p == "/api/agentic-ai":
-            self._json({"items": load_agentic_ai()})
-        elif p == "/api/agentic-ai-doc":
-            self._json(read_markdown(safe_md(AGENTIC_AI_DIR, q.get("id", [""])[0])))
-        elif p == "/api/track":
-            self._json({"items": load_track(q.get("m", [""])[0])})
-        elif p == "/api/track-doc":
-            base = TRACK_DIRS.get(q.get("m", [""])[0])
-            path = safe_md(base, q.get("id", [""])[0]) if base else None
-            self._json(read_markdown(path) if path else {"exists": False, "markdown": ""})
-        elif p == "/api/cs-fundamentals":
-            self._json({"items": load_cs_fundamentals()})
-        elif p == "/api/cs-fundamentals-doc":
-            self._json(read_markdown(safe_md(CS_FUNDAMENTALS_DIR, q.get("id", [""])[0])))
-        elif p == "/api/google-behavioral":
-            self._json({"items": load_google_behavioral()})
-        elif p == "/api/google-behavioral-doc":
-            self._json(read_markdown(safe_md(GOOGLE_BEHAVIORAL_DIR, q.get("id", [""])[0])))
-        elif p == "/api/sql":
-            self._json({"items": load_sql()})
-        elif p == "/api/sql-doc":
-            self._json(read_sql(q.get("id", [""])[0]))
-        elif p == "/api/nosql":
-            self._json({"items": load_nosql()})
-        elif p == "/api/nosql-doc":
-            self._json(read_nosql(q.get("id", [""])[0]))
-        elif p == "/api/stdlib":
-            self._json({"items": load_stdlib(stdlib_lang(q.get("lang", ["py"])[0]))})
-        elif p == "/api/stdlib-doc":
-            self._json(stdlib_guide(stdlib_lang(q.get("lang", ["py"])[0]),
-                                    q.get("id", [""])[0]))
-        elif p == "/api/stdlib-file":
-            self._json(read_stdlib_file(stdlib_lang(q.get("lang", ["py"])[0]),
-                                        q.get("pkg", [""])[0], q.get("level", [""])[0]))
-        elif p == "/api/software-design":
-            self._json({"items": load_software_design()})
-        elif p == "/api/software-design-doc":
-            self._json(read_markdown(safe_md(SOFTWARE_DESIGN_DIR, q.get("id", [""])[0])))
-        elif p == "/api/state":
-            with _state_lock:
-                self._json(load_state())
+        reply = api_get(u.path, parse_qs(u.query))
+        if reply is None:
+            self._static(u.path)
         else:
-            self._static(p)
+            self._json(*reply)
 
     def do_POST(self) -> None:
         p = urlparse(self.path).path

@@ -62,7 +62,7 @@
       "pos": 0.8635
     },
     "api:REST/Theory": {
-      "last": 1790314812213,
+      "last": 1791219502112,
       "pct": 100,
       "pos": 0.9606
     },
@@ -120,6 +120,9 @@
     "csfund:04_software_engineering_deep_dive": {
       "last": 1790264250957,
       "pos": 0
+    },
+    "csfund:README": {
+      "last": 1791219501830
     },
     "dsaguide:01_arrays_hashing": {
       "last": 1790240260057,
@@ -338,7 +341,7 @@
       "pos": 0
     },
     "roadmap:1_day_vectors_dot_products": {
-      "last": 1789654487649,
+      "last": 1791219501875,
       "pct": 94,
       "pos": 0
     },
@@ -423,6 +426,9 @@
       "last": 1790326293756,
       "pct": 71,
       "pos": 0
+    },
+    "sd:building_blocks/05_databases": {
+      "last": 1791219501789
     },
     "sd:building_blocks/13_scaling_and_load_balancing": {
       "last": 1789507035681
@@ -593,6 +599,9 @@
       "last": 1790178510719,
       "pct": 100,
       "pos": 0.8691
+    },
+    "sql:06_joins": {
+      "last": 1791219501715
     },
     "sql:09_transactions_and_isolation_levels": {
       "last": 1790179700406
