@@ -1,17 +1,23 @@
 # Running and Deploying the Guide
 
-The web app runs in two modes from the same front end (`webapp/static/`):
+The web app runs in three modes from the same front end (`webapp/static/`):
 
-| | Local app (`make app`) | Static site (`make build`) |
-|---|---|---|
-| What it is | `webapp/server.py`, Python standard library, on `127.0.0.1` | A plain folder, `dist/`, of HTML, JS, CSS and pre-rendered JSON |
-| Reading every module, visualizers, labs, diagrams | Yes | Yes |
-| **Run** / **gofmt** in the editor | Yes (Python and Go on your machine) | No; the editor shows how to run it locally |
-| Progress (status, drafts, notes, timers, reviews) | `webapp/data/progress.json` | The visitor's browser (`localStorage`), per device |
-| Where it can run | Your machine only (it executes code you type) | Any static host or container platform |
+| | Local app (`make app`) | Hosted app (`make serve`, `deploy/Dockerfile`) | Static preview (`make build`) |
+|---|---|---|---|
+| What it is | `webapp/server.py` on `127.0.0.1` | `webapp/server.py` with `EG_AUTH=1`, behind HTTPS | A plain folder, `dist/`, of HTML, JS, CSS and pre-rendered JSON |
+| Sign-in | None | Emailed one-time code | None |
+| Content | Every module | What the account's plan includes (Free, Base, Pro, Pro Max) | The Free plan only |
+| **Run** / **gofmt** in the editor | Yes (Python and Go on your machine) | No | No |
+| Progress | `webapp/data/progress.json` | Per account (SQLite) | The visitor's browser (`localStorage`) |
+| Copy / inspect restrictions | Off | On | On |
+| Where it can run | Your machine only (it executes code you type) | Any container platform | Any static host |
 
-The static build is safe to publish: it contains no server, executes nothing, and never
-includes your `progress.json`.
+Plans and what each one reads are defined in `webapp/entitlements.py`; the sign-in
+rules in `webapp/auth.py`.
+
+The static build is safe to publish: it contains no server, executes nothing, never
+includes your `progress.json`, and holds only Free-plan content (pages above it are
+small `upgrade_required` stubs).
 
 ---
 
@@ -42,7 +48,7 @@ as it is served through an existing endpoint; a new endpoint is added to
 
 ## GitHub Pages (set up)
 
-`.github/workflows/deploy.yaml` builds and deploys on every push to `main`, and can be run
+`.github/workflows/deploy.yaml` runs `make test`, then builds the free preview and deploys it on every push to `main`, and can be run
 by hand (Actions → Deploy to GitHub Pages → Run workflow). Pull requests run the build
 only, so a change that breaks it is caught before merge.
 
@@ -76,17 +82,23 @@ No redirects or SPA fallback rules are needed.
 
 ## Containers (any cloud)
 
-`deploy/Dockerfile` builds the site and serves it with nginx on port 8080: the default
-port for Google Cloud Run, and easy to map on AWS App Runner / ECS, Azure Container Apps,
-Fly.io, Render, Kubernetes and the rest.
+Two images, both on port 8080 (the default for Google Cloud Run, and easy to map on AWS
+App Runner / ECS, Azure Container Apps, Fly.io, Render, Kubernetes and the rest):
+
+| Image | What it serves |
+|---|---|
+| `deploy/Dockerfile` | The hosted app: sign-in, plans, per-user progress, data on a `/data` volume |
+| `deploy/Dockerfile.static` | The static free preview, served by nginx |
 
 ```bash
-make docker-build            # docker build -f deploy/Dockerfile -t engineering-guide .
-make docker-run              # http://127.0.0.1:8080
+make docker-build            # hosted app:     docker build -f deploy/Dockerfile -t engineering-guide .
+make docker-run              # http://127.0.0.1:8080, sign-in codes printed to the container log
+make docker-build-static     # free preview:   docker build -f deploy/Dockerfile.static -t engineering-guide-preview .
 ```
 
-`deploy/nginx.conf` gzips text, caches the versioned libraries under `vendor/` for a
-year and makes browsers revalidate everything else, so a redeploy shows up at once.
+`deploy/nginx.conf` sends the same security headers as the hosted app, gzips text,
+caches the versioned libraries under `vendor/` for a year and makes browsers revalidate
+everything else, so a redeploy shows up at once.
 
 ---
 
@@ -101,13 +113,17 @@ content/            all learning material, the app's single source of truth (rea
   ship-and-run/       Tool-Kit/  TestingAndQuality/  CICD/  DataEngineering/
   study-plans/        master_dsa_plan.md  REVIEW_LEDGER.md  GOOGLE_INTERVIEW_PREP.md  CURRICULUM.md (generated)
 webapp/
-  server.py         local app: serves the front end, answers /api/*, runs code (paths: CONTENT and friends at the top)
+  server.py         local app / hosted app (EG_AUTH=1): serves the front end, answers /api/*, runs code locally
+  auth.py           hosted mode: emailed one-time codes, sessions, per-user progress (SQLite)
+  entitlements.py   the Free / Base / Pro / Pro Max plans and what each one reads
+  admin.py          grant and revoke plans, list accounts, end sessions
+  tests/            sign-in and plans tests (make test)
   build_static.py   static build: dist/ from the front end + every /api answer
   static/           the front end (index.html, app.js, …, vendor/ libraries)
   scripts/          developer checks for the front end (npm ci first; see below)
   data/             progress.json, your local progress
 tools/              curriculum tooling: problems.tsv (DSA index), generators, checkers; ollama/Modelfile
-deploy/             Dockerfile + nginx.conf for container platforms
+deploy/             Dockerfile (hosted app), Dockerfile.static + nginx.conf (free preview)
 docs/               this guide; CONTEXT.md (session handoff notes)
 .github/workflows/  GitHub Pages deployment
 docker-compose.databases.yml   Postgres, MongoDB and Redis for the SQL / NoSQL lessons

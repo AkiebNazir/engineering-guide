@@ -6,8 +6,16 @@ Stdlib only. No pip install, no build step.
 
     python webapp/server.py          # then open http://127.0.0.1:8420
 
-Binds to 127.0.0.1 only. It executes code you type, on your machine, as you —
-the same trust model as a Jupyter notebook. Do not expose it to a network.
+Two modes:
+
+  local (default)  Binds to 127.0.0.1. It executes code you type, on your machine,
+                   as you — the same trust model as a Jupyter notebook. Single user,
+                   everything readable, progress in webapp/data/progress.json.
+                   Do not expose it to a network.
+  hosted (EG_AUTH=1, `make serve`, deploy/Dockerfile)
+                   Email one-time-code sign-in (auth.py), subscription tiers
+                   (entitlements.py) enforced on every /api request, per-user progress
+                   in SQLite, security headers, and code execution switched off.
 """
 from __future__ import annotations
 
@@ -31,6 +39,8 @@ class StudioServer(ThreadingHTTPServer):
     request_queue_size = 128
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+
+import entitlements
 
 ROOT = Path(__file__).resolve().parent.parent
 WEBAPP = ROOT / "webapp"
@@ -81,6 +91,22 @@ TRACK_PARTS = {
 }
 
 PORT = int(os.environ.get("DSA_PORT", "8420"))
+
+# Hosted mode: sign-in, tiers and no code execution (see the module docstring).
+AUTH_ENABLED = os.environ.get("EG_AUTH", "") == "1"
+HOST = os.environ.get("EG_HOST", "127.0.0.1")
+LOOPBACK = HOST in ("127.0.0.1", "localhost", "::1")
+# Secure cookies need HTTPS; on by default unless bound to loopback for development.
+COOKIE_SECURE = os.environ.get("EG_COOKIE_SECURE", "0" if LOOPBACK else "1") == "1"
+SESSION_COOKIE = "__Host-eg_session" if COOKIE_SECURE else "eg_session"
+TRUST_PROXY = os.environ.get("EG_TRUST_PROXY", "") == "1"     # read X-Forwarded-For / -Proto
+PUBLIC_ORIGIN = os.environ.get("EG_PUBLIC_ORIGIN", "").rstrip("/")   # e.g. https://guide.example.com
+UPGRADE_URL = os.environ.get("EG_UPGRADE_URL", "")           # where "Upgrade" buttons go (billing page)
+AUTH_DB = Path(os.environ.get("EG_AUTH_DB", str(DATA / "auth.sqlite3")))
+MAX_BODY = 4_000_000
+AUTH = None            # auth.AuthStore, created by main() in hosted mode
+CODE_RUN_OFF = ("Running code is switched off on the hosted guide. Clone the repository and "
+                "run `make app` to run code on your own machine.")
 RUN_TIMEOUT_PY = 15
 RUN_TIMEOUT_GO = 40
 RUN_TIMEOUT_ENG_PY = 30
@@ -169,6 +195,27 @@ def load_state() -> dict:
     base = default_state()
     base.update(state)
     return base
+
+
+def apply_patch(state: dict, body: dict) -> dict:
+    """Merge one POST /api/patch into a progress document (static/app.js staticPost twins this)."""
+    pid = body.get("id")
+    if pid and isinstance(body.get("patch", {}), dict):
+        rec = state["problems"].setdefault(pid, {})
+        rec.update(body.get("patch", {}))
+    if isinstance(body.get("settings"), dict):
+        state["settings"].update(body["settings"])
+    if body.get("doc") and isinstance(body.get("docPatch", {}), dict):
+        # Reading state for module pages: scroll depth, checked sections,
+        # highlights, completion.
+        docs = state.setdefault("docs", {})
+        docs.setdefault(body["doc"], {}).update(body.get("docPatch", {}))
+    if isinstance(body.get("session"), dict):
+        day = str(body["session"].get("date", ""))[:10]
+        secs = body["session"].get("seconds", 0)
+        if day and isinstance(secs, (int, float)):
+            state["sessions"][day] = state["sessions"].get(day, 0) + secs
+    return state
 
 
 def save_state(state: dict) -> None:
@@ -1920,71 +1967,271 @@ def api_get(p: str, q: dict[str, list[str]]) -> tuple[object, int] | None:
     return None
 
 
+# Files the sign-in page needs before anyone is signed in (hosted mode).
+PUBLIC_STATIC = frozenset({"login.html", "login.js", "auth.css", "logo.svg", "theme-init.js"})
+PUBLIC_PREFIXES = ("vendor/fonts/",)
+
+# Content-Security-Policy for the hosted app: scripts only from this origin (the
+# Mongo shell in the Query Lab and PGlite need eval / WebAssembly), no framing.
+CSP = ("default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; "
+       "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; "
+       "connect-src 'self' blob: data:; worker-src 'self' blob:; frame-ancestors 'none'; "
+       "base-uri 'self'; form-action 'self'; object-src 'none'")
+
+STATIC_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".json": "application/json",
+    ".woff2": "font/woff2",
+    ".woff": "font/woff",
+    ".ttf": "font/ttf",
+    ".png": "image/png",
+    ".wasm": "application/wasm",
+    ".mjs": "application/javascript; charset=utf-8",
+}
+
+RUN_ROUTES = frozenset({"/api/run", "/api/eng-run", "/api/stdlib-run", "/api/api-run", "/api/format"})
+
+
+def hosted_config_js() -> bytes:
+    """static/config.js as the hosted app serves it."""
+    return ("/* Served by server.py in hosted mode (EG_AUTH=1). */\n"
+            "window.EG_STATIC = false;\nwindow.EG_AUTH = true;\nwindow.EG_PROTECT = true;\n"
+            f"window.EG_UPGRADE_URL = {json.dumps(UPGRADE_URL)};\n").encode()
+
+
 # ----------------------------------------------------------------------------
 # HTTP handler
 # ----------------------------------------------------------------------------
 class Handler(BaseHTTPRequestHandler):
     server_version = "DSAStudio/1.0"
+    sys_version = ""
 
     def log_message(self, fmt, *args):  # quieter console
         if "/api/run" in (args[0] if args else ""):
             sys.stderr.write(f"  run  {args[0]}\n")
 
     # -- helpers ------------------------------------------------------------
-    def _send(self, code: int, body: bytes, ctype: str) -> None:
+    def _security_headers(self) -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "same-origin")
+        self.send_header("X-Frame-Options", "DENY")
+        if AUTH_ENABLED:
+            self.send_header("Content-Security-Policy", CSP)
+            self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+            self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+            if COOKIE_SECURE:
+                self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+
+    def _send(self, code: int, body: bytes, ctype: str, headers: dict | None = None) -> None:
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        self._security_headers()
+        for k, v in (headers or {}).items():
+            for one in (v if isinstance(v, list) else [v]):
+                self.send_header(k, one)
         self.end_headers()
         self.wfile.write(body)
 
-    def _json(self, obj, code: int = 200) -> None:
-        self._send(code, json.dumps(obj).encode(), "application/json")
+    def _json(self, obj, code: int = 200, headers: dict | None = None) -> None:
+        self._send(code, json.dumps(obj).encode(), "application/json", headers)
+
+    def _redirect(self, location: str) -> None:
+        self._send(302, b"", "text/plain", {"Location": location})
 
     def _body(self) -> dict:
-        n = int(self.headers.get("Content-Length") or 0)
-        if not n:
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            return {}
+        if n <= 0 or n > MAX_BODY:
             return {}
         try:
-            return json.loads(self.rfile.read(n))
-        except json.JSONDecodeError:
+            body = json.loads(self.rfile.read(n))
+        except (json.JSONDecodeError, UnicodeDecodeError):
             return {}
+        return body if isinstance(body, dict) else {}
 
     def _static(self, rel: str) -> None:
         rel = rel.lstrip("/") or "index.html"
+        if AUTH_ENABLED and rel == "config.js":
+            self._send(200, hosted_config_js(), STATIC_TYPES[".js"])
+            return
         path = (STATIC / rel).resolve()
-        if not str(path).startswith(str(STATIC.resolve())) or not path.is_file():
+        if not path.is_relative_to(STATIC.resolve()) or not path.is_file():
             self._send(404, b"Not found", "text/plain")
             return
-        ctype = {
-            ".html": "text/html; charset=utf-8",
-            ".css": "text/css; charset=utf-8",
-            ".js": "application/javascript; charset=utf-8",
-            ".svg": "image/svg+xml",
-            ".json": "application/json",
-            ".woff2": "font/woff2",
-            ".woff": "font/woff",
-            ".ttf": "font/ttf",
-            ".png": "image/png",
-            ".wasm": "application/wasm",
-            ".mjs": "application/javascript; charset=utf-8",
-        }.get(path.suffix, "application/octet-stream")
-        self._send(200, path.read_bytes(), ctype)
+        self._send(200, path.read_bytes(), STATIC_TYPES.get(path.suffix, "application/octet-stream"))
+
+    # -- hosted mode: who is asking ------------------------------------------
+    def _client_ip(self) -> str:
+        if TRUST_PROXY:
+            fwd = self.headers.get("X-Forwarded-For", "")
+            if fwd:
+                return fwd.split(",")[-1].strip()      # the address our own proxy saw
+        return self.client_address[0]
+
+    def _session_token(self) -> str | None:
+        # Parsed by hand: http.cookies drops every cookie after one it cannot parse,
+        # and other apps on the same host can set those.
+        for part in (self.headers.get("Cookie") or "").split(";"):
+            name, _, value = part.strip().partition("=")
+            if name == SESSION_COOKIE and value:
+                return value
+        return None
+
+    def _session_cookie(self, token: str, max_age: int) -> str:
+        parts = [f"{SESSION_COOKIE}={token}", "Path=/", "HttpOnly", "SameSite=Strict", f"Max-Age={max_age}"]
+        if COOKIE_SECURE:
+            parts.append("Secure")
+        return "; ".join(parts)
+
+    def _user(self):
+        return AUTH.session_user(self._session_token()) if AUTH_ENABLED else None
+
+    def _same_origin(self) -> bool:
+        """POSTs must come from our own pages (with SameSite=Strict cookies, defence in depth
+        against cross-site request forgery)."""
+        origin = self.headers.get("Origin") or ""
+        if not origin:
+            ref = self.headers.get("Referer") or ""
+            origin = f"{urlparse(ref).scheme}://{urlparse(ref).netloc}" if ref else ""
+        if not origin:
+            return False
+        if PUBLIC_ORIGIN:
+            return origin == PUBLIC_ORIGIN
+        host = self.headers.get("X-Forwarded-Host") if TRUST_PROXY else None
+        return urlparse(origin).netloc == (host or self.headers.get("Host") or "")
+
+    def _user_state(self, user) -> dict:
+        return AUTH.load_progress(user["id"], default_state())
 
     # -- routes -------------------------------------------------------------
     def do_GET(self) -> None:
         u = urlparse(self.path)
+        if AUTH_ENABLED:
+            self._hosted_get(u)
+            return
         reply = api_get(u.path, parse_qs(u.query))
         if reply is None:
             self._static(u.path)
         else:
             self._json(*reply)
 
+    def _hosted_get(self, u) -> None:
+        rel = u.path.lstrip("/")
+        # Decide on the normalised path: "vendor/fonts/../app.js" must not pass as public.
+        if ".." in rel.split("/") or "\\" in rel:
+            self._send(404, b"Not found", "text/plain")
+            return
+        user = self._user()
+        if rel in ("login", "login.html"):
+            if user:
+                self._redirect("./")
+            else:
+                self._static("login.html")
+            return
+        if rel in PUBLIC_STATIC or rel.startswith(PUBLIC_PREFIXES):
+            self._static(rel)
+            return
+        if u.path == "/api/me":
+            self._json(AUTH.account(user) if user else {"error": "signed_out"}, 200 if user else 401)
+            return
+        if user is None:
+            if u.path.startswith("/api/"):
+                self._json({"error": "signed_out", "message": "Sign in to continue."}, 401)
+            elif rel in ("", "index.html"):
+                self._redirect("login.html")
+            else:
+                self._send(401, b"Sign in first.", "text/plain")
+            return
+        if not u.path.startswith("/api/"):
+            self._static(u.path)
+            return
+        if not AUTH.allow_api(user):
+            self._json({"error": "rate_limited", "message": "Too many requests. Slow down a little."}, 429,
+                       {"Retry-After": "60"})
+            return
+        q = parse_qs(u.query)
+        tier = AUTH.effective_tier(user)
+        denied = entitlements.check(u.path, q, tier)
+        if denied is not None:
+            self._json(denied, 403)
+            return
+        if u.path == "/api/state":
+            self._json(self._user_state(user))
+            return
+        reply = api_get(u.path, q)
+        if reply is None:
+            self._json({"error": "not_found"}, 404)
+            return
+        payload, status = reply
+        if u.path == "/api/bootstrap":
+            payload = {**payload, "state": self._user_state(user), "root": "",
+                       "runtimes": {"python": False, "go": False}, "account": AUTH.account(user)}
+        self._json(entitlements.filter_payload(u.path, q, payload, tier), status)
+
     def do_POST(self) -> None:
         p = urlparse(self.path).path
-        body = self._body()
+        if AUTH_ENABLED:
+            self._hosted_post(p)
+            return
+        self._local_post(p, self._body())
 
+    def _hosted_post(self, p: str) -> None:
+        import auth   # hosted mode only
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = -1
+        if length < 0 or length > MAX_BODY:
+            self._json({"error": "too_large"}, 413)
+            return
+        if not self._same_origin() or "application/json" not in (self.headers.get("Content-Type") or ""):
+            self._json({"error": "forbidden", "message": "Cross-site request refused."}, 403)
+            return
+        body = self._body()
+        ip = self._client_ip()
+        try:
+            if p == "/api/auth/request-otp":
+                self._json(AUTH.request_otp(body.get("email"), ip))
+                return
+            if p == "/api/auth/verify-otp":
+                token, account = AUTH.verify_otp(body.get("email"), body.get("code"), ip,
+                                                 self.headers.get("User-Agent", ""))
+                self._json({"ok": True, "account": account}, 200,
+                           {"Set-Cookie": self._session_cookie(token, auth.SESSION_TTL)})
+                return
+            if p == "/api/auth/logout":
+                AUTH.logout(self._session_token())
+                self._json({"ok": True}, 200, {"Set-Cookie": self._session_cookie("", 0)})
+                return
+            user = self._user()
+            if user is None:
+                self._json({"error": "signed_out", "message": "Sign in to continue."}, 401)
+                return
+            if p in RUN_ROUTES:
+                self._json({"ok": False, "exitCode": 1, "stdout": "", "stderr": CODE_RUN_OFF,
+                            "error": CODE_RUN_OFF, "ms": 0})
+            elif p == "/api/state":
+                state = default_state()
+                state.update(body)
+                AUTH.save_progress(user["id"], state)
+                self._json({"ok": True})
+            elif p == "/api/patch":
+                with _state_lock:
+                    AUTH.save_progress(user["id"], apply_patch(self._user_state(user), body))
+                self._json({"ok": True})
+            else:
+                self._json({"error": "not_found"}, 404)
+        except auth.AuthError as e:
+            self._json(e.body(), e.status, {"Retry-After": str(e.retry_after)} if e.retry_after else None)
+
+    def _local_post(self, p: str, body: dict) -> None:
         if p == "/api/run":
             code = body.get("code", "")
             lang = body.get("lang", "py")
@@ -2013,59 +2260,69 @@ class Handler(BaseHTTPRequestHandler):
         elif p == "/api/patch":
             # Merge a single problem's record without shipping whole state.
             with _state_lock:
-                state = load_state()
-                pid = body.get("id")
-                if pid:
-                    rec = state["problems"].setdefault(pid, {})
-                    rec.update(body.get("patch", {}))
-                if "settings" in body:
-                    state["settings"].update(body["settings"])
-                if body.get("doc"):
-                    # Reading state for module pages: scroll depth, checked
-                    # sections, highlights, completion.
-                    docs = state.setdefault("docs", {})
-                    docs.setdefault(body["doc"], {}).update(body.get("docPatch", {}))
-                if "session" in body:
-                    day = body["session"]["date"]
-                    state["sessions"][day] = (
-                        state["sessions"].get(day, 0) + body["session"]["seconds"]
-                    )
-                save_state(state)
+                save_state(apply_patch(load_state(), body))
             self._json({"ok": True})
         else:
             self._send(404, b"Not found", "text/plain")
 
 
+def open_auth_store():
+    """Hosted mode: the account store, or exit with what is missing."""
+    import auth
+    mailer = auth.Mailer()
+    if not mailer.configured:
+        sys.exit("EG_AUTH=1 needs a way to send sign-in codes: set EG_SMTP_HOST and EG_SMTP_FROM "
+                 "(plus EG_SMTP_USER / EG_SMTP_PASSWORD), or EG_OTP_CONSOLE=1 for local development.")
+    if mailer.console and not mailer.host and not LOOPBACK:
+        print("  [warn] EG_OTP_CONSOLE=1 on a public address: codes go to this console, not by email.",
+              file=sys.stderr)
+    return auth.AuthStore(AUTH_DB, auth.load_secret(AUTH_DB.parent), mailer)
+
+
 def main() -> None:
+    global AUTH
     if not TSV.exists():
         sys.exit(f"Missing {TSV}. Run this from the DSA-Practice repo.")
-    DATA.mkdir(parents=True, exist_ok=True)
+    if AUTH_ENABLED:
+        AUTH = open_auth_store()       # hosted: writes only next to EG_AUTH_DB (the image's /data volume)
+    else:
+        DATA.mkdir(parents=True, exist_ok=True)
+    if not AUTH_ENABLED and not LOOPBACK:
+        sys.exit(f"EG_HOST={HOST}: the local app runs code you send it, so it only binds to loopback. "
+                 "Set EG_AUTH=1 for the hosted mode (sign-in, no code execution).")
 
     problems = load_curriculum()
     written = sum(1 for p in problems if p["has"]["pySolution"])
     go_ok = "yes" if go_bin() else "NOT FOUND (Python still runs)"
 
     try:
-        srv = StudioServer(("127.0.0.1", PORT), Handler)
+        srv = StudioServer((HOST, PORT), Handler)
     except PermissionError:
         sys.exit(f"Cannot bind port {PORT}: permission denied. Ports below 1024 need "
                   f"root on macOS/Linux. Use a port above 1024, e.g. DSA_PORT=8420 python3 webapp/server.py")
     except OSError as e:
         sys.exit(f"Cannot bind port {PORT}: {e}. Is another instance already running? "
-                  f"Try a different port: ./studio {PORT + 1}")
-    url = f"http://127.0.0.1:{PORT}"
+                  f"Try a different port: DSA_PORT={PORT + 1}")
+    url = f"http://{'127.0.0.1' if LOOPBACK else HOST}:{PORT}"
     print("=" * 62)
-    print("  Ultimate Engineering Guide")
+    print("  Ultimate Engineering Guide" + ("  ·  hosted (sign-in required)" if AUTH_ENABLED else ""))
     print("=" * 62)
     print(f"  URL         {url}")
     print(f"  Problems    {len(problems)} indexed, {written} written")
-    print(f"  Python      {python_bin()}")
-    print(f"  Go          {go_ok}")
-    print(f"  Progress    {STATE_FILE.relative_to(ROOT)}")
+    if AUTH_ENABLED:
+        print(f"  Accounts    {AUTH_DB.relative_to(ROOT) if AUTH_DB.is_relative_to(ROOT) else AUTH_DB}")
+        print(f"  Codes via   {AUTH.mailer.describe()}")
+        print(f"  Cookies     {'Secure (HTTPS only)' if COOKIE_SECURE else 'not Secure (development)'}")
+        print("  Code runs   off (hosted mode)")
+    else:
+        print(f"  Python      {python_bin()}")
+        print(f"  Go          {go_ok}")
+        print(f"  Progress    {STATE_FILE.relative_to(ROOT)}")
     print("=" * 62)
     print("  Ctrl+C to stop\n", flush=True)
 
-    threading.Timer(0.6, lambda: webbrowser.open(url)).start()
+    if LOOPBACK and os.environ.get("EG_NO_BROWSER") != "1":
+        threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

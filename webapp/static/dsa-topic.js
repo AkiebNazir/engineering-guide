@@ -203,6 +203,7 @@ function tpRow(p, r, i) {
             ${tpSort !== 'family' && typeof problemFamily === 'function' && problemFamily(p.id) ? `<span class="tptag fam">${esc(problemFamily(p.id).family.name)}</span>` : ''}
             ${p.has.goQuestion ? '<span class="tptag">Go</span>' : ''}
             ${state === 'missing' ? '<span class="tptag">not written yet</span>' : ''}
+            ${p.locked && window.EGAccount ? EGAccount.lockBadge(p.requires) : ''}
             ${due ? `<span class="tptag${due.hot ? ' hot' : ''}">${due.label}</span>` : ''}
             ${r.status === 'mastered' ? '<span class="tptag star">mastered</span>' : ''}
           </span>

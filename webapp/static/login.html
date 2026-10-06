@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-theme-pref="system">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<title>Sign in · Ultimate Engineering Guide</title>
+<script src="./theme-init.js"></script>
+<link rel="icon" type="image/svg+xml" href="./logo.svg">
+<link rel="stylesheet" href="./vendor/fonts/fonts.css">
+<link rel="stylesheet" href="./auth.css">
+</head>
+<body class="auth-page">
+<main class="auth-shell">
+  <section class="auth-card" aria-labelledby="authTitle">
+    <a class="auth-brand" href="./">
+      <img src="./logo.svg" alt="" width="34" height="34">
+      <span>Ultimate Engineering Guide</span>
+    </a>
+
+    <!-- Step 1: email -->
+    <form id="stepEmail" class="auth-step" novalidate>
+      <h1 id="authTitle">Sign in or create an account</h1>
+      <p class="auth-sub">We email you a 6-digit code. No password to remember; a new address gets a Free account.</p>
+      <label class="auth-label" for="email">Email</label>
+      <input class="auth-input" id="email" name="email" type="email" autocomplete="email" inputmode="email"
+             required maxlength="254" placeholder="you@example.com" autofocus>
+      <p class="auth-msg" id="emailMsg" role="alert" hidden></p>
+      <button class="auth-btn" id="sendBtn" type="submit">Email me a code</button>
+    </form>
+
+    <!-- Step 2: code -->
+    <form id="stepCode" class="auth-step" novalidate hidden>
+      <h1>Check your email</h1>
+      <p class="auth-sub">Enter the code we sent to <b id="sentTo"></b>. It works once and expires in 10 minutes.</p>
+      <label class="auth-label" for="code">6-digit code</label>
+      <input class="auth-input auth-code" id="code" name="code" type="text" inputmode="numeric"
+             autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="••••••">
+      <p class="auth-msg" id="codeMsg" role="alert" hidden></p>
+      <button class="auth-btn" id="verifyBtn" type="submit">Verify and sign in</button>
+      <div class="auth-row">
+        <button class="auth-link" id="resendBtn" type="button" disabled>Send a new code</button>
+        <button class="auth-link" id="changeBtn" type="button">Use another email</button>
+      </div>
+    </form>
+
+    <p class="auth-foot">Signing in keeps your progress on your account. Plans: Free, Base, Pro and Pro Max.</p>
+  </section>
+</main>
+<script src="./login.js"></script>
+</body>
+</html>

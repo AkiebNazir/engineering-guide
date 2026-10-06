@@ -5,21 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <title>Ultimate Engineering Guide</title>
-<script>
-/* Paint the right theme BEFORE first paint. The server round-trip that loads
-   settings.theme finishes long after this, so without it every reload flashes
-   the wrong ground. localStorage mirrors the server copy; "system" follows
-   prefers-color-scheme. */
-(function () {
-  var pref = 'system';
-  try { pref = localStorage.getItem('dsa-theme') || 'system'; } catch (e) {}
-  var dark = pref === 'dark' ||
-    (pref === 'system' && !matchMedia('(prefers-color-scheme: light)').matches);
-  var r = document.documentElement;
-  r.dataset.theme = dark ? 'dark' : 'light';
-  r.dataset.themePref = pref;
-})();
-</script>
+<script src="./theme-init.js"></script>
+<script src="./config.js"></script>
+<script src="./protect.js"></script>
 <link rel="icon" type="image/svg+xml" href="./logo.svg">
 <link rel="stylesheet" href="./vendor/fonts/fonts.css">
 <link rel="stylesheet" href="./vendor/codemirror/5.65.16/codemirror.css">
@@ -40,6 +28,7 @@
 <link rel="stylesheet" href="./api-practice.css">
 <link rel="stylesheet" href="./stdlib-practice.css">
 <link rel="stylesheet" href="./qlab.css">
+<link rel="stylesheet" href="./auth.css">
 </head>
 <body>
 
@@ -284,8 +273,8 @@
 <script src="./vendor/marked/4.3.0/marked.min.js"></script>
 <!-- mermaid, KaTeX and highlight.js load lazily, the first time a page needs them.
      Every library and font is served from /vendor, so the app works with no network. -->
-<script src="./config.js"></script>
 <script src="./app.js"></script>
+<script src="./account.js"></script>
 <script src="./arch-diagram.js"></script>
 <script src="./reader.js"></script>
 <script src="./viz.js"></script>

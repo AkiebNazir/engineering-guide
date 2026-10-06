@@ -19,3 +19,10 @@ webapp/static/data/
 .DS_Store
 .idea/
 .vscode/
+
+# Hosted mode (EG_AUTH=1): accounts database and the server's signing key. Never commit.
+webapp/data/auth.sqlite3*
+webapp/data/auth_secret.key
+
+# Operator notes for the hosted app (secrets, mail server): kept local, never pushed.
+docs/AUTH.md

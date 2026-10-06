@@ -1,17 +1,22 @@
-# The static site in an nginx container: runs on any container platform
-# (Cloud Run, AWS App Runner / ECS, Azure Container Apps, Fly.io, Render, Kubernetes…).
+# The hosted guide: sign-in by emailed one-time code, Free / Base / Pro / Pro Max
+# plans enforced on the server, per-user progress. Code execution is off.
 #
-#   docker build -f deploy/Dockerfile -t engineering-guide .     (or: make docker-build)
-#   docker run --rm -p 8080:8080 engineering-guide               (or: make docker-run)
-
-# 1. Build: render every page's data to static files (standard library only).
-FROM python:3.12-slim AS build
-WORKDIR /src
-COPY . .
-RUN python3 webapp/build_static.py --out /site
-
-# 2. Serve: plain nginx, listening on 8080.
-FROM nginx:1.27-alpine
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /site /usr/share/nginx/html
+#   docker build -f deploy/Dockerfile -t engineering-guide .           (or: make docker-build)
+FROM python:3.12-slim
+WORKDIR /app
+COPY content ./content
+COPY tools/problems.tsv ./tools/problems.tsv
+COPY webapp/*.py ./webapp/
+COPY webapp/static ./webapp/static
+RUN useradd --system --uid 10001 guide && mkdir /data && chown guide /data
+USER guide
+ENV EG_AUTH=1 \
+    EG_HOST=0.0.0.0 \
+    DSA_PORT=8080 \
+    EG_AUTH_DB=/data/auth.sqlite3 \
+    EG_TRUST_PROXY=1 \
+    EG_NO_BROWSER=1 \
+    PYTHONUNBUFFERED=1
+VOLUME /data
 EXPOSE 8080
+CMD ["python3", "webapp/server.py"]

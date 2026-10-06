@@ -1,6 +1,7 @@
 name: Deploy to GitHub Pages
 
-# Builds the static site (make build → dist/) and publishes it to GitHub Pages.
+# Builds the static free preview (make build → dist/, Free-tier content only) and publishes
+# it to GitHub Pages. The full guide with accounts and plans is the hosted app.
 # Pull requests only build it, so a change that breaks the build is caught before merge.
 # One-time setup: repo Settings → Pages → Source: "GitHub Actions".
 
@@ -29,7 +30,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build static site
+      - name: Sign-in and plans tests
+        run: make test
+
+      - name: Build static site (Free-tier preview)
         run: make build
 
       - name: Upload Pages artifact

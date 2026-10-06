@@ -267,12 +267,17 @@ system). Where they disagree with this page about order, follow this page.
 
 - **On your machine:** `make app` runs the full app: everything above, including running
   your code and saving progress to `webapp/data/progress.json`.
-- **Online:** the same app builds into a static site (`make build` → `dist/`) that any
-  host can serve; `.github/workflows/deploy.yaml` publishes it to GitHub Pages on every
-  push to `main`. Every page, guide, visualizer and lab works there; progress is kept in
-  the browser, and running code needs the local app.
-  [Running and Deploying the Guide](docs/DEPLOYMENT.md) covers GitHub Pages, other static
-  hosts and containers.
+- **Online, for learners:** the hosted mode (`make serve` to try it, `deploy/Dockerfile` to
+  deploy) adds sign-in by emailed one-time code and four plans, **Free, Base, Pro and Pro
+  Max**, enforced on the server: Free samples every module, Base opens the interview core
+  (all of DSA, CS Fundamentals, Maths, Behavioral), Pro adds design and the production stack,
+  Pro Max adds staff-level System Design and the AI track. Progress is kept per account, code
+  running is off, and copying page text and the developer tools are restricted (the Copy
+  buttons on code examples still work). Plans are granted with `webapp/admin.py`.
+- **Public preview:** `make build` → `dist/` is a static site with the Free plan's content
+  only, which any host can serve; `.github/workflows/deploy.yaml` tests and publishes it to
+  GitHub Pages on every push to `main`. [Running and Deploying the Guide](docs/DEPLOYMENT.md)
+  covers GitHub Pages, other static hosts and containers.
 - **Layout:** all learning material lives in `content/`, grouped the way the app's home page
   groups it; everything else is the app and its tooling. `make help` lists every command.
 
