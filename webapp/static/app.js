@@ -93,7 +93,8 @@ const upgradeError = info => {
   return e;
 };
 const api = async (path, opts) => {
-  const url = IS_STATIC ? staticDataPath(path) : path;
+  // the build's data version keeps a cached page from outliving a deploy (sw.js)
+  const url = IS_STATIC ? staticDataPath(path) + (window.EG_DATA_V ? `?v=${window.EG_DATA_V}` : '') : path;
   const r = await fetch(url, { credentials: 'same-origin', ...opts });
   if (r.status === 401 && window.EG_AUTH) {
     location.href = `./login.html?next=${encodeURIComponent(location.hash)}`;
@@ -1101,6 +1102,8 @@ function initEditor() {
   editor.on('change', markDirty);
   editor.on('cursorActivity', renderEditorStatus);
   renderEditorStatus();
+  // editor-tools.js: Copy / Cut / Paste / Delete / Undo as buttons, for touch screens
+  if (typeof mountEditBar === 'function') mountEditBar($('#editorHost'), () => editor);
 }
 
 /* The strip under the editor: where the caret is, and how much is selected.
@@ -1304,8 +1307,12 @@ async function loadPane(tab) {
     return;
   }
 
-  /* dsa-viz.js: the step-by-step algorithm player for this topic */
+  /* dsa-viz.js: the step-by-step algorithm player for this topic. Loaded on first
+     use (lazy.js); openProblem() has usually downloaded it in the background already. */
   if (tab === 'visualize') {
+    const p = cur;
+    if (!await loadDsaViz(body)) return;
+    if (curTab !== 'visualize' || cur !== p) return;
     if (typeof renderAlgoTab === 'function') renderAlgoTab(body, cur.topic, cur);
     else body.innerHTML = emptyMsg('Visualizer unavailable', 'dsa-viz.js did not load.');
     return;
@@ -1318,9 +1325,12 @@ async function loadPane(tab) {
     catch (e) { if (paywallInto(body, e)) return; throw e; }
     docCache.set(key, d);
   }
-  /* solution-gate.js: solutions stay hidden until "Reveal solution" is pressed */
+  /* solution-gate.js: solutions stay hidden until "Reveal solution" is pressed. It
+     reads the visualizers to offer the matching animation, so they load first. */
   if (tab === 'solution' && d.exists && typeof renderGatedSolution === 'function') {
-    if (curTab === 'solution') renderGatedSolution(body, cur, d, curLang);
+    const p = cur;
+    await loadDsaViz(body);
+    if (curTab === 'solution' && cur === p) renderGatedSolution(body, cur, d, curLang);
     return;
   }
   body.innerHTML = d.exists
@@ -1330,6 +1340,17 @@ async function loadPane(tab) {
   if (d.exists && typeof enhanceProblemDoc === 'function') enhanceProblemDoc(body);
   /* dsa-learn.js: the hint ladder under the statement */
   if (d.exists && tab === 'question' && typeof mountQuestionLearn === 'function') mountQuestionLearn(body, cur);
+}
+
+/* The DSA visualizers (lazy.js group "dsaviz"), with a placeholder in `body` while
+   they load. Resolves false, with a message in `body`, if they could not load. */
+async function loadDsaViz(body) {
+  if (typeof LazyScripts === 'undefined') return true;
+  const t = setTimeout(() => { body.innerHTML = '<div class="empty"><p class="muted">Loading…</p></div>'; }, 150);
+  const ok = await LazyScripts.load('dsaviz');
+  clearTimeout(t);
+  if (!ok) body.innerHTML = emptyMsg('Visualizer unavailable', 'Its scripts did not load. Check the connection and open the tab again.');
+  return ok;
 }
 
 const emptyMsg = (h, p) =>
@@ -1515,10 +1536,13 @@ async function openProblem(topic, seq, tab) {
   await loadEditorFor(curLang);
   await loadPane(DSA_TABS.includes(tab) ? tab : curTab === 'notes' ? 'question' : curTab);
   renderSidebar();
+  // the Visualize and Solution tabs need the visualizers: fetch them while the user reads
+  if (typeof LazyScripts !== 'undefined') LazyScripts.warm('dsaviz');
 }
 
 async function loadEditorFor(lang) {
   curLang = lang;
+  if (IS_STATIC) BrowserRun.warm(lang);
   $$('#langSwitch .lang').forEach(b => b.classList.toggle('is-on', b.dataset.lang === lang));
   if (editor) editor.setOption('mode', lang === 'py' ? 'python' : 'go');
   $('#esLang').textContent = lang === 'py' ? 'Python' : 'Go';
@@ -1777,6 +1801,12 @@ function wireUI() {
       if (tabs[+e.key - 1]) loadPane(tabs[+e.key - 1]);
     }
   };
+}
+
+/* Static build: keep the app on the device for fast repeat visits and offline
+   reading (sw.js; the local server has nothing to gain from it). */
+if (IS_STATIC && 'serviceWorker' in navigator && window.isSecureContext) {
+  addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 }
 
 (async function boot() {

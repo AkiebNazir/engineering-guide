@@ -121,6 +121,9 @@ webapp/
     config.js          EG_STATIC = false here; true in a static build (app.js then reads ./data/)
     browser-run.js     static build only: runs code without the server (Python: Pyodide, Go: Go Playground)
     py-worker.js       the Pyodide Web Worker browser-run.js drives
+    lazy.js            loads the DSA visualizers and the reading-page labs on first use; assetUrl()
+    editor-tools.js    the editors' Copy / Cut / Paste / Delete / Undo toolbar (touch-friendly)
+    sw.js              static build only: offline + instant repeat visits (build_static.py fills it in)
     styles.css         design system (dark + light, all tokenised)
                        — editor is VS Code Dark Modern / Light Modern
     app.js             router, editor, timer, review scheduling

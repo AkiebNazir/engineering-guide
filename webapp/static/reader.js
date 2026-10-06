@@ -1015,8 +1015,15 @@ async function renderReader(mod, id) {
     md += `\n\n<div class="sol-divider"><span>Reference design</span></div>\n\n${doc.solution.replace(/^#\s/m, '## ')}`;
   }
   const prose = $('#docProse', host);
-  // cross-references resolve against every module's page list, so have them all
-  await Promise.allSettled(Object.keys(MODULES).filter(k => MODULES[k].list).map(k => modItems(k)));
+  // cross-references resolve against every module's page list, so have them all; a page
+  // with labs also needs their definitions, which load on first use (lazy.js "labs")
+  const needsLabs = typeof LazyScripts !== 'undefined' && (/data-viz=/.test(md) ||
+    (mod === 'sd' && typeof SD_LABS !== 'undefined' && !!SD_LABS[it.id]) ||
+    (mod === 'roadmap' && typeof DAY_LABS !== 'undefined' && it.kind === 'day' && !!DAY_LABS[it.day]));
+  await Promise.allSettled([
+    ...Object.keys(MODULES).filter(k => MODULES[k].list).map(k => modItems(k)),
+    needsLabs ? LazyScripts.load('labs') : null,
+  ]);
   if (!curDoc || curDoc.key !== key) return;
   prose.innerHTML = renderMarkdown(md);
   const h1 = prose.firstElementChild;
@@ -1181,7 +1188,7 @@ const LABEL_CALLOUT = [
    headings, diagrams or labs. */
 let glossaryJson = null;
 async function linkAcronyms(prose) {
-  glossaryJson ??= fetch('./glossary.json').then(r => (r.ok ? r.json() : {})).catch(() => { glossaryJson = null; return {}; });
+  glossaryJson ??= fetch(assetUrl('./glossary.json')).then(r => (r.ok ? r.json() : {})).catch(() => { glossaryJson = null; return {}; });
   const gl = await glossaryJson;
   const keys = Object.keys(gl).sort((a, b) => b.length - a.length);
   if (!keys.length || !prose.isConnected) return;
@@ -1657,7 +1664,7 @@ function mermaidVars(el) {
    bodies come from /arch-icons.json, fetched once on first use. */
 let archIcons = null;
 function ensureArchIcons() {
-  if (!archIcons) archIcons = fetch('./arch-icons.json').then(r => (r.ok ? r.json() : {})).catch(() => { archIcons = null; return {}; });
+  if (!archIcons) archIcons = fetch(assetUrl('./arch-icons.json')).then(r => (r.ok ? r.json() : {})).catch(() => { archIcons = null; return {}; });
   return archIcons;
 }
 const diagramChrome = fig => `<button type="button" class="diagram-zoom" aria-label="Expand diagram"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>Expand</button>
