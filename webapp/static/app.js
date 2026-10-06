@@ -81,17 +81,45 @@ const loadLocalState = defaults => {           // mirrors server.py load_state()
   return Object.assign(defaults, saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {});
 };
 
+/* Hosted mode (server.py EG_AUTH=1) and the static build gate content by plan:
+   a page above the reader's plan answers {error: 'upgrade_required', requires}
+   (403 from the server, a stub file in a static build). The thrown error carries
+   `upgrade`; a caller that draws its own paywall sets `e.handled`, otherwise
+   account.js opens the plans dialog. 401 means the session ended: sign in again. */
+const upgradeError = info => {
+  const e = new Error(info.message || 'Upgrade required');
+  e.upgrade = info;
+  setTimeout(() => { if (!e.handled && window.EGAccount) EGAccount.paywall(info); }, 0);
+  return e;
+};
 const api = async (path, opts) => {
   // the build's data version keeps a cached page from outliving a deploy (sw.js)
   const url = IS_STATIC ? staticDataPath(path) + (window.EG_DATA_V ? `?v=${window.EG_DATA_V}` : '') : path;
-  const r = await fetch(url, opts);
+  const r = await fetch(url, { credentials: 'same-origin', ...opts });
+  if (r.status === 401 && window.EG_AUTH) {
+    location.href = `./login.html?next=${encodeURIComponent(location.hash)}`;
+    throw new Error('signed out');
+  }
+  if (r.status === 403) {
+    const body = await r.json().catch(() => ({}));
+    if (body.error === 'upgrade_required') throw upgradeError(body);
+  }
   if (!r.ok) throw new Error(`${url} → ${r.status}`);
   const json = await r.json();
+  if (json && json.error === 'upgrade_required') throw upgradeError(json);
   if (IS_STATIC && path === '/api/bootstrap') {
     localState = loadLocalState(json.state);
     json.state = JSON.parse(JSON.stringify(localState));   // the app mutates DATA.state itself
   }
   return json;
+};
+
+/* Draw the plans card in `host` for an upgrade error; false for any other error. */
+const paywallInto = (host, e) => {
+  if (!e || !e.upgrade || !window.EGAccount) return false;
+  e.handled = true;
+  host.innerHTML = EGAccount.paywallHtml(e.upgrade);
+  return true;
 };
 
 const serverPost = (path, body) =>
@@ -638,7 +666,7 @@ function renderSidebar() {
            title="Run SQL, MongoDB and Redis queries in your browser">
           <svg class="mod-icon" viewBox="0 0 24 24" aria-hidden="true">${QLAB_ICON}</svg>
           <span class="mod-name">Query Lab</span>
-          <span class="mod-tag">SQL · Mongo · Redis</span>
+          ${window.EGAccount?.moduleBadge('qlab') || '<span class="mod-tag">SQL · Mongo · Redis</span>'}
         </a>`;
 
   if (query) {
@@ -652,6 +680,7 @@ function renderSidebar() {
         <a class="mod-item${on ? ' is-on' : ''}" href="${sectionHref(key)}"${on ? ' aria-current="page"' : ''}>
           <svg class="mod-icon" viewBox="0 0 24 24" aria-hidden="true">${SECTION_ICON[key]}</svg>
           <span class="mod-name">${esc(sectionName(key))}</span>
+          ${window.EGAccount ? EGAccount.moduleBadge(key) : ''}
           ${c ? `<span class="mod-count">${c.done}<i>/${c.total}</i></span>` : ''}
           <span class="mod-bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
         </a>${key === 'nosql' ? labRow : ''}`;
@@ -1292,7 +1321,8 @@ async function loadPane(tab) {
   const key = `${cur.id}:${tab}:${curLang}`;
   let d = docCache.get(key);
   if (!d) {
-    d = await api(`/api/problem?topic=${cur.topic}&seq=${cur.seq}&kind=${tab}&lang=${curLang}`);
+    try { d = await api(`/api/problem?topic=${cur.topic}&seq=${cur.seq}&kind=${tab}&lang=${curLang}`); }
+    catch (e) { if (paywallInto(body, e)) return; throw e; }
     docCache.set(key, d);
   }
   /* solution-gate.js: solutions stay hidden until "Reveal solution" is pressed. It
@@ -1379,7 +1409,8 @@ async function loadEngPane(tab) {
   const key = `eng:${curEng.recId}:${tab}`;
   let d = docCache.get(key);
   if (!d) {
-    d = await api(`/api/eng-problem?lang=${curEng.lang}&topic=${curEng.id}&kind=${tab}`);
+    try { d = await api(`/api/eng-problem?lang=${curEng.lang}&topic=${curEng.id}&kind=${tab}`); }
+    catch (e) { if (paywallInto(body, e)) return; throw e; }
     docCache.set(key, d);
   }
   const langName = curEng.lang === 'go' ? 'Go' : 'Python';
@@ -1519,8 +1550,16 @@ async function loadEditorFor(lang) {
   const key = `${cur.id}:question:${lang}`;
   let d = docCache.get(key);
   if (!d) {
-    d = await api(`/api/problem?topic=${cur.topic}&seq=${cur.seq}&kind=question&lang=${lang}`);
-    docCache.set(key, d);
+    try {
+      d = await api(`/api/problem?topic=${cur.topic}&seq=${cur.seq}&kind=question&lang=${lang}`);
+      docCache.set(key, d);
+    } catch (e) {
+      if (!e.upgrade) throw e;
+      e.handled = true;          // the question pane draws the plans card in its place
+      const plan = (window.EGAccount?.account?.tierNames || {})[e.upgrade.requires] || e.upgrade.requires;
+      d = { code: lang === 'py' ? `# This problem is part of the ${plan} plan.\n`
+                                : `// This problem is part of the ${plan} plan.\npackage main\n\nfunc main() {\n}\n` };
+    }
   }
   originalCode = d.code || (lang === 'py'
     ? '# This problem has not been authored yet.\n'
@@ -1791,5 +1830,6 @@ if (IS_STATIC && 'serviceWorker' in navigator && window.isSecureContext) {
   initTheme();
   initEditor();
   wireUI();
+  window.EGAccount?.init(DATA.account);   // account.js: plan badge, sign out, locks (hosted / static only)
   await route();
 })();

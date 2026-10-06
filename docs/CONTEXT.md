@@ -58,7 +58,11 @@ webapp/               local web app (see §8)
   server.py  static/{index.html,styles.css,app.js}  data/progress.json
   build_static.py     `make build` → dist/: static site for GitHub Pages / any host (docs/DEPLOYMENT.md)
   scripts/            dev checks: validate_viz_player.js, validate_api_labs.mjs, validate_mermaid.mjs, arch_tool.mjs
-deploy/               Dockerfile + nginx.conf (static site in a container)
+deploy/               Dockerfile (hosted app with sign-in), Dockerfile.runner + compose.yaml (sandboxed code
+                      runner, `make up`; webapp/runner.py, jobs staged by webapp/sandbox.py),
+                      Dockerfile.static/nginx.conf (free preview)
+webapp/auth.py        hosted mode: emailed-code sign-in; Free/Base/Pro/Pro Max plans in webapp/entitlements.py;
+                      content protection in static/protect.js; `make serve` runs it locally, `make test` checks it
 content/data-and-apis/SQL/lab/, content/data-and-apis/NoSQL/lab/  Query Lab: question banks (markdown) + datasets (tools/gen_query_lab_data.py);
                       UI in webapp/static/qlab*.js, engines run in the browser (PGlite, mingo, MiniRedis);
                       check with `node webapp/scripts/validate_query_labs.mjs`

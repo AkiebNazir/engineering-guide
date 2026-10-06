@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-theme-pref="system">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<title>Sign in · Ultimate Engineering Guide</title>
+<script src="./theme-init.js"></script>
+<link rel="icon" type="image/svg+xml" href="./logo.svg">
+<link rel="stylesheet" href="./vendor/fonts/fonts.css">
+<link rel="stylesheet" href="./auth.css">
+</head>
+<body class="auth-page">
+<main class="auth-shell">
+  <section class="auth-card" aria-labelledby="authTitle">
+    <a class="auth-brand" href="./">
+      <img src="./logo.svg" alt="" width="34" height="34">
+      <span>Ultimate Engineering Guide</span>
+    </a>
+
+    <!-- Step 1: Google, or an email for a code -->
+    <form id="stepEmail" class="auth-step" novalidate>
+      <h1 id="authTitle">Sign in or create an account</h1>
+      <p class="auth-sub">No password to remember. A new account starts on the Free plan.</p>
+      <p class="auth-msg" id="topMsg" role="alert" hidden></p>
+      <div id="googleBox" hidden>
+        <a class="auth-google" id="googleBtn" href="./api/auth/google/start">
+          <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Sign in with Google</span>
+        </a>
+        <div class="auth-or"><span>or get a code by email</span></div>
+      </div>
+      <label class="auth-label" for="email">Email</label>
+      <input class="auth-input" id="email" name="email" type="email" autocomplete="email" inputmode="email"
+             required maxlength="254" placeholder="you@example.com" autofocus>
+      <p class="auth-msg" id="emailMsg" role="alert" hidden></p>
+      <button class="auth-btn" id="sendBtn" type="submit">Email me a code</button>
+    </form>
+
+    <!-- Step 2: code -->
+    <form id="stepCode" class="auth-step" novalidate hidden>
+      <h1>Check your email</h1>
+      <p class="auth-sub">Enter the code we sent to <b id="sentTo"></b>. It works once and expires in 10 minutes.</p>
+      <label class="auth-label" for="code">6-digit code</label>
+      <input class="auth-input auth-code" id="code" name="code" type="text" inputmode="numeric"
+             autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="••••••">
+      <p class="auth-msg" id="codeMsg" role="alert" hidden></p>
+      <button class="auth-btn" id="verifyBtn" type="submit">Verify and sign in</button>
+      <div class="auth-row">
+        <button class="auth-link" id="resendBtn" type="button" disabled>Send a new code</button>
+        <button class="auth-link" id="changeBtn" type="button">Use another email</button>
+      </div>
+    </form>
+
+    <p class="auth-foot">Signing in keeps your progress on your account. Plans: Free, Base, Pro and Pro Max.</p>
+  </section>
+</main>
+<script src="./login.js"></script>
+</body>
+</html>

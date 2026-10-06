@@ -1,0 +1,47 @@
+# The code runner of the hosted guide (webapp/runner.py): Python and Go with the libraries
+# the curriculum uses, and nothing else. Start it through deploy/compose.yaml, which takes
+# away its network and every privilege it does not need; never publish a port for it.
+#
+#   docker compose -f deploy/compose.yaml build                      (or: make up)
+
+# Go toolchain, and a cache of every dependency and precompiled package the lessons use, so
+# runs work offline and do not recompile the standard library each time. The lesson sources
+# are only used in this stage; the final image holds none of them.
+FROM golang:1.26-bookworm AS warm
+ENV GOFLAGS="-mod=mod -trimpath" GOTOOLCHAIN=local CGO_ENABLED=0 \
+    GOMODCACHE=/opt/go/mod GOCACHE=/var/cache/go/build GOTELEMETRY=off
+WORKDIR /src
+COPY content/languages/GoStdLib ./GoStdLib
+COPY content/languages/GoEngineering ./GoEngineering
+COPY content/data-and-apis/API ./API
+RUN set -e; \
+    mkdir hello && printf 'package main\nimport "fmt"\nfunc main() { fmt.Println("ok") }\n' > hello/main.go && \
+    printf 'module hello\n\ngo 1.21\n' > hello/go.mod && (cd hello && go build -o /dev/null . && go vet .); \
+    for m in GoStdLib GoEngineering API; do \
+      (cd "$m" && go mod download && (go build ./... ; go vet ./... ; go test -count=1 -run '^$' ./...) >/dev/null 2>&1 || true); \
+    done; \
+    du -sh /opt/go/mod /var/cache/go/build
+
+FROM python:3.12-slim
+COPY --from=warm /usr/local/go /usr/local/go
+COPY content/languages/PyEngineering/requirements.txt /tmp/req-eng.txt
+COPY content/data-and-apis/API/requirements.txt /tmp/req-api.txt
+RUN pip install --no-cache-dir -r /tmp/req-eng.txt -r /tmp/req-api.txt && rm /tmp/req-*.txt
+# 2000 compiles Go and owns the build cache; 3000+ are the throwaway users runs execute as.
+RUN groupadd --gid 2000 gobuild && useradd --uid 2000 --gid 2000 --no-create-home \
+      --home-dir /var/cache/go/home --shell /usr/sbin/nologin gobuild
+COPY --from=warm /opt/go/mod /opt/go/mod
+COPY --from=warm --chown=2000:2000 /var/cache/go /var/cache/go
+RUN mkdir -p /var/cache/go/home /work /run/eg-runner && chown 2000:2000 /var/cache/go/home \
+    && chmod 0711 /work
+WORKDIR /app
+COPY webapp/sandbox.py webapp/runner.py ./webapp/
+ENV EG_RUNNER_SOCKET=/run/eg-runner/runner.sock \
+    EG_RUNNER_WORK=/work \
+    EG_RUNNER_GO=/usr/local/go/bin/go \
+    EG_RUNNER_GOCACHE=/var/cache/go \
+    EG_RUNNER_GOMODCACHE=/opt/go/mod \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+# Root only to switch to each run's own user; compose drops every other capability.
+CMD ["python3", "webapp/runner.py"]

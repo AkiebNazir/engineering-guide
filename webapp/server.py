@@ -6,8 +6,17 @@ Stdlib only. No pip install, no build step.
 
     python webapp/server.py          # then open http://127.0.0.1:8420
 
-Binds to 127.0.0.1 only. It executes code you type, on your machine, as you —
-the same trust model as a Jupyter notebook. Do not expose it to a network.
+Two modes:
+
+  local (default)  Binds to 127.0.0.1. It executes code you type, on your machine,
+                   as you — the same trust model as a Jupyter notebook. Single user,
+                   everything readable, progress in webapp/data/progress.json.
+                   Do not expose it to a network.
+  hosted (EG_AUTH=1, `make serve`, deploy/Dockerfile)
+                   Sign-in with Google (google_signin.py) or an emailed
+                   one-time code (auth.py), subscription tiers
+                   (entitlements.py) enforced on every /api request, per-user progress
+                   in SQLite, security headers, and code execution switched off.
 """
 from __future__ import annotations
 
@@ -16,11 +25,8 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import sys
-import tempfile
 import threading
-import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -31,6 +37,11 @@ class StudioServer(ThreadingHTTPServer):
     request_queue_size = 128
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+
+import auth
+import entitlements
+import google_signin
+import sandbox
 
 ROOT = Path(__file__).resolve().parent.parent
 WEBAPP = ROOT / "webapp"
@@ -81,6 +92,31 @@ TRACK_PARTS = {
 }
 
 PORT = int(os.environ.get("DSA_PORT", "8420"))
+
+# Hosted mode: sign-in, tiers and no code execution (see the module docstring).
+AUTH_ENABLED = os.environ.get("EG_AUTH", "") == "1"
+HOST = os.environ.get("EG_HOST", "127.0.0.1")
+LOOPBACK = HOST in ("127.0.0.1", "localhost", "::1")
+# Secure cookies need HTTPS; on by default unless bound to loopback for development.
+COOKIE_SECURE = os.environ.get("EG_COOKIE_SECURE", "0" if LOOPBACK else "1") == "1"
+SESSION_COOKIE = "__Host-eg_session" if COOKIE_SECURE else "eg_session"
+TRUST_PROXY = os.environ.get("EG_TRUST_PROXY", "") == "1"     # read X-Forwarded-For / -Proto
+# The site's origin, e.g. https://guide.example.com. Several, comma-separated, are allowed
+# (e.g. a public address and https://localhost); the first is the one Google returns to.
+PUBLIC_ORIGINS = [o.rstrip("/") for o in re.split(r"[,\s]+", os.environ.get("EG_PUBLIC_ORIGIN", "")) if o]
+PUBLIC_ORIGIN = PUBLIC_ORIGINS[0] if PUBLIC_ORIGINS else ""
+UPGRADE_URL = os.environ.get("EG_UPGRADE_URL", "")           # where "Upgrade" buttons go (billing page)
+AUTH_DB = Path(os.environ.get("EG_AUTH_DB", str(DATA / "auth.sqlite3")))
+MAX_BODY = 4_000_000
+AUTH = None            # auth.AuthStore, created by main() in hosted mode
+GOOGLE = None          # google_signin.GoogleSignIn, when EG_GOOGLE_CLIENT_ID/SECRET are set
+OAUTH_COOKIE = "__Host-eg_oauth" if COOKIE_SECURE else "eg_oauth"
+SIGNIN_ERRORS = {"google_failed", "google_cancelled", "google_mismatch", "disabled", "google_off", "rate_limited"}
+CODE_RUN_OFF = ("Running code is switched off on the hosted guide. Clone the repository and "
+                "run `make app` to run code on your own machine.")
+RUNNER_SOCKET = os.environ.get("EG_RUNNER_SOCKET", "")      # hosted: runner.py's socket (see deploy/)
+RUNNER = None          # sandbox.LocalRunner / RemoteRunner, picked by code_runner() and main()
+SCRATCH_PKG = "scratch_run"    # the package a Go level's buffer becomes, inside a copy of its module
 RUN_TIMEOUT_PY = 15
 RUN_TIMEOUT_GO = 40
 RUN_TIMEOUT_ENG_PY = 30
@@ -169,6 +205,27 @@ def load_state() -> dict:
     base = default_state()
     base.update(state)
     return base
+
+
+def apply_patch(state: dict, body: dict) -> dict:
+    """Merge one POST /api/patch into a progress document (static/app.js staticPost twins this)."""
+    pid = body.get("id")
+    if pid and isinstance(body.get("patch", {}), dict):
+        rec = state["problems"].setdefault(pid, {})
+        rec.update(body.get("patch", {}))
+    if isinstance(body.get("settings"), dict):
+        state["settings"].update(body["settings"])
+    if body.get("doc") and isinstance(body.get("docPatch", {}), dict):
+        # Reading state for module pages: scroll depth, checked sections,
+        # highlights, completion.
+        docs = state.setdefault("docs", {})
+        docs.setdefault(body["doc"], {}).update(body.get("docPatch", {}))
+    if isinstance(body.get("session"), dict):
+        day = str(body["session"].get("date", ""))[:10]
+        secs = body["session"].get("seconds", 0)
+        if day and isinstance(secs, (int, float)):
+            state["sessions"][day] = state["sessions"].get(day, 0) + secs
+    return state
 
 
 def save_state(state: dict) -> None:
@@ -347,26 +404,24 @@ def eng_python_bin() -> str:
     return str(venv) if venv.exists() else python_bin()
 
 
-_eng_run_lock = threading.Lock()
-
-
 def run_eng(lang: str, topic: str, code: str) -> dict:
     """Runs the learner's edited explanation code.
 
     When the topic has a test file, tests are the real check: Go/Python
-    tests are hardcoded to load the *_solution.* file by name, so the trick
-    is to back up the real solution file, overwrite it with the learner's
-    code (same package/module, same public surface), run the real test file
-    against it, then always restore the original — even on timeout or
-    crash. Many topics have no test file (by design — this curriculum
-    doesn't require one), so when there isn't one we fall back to swapping
-    the *explanation* file itself and just compiling/running it directly:
+    tests are hardcoded to load the *_solution.* file by name, so the run
+    gets a scratch copy of the topic with the learner's code in place of the
+    solution file (same package/module, same public surface) and runs the
+    real test file against it. Many topics have no test file (by design —
+    this curriculum doesn't require one), so when there isn't one the
+    *explanation* file is swapped instead and just compiled/run directly:
     `go vet` (which type-checks a `package main` fine even with no
-    `func main()`) for Go, or executing the file for Python. Either way the
-    swap always takes a lock and always restores the original file."""
+    `func main()`) for Go, or executing the file for Python. The curriculum
+    on disk is only ever read."""
     if not code.strip():
         return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
                 "stderr": "Nothing to run — the editor is empty."}
+    if lang not in ENG_ROOTS or not re.fullmatch(r"[\w\-]+", topic or ""):     # no dots, no slashes
+        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0, "stderr": "Unknown topic."}
 
     expl = eng_file(lang, topic, "explanation")
     sol = eng_file(lang, topic, "solution")
@@ -375,58 +430,34 @@ def run_eng(lang: str, topic: str, code: str) -> dict:
         return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
                 "stderr": "This topic hasn't been authored yet — nothing to run."}
 
-    if lang == "go" and not go_bin():
-        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                "stderr": "Go toolchain not found on PATH."}
-
     has_test = sol.exists() and test.exists()
     target = sol if has_test else expl
+    root = ENG_ROOTS[lang]
+    rel = target.relative_to(root).as_posix()
+    pkg = rel.rpartition("/")[0]
 
-    with _eng_run_lock:
-        original = target.read_text()
-        started = time.perf_counter()
-        try:
-            target.write_text(code)
-            if lang == "go":
-                cmd = [go_bin(), "test", "-v", "./..."] if has_test else [go_bin(), "vet", "./..."]
-                proc = subprocess.run(
-                    cmd, capture_output=True, text=True,
-                    timeout=RUN_TIMEOUT_ENG_GO, cwd=str(target.parent),
-                    env={**os.environ, "GOFLAGS": "-mod=mod"},
-                )
-                stdout = proc.stdout
-                if not has_test and proc.returncode == 0 and not stdout.strip():
-                    stdout = "go vet: no issues found — code compiles cleanly.\n"
-            elif has_test:
-                proc = subprocess.run(
-                    [eng_python_bin(), "-m", "pytest", test.name, "-v"],
-                    capture_output=True, text=True,
-                    timeout=RUN_TIMEOUT_ENG_PY, cwd=str(target.parent),
-                )
-                stdout = proc.stdout
-            else:
-                proc = subprocess.run(
-                    [eng_python_bin(), expl.name],
-                    capture_output=True, text=True,
-                    timeout=RUN_TIMEOUT_ENG_PY, cwd=str(target.parent),
-                )
-                stdout = proc.stdout
-            return {
-                "ok": proc.returncode == 0,
-                "stdout": stdout, "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000),
-            }
-        except subprocess.TimeoutExpired:
-            timeout = RUN_TIMEOUT_ENG_GO if lang == "go" else RUN_TIMEOUT_ENG_PY
-            return {
-                "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {timeout}s — likely an infinite loop, "
-                          f"a deadlock, or a server that never shuts down.",
-                "ms": timeout * 1000,
-            }
-        finally:
-            target.write_text(original)
+    if lang == "go":
+        timeout = RUN_TIMEOUT_ENG_GO
+        job = {"kind": "go-test" if has_test else "go-vet", "cwd": pkg, "timeout": timeout,
+               "files": sandbox.stage_go_module(root, [pkg], {rel: code})}
+    elif lang == "lld":
+        # lld/ is flat (every question and solution side by side): the question alone
+        timeout = RUN_TIMEOUT_ENG_PY
+        job = {"kind": "python", "python": "eng", "args": [target.name], "timeout": timeout,
+               "files": {target.name: code}}
+    else:
+        timeout = RUN_TIMEOUT_ENG_PY
+        files = sandbox.dir_files(target.parent, f"{pkg}/")
+        files[rel] = code
+        args = ["-m", "pytest", test.name, "-v", "-p", "no:cacheprovider"] if has_test else [expl.name]
+        job = {"kind": "python", "python": "eng", "cwd": pkg, "args": args, "timeout": timeout,
+               "files": files}
+
+    result = timed_out_message(code_runner().run(job), timeout,
+                               "likely an infinite loop, a deadlock, or a server that never shuts down.")
+    if lang == "go" and not has_test and result.get("ok") and not result.get("stdout", "").strip():
+        result["stdout"] = "go vet: no issues found — code compiles cleanly.\n"
+    return result
 
 
 # ----------------------------------------------------------------------------
@@ -1112,19 +1143,12 @@ def read_stdlib_file(lang: str, pkg: str, level: str) -> dict:
             "path": str(path.relative_to(ROOT))}
 
 
-_stdlib_run_lock = threading.Lock()
-# Dot-prefixed so the Go tool skips it when expanding ./... — an explicit
-# relative path to it still builds, which is all `go run` needs.
-GO_RUNTMP = ".runtmp"
-
-
 def run_stdlib(lang: str, pkg: str, level: str, code: str) -> dict:
     """Runs the buffer the learner is looking at — never the file on disk.
 
-    Python is trivial: a temp directory outside the repo. Go is not, because a
-    level imports nothing but the stdlib yet still has to compile inside the
-    GoStdLib module, so the throwaway package is created *under* GoStdLib and
-    deleted in a finally. Either way the curriculum file is only ever read."""
+    Python runs alone in a scratch directory. A Go level imports nothing but the
+    stdlib yet still compiles inside the GoStdLib module, so it gets a scratch
+    package inside a copy of that module."""
     timeout = RUN_TIMEOUT_STDLIB_GO if lang == "go" else RUN_TIMEOUT_STDLIB_PY
     if not code.strip():
         return {"ok": False, "stdout": "", "stderr": "Nothing to run — the editor is empty.",
@@ -1132,61 +1156,14 @@ def run_stdlib(lang: str, pkg: str, level: str, code: str) -> dict:
     if stdlib_level_path(lang, pkg, level) is None:
         return {"ok": False, "stdout": "", "stderr": "Unknown package or level.",
                 "exitCode": -1, "ms": 0}
-
-    def timed_out() -> dict:
-        return {
-            "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-            "stderr": f"Timed out after {timeout}s — likely an infinite loop, a "
-                      f"benchmark that is too big, or something waiting on input.",
-            "ms": timeout * 1000,
-        }
-
-    def done(proc, started: float) -> dict:
-        return {"ok": proc.returncode == 0, "stdout": proc.stdout, "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000)}
-
     if lang == "py":
-        tmp = tempfile.mkdtemp(prefix="stdlib_py_")
-        try:
-            f = Path(tmp) / "main.py"
-            f.write_text(code)
-            started = time.perf_counter()
-            try:
-                return done(subprocess.run([python_bin(), str(f)], capture_output=True,
-                                           text=True, timeout=timeout, cwd=tmp), started)
-            except subprocess.TimeoutExpired:
-                return timed_out()
-        finally:
-            shutil.rmtree(tmp, ignore_errors=True)
-
-    go = go_bin()
-    if not go:
-        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                "stderr": "Go toolchain not found on PATH."}
-    root = STDLIB_ROOTS["go"]
-    # The scratch package lives inside the module, so serialise creation and
-    # teardown against anything else mutating shared curriculum paths.
-    with _stdlib_run_lock:
-        holder = root / GO_RUNTMP
-        holder.mkdir(exist_ok=True)
-        tmp = Path(tempfile.mkdtemp(prefix="run_", dir=str(holder)))
-        try:
-            (tmp / "main.go").write_text(code)
-            started = time.perf_counter()
-            try:
-                return done(subprocess.run(
-                    [go, "run", f"./{GO_RUNTMP}/{tmp.name}"], capture_output=True,
-                    text=True, timeout=timeout, cwd=str(root),
-                    env={**os.environ, "GOFLAGS": "-mod=mod"}), started)
-            except subprocess.TimeoutExpired:
-                return timed_out()
-        finally:
-            shutil.rmtree(tmp, ignore_errors=True)
-            try:
-                holder.rmdir()          # only when nothing else is running
-            except OSError:
-                pass
+        job = {"kind": "python", "args": ["main.py"], "timeout": timeout, "files": {"main.py": code}}
+    else:
+        job = {"kind": "go-run", "pkg": SCRATCH_PKG, "timeout": timeout,
+               "files": sandbox.stage_go_module(STDLIB_ROOTS["go"], [], {f"{SCRATCH_PKG}/main.go": code})}
+    return timed_out_message(code_runner().run(job), timeout,
+                             "likely an infinite loop, a benchmark that is too big, "
+                             "or something waiting on input.")
 
 
 # ----------------------------------------------------------------------------
@@ -1208,7 +1185,6 @@ API_TYPES = ["REST", "GraphQL", "Protobuf", "gRPC", "WebSockets", "Webhooks", "S
 API_LEVEL_RE = re.compile(r"^(\d{2})_([a-z0-9_]+)$")
 RUN_TIMEOUT_API_PY = 30
 RUN_TIMEOUT_API_GO = 45
-API_RUNTMP = ".runtmp"
 
 
 def api_python_bin() -> str:
@@ -1309,18 +1285,15 @@ def read_api_file(type_name: str, section: str, level_id: str, lang: str) -> dic
     return {"exists": True, "doc": doc, "code": code, "path": str(path.relative_to(ROOT))}
 
 
-_api_run_lock = threading.Lock()
-
-
 def run_api_file(type_name: str, section: str, level_id: str, lang: str, code: str) -> dict:
     """Runs the buffer the learner is looking at — never the file on disk (same
     principle as run_stdlib above). Python: the level's sibling files (some
     Protobuf/gRPC levels import generated *_pb2 / *_pb2_grpc stubs by bare
-    name) are copied into a scratch dir alongside the edited code, so those
+    name) go into the scratch directory alongside the edited code, so those
     imports still resolve, using the content/data-and-apis/API/.venv interpreter that has fastapi,
     strawberry, grpcio, websockets etc. installed. Go: a scratch package
-    created *under* API/ so it still compiles inside the dsapractice/api
-    module and picks up its real dependencies (gin, echo, coder/websocket...)."""
+    inside a copy of the dsapractice/api module (with the generated packages
+    it imports), so it picks up its real dependencies (gin, echo, coder/websocket...)."""
     timeout = RUN_TIMEOUT_API_GO if lang == "go" else RUN_TIMEOUT_API_PY
     if not code.strip():
         return {"ok": False, "stdout": "", "stderr": "Nothing to run — the editor is empty.",
@@ -1329,56 +1302,16 @@ def run_api_file(type_name: str, section: str, level_id: str, lang: str, code: s
     if not target or not target.exists():
         return {"ok": False, "stdout": "", "stderr": "Unknown type, section, level or language.",
                 "exitCode": -1, "ms": 0}
-
-    def timed_out() -> dict:
-        return {"ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {timeout}s — likely an infinite loop, a "
-                          f"deadlock, or a server that never shuts down.",
-                "ms": timeout * 1000}
-
-    def done(proc, started: float) -> dict:
-        return {"ok": proc.returncode == 0, "stdout": proc.stdout, "stderr": proc.stderr,
-                "exitCode": proc.returncode, "ms": round((time.perf_counter() - started) * 1000)}
-
     if lang == "go":
-        go = go_bin()
-        if not go:
-            return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                    "stderr": "Go toolchain not found on PATH."}
-        with _api_run_lock:
-            holder = API_DIR / API_RUNTMP
-            holder.mkdir(exist_ok=True)
-            tmp = Path(tempfile.mkdtemp(prefix="run_", dir=str(holder)))
-            try:
-                (tmp / "main.go").write_text(code)
-                started = time.perf_counter()
-                try:
-                    return done(subprocess.run(
-                        [go, "run", f"./{API_RUNTMP}/{tmp.name}"], capture_output=True,
-                        text=True, timeout=timeout, cwd=str(API_DIR),
-                        env={**os.environ, "GOFLAGS": "-mod=mod"}), started)
-                except subprocess.TimeoutExpired:
-                    return timed_out()
-            finally:
-                shutil.rmtree(tmp, ignore_errors=True)
-                try:
-                    holder.rmdir()          # only when nothing else is running
-                except OSError:
-                    pass
-
-    with tempfile.TemporaryDirectory(prefix="api_py_") as tmp:
-        tmp_path = Path(tmp)
-        for sib in target.parent.iterdir():
-            if sib.is_file() and sib.suffix == ".py":
-                shutil.copy2(sib, tmp_path / sib.name)
-        (tmp_path / target.name).write_text(code)
-        started = time.perf_counter()
-        try:
-            return done(subprocess.run(
-                [api_python_bin(), target.name], capture_output=True, text=True,
-                timeout=timeout, cwd=str(tmp_path)), started)
-        except subprocess.TimeoutExpired:
-            return timed_out()
+        job = {"kind": "go-run", "pkg": SCRATCH_PKG, "timeout": timeout,
+               "files": sandbox.stage_go_module(API_DIR, [], {f"{SCRATCH_PKG}/main.go": code})}
+    else:
+        files = {k: v for k, v in sandbox.dir_files(target.parent).items() if k.endswith(".py")}
+        files[target.name] = code
+        job = {"kind": "python", "python": "api", "args": [target.name], "timeout": timeout,
+               "files": files}
+    return timed_out_message(code_runner().run(job), timeout,
+                             "likely an infinite loop, a deadlock, or a server that never shuts down.")
 
 
 # ----------------------------------------------------------------------------
@@ -1683,82 +1616,45 @@ def read_guide(topic: str, lang: str) -> dict:
 # ----------------------------------------------------------------------------
 # Code execution
 # ----------------------------------------------------------------------------
+def code_runner():
+    """Where code runs: set by main() (the runner container in hosted mode),
+    otherwise this machine's toolchains."""
+    global RUNNER
+    if RUNNER is None:
+        if AUTH_ENABLED:      # the hosted guide never runs code with this machine's toolchains
+            RUNNER = sandbox.RemoteRunner(RUNNER_SOCKET) if RUNNER_SOCKET else sandbox.DisabledRunner(CODE_RUN_OFF)
+        else:
+            RUNNER = sandbox.LocalRunner(
+                {"default": python_bin(), "eng": eng_python_bin(), "api": api_python_bin()}, go_bin())
+    return RUNNER
+
+
+def timed_out_message(result: dict, timeout: int, why: str) -> dict:
+    if result.get("timeout"):
+        return {**result, "stderr": f"Timed out after {timeout}s — {why}", "ms": timeout * 1000}
+    return result
+
+
 def run_python(code: str) -> dict:
-    with tempfile.TemporaryDirectory(prefix="dsa_py_") as tmp:
-        f = Path(tmp) / "main.py"
-        f.write_text(code)
-        started = time.perf_counter()
-        try:
-            proc = subprocess.run(
-                [python_bin(), str(f)],
-                capture_output=True, text=True,
-                timeout=RUN_TIMEOUT_PY, cwd=tmp,
-            )
-            return {
-                "ok": proc.returncode == 0,
-                "stdout": proc.stdout,
-                "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000),
-            }
-        except subprocess.TimeoutExpired:
-            return {
-                "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {RUN_TIMEOUT_PY}s — "
-                          f"likely an infinite loop or runaway recursion.",
-                "ms": RUN_TIMEOUT_PY * 1000,
-            }
+    return timed_out_message(
+        code_runner().run({"kind": "python", "args": ["main.py"], "timeout": RUN_TIMEOUT_PY,
+                           "files": {"main.py": code}}),
+        RUN_TIMEOUT_PY, "likely an infinite loop or runaway recursion.")
 
 
 def run_go(code: str) -> dict:
-    go = go_bin()
-    if not go:
-        return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                "stderr": "Go toolchain not found on PATH. Install Go, or "
-                          "set it up so `go` is runnable from a shell."}
-    with tempfile.TemporaryDirectory(prefix="dsa_go_") as tmp:
-        d = Path(tmp)
-        (d / "main.go").write_text(code)
-        (d / "go.mod").write_text("module dsascratch\n\ngo 1.21\n")
-        started = time.perf_counter()
-        env = {**os.environ, "GOFLAGS": "-mod=mod"}
-        try:
-            proc = subprocess.run(
-                [go, "run", "."],
-                capture_output=True, text=True,
-                timeout=RUN_TIMEOUT_GO, cwd=str(d), env=env,
-            )
-            return {
-                "ok": proc.returncode == 0,
-                "stdout": proc.stdout,
-                "stderr": proc.stderr,
-                "exitCode": proc.returncode,
-                "ms": round((time.perf_counter() - started) * 1000),
-            }
-        except subprocess.TimeoutExpired:
-            return {
-                "ok": False, "stdout": "", "timeout": True, "exitCode": -1,
-                "stderr": f"Timed out after {RUN_TIMEOUT_GO}s — "
-                          f"likely an infinite loop, or a very slow first build.",
-                "ms": RUN_TIMEOUT_GO * 1000,
-            }
+    return timed_out_message(
+        code_runner().run({"kind": "go-run", "timeout": RUN_TIMEOUT_GO,
+                           "files": {"main.go": code, "go.mod": "module dsascratch\n\ngo 1.21\n"}}),
+        RUN_TIMEOUT_GO, "likely an infinite loop, or a very slow first build.")
 
 
 def format_go(code: str) -> dict:
-    go = go_bin()
-    if not go:
-        return {"ok": False, "code": code, "error": "Go toolchain not found."}
-    gofmt = Path(go).parent / "gofmt"
-    if not gofmt.exists():
-        return {"ok": False, "code": code, "error": "gofmt not found."}
-    try:
-        proc = subprocess.run([str(gofmt)], input=code, capture_output=True,
-                              text=True, timeout=10)
-        if proc.returncode == 0:
-            return {"ok": True, "code": proc.stdout}
-        return {"ok": False, "code": code, "error": proc.stderr}
-    except subprocess.TimeoutExpired:
-        return {"ok": False, "code": code, "error": "gofmt timed out."}
+    r = code_runner().run({"kind": "gofmt", "stdin": code, "timeout": 10, "files": {}})
+    if r.get("ok"):
+        return {"ok": True, "code": r["stdout"]}
+    error = "gofmt timed out." if r.get("timeout") else (r.get("stderr") or "gofmt failed.")
+    return {"ok": False, "code": code, "error": error}
 
 
 # ----------------------------------------------------------------------------
@@ -1787,7 +1683,7 @@ def api_get(p: str, q: dict[str, list[str]]) -> tuple[object, int] | None:
                 "lld": load_eng_curriculum("lld"),
             },
             "state": state,
-            "runtimes": {"python": True, "go": go_bin() is not None},
+            "runtimes": code_runner().available,
             "root": str(ROOT),
         })
     elif p == "/api/eng-problem":
@@ -1920,92 +1816,398 @@ def api_get(p: str, q: dict[str, list[str]]) -> tuple[object, int] | None:
     return None
 
 
+# Files the sign-in page needs before anyone is signed in (hosted mode).
+PUBLIC_STATIC = frozenset({"login.html", "login.js", "auth.css", "logo.svg", "theme-init.js"})
+PUBLIC_PREFIXES = ("vendor/fonts/",)
+
+# Content-Security-Policy for the hosted app: scripts only from this origin (the
+# Mongo shell in the Query Lab and PGlite need eval / WebAssembly), no framing.
+CSP = ("default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; "
+       "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; "
+       "connect-src 'self' blob: data:; worker-src 'self' blob:; frame-ancestors 'none'; "
+       "base-uri 'self'; form-action 'self'; object-src 'none'")
+
+STATIC_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".json": "application/json",
+    ".woff2": "font/woff2",
+    ".woff": "font/woff",
+    ".ttf": "font/ttf",
+    ".png": "image/png",
+    ".wasm": "application/wasm",
+    ".mjs": "application/javascript; charset=utf-8",
+}
+
+GOOGLE_START_RATE = auth.RateLimiter(30, 600)     # Google sign-in starts per client IP
+
+RUN_ROUTES = frozenset({"/api/run", "/api/eng-run", "/api/stdlib-run", "/api/api-run", "/api/format"})
+RUN_RATE_MINUTE = auth.RateLimiter(int(os.environ.get("EG_RUNS_PER_MINUTE", "20")), 60)
+RUN_RATE_HOUR = auth.RateLimiter(int(os.environ.get("EG_RUNS_PER_HOUR", "300")), 3600)
+_runs_lock = threading.Lock()
+_runs_in_flight: set = set()
+
+
+def dispatch_run(p: str, body: dict) -> dict:
+    """POST /api/run, /api/eng-run, /api/stdlib-run, /api/api-run, /api/format."""
+    s = lambda key, default="": str(body.get(key) or default)       # noqa: E731
+    if p == "/api/run":
+        code = s("code")
+        if not code.strip():
+            return {"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
+                    "stderr": "Nothing to run — the editor is empty."}
+        return run_python(code) if s("lang", "py") == "py" else run_go(code)
+    if p == "/api/eng-run":
+        return run_eng(s("lang", "go"), s("topic"), s("code"))
+    if p == "/api/stdlib-run":
+        return run_stdlib(stdlib_lang(s("lang", "py")), s("pkg"), s("level"), s("code"))
+    if p == "/api/api-run":
+        return run_api_file(s("type"), s("section", "Foundation"), s("level"), s("lang", "py"), s("code"))
+    return format_go(s("code"))
+
+
+def hosted_config_js() -> bytes:
+    """static/config.js as the hosted app serves it."""
+    return ("/* Served by server.py in hosted mode (EG_AUTH=1). */\n"
+            "window.EG_STATIC = false;\nwindow.EG_AUTH = true;\nwindow.EG_PROTECT = true;\n"
+            f"window.EG_UPGRADE_URL = {json.dumps(UPGRADE_URL)};\n").encode()
+
+
 # ----------------------------------------------------------------------------
 # HTTP handler
 # ----------------------------------------------------------------------------
 class Handler(BaseHTTPRequestHandler):
     server_version = "DSAStudio/1.0"
+    sys_version = ""
 
     def log_message(self, fmt, *args):  # quieter console
         if "/api/run" in (args[0] if args else ""):
             sys.stderr.write(f"  run  {args[0]}\n")
 
     # -- helpers ------------------------------------------------------------
-    def _send(self, code: int, body: bytes, ctype: str) -> None:
+    def _security_headers(self) -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "same-origin")
+        self.send_header("X-Frame-Options", "DENY")
+        if AUTH_ENABLED:
+            self.send_header("Content-Security-Policy", CSP)
+            self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+            self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+            if COOKIE_SECURE:
+                self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+
+    def _send(self, code: int, body: bytes, ctype: str, headers: dict | None = None) -> None:
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        self._security_headers()
+        for k, v in (headers or {}).items():
+            for one in (v if isinstance(v, list) else [v]):
+                self.send_header(k, one)
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            pass        # the browser moved on (navigation, reload) before the answer arrived
 
-    def _json(self, obj, code: int = 200) -> None:
-        self._send(code, json.dumps(obj).encode(), "application/json")
+    def _json(self, obj, code: int = 200, headers: dict | None = None) -> None:
+        self._send(code, json.dumps(obj).encode(), "application/json", headers)
+
+    def _redirect(self, location: str) -> None:
+        self._send(302, b"", "text/plain", {"Location": location})
 
     def _body(self) -> dict:
-        n = int(self.headers.get("Content-Length") or 0)
-        if not n:
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            return {}
+        if n <= 0 or n > MAX_BODY:
             return {}
         try:
-            return json.loads(self.rfile.read(n))
-        except json.JSONDecodeError:
+            body = json.loads(self.rfile.read(n))
+        except (json.JSONDecodeError, UnicodeDecodeError):
             return {}
+        return body if isinstance(body, dict) else {}
 
     def _static(self, rel: str) -> None:
         rel = rel.lstrip("/") or "index.html"
+        if AUTH_ENABLED and rel == "config.js":
+            self._send(200, hosted_config_js(), STATIC_TYPES[".js"])
+            return
         path = (STATIC / rel).resolve()
-        if not str(path).startswith(str(STATIC.resolve())) or not path.is_file():
+        if not path.is_relative_to(STATIC.resolve()) or not path.is_file():
             self._send(404, b"Not found", "text/plain")
             return
-        ctype = {
-            ".html": "text/html; charset=utf-8",
-            ".css": "text/css; charset=utf-8",
-            ".js": "application/javascript; charset=utf-8",
-            ".svg": "image/svg+xml",
-            ".json": "application/json",
-            ".woff2": "font/woff2",
-            ".woff": "font/woff",
-            ".ttf": "font/ttf",
-            ".png": "image/png",
-            ".wasm": "application/wasm",
-            ".mjs": "application/javascript; charset=utf-8",
-        }.get(path.suffix, "application/octet-stream")
-        self._send(200, path.read_bytes(), ctype)
+        self._send(200, path.read_bytes(), STATIC_TYPES.get(path.suffix, "application/octet-stream"))
+
+    # -- hosted mode: who is asking ------------------------------------------
+    def _client_ip(self) -> str:
+        if TRUST_PROXY:
+            fwd = self.headers.get("X-Forwarded-For", "")
+            if fwd:
+                return fwd.split(",")[-1].strip()      # the address our own proxy saw
+        return self.client_address[0]
+
+    def _cookie(self, wanted: str) -> str | None:
+        # Parsed by hand: http.cookies drops every cookie after one it cannot parse,
+        # and other apps on the same host can set those.
+        for part in (self.headers.get("Cookie") or "").split(";"):
+            name, _, value = part.strip().partition("=")
+            if name == wanted and value:
+                return value
+        return None
+
+    def _session_token(self) -> str | None:
+        return self._cookie(SESSION_COOKIE)
+
+    def _oauth_cookie(self, value: str, max_age: int) -> str:
+        # Lax, not Strict: it has to come back on the top-level redirect from Google.
+        parts = [f"{OAUTH_COOKIE}={value}", "Path=/", "HttpOnly", "SameSite=Lax", f"Max-Age={max_age}"]
+        if COOKIE_SECURE:
+            parts.append("Secure")
+        return "; ".join(parts)
+
+    def _google_redirect_uri(self) -> str:
+        if PUBLIC_ORIGIN:
+            return f"{PUBLIC_ORIGIN}/api/auth/google/callback"
+        host = (self.headers.get("X-Forwarded-Host") if TRUST_PROXY else None) or self.headers.get("Host", "")
+        return f"{'https' if COOKIE_SECURE else 'http'}://{host}/api/auth/google/callback"
+
+    def _signin_failed(self, code: str) -> None:
+        self._send(302, b"", "text/plain", {
+            "Location": f"/login.html?error={code if code in SIGNIN_ERRORS else 'google_failed'}",
+            "Set-Cookie": self._oauth_cookie("", 0)})
+
+    def _google_start(self, q: dict) -> None:
+        if GOOGLE is None or not GOOGLE.enabled:
+            self._signin_failed("google_off")
+            return
+        if not GOOGLE_START_RATE.allow(f"ip:{self._client_ip()}"):
+            self._signin_failed("rate_limited")
+            return
+        url, binding = GOOGLE.start(self._google_redirect_uri(), (q.get("next") or [""])[0])
+        self._send(302, b"", "text/plain", {"Location": url, "Set-Cookie": self._oauth_cookie(binding, 600)})
+
+    def _google_callback(self, q: dict) -> None:
+        one = lambda k: (q.get(k) or [""])[0]
+        if GOOGLE is None or not GOOGLE.enabled:
+            self._signin_failed("google_off")
+            return
+        if one("error"):                                   # cancelled on Google's screen
+            AUTH.take_oauth_state(one("state"), self._cookie(OAUTH_COOKIE) or "")
+            self._signin_failed("google_cancelled")
+            return
+        ip = self._client_ip()
+        try:
+            email, sub, next_hash = GOOGLE.finish(one("state"), one("code"), self._cookie(OAUTH_COOKIE) or "",
+                                                  self._google_redirect_uri())
+            token, _ = AUTH.sign_in_google(email, sub, ip, self.headers.get("User-Agent", ""))
+        except google_signin.GoogleError as e:
+            AUTH.log("google_failed", ip=ip, note=e.reason[:200])
+            self._signin_failed("google_failed")
+            return
+        except auth.AuthError as e:
+            self._signin_failed(e.code)
+            return
+        # A 200 page that moves on by itself, not a 302: this response ends a navigation
+        # that started on Google's site, so a redirect from it would still count as
+        # cross-site and the browser would hold back the new SameSite=Strict cookie.
+        target = "/" + next_hash
+        page = (f'<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url={target}">'
+                f'<title>Signing in</title><p style="font-family:sans-serif;padding:40px">Signed in. '
+                f'<a href="{target}">Continue to the guide</a>.</p>').encode()
+        self._send(200, page, "text/html; charset=utf-8", {"Set-Cookie": [
+            self._session_cookie(token, auth.SESSION_TTL), self._oauth_cookie("", 0)]})
+
+    def _session_cookie(self, token: str, max_age: int) -> str:
+        parts = [f"{SESSION_COOKIE}={token}", "Path=/", "HttpOnly", "SameSite=Strict", f"Max-Age={max_age}"]
+        if COOKIE_SECURE:
+            parts.append("Secure")
+        return "; ".join(parts)
+
+    def _user(self):
+        return AUTH.session_user(self._session_token()) if AUTH_ENABLED else None
+
+    def _same_origin(self) -> bool:
+        """POSTs must come from our own pages (with SameSite=Strict cookies, defence in depth
+        against cross-site request forgery)."""
+        origin = self.headers.get("Origin") or ""
+        if not origin:
+            ref = self.headers.get("Referer") or ""
+            origin = f"{urlparse(ref).scheme}://{urlparse(ref).netloc}" if ref else ""
+        if not origin:
+            return False
+        if PUBLIC_ORIGINS:
+            return origin.rstrip("/") in PUBLIC_ORIGINS
+        host = self.headers.get("X-Forwarded-Host") if TRUST_PROXY else None
+        return urlparse(origin).netloc == (host or self.headers.get("Host") or "")
+
+    def _user_state(self, user) -> dict:
+        return AUTH.load_progress(user["id"], default_state())
 
     # -- routes -------------------------------------------------------------
     def do_GET(self) -> None:
         u = urlparse(self.path)
+        if AUTH_ENABLED:
+            self._hosted_get(u)
+            return
         reply = api_get(u.path, parse_qs(u.query))
         if reply is None:
             self._static(u.path)
         else:
             self._json(*reply)
 
+    def _hosted_get(self, u) -> None:
+        rel = u.path.lstrip("/")
+        # Decide on the normalised path: "vendor/fonts/../app.js" must not pass as public.
+        if ".." in rel.split("/") or "\\" in rel:
+            self._send(404, b"Not found", "text/plain")
+            return
+        user = self._user()
+        if rel in ("login", "login.html"):
+            if user:
+                self._redirect("./")
+            else:
+                self._static("login.html")
+            return
+        if rel in PUBLIC_STATIC or rel.startswith(PUBLIC_PREFIXES):
+            self._static(rel)
+            return
+        if u.path == "/api/auth/providers":
+            self._json({"email": True, "google": bool(GOOGLE and GOOGLE.enabled)})
+            return
+        if u.path == "/api/auth/google/start":
+            self._google_start(parse_qs(u.query))
+            return
+        if u.path == "/api/auth/google/callback":
+            self._google_callback(parse_qs(u.query))
+            return
+        if u.path == "/api/me":
+            self._json(AUTH.account(user) if user else {"error": "signed_out"}, 200 if user else 401)
+            return
+        if user is None:
+            if u.path.startswith("/api/"):
+                self._json({"error": "signed_out", "message": "Sign in to continue."}, 401)
+            elif rel in ("", "index.html"):
+                self._redirect("login.html")
+            else:
+                self._send(401, b"Sign in first.", "text/plain")
+            return
+        if not u.path.startswith("/api/"):
+            self._static(u.path)
+            return
+        if not AUTH.allow_api(user):
+            self._json({"error": "rate_limited", "message": "Too many requests. Slow down a little."}, 429,
+                       {"Retry-After": "60"})
+            return
+        q = parse_qs(u.query)
+        tier = AUTH.effective_tier(user)
+        denied = entitlements.check(u.path, q, tier)
+        if denied is not None:
+            self._json(denied, 403)
+            return
+        if u.path == "/api/state":
+            self._json(self._user_state(user))
+            return
+        reply = api_get(u.path, q)
+        if reply is None:
+            self._json({"error": "not_found"}, 404)
+            return
+        payload, status = reply
+        if u.path == "/api/bootstrap":
+            payload = {**payload, "state": self._user_state(user), "root": "",
+                       "runtimes": code_runner().available, "account": AUTH.account(user)}
+        self._json(entitlements.filter_payload(u.path, q, payload, tier), status)
+
     def do_POST(self) -> None:
         p = urlparse(self.path).path
-        body = self._body()
+        if AUTH_ENABLED:
+            self._hosted_post(p)
+            return
+        self._local_post(p, self._body())
 
-        if p == "/api/run":
-            code = body.get("code", "")
-            lang = body.get("lang", "py")
-            if not code.strip():
-                self._json({"ok": False, "stdout": "", "exitCode": -1, "ms": 0,
-                            "stderr": "Nothing to run — the editor is empty."})
+    def _hosted_post(self, p: str) -> None:
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = -1
+        if length < 0 or length > MAX_BODY:
+            self._json({"error": "too_large"}, 413)
+            return
+        if not self._same_origin() or "application/json" not in (self.headers.get("Content-Type") or ""):
+            self._json({"error": "forbidden", "message": "Cross-site request refused."}, 403)
+            return
+        body = self._body()
+        ip = self._client_ip()
+        try:
+            if p == "/api/auth/request-otp":
+                self._json(AUTH.request_otp(body.get("email"), ip))
                 return
-            self._json(run_python(code) if lang == "py" else run_go(code))
-        elif p == "/api/eng-run":
-            self._json(run_eng(body.get("lang", "go"), body.get("topic", ""),
-                                body.get("code", "")))
-        elif p == "/api/stdlib-run":
-            self._json(run_stdlib(stdlib_lang(body.get("lang", "py")),
-                                  body.get("pkg", ""), body.get("level", ""),
-                                  body.get("code", "")))
-        elif p == "/api/api-run":
-            self._json(run_api_file(body.get("type", ""), body.get("section", "Foundation"),
-                                    body.get("level", ""), body.get("lang", "py"),
-                                    body.get("code", "")))
-        elif p == "/api/format":
-            self._json(format_go(body.get("code", "")))
+            if p == "/api/auth/verify-otp":
+                token, account = AUTH.verify_otp(body.get("email"), body.get("code"), ip,
+                                                 self.headers.get("User-Agent", ""))
+                self._json({"ok": True, "account": account}, 200,
+                           {"Set-Cookie": self._session_cookie(token, auth.SESSION_TTL)})
+                return
+            if p == "/api/auth/logout":
+                AUTH.logout(self._session_token())
+                self._json({"ok": True}, 200, {"Set-Cookie": self._session_cookie("", 0)})
+                return
+            user = self._user()
+            if user is None:
+                self._json({"error": "signed_out", "message": "Sign in to continue."}, 401)
+                return
+            if p in RUN_ROUTES:
+                self._hosted_run(p, body, user)
+            elif p == "/api/state":
+                state = default_state()
+                state.update(body)
+                AUTH.save_progress(user["id"], state)
+                self._json({"ok": True})
+            elif p == "/api/patch":
+                with _state_lock:
+                    AUTH.save_progress(user["id"], apply_patch(self._user_state(user), body))
+                self._json({"ok": True})
+            else:
+                self._json({"error": "not_found"}, 404)
+        except auth.AuthError as e:
+            self._json(e.body(), e.status, {"Retry-After": str(e.retry_after)} if e.retry_after else None)
+
+    def _hosted_run(self, p: str, body: dict, user) -> None:
+        """Code runs on the hosted guide: only with a runner container, only for pages
+        the reader's plan opens, one at a time per account, rate limited."""
+        if not RUNNER_SOCKET:
+            self._json({"ok": False, "exitCode": 1, "stdout": "", "stderr": CODE_RUN_OFF,
+                        "error": CODE_RUN_OFF, "ms": 0})
+            return
+        denied = entitlements.check_run(p, body, AUTH.effective_tier(user))
+        if denied:
+            self._json(denied, 403)
+            return
+        key = f"user:{user['id']}"
+        if not (RUN_RATE_MINUTE.allow(key) and RUN_RATE_HOUR.allow(key)):
+            self._json(sandbox.failure("You are running code very often. Wait a minute and try again.",
+                                       error="rate_limited"), 429, {"Retry-After": "60"})
+            return
+        with _runs_lock:
+            busy = user["id"] in _runs_in_flight
+            _runs_in_flight.add(user["id"])
+        if busy:
+            self._json(sandbox.failure("Your previous run is still going. Wait for it to finish.",
+                                       error="busy"), 429)
+            return
+        try:
+            self._json(dispatch_run(p, body))
+        finally:
+            with _runs_lock:
+                _runs_in_flight.discard(user["id"])
+
+    def _local_post(self, p: str, body: dict) -> None:
+        if p in RUN_ROUTES:
+            self._json(dispatch_run(p, body))
         elif p == "/api/state":
             with _state_lock:
                 save_state(body)
@@ -2013,59 +2215,83 @@ class Handler(BaseHTTPRequestHandler):
         elif p == "/api/patch":
             # Merge a single problem's record without shipping whole state.
             with _state_lock:
-                state = load_state()
-                pid = body.get("id")
-                if pid:
-                    rec = state["problems"].setdefault(pid, {})
-                    rec.update(body.get("patch", {}))
-                if "settings" in body:
-                    state["settings"].update(body["settings"])
-                if body.get("doc"):
-                    # Reading state for module pages: scroll depth, checked
-                    # sections, highlights, completion.
-                    docs = state.setdefault("docs", {})
-                    docs.setdefault(body["doc"], {}).update(body.get("docPatch", {}))
-                if "session" in body:
-                    day = body["session"]["date"]
-                    state["sessions"][day] = (
-                        state["sessions"].get(day, 0) + body["session"]["seconds"]
-                    )
-                save_state(state)
+                save_state(apply_patch(load_state(), body))
             self._json({"ok": True})
         else:
             self._send(404, b"Not found", "text/plain")
 
 
+def open_auth_store():
+    """Hosted mode: the account store, or exit with what is missing."""
+    mailer = auth.Mailer()
+    if not mailer.configured:
+        sys.exit("EG_AUTH=1 needs a way to send sign-in codes: set EG_BREVO_API_KEY and EG_MAIL_FROM, "
+                 "or EG_SMTP_HOST and EG_MAIL_FROM "
+                 "(plus EG_SMTP_USER / EG_SMTP_PASSWORD), or EG_OTP_CONSOLE=1 for local development.")
+    if mailer.provider == "console" and not LOOPBACK:
+        print("  [warn] EG_OTP_CONSOLE=1 on a public address: codes go to this console, not by email.",
+              file=sys.stderr)
+    return auth.AuthStore(AUTH_DB, auth.load_secret(AUTH_DB.parent), mailer)
+
+
+def open_google(store):
+    g = google_signin.GoogleSignIn(store)
+    if bool(g.client_id) != bool(g.client_secret):
+        sys.exit("Sign in with Google needs both EG_GOOGLE_CLIENT_ID and EG_GOOGLE_CLIENT_SECRET.")
+    return g
+
+
 def main() -> None:
+    global AUTH, GOOGLE
     if not TSV.exists():
         sys.exit(f"Missing {TSV}. Run this from the DSA-Practice repo.")
-    DATA.mkdir(parents=True, exist_ok=True)
+    if AUTH_ENABLED:
+        AUTH = open_auth_store()       # hosted: writes only next to EG_AUTH_DB (the image's /data volume)
+        GOOGLE = open_google(AUTH)
+    else:
+        DATA.mkdir(parents=True, exist_ok=True)
+    if not AUTH_ENABLED and not LOOPBACK:
+        sys.exit(f"EG_HOST={HOST}: the local app runs code you send it, so it only binds to loopback. "
+                 "Set EG_AUTH=1 for the hosted mode (sign-in; code runs only in the runner container).")
 
     problems = load_curriculum()
     written = sum(1 for p in problems if p["has"]["pySolution"])
     go_ok = "yes" if go_bin() else "NOT FOUND (Python still runs)"
 
     try:
-        srv = StudioServer(("127.0.0.1", PORT), Handler)
+        srv = StudioServer((HOST, PORT), Handler)
     except PermissionError:
         sys.exit(f"Cannot bind port {PORT}: permission denied. Ports below 1024 need "
                   f"root on macOS/Linux. Use a port above 1024, e.g. DSA_PORT=8420 python3 webapp/server.py")
     except OSError as e:
         sys.exit(f"Cannot bind port {PORT}: {e}. Is another instance already running? "
-                  f"Try a different port: ./studio {PORT + 1}")
-    url = f"http://127.0.0.1:{PORT}"
+                  f"Try a different port: DSA_PORT={PORT + 1}")
+    url = f"http://{'127.0.0.1' if LOOPBACK else HOST}:{PORT}"
     print("=" * 62)
-    print("  Ultimate Engineering Guide")
+    print("  Ultimate Engineering Guide" + ("  ·  hosted (sign-in required)" if AUTH_ENABLED else ""))
     print("=" * 62)
     print(f"  URL         {url}")
     print(f"  Problems    {len(problems)} indexed, {written} written")
-    print(f"  Python      {python_bin()}")
-    print(f"  Go          {go_ok}")
-    print(f"  Progress    {STATE_FILE.relative_to(ROOT)}")
+    if AUTH_ENABLED:
+        print(f"  Accounts    {AUTH_DB.relative_to(ROOT) if AUTH_DB.is_relative_to(ROOT) else AUTH_DB}")
+        print(f"  Codes via   {AUTH.mailer.describe()}")
+        print(f"  Google      {'on' if GOOGLE.enabled else 'off (EG_GOOGLE_CLIENT_ID / _SECRET not set)'}")
+        print(f"  Cookies     {'Secure (HTTPS only)' if COOKIE_SECURE else 'not Secure (development)'}")
+        if RUNNER_SOCKET:
+            reachable = code_runner().ping()
+            print(f"  Code runs   runner container at {RUNNER_SOCKET}"
+                  f"{'' if reachable else ' (not answering yet)'}")
+        else:
+            print("  Code runs   off (no EG_RUNNER_SOCKET; see deploy/compose.yaml)")
+    else:
+        print(f"  Python      {python_bin()}")
+        print(f"  Go          {go_ok}")
+        print(f"  Progress    {STATE_FILE.relative_to(ROOT)}")
     print("=" * 62)
     print("  Ctrl+C to stop\n", flush=True)
 
-    threading.Timer(0.6, lambda: webbrowser.open(url)).start()
+    if LOOPBACK and os.environ.get("EG_NO_BROWSER") != "1":
+        threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

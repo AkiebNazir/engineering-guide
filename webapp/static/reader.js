@@ -509,8 +509,9 @@ function modCard(mod, it) {
   }
   const state = p.state === 'done' ? 'Done'
     : p.state === 'reading' ? (isWorkspaceItem(mod, it) || m.stdlibLang ? 'In progress' : `${p.pct}% read`) : '';
-  return `<a class="mcard st-${p.state}${missing ? ' missing' : ''}" href="${itemHref(mod, it)}" style="--p:${p.pct}">
-    <span class="mcard-top"><span class="mcard-num">${esc(m.label(it))}</span>${stateGlyph(p)}</span>
+  const lock = it.locked && window.EGAccount ? EGAccount.lockBadge(it.requires) : '';
+  return `<a class="mcard st-${p.state}${missing ? ' missing' : ''}${it.locked ? ' is-locked' : ''}" href="${itemHref(mod, it)}" style="--p:${p.pct}">
+    <span class="mcard-top"><span class="mcard-num">${esc(m.label(it))}</span>${lock || stateGlyph(p)}</span>
     <span class="mcard-title">${esc(modTitle(m, it))}</span>
     ${!m.compact && it.summary ? `<span class="mcard-sum">${esc(it.summary)}</span>` : ''}
     ${m.stdlibLang ? stdlibStrip(m.stdlibLang, it) : ''}
@@ -914,6 +915,7 @@ async function renderReader(mod, id) {
       docCache.set(`doc:${key}`, doc);
     }
   } catch (e) {
+    if (paywallInto(host, e)) return;
     host.innerHTML = emptyMsg('This page could not be opened', 'The server did not return it. Check it is still running, then reload.');
     return;
   }

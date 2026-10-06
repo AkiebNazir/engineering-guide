@@ -5,33 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <title>Ultimate Engineering Guide</title>
-<script>
-/* Paint the right theme BEFORE first paint. The server round-trip that loads
-   settings.theme finishes long after this, so without it every reload flashes
-   the wrong ground. localStorage mirrors the server copy; "system" follows
-   prefers-color-scheme. */
-(function () {
-  var pref = 'system';
-  try { pref = localStorage.getItem('dsa-theme') || 'system'; } catch (e) {}
-  var dark = pref === 'dark' ||
-    (pref === 'system' && !matchMedia('(prefers-color-scheme: light)').matches);
-  var r = document.documentElement;
-  r.dataset.theme = dark ? 'dark' : 'light';
-  r.dataset.themePref = pref;
-})();
-/* iOS Safari zooms into any focused field whose text is under 16px (the code
-   editor, search) and stays zoomed. maximum-scale=1 stops that, and iOS still
-   allows pinch-zoom despite it. Elsewhere it would block pinch-zoom, and no
-   other browser auto-zooms, so iOS only. */
-(function () {
-  var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPadOS reports as a Mac
-  if (ios) {
-    var vp = document.querySelector('meta[name=viewport]');
-    vp.content += ', maximum-scale=1';
-  }
-})();
-</script>
+<script src="./theme-init.js"></script>
+<script src="./config.js"></script>
+<script src="./protect.js"></script>
 <link rel="icon" type="image/svg+xml" href="./logo.svg">
 <link rel="stylesheet" href="./vendor/fonts/fonts.css">
 <link rel="stylesheet" href="./vendor/codemirror/5.65.16/codemirror.css">
@@ -52,6 +28,7 @@
 <link rel="stylesheet" href="./api-practice.css">
 <link rel="stylesheet" href="./stdlib-practice.css">
 <link rel="stylesheet" href="./qlab.css">
+<link rel="stylesheet" href="./auth.css">
 </head>
 <body>
 
@@ -298,11 +275,11 @@
      Every library and font is served from /vendor, so the app works with no network.
      The one exception is browser-run.js, used only by the static build (no server to
      run code): it loads Pyodide from jsDelivr and sends Go to the Go Playground. -->
-<script src="./config.js"></script>
 <script src="./browser-run.js"></script>
 <script src="./lazy.js"></script>
 <script src="./editor-tools.js"></script>
 <script src="./app.js"></script>
+<script src="./account.js"></script>
 <script src="./arch-diagram.js"></script>
 <script src="./reader.js"></script>
 <script src="./viz.js"></script>

@@ -12,9 +12,10 @@ DSA_PORT=9000 python3 webapp/server.py   # any other port
 
 No `pip install`, no `npm install`, no build step — the server is Python stdlib only.
 
-To publish it, `make build` writes a static copy to `dist/` (no server needed: code
-running is off and progress is kept in the browser). See
-[Running and Deploying the Guide](../docs/DEPLOYMENT.md).
+To publish it for learners, run the hosted mode (`make up`: the web app plus a sandboxed
+code runner, in Docker): sign-in with Google or an emailed code, Free / Base / Pro / Pro Max plans
+enforced on the server, per-user progress, code running in an isolated container. `make build` writes a static
+free preview to `dist/`. See [Running and Deploying the Guide](../docs/DEPLOYMENT.md).
 Every library and font the pages use is served from `webapp/static/vendor/`, so the
 app works with no internet connection at all (see the root `README.md`, section 6, for
 what else to install before going offline).

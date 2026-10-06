@@ -1,0 +1,29 @@
+# Serve the guide straight from this machine, no tunnel or outside service: Caddy takes
+# ports 80 and 443 and handles HTTPS (deploy/Caddyfile). Your router forwards those two
+# ports here. Used on top of compose.yaml:
+#
+#   make up-direct      (docker compose -f deploy/compose.yaml -f deploy/compose.direct.yaml up -d)
+#
+# The address comes from EG_SITE_ADDRESS in tmp/guide.env (make passes only that value
+# here: Caddy never sees the mail or Google keys).
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [web]
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      EG_SITE_ADDRESS: "${EG_SITE_ADDRESS:-localhost}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - eg-caddy-data:/data               # certificates and keys
+      - eg-caddy-config:/config
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  eg-caddy-data:
+  eg-caddy-config:

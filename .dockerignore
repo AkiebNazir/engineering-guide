@@ -7,3 +7,7 @@ dist
 webapp/static/data
 # Personal progress: never baked into an image
 webapp/data/progress.json
+webapp/data/auth.sqlite3*
+webapp/data/auth_secret.key
+# Private local notes
+tmp

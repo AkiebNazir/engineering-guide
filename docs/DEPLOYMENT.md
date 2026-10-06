@@ -1,18 +1,24 @@
 # Running and Deploying the Guide
 
-The web app runs in two modes from the same front end (`webapp/static/`):
+The web app runs in three modes from the same front end (`webapp/static/`):
 
-| | Local app (`make app`) | Static site (`make build`) |
-|---|---|---|
-| What it is | `webapp/server.py`, Python standard library, on `127.0.0.1` | A plain folder, `dist/`, of HTML, JS, CSS and pre-rendered JSON |
-| Reading every module, visualizers, labs, diagrams | Yes | Yes |
-| **Run** / **gofmt**: DSA problems, standard-library levels | Yes (Python and Go on your machine) | Yes: Python in the browser (Pyodide, WebAssembly), Go on the [Go Playground](https://go.dev/play) |
-| **Run**: Go/Py Engineering, Software Design LLD, API labs | Yes | No (they need the repo's files and packages); the editor says to run it locally |
-| Progress (status, drafts, notes, timers, reviews) | `webapp/data/progress.json` | The visitor's browser (`localStorage`), per device |
-| Where it can run | Your machine only (it executes code you type) | Any static host or container platform |
+| | Local app (`make app`) | Hosted app (`make up`, `make serve`, `deploy/`) | Static preview (`make build`) |
+|---|---|---|---|
+| What it is | `webapp/server.py`, Python standard library, on `127.0.0.1` | `webapp/server.py` with `EG_AUTH=1`, behind HTTPS | A plain folder, `dist/`, of HTML, JS, CSS and pre-rendered JSON |
+| Sign-in | None | Google, or an emailed one-time code | None |
+| Content | Every module | What the account's plan includes (Free, Base, Pro, Pro Max) | The Free plan only |
+| **Run** / **gofmt**: DSA problems, standard-library levels | Yes (Python and Go on your machine) | Yes with `make up` (a sandboxed runner container); no with `make serve` or the web image alone | Yes: Python in the browser (Pyodide, WebAssembly), Go on the [Go Playground](https://go.dev/play) |
+| **Run**: Go/Py Engineering, Software Design LLD, API labs | Yes | Yes with `make up`, for the lessons the plan opens | No (they need the repo's files and packages); the editor says so |
+| Progress (status, drafts, notes, timers, reviews) | `webapp/data/progress.json` | Per account (SQLite) | The visitor's browser (`localStorage`), per device |
+| Copy / inspect restrictions | Off | On | On |
+| Where it can run | Your machine only (it executes code you type) | Any machine with Docker, a laptop included; the web image alone on any container platform | Any static host |
+
+Plans and what each one reads are defined in `webapp/entitlements.py`; the sign-in
+rules in `webapp/auth.py`.
 
 The static build is safe to publish: it contains no server, executes nothing on the host,
-and never includes your `progress.json`.
+never includes your `progress.json`, and holds only Free-plan content (pages above it are
+small `upgrade_required` stubs).
 
 ### Loading speed and caching
 
@@ -79,7 +85,7 @@ as it is served through an existing endpoint; a new endpoint is added to
 
 ## GitHub Pages (set up)
 
-`.github/workflows/deploy.yaml` builds and deploys on every push to `main`, and can be run
+`.github/workflows/deploy.yaml` runs `make test`, then builds the free preview and deploys it on every push to `main`, and can be run
 by hand (Actions → Deploy to GitHub Pages → Run workflow). Pull requests run the build
 only, so a change that breaks it is caught before merge.
 
@@ -113,17 +119,60 @@ No redirects or SPA fallback rules are needed.
 
 ## Containers (any cloud)
 
-`deploy/Dockerfile` builds the site and serves it with nginx on port 8080: the default
-port for Google Cloud Run, and easy to map on AWS App Runner / ECS, Azure Container Apps,
-Fly.io, Render, Kubernetes and the rest.
+Two images, both on port 8080 (the default for Google Cloud Run, and easy to map on AWS
+App Runner / ECS, Azure Container Apps, Fly.io, Render, Kubernetes and the rest):
+
+| Image | What it serves |
+|---|---|
+| `deploy/Dockerfile` | The hosted app: sign-in, plans, per-user progress, data on a `/data` volume |
+| `deploy/Dockerfile.runner` | The code runner next to it (no port; only through `deploy/compose.yaml`) |
+| `deploy/Dockerfile.static` | The static free preview, served by nginx |
 
 ```bash
-make docker-build            # docker build -f deploy/Dockerfile -t engineering-guide .
-make docker-run              # http://127.0.0.1:8080
+make docker-build            # hosted app:     docker build -f deploy/Dockerfile -t engineering-guide .
+make docker-run              # http://127.0.0.1:8080, sign-in codes printed to the container log
+make docker-build-static     # free preview:   docker build -f deploy/Dockerfile.static -t engineering-guide-preview .
 ```
 
-`deploy/nginx.conf` gzips text, caches the versioned libraries under `vendor/` for a
-year and makes browsers revalidate everything else, so a redeploy shows up at once.
+`deploy/nginx.conf` sends the same security headers as the hosted app, gzips text,
+caches the versioned libraries under `vendor/` for a year and makes browsers revalidate
+everything else, so a redeploy shows up at once.
+
+### The whole hosted guide on one machine, code running included
+
+```bash
+make up        # web + runner (deploy/compose.yaml), on http://127.0.0.1:8080
+make logs      # follow both;  make down  stops them, data stays in Docker volumes
+make tunnel    # optional: share it over HTTPS with Tailscale Funnel
+```
+
+`make up` starts two containers. `web` is the hosted app above. `runner`
+(`webapp/runner.py`) runs learners' code, and is built to assume that code is hostile:
+
+- no network at all: not the internet, not the home network, not `web`; the two talk
+  over a Unix socket on a shared volume that only the web container's group may open
+- no accounts database, no secrets, no curriculum: each job carries only the files of
+  that one run (`webapp/sandbox.py` stages them; the content folder is never written)
+- a read-only filesystem, capped memory (2 GB), CPU (2 cores) and process count
+- each run as its own throwaway user with no groups or capabilities, in a private
+  scratch directory, under CPU, process, file-size and memory limits, killed with
+  everything it started when it finishes or times out; leftovers are swept
+- Go compiles as a separate build user that owns the shared build cache (no learner code
+  runs at build time); the program then runs as the throwaway user
+
+The web app sends a run only for pages the reader's plan opens (`entitlements.check_run`),
+one at a time per account, with a per-account rate limit. The site listens on
+`127.0.0.1` only; a tunnel such as Tailscale Funnel or Cloudflare Tunnel gives it a
+public HTTPS address without opening anything else on the machine.
+
+To serve it with no tunnel or outside service at all, `make up-direct` adds a third
+container, Caddy (`deploy/compose.direct.yaml`, `deploy/Caddyfile`), on ports 80 and 443.
+It terminates HTTPS and forwards to `web`; the router forwards those two ports to the
+machine. `EG_SITE_ADDRESS` picks the certificate: a host name pointing at the machine gets
+a Let's Encrypt certificate, renewed automatically; a bare IP address gets Caddy's own
+certificate, which browsers warn about once. This needs an internet connection with a
+public IP address (not CGNAT). The runner image is
+about 2.4 GB (Python and Go with every library the lessons use, precompiled).
 
 ---
 
@@ -138,13 +187,21 @@ content/            all learning material, the app's single source of truth (rea
   ship-and-run/       Tool-Kit/  TestingAndQuality/  CICD/  DataEngineering/
   study-plans/        master_dsa_plan.md  REVIEW_LEDGER.md  GOOGLE_INTERVIEW_PREP.md  CURRICULUM.md (generated)
 webapp/
-  server.py         local app: serves the front end, answers /api/*, runs code (paths: CONTENT and friends at the top)
+  server.py         local app / hosted app (EG_AUTH=1): serves the front end, answers /api/*
+  sandbox.py        stages each code run as a set of files; runs it locally or hands it to the runner
+  runner.py         the hosted guide's code runner (its own container, no network)
+  auth.py           hosted mode: emailed one-time codes (Brevo), sessions, per-user progress (SQLite)
+  google_signin.py  hosted mode: Sign in with Google
+  entitlements.py   the Free / Base / Pro / Pro Max plans and what each one reads
+  admin.py          grant and revoke plans, list accounts, end sessions
+  tests/            sign-in and plans tests (make test)
   build_static.py   static build: dist/ from the front end + every /api answer
   static/           the front end (index.html, app.js, …, vendor/ libraries)
   scripts/          developer checks for the front end (npm ci first; see below)
   data/             progress.json, your local progress
 tools/              curriculum tooling: problems.tsv (DSA index), generators, checkers; ollama/Modelfile
-deploy/             Dockerfile + nginx.conf for container platforms
+deploy/             Dockerfile (hosted app), Dockerfile.runner + compose.yaml (code runner),
+                    compose.direct.yaml + Caddyfile (serve it from this machine), Dockerfile.static + nginx.conf (free preview)
 docs/               this guide; CONTEXT.md (session handoff notes)
 .github/workflows/  GitHub Pages deployment
 docker-compose.databases.yml   Postgres, MongoDB and Redis for the SQL / NoSQL lessons
