@@ -219,6 +219,18 @@ class HostedRunTests(unittest.TestCase):
                                                      "code": "package solution"}, cookie=pro)
         self.assertEqual((st, out["stdout"]), (200, "ran go-test\n"))
 
+    def test_several_public_origins(self):
+        cookie = self.login("runner-origins@example.com")
+        mine = f"http://127.0.0.1:{self.port}"
+        saved = server.PUBLIC_ORIGINS
+        try:
+            server.PUBLIC_ORIGINS = ["https://203.0.113.7", mine]          # public IP + this machine
+            self.assertEqual(self.req("POST", "/api/format", {"code": "package main"}, cookie=cookie)[0], 200)
+            server.PUBLIC_ORIGINS = ["https://203.0.113.7"]
+            self.assertEqual(self.req("POST", "/api/format", {"code": "package main"}, cookie=cookie)[0], 403)
+        finally:
+            server.PUBLIC_ORIGINS = saved
+
     def test_one_run_at_a_time_and_rate_limit(self):
         cookie = self.login("runner-busy@example.com")
         results = []

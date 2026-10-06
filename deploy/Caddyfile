@@ -5,13 +5,14 @@
 #   a host name that points at this machine   a free Let's Encrypt certificate, renewed
 #                                             automatically (needs ports 80 and 443 open)
 #   an IP address                             Caddy's own certificate: browsers warn once
+# https://localhost also works on this machine itself (Caddy's own certificate).
 {
 	admin off
 	skip_install_trust # nothing to install it into inside a container
 	default_sni {$EG_SITE_ADDRESS} # browsers send no name when visiting a bare IP
 }
 
-{$EG_SITE_ADDRESS} {
+{$EG_SITE_ADDRESS}, localhost {
 	encode zstd gzip
 	reverse_proxy web:8080
 }

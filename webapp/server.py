@@ -101,7 +101,10 @@ LOOPBACK = HOST in ("127.0.0.1", "localhost", "::1")
 COOKIE_SECURE = os.environ.get("EG_COOKIE_SECURE", "0" if LOOPBACK else "1") == "1"
 SESSION_COOKIE = "__Host-eg_session" if COOKIE_SECURE else "eg_session"
 TRUST_PROXY = os.environ.get("EG_TRUST_PROXY", "") == "1"     # read X-Forwarded-For / -Proto
-PUBLIC_ORIGIN = os.environ.get("EG_PUBLIC_ORIGIN", "").rstrip("/")   # e.g. https://guide.example.com
+# The site's origin, e.g. https://guide.example.com. Several, comma-separated, are allowed
+# (e.g. a public address and https://localhost); the first is the one Google returns to.
+PUBLIC_ORIGINS = [o.rstrip("/") for o in re.split(r"[,\s]+", os.environ.get("EG_PUBLIC_ORIGIN", "")) if o]
+PUBLIC_ORIGIN = PUBLIC_ORIGINS[0] if PUBLIC_ORIGINS else ""
 UPGRADE_URL = os.environ.get("EG_UPGRADE_URL", "")           # where "Upgrade" buttons go (billing page)
 AUTH_DB = Path(os.environ.get("EG_AUTH_DB", str(DATA / "auth.sqlite3")))
 MAX_BODY = 4_000_000
@@ -2037,8 +2040,8 @@ class Handler(BaseHTTPRequestHandler):
             origin = f"{urlparse(ref).scheme}://{urlparse(ref).netloc}" if ref else ""
         if not origin:
             return False
-        if PUBLIC_ORIGIN:
-            return origin == PUBLIC_ORIGIN
+        if PUBLIC_ORIGINS:
+            return origin.rstrip("/") in PUBLIC_ORIGINS
         host = self.headers.get("X-Forwarded-Host") if TRUST_PROXY else None
         return urlparse(origin).netloc == (host or self.headers.get("Host") or "")
 
