@@ -1160,7 +1160,7 @@ const EMOJI_CALLOUT = {
   '🏭': 'practice', '🚀': 'practice', '❓': 'question',
 };
 const LABEL_CALLOUT = [
-  [/^your turn$/i, 'yourturn'],
+  [/^your turn\b/i, 'yourturn'],
   [/analog/i, 'analogy'],
   [/interview/i, 'interview'],
   [/warn|pitfall|gotcha|caution|trap|mistake|danger|watch out|anti-?pattern/i, 'warn'],

@@ -195,6 +195,22 @@ Keep this bar. It is the reason the user said "format is nice."
   line marked in the code; predict mode asks *which variables will change* and scores the guess; 0.25×.
   State = frame fields minus presentational ones, with authored `vars` laid over (vars alone missed
   in-place array writes). `validate_viz_player.js`: 353/353, 410/410.
+**6 Oct 2026 — Maths: notebook examples rebuilt for beginners; 00 warm-up; step-by-step reveal.** User said
+the notebook examples were hard to follow and not really step by step, and asked for the module to be "very
+very easy". Every `> **Notebook example:**` (105 → 190) now follows one format: problem (one skill), **What
+you need** (the rule restated in plain words), **Plan**, numbered steps each starting with a bold move name
+and doing one move (optional *Why:* line), then **Answer** and **Check**; bundled examples were split. Each is
+followed by a separate `> **Your turn:**` blockquote holding `<details>` with a worked answer. All numbers
+verified by throwaway scripts (not in the repo). New `00_maths_warm_up.md` (negatives, fractions/percent,
+powers/roots, algebra, solving/rearranging, straight lines, estimating; 14 examples) in a new
+`Part 0 · Warm-up` (server.py TRACK_PARTS); README placement check, routes, path and diagram updated, plus a
+"How to read a notebook example" table. reader.js `stepThrough`: a callout labelled exactly "Notebook example"
+whose body has a direct `<ol>` gets a bar (Show step 1 / Next step / Show all / Start over) and hides the
+paragraphs after the list (Answer, Check) until the last step; new `yourturn` callout type (✏️). Markup
+rules the parser relies on: one step list directly in the blockquote, no blank `>` lines inside it (they
+turn steps into `<p>` items), What you need/Plan before it, Answer/Check after it. Chromium: all 16 chapters
+at 1300 and 390 px, 0 KaTeX errors, 0 console errors, no horizontal scroll. Checker: 161 blocks, 360 claims.
+
 **30 Sep 2026 — Maths: "where to start" structure.** README now opens with *Where to Start*: a 14-question
 placement check (start at the first chapter you cannot answer; hidden answers), routes by goal (the old
 Who-this-is-for and Study Plans merged), and a 6-step routine per chapter; path, teaching table, labs and

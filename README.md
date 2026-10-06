@@ -229,8 +229,9 @@ sets; CS 13, 14, 01, 04, 11; building blocks beyond the list above.
 - All **353 visualizers** play end to end, all **546 architecture diagrams** pass the layout
   checker, and every Python file outside `_archive/` parses under Python 3.12 without
   warnings.
-- The **Maths module's** 16 pages render offline with all 1,033 formulas and 0 errors, and its
-  own checker runs 148 code blocks and confirms all 295 printed claims.
+- The **Maths module's** 17 pages render offline with 0 formula errors, and its own checker
+  runs 161 code blocks and confirms all 360 printed claims. Its 190 hand-worked notebook
+  examples and their Your turn answers were each verified by script.
 - **No broken links** between the learning materials (1,892 relative links checked).
 - The core modules (DSA, CS Fundamentals, System Design) need only Python's standard
   library, Go's standard library and a C compiler.
