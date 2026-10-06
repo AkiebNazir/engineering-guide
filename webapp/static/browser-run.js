@@ -30,7 +30,7 @@ window.BrowserRun = (() => {
 
   const freshWorker = () => {
     if (worker) worker.terminate();
-    worker = new Worker('./py-worker.js');
+    worker = new Worker(assetUrl('./py-worker.js'));
     pyReady = false;
   };
 
@@ -130,5 +130,28 @@ window.BrowserRun = (() => {
     }
   };
 
-  return { python, go, gofmt, isPythonReady: () => pyReady };
+  /* Get ready for a Run while the learner reads: start Python (downloads the runtime
+     the first time, then boots from the browser cache in a second or two), or open
+     the connection to the Go Playground. Skipped on data-saver or 2G connections,
+     where a 10 MB download nobody asked for would hurt. */
+  const slowLink = () => {
+    const c = navigator.connection;
+    return !!c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ''));
+  };
+  let preconnected = false;
+  const warm = lang => {
+    if (lang === 'py') {
+      if (worker || slowLink()) return;
+      (window.requestIdleCallback || (cb => setTimeout(cb, 1500)))(() => { if (!worker) freshWorker(); }, { timeout: 5000 });
+    } else if (!preconnected) {
+      preconnected = true;
+      const l = document.createElement('link');
+      l.rel = 'preconnect';
+      l.href = GO_PLAYGROUND;
+      l.crossOrigin = 'anonymous';
+      document.head.append(l);
+    }
+  };
+
+  return { python, go, gofmt, warm, isPythonReady: () => pyReady };
 })();

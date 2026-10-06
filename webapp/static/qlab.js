@@ -104,7 +104,7 @@ const SQL_TIME_LIMIT_MS = 10000;
 
 class SqlWorkerDb {
   constructor() {
-    this.worker = new Worker(new URL('./qlab-sql-worker.js', document.baseURI), { type: 'module' });
+    this.worker = new Worker(new URL(assetUrl('./qlab-sql-worker.js'), document.baseURI), { type: 'module' });
     this.pending = new Map();
     this.seq = 0;
     this.dead = null;
@@ -652,6 +652,10 @@ function qlabMountEditor(engine, q) {
     },
   });
   qlabEditor.on('change', () => qlabSaveDraft());
+  // editor-tools.js: Copy / Cut / Paste / Delete / Undo as buttons, for touch screens
+  if (typeof mountEditBar === 'function' && !host.previousElementSibling?.classList.contains('edit-bar')) {
+    mountEditBar(host, () => qlabEditor);
+  }
   setTimeout(() => qlabEditor.refresh(), 0);
 }
 const qlabBlankFor = (engine, q) => (engine === 'sql' ? `-- ${q.title}\n-- dataset: ${q.dataset}\n\n`

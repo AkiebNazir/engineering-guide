@@ -441,6 +441,7 @@ async function openStdlibItem(lang, pkgId, levelId) {
   curLang = lang;
   curStdlib = { lang, pkg: pkgId, level: levelId, num: lv.num, title: lv.title,
                 recId: stdlibRecId(lang, pkgId, levelId) };
+  if (typeof IS_STATIC !== 'undefined' && IS_STATIC) BrowserRun.warm(lang);   // ready for Run
 
   showView('problem');
   setStdlibTabs();
