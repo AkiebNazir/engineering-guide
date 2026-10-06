@@ -5,7 +5,7 @@ OUT ?= dist
 IMAGE ?= engineering-guide
 COMPOSE ?= docker compose -f deploy/compose.yaml
 
-.PHONY: help app serve test admin build preview clean up down logs up-admin tunnel docker-build docker-run docker-build-static
+.PHONY: help app serve test admin build preview clean up up-direct down logs up-admin tunnel docker-build docker-run docker-build-static
 
 help: ## List the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-20s %s\n", $$1, $$2}'
@@ -39,8 +39,13 @@ up: ## Run the hosted guide WITH code running (web + sandboxed runner) on http:/
 	$(COMPOSE) up -d --build
 	@echo "Up on http://127.0.0.1:$${EG_PORT:-8080}  ·  make logs  ·  make down  ·  make tunnel to share it"
 
+up-direct: ## Same, served straight from this machine on ports 80/443 (HTTPS by Caddy, no tunnel)
+	@grep -q '^EG_SITE_ADDRESS=' tmp/guide.env 2>/dev/null || { echo "Set EG_SITE_ADDRESS (this machine's public IP or host name) in tmp/guide.env." >&2; exit 1; }
+	EG_SITE_ADDRESS=$$(grep '^EG_SITE_ADDRESS=' tmp/guide.env | tail -1 | cut -d= -f2-) \
+	  $(COMPOSE) -f deploy/compose.direct.yaml up -d --build
+
 down: ## Stop it (accounts, progress and the Go build cache are kept)
-	$(COMPOSE) down
+	$(COMPOSE) down --remove-orphans
 
 logs: ## Follow its logs
 	$(COMPOSE) logs -f

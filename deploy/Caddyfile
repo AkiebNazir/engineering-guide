@@ -1,0 +1,17 @@
+# The HTTPS front door when this machine serves the guide itself (make up-direct):
+# visitors reach Caddy on ports 80/443, Caddy forwards to the web container.
+#
+# EG_SITE_ADDRESS (in tmp/guide.env) decides the certificate:
+#   a host name that points at this machine   a free Let's Encrypt certificate, renewed
+#                                             automatically (needs ports 80 and 443 open)
+#   an IP address                             Caddy's own certificate: browsers warn once
+{
+	admin off
+	skip_install_trust # nothing to install it into inside a container
+	default_sni {$EG_SITE_ADDRESS} # browsers send no name when visiting a bare IP
+}
+
+{$EG_SITE_ADDRESS} {
+	encode zstd gzip
+	reverse_proxy web:8080
+}

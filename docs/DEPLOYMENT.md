@@ -163,7 +163,15 @@ make tunnel    # optional: share it over HTTPS with Tailscale Funnel
 The web app sends a run only for pages the reader's plan opens (`entitlements.check_run`),
 one at a time per account, with a per-account rate limit. The site listens on
 `127.0.0.1` only; a tunnel such as Tailscale Funnel or Cloudflare Tunnel gives it a
-public HTTPS address without opening anything else on the machine. The runner image is
+public HTTPS address without opening anything else on the machine.
+
+To serve it with no tunnel or outside service at all, `make up-direct` adds a third
+container, Caddy (`deploy/compose.direct.yaml`, `deploy/Caddyfile`), on ports 80 and 443.
+It terminates HTTPS and forwards to `web`; the router forwards those two ports to the
+machine. `EG_SITE_ADDRESS` picks the certificate: a host name pointing at the machine gets
+a Let's Encrypt certificate, renewed automatically; a bare IP address gets Caddy's own
+certificate, which browsers warn about once. This needs an internet connection with a
+public IP address (not CGNAT). The runner image is
 about 2.4 GB (Python and Go with every library the lessons use, precompiled).
 
 ---
@@ -192,7 +200,8 @@ webapp/
   scripts/          developer checks for the front end (npm ci first; see below)
   data/             progress.json, your local progress
 tools/              curriculum tooling: problems.tsv (DSA index), generators, checkers; ollama/Modelfile
-deploy/             Dockerfile (hosted app), Dockerfile.runner + compose.yaml (code runner), Dockerfile.static + nginx.conf (free preview)
+deploy/             Dockerfile (hosted app), Dockerfile.runner + compose.yaml (code runner),
+                    compose.direct.yaml + Caddyfile (serve it from this machine), Dockerfile.static + nginx.conf (free preview)
 docs/               this guide; CONTEXT.md (session handoff notes)
 .github/workflows/  GitHub Pages deployment
 docker-compose.databases.yml   Postgres, MongoDB and Redis for the SQL / NoSQL lessons
