@@ -57,16 +57,96 @@ def cross(o, a, b):
 print(cross((0, 0), (4, 0), (2, 3)), cross((0, 0), (4, 0), (2, -3)), cross((0, 0), (4, 0), (8, 0)))   # → 12 -12 0
 ```
 
-> **Notebook example:** For A = (1, 1), B = (4, 2), C = (2, 4), which way does A → B → C
-> turn, and what is the triangle's area?
+> **Notebook example:** For A = (1, 1), B = (4, 2), C = (2, 4), does the path A → B → C turn
+> left or right?
 >
-> 1. $B - A = (3, 1)$ and $C - A = (1, 3)$.
-> 2. Cross product: $3 \times 3 - 1 \times 1 = 9 - 1 = 8$.
-> 3. It is positive, so the turn is **left** (counter-clockwise).
-> 4. The triangle's area is half the absolute value: $8 / 2 = 4$.
+> **What you need:** Subtracting two points gives a **direction**: $B - A$ means "how to walk
+> from A to B", found by subtracting the x's and the y's separately. The **2-D cross
+> product** of two directions $u = (u_x, u_y)$ and $v = (v_x, v_y)$ is the single number
+> $u \times v = u_x v_y - u_y v_x$. With $u = B - A$ and $v = C - A$, its **sign** gives the
+> turn: positive means a **left** turn (counter-clockwise), negative means a **right** turn
+> (clockwise), and zero means the three points lie on one straight line (**collinear**).
 >
-> **Answer:** a left turn, with area 4. Only integer multiplications were used, so the
-> answer is exact.
+> **Plan:** make the two directions starting at A, take their cross product, and read its
+> sign.
+>
+> 1. **Find B − A.** $(4 - 1, 2 - 1) = (3, 1)$. So $u_x = 3$ and $u_y = 1$.
+> 2. **Find C − A.** $(2 - 1, 4 - 1) = (1, 3)$. So $v_x = 1$ and $v_y = 3$.
+> 3. **Multiply the first pair.** $u_x v_y = 3 \times 3 = 9$.
+> 4. **Multiply the second pair.** $u_y v_x = 1 \times 1 = 1$.
+> 5. **Subtract.** $9 - 1 = 8$.
+> 6. **Read the sign.** 8 is positive, so the turn is **left**.
+>    *Why:* a positive cross product means C lies on the left-hand side as you walk from A
+>    towards B.
+>
+> **Answer:** A → B → C turns left (counter-clockwise). Only integer multiplication and
+> subtraction were used, so the answer is exact, with no rounding.
+>
+> **Check:** sketch it. Walking from (1, 1) to (4, 2) heads right and slightly up, and
+> C = (2, 4) is well above that line, on your left hand. ✓ `cross((1, 1), (4, 2), (2, 4))`
+> from the code above returns 8.
+
+> **Your turn:** For A = (0, 0), B = (4, 0), C = (1, −2), does A → B → C turn left or right?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Find B − A.** $(4 - 0, 0 - 0) = (4, 0)$.
+> 2. **Find C − A.** $(1 - 0, -2 - 0) = (1, -2)$.
+> 3. **Multiply the first pair.** $4 \times (-2) = -8$.
+> 4. **Multiply the second pair.** $0 \times 1 = 0$.
+> 5. **Subtract.** $-8 - 0 = -8$.
+> 6. **Read the sign.** −8 is negative, so the turn is **right**.
+>
+> **Answer:** a right turn (clockwise). Walking along the x-axis to the right, C is below the
+> line, on your right hand.
+>
+> </details>
+
+> **Notebook example:** Find the area of the triangle A = (1, 1), B = (4, 2), C = (2, 4) using
+> the cross product.
+>
+> **What you need:** The cross product $(B - A) \times (C - A)$, worked out as
+> $u_x v_y - u_y v_x$, is the **signed area** of the parallelogram (a slanted rectangle)
+> whose sides are $B - A$ and $C - A$. "Signed" means it can come out negative, depending
+> on which way round the points go. The triangle ABC is exactly half of that parallelogram.
+> So the area is $\lvert \text{cross} \rvert / 2$, where the bars (absolute value) mean
+> "drop the minus sign if there is one".
+>
+> **Plan:** compute the cross product, make it positive, and halve it.
+>
+> 1. **Find B − A.** $(4 - 1, 2 - 1) = (3, 1)$.
+> 2. **Find C − A.** $(2 - 1, 4 - 1) = (1, 3)$.
+> 3. **Compute the cross product.** $3 \times 3 = 9$ and $1 \times 1 = 1$, and $9 - 1 = 8$.
+> 4. **Take the absolute value.** $\lvert 8 \rvert = 8$.
+>    *Why:* an area cannot be negative. The sign only tells you which way the points turn.
+> 5. **Halve it.** $8 / 2 = 4$.
+>    *Why:* a diagonal cuts a parallelogram into two equal triangles, and ABC is one of
+>    them.
+>
+> **Answer:** the triangle has area 4 square units.
+>
+> **Check:** put the triangle in its bounding box, x from 1 to 4 and y from 1 to 4, which has
+> area $3 \times 3 = 9$. Cut off the three right-angled corner triangles outside ABC: under
+> AB the legs are 3 and 1, area $3 \times 1 / 2 = 1.5$; beside BC the legs are 2 and 2, area
+> $2 \times 2 / 2 = 2$; beside CA the legs are 1 and 3, area 1.5. Then
+> $9 - 1.5 - 2 - 1.5 = 4$. ✓
+
+> **Your turn:** Find the area of the triangle A = (0, 0), B = (4, 0), C = (0, 3) with the
+> cross product.
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Find B − A.** $(4, 0)$.
+> 2. **Find C − A.** $(0, 3)$.
+> 3. **Compute the cross product.** $4 \times 3 = 12$ and $0 \times 0 = 0$, and $12 - 0 = 12$.
+> 4. **Take the absolute value.** $\lvert 12 \rvert = 12$.
+> 5. **Halve it.** $12 / 2 = 6$.
+>
+> **Answer:** area 6, which matches the school formula ½ × base × height = ½ × 4 × 3 = 6.
+>
+> </details>
 
 ### Segment intersection
 
@@ -110,18 +190,57 @@ def shoelace(poly):
 print(shoelace([(0, 0), (4, 0), (4, 3), (0, 3)]), shoelace([(0, 0), (0, 3), (4, 3), (4, 0)]))   # → 12.0 -12.0
 ```
 
-> **Notebook example:** Find the area of the quadrilateral (1, 1), (5, 2), (4, 5),
-> (2, 4) with the shoelace formula.
+> **Notebook example:** Find the area of the quadrilateral with corners (1, 1), (5, 2),
+> (4, 5), (2, 4) with the shoelace formula.
 >
-> | Edge | $x_i y_{i+1} - x_{i+1} y_i$ |
-> |---|---|
-> | (1, 1) → (5, 2) | $1 \cdot 2 - 5 \cdot 1 = -3$ |
-> | (5, 2) → (4, 5) | $5 \cdot 5 - 4 \cdot 2 = 17$ |
-> | (4, 5) → (2, 4) | $4 \cdot 4 - 2 \cdot 5 = 6$ |
-> | (2, 4) → (1, 1) | $2 \cdot 1 - 1 \cdot 4 = -2$ |
+> **What you need:** List the corners in order around the shape; $(x_i, y_i)$ is the i-th
+> corner. For each edge, from corner i to the next corner i + 1, compute the term
+> $x_i y_{i+1} - x_{i+1} y_i$ (a cross product, as in the previous section). The last edge
+> runs from the last corner back to the first. Then the area is half the absolute value of
+> the sum of the terms: $\text{Area} = \frac{1}{2}\lvert \text{sum} \rvert$. If the sum is
+> positive, the corners were listed counter-clockwise.
 >
-> **Answer:** the sum is $-3 + 17 + 6 - 2 = 18$, so the area is $18 / 2 = 9$. The sum is
-> positive, so the vertices are listed counter-clockwise.
+> **Plan:** work out one term per edge (4 edges), add them up, then drop the sign and halve.
+>
+> 1. **List the corners and close the loop.** (1, 1) → (5, 2) → (4, 5) → (2, 4) → back to
+>    (1, 1).
+> 2. **Edge 1: (1, 1) → (5, 2).** $1 \cdot 2 - 5 \cdot 1 = 2 - 5 = -3$.
+>    *Why:* each term is twice the signed area of the thin triangle from the origin to this
+>    edge. The parts that lie outside the shape cancel when you add them all up.
+> 3. **Edge 2: (5, 2) → (4, 5).** $5 \cdot 5 - 4 \cdot 2 = 25 - 8 = 17$.
+> 4. **Edge 3: (4, 5) → (2, 4).** $4 \cdot 4 - 2 \cdot 5 = 16 - 10 = 6$.
+> 5. **Edge 4: (2, 4) → (1, 1).** $2 \cdot 1 - 1 \cdot 4 = 2 - 4 = -2$.
+>    *Why:* forgetting this closing edge is the most common shoelace bug. In the code it is
+>    the `% len(poly)`.
+> 6. **Add the terms.** $-3 + 17 = 14$, then $14 + 6 = 20$, then $20 - 2 = 18$.
+> 7. **Halve the absolute value.** $\lvert 18 \rvert = 18$, and $18 / 2 = 9$.
+> 8. **Read the sign.** The sum, 18, is positive, so the corners are listed
+>    counter-clockwise.
+>
+> **Answer:** the area is 9 square units, and the corners go round counter-clockwise.
+>
+> **Check:** cut the shape along the diagonal from (1, 1) to (4, 5) into two triangles and use
+> the cross product. Triangle (1, 1), (5, 2), (4, 5): $(4, 1) \times (3, 4) = 16 - 3 = 13$,
+> area 6.5. Triangle (1, 1), (4, 5), (2, 4): $(3, 4) \times (1, 3) = 9 - 4 = 5$, area 2.5.
+> Total $6.5 + 2.5 = 9$. ✓ `shoelace([(1, 1), (5, 2), (4, 5), (2, 4)])` also gives 9.0.
+
+> **Your turn:** Use the shoelace formula on the rectangle (0, 0), (3, 0), (3, 2), (0, 2).
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **List the corners and close the loop.** (0, 0) → (3, 0) → (3, 2) → (0, 2) → back to
+>    (0, 0).
+> 2. **Edge 1: (0, 0) → (3, 0).** $0 \cdot 0 - 3 \cdot 0 = 0$.
+> 3. **Edge 2: (3, 0) → (3, 2).** $3 \cdot 2 - 3 \cdot 0 = 6 - 0 = 6$.
+> 4. **Edge 3: (3, 2) → (0, 2).** $3 \cdot 2 - 0 \cdot 2 = 6 - 0 = 6$.
+> 5. **Edge 4: (0, 2) → (0, 0).** $0 \cdot 0 - 0 \cdot 2 = 0$.
+> 6. **Add the terms, then halve.** $0 + 6 + 6 + 0 = 12$, and $12 / 2 = 6$.
+>
+> **Answer:** area 6, which matches width × height = 3 × 2. The sum was positive, so these
+> corners are also counter-clockwise.
+>
+> </details>
 
 ### Convex hull: sort, then keep only left turns
 
@@ -308,13 +427,48 @@ print(trailing_zeros(100), len(s) - len(s.rstrip("0")))   # → 24 24
 
 > **Notebook example:** How many trailing zeros does $125!$ have?
 >
-> 1. Multiples of 5 up to 125: $\lfloor 125/5 \rfloor = 25$.
-> 2. Multiples of 25 give a second 5: $\lfloor 125/25 \rfloor = 5$.
-> 3. Multiples of 125 give a third 5: $\lfloor 125/125 \rfloor = 1$.
-> 4. Total fives: $25 + 5 + 1 = 31$. There are far more factors of 2, so each 5 pairs
->    with a 2 to make a 10.
+> **What you need:** $n!$ ("n factorial") is $1 \times 2 \times 3 \times \dots \times n$. A
+> **trailing zero** is a 0 at the end of a number (1200 has two). Each trailing zero comes
+> from a factor $10 = 2 \times 5$ in the product. The even numbers supply far more 2s than
+> there are 5s, so the number of zeros equals the number of 5s. $\lfloor x \rfloor$
+> ("floor") means "round down to a whole number", so $\lfloor 125/5 \rfloor$ is Python's
+> `125 // 5`; it counts the multiples of 5 from 1 to 125. Legendre's formula adds these up:
+> $\lfloor n/5 \rfloor + \lfloor n/25 \rfloor + \lfloor n/125 \rfloor + \dots$
 >
-> **Answer:** 31 trailing zeros.
+> **Plan:** count the multiples of 5, then of 25, then of 125, until the power of 5 is bigger
+> than n, and add the counts.
+>
+> 1. **Count the multiples of 5.** $\lfloor 125/5 \rfloor = 25$. Each of these numbers gives
+>    at least one 5.
+> 2. **Count the multiples of 25.** $\lfloor 125/25 \rfloor = 5$.
+>    *Why:* $25 = 5 \times 5$, so 25, 50, 75, 100 and 125 each hold a second 5 that step 1
+>    did not count.
+> 3. **Count the multiples of 125.** $\lfloor 125/125 \rfloor = 1$.
+>    *Why:* $125 = 5 \times 5 \times 5$ holds a third 5.
+> 4. **Try the next power, 625.** 625 is bigger than 125, so $\lfloor 125/625 \rfloor = 0$.
+>    Stop.
+> 5. **Add the counts.** $25 + 5 = 30$, then $30 + 1 = 31$.
+>
+> **Answer:** $125!$ ends in 31 zeros. Each of the 31 fives pairs with a 2 to make a 10.
+>
+> **Check:** first a small case: $10! = 3628800$ has 2 trailing zeros, and
+> $\lfloor 10/5 \rfloor = 2$. ✓ For 125, `trailing_zeros(125)` from the code above returns
+> 31, and so does counting the zeros at the end of `str(math.factorial(125))`. ✓
+
+> **Your turn:** How many trailing zeros does $30!$ have?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Count the multiples of 5.** $\lfloor 30/5 \rfloor = 6$.
+> 2. **Count the multiples of 25.** $\lfloor 30/25 \rfloor = 1$ (just 25 itself).
+> 3. **Try the next power, 125.** 125 is bigger than 30. Stop.
+> 4. **Add the counts.** $6 + 1 = 7$.
+>
+> **Answer:** 7 trailing zeros. Indeed $30! = 265252859812191058636308480000000$, which ends
+> in seven 0s.
+>
+> </details>
 
 ### Excel column titles: bijective base 26
 
@@ -334,14 +488,51 @@ print(column_title(1), column_title(26), column_title(27), column_title(702), co
 
 > **Notebook example:** Which spreadsheet column is number 705?
 >
-> 1. Subtract 1, then divide by 26: $704 = 27 \times 26 + 2$. The remainder 2 is the
->    letter **C** (0 = A).
-> 2. Carry on with 27: $27 - 1 = 26 = 1 \times 26 + 0$. The remainder 0 is **A**.
-> 3. Carry on with 1: $1 - 1 = 0 = 0 \times 26 + 0$. The remainder 0 is **A**. The
->    quotient is 0, so stop.
-> 4. Read the letters from last to first: **AAC**.
+> **What you need:** Column names count A, B, …, Z, AA, AB, …, which is like base 26 except
+> the "digits" are A = 1 up to Z = 26 and there is **no zero digit** (this is called
+> **bijective base 26**). Ordinary base conversion uses `divmod(n, 26)`, which gives the
+> **quotient** (how many whole 26s) and the **remainder** (what is left, 0 to 25). The fix
+> is to subtract 1 first, so the remainders 0, 1, …, 25 stand for A, B, …, Z. Repeat on the
+> quotient until it reaches 0. The letters come out last letter first.
 >
-> **Answer:** AAC. **Check:** $1 \times 26^2 + 1 \times 26 + 3 = 676 + 26 + 3 = 705$. ✓
+> **Plan:** subtract 1, divide by 26, turn the remainder into a letter; repeat with the
+> quotient; then read the letters backwards.
+>
+> 1. **Subtract 1.** $705 - 1 = 704$.
+> 2. **Divide by 26.** $26 \times 27 = 702$ and $704 - 702 = 2$, so
+>    $704 = 27 \times 26 + 2$. Quotient 27, remainder 2.
+> 3. **Turn the remainder into a letter.** 0 = A, 1 = B, 2 = C, so the letter is **C**.
+>    This is the last letter of the answer.
+> 4. **Subtract 1 from the quotient.** $27 - 1 = 26$.
+> 5. **Divide by 26.** $26 = 1 \times 26 + 0$. Quotient 1, remainder 0, which is **A**.
+> 6. **Subtract 1 from the quotient.** $1 - 1 = 0$.
+> 7. **Divide by 26.** $0 = 0 \times 26 + 0$. Remainder 0, which is **A**. The quotient is 0,
+>    so stop.
+> 8. **Read the letters backwards.** We found C, then A, then A, so the column is **AAC**.
+>    *Why:* the first remainder is the lowest place, like the last digit of an ordinary
+>    number.
+>
+> **Answer:** column 705 is **AAC**.
+>
+> **Check:** convert back with A = 1 and C = 3:
+> $1 \times 26^2 + 1 \times 26 + 3 = 676 + 26 + 3 = 705$. ✓ `column_title(705)` from the
+> code above returns `"AAC"`.
+
+> **Your turn:** Which spreadsheet column is number 52?
+>
+> <details>
+> <summary>Show the worked answer</summary>
+>
+> 1. **Subtract 1.** $52 - 1 = 51$.
+> 2. **Divide by 26.** $51 = 1 \times 26 + 25$. Quotient 1, remainder 25, which is **Z**.
+> 3. **Subtract 1 from the quotient.** $1 - 1 = 0$.
+> 4. **Divide by 26.** $0 = 0 \times 26 + 0$. Remainder 0, which is **A**. Stop.
+> 5. **Read the letters backwards.** Z, then A gives **AZ**.
+>
+> **Answer:** AZ. Check: $1 \times 26 + 26 = 52$. Without subtracting 1, plain base 26 would
+> give $52 = 2 \times 26 + 0$, a zero digit that no letter can show.
+>
+> </details>
 
 ## 3 · Back-of-the-Envelope Estimation
 
